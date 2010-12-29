@@ -686,7 +686,7 @@ bool logpos;
 	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost){ return cost;}
 	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration){ return duration;}
 	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
-	float ResistSpell(int8 resist_type, int16 spell_id, Mob *caster);
+	float ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_resist_override = false, int resist_override = 0);
 	uint16 GetSpecializeSkillValue(int16 spell_id) const;
 
 	void ShowStats(Client* client);

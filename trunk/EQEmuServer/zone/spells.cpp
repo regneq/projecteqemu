@@ -3607,189 +3607,283 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 }
 
 //
-// solar: spell resists:
+// Spell resists:
 // returns an effectiveness index from 0 to 100.  for most spells, 100 means
 // it landed, and anything else means it was resisted; however there are some
 // spells that can be partially effective, and this value can be used there.
-//
-float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
+// TODO: we need to figure out how the following pvp values work and implement them
+// pvp_resist_base
+// pvp_resist_calc
+// pvp_resist_cap
+float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_resist_override, int resist_override)
 {
-	int caster_level, target_level, resist;
-	float roll, fullchance, resistchance;
-	int resist_bonuses = CalcResistChanceBonus();
-	int fear_resist_bonuses = CalcFearResistChance();
-	int spell_resist_chance = MakeRandomInt(0,99); // Declare this so we don't have to win two rolls for every spell
-	
+
+	if(!caster)
+	{
+		return 100;
+	}
+
 	if(spell_id != 0 && !IsValidSpell(spell_id))
 	{
 		return 0;
 	}
-	
-	//this is checked here instead of in the Immune code so it only applies to detrimental spells
-	if(SpecAttacks[IMMUNE_MAGIC]) {
-		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_id);
-		return(0);
-	}
-	
-	if(resist_type == RESIST_NONE && (spell_resist_chance > resist_bonuses || resist_bonuses == 0)) {
-		//unresistable...
-		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", spell_id, resist_type);
-		return(100);
-	}
 
 	if(SpecAttacks[IMMUNE_CASTING_FROM_RANGE])
 	{
-		if(caster)
+		if(!caster->CombatRange(this))
 		{
-			if(!caster->CombatRange(this))
-				return(0);
-		}
-	}
-
-	target_level = GetLevel();
-	
-	if(spell_id == 0) {
-		caster_level = caster->GetLevel();
-	} else {
-		caster_level = caster ? caster->GetCasterLevel(spell_id) : target_level;
-	}
-
-	// if NPC target and more than X levels above caster, it's always resisted
-	if(IsNPC() && target_level - caster_level > RuleI(Spells, AutoResistDiff)) {
-		mlog(SPELLS__RESISTS, "We are %d levels above the caster, which is higher than the %d level auto-resist gap. Fully resisting.",  target_level - caster_level, RuleI(Spells, AutoResistDiff));
- 		return 0;
-	}
-	
-	//check for buff/item/aa based fear modifiers
-	if (spell_id != 0 && IsFearSpell(spell_id)) {
-		//Spell resist bonuses apply here as well, I dont think they should stack in this instance though
-		if(MakeRandomInt(0, 99) < fear_resist_bonuses || MakeRandomInt(0, 99) < resist_bonuses) {
-			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", fear_resist_bonuses + resist_bonuses, spell_id);
 			return(0);
 		}
 	}
 
-	switch(resist_type) {
-	case RESIST_MAGIC:
-		resist = GetMR();
-		break;
-
-	case RESIST_FIRE:
-		resist = GetFR();
-		break;
-	
-	case RESIST_COLD:
-		resist = GetCR();
-		break;
-	
-	case RESIST_POISON:
-		resist = GetPR();
-		break;
-	
-	case RESIST_DISEASE:
-		resist = GetDR();
-		break;
-	
-	case RESIST_CORRUPTION:
-		resist = GetCorrup();
-		break;
-	
-	// Hvitrev: Primsatic = average of all resists
-	case RESIST_PRISMATIC:
-		resist = (GetDR()+GetMR()+GetFR()+GetCR()+GetPR())/5;
-		break;
-	
-	// Hvitrev: Chromatic = lowest of all resists
-	case RESIST_CHROMATIC: {
-		sint16 tempresist = GetMR();
-		sint16 tempresist2 = GetFR();
-		
-		if ( tempresist < tempresist2 )
-			resist = tempresist;
-		else
-			resist = tempresist2;
-		tempresist = GetCR();
-		if ( tempresist < resist )
-			resist = tempresist;
-		tempresist = GetDR();
-		if ( tempresist < resist )
-			resist = tempresist;
-		tempresist = GetPR();
-		if ( tempresist < resist )
-			resist = tempresist;
-		break;
-	}
-	case RESIST_PHYSICAL:
-	default:
-		resist = GetMR(); // need something better eventually
-		break;
+	if(SpecAttacks[IMMUNE_MAGIC]) 
+	{
+		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_id);
+		return(0);
 	}
 
-	// value in spell to adjust base resist by
-	if(spell_id != 0)
-		resist += spells[spell_id].ResistDiff;
-		
-	//This is our base resist chance given no resists and no level diff, set to a modest 2% by default
-	resistchance = RuleR(Spells, ResistChance); 
-	
-	//changed this again, just straight 8.5 resist points per level above you
-	float lvldiff = caster_level - target_level;
-	resist += (RuleI(Spells, ResistPerLevelDiff) * (-lvldiff) / 10);
-
-	/*The idea is we come up with 3 ranges of numbers and a roll between 0 and 100
-	[[[Empty Space above the resistchance line]]] - If the roll lands up here the spell wasn't resisted, the lower the resist chance the larger this range is
-	[[[Space between resistchance line and full resist chance line]]] - If the roll ends up here then the spell is resisted but only partially, we take the roll in porportion to where it landed in this range to det how
-	high the partial should be, for example if we rolled barely over the full resist chance line then it would result in a low partial but if we barely missed the spell not resisting then it would result in a very high partial
-	The higher the resist the larger this range will be.
-	[[[Space below the full resist chance line]]] - If the roll ends up down here then the spell was resisted fully, the higher the resist the larger this range will be.
-	*/
-
-	//default 0.40: 500 resist = 200% Base resist while 40 resist = 16% resist base.
-	//Set ResistMod lower to require more resist points per percentage point of resistance.
-	resistchance += resist * RuleR(Spells, ResistMod); 
-	resistchance += resist_bonuses;
-	
-	if(caster && caster->IsClient())
+	//Get resist modifier and adjust it based on focus 2 resist about eq to 1% resist chance
+	int resist_modifier = (use_resist_override) ? resist_override : spells[spell_id].ResistDiff;
+	if(caster->IsClient())
 	{
 		if(IsValidSpell(spell_id))
 		{
-			sint32 focusResist = caster->CastToClient()->GetFocusEffect(focusResistRate, spell_id);
-			resistchance = (resistchance * (100-focusResist) / 100);
+			int focus_resist = caster->CastToClient()->GetFocusEffect(focusResistRate, spell_id);
+			resist_modifier -= 2 * focus_resist;
 		}
 	}
 
-	//Resist chance makes up the upper limit of our partial range
-	//Fullchance makes up the lower limit of our partial range
-	if(!IsFearSpell(spell_id))
-		fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChance))); //default 0.7
+	//Check for fear resist
+	if(IsFearSpell(spell_id))
+	{
+		int fear_resist_bonuses = CalcFearResistChance();
+		if(MakeRandomInt(0, 99) < fear_resist_bonuses)
+		{
+			mlog(SPELLS__RESISTS, "Resisted spell in fear resistance, had %d chance to resist", fear_resist_bonuses);
+			return 0;
+		}
+	}
+
+	//Check for specific resistance to spell effect.
+	//Don't think we have this implemented except for fear.
+
+	//Check for sanctification
+	int resist_bonuses = CalcResistChanceBonus();
+	if(MakeRandomInt(0, 99) < resist_bonuses)
+	{
+		mlog(SPELLS__RESISTS, "Resisted spell in sanctification, had %d chance to resist", resist_bonuses);
+		return 0;
+	}
+
+	//Get the resist chance for the target
+	if(resist_type == RESIST_NONE)
+	{
+		mlog(SPELLS__RESISTS, "Spell was unresistable");
+		return 100;
+	}
+
+	int target_resist;
+	switch(resist_type)
+	{
+	case RESIST_FIRE:
+		target_resist = GetFR();
+		break;
+	case RESIST_COLD:
+		target_resist = GetCR();
+		break;
+	case RESIST_MAGIC:
+		target_resist = GetMR();
+		break;
+	case RESIST_DISEASE:
+		target_resist = GetDR();
+		break;
+	case RESIST_POISON:
+		target_resist = GetPR();
+		break;
+	case RESIST_CORRUPTION:
+		target_resist = GetCorrup();
+		break;
+	case RESIST_PRISMATIC:
+		target_resist = (GetFR() + GetCR() + GetMR() + GetDR() + GetPR()) / 5;
+		break;
+	case RESIST_CHROMATIC:
+		{
+			target_resist = GetFR();
+			int temp = GetCR();
+			if(temp < target_resist)
+			{
+				target_resist = temp;
+			}
+
+			temp = GetMR();
+			if(temp < target_resist)
+			{
+				target_resist = temp;
+			}
+
+			temp = GetDR();
+			if(temp < target_resist)
+			{
+				target_resist = temp;
+			}
+		
+			temp = GetPR();
+			if(temp < target_resist)
+			{
+				target_resist = temp;
+			}
+		}
+		break;
+	case RESIST_PHYSICAL:
+	default:
+		//This is guessed but the others are right
+		target_resist = (GetSTA() / 4);
+	}
+
+	//Setup our base resist chance.
+	//Lulls have a slightly higher chance to resist than normal 15/200 or ~ 7.5%
+	int resist_chance;
+	if(IsHarmonySpell(spell_id))
+	{
+		resist_chance = 15;
+	}
 	else
-		fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChanceFear))); //default 0.25
+	{
+		resist_chance = 0;
+	}
 
-	roll = MakeRandomInt(0, 100);
-
-	mlog(SPELLS__RESISTS, "Spell %d: Resist Amount: %d, ResistChance: %.2f, Resist Bonuses: %.2f", 
-		spell_id, resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));	
-	
-	if(spell_resist_chance > resist_bonuses || resist_bonuses == 0) {
-		if (roll > resistchance) {
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_id, roll, resistchance);
-			return(100);
+	//Adjust our resist chance based on level modifiers
+	int temp_level_diff = GetLevel() - caster->GetLevel();
+	if(IsNPC() && GetLevel() >=67)
+	{
+		int a = 66 - caster->GetLevel();
+		if(a > 0)
+		{
+			temp_level_diff = a;
 		}
-		else {
-			if ((roll <= fullchance))	{
-				mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", spell_id, roll, fullchance);
-				return(0);
-			}
-			else {
-				mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_id, roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
-				//Remove the lower range so it doesn't throw off the proportion.
-				return(100 * ((roll-fullchance)/(resistchance-fullchance)));
-			}
+		else
+		{
+			temp_level_diff = 0;
 		}
 	}
-	else {
-		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= resist_bonuses %.2f, fully resisted", spell_id, roll, resist_bonuses);
-		return(0);
+
+	if(IsClient() && GetLevel() >= 21 && temp_level_diff > 15)
+	{
+		temp_level_diff = 15;
+	}
+
+	if(IsNPC() && temp_level_diff < -9)
+	{
+		temp_level_diff = -9;
+	}
+
+	int level_mod = temp_level_diff * temp_level_diff / 2;
+	if(temp_level_diff < 0)
+	{
+		level_mod = -level_mod;
+	}
+
+	if(IsNPC() && (caster->GetLevel() - GetLevel()) < -20)
+	{
+		level_mod = 1000;
+	}
+
+	//Add our level, resist and -spell resist modifier to our roll chance
+	resist_chance += level_mod;
+	resist_chance += resist_modifier;
+	resist_chance += target_resist;
+
+	//Even more level stuff this time dealing with damage spells
+	if(IsNPC() && IsDamageSpell(spell_id) && GetLevel() >= 17)
+	{
+		int level_diff;
+		if(GetLevel() >= 67)
+		{
+			level_diff = 66 - caster->GetLevel();
+			if(level_diff < 0)
+			{
+				level_diff = 0;
+			}
+		}
+		else
+		{
+			level_diff = GetLevel() - caster->GetLevel();
+		}
+		resist_chance += (2 * level_diff);
+	}
+
+	//Do our min and max resist checks.
+	if(resist_chance > spells[spell_id].MaxResist && spells[spell_id].MaxResist != 0)
+	{
+		resist_chance = spells[spell_id].MaxResist;
+	}
+
+	if(resist_chance < spells[spell_id].MinResist && spells[spell_id].MinResist != 0)
+	{
+		resist_chance = spells[spell_id].MinResist;
+	}
+
+	//Finally our roll
+	int roll = MakeRandomInt(0, 200);
+	if(roll > resist_chance)
+	{
+		return 100;
+	}
+	else
+	{
+		//This is confusing but it's basically right
+		//It skews partial resists up over 100 more often than not
+		if(!IsPartialCapableSpell(spell_id))
+		{
+			return 0;
+		}
+		else
+		{
+			if(resist_chance < 1)
+			{
+				resist_chance = 1;
+			}
+
+			int partial_modifier = ((150 * (resist_chance - roll)) / resist_chance);
+
+			if(IsNPC())
+			{
+				if(GetLevel() > caster->GetLevel() && GetLevel() >= 17 && caster->GetLevel() <= 50)
+				{
+					partial_modifier += 5;
+				}
+
+				if(GetLevel() >= 30 && caster->GetLevel() < 50)
+				{
+					partial_modifier += (caster->GetLevel() - 25);
+				}
+
+				if(GetLevel() < 15)
+				{
+					partial_modifier -= 5;
+				}
+			}
+			
+			if(caster->IsNPC())
+			{
+				if((GetLevel() - caster->GetLevel()) >= 20)
+				{
+					partial_modifier += (GetLevel() - caster->GetLevel()) * 1.5;
+				}
+			}
+
+			if(partial_modifier < 0)
+			{
+				return 0;
+			}
+
+			if(partial_modifier > 100)
+			{
+				return 100;
+			}
+
+			return partial_modifier;
+		}
 	}
 }
 
