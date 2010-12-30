@@ -3640,7 +3640,7 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 	safe_delete(outapp);
 }
 
-void Client::SendStatWindow(const char *Text, ...) {
+void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, const char *Title, const char *Text, ...) {
 	va_list argptr;
 	char *buffer = new char[4096];
 
@@ -3656,12 +3656,45 @@ void Client::SendStatWindow(const char *Text, ...) {
 	if(strlen(Text) > (sizeof(olms->Text)-1))
 		return;
 
-	strcpy(olms->Title, "Stats Window");
+	switch (title_type)
+	{
+		case 1: {
+			char name[64] = "";
+			strcpy(name, this->GetName());
+			if(this->GetLastName()) {
+				char last_name[64] = "";
+				strcpy(last_name, this->GetLastName());
+				strcat(name, " ");
+				strcat(name, last_name);
+			}
+			strcpy(olms->Title, name);
+			break;
+		}
+		case 2: {
+			if(this->GuildID()) {
+				char *guild_name = (char*)guild_mgr.GetGuildName(this->GuildID());
+				strcpy(olms->Title, guild_name);
+			}
+			else {
+				strcpy(olms->Title, "No Guild");
+			}
+			break;
+		}
+		default: {
+			strcpy(olms->Title, Title);
+			break;
+		}
+	}
+	
 	memcpy(olms->Text, buffer, len+1);
 
-	olms->Buttons = 0;
-	olms->Duration = 0xffffffff;
-	olms->PopupID = 0;
+	olms->Buttons = Buttons;
+	if(Duration > 0)
+		olms->Duration = Duration * 1000;
+	else
+		olms->Duration = 0xffffffff;
+	
+	olms->PopupID = PopupID;
 	olms->unknown4236 = 0x00000000;
 	olms->unknown4240 = 0xffffffff;
 	

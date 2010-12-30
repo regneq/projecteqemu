@@ -1023,9 +1023,9 @@ void Mob::ShowStats(Client* client) {
 	else {
 		if (c) {
 		client->Message(0, "  Level: %i  AC: %i  Class: %i  Size: %1.1f  Weight: %.1f/%d  Haste: %i DS: %i DS Cap: %i", GetLevel(), GetAC(), GetClass(), GetSize(), (float)c->CalcCurrentWeight() / 10.0f, c->GetSTR(), GetHaste(), c->GetDS(), RuleI(Character, ItemDamageShieldCap));
-		client->Message(0, "  HP: %i  Max HP: %i  HP Regen: %i HP Regen Cap: %i",GetHP(), GetMaxHP(), c->CalcHPRegen(), c->CalcHPRegenCap(true));
-		client->Message(0, "  Mana: %i  Max Mana: %i  Mana Regen: %i Mana Regen Cap: %i", GetMana(), GetMaxMana(), c->CalcManaRegen(), c->CalcManaRegenCap(true));
-		client->Message(0, "  End.: %i, Max End.: %i  End. Regen: %i End. Regen Cap: %i",c->GetEndurance(), c->GetMaxEndurance(), c->CalcEnduranceRegen(), c->CalcEnduranceRegenCap(true));
+		client->Message(0, "  HP: %i  Max HP: %i  HP Regen: %i HP Regen Cap: %i",GetHP(), GetMaxHP(), c->CalcHPRegen(), c->CalcHPRegenCap());
+		client->Message(0, "  Mana: %i  Max Mana: %i  Mana Regen: %i Mana Regen Cap: %i", GetMana(), GetMaxMana(), c->CalcManaRegen(), c->CalcManaRegenCap());
+		client->Message(0, "  End.: %i, Max End.: %i  End. Regen: %i End. Regen Cap: %i",c->GetEndurance(), c->GetMaxEndurance(), c->CalcEnduranceRegen(), c->CalcEnduranceRegenCap());
 		}
 		else {
 			client->Message(0, "  Level: %i  AC: %i  Class: %i  Size: %1.1f  Haste: %i", GetLevel(), GetAC(), GetClass(), GetSize(), GetHaste());
@@ -4304,15 +4304,20 @@ void Client::SendClientStatWindow(Client* client)
 	// Current HP
 	char cur_hp_field[8];
 	char cur_hp_spacing[20] = "";
-	strcat(HME_row, indP);
+	strcat(HME_row, indM);
 	strcat(HME_row, " H: ");
 	int cur_hp_length = sprintf(cur_hp_field, "%d", GetHP());
 	for(int h = cur_hp_length; h < 8; h++) {
 		strcat(cur_hp_spacing, " .");
 	}
 	strcat(HME_row, cur_hp_spacing); // Add spacing
+	if(GetHP() == GetMaxHP()) 
+		strcat(HME_row, "<c \"#7CFC00\">"); // Green color
+	else
+		strcat(HME_row, "<c \"#CC3333\">"); // Red color
+	
 	strcat(HME_row, cur_hp_field); // Add HP value to string
-	strcat(HME_row, " / "); // divider
+	strcat(HME_row, "</c> / ");
 	// HP total
 	char hp_field[8];
 	sprintf(hp_field, "%d", GetMaxHP());
@@ -4321,7 +4326,7 @@ void Client::SendClientStatWindow(Client* client)
 	/////////////////////
 	// Current Mana
 	if(c->CalcMaxMana() > 0) {
-		strcat(HME_row, indP);
+		strcat(HME_row, indM);
 		strcat(HME_row, " M: "); // mana
 		char cur_mana_field[8];
 		char cur_mana_spacing[20] = "";
@@ -4330,18 +4335,23 @@ void Client::SendClientStatWindow(Client* client)
 			strcat(cur_mana_spacing, " .");
 		}
 		strcat(HME_row, cur_mana_spacing); // Add spacing
+		if(GetMana() == c->CalcMaxMana()) 
+			strcat(HME_row, "<c \"#7CFC00\">"); // Green color
+		else
+			strcat(HME_row, "<c \"#CC3333\">"); // Red color
+		
 		strcat(HME_row, cur_mana_field); // Add Mana value to string
-		strcat(HME_row, " / "); // divider
+		strcat(HME_row, "</c> / ");
 		// Mana total
 		char mana_field[8];
-		sprintf(mana_field, "%d", GetMaxMana());
+		sprintf(mana_field, "%d", c->CalcMaxMana());
 		strcat(HME_row, mana_field); // Add Mana value to string
 		strcat(HME_row, "<br>"); // END LINE
 		
 	}
 	///////////////////
 	// Current Endurance
-	strcat(HME_row, indP);
+	strcat(HME_row, indM);
 	strcat(HME_row, " E: "); // End
 	char cur_end_field[8];
 	char cur_end_spacing[20] = "";
@@ -4350,7 +4360,13 @@ void Client::SendClientStatWindow(Client* client)
 		strcat(cur_end_spacing, " .");
 	}
 	strcat(HME_row, cur_end_spacing); // Add spacing
+	if(GetEndurance() == c->GetMaxEndurance()) 
+			strcat(HME_row, "<c \"#7CFC00\">"); // Green color
+		else
+			strcat(HME_row, "<c \"#CC3333\">"); // Red color
+			
 	strcat(HME_row, cur_end_field); // Add End value to string
+	strcat(HME_row, "</c>");
 	strcat(HME_row, " / "); // divider
 	// End. total
 	char end_field[8];
@@ -4383,6 +4399,18 @@ void Client::SendClientStatWindow(Client* client)
 	}
 	strcat(hp_row, item_HPregen_spacing); // Spacing
 	strcat(hp_row, item_HPregen_field); // Add item HP Regen value to string
+	strcat(hp_row, " ("); // Bracket
+	
+	// HP Item Regen Cap
+	char cap_HPregen_field[5];
+	char cap_HPregen_spacing[10] = "";
+	int cap_HPregen_length = sprintf(cap_HPregen_field, "%d", c->CalcHPRegenCap());
+	strcat(hp_row, cap_HPregen_field); // Add HP Regen cap value to string
+	strcat(hp_row, ") ");
+	for(int h = cap_HPregen_length; h < 5; h++) {
+		strcat(cap_HPregen_spacing, " ."); 
+	}
+	strcat(hp_row, cap_HPregen_spacing); // Spacing
 	strcat(hp_row, div); // Divider
 	
 	// Spell HP Regen
@@ -4409,19 +4437,8 @@ void Client::SendClientStatWindow(Client* client)
 	
 	// Total Current HP Regen
 	char total_HPregen_field[5];
-	char total_HPregen_spacing[10] = "";
-	int total_HPregen_length = sprintf(total_HPregen_field, "%d", c->CalcHPRegen());
-	for(int h = total_HPregen_length; h < 5; h++) {
-		strcat(total_HPregen_spacing, " ."); 
-	}
-	strcat(hp_row, total_HPregen_spacing); // Spacing
+	sprintf(total_HPregen_field, "%d", c->CalcHPRegen());
 	strcat(hp_row, total_HPregen_field); // Add current HP Regen value to string
-	strcat(hp_row, div); // Divider
-	
-	// HP Regen Cap
-	char cap_HPregen_field[5];
-	sprintf(cap_HPregen_field, "%d", c->CalcHPRegenCap(true));
-	strcat(hp_row, cap_HPregen_field); // Add HP Regen cap value to string
 	
 	//////////////////////////////
 	// MANA
@@ -4447,6 +4464,18 @@ void Client::SendClientStatWindow(Client* client)
 	}
 	strcat(mana_row, item_manaregen_spacing); // Spacing
 	strcat(mana_row, item_manaregen_field); // Add item mana Regen value to string
+		
+	// Mana Item Regen Cap
+	strcat(mana_row, " ("); // Brackets
+	char cap_manaregen_field[5];
+	char cap_manaregen_spacing[10] = "";
+	int cap_manaregen_length = sprintf(cap_manaregen_field, "%d", c->CalcManaRegenCap());
+	strcat(mana_row, cap_manaregen_field); // Add Mana Regen cap value to string
+	strcat(mana_row, ") ");
+	for(int h = cap_manaregen_length; h < 5; h++) {
+		strcat(cap_manaregen_spacing, " ."); 
+	}
+	strcat(mana_row, cap_manaregen_spacing); // Spacing
 	strcat(mana_row, div); // Divider
 	
 	// Spell Mana Regen
@@ -4473,20 +4502,9 @@ void Client::SendClientStatWindow(Client* client)
 	
 	// Total Current Mana Regen
 	char total_manaregen_field[5];
-	char total_manaregen_spacing[10] = "";
-	int total_manaregen_length = sprintf(total_manaregen_field, "%d", c->CalcManaRegen());
-	for(int h = total_manaregen_length; h < 5; h++) {
-		strcat(total_manaregen_spacing, " ."); 
-	}
-	strcat(mana_row, total_manaregen_spacing); // Spacing
+	sprintf(total_manaregen_field, "%d", c->CalcManaRegen());
 	strcat(mana_row, total_manaregen_field); // Add current mana Regen value to string
-	strcat(mana_row, div); // Divider
-	
-	// Mana Regen Cap
-	char cap_manaregen_field[5];
-	sprintf(cap_manaregen_field, "%d", c->CalcManaRegenCap(true));
-	strcat(mana_row, cap_manaregen_field); // Add mana Regen cap value to string
-	
+		
 	//////////////////////////////
 	// Endurance
 	char end_row[250] = "";
@@ -4511,6 +4529,18 @@ void Client::SendClientStatWindow(Client* client)
 	}
 	strcat(end_row, item_endregen_spacing); // Spacing
 	strcat(end_row, item_endregen_field); // Add item Endurance Regen value to string
+	
+	// Endurance Item Regen Cap
+	strcat(end_row, " ("); // Brackets
+	char cap_endregen_field[5];
+	char cap_endregen_spacing[10] = "";
+	int cap_endregen_length = sprintf(cap_endregen_field, "%d", c->CalcEnduranceRegenCap());
+	strcat(end_row, cap_endregen_field); // Add End Regen cap value to string
+	strcat(end_row, ") ");
+	for(int h = cap_endregen_length; h < 5; h++) {
+		strcat(cap_endregen_spacing, " ."); 
+	}
+	strcat(end_row, cap_endregen_spacing); // Spacing
 	strcat(end_row, div); // Divider
 	
 	// Spell Endurance Regen
@@ -4537,20 +4567,11 @@ void Client::SendClientStatWindow(Client* client)
 	
 	// Total Current Endurance Regen
 	char total_endregen_field[5];
-	char total_endregen_spacing[10] = "";
-	int total_endregen_length = sprintf(total_endregen_field, "%d", c->CalcEnduranceRegen());
-	for(int h = total_endregen_length; h < 5; h++) {
-		strcat(total_endregen_spacing, " ."); 
-	}
-	strcat(end_row, total_endregen_spacing); // Spacing
+	sprintf(total_endregen_field, "%d", c->CalcEnduranceRegen());
 	strcat(end_row, total_endregen_field); // Add current Endurance Regen value to string
-	strcat(end_row, div); // Divider
+	///////////////////////////////////////
+	/////////////////////////////////////// End String
 	
-	// Endurance Regen Cap
-	char cap_endregen_field[5];
-	sprintf(cap_endregen_field, "%d", c->CalcEnduranceRegenCap(true));
-	strcat(end_row, cap_endregen_field); // Add Endurance Regen cap value to string
-		
 	// Rune Total
 	uint32 buff_count = GetMaxTotalSlots();
 	int16 melee_rune_left = 0;
@@ -4583,19 +4604,20 @@ void Client::SendClientStatWindow(Client* client)
 	strcat(regen_fields, "<br>"); // break
 	
 	
-	client->SendStatWindow(" "
-			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s</c><br>"
-			/* 02 - C/L/R	*/		" %s Class: %s Level: %i Race: %s<br>"
-			/* 03 - HP		*/		" %s <br>"
-			/* 04 - MANA	*/		
-			/* 05 - END		*/		
-			/* 06 - LineBr	*/		" <br>"
-			/* 07 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
-			/* 08 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
-			/* 09 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
-			/* 10 - Rune 	*/		" %s Rune: %i | Magic Rune: %i<br>"
-			/* 11 - Labels 	*/		" %s Regen<br>"
-			/* 12 - Labels 	*/		" %s %s %s Base | Items | Spell | A.A.s | Total | Cap<br>"
+	client->SendWindow(0,0,0,1,"", " "
+			/* 00 - C/L/R	*/		" %s Class: %s %s Level: %i %s Race: %s<br>"
+			/* 01 - LineBr	*/		" <br>"
+			/* 02 - HP		*/		" %s <br>"
+			/* 03 - MANA	*/		
+			/* 04 - END		*/		
+			/* 05 - LineBr	*/		" <br>"
+			/* 06 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
+			/* 07 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
+			/* 08 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
+			/* 09 - Rune 	*/		" %s Rune: %i | Magic Rune: %i<br>"
+			/* 10 - LineBr	*/		" <br>"
+			/* 11 - Labels 	*/		" %s %s Regen<br>"
+			/* 12 - Labels 	*/		" %s %s %s Base | Items (Cap) %s | Spell | A.A.s | Total<br>"
 			/* 13 - HP	 	*/		" %s "
 			/* 14 - Mana 	*/		
 			/* 15 - End. 	*/		
@@ -4628,18 +4650,19 @@ void Client::SendClientStatWindow(Client* client)
 			/* 42 - Sdg		*/		" %s Spell Dmg.: %i / %i<br>" 
 			/* 43 - Clar	*/		" %s Clair.: %i / %i<br>" 
 			/* 44 - DSm		*/		" %s DS Mit.: %i / %i<br>",
-			/* 01 - Name 	*/		indL, GetName(),
-			/* 02 - C/L/R 	*/		indP, class_Name, GetLevel(), race_Name,
-			/* 03 - HP	 	*/		HME_row,
-			/* 04 - MANA 	*/		
-			/* 05 - END 	*/		
-			/* 06 - LineBr 	*/		
-			/* 07 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), GetATK(),
-			/* 08 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
-			/* 09 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
-			/* 10 - Rune 	*/		indP, melee_rune_left, magic_rune_left,
-			/* 11 - Labels 	*/		indL,
-			/* 12 - Labels 	*/		indS, indP, indP,
+			/* 00 - C/L/R 	*/		indP, class_Name, indS, GetLevel(), indS, race_Name,
+			/* 01 - LineBr 	*/		
+			/* 02 - HP	 	*/		HME_row,
+			/* 03 - MANA 	*/		
+			/* 04 - END 	*/		
+			/* 05 - LineBr 	*/		
+			/* 06 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), GetATK(),
+			/* 07 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
+			/* 08 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
+			/* 09 - Rune 	*/		indP, melee_rune_left, magic_rune_left,
+			/* 10 - LineBr	*/		
+			/* 11 - Labels 	*/		indL, indS,
+			/* 12 - Labels 	*/		indS, indP, indP, indP,
 			/* 13 - HP 		*/		regen_fields,
 			/* 14 - Mana 	*/		
 			/* 15 - End. 	*/		
