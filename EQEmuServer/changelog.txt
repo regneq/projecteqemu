@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==12/30/2010==
 Derision: Added a new table aa_required_level_cost to allow specifying a required level and cost for each rank of an AA.
 Derision: Implemented spell formulas required by AA versions of Harm Touch/Lay on Hands.
+Caryatis: ShowStatWindow was changed to ShowWindow and had some features added
+Caryatis: title_type = 0 for custom titles, 1 for first and last name and 2 for guild titles
+Caryatis: Implemented a limit on how low a weapon speed can be when procs are calculated to reflect the innate swing speed limit
 
 Required SQL:
 

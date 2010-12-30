@@ -301,7 +301,7 @@ public:
 	sint32			CalcMaxMana();
 	sint32			CalcBaseMana();
 	const sint32&	SetMana(sint32 amount);
-	sint32 			CalcManaRegenCap(bool absolute_cap=false);
+	sint32 			CalcManaRegenCap();
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
 	void	BulkSendTraderInventory(int32 char_id);
@@ -440,8 +440,8 @@ public:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
 	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
-	sint32	CalcEnduranceRegenCap(bool absolute_cap=false);	
-	sint32	CalcHPRegenCap(bool absolute_cap=false);
+	sint32	CalcEnduranceRegenCap();	
+	sint32	CalcHPRegenCap();
 	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
 	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
 	void DoEnduranceRegen();	//This Regenerates endurance
@@ -800,7 +800,7 @@ public:
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
 	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
-	void	SendStatWindow(const char *Text, ...);
+	void	SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, const char *Title, const char *Text, ...);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;

@@ -3589,7 +3589,8 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 		PermaHaste = 1.0f;
 		
 	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste) / 100);
-
+	if(weapon_speed < 10) // fast as a client can swing, so should be the floor of the proc chance
+		weapon_speed = 10;
 
 	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
 

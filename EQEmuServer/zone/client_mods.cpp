@@ -213,18 +213,16 @@ sint32 Client::LevelRegen()
 }
 
 sint32 Client::CalcHPRegen() {
-	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen + (itembonuses.HeroicSTA / 25);
+	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
 
 	regen += aabonuses.HPRegen + GroupLeadershipAAHealthRegeneration();
 
 	return (regen * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcHPRegenCap(bool absolute_cap)
+sint32 Client::CalcHPRegenCap()
 {
 	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
-	if(absolute_cap)
-		cap += CalcHPRegen() - itembonuses.HPRegen;
 	
 	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
@@ -1099,11 +1097,6 @@ sint32 Client::CalcManaRegen()
 		this->medding = false;
 		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 	}
-
-	if(GetCasterClass() == 'I')
-		regen += (itembonuses.HeroicINT / 25);
-	else
-		regen += (itembonuses.HeroicWIS / 25);
 	
 	//AAs
 	regen += aabonuses.ManaRegen;
@@ -1111,7 +1104,7 @@ sint32 Client::CalcManaRegen()
 	return (regen * RuleI(Character, ManaRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcManaRegenCap(bool absolute_cap)
+sint32 Client::CalcManaRegenCap()
 {
 	sint32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
 	switch(GetCasterClass())
@@ -1123,8 +1116,6 @@ sint32 Client::CalcManaRegenCap(bool absolute_cap)
 			cap += (itembonuses.HeroicWIS / 25);
 			break;
 	}
-	if(absolute_cap)
-		cap += CalcManaRegen() - itembonuses.ManaRegen;
 
 	return (cap * RuleI(Character, ManaRegenMultiplier) / 100);
 }
@@ -1973,15 +1964,12 @@ sint32 Client::CalcBaseEndurance()
 sint32 Client::CalcEnduranceRegen() {
 	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
 	regen += aabonuses.EnduranceRegen + spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
-	regen += itembonuses.HeroicSTR/25 + itembonuses.HeroicSTA/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25;
 
 	return (regen * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcEnduranceRegenCap(bool absolute_cap) {
+sint32 Client::CalcEnduranceRegenCap() {
 	int cap = (RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25);
-	if(absolute_cap) 
-		cap += CalcEnduranceRegen() - itembonuses.EnduranceRegen;
 		
 	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
