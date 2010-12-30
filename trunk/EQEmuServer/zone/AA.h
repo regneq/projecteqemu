@@ -689,6 +689,7 @@ typedef enum {	//AA IDs
 	aaSelosEnduringCadence = 1627,		//from dbstr_us.txt
 	aaHarmTouch = 7800,					//from dbstr_us.txt
 	aaLayonHands = 7850,				//from dbstr_us.txt
+	aaLayonHandsRank16 = 7866,
 
 	aaHighestID		//this should always be last, and should always
 					//follow the highest AA ID
@@ -716,6 +717,12 @@ struct AA_SwarmPet {
 	int16 duration;		//how long they last, in seconds
 };
 
+struct AALevelCost_Struct
+{
+	uint32 Level;
+	uint32 Cost;
+};
+
 //assumes that no activatable AA has more than 5 ranks
 #define MAX_AA_ACTION_RANKS 20
 extern AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
@@ -725,7 +732,7 @@ extern map<int16, AA_SwarmPet> AA_SwarmPets;	//key=spell_id
 
 extern map<int32,SendAA_Struct*>aas_send;
 extern std::map<uint32, std::map<uint32, AA_Ability> > aa_effects;
-
+extern std::map<uint32, AALevelCost_Struct> AARequiredLevelAndCost;
 
 enum {	//values of AA_Action.action
 	aaActionActivate = 0,

@@ -46,6 +46,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemulator.net)
 AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
 map<int32,SendAA_Struct*>aas_send;
 std::map<uint32, std::map<uint32, AA_Ability> > aa_effects;	//stores the effects from the aa_effects table in memory
+std::map<uint32, AALevelCost_Struct> AARequiredLevelAndCost;
 
 /*
 
@@ -887,7 +888,8 @@ void Client::SendAAStats() {
 	safe_delete(outapp);
 }
 
-void Client::BuyAA(AA_Action* action){
+void Client::BuyAA(AA_Action* action)
+{
 	mlog(AA__MESSAGE, "Starting to buy AA %d", action->ability);
 		
 	//find the AA information from the database
@@ -929,8 +931,17 @@ void Client::BuyAA(AA_Action* action){
 		}
 	}
 
-	int real_cost = aa2->cost + (aa2->cost_inc * cur_level);
+	int real_cost;
 	
+	std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(action->ability);
+
+	if(RequiredLevel != AARequiredLevelAndCost.end())
+	{
+		real_cost = RequiredLevel->second.Cost;
+	}
+	else
+		real_cost = aa2->cost + (aa2->cost_inc * cur_level);
+
 	if(m_pp.aapoints >= real_cost && cur_level < aa2->max_level) {
 		SetAA(aa2->id, cur_level+1);
 
@@ -1148,6 +1159,13 @@ void Client::SendAA(int32 id, int seq) {
 
 		if(caa && caa->reuse_time > 0)
 			saa->spell_refresh = CalcAAReuseTimer(caa);
+	}
+	std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(saa->id);
+
+	if(RequiredLevel != AARequiredLevelAndCost.end())
+	{
+		saa->class_type = RequiredLevel->second.Level;
+		saa->cost = RequiredLevel->second.Cost;
 	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendAATable);
@@ -1566,9 +1584,9 @@ void ZoneDatabase::LoadAAs(SendAA_Struct **load){
 	if(!load)
 		return;
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT skill_id from altadv_vars order by skill_id"), errbuf, &result)) {
 		int skill=0,ndx=0;
 		while((row = mysql_fetch_row(result))!=NULL) {
@@ -1581,6 +1599,24 @@ void ZoneDatabase::LoadAAs(SendAA_Struct **load){
 	} else {
 		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadAAs query '%s': %s", query, errbuf);		
 	}
+	safe_delete_array(query);
+
+	AARequiredLevelAndCost.clear();
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT skill_id, level, cost from aa_required_level_cost order by skill_id"), errbuf, &result))
+	{
+		AALevelCost_Struct aalcs;
+		while((row = mysql_fetch_row(result))!=NULL)
+		{
+			aalcs.Level = atoi(row[1]);
+			aalcs.Cost = atoi(row[2]);
+			AARequiredLevelAndCost[atoi(row[0])] = aalcs;
+		}		
+		mysql_free_result(result);
+	}
+	else
+		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadAAs query '%s': %s", query, errbuf);
+
 	safe_delete_array(query);
 }
 
