@@ -1,5 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/30/2010==
+Derision: Added a new table aa_required_level_cost to allow specifying a required level and cost for each rank of an AA.
+Derision: Implemented spell formulas required by AA versions of Harm Touch/Lay on Hands.
+
+Required SQL:
+
+utils/sql/svn/1790_required_aa_required_level_cost.sql
+
+If there is no entry in this new table for a given rank of an AA, then the level (class_type) and cost_inc
+from altadv_vars will be used as normal.
+
 ==12/28/2010==
 Derision: /corpsedrag & /corpsedrop. Optional SQL: utils/sql/svn/1784_optional_corpsedrag_rules.sql
 

@@ -3187,6 +3187,11 @@ snare has both of them negative, yet their range should work the same:
 		default:
 			if (formula < 100)
 				result = ubase + (caster_level * formula);
+			else if((formula >= 2000) && (formula <= 2650))
+			{
+				// Source: http://crucible.samanna.net/viewtopic.php?f=38&t=6259
+				result = ubase * (caster_level * (formula - 2000) + 1);
+			}
 			else
 				LogFile->write(EQEMuLog::Debug, "Unknown spell effect value forumula %d", formula);
 	}

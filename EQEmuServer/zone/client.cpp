@@ -498,14 +498,26 @@ bool Client::Save(int8 iCommitNow) {
 			aa[a]->value = HIGHEST_AA_VALUE;
 			points = HIGHEST_AA_VALUE;
 		}
-		if (points > 0) {
+		if (points > 0)
+		{
 			SendAA_Struct* curAA = zone->FindAA(aa[a]->AA-aa[a]->value+1);
-			if(curAA) {
+			if(curAA)
+			{
 				for (int rank=0; rank<points; rank++) 
-					spentpoints += (curAA->cost + (curAA->cost_inc * rank));
+				{
+					std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(aa[a]->AA-aa[a]->value + 1 + rank);
+
+					if(RequiredLevel != AARequiredLevelAndCost.end())
+					{
+						spentpoints +=  RequiredLevel->second.Cost;
+					}
+					else
+						spentpoints += (curAA->cost + (curAA->cost_inc * rank));
+				}
 			}
 		}
 	}
+
 	m_pp.aapoints_spent = spentpoints + m_epp.expended_aa;
 
 	if (GetHP() <= 0) {
