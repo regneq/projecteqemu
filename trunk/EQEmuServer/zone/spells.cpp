@@ -3844,7 +3844,19 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 				resist_chance = 1;
 			}
 
-			int partial_modifier = ((150 * (resist_chance - roll)) / resist_chance);
+			int full_chance = (resist_chance * (1 - RuleR(Spells, PartialHitChance)));
+
+			if(roll <= full_chance)
+			{
+				return 0;
+			}
+			else
+			{
+				return(100 * ((roll - full_chance) / (resist_chance - full_chance)));
+			}
+			//Todo: fix this, im not entirely sure what sony's intention was but it doesn't work right
+			//Replaced with old code for now.
+			/*int partial_modifier = ((150 * (resist_chance - roll)) / resist_chance);
 
 			if(IsNPC())
 			{
@@ -3882,7 +3894,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 				return 100;
 			}
 
-			return partial_modifier;
+			return partial_modifier;*/
 		}
 	}
 }
