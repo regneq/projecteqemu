@@ -53,6 +53,7 @@ struct AISpells_Struct {
 	int32	time_cancast;	// when we can cast this spell next
 	sint32	recast_delay;
 	sint16	priority;
+	sint16  resist_adjust;
 };
 
 class NPC : public Mob
@@ -306,7 +307,7 @@ public:
 	void NPCSlotTexture(int8 slot, int16 texture);	// Sets new material values for slots
 
 	uint32 GetAdventureTemplate() const { return adventure_template_id; }
-	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
+	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay, sint16 iResistAdjust);
 	void RemoveSpellFromNPCList(sint16 spell_id);
 
 protected:

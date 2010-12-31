@@ -1142,7 +1142,7 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 		if((SpellEffectDescNum == 82) || (SpellEffectDescNum == 39067)) {
 			SetMana(0);
 			SetHP(GetMaxHP()/5);
-			SpellOnTarget(756,this); // Rezz effects
+			SpellOnTarget(756, this); // Rezz effects
 		}
 		else {
 			SetMana(GetMaxMana());

@@ -738,11 +738,12 @@ bool logpos;
  	void SendSpellBarEnable(int16 spellid);
 	void ZeroCastingVars();
 	virtual void SpellProcess();
-	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0);
-	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0);
-	void CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
-	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
-	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect=false);
+	//TODO: put these ridiculous options in a damned struct or something
+	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0, sint16 *resist_adjust = NULL);
+	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0, sint16 resist_adjust = 0);
+	void CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF, sint16 resist_adjust = 0);
+	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF, sint16 resist_adjust = 0);
+	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect = false, bool use_resist_adjust = false, sint16 resist_adjust = 0);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
 	virtual bool CheckFizzle(int16 spell_id);
@@ -1215,6 +1216,7 @@ protected:
 	uint32 casting_spell_timer;
 	uint32 casting_spell_timer_duration;
 	uint32 casting_spell_type;
+	sint16 casting_spell_resist_adjust;
 	uint16 bardsong;
 	uint8 bardsong_slot;
 	uint32 bardsong_target_id;

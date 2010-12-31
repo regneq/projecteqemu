@@ -2607,12 +2607,12 @@ void command_castspell(Client *c, const Seperator *sep)
 		else
 			if (c->GetTarget() == 0)
 				if(c->Admin() >= commandInstacast)
-					c->SpellFinished(spellid, 0, 10, 0);
+					c->SpellFinished(spellid, 0, 10, 0, -1, spells[spellid].ResistDiff);
 				else
 					c->CastSpell(spellid, 0, 10, 0);
 			else
 				if(c->Admin() >= commandInstacast)
-					c->SpellFinished(spellid, c->GetTarget(), 10, 0);
+					c->SpellFinished(spellid, c->GetTarget(), 10, 0, -1, spells[spellid].ResistDiff);
 				else
 					c->CastSpell(spellid, c->GetTarget()->GetID(), 10, 0);
 	}

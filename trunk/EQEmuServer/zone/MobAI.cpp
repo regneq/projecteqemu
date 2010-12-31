@@ -333,7 +333,7 @@ bool NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 		SetMoving(false);
 	}
 	
-	return CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
+	return CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore, -1, -1, 0, 0, &(AIspells[i].resist_adjust));
 }
 
 bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes) {
@@ -2201,7 +2201,10 @@ bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 			if (GetLevel() >= parentlist->entries[i].minlevel && GetLevel() <= parentlist->entries[i].maxlevel && parentlist->entries[i].spellid > 0) {
 				if (!IsSpellInList(spell_list, parentlist->entries[i].spellid))
 				{
-					AddSpellToNPCList(parentlist->entries[i].priority, parentlist->entries[i].spellid, parentlist->entries[i].type, parentlist->entries[i].manacost, parentlist->entries[i].recast_delay);
+					AddSpellToNPCList(parentlist->entries[i].priority, 
+						parentlist->entries[i].spellid, parentlist->entries[i].type, 
+						parentlist->entries[i].manacost, parentlist->entries[i].recast_delay,
+						parentlist->entries[i].resist_adjust);
 				}
 			}
 		}
@@ -2212,7 +2215,10 @@ bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 	}
 	for (i=0; i<spell_list->numentries; i++) {
 		if (GetLevel() >= spell_list->entries[i].minlevel && GetLevel() <= spell_list->entries[i].maxlevel && spell_list->entries[i].spellid > 0) {
-			AddSpellToNPCList(spell_list->entries[i].priority, spell_list->entries[i].spellid, spell_list->entries[i].type, spell_list->entries[i].manacost, spell_list->entries[i].recast_delay);
+			AddSpellToNPCList(spell_list->entries[i].priority, 
+				spell_list->entries[i].spellid, spell_list->entries[i].type, 
+				spell_list->entries[i].manacost, spell_list->entries[i].recast_delay, 
+				spell_list->entries[i].resist_adjust);
 		}
 	}
 	std::sort(AIspells.begin(), AIspells.end(), Compare_AI_Spells);
@@ -2241,7 +2247,9 @@ bool Compare_AI_Spells(AISpells_Struct i, AISpells_Struct j)
 }
 
 // adds a spell to the list, taking into account priority and resorting list as needed.
-void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay) {
+void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, 
+							sint16 iManaCost, sint32 iRecastDelay, sint16 iResistAdjust) 
+{
 	
 	if(!IsValidSpell(iSpellID))
 		return;
@@ -2255,6 +2263,7 @@ void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sin
 	t.manacost = iManaCost;
 	t.recast_delay = iRecastDelay;
 	t.time_cancast = 0;
+	t.resist_adjust = iResistAdjust;
 
 	AIspells.push_back(t);
 }
@@ -2305,7 +2314,7 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
 				sint16 tmpattack_proc = atoi(row[2]);
 				int8 tmpproc_chance = atoi(row[3]);
 				mysql_free_result(result);
-				if (RunQuery(query, MakeAnyLenString(&query, "SELECT spellid, type, minlevel, maxlevel, manacost, recast_delay, priority from npc_spells_entries where npc_spells_id=%d ORDER BY minlevel", iDBSpellsID), errbuf, &result)) {
+				if (RunQuery(query, MakeAnyLenString(&query, "SELECT spellid, type, minlevel, maxlevel, manacost, recast_delay, priority, resist_adjust from npc_spells_entries where npc_spells_id=%d ORDER BY minlevel", iDBSpellsID), errbuf, &result)) {
 					safe_delete_array(query);
 					int32 tmpSize = sizeof(DBnpcspells_Struct) + (sizeof(DBnpcspells_entries_Struct) * mysql_num_rows(result));
 					npc_spells_cache[iDBSpellsID] = (DBnpcspells_Struct*) new uchar[tmpSize];
@@ -2323,6 +2332,7 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
 						npc_spells_cache[iDBSpellsID]->entries[j].manacost = atoi(row[4]);
 						npc_spells_cache[iDBSpellsID]->entries[j].recast_delay = atoi(row[5]);
 						npc_spells_cache[iDBSpellsID]->entries[j].priority = atoi(row[6]);
+						npc_spells_cache[iDBSpellsID]->entries[j].resist_adjust = row[7] ? atoi(row[7]) : spells[npc_spells_cache[iDBSpellsID]->entries[j].spellid].ResistDiff;
 						j++;
 					}
 					mysql_free_result(result);

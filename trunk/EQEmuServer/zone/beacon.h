@@ -42,13 +42,14 @@ public:
 	bool	IsBeacon()			const { return true; }
 	bool	Process();
 	virtual void	Depop(bool not_used = true)	{ remove_me = true; }
-	void AELocationSpell(Mob *caster, int16 cast_spell_id);
+	void AELocationSpell(Mob *caster, int16 cast_spell_id, sint16 resist_adjust);
 
 protected:
 	Timer remove_timer;
 	bool remove_me;
 
 	int16 spell_id;
+	sint16 resist_adjust;
 	int spell_iterations;
 	Timer spell_timer;
 
