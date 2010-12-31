@@ -34,6 +34,7 @@ typedef const char Const_char;
 
 #include "mob.h"
 #include "client.h"
+#include "spdat.h"
 
 #ifdef THIS	 /* this macro seems to leak out on some systems */
 #undef THIS		
@@ -3880,7 +3881,7 @@ XS(XS_Mob_SpellFinished)
 		if (items > 3)
 			mana_cost = (int16)SvUV(ST(3));
 
-		THIS->SpellFinished(spell_id, spell_target, 10, mana_cost);
+		THIS->SpellFinished(spell_id, spell_target, 10, mana_cost, -1, spells[spell_id].ResistDiff);
 	}
 	XSRETURN_EMPTY;
 }

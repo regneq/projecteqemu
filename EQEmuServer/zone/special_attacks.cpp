@@ -480,7 +480,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 	DoSpecialAttackDamage(other, skill_type, ndamage, min_dmg, ht);
 
 	if(unchecked_type == DRAGON_PUNCH && GetAA(aaDragonPunch) && MakeRandomInt(0, 99) < 25){
-		SpellFinished(904, other);
+		SpellFinished(904, other, 10, 0, -1, spells[904].ResistDiff);
 		other->Stun(100);
 	}	
 	return(reuse);
@@ -1878,7 +1878,7 @@ void Mob::InstillDoubt(Mob *who) {
 		//temporary hack...
 		//cast fear on them... should prolly be a different spell
 		//and should be un-resistable.
-		SpellOnTarget(229, who);
+		SpellOnTarget(229, who, false, true, -2000);
 		//is there a success message?
 	} else {
 		Message_StringID(4,NOT_SCARING);

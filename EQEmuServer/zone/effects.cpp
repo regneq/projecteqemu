@@ -675,7 +675,7 @@ void EntityList::AETaunt(Client* taunter, float range) {
 // solar: causes caster to hit every mob within dist range of center with
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster, sint16 resist_adjust)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
@@ -723,12 +723,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 		{
 			if(iCounter < MAX_TARGETS_ALLOWED)
 			{
-				caster->SpellOnTarget(spell_id, curmob);
+				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust);
 			}
 		}
 		else
 		{
-			caster->SpellOnTarget(spell_id, curmob);
+			caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust);
 		}
 
 		if(!isnpc) //npcs are not target limited...

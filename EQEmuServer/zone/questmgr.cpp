@@ -75,6 +75,7 @@ using namespace std;
 #include "guild_mgr.h"
 #include "../common/rulesys.h"
 #include "QGlobals.h"
+#include "spdat.h"
 
 #ifdef BOTS
 #include "bot.h"
@@ -397,13 +398,13 @@ void QuestManager::castspell(int spell_id, int target_id) {
 	if (owner) {
 		Mob *tgt = entity_list.GetMob(target_id);
 		if(tgt != NULL)
-			owner->SpellFinished(spell_id, tgt);
+			owner->SpellFinished(spell_id, tgt, 10, 0, -1, spells[spell_id].ResistDiff);
 	}
 }
 
 void QuestManager::selfcast(int spell_id) {
 	if (initiator)
-		initiator->SpellFinished(spell_id, initiator,10,0);
+		initiator->SpellFinished(spell_id, initiator, 10, 0, -1, spells[spell_id].ResistDiff);
 }
 
 void QuestManager::addloot(int item_id, int charges) {

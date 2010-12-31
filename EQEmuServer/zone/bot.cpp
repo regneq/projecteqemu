@@ -7854,7 +7854,7 @@ void Bot::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		Mob::DoBuffTic(spell_id, ticsremaining, caster_level, caster);
 }
 
-bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot) {
+bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot, sint16 *resist_adjust) {
 	bool Result = false;
 
 	if(zone && !zone->IsSpellBlocked(spell_id, GetX(), GetY(), GetZ())) {

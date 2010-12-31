@@ -24,6 +24,7 @@ struct DBnpcspells_entries_Struct {
 	sint16	manacost;
 	sint32	recast_delay;
 	sint16	priority;
+	sint16	resist_adjust;
 };
 #pragma pack()
 

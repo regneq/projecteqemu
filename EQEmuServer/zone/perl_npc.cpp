@@ -1897,8 +1897,8 @@ XS(XS_NPC_AddSpellToNPCList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_AddSpellToNPCList)
 {
 	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: NPC::AddAISpell(THIS, priority, spell_id, type, mana_cost, recast_delay)");
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: NPC::AddAISpell(THIS, priority, spell_id, type, mana_cost, recast_delay, resist_adjust)");
 	{
 		NPC * THIS;
 		int	priority = (int)SvIV(ST(1));
@@ -1906,6 +1906,7 @@ XS(XS_NPC_AddSpellToNPCList)
 		int	type = (int)SvIV(ST(3));
 		int	mana_cost = (int)SvIV(ST(4));
 		int	recast_delay = (int)SvIV(ST(5));
+		int	resist_adjust = (int)SvIV(ST(6));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1916,7 +1917,7 @@ XS(XS_NPC_AddSpellToNPCList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->AddSpellToNPCList(priority, spell_id, type, mana_cost, recast_delay);
+		THIS->AddSpellToNPCList(priority, spell_id, type, mana_cost, recast_delay, resist_adjust);
 	}
 	XSRETURN_EMPTY;
 }
@@ -1925,7 +1926,7 @@ XS(XS_NPC_RemoveSpellFromNPCList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_RemoveSpellFromNPCList)
 {
 	dXSARGS;
-	if (items != 3)
+	if (items != 2)
 		Perl_croak(aTHX_ "Usage: NPC::RemoveAISpell(THIS, spell_id)");
 	{
 		NPC * THIS;
@@ -2036,7 +2037,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "GetSwarmTarget"), XS_NPC_GetSwarmTarget, file, "$");
 		newXSproto(strcpy(buf, "SetSwarmTarget"), XS_NPC_SetSwarmTarget, file, "$$");
 		newXSproto(strcpy(buf, "ModifyNPCStat"), XS_NPC_ModifyNPCStat, file, "$$$");
-		newXSproto(strcpy(buf, "AddAISpell"), XS_NPC_AddSpellToNPCList, file, "$$$$$$");
+		newXSproto(strcpy(buf, "AddAISpell"), XS_NPC_AddSpellToNPCList, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "RemoveAISpell"), XS_NPC_RemoveSpellFromNPCList, file, "$$");
 	XSRETURN_YES;
 }

@@ -19,6 +19,7 @@
 #include "../common/types.h"
 #include "entity.h"
 #include "masterentity.h"
+#include "spdat.h"
 #include "../common/MiscFunctions.h"
 
 /*
@@ -113,7 +114,7 @@ void Trap::Trigger(Mob* trigger)
 				entity_list.MessageClose(trigger,false,100,13,"%s",message.c_str());
 			}
 			if(hiddenTrigger){
-				hiddenTrigger->SpellFinished(effectvalue, trigger, 10);
+				hiddenTrigger->SpellFinished(effectvalue, trigger, 10, 0, -1, spells[effectvalue].ResistDiff);
 			}
 			break;
 		case trapTypeAlarm:

@@ -127,7 +127,8 @@ void Mob::SpellProcess()
 	{
 		spellend_timer.Disable();
 		delaytimer = false;
-		CastedSpellFinished(casting_spell_id, casting_spell_targetid, casting_spell_slot, casting_spell_mana, casting_spell_inventory_slot);
+		CastedSpellFinished(casting_spell_id, casting_spell_targetid, casting_spell_slot, 
+			casting_spell_mana, casting_spell_inventory_slot, casting_spell_resist_adjust);
 	}
 
 }
@@ -171,7 +172,8 @@ void NPC::SpellProcess()
 // but things like SpellFinished() can run concurrent with a triggered cast
 // to allow procs to work
 bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
-	sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot, uint32 timer, uint32 timer_duration, uint32 type)
+	sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot, 
+	uint32 timer, uint32 timer_duration, uint32 type, sint16 *resist_adjust)
 {
 	_ZP(Mob_CastSpell);
 	
@@ -216,7 +218,6 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		return(false);
 	}
 
-	
 	//cannot cast under divine aura
 	if(DivineAura()) {
 		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: cannot cast while Divine Aura is in effect.");
@@ -289,8 +290,16 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 			}
 			return(false);
 		}
-	}	
-	return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot, timer, timer_duration, type));
+	}
+
+	if(resist_adjust)
+	{
+		return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot, timer, timer_duration, type, *resist_adjust));
+	}
+	else
+	{
+		return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot, timer, timer_duration, type, spells[spell_id].ResistDiff));
+	}
 }
 
 //
@@ -302,7 +311,9 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 // to repeat a spell for bard songs
 //
 bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
-                    sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot, uint32 timer, uint32 timer_duration, uint32 type)
+                    sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, 
+					int32 item_slot, uint32 timer, uint32 timer_duration, uint32 type,
+					sint16 resist_adjust)
 {
 	_ZP(Mob_DoCastSpell);
 	
@@ -416,12 +427,14 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 
 	// we know our mana cost now
 	casting_spell_mana = mana_cost;
+
+	casting_spell_resist_adjust = resist_adjust;
 	
 	mlog(SPELLS__CASTING, "Spell %d: Casting time %d (orig %d), mana cost %d", orgcasttime, cast_time, mana_cost);
 
 	// cast time is 0, just finish it right now and be done with it
 	if(cast_time == 0) {
-		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
+		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot, resist_adjust);
 		return(true);
 	}
 
@@ -680,6 +693,7 @@ void Mob::ZeroCastingVars()
 	casting_spell_timer = 0;
 	casting_spell_timer_duration = 0;
 	casting_spell_type = 0;
+	casting_spell_resist_adjust = 0;
 	delaytimer = false;
 }
 
@@ -770,7 +784,8 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 // NOTE: do not put range checking, etc into this function.  this should
 // just check timed spell specific things before passing off to SpellFinished
 // which figures out proper targets etc
-void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot)
+void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, 
+							  int16 mana_used, int32 inventory_slot, sint16 resist_adjust)
 {
 	_ZP(Mob_CastedSpellFinished);
 	
@@ -1093,7 +1108,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	}
 
 	// we're done casting, now try to apply the spell
-	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot) )
+	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot, resist_adjust) )
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: SpellFinished returned false.", spell_id);
 		InterruptSpell();
@@ -1534,7 +1549,8 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 // only used from CastedSpellFinished, and procs
 // solar: we can't interrupt in this, or anything called from this!
 // if you need to abort the casting, return false
-bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 mana_used, int32 inventory_slot)
+bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, 
+						int16 mana_used, int32 inventory_slot, sint16 resist_adjust)
 {
 	_ZP(Mob_SpellFinished);
 	
@@ -1683,8 +1699,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 				mlog(SPELLS__CASTING, "Spell %d: Targeted spell, but we have no target", spell_id);
 				return(false);
 			}
-			SpellOnTarget(spell_id, spell_target);
-// seveian 2008-09-23
+			SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
 
 			if(IsPlayerIllusionSpell(spell_id)
 			&& IsClient()
@@ -1716,19 +1731,19 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 
 			if(ae_center->IsBeacon()) {
 				// special ae duration spell
-				ae_center->CastToBeacon()->AELocationSpell(this, spell_id);
+				ae_center->CastToBeacon()->AELocationSpell(this, spell_id, resist_adjust);
 			} else {
 				// regular PB AE or targeted AE spell - spell_target is null if PB
 				if(spell_target)	// this must be an AETarget spell
 				{
 					// affect the target too
-					SpellOnTarget(spell_id, spell_target);
+					SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
 				}
 				if(ae_center && ae_center == this && IsBeneficialSpell(spell_id))
 					SpellOnTarget(spell_id, this);
 				
 				bool affect_caster = !IsNPC();	//NPC AE spells do not affect the NPC caster
-				entity_list.AESpell(this, ae_center, spell_id, affect_caster);
+				entity_list.AESpell(this, ae_center, spell_id, affect_caster, resist_adjust);
 			}
 			break;
 		}
@@ -1841,7 +1856,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 						(heading_to_target >= 0.0f && heading_to_target <= angle_end))
 					{
 						if(CheckLosFN(spell_target))
-							SpellOnTarget(spell_id, spell_target);
+							SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
 					}
 				}
 				else
@@ -1849,7 +1864,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 					if(heading_to_target >= angle_start && heading_to_target <= angle_end)
 					{
 						if(CheckLosFN((*iter)))
-							SpellOnTarget(spell_id, (*iter));
+							SpellOnTarget(spell_id, (*iter), false, true, resist_adjust);
 					}
 				}
 				iter++;
@@ -2792,7 +2807,7 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 // and if you don't want effects just return false.  interrupting here will
 // break stuff
 //
-bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect)
+bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, sint16 resist_adjust)
 {
 	// well we can't cast a spell on target without a target
 	if(!spelltar)
@@ -3051,7 +3066,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect)
 		}
 		if(reflect_chance) {
 			Message_StringID(MT_Spells, SPELL_REFLECT, GetCleanName(), spelltar->GetCleanName());
-			SpellOnTarget(spell_id, this, true);
+			SpellOnTarget(spell_id, this, true, use_resist_adjust, resist_adjust);
 			return false;
 		}
 	}
@@ -3059,9 +3074,9 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect)
 	// solar: resist check - every spell can be resisted, beneficial or not
 	// add: ok this isn't true, eqlive's spell data is fucked up, buffs are
 	// not all unresistable, so changing this to only check certain spells
-	if(IsResistableSpell(spell_id) || (MakeRandomInt(0,99) < spelltar->CalcResistChanceBonus() && IsDetrimentalSpell(spell_id) && spells[spell_id].dispel_flag == 0))
+	if(IsResistableSpell(spell_id))
 	{
-		spell_effectiveness = spelltar->ResistSpell(spells[spell_id].resisttype, spell_id, this);
+		spell_effectiveness = spelltar->ResistSpell(spells[spell_id].resisttype, spell_id, this, use_resist_adjust, resist_adjust);
 		if(spell_effectiveness < 100)
 		{
 			if(spell_effectiveness == 0 || !IsPartialCapableSpell(spell_id) )
@@ -3839,24 +3854,13 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 		}
 		else
 		{
+			resist_chance -= roll;
 			if(resist_chance < 1)
 			{
 				resist_chance = 1;
 			}
 
-			int full_chance = (resist_chance * (1 - RuleR(Spells, PartialHitChance)));
-
-			if(roll <= full_chance)
-			{
-				return 0;
-			}
-			else
-			{
-				return(100 * ((roll - full_chance) / (resist_chance - full_chance)));
-			}
-			//Todo: fix this, im not entirely sure what sony's intention was but it doesn't work right
-			//Replaced with old code for now.
-			/*int partial_modifier = ((150 * (resist_chance - roll)) / resist_chance);
+			int partial_modifier = ((150 * (roll - resist_chance)) / resist_chance);
 
 			if(IsNPC())
 			{
@@ -3894,7 +3898,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 				return 100;
 			}
 
-			return partial_modifier;*/
+			return partial_modifier;
 		}
 	}
 }

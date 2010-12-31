@@ -2840,12 +2840,12 @@ void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 		twinproc = true;
 		
 	if (IsBeneficialSpell(spell_id)) {
-		SpellFinished(spell_id, this, 10, 0);
+		SpellFinished(spell_id, this, 10, 0, -1, spells[spell_id].ResistDiff);
 		if(twinproc)
 			SpellOnTarget(spell_id, this);
 	}
 	else if(!(on->IsClient() && on->CastToClient()->dead)) { //dont proc on dead clients
-		SpellFinished(spell_id, on, 10, 0);
+		SpellFinished(spell_id, on, 10, 0, -1, spells[spell_id].ResistDiff);
 		if(twinproc)
 			SpellOnTarget(spell_id, on);
 	}
@@ -3135,7 +3135,7 @@ void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
 			{
 				if (spells[focus_spell].effectid[i] == SE_TriggerOnCast)
 				{
-					// 100 = 100% chance to proc... seriously KLS :)
+					// 100 = 100% chance to proc...
 					if(MakeRandomInt(0, 99) < spells[focus_spell].base[i])
 					{
 						if(spells[spells[focus_spell].base2[i]].targettype == ST_Self || spells[spells[focus_spell].base2[i]].targettype == ST_Group)
