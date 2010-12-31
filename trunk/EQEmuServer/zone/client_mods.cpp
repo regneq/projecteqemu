@@ -899,18 +899,55 @@ sint16 Client::GetACMit() {
 		if(m_pp.class_ == MONK)
 			mitigation += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
 	}
+	
+	// Shield AC bonus for HeroicSTR
+	if(itembonuses.HeroicSTR) {
+		bool equiped = CastToClient()->m_inv.GetItem(14);
+		if(equiped) {
+			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
+			if(shield == ItemTypeShield) 
+				mitigation += itembonuses.HeroicSTR/2;
+		}
+	}
 
 	return(mitigation*1000/847);
 }
 
 sint16 Client::GetACAvoid() {
 
-	// new formula
 	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
 	if (avoidance < 0)
 		avoidance = 0;
+		
+	return(avoidance*1000/847);
+}
 
-	return (avoidance*1000/847);	//natural AC
+sint32 Client::GetShieldACBonus()
+{
+	int shield_ac_val = 0;
+	bool equiped = CastToClient()->m_inv.GetItem(14);
+	if(equiped) {
+		const Item_Struct *shield = CastToClient()->m_inv.GetItem(14)->GetItem();
+		if(shield->ItemType == ItemTypeShield) {
+			int slot_divider = 20; // Number to divide defense skill to simulate the items bonus
+			int shield_ac = shield->AC;
+			if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
+				shield_ac_val = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/(4*slot_divider) + 
+								(shield_ac);
+			} 
+			else {
+				shield_ac_val = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/(3*slot_divider) + 
+								((shield_ac*4)/3);
+				if(m_pp.class_ == MONK)
+					shield_ac_val += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
+			}
+			// Shield AC bonus for HeroicSTR
+			if(itembonuses.HeroicSTR) {
+				shield_ac_val += itembonuses.HeroicSTR/2;
+			}
+		}
+	}
+	return (shield_ac_val*1000/847);
 }
 
 sint32 Client::CalcMaxMana()
@@ -1359,25 +1396,6 @@ int Client::CalcHaste() {
 	return(Haste); 
 }
 
-int Client::CalcSpecificHaste(int toggle) {
-	int haste = 0;
-	switch(toggle) 
-	{
-		// Item haste
-		case 0:
-			haste = itembonuses.haste;
-			break;
-		// Spell Haste
-		case 1:
-			haste = spellbonuses.haste + spellbonuses.hastetype2;
-			break;
-		// Overhaste
-		case 2:
-			haste = spellbonuses.hastetype3 + ExtraHaste;
-			break;
-	}
-	return(haste); 
-}
 //The AA multipliers are set to be 5, but were 2 on WR
 //The resistant discipline which I think should be here is implemented
 //in Mob::ResistSpell
@@ -1785,7 +1803,7 @@ sint16	Client::CalcCorrup()
 }
 
 sint16 Client::CalcATK() {
-	ATK = itembonuses.ATK + spellbonuses.ATK + GroupLeadershipAAOffenseEnhancement();
+	ATK = itembonuses.ATK + spellbonuses.ATK + aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
 }
 

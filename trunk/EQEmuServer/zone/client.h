@@ -330,6 +330,7 @@ public:
 	inline virtual sint16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual int	GetHaste() const { return Haste; }
 	int GetRawACNoShield(int &shield_ac) const;
+	sint32 GetShieldACBonus();
 
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -449,6 +450,7 @@ public:
 
 	//This calculates total Attack Rating to match very close to what the client should show
 	uint16 GetTotalATK();
+	uint16 GetATKRating();
 	//This gets the skill value of the item type equiped in the Primary Slot
 	uint16 GetPrimarySkillValue();
 
@@ -800,7 +802,7 @@ public:
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
 	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
-	void	SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, const char *Title, const char *Text, ...);
+	void	SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
@@ -1067,7 +1069,6 @@ private:
 	sint16    GetACAvoid();
 	sint16    CalcATK();
 	int      CalcHaste();
-	int      CalcSpecificHaste(int toggle);
 
 	sint16   CalcSTR();
 	sint16   CalcSTA();

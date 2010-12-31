@@ -3640,7 +3640,7 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 	safe_delete(outapp);
 }
 
-void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, const char *Title, const char *Text, ...) {
+void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...) {
 	va_list argptr;
 	char *buffer = new char[4096];
 
@@ -3656,14 +3656,17 @@ void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_
 	if(strlen(Text) > (sizeof(olms->Text)-1))
 		return;
 
+	if(!target) 
+		title_type = 0;
+		
 	switch (title_type)
 	{
 		case 1: {
 			char name[64] = "";
-			strcpy(name, this->GetName());
-			if(this->GetLastName()) {
+			strcpy(name, target->GetName());
+			if(target->GetLastName()) {
 				char last_name[64] = "";
-				strcpy(last_name, this->GetLastName());
+				strcpy(last_name, target->GetLastName());
 				strcat(name, " ");
 				strcat(name, last_name);
 			}
@@ -3671,8 +3674,8 @@ void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_
 			break;
 		}
 		case 2: {
-			if(this->GuildID()) {
-				char *guild_name = (char*)guild_mgr.GetGuildName(this->GuildID());
+			if(target->GuildID()) {
+				char *guild_name = (char*)guild_mgr.GetGuildName(target->GuildID());
 				strcpy(olms->Title, guild_name);
 			}
 			else {
@@ -3880,20 +3883,32 @@ uint16 Client::GetPrimarySkillValue()
 uint16 Client::GetTotalATK()
 {
 	int16 AttackRating = 0;
-	int16 WornCap = GetATKBonus();
-
-	if(WornCap > 250)
-		WornCap = 250;
+	int16 WornCap = itembonuses.ATK;
 
 	if(IsClient()) {
 		AttackRating = ((WornCap * 1.342) + (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69));
+		AttackRating += aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 
 		if (AttackRating < 10)
 			AttackRating = 10;
 	}
 	else
 		AttackRating = GetATK();
+		
+	AttackRating += spellbonuses.ATK;
 
+	return AttackRating;
+}
+
+uint16 Client::GetATKRating()
+{
+	int16 AttackRating = 0;
+	if(IsClient()) {
+		AttackRating = (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69);
+
+		if (AttackRating < 10)
+			AttackRating = 10;
+	}
 	return AttackRating;
 }
 
