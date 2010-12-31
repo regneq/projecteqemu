@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/31/2010==
+Derision: UF: Fix for extended duration buffs not reporting correctly after first tic.
+
 ==12/30/2010==
 Derision: Added a new table aa_required_level_cost to allow specifying a required level and cost for each rank of an AA.
 Derision: Implemented spell formulas required by AA versions of Harm Touch/Lay on Hands.
