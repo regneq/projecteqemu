@@ -4521,6 +4521,14 @@ struct CorpseDrag_Struct
 /*152*/
 };
 
+struct ChangeSize_Struct
+{
+/*00*/ uint32 EntityID;
+/*04*/ float Size;
+/*08*/ uint32 Unknown08;	// Observed 0
+/*12*/ float Unknown12;		// Observed 1.0f
+/*16*/
+};
 //old structures live here:
 #include "eq_old_structs.h"
 
