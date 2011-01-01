@@ -3685,7 +3685,9 @@ struct BandolierSet_Struct {
 /*05*/	int8	unknown05[35];
 };
 
-struct Arrow_Struct {
+// Not 100% sure on this struct. Live as of 1/1/11 is different than UF. Seems to work 'OK'
+struct Arrow_Struct
+{
 /*000*/	float	src_y;
 /*004*/	float	src_x;
 /*008*/	float	src_z;
@@ -3698,14 +3700,12 @@ struct Arrow_Struct {
 /*048*/	uint32	source_id;
 /*052*/	uint32	target_id;	//entity ID
 /*056*/	uint32	item_id;
-/*060*/	uint32	unknown060;
-/*064*/	uint32	unknown064;
-/*068*/	uint8	unknown068;
-/*069*/	uint8	unknown069;
+/*060*/	uint8	unknown060[10];
 /*070*/	uint8	unknown070;
 /*071*/	uint8	item_type;
 /*072*/	uint8	skill;
-/*073*/	char	model_name[43];
+/*073*/	uint8	unknown073[13];
+/*086*/	char	model_name[30];
 /*116*/
 };
 

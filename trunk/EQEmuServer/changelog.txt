@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/01/2011==
+Derision: UF: Tweaked Arrow_Struct and implemented new OPCode for changing player size.
+
 ==12/31/2010==
 Derision: UF: Fix for extended duration buffs not reporting correctly after first tic.
 
