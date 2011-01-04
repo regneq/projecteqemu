@@ -104,5 +104,6 @@ D(OP_BazaarSearch)
 D(OP_LoadSpellSet)
 D(OP_ApplyPoison)
 D(OP_DeleteItem)
+D(OP_AugmentItem)
 #undef E
 #undef D

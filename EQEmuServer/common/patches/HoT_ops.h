@@ -114,5 +114,6 @@ D(OP_EnvDamage)
 D(OP_ChannelMessage)
 D(OP_DeleteItem)
 D(OP_ZoneChange)
+D(OP_AugmentItem)
 #undef E
 #undef D
