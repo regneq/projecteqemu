@@ -278,6 +278,7 @@ Client::Client(EQStreamInterface* ieqs)
 	AggroCount = 0;
 	RestRegenHP = 0;
 	RestRegenMana = 0;
+	RestRegenEndurance = 0;
 	XPRate = 100;
 	cur_end = 0;
 

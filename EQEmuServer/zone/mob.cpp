@@ -116,8 +116,9 @@ Mob::Mob(const char*   in_name,
 		stunned_timer(0),
 		bardsong_timer(6000),
 		flee_timer(FLEE_CHECK_TIMER),
-		bindwound_timer(10000)
-	//	mezzed_timer(0)
+		bindwound_timer(10000),
+		GravityTimer(1000)
+
 {
 	targeted = 0;
 	logpos = false;
@@ -4858,4 +4859,93 @@ void Client::SendClientStatWindow(Client* client)
 			/* 32 - Clair	*/		indP, GetClair(), RuleI(Character, ItemClairvoyanceCap),
 			/* 33 - DSmit	*/		indP, GetDSMit(), RuleI(Character, ItemDSMitigationCap)
 								);
+}
+
+void Mob::DoGravityEffect()
+{
+	Mob *caster = NULL;
+	int away = -1;
+	float caster_x, caster_y, amount, value, cur_x, my_x, cur_y, my_y, x_vector, y_vector, hypot;
+	
+	// Set values so we can run through all gravity effects and then apply the culmative move at the end 
+	// instead of many small moves if the mob/client had more than 1 gravity effect on them
+	cur_x = my_x = GetX();
+	cur_y = my_y = GetY();
+	
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int slot = 0; slot < buff_count; slot++)
+	{
+		if (buffs[slot].spellid != SPELL_UNKNOWN && IsEffectInSpell(buffs[slot].spellid, SE_GravityEffect))
+		{
+			for (int i = 0; i < EFFECT_COUNT; i++) 
+			{
+				if(spells[buffs[slot].spellid].effectid[i] == SE_GravityEffect) {
+			
+					int casterId = buffs[slot].casterid;
+					if(casterId)
+						caster = entity_list.GetMob(casterId);
+			
+					if(!caster || casterId == this->GetID())
+						continue;
+		
+					caster_x = caster->GetX();
+					caster_y = caster->GetY();
+										
+					value = spells[buffs[slot].spellid].base[i];
+					if(value == 0) 
+						continue;
+						
+					if(value > 0) 
+						away = 1;
+					
+					amount = fabs(value) / (100.0f); // to bring the values in line, arbitarily picked
+					
+					x_vector = cur_x - caster_x;
+					y_vector = cur_y - caster_y;
+					hypot = sqrt(x_vector*x_vector + y_vector*y_vector);
+					
+					if(hypot <= 5) // dont want to be inside the mob, even though we can, it looks bad
+						continue;
+					
+					x_vector /= hypot;
+					y_vector /= hypot;
+					
+					cur_x = cur_x + (x_vector * amount * away);
+					cur_y = cur_y + (y_vector * amount * away);
+				}
+			}
+		}
+	}
+
+	if((fabs(my_x - cur_x) > 0.01) || (fabs(my_y - cur_y) > 0.01)) {
+		float new_ground = GetGroundZ(cur_x, cur_y);
+		// If we cant get LoS on our new spot then keep checking up to 5 units up.
+		if(!CheckLosFN(cur_x, cur_y, new_ground, GetSize())) {
+			for(float z_adjust = 0.1f; z_adjust < 5; z_adjust += 0.1f) {
+				if(CheckLosFN(cur_x, cur_y, new_ground+z_adjust, GetSize())) {
+					new_ground += z_adjust;
+					break;
+				}
+			}
+			// If we still fail, then lets only use the x portion(ie sliding around a wall)
+			if(!CheckLosFN(cur_x, my_y, new_ground, GetSize())) {
+				// If that doesnt work, try the y
+				if(!CheckLosFN(my_x, cur_y, new_ground, GetSize())) {
+					// If everything fails, then lets do nothing
+					return;
+				}
+				else {
+					cur_x = my_x; 
+				}
+			}
+			else {
+				cur_y = my_y;
+			}
+		}
+		
+		if(IsClient()) 
+			this->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), cur_x, cur_y, new_ground, GetHeading()*2); // I know the heading thing is weird(chance of movepc to halve the heading value, too lazy to figure out why atm)
+		else
+			this->GMMove(cur_x, cur_y, new_ground, GetHeading());
+	}
 }

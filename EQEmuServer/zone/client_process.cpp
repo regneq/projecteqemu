@@ -609,6 +609,11 @@ bool Client::Process() {
 			}
 		}
 		
+		if(spellbonuses.GravityEffect == 1) {
+			if(GravityTimer.Check())
+				DoGravityEffect();
+		}
+
 		if (shield_timer.Check())
 		{
 			if (shield_target)
@@ -1883,7 +1888,7 @@ void Client::DoEnduranceRegen()
 	if(GetEndurance() >= GetMaxEndurance())
 		return;
 
-	SetEndurance(GetEndurance() + CalcEnduranceRegen());
+	SetEndurance(GetEndurance() + CalcEnduranceRegen() + RestRegenEndurance);
 }
 
 void Client::DoEnduranceUpkeep() {
@@ -1925,7 +1930,7 @@ void Client::CalcRestState() {
 	if(!RuleI(Character, RestRegenPercent))
 		return;
 
-	RestRegenHP = RestRegenMana = 0;
+	RestRegenHP = RestRegenMana = RestRegenEndurance = 0;
 
 	if(AggroCount || !IsSitting())
 		return;
@@ -1945,6 +1950,9 @@ void Client::CalcRestState() {
 	RestRegenHP = (GetMaxHP() * RuleI(Character, RestRegenPercent) / 100);
 
 	RestRegenMana = (GetMaxMana() * RuleI(Character, RestRegenPercent) / 100);
+	
+	if(RuleB(Character, RestRegenEndurance))
+		RestRegenEndurance = (GetMaxEndurance() * RuleI(Character, RestRegenPercent) / 100);
 }
 
 void Client::DoTracking()

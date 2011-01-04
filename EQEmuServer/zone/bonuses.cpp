@@ -1468,6 +1468,11 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->TwinProc += effect_value;
 				break;
 			}
+			case SE_GravityEffect:
+			{
+				newbon->GravityEffect = 1;
+				break;
+			}
 		}
 	}
 }

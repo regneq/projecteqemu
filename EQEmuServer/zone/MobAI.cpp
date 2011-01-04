@@ -1102,6 +1102,11 @@ void Mob::AI_Process() {
 		CastToNPC()->CheckSignal();
 	}
 	
+	if(spellbonuses.GravityEffect == 1) {
+		if(GravityTimer.Check())
+			DoGravityEffect();
+	}
+	
 	if (engaged) 
 	{
 		_ZP(Mob_AI_Process_engaged);
