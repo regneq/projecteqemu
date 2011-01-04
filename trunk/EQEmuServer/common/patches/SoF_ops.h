@@ -88,5 +88,6 @@ D(OP_RaidInvite)
 D(OP_InspectAnswer)
 D(OP_ApplyPoison)
 D(OP_DeleteItem)
+D(OP_AugmentItem)
 #undef E
 #undef D

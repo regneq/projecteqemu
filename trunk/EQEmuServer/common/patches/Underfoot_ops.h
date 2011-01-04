@@ -113,5 +113,6 @@ D(OP_EnvDamage)
 D(OP_ChannelMessage)
 D(OP_DeleteItem)
 D(OP_PetCommands)
+D(OP_AugmentItem)
 #undef E
 #undef D

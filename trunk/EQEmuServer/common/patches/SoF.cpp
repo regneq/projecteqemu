@@ -2278,6 +2278,16 @@ DECODE(OP_TradeSkillCombine) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_AugmentItem) {
+	DECODE_LENGTH_EXACT(structs::AugmentItem_Struct);
+	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
+
+	emu->container_slot = SoFToTitaniumSlot(eq->container_slot);
+	emu->augment_slot = eq->augment_slot;
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_AugmentInfo) {
 	DECODE_LENGTH_EXACT(structs::AugmentInfo_Struct);
 	SETUP_DIRECT_DECODE(AugmentInfo_Struct, structs::AugmentInfo_Struct);

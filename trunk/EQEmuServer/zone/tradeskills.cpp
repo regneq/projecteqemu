@@ -46,20 +46,48 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		return;
 	}
 
-	if(!worldo)
-	{
-		LogFile->write(EQEMuLog::Error, "Player tried to augment an item without a world object set.");
+	ItemInst* container = NULL;
+
+	if (worldo) {
+		container = worldo->m_inst;
+	} 
+	else {
+		// Check to see if they have an inventory container type 53 that is used for this.
+		Inventory& user_inv = user->GetInv();
+		ItemInst* inst = NULL;
+		
+		inst = user_inv.GetItem(in_augment->container_slot);
+		if (inst) {
+			const Item_Struct* item = inst->GetItem();
+			if (item && inst->IsType(ItemClassContainer) && item->BagType == 53) {
+				// We have found an appropriate inventory augmentation sealer
+				container = inst;
+
+				// Verify that no more than two items are in container to guarantee no inadvertant wipes.
+				uint8 itemsFound = 0;
+				for (uint8 i=0; i<10; i++){
+					const ItemInst* inst = container->GetItem(i);
+					if (inst) {
+						itemsFound++;
+					}
+				}
+
+				if (itemsFound != 2) {
+					user->Message(13, "Error:  Too many/few items in augmentation container.");
+					return;
+				}
+			}
+		}
+	}
+
+	if(!container) {
+		LogFile->write(EQEMuLog::Error, "Player tried to augment an item without a container set.");
+		user->Message(13, "Error: This item is not a container!");
 		return;
 	}
 	
 	ItemInst *tobe_auged, *auged_with = NULL;
 	sint8 slot=-1;
-	ItemInst* container = worldo->m_inst;
-
-	if (!container) {
-		user->Message(13, "Error: This item is not a container!");
-		return;
-	}
 
 	if (!(tobe_auged = container->GetItem(0))) {
 		user->Message(13, "Error: No item in slot 0 of sealer");
@@ -78,18 +106,14 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		}
 	}
 
+	bool deleteItems = false;
+
 	// Adding augment
 	if (in_augment->augment_slot == -1) {
 		if (((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) && (tobe_auged->AvailableWearSlot(auged_with->GetItem()->Slots))) {
 			tobe_auged->PutAugment(slot,*auged_with);
 			user->PushItemOnCursor(*tobe_auged,true);
-			container->Clear();
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
-			ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
-			cos->Clear = 1;
-			user->QueuePacket(outapp);
-			safe_delete(outapp);
-			database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
+			deleteItems = true;
 		} else {
 			user->Message(13, "Error: No available slot for augment");
 		}
@@ -104,13 +128,31 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		user->PushItemOnCursor(*tobe_auged,true);
 		if (old_aug)
 			user->PushItemOnCursor(*old_aug,true);
-		container->Clear();
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
-		ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
-		cos->Clear = 1;
-		user->QueuePacket(outapp);
-		safe_delete(outapp);
-		database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
+
+		deleteItems = true;
+	}
+
+	if (deleteItems) {
+		if (worldo) {
+			container->Clear();
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
+			ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
+			cos->Clear = 1;
+			user->QueuePacket(outapp);
+			safe_delete(outapp);
+			database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
+		}
+		else {
+			// Delete items in our inventory container... 
+			for (uint8 i=0; i<10; i++){
+				const ItemInst* inst = container->GetItem(i);
+				if (inst) {
+					user->DeleteItemInInventory(Inventory::CalcSlotId(in_augment->container_slot,i),0,true);
+				}
+			}
+			// Explicitly mark container as cleared.
+			container->Clear();
+		}
 	}
 }
 
