@@ -291,6 +291,7 @@ struct StatBonuses {
 	sint16 SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
 	uint16 TwinProc;							// Proc twice
 	uint16 ItemManaRegenCap;					// Increases the amount of mana you have can over the cap(aa effect)
+	sint16 GravityEffect;						// Indictor of spell effect
 	int XPRateMod;								//i
 	
 	// AAs
@@ -796,6 +797,8 @@ bool logpos;
 	EQApplicationPacket *MakeBuffsPacket(bool for_target = true);
 	void SendBuffsToClient(Client *c);
 	inline Buffs_Struct* GetBuffs() const { return buffs; }
+	void DoGravityEffect();
+	Timer GravityTimer;
 
 	//effect related
 	sint16 CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);

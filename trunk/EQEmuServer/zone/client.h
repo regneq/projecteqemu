@@ -1244,6 +1244,7 @@ private:
 
 	unsigned int	RestRegenHP;
 	unsigned int	RestRegenMana;
+	unsigned int	RestRegenEndurance;
 
 	set<uint32> zone_flags;
 

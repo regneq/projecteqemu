@@ -2589,11 +2589,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Fading Memories");
 #endif
-				//bard mana check, doesnt use it, just checks it-
-				if((caster)&&(caster->IsClient())&&(caster->GetMana() <= 899)&&(caster->GetClass() == BARD)) {
-					caster->Message(13,"Insufficient Mana to cast this Spell.");
-					break;
-				}
 				entity_list.RemoveFromTargets(caster);
 				break;
 			}
@@ -2944,6 +2939,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				// This just here to remove unknown spell ID message.
 				break;
 			}
+
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:
@@ -2993,6 +2989,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_HPToMana:
 			case SE_ManaAbsorbPercentDamage:
 			case SE_SkillDamageAmount:
+			case SE_GravityEffect:
 			{
 				break;
 			}

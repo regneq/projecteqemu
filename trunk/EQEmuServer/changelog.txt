@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/03/2011==
+Caryatis: Implemented SE_GravityEffect(424)
+Caryatis: Added rule for endurance to be included in rest regeneration
+
+Optional SQL:
+utils/sql/svn/1799_optional_rest_regen_endurance_rule.sql
+
 ==01/01/2011==
 Derision: UF: Tweaked Arrow_Struct and implemented new OPCode for changing player size.
 
