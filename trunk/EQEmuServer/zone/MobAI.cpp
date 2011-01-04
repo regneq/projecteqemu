@@ -2330,14 +2330,25 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
 					npc_spells_cache[iDBSpellsID]->numentries = mysql_num_rows(result);
 					int j = 0;
 					while ((row = mysql_fetch_row(result))) {
-						npc_spells_cache[iDBSpellsID]->entries[j].spellid = atoi(row[0]);
+						int spell_id = atoi(row[0]);
+						npc_spells_cache[iDBSpellsID]->entries[j].spellid = spell_id;
 						npc_spells_cache[iDBSpellsID]->entries[j].type = atoi(row[1]);
 						npc_spells_cache[iDBSpellsID]->entries[j].minlevel = atoi(row[2]);
 						npc_spells_cache[iDBSpellsID]->entries[j].maxlevel = atoi(row[3]);
 						npc_spells_cache[iDBSpellsID]->entries[j].manacost = atoi(row[4]);
 						npc_spells_cache[iDBSpellsID]->entries[j].recast_delay = atoi(row[5]);
 						npc_spells_cache[iDBSpellsID]->entries[j].priority = atoi(row[6]);
-						npc_spells_cache[iDBSpellsID]->entries[j].resist_adjust = row[7] ? atoi(row[7]) : spells[npc_spells_cache[iDBSpellsID]->entries[j].spellid].ResistDiff;
+						if(row[7])
+						{
+							npc_spells_cache[iDBSpellsID]->entries[j].resist_adjust = atoi(row[7]);
+						}
+						else
+						{
+							if(IsValidSpell(spell_id))
+							{
+								npc_spells_cache[iDBSpellsID]->entries[j].resist_adjust = spells[spell_id].ResistDiff;
+							}
+						}
 						j++;
 					}
 					mysql_free_result(result);
