@@ -974,6 +974,7 @@ public:
 	bool CalcItemScale(int32 slot_x, int32 slot_y);
 	void SummonAndRezzAllCorpses();
 	void SuspendMinion();
+	void Doppelganger(int16 spell_id, Mob *target, const char *name_override, int pet_count, int pet_duration);
 	void NotifyNewTitlesAvailable();
 	void Signal(int32 data);
 	Mob *GetBindSightTarget() { return bind_sight_target; }

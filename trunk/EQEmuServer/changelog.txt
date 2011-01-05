@@ -2,6 +2,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/04/2011==
 Trevius: (l0stmancd) BagType 53 can now be used as an Augmentation Sealer from inventory.
+Caryatis: Implemented SE_Doppelganger(Doppelganger AA is now functional)
+
+Required SQL:
+utils/sql/svn/1802_required_doppelganger.sql
 
 ==01/03/2011==
 Caryatis: Implemented SE_GravityEffect(424)

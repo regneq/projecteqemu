@@ -5775,3 +5775,118 @@ void Client::DragCorpses()
 		}
 	}
 }
+void Client::Doppelganger(int16 spell_id, Mob *target, const char *name_override, int pet_count, int pet_duration)
+{
+	if(!target || !IsValidSpell(spell_id) || this->GetID() == target->GetID())
+		return;
+	
+	PetRecord record;
+	if(!database.GetPetEntry(spells[spell_id].teleport_zone, &record))
+	{
+		LogFile->write(EQEMuLog::Error, "Unknown doppelganger spell id: %d, check pets table", spell_id);
+		Message(13, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
+		return;
+	}
+	
+	AA_SwarmPet pet;
+	pet.count = pet_count;
+	pet.duration = pet_duration;
+	pet.npc_id = record.npc_type;
+
+	NPCType *made_npc = NULL;
+	
+	const NPCType *npc_type = database.GetNPCType(pet.npc_id);
+	if(npc_type == NULL) {
+		LogFile->write(EQEMuLog::Error, "Unknown npc type for doppelganger spell id: %d", spell_id);
+		Message(0,"Unable to find pet!");
+		return;
+	}
+	// make a custom NPC type for this
+	made_npc = new NPCType; 
+	memcpy(made_npc, npc_type, sizeof(NPCType));
+	
+	strcpy(made_npc->name, name_override);
+	made_npc->level = GetLevel(); 
+	made_npc->race = GetRace();
+	made_npc->gender = GetGender();
+	made_npc->size = GetSize();
+	made_npc->AC = GetAC();
+	made_npc->STR = GetSTR();
+	made_npc->STA = GetSTA();
+	made_npc->DEX = GetDEX();
+	made_npc->AGI = GetAGI();
+	made_npc->MR = GetMR();
+	made_npc->FR = GetFR();
+	made_npc->CR = GetCR();
+	made_npc->DR = GetDR();
+	made_npc->PR = GetPR();
+	made_npc->Corrup = GetCorrup();
+	// looks
+	made_npc->texture = GetEquipmentMaterial(1);
+	made_npc->helmtexture = GetEquipmentMaterial(0);
+	made_npc->haircolor = GetHairColor();
+	made_npc->beardcolor = GetBeardColor();
+	made_npc->eyecolor1 = GetEyeColor1();
+	made_npc->eyecolor2 = GetEyeColor2();
+	made_npc->hairstyle = GetHairStyle();
+	made_npc->luclinface = GetLuclinFace();
+	made_npc->beard = GetBeard();
+	made_npc->drakkin_heritage = GetDrakkinHeritage();
+	made_npc->drakkin_tattoo = GetDrakkinTattoo();
+	made_npc->drakkin_details = GetDrakkinDetails();
+	made_npc->d_meele_texture1 = GetEquipmentMaterial(7);
+	made_npc->d_meele_texture2 = GetEquipmentMaterial(8);
+	for (int i = 0; i < MAX_MATERIALS; i++)	{
+		made_npc->armor_tint[i] = GetEquipmentColor(i);
+	}
+	made_npc->loottable_id = 0;
+		
+	npc_type = made_npc;
+		
+	int summon_count = 0;
+	summon_count = pet.count;
+	
+	if(summon_count > MAX_SWARM_PETS)
+		summon_count = MAX_SWARM_PETS;
+	
+	static const float swarm_pet_x[MAX_SWARM_PETS] = { 	5, -5, 5, -5, 10, -10, 10, -10, 8, -8, 8, -8 };
+	static const float swarm_pet_y[MAX_SWARM_PETS] = { 	5, 5, -5, -5, 10, 10, -10, -10, 8, 8, -8, -8 };
+	TempPets(true);
+	
+	while(summon_count > 0) {
+		NPCType *npc_dup = NULL;
+		if(made_npc != NULL) {
+			npc_dup = new NPCType;
+			memcpy(npc_dup, made_npc, sizeof(NPCType));
+		}
+		
+		NPC* npca = new NPC(
+				(npc_dup!=NULL)?npc_dup:npc_type,	//make sure we give the NPC the correct data pointer
+				0, 
+				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
+				GetZ(), GetHeading(), FlyMode3);
+
+		if(!npca->GetSwarmInfo()){
+			AA_SwarmPetInfo* nSI = new AA_SwarmPetInfo;
+			npca->SetSwarmInfo(nSI);
+			npca->GetSwarmInfo()->duration = new Timer(pet_duration*1000);
+		}
+		else{
+			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
+		}
+
+		npca->GetSwarmInfo()->owner_id = GetID();
+
+		// Give the pets alittle more agro than the caster and then agro them on the target
+		target->AddToHateList(npca, (target->GetHateAmount(this) + 100), (target->GetDamageAmount(this) + 100));
+		npca->AddToHateList(target, 1000, 1000);
+		npca->GetSwarmInfo()->target = target->GetID();
+		
+		//we allocated a new NPC type object, give the NPC ownership of that memory
+		if(npc_dup != NULL)
+			npca->GiveNPCTypeData(npc_dup);
+		
+		entity_list.AddNPC(npca);
+		summon_count--;
+	}
+}
