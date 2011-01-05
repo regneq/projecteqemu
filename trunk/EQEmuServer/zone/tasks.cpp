@@ -203,7 +203,7 @@ bool TaskManager::LoadTasks(int SingleTask) {
 			strcpy(Tasks[TaskID]->Reward, row[4]);
 			Tasks[TaskID]->RewardID = atoi(row[5]);
 			Tasks[TaskID]->CashReward = atoi(row[6]);
-			Tasks[TaskID]->XPReward = (sint32)atoul(row[7]);
+			Tasks[TaskID]->XPReward = atoi(row[7]);
 			Tasks[TaskID]->RewardMethod = (TaskMethodType)atoi(row[8]);
 			Tasks[TaskID]->StartZone = atoi(row[9]);
 			Tasks[TaskID]->MinLevel = atoi(row[10]);
@@ -1896,7 +1896,9 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 			taskmanager->SaveClientState(c, this);
 			//c->SendTaskComplete(TaskIndex);
 			c->CancelTask(TaskIndex);
-			if(Task->RewardMethod != METHODQUEST) RewardTask(c, Task);
+			//if(Task->RewardMethod != METHODQUEST) RewardTask(c, Task);
+			// If Experience and/or cash rewards are set, reward them from the task even if RewardMethod is METHODQUEST
+			RewardTask(c, Task);
 			//RemoveTask(c, TaskIndex);
 		}
 
@@ -1917,6 +1919,7 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 	switch(Task->RewardMethod) {
 
 		case METHODSINGLEID:
+		{
 			if(Task->RewardID) {
 				c->SummonItem(Task->RewardID);
 				Item = database.GetItem(Task->RewardID);
@@ -1924,8 +1927,9 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 					c->Message(15, "You receive %s as a reward.", Item->Name);
 			}
 			break;
-
+		}
 		case METHODLIST: 
+		{
 			RewardList = taskmanager->GoalListManager.GetListContents(Task->RewardID);
 			for(unsigned int i=0; i<RewardList.size(); i++) {
 				c->SummonItem(RewardList[i]);
@@ -1934,9 +1938,12 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 					c->Message(15, "You receive %s as a reward.", Item->Name);
 			}
 			break;
-
+		}
 		default:
+		{
+			// Nothing special done for METHODQUEST
 			break;
+		}
 	}
 	if(Task->CashReward) {
 		int Plat, Gold, Silver, Copper;
@@ -1996,11 +2003,11 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 		c->AddEXP(EXPReward);
 	}
 	if(EXPReward < 0) {
-		int32 PosReward = EXPReward * -1;
+		uint32 PosReward = EXPReward * -1;
 		// Minimal Level Based Exp Reward Setting is 101 (1% exp at level 1)
 		if (PosReward > 100 && PosReward < 25700) {
-			int8 MaxLevel = int(PosReward / 100);
-			int8 ExpPercent = PosReward - (MaxLevel * 100);
+			uint8 MaxLevel = PosReward / 100;
+			uint8 ExpPercent = PosReward - (MaxLevel * 100);
 			c->AddLevelBasedExp(ExpPercent, MaxLevel);
 		}
 	}
@@ -2713,22 +2720,22 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 				switch(c->GetClientVersion()) {
 
-					case EQClientSoF:
-					case EQClientSoD:
-					{
-						MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
-								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
-						break;
-					}
 					case EQClient62:
 					{
 						MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 						break;
 					}
-					default:
+					case EQClientTitanium:
 					{
 						MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
+								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+						break;
+					}
+					default:
+					{
+						// All clients after Titanium
+						MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 					}
 				}
@@ -2741,21 +2748,24 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 					switch(c->GetClientVersion()) {
 
-						case EQClientSoF:
-
-							MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
-									 0x12, ItemID, Item->Name ,0x12);
-							break;
-
 						case EQClient62:
-
+						{
 							MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
 									 0x12, ItemID, Item->Name,0x12);
 							break;
-
-						default:
+						}
+						case EQClientTitanium:
+						{
 							MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
 									 0x12, ItemID, Item->Name ,0x12);
+							break;
+						}
+						default:
+						{
+							// All clients after Titanium
+							MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
+									 0x12, ItemID, Item->Name ,0x12);
+						}
 					}
 				}
 			}
