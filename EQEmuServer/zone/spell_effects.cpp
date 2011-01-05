@@ -2160,9 +2160,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Lycanthropy: %+i", effect_value);
 #endif
-				// solar: TODO figure out what this is
-				const char *msg = "Lycanthropy is not implemented.";
-				if(caster) caster->Message(13, msg);
+				// this is a spell blocker(can only have one buff with this effect at one time)
 				break;
 			}
 
@@ -2355,9 +2353,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Screech: %d", effect_value);
 #endif
-				// solar: TODO figure out what this is
-				const char *msg = "Screech is not implemented.";
-				if(caster) caster->Message(13, msg);
+				// this is a spell blocker(can only have one spell with this effect on you at one time)
 				break;
 			}
 
@@ -2391,8 +2387,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					caster->TemporaryPets(spell_id, this, NULL);
 				break;
 			}
-
-
 
 			case SE_MeleeMitigation:
 			{
@@ -2730,16 +2724,17 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
-
-			case SE_Doppelganger:
+			case SE_Doppelganger:         
 			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Doppelganger");
-#endif
-				if(caster) caster->Message(13, "Doppelganger is not implemented yet.");
+				if(caster && caster->IsClient()) {
+					char pet_name[64];
+					snprintf(pet_name, sizeof(pet_name), "%s`s doppelganger", caster->GetCleanName());
+					int pet_count = spells[spell_id].base[i];
+					int pet_duration = spells[spell_id].max[i];
+					caster->CastToClient()->Doppelganger(spell_id, this, pet_name, pet_count, pet_duration);
+				}
 				break;
 			}
-
 
 			case SE_DefensiveProc:
 			{
@@ -2932,14 +2927,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 			case SE_Purify:
-			{
-				// NOT IMPLEMENTED.
-				// A Divine Save casts spell 4789 Touch of the Divine, which contains SE_Purify.
-				// Touch of the Divine is implemented enough to be used.
-				// This just here to remove unknown spell ID message.
-				break;
-			}
-
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:
