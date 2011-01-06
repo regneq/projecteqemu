@@ -3915,9 +3915,14 @@ sint16 Mob::CalcResistChanceBonus()
 sint16 Mob::CalcFearResistChance()
 {
 	int resistchance = spellbonuses.ResistFearChance + itembonuses.ResistFearChance;
-	if(this->IsClient()) 
+	if(this->IsClient()) {
 		resistchance += aabonuses.ResistFearChance;
-		
+		if(aabonuses.Fearless == true)
+			resistchance = 100;
+	}
+	if(spellbonuses.Fearless == true || itembonuses.Fearless == true)
+		resistchance = 100;
+			
 	return resistchance;
 }
 
@@ -3976,33 +3981,38 @@ float Mob::GetAOERange(uint16 spell_id) {
 // 'other' functions
 
 void Mob::Spin() {
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
-	outapp->pBuffer[0] = 0x0B;
-	outapp->pBuffer[1] = 0x0A;
-	outapp->pBuffer[2] = 0x0B;
-	outapp->pBuffer[3] = 0x0A;
-	outapp->pBuffer[4] = 0xE7;
-	outapp->pBuffer[5] = 0x00;
-	outapp->pBuffer[6] = 0x4D;
-	outapp->pBuffer[7] = 0x04;
-	outapp->pBuffer[8] = 0x00;
-	outapp->pBuffer[9] = 0x00;
-	outapp->pBuffer[10] = 0x00;
-	outapp->pBuffer[11] = 0x00;
-	outapp->pBuffer[12] = 0x00;
-	outapp->pBuffer[13] = 0x00;
-	outapp->pBuffer[14] = 0x00;
-	outapp->pBuffer[15] = 0x00;
-	outapp->pBuffer[16] = 0x00;
-	outapp->pBuffer[17] = 0x00;
-	outapp->pBuffer[18] = 0xD4;
-	outapp->pBuffer[19] = 0x43;
-	outapp->pBuffer[20] = 0x00;
-	outapp->pBuffer[21] = 0x00;
-	outapp->pBuffer[22] = 0x00;
-	outapp->priority = 5;
-	CastToClient()->QueuePacket(outapp);
-	safe_delete(outapp);
+	if(IsClient()) {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
+		outapp->pBuffer[0] = 0x0B;
+		outapp->pBuffer[1] = 0x0A;
+		outapp->pBuffer[2] = 0x0B;
+		outapp->pBuffer[3] = 0x0A;
+		outapp->pBuffer[4] = 0xE7;
+		outapp->pBuffer[5] = 0x00;
+		outapp->pBuffer[6] = 0x4D;
+		outapp->pBuffer[7] = 0x04;
+		outapp->pBuffer[8] = 0x00;
+		outapp->pBuffer[9] = 0x00;
+		outapp->pBuffer[10] = 0x00;
+		outapp->pBuffer[11] = 0x00;
+		outapp->pBuffer[12] = 0x00;
+		outapp->pBuffer[13] = 0x00;
+		outapp->pBuffer[14] = 0x00;
+		outapp->pBuffer[15] = 0x00;
+		outapp->pBuffer[16] = 0x00;
+		outapp->pBuffer[17] = 0x00;
+		outapp->pBuffer[18] = 0xD4;
+		outapp->pBuffer[19] = 0x43;
+		outapp->pBuffer[20] = 0x00;
+		outapp->pBuffer[21] = 0x00;
+		outapp->pBuffer[22] = 0x00;
+		outapp->priority = 5;
+		CastToClient()->QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+	else {
+		GMMove(GetX(), GetY(), GetZ(), GetHeading()+5);
+	}
 }
 
 void Mob::SendSpellBarDisable()
@@ -4035,8 +4045,14 @@ void Mob::Stun(int duration)
 	if(stunned && stunned_timer.GetRemainingTime() > uint32(duration))
 		return;
 	
-	if(casting_spell_id)
-		InterruptSpell();
+	if(casting_spell_id) {
+		int persistent_casting = spellbonuses.PersistantCasting + itembonuses.PersistantCasting;
+		if(IsClient())
+			persistent_casting += aabonuses.PersistantCasting;
+		
+		if(MakeRandomInt(1,99) > persistent_casting)
+			InterruptSpell();
+	}
 
 	if(duration > 0)
 	{

@@ -1102,11 +1102,6 @@ void Mob::AI_Process() {
 		CastToNPC()->CheckSignal();
 	}
 	
-	if(spellbonuses.GravityEffect == 1) {
-		if(GravityTimer.Check())
-			DoGravityEffect();
-	}
-	
 	if (engaged) 
 	{
 		_ZP(Mob_AI_Process_engaged);
@@ -1137,7 +1132,6 @@ void Mob::AI_Process() {
 		
 		bool is_combat_range = CombatRange(target);
 		
-	
         if (is_combat_range) 
         {
 			if (AImovement_timer->Check()) 
@@ -1893,8 +1887,8 @@ bool Mob::IsEnraged()
 
 bool Mob::Flurry()
 {
-    // attack the most hated target, regardless of range or whatever
-    Mob *target = GetHateTop();
+    // this is wrong, flurry is extra attacks on the current target
+    Mob *target = GetTarget();
 	if (target) {
 		entity_list.MessageClose(this, true, 200, 13, "%s executes a FLURRY of attacks on %s!", GetCleanName(), target->GetCleanName());
 		for (int i = 0; i < RuleI(Combat, MaxFlurryHits); i++)

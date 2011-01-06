@@ -777,7 +777,20 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			}
 			case SE_ResistFearChance:
 			{
+				if(base1 == 100) // If we reach 100% in a single spell/item then we should be immune to negative fear resist effects until our immunity is over
+					newbon->Fearless = true;
+					
 				newbon->ResistFearChance += base1; // these should stack
+				break;
+			}
+			case SE_Fearless:
+			{
+				newbon->Fearless = true;  
+				break;
+			}
+			case SE_PersistantCasting:
+			{
+				newbon->PersistantCasting += base1;
 				break;
 			}
 		}
@@ -1130,7 +1143,6 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 
 			case SE_SingingSkill:
 			{
-				//newbon->skillmod[SINGING] += effect_value;
 				if(effect_value > newbon->singingMod)
 					newbon->singingMod = effect_value;
 				break;
@@ -1256,7 +1268,15 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}	
 			case SE_ResistFearChance:
 			{
+				if(effect_value == 100) // If we reach 100% in a single spell/item then we should be immune to negative fear resist effects until our immunity is over
+					newbon->Fearless = true;
+					
 				newbon->ResistFearChance += effect_value; // these should stack
+				break;
+			}
+			case SE_Fearless:
+			{
+				newbon->Fearless = true;  
 				break;
 			}
  			case SE_HundredHands:
@@ -1471,6 +1491,26 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			case SE_GravityEffect:
 			{
 				newbon->GravityEffect = 1;
+				break;
+			}
+			case SE_AntiGate:
+			{
+				newbon->AntiGate = true;
+				break;
+			}
+			case SE_MagicWeapon:
+			{
+				newbon->MagicWeapon = true;
+				break;
+			}
+			case SE_IncreaseBlockChance:
+			{
+				newbon->IncreaseBlockChance += effect_value;
+				break;
+			}
+			case SE_PersistantCasting:
+			{
+				newbon->PersistantCasting += effect_value;
 				break;
 			}
 		}

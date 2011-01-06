@@ -240,59 +240,60 @@ struct StatBonuses {
 	sint8	hatemod;
 	sint32	EnduranceReduction;
 
-	//PoP effects:
-	sint16   StrikeThrough;						// PoP: Strike Through %
-
-	//discipline and PoP effects
-	//everything is a straight percent increase unless noted.
-	sint16 MeleeMitigation;						//i = Shielding
-	sint16 CriticalHitChance[HIGHEST_SKILL+2];	//i
-	sint16 CriticalSpellChance;					//i
-	sint16 SpellCritDmgIncrease;				//i
-	sint16 CriticalHealChance;					//i
-	sint16 CriticalHealOverTime;				//i
-	sint16 CriticalDoTChance;					//i
-	sint16 CrippBlowChance;						//
-	sint16 AvoidMeleeChance;					//AvoidMeleeChance/10 == % chance i = Avoidance
-	sint16 RiposteChance;						//i
-	sint16 DodgeChance;							//i
-	sint16 ParryChance;							//i
-	sint16 DualWieldChance;						//i
-	sint16 DoubleAttackChance;					//i
-	sint16 ResistSpellChance;					//i
-	sint16 ResistFearChance;					//i
-	sint16 StunResist;							//i
-	sint16 MeleeSkillCheck;						//i
-	uint8  MeleeSkillCheckSkill;
-	sint16 HitChance;							//HitChance/15 == % increase i = Accuracy
-	uint8  HitChanceSkill;
-	sint16 DamageModifier[HIGHEST_SKILL+2];		//i
-	sint16 MinDamageModifier;   				//i
-	sint16 ProcChance;							// ProcChance/10 == % increase i = CombatEffects
-	sint16 ExtraAttackChance;
-	sint16 DoTShielding;
-	sint16 DivineSaveChance;					// Second Chance
-	sint16 FlurryChance;
-	sint16 Accuracy;							// Works like HitChance but on all skills
-
-	sint8 HundredHands;							//extra haste, stacks with all other haste  i
-	sint8 MeleeLifetap;							//i
-	sint16 HealRate;							// Spell effect that influences effectiveness of heals
-	sint16 MaxHPChange;							// Spell Effect
-	sint16 SkillDmgTaken[HIGHEST_SKILL+2];		// All Skills + -1
-	sint32 HealAmt;								// Item Effect
-	sint32 SpellDmg;							// Item Effect
-	sint32 Clairvoyance;						// Item Effect
-	sint16 DSMitigation;						// Item Effect
-	uint32 SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
-	uint32 SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
-	sint16 CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
-	sint16 SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
-	sint16 SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
-	uint16 TwinProc;							// Proc twice
-	uint16 ItemManaRegenCap;					// Increases the amount of mana you have can over the cap(aa effect)
-	sint16 GravityEffect;						// Indictor of spell effect
-	int XPRateMod;								//i
+	sint16  StrikeThrough;						// PoP: Strike Through %
+	sint16 	MeleeMitigation;						//i = Shielding
+	sint16 	CriticalHitChance[HIGHEST_SKILL+2];	//i
+	sint16 	CriticalSpellChance;					//i
+	sint16 	SpellCritDmgIncrease;				//i
+	sint16 	CriticalHealChance;					//i
+	sint16 	CriticalHealOverTime;				//i
+	sint16 	CriticalDoTChance;					//i
+	sint16 	CrippBlowChance;						//
+	sint16 	AvoidMeleeChance;					//AvoidMeleeChance/10 == % chance i = Avoidance
+	sint16 	RiposteChance;						//i
+	sint16 	DodgeChance;							//i
+	sint16 	ParryChance;							//i
+	sint16 	DualWieldChance;						//i
+	sint16 	DoubleAttackChance;					//i
+	sint16 	ResistSpellChance;					//i
+	sint16 	ResistFearChance;					//i
+	bool   	Fearless;							//i
+	sint16 	StunResist;							//i
+	sint16 	MeleeSkillCheck;						//i
+	uint8  	MeleeSkillCheckSkill;
+	sint16 	HitChance;							//HitChance/15 == % increase i = Accuracy
+	uint8  	HitChanceSkill;
+	sint16 	DamageModifier[HIGHEST_SKILL+2];		//i
+	sint16 	MinDamageModifier;   				//i
+	sint16 	ProcChance;							// ProcChance/10 == % increase i = CombatEffects
+	sint16 	ExtraAttackChance;
+	sint16	DoTShielding;
+	sint16 	DivineSaveChance;					// Second Chance
+	sint16 	FlurryChance;
+	sint16	Accuracy;							// Works like HitChance but on all skills	
+	sint8	HundredHands;							//extra haste, stacks with all other haste  i
+	sint8	MeleeLifetap;							//i
+	sint16 	HealRate;							// Spell effect that influences effectiveness of heals
+	sint16 	MaxHPChange;							// Spell Effect
+	sint16 	SkillDmgTaken[HIGHEST_SKILL+2];		// All Skills + -1
+	sint32 	HealAmt;								// Item Effect
+	sint32 	SpellDmg;							// Item Effect
+	sint32 	Clairvoyance;						// Item Effect
+	sint16 	DSMitigation;						// Item Effect
+	uint32 	SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
+	uint32 	SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
+	sint16 	CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
+	sint16 	SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
+	sint16 	SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
+	uint16 	TwinProc;							// Proc twice
+	uint16 	ItemManaRegenCap;					// Increases the amount of mana you have can over the cap(aa effect)
+	sint16 	GravityEffect;						// Indictor of spell effect
+	bool	AntiGate;							// spell effect that prevents gating
+	bool	MagicWeapon;						// spell effect that makes weapon magical
+	sint16	IncreaseBlockChance;				// overall block chance modifier
+	uint16	PersistantCasting;				// chance to continue casting through a stun
+	int 	XPRateMod;							//i
+	
 	
 	// AAs
 	sint8	Packrat;							//weight reduction for items, 1 point = 10%
@@ -1255,6 +1256,7 @@ protected:
 	bool inWater;	// Set to true or false by Water Detection code if enabled by rules
 //	Timer mezzed_timer;
 	Timer  stunned_timer;
+	Timer  spun_timer;
 	Timer	bardsong_timer;
 	int16	adverrorinfo;
 

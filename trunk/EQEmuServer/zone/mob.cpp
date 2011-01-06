@@ -114,11 +114,12 @@ Mob::Mob(const char*   in_name,
 		spellend_timer(0),
 		rewind_timer(30000), //Timer used for determining amount of time between actual player position updates for /rewind.
 		stunned_timer(0),
+		spun_timer(0),
 		bardsong_timer(6000),
 		flee_timer(FLEE_CHECK_TIMER),
 		bindwound_timer(10000),
 		GravityTimer(1000)
-
+		
 {
 	targeted = 0;
 	logpos = false;
@@ -2375,9 +2376,14 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 
 bool Mob::HateSummon() {
     // check if mob has ability to summon
-    // we need to be hurt and level 51+ or ability checked to continue
-// Sandy - fix so not automatic summon
-	if (GetHPRatio() >= 95 || SpecAttacks[SPECATK_SUMMON] == false)
+    // 97% is the offical % that summoning starts on live, not 94
+	// if the mob can summon and is charmed, it can only summon mobs it has LoS to
+	Mob* mob_owner = NULL;
+	if(GetOwnerID())
+		mob_owner = entity_list.GetMob(GetOwnerID());
+		
+	if (GetHPRatio() >= 98 || SpecAttacks[SPECATK_SUMMON] == false || !GetTarget() || 
+		(mob_owner && mob_owner->IsClient() && !CheckLosFN(GetTarget())))
         return false;
 
     // now validate the timer

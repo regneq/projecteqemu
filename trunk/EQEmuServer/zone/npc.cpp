@@ -525,6 +525,7 @@ bool NPC::Process()
     {
         this->stunned = false;
         this->stunned_timer.Disable();
+		this->spun_timer.Disable();
     }
 
     if (p_depop)
@@ -611,9 +612,20 @@ bool NPC::Process()
 			SendHPUpdate();
 		}
 	}
-		  
-    if (IsStunned()||IsMezzed())
+	
+	if(spellbonuses.GravityEffect == 1) {
+		if(GravityTimer.Check())
+			DoGravityEffect();
+	}
+	
+    if (IsMezzed())
 	    return true;
+	
+	if(IsStunned()) {
+		if(spun_timer.Check()) 
+			Spin();
+		return true;
+	}
 	
 	if (enraged_timer.Check()){
 		ProcessEnrage();
@@ -624,7 +636,6 @@ bool NPC::Process()
 		entity_list.AIYellForHelp(this, GetTarget());
 	}
 
-	
 	if(qGlobals)
 	{
 		if(qglobal_purge_timer.Check())
