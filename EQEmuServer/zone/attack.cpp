@@ -428,7 +428,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	float riposte_chance = 0.0f;
 	if (damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
-		ripose_chance = (100.0f + (float)defender->spellbonuses.RiposteChance + (float)defender->itembonuses.RiposteChance) / 100.0f;
+		riposte_chance = (100.0f + (float)defender->spellbonuses.RiposteChance + (float)defender->itembonuses.RiposteChance) / 100.0f;
         skill = GetSkill(RIPOSTE);
 		if (IsClient()) {
 			CastToClient()->CheckIncreaseSkill(RIPOSTE, other, -10);
