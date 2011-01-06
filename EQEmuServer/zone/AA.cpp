@@ -2466,3 +2466,11 @@ and I am not sure that it is all in the DB yet.
 			Message(0,"Sorry Frenzied Devastation not working YET");
 			break;
 */
+
+void Client::DurationRampage(int32 duration)
+{
+	if(duration) {
+		m_epp.aa_effects |= 1 << (aaEffectRampage-1);
+		p_timers.Start(pTimerAAEffectStart + aaEffectRampage, duration);
+	}
+}

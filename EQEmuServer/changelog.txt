@@ -4,9 +4,22 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Changed xpreward field in the tasks table to be signed so it can display negative values for the level based experience rewards.
 Trevius: Tasks now show item links in Task Rewards correctly for all clients.
 Trevius: Tasks now reward any set Experience and/or Coin even if the rewardmethod is set to 2 (perl quest).
+Caryatis: Mobs now summon starting at 97%, not 94%(like live).
+Caryatis: Charmed pets can no longer summon mobs from out of their LoS while charmed.
+Caryatis: All fixed duration charm spells now have fixed duration instead of only 2 that were supported.
+Caryatis: SpinStun effects now work on mobs up to the max level that the spell denotes(previously limited to 55 regardless of spell info)
+Caryatis: SpinStun durations have been changed to be pulled from the effect_value, instead of buff duration(which stopped alot from working), also spins mobs now
+Caryatis: Implemented SE_Fearless(Valiant Companion), SE_AntiGate(Translocational Anchor), SE_DispelBeneficial(various spells and clicks)
+Caryatis: Implemented SE_IncreaseBlockChance, SE_CurrentEnduranceOnce, SE_CurrentManaOnce, SE_AEMelee(duration rampage)
+Caryatis: Persistent Casting AA is now functional(required sql)
+Caryatis: Rampage(-) and Destructive Force(+) have changed, the duration on both has been altered based on the live spell info(required sql)
+Caryatis: Flurry will no longer hit the highest on hatelist, it will hit the mobs current target like live(fixes rooted flurrying mobs).
+Caryatis: Updated spdat.h with current status of all spell effects
+Caryatis: Reorganized spell_effects.cpp to remove alot of the clutter of effects handled elsewhere
 
 Required SQL:
 utils/sql/svn/1803_required_tasks_xpreward_signed.sql
+utils/sql/svn/1804_required_ae_melee_updates.sql
 
 ==01/04/2011==
 Trevius: (l0stmancd) BagType 53 can now be used as an Augmentation Sealer from inventory.

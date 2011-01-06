@@ -421,12 +421,14 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		damage = -3;
 		mlog(COMBAT__DAMAGE, "I am enraged, riposting frontal attack.");
 	}
-	
+
 	/////////////////////////////////////////////////////////
 	// riposte
 	/////////////////////////////////////////////////////////
+	float riposte_chance = 0.0f;
 	if (damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
+		ripose_chance = (100.0f + (float)defender->spellbonuses.RiposteChance + (float)defender->itembonuses.RiposteChance) / 100.0f;
         skill = GetSkill(RIPOSTE);
 		if (IsClient()) {
 			CastToClient()->CheckIncreaseSkill(RIPOSTE, other, -10);
@@ -434,7 +436,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
-			bonus = bonus * (100 + defender->spellbonuses.RiposteChance + defender->itembonuses.RiposteChance) / 100.0f;
+			bonus *= riposte_chance;
 			RollTable[0] = bonus + (itembonuses.HeroicDEX / 25); // 25 heroic = 1%, applies to ripo, parry, block
 		}
 	}
@@ -472,7 +474,9 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 			bBlockFromRear = true;
 	}
 
+	float block_chance = 0.0f;
 	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
+		block_chance = (100.0f + (float)spellbonuses.IncreaseBlockChance + (float)itembonuses.IncreaseBlockChance) / 100.0f;
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
 		if (IsClient()) {
 			CastToClient()->CheckIncreaseSkill(BLOCKSKILL, other, -10);
@@ -480,7 +484,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-			RollTable[1] = RollTable[0] + bonus;
+			RollTable[1] = RollTable[0] + (bonus * block_chance) - riposte_chance;
+			block_chance *= bonus; // set this so we can remove it from the parry calcs
 		}
 	}
 	else{
@@ -507,33 +512,36 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 			}
 		}
 	}
-
+	
 	//////////////////////////////////////////////////////		
 	// parry
 	//////////////////////////////////////////////////////
+	float parry_chance = 0.0f;
 	if (damage > 0 && CanThisClassParry() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
-        skill = CastToClient()->GetSkill(PARRY);
+		parry_chance = (100.0f + (float)defender->spellbonuses.ParryChance + (float)defender->itembonuses.ParryChance) / 100.0f;
+		skill = CastToClient()->GetSkill(PARRY);
 		if (IsClient()) {
 			CastToClient()->CheckIncreaseSkill(PARRY, other, -10); 
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
-			bonus = bonus * (100 + defender->spellbonuses.ParryChance + defender->itembonuses.ParryChance) / 100.0f;
-			RollTable[2] = RollTable[1] + bonus;
+			bonus *= parry_chance;
+			RollTable[2] = RollTable[1] + bonus - block_chance;
 		}
 	}
 	else{
-		RollTable[2] = RollTable[1];
+		RollTable[2] = RollTable[1] - block_chance;
 	}
 	
 	////////////////////////////////////////////////////////
 	// dodge
 	////////////////////////////////////////////////////////
+	float dodge_chance = 0.0f;
 	if (damage > 0 && CanThisClassDodge() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
-	
+		dodge_chance = (100.0f + (float)defender->spellbonuses.DodgeChance + (float)defender->itembonuses.DodgeChance) / 100.0f;
         skill = CastToClient()->GetSkill(DODGE);
 		if (IsClient()) {
 			CastToClient()->CheckIncreaseSkill(DODGE, other, -10);
@@ -541,12 +549,12 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetAGI()/200);
-			bonus = bonus * (100 + defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
-			RollTable[3] = RollTable[2] + bonus - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25); // Remove the dex as it doesnt count for dodge
+			bonus *= dodge_chance;
+			RollTable[3] = RollTable[2] + bonus - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25) - parry_chance; // Remove the dex as it doesnt count for dodge
 		}
 	}
 	else{
-		RollTable[3] = RollTable[2];
+		RollTable[3] = RollTable[2] - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25) - parry_chance;
 	}
 
 	if(damage > 0){
@@ -930,14 +938,9 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 			bool MagicWeapon = false;
 			if(weapon_item->GetItem() && weapon_item->GetItem()->Magic) 
 				MagicWeapon = true;
-			else {					// if it isn't, check to see if a MagicWeapon buff is active
-				int buffs_i;
-				uint32 buff_count = GetMaxTotalSlots();
-				for (buffs_i = 0; buffs_i < buff_count; buffs_i++)
-					if(IsEffectInSpell(buffs[buffs_i].spellid, SE_MagicWeapon)) { 
-						MagicWeapon = true;
-						break;		// no need to keep looking once we find one
-					}
+			else {					
+				if(spellbonuses.MagicWeapon || itembonuses.MagicWeapon)
+					MagicWeapon = true;
 			}
 			
 			if(MagicWeapon) {

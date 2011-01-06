@@ -1068,6 +1068,7 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].directional_start = (float)atoi(sep.arg[194]);
 		sp[tempid].directional_end = (float)atoi(sep.arg[195]);
 		sp[tempid].spellgroup=atoi(row[207]);
+		sp[tempid].field209=atoi(row[209]);
 		sp[tempid].AllowRest = atoi(sep.arg[212]);
 	
 		// May crash zone
@@ -1270,6 +1271,7 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].directional_start = (float)atoi(row[194]);
 			sp[tempid].directional_end = (float)atoi(row[195]);
 			sp[tempid].spellgroup=atoi(row[207]);
+			sp[tempid].field209=atoi(row[209]);
 			sp[tempid].AllowRest = atoi(row[212]);
 
 			// May crash zone

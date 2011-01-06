@@ -53,7 +53,7 @@ typedef enum {	//AA Effect IDs
 	aaEffectFrostArrows,
 	aaEffectWarcry,
 	aaEffectLeechTouch,
-      aaEffectProjectIllusion // seveian 2008-09-23
+	aaEffectProjectIllusion // seveian 2008-09-23
 } aaEffectType;
 
 

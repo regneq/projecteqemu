@@ -456,6 +456,7 @@ public:
 
     bool Flurry();
     bool Rampage();
+	void DurationRampage(int32 duration);
 
 	inline uint32	GetEXP()		const { return m_pp.exp; }
 
