@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/08/2011==
+Caryatis: Implemented Target's Target(target type 46). Places effect on your target's target(ie cast with mob as target but spell lands on mob's target)
+
 ==01/05/2011==
 Trevius: Changed xpreward field in the tasks table to be signed so it can display negative values for the level based experience rewards.
 Trevius: Tasks now show item links in Task Rewards correctly for all clients.
