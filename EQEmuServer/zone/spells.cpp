@@ -1535,6 +1535,16 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			ae_center = NULL;
 			break;
 
+		case ST_TargetsTarget:
+		{
+			if(!spell_target->GetTarget())
+				return false;
+				
+			spell_target = spell_target->GetTarget();
+			CastAction = SingleTarget;
+			break;
+		}
+		
 		default:
 		{
 			mlog(SPELLS__CASTING_ERR, "I dont know Target Type: %d   Spell: (%d) %s", spells[spell_id].targettype, spell_id, spells[spell_id].name);

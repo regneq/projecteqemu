@@ -3254,7 +3254,11 @@ void Mob::TryApplyEffect(Mob *target, uint32 spell_id)
 		{
 			if(MakeRandomInt(0, 100) <= spells[spell_id].base[i]) 
 			{
-				SpellOnTarget(spells[spell_id].base2[i], target);
+				if(spells[spells[spell_id].base2[i]].targettype == ST_TargetsTarget)
+					target = target->GetTarget();
+				
+				if(target)
+					SpellOnTarget(spells[spell_id].base2[i], target);
 			}
 		}
 	}

@@ -121,6 +121,7 @@ typedef enum {
 	ST_Directional = 0x2a, //ae around this target between two angles
 	ST_GroupClientAndPet = 0x2b,
 	ST_Beam = 0x2c, //like directional but facing in front of you always
+	ST_TargetsTarget = 0x2E, // uses the target of your target
 } SpellTargetType;
 
 typedef enum  {
