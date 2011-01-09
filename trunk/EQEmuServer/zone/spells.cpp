@@ -1537,10 +1537,11 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 
 		case ST_TargetsTarget:
 		{
-			if(!spell_target->GetTarget())
+			Mob *spell_target_tot = spell_target ? spell_target->GetTarget() : NULL;
+			if(!spell_target_tot)
 				return false;
 				
-			spell_target = spell_target->GetTarget();
+			spell_target = spell_target_tot;
 			CastAction = SingleTarget;
 			break;
 		}
