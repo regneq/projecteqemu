@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/09/2011==
+Caryatis: Viral spells are now supported(field191 determines how many targets it will spread to and field 192 determines how often(in seconds)).
+Caryatis: Lull spells will now only work on the levels they were intended to.
+Caryatis: Corpses now have a res timer(like live). You may res a corpse as many times as you want however you will only recieve exp for the first.
+
+Optional SQL:
+utils/sql/svn/1809_optional_rules.sql
+
 ==01/08/2011==
 Caryatis: Implemented Target's Target(target type 46). Places effect on your target's target(ie cast with mob as target but spell lands on mob's target)
 

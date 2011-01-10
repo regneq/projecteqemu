@@ -58,6 +58,7 @@ public:
 	int32	GetCharID()			{ return charid; }
 	int32	SetCharID(int32 iCharID) { if (IsPlayerCorpse()) { return (charid=iCharID); } return 0xFFFFFFFF; };
 	int32	GetDecayTime()		{ if (!corpse_decay_timer.Enabled()) return 0xFFFFFFFF; else return corpse_decay_timer.GetRemainingTime(); }
+	int32	GetResTime()		{ if (!corpse_res_timer.Enabled()) return 0; else return corpse_res_timer.GetRemainingTime(); }
 	void	CalcCorpseName();
 	inline void		Lock()			{ pLocked = true; }
 	inline void		UnLock()		{ pLocked = false; }
@@ -127,9 +128,11 @@ private:
 	int32		BeingLootedBy;
 	int32		rezzexp;
 	bool		rez;
+	bool		can_rez;
 	bool		become_npc;
 	int			looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
 	Timer		corpse_decay_timer;
+	Timer		corpse_res_timer;
 	Timer		corpse_delay_timer;
 	Timer		corpse_graveyard_timer;
 	Timer		loot_cooldown_timer;

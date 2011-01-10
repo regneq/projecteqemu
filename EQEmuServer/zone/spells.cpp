@@ -2972,6 +2972,19 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 			return false;
 		}
 	}
+	
+	if(IsHarmonySpell(spell_id))
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++) {
+			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony || spells[spell_id].effectid[i] == SE_Lull) {
+				if(spelltar->GetLevel() > spells[spell_id].max[i]) {
+					Message_StringID(MT_Spells, CANNOT_AFFECT_NPC);
+					safe_delete(action_packet);
+					return false;
+				}
+			}
+		}
+	}
 
 	if(!(IsClient() && CastToClient()->GetGM()) && !IsHarmonySpell(spell_id))	// GMs can cast on anything
 	{
@@ -3359,9 +3372,9 @@ void Corpse::CastRezz(int16 spellid, Mob* Caster){
 
 	_log(SPELLS__REZ, "Corpse::CastRezz spellid %i, Rezzed() is %i, rezzexp is %i", spellid,Rezzed(),rezzexp);
 
-	if(Rezzed()){
+	if(!can_rez) {
 		if(Caster && Caster->IsClient())
-			Caster->Message(13,"This character has already been resurrected.");
+			Caster->Message_StringID(0, CORPSE_TOO_OLD);
 		return;
 	}
 

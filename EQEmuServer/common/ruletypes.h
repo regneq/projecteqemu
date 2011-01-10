@@ -29,6 +29,7 @@ RULE_INT ( Character, DeathItemLossLevel, 10 )
 RULE_INT ( Character, DeathExpLossMultiplier, 3) //Adjust how much exp is lost
 RULE_BOOL( Character, UseDeathExpLossMult, false ) //Adjust to use the above multiplier or to use code default.
 RULE_INT ( Character, CorpseDecayTimeMS, 10800000 )
+RULE_INT ( Character, CorpseResTimeMS, 10800000 ) // time before cant res corpse(3 hours)
 RULE_BOOL( Character, LeaveCorpses, true )
 RULE_BOOL( Character, LeaveNakedCorpses, false )
 RULE_INT ( Character, MaxDraggedCorpses, 2 )
@@ -235,6 +236,7 @@ RULE_INT ( Spells, MaxDiscSlotsNPC, 1)
 RULE_INT ( Spells, MaxTotalSlotsNPC, 36)
 RULE_BOOL (Spells, EnableBlockedBuffs, true)
 RULE_INT ( Spells, ReflectType, 1) //0 = disabled, 1 = single target player spells only, 2 = all player spells, 3 = all single target spells, 4 = all spells
+RULE_INT ( Spells, VirusSpreadDistance, 30) // The distance a viral spell will jump to its next victim
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

@@ -4893,3 +4893,54 @@ Client* EntityList::FindCorpseDragger(const char *CorpseName)
 	} 
 	return 0; 
 }
+
+Mob* EntityList::GetTargetForVirus(Mob* spreader)
+{
+	int max_spread_range = RuleI(Spells, VirusSpreadDistance);
+	
+	vector<Mob*> TargetsInRange;
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	
+	iterator.Reset(); 
+	while(iterator.MoreElements())
+	{
+		// Make sure the target is in range, has los and is not the mob doing the spreading
+		if ((iterator.GetData()->GetID() != spreader->GetID()) && 
+			(iterator.GetData()->CalculateDistance(spreader->GetX(), spreader->GetY(), spreader->GetZ()) <= max_spread_range) &&
+			(spreader->CheckLosFN(iterator.GetData())))
+		{
+			// If the spreader is an npc it can only spread to other npc controlled mobs
+			if (spreader->IsNPC() && !spreader->IsPet() && iterator.GetData()->IsNPC()) {
+				TargetsInRange.push_back(iterator.GetData());
+			}
+			// If the spreader is an npc controlled pet it can spread to any other npc or an npc controlled pet
+			else if (spreader->IsNPC() && spreader->IsPet() && spreader->GetOwner()->IsNPC()) {
+				if(iterator.GetData()->IsNPC() && !iterator.GetData()->IsPet()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+				else if(iterator.GetData()->IsNPC() && iterator.GetData()->IsPet() && iterator.GetData()->GetOwner()->IsNPC()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+			}
+			// if the spreader is anything else(bot, pet, etc) then it should spread to everything but non client controlled npcs
+			else if(!spreader->IsNPC() && !iterator.GetData()->IsNPC()) {
+				TargetsInRange.push_back(iterator.GetData());
+			}
+			// if its a pet we need to determine appropriate targets(pet to client, pet to pet, pet to bot, etc)
+			else if (spreader->IsNPC() && spreader->IsPet() && !spreader->GetOwner()->IsNPC()) {
+				if(!iterator.GetData()->IsNPC()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+				else if (iterator.GetData()->IsNPC() && iterator.GetData()->IsPet() && !iterator.GetData()->GetOwner()->IsNPC()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+			}
+		}
+		iterator.Advance();
+	}
+
+	if(TargetsInRange.size() == 0)
+		return NULL;
+
+	return TargetsInRange[MakeRandomInt(0, TargetsInRange.size() - 1)];
+}
