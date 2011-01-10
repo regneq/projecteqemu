@@ -58,6 +58,7 @@
 #define ONLY_ON_CORPSES				221		//This spell only works on corpses.
 #define CANT_DRAIN_SELF				224		//You can't drain yourself!
 #define CORPSE_NOT_VALID			230		//This corpse is not valid.
+#define CORPSE_TOO_OLD				231		//This player cannot be resurrected. The corpse is too old.
 #define CAST_OUTDOORS				234		//You can only cast this spell in the outdoors.
 #define SPELL_RECAST				236		//Spell recast time not yet met.
 #define SPELL_RECOVERY				237		//Spell recovery time not yet met.

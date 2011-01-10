@@ -118,7 +118,8 @@ Mob::Mob(const char*   in_name,
 		bardsong_timer(6000),
 		flee_timer(FLEE_CHECK_TIMER),
 		bindwound_timer(10000),
-		GravityTimer(1000)
+		GravityTimer(1000),
+		ViralTimer(0)
 		
 {
 	targeted = 0;
@@ -341,6 +342,10 @@ Mob::Mob(const char*   in_name,
 	roamer = false;
 	rooted = false;
 	charmed = false;
+	has_virus = false;
+	for (i=0; i<MAX_SPELL_TRIGGER*2; i++) {
+		viral_spells[i] = 0;
+	}
 	pStandingPetOrder = SPO_Follow;
 
 	see_invis = in_see_invis;
@@ -4957,5 +4962,27 @@ void Mob::DoGravityEffect()
 			this->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), cur_x, cur_y, new_ground, GetHeading()*2); // I know the heading thing is weird(chance of movepc to halve the heading value, too lazy to figure out why atm)
 		else
 			this->GMMove(cur_x, cur_y, new_ground, GetHeading());
+	}
+}
+
+void Mob::SpreadVirus(int16 spell_id, int16 casterID)
+{
+	int num_targs = spells[spell_id].viral_targets;
+
+	Mob* caster = entity_list.GetMob(casterID);
+	Mob* target = NULL;
+	// Only spread in zones without perm buffs
+	if(!zone->BuffTimersSuspended()) {
+		for(int i = 0; i < num_targs; i++) {
+			target = entity_list.GetTargetForVirus(this);
+			if(target) {
+				// Only spreads to the uninfected 
+				if(!target->FindBuff(spell_id)) {
+					if(caster)
+						caster->SpellOnTarget(spell_id, target);
+			
+				}
+			}
+		}
 	}
 }

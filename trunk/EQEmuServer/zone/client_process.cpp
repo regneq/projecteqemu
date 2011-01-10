@@ -609,6 +609,21 @@ bool Client::Process() {
 			}
 		}
 		
+		if(HasVirus()) {
+			if(ViralTimer.Check()) {
+				viral_timer_counter++;
+				for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2) {
+					if(viral_spells[i])	{
+						if(viral_timer_counter % spells[viral_spells[i]].viral_timer == 0) {
+							SpreadVirus(viral_spells[i], viral_spells[i+1]);
+						}
+					}
+				}
+			}
+			if(viral_timer_counter > 999)
+				viral_timer_counter = 0;
+		}
+		
 		if(spellbonuses.GravityEffect == 1) {
 			if(GravityTimer.Check())
 				DoGravityEffect();
@@ -1153,13 +1168,12 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 			SetMana(GetMaxMana());
 			SetHP(GetMaxHP());
 		}
-		
-		if (SpellID != 994) { // Spell 994 is Customer Service 100% Rez.
-			if(SpellID!= 2168) // Spell 2168 is Reanimate 0% Rez.
+		if(spells[SpellID].base[0] < 100 && spells[SpellID].base[0] > 0 && PendingRezzXP > 0) 
+		{
 				SetEXP(((int)(GetEXP()+((float)((PendingRezzXP / 100) * spells[SpellID].base[0])))),
 				       GetAAXP(),true);
 		}
-		else {
+		else if (spells[SpellID].base[0] == 100 && PendingRezzXP > 0) {
 			SetEXP((GetEXP() + PendingRezzXP), GetAAXP(), true);
 		}
 

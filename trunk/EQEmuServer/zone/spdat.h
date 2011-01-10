@@ -531,9 +531,9 @@ typedef enum  {
 #define SE_ManaDrainWithDmg				401 // *not implemented - Deals damage based on the amount of mana drained
 #define SE_EndDrainWithDmg				402 // *not implemented - Deals damage for the amount of endurance drained
 #define SE_Twinproc						405 // implemented - Proc twice
-#define SE_SetMaxHP						408 // *not implemented - Sets your max hp to a percent of your original
-#define SE_SetMaxMana					409 // *not implemented - Sets your max mana to a percent of your original
-#define SE_SetMaxEnd					410 // *not implemented - Sets your max end to a percent of your original
+#define SE_LimitHPPercent				408 // *not implemented - limited to a certain percent of your hp(ie heals up to 50%)
+#define SE_LimitManaPercent				409 // *not implemented - limited to a certain percent of your mana
+#define SE_LimitEndPercent				410 // *not implemented - limited to a certain percent of your end
 #define SE_LimitClass					411 // *not implemented - Limits to spells of a certain class
 #define SE_IncreaseSpellPower			413 // *not implemented - Increases the power of spells(bard only?)
 #define SE_LimitSpellSkill				414 // *not implemented - Limits to a skill of spells(ie wind, evocation)
@@ -628,23 +628,25 @@ struct SPDat_Spell_Struct
 /* 173 */   int			HateAdded;
 /* 174 */   int			EndurUpkeep;
 /* 175 */ int spacing175;
-/* 176 */ int numhits;
-/* 177 */ int pvpresistbase;
-/* 178 */ int pvpresistcalc;
-/* 179 */ int pvpresistcap;
-/* 180 */ int spell_category;
+/* 176 */ 	int 		numhits;
+/* 177 */ 	int 		pvpresistbase;
+/* 178 */ 	int 		pvpresistcalc;
+/* 179 */ 	int 		pvpresistcap;
+/* 180 */ 	int 		spell_category;
 /* 181 */ int spacing181[4];
-/* 185 */ int can_mgb;	// 0=no, -1 or 1 = yes
-/* 186 */ int dispel_flag;
-/* 189 */ int MinResist;
-/* 190 */ int MaxResist;
-/* 192 */ int NimbusEffect;
-/* 195 */ float directional_start;
-/* 196 */ float directional_end;
-/* 207 */ int spellgroup;
-/* 209 */ int field209; // Need more investigation to figure out what to call this, for now we know -1 makes charm spells not break before their duration is complete, it does alot more though
-/* 212 */ bool AllowRest;
-
+/* 185 */ 	int 		can_mgb;	// 0=no, -1 or 1 = yes
+/* 186 */ 	int 		dispel_flag;
+/* 189 */ 	int 		MinResist;
+/* 190 */ 	int 		MaxResist;
+/* 191 */ 	int 		viral_targets;
+/* 192 */ 	int 		viral_timer;
+/* 193 */ 	int 		NimbusEffect;
+/* 194 */ 	float 		directional_start;
+/* 195 */ 	float 		directional_end;
+/* 207 */ 	int 		spellgroup;
+/* 209 */ 	int 		field209; // Need more investigation to figure out what to call this, for now we know -1 makes charm spells not break before their duration is complete, it does alot more though
+/* 212 */ 	bool 		AllowRest;
+/* 219 */	int			maxtargets; // not in DB yet, is used for beam and ring spells for target # limits
 
 //shared memory errors
 /* 186 */	/*sint8		nodispell;*/	// 0=can be dispelled, -1=can't be dispelled at all, 1=most can be cancelled w/ a cure but not dispelled

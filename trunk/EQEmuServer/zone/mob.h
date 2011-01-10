@@ -291,10 +291,9 @@ struct StatBonuses {
 	bool	AntiGate;							// spell effect that prevents gating
 	bool	MagicWeapon;						// spell effect that makes weapon magical
 	sint16	IncreaseBlockChance;				// overall block chance modifier
-	uint16	PersistantCasting;				// chance to continue casting through a stun
+	uint16	PersistantCasting;					// chance to continue casting through a stun
 	int 	XPRateMod;							//i
-	
-	
+		
 	// AAs
 	sint8	Packrat;							//weight reduction for items, 1 point = 10%
 	int8	BuffSlotIncrease;					// Increases number of available buff slots
@@ -567,6 +566,7 @@ bool logpos;
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 	bool	CheckHitsRemaining(uint32 buff_slot, bool when_spell_done=false, bool negate=false);
+	void 	SpreadVirus(int16 spell_id, int16 casterID);
 
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 //	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
@@ -937,6 +937,7 @@ bool logpos;
 	inline const bool	IsHeld() const { return held; }
 	inline const bool	IsRoamer() const { return roamer; }
 	inline const bool   IsRooted() const { return rooted || permarooted; }
+	inline const bool   HasVirus() const { return has_virus; }
 	int					GetSnaredAmount();
 
 	bool				RemoveFromHateList(Mob* mob);
@@ -1246,18 +1247,22 @@ protected:
 
 	Mob* shield_target;
 
-	int ExtraHaste;	// for the #haste command
-	bool mezzed;
-	bool stunned;
-	bool charmed;	//this isnt fully implemented yet
-	bool rooted;
-	bool silenced;
-	bool amnesiad;
-	bool inWater;	// Set to true or false by Water Detection code if enabled by rules
-//	Timer mezzed_timer;
-	Timer  stunned_timer;
-	Timer  spun_timer;
+	int		ExtraHaste;	// for the #haste command
+	bool	mezzed;
+	bool	stunned;
+	bool	charmed;	//this isnt fully implemented yet
+	bool	rooted;
+	bool	silenced;
+	bool	amnesiad;
+	bool	inWater;	// Set to true or false by Water Detection code if enabled by rules
+	bool	has_virus;	// whether this mob has a viral spell on them
+	int16	viral_spells[MAX_SPELL_TRIGGER*2]; // Stores the spell ids of the viruses on target and caster ids
+
+	Timer	stunned_timer;
+	Timer	spun_timer;
 	Timer	bardsong_timer;
+	Timer 	ViralTimer;
+	int8	viral_timer_counter;
 	int16	adverrorinfo;
 
 	// MobAI stuff
@@ -1270,7 +1275,7 @@ protected:
 	Timer*	AImovement_timer;
 	Timer*	AItarget_check_timer;
 	bool	movetimercompleted;
-	bool   permarooted;
+	bool	permarooted;
 	Timer*	AIscanarea_timer;
 	Timer*	AIwalking_timer;
 	Timer*	AIfeignremember_timer;

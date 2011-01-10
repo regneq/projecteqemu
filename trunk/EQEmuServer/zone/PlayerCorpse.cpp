@@ -200,6 +200,7 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	 0,0,0,0,0,0,0,0,0,
 	 0,0,0,0,0,0,0,0,0,0,0,0xff,0,0,0,0,0,0,0,0,0,0),
 	 corpse_decay_timer(in_decaytime),
+	 corpse_res_timer(0),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(0),
 	loot_cooldown_timer(10)
@@ -306,6 +307,7 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 	0	// scalerate
 ),
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
+	corpse_res_timer(RuleI(Character, CorpseResTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
 	loot_cooldown_timer(10)
@@ -324,6 +326,7 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 
 	pIsChanged		= true;
 	rezzexp			= in_rezexp;
+	can_rez			= true;
 	p_PlayerCorpse	= true;
 	pLocked			= false;
 	BeingLootedBy	= 0xFFFFFFFF;
@@ -415,6 +418,7 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	 0,0,0,0,0,0,0,0,0,0,0,0xff,
 	 0,0,0,0,0,0,0,0,0,0),
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
+	corpse_res_timer(RuleI(Character, CorpseResTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
 	loot_cooldown_timer(10)
@@ -737,7 +741,12 @@ bool Corpse::Process() {
 		corpse_graveyard_timer.Disable();
 		return false;
 	}
-
+	
+	if(corpse_res_timer.Check()) {
+		can_rez = false;
+		corpse_res_timer.Disable();
+	}
+	
 	if(corpse_decay_timer.Check()) {
 		if(!RuleB(Zone, EnableShadowrest))
 			Delete();
@@ -1759,8 +1768,16 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) FROM player_corpses WHERE id=%d and not timeofdeath=0", dbid), errbuf, &result)) {
 		safe_delete_array(query);
 		while ((row = mysql_fetch_row(result))) {
-			if(atoi(row[0]) > 0 && RuleI(Character, CorpseDecayTimeMS) > (atoi(row[0]) * 1000))
+			if(atoi(row[0]) > 0 && RuleI(Character, CorpseDecayTimeMS) > (atoi(row[0]) * 1000)) {
 				corpse_decay_timer.SetTimer(RuleI(Character, CorpseDecayTimeMS) - (atoi(row[0]) * 1000));
+				if(RuleI(Character, CorpseResTimeMS) > (atoi(row[0]) * 1000)) {
+					corpse_res_timer.SetTimer(RuleI(Character, CorpseResTimeMS) - (atoi(row[0]) * 1000));
+				}
+				else {
+					corpse_res_timer.Disable();
+					can_rez = false;
+				}
+			}
 			else
 				corpse_decay_timer.SetTimer(300000);
 		}

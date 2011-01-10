@@ -140,7 +140,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		buffs[buffslot].melee_rune = 0;
 		buffs[buffslot].magic_rune = 0;
 		buffs[buffslot].numhits = 0;
-			
+		
 		if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_UnderfootAndLater)
 		{
 			EQApplicationPacket *outapp = MakeBuffsPacket(false);
@@ -164,6 +164,22 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			parse->Event(EVENT_SPELL_EFFECT_CLIENT, 0, itoa(spell_id), NULL, this, caster ? caster->GetID() : 0);
 			CalcBonuses();
 			return true;
+		}
+	}
+	
+	if(spells[spell_id].viral_targets > 0) {
+		if(!ViralTimer.Enabled()) 
+			ViralTimer.Start(1000);
+			
+		has_virus = true;
+		for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2)
+		{
+			if(!viral_spells[i])
+			{
+				viral_spells[i] = spell_id;
+				viral_spells[i+1] = caster->GetID();
+				break;
+			}
 		}
 	}
 
@@ -2921,6 +2937,23 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 		CastToClient()->MakeBuffFadePacket(buffs[slot].spellid, slot);
 
 	mlog(SPELLS__BUFFS, "Fading buff %d from slot %d", buffs[slot].spellid, slot);
+	
+	if(spells[buffs[slot].spellid].viral_targets > 0) {
+		bool last_virus = true;
+		for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2)
+		{
+			if(viral_spells[i] && viral_spells[i] != buffs[slot].spellid)
+			{
+				// If we have a virus that doesn't match this one then don't stop the viral timer
+				last_virus = false;
+			}
+		}
+		// This is the last virus on us so lets stop timer
+		if(last_virus) {
+			ViralTimer.Disable();
+			has_virus = false;
+		}
+	}
 
 	for (int i=0; i < EFFECT_COUNT; i++)
 	{
