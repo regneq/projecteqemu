@@ -1,7 +1,10 @@
-=04/27/2009
+=01/09/2010=
+Trevius: The xpreward field now allows a negative value to match a change in Rev1803.
+
+=04/27/2009=
 KLS: Fix for reward method not saving.
 
-=10/12/2008
+=10/12/2008=
 KLS: Improved some sql syntax to be more safe.
 KLS: Increased the size of goal count box significantly.
 KLS: Added id select for new task.

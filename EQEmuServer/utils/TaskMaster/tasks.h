@@ -10,7 +10,7 @@ struct eqtask
 	char reward[64]; //i
 	unsigned int rewardid; //i
 	unsigned int cashreward; //i
-	unsigned int xpreward; //i
+	int xpreward; //i
 	unsigned short rewardmethod; //i
 	unsigned int startzone; //i
 	unsigned short level_min; //i
