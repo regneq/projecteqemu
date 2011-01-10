@@ -560,7 +560,7 @@ void MainFrame::ListBoxDoubleClick(wxCommandEvent& event)
 	mRewardCash->Enable();
 	mStr.clear();
 
-	mStr.Printf("%u", mTask.xpreward);
+	mStr.Printf("%i", mTask.xpreward);
 	mRewardXP->Clear();
     mRewardXP->AppendText(mStr);
 	mRewardXP->Enable();

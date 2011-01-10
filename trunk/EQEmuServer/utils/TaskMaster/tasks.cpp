@@ -259,7 +259,7 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 
 
 		char * mQuery = 0;
-		MakeAnyLenString(&mQuery, "UPDATE tasks SET duration=%u, title='%s', description='%s', reward='%s', rewardid=%u, cashreward=%u, xpreward=%u, rewardmethod=%u, startzone=%u, minlevel=%u, maxlevel=%u, repeatable=%u WHERE id=%u",
+		MakeAnyLenString(&mQuery, "UPDATE tasks SET duration=%u, title='%s', description='%s', reward='%s', rewardid=%u, cashreward=%u, xpreward=%i, rewardmethod=%u, startzone=%u, minlevel=%u, maxlevel=%u, repeatable=%u WHERE id=%u",
 			ourTask.duration, MakeStringSQLSafe(ourTask.title).mb_str(), MakeStringSQLSafe(ourTask.desc).mb_str(), MakeStringSQLSafe(ourTask.reward).mb_str(), ourTask.rewardid, ourTask.cashreward, ourTask.xpreward, ourTask.rewardmethod, ourTask.startzone, ourTask.level_min, ourTask.level_max, ourTask.repeatable, ourTask.id);
 		
 		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
