@@ -371,6 +371,7 @@ int main(int argc, char** argv) {
 	zoneserver_list.reminder->Disable();
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	InterserverTimer.Trigger();
+	uint8 ReconnectCounter = 100;
 	EQStream* eqs;
 	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
@@ -452,13 +453,17 @@ int main(int argc, char** argv) {
 			InterserverTimer.Start();
 			database.ping();
 			AsyncLoadVariables(dbasync, &database);
-			if (loginserverlist.AllConnected() == false) {
+			ReconnectCounter++;
+			if (ReconnectCounter >= 60) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
+				ReconnectCounter = 0;
+				if (loginserverlist.AllConnected() == false) {
 #ifdef WIN32
-				_beginthread(AutoInitLoginServer, 0, NULL);
+					_beginthread(AutoInitLoginServer, 0, NULL);
 #else
-				pthread_t thread;
-				pthread_create(&thread, NULL, &AutoInitLoginServer, NULL);
+					pthread_t thread;
+					pthread_create(&thread, NULL, &AutoInitLoginServer, NULL);
 #endif
+				}
 			}
 		}
 		if (numclients == 0) {
