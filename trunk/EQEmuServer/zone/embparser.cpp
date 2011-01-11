@@ -276,6 +276,8 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		}
 	}
 	else if(isPlayerQuest) {
+		if(!zone || !zone->GetShortName()) // possible segfault fix
+			return;
 		packagename = "player";
 		packagename += "_";
 		packagename += zone->GetShortName();
