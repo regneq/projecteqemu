@@ -2975,7 +2975,8 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 	if(IsHarmonySpell(spell_id))
 	{
 		for(int i = 0; i < EFFECT_COUNT; i++) {
-			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony || spells[spell_id].effectid[i] == SE_Lull) {
+			// not important to check limit on SE_Lull as it doesnt have one and if the other components won't land, then SE_Lull wont either
+			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony) {
 				if(spells[spell_id].max[i] != 0 && spelltar->GetLevel() > spells[spell_id].max[i]) {
 					Message_StringID(MT_Spells, CANNOT_AFFECT_NPC);
 					safe_delete(action_packet);
@@ -3371,11 +3372,19 @@ void Corpse::CastRezz(int16 spellid, Mob* Caster){
 
 	_log(SPELLS__REZ, "Corpse::CastRezz spellid %i, Rezzed() is %i, rezzexp is %i", spellid,Rezzed(),rezzexp);
 
+	if(Rezzed()){
+ 		if(Caster && Caster->IsClient())
+			Caster->Message(13,"This character has already been resurrected.");
+
+ 		return;
+ 	}
+	/*
 	if(!can_rez) {
 		if(Caster && Caster->IsClient())
 			Caster->Message_StringID(0, CORPSE_TOO_OLD);
 		return;
 	}
+	*/
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RezzRequest, sizeof(Resurrect_Struct));
 	Resurrect_Struct* rezz = (Resurrect_Struct*) outapp->pBuffer;

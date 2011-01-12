@@ -741,12 +741,12 @@ bool Corpse::Process() {
 		corpse_graveyard_timer.Disable();
 		return false;
 	}
-	
+	/*
 	if(corpse_res_timer.Check()) {
 		can_rez = false;
 		corpse_res_timer.Disable();
 	}
-	
+	*/
 	if(corpse_decay_timer.Check()) {
 		if(!RuleB(Zone, EnableShadowrest))
 			Delete();
@@ -1770,6 +1770,7 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 		while ((row = mysql_fetch_row(result))) {
 			if(atoi(row[0]) > 0 && RuleI(Character, CorpseDecayTimeMS) > (atoi(row[0]) * 1000)) {
 				corpse_decay_timer.SetTimer(RuleI(Character, CorpseDecayTimeMS) - (atoi(row[0]) * 1000));
+				/*
 				if(RuleI(Character, CorpseResTimeMS) > (atoi(row[0]) * 1000)) {
 					corpse_res_timer.SetTimer(RuleI(Character, CorpseResTimeMS) - (atoi(row[0]) * 1000));
 				}
@@ -1777,9 +1778,12 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 					corpse_res_timer.Disable();
 					can_rez = false;
 				}
+				*/
 			}
-			else
+			else {
 				corpse_decay_timer.SetTimer(300000);
+				//corpse_res_timer.SetTimer(300000);
+			}
 		}
 		mysql_free_result(result);
 	}

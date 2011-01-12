@@ -2439,6 +2439,8 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 			else
 				Message(0, "This corpse will decay in %i minutes and %i seconds.", min, sec);
 			
+			Message(0, "This corpse %s be resurrected.", tcorpse->Rezzed()?"cannot":"can");
+			/*
 			hour = 0;
 			
 			if((ttime = tcorpse->GetResTime()) != 0) {
@@ -2453,6 +2455,7 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 			else {
 				Message_StringID(0, CORPSE_TOO_OLD);
 			}
+			*/
 		}
 		else {
 			Message_StringID(10,CORPSE_DECAY_NOW);

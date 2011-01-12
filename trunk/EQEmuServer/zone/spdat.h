@@ -421,7 +421,7 @@ typedef enum  {
 //#define SE_Unknown284					284	// not used
 #define SE_NimbleEvasion				285	// *not implemented - base1 = 100 for max
 #define SE_SpellDamage					286	// implemented - adds direct spell damage
-#define SE_FocusCombatDurationMod		287 // *not implemented
+#define SE_SpellDurationIncByTic		287 // implemented
 //#define SE_Unknown288					288	// not used
 #define SE_ImprovedSpellEffect			289 // implemented 
 //#define SE_Unknown290					290	// not used
@@ -445,7 +445,7 @@ typedef enum  {
 #define SE_SuspendMinion				308 // not implemented as bonus
 #define SE_YetAnotherGate				309 // implemented
 #define SE_ReduceReuseTimer				310 // *not implemented
-#define SE_NoCombatSkills				311 // implemented
+#define SE_CombatSkills					311 // implemented
 #define SE_Sanctuary					312 // *not implemented
 //#define SE_Unknown313					313	// not used
 #define SE_Invisibility2				314 // *not implemented correctly, this is supposed to be a higher level invis than reg invis
@@ -520,26 +520,52 @@ typedef enum  {
 #define SE_SympatheticProc				383 // implemented - focus on items that has chance to proc a spell when you cast
 #define SE_Leap							384	// *not implemented - Leap effect, ie stomping leap
 #define SE_LimitSpellGroup				385	// implemented - Limits to spell group(ie type 3 reuse reduction augs that are class specific and thus all share s SG)
-#define SE_CastOnCure					387 // *not implemented - Casts a spell when you are cured
-#define SE_Forceful_Rejuv				389 // *not implemented - Refresh spell icons
+#define SE_CastOnCurer					386 // *not implemented - Casts a spell on the person curing
+#define SE_CastOnCure					387 // *not implemented - Casts a spell on the cured person
+#define SE_SummonCorpseZone				388 // *not implemented - summons a corpse from any zone(nec AA)
+#define SE_Forceful_Rejuv				389 // Refresh spell icons
+#define SE_CastResistRestrict			390 // *not implemented - some sort of restriction of what resist spells you can cast
+//#define SE_Unknown391					391 // not used
 #define SE_HealingFocus					392 // *not implemented - Adds or removes healing from spells
-#define SE_HealRate2					393 // not implemented - Appears to be exactly the same as HealRate except with focus restrictions
-#define SE_AdditionalHeal				396 // not implemented - Adds/removes healing from specific spells(restricted to spell groups)
-#define SE_SwarmPetDuration				398 // *not implemented - Affects the duration of swarm pets
+#define SE_HealRate2					393 // *not implemented - Appears to be exactly the same as HealRate except with focus restrictions
+//#define SE_Unknown394					394 // not used
+//#define SE_Unknown395					395 // not used
+#define SE_AdditionalHeal				396 // *not implemented - Adds/removes healing from specific spells(restricted to spell groups)
+//#define SE_Unknown397					397 // not used
+#define SE_SwarmPetDuration				398 // implemented - Affects the duration of swarm pets
 #define SE_Twincast						399 // implemented - cast 2 spells for every 1
-#define SE_HealFromMana					400 // *not implemented - Drains mana and heals for each point of mana drained
-#define SE_ManaDrainWithDmg				401 // *not implemented - Deals damage based on the amount of mana drained
-#define SE_EndDrainWithDmg				402 // *not implemented - Deals damage for the amount of endurance drained
+#define SE_HealFromMana					400 // implemented - Drains mana and heals for each point of mana drained
+#define SE_ManaDrainWithDmg				401 // implemented - Deals damage based on the amount of mana drained
+#define SE_EndDrainWithDmg				402 // implemented - Deals damage for the amount of endurance drained
+#define SE_ReluctantBene				403 // *not implemented - Reluctant Benevolence(21662)
+#define SE_AxiomPH						404 // *not implemented - Axiom Omission(15931)
 #define SE_Twinproc						405 // implemented - Proc twice
-#define SE_LimitHPPercent				408 // *not implemented - limited to a certain percent of your hp(ie heals up to 50%)
-#define SE_LimitManaPercent				409 // *not implemented - limited to a certain percent of your mana
-#define SE_LimitEndPercent				410 // *not implemented - limited to a certain percent of your end
+#define SE_CastonNumHitFade				406 // *not implemented - casts a spell when a buff fades due to its numhits being depleted
+//#define SE_Unknown407					407 // not used
+#define SE_LimitHPPercent				408 // implemented - limited to a certain percent of your hp(ie heals up to 50%)
+#define SE_LimitManaPercent				409 // implemented - limited to a certain percent of your mana
+#define SE_LimitEndPercent				410 // implemented - limited to a certain percent of your end
 #define SE_LimitClass					411 // *not implemented - Limits to spells of a certain class
+//#define SE_Unknown412					412 // not used
 #define SE_IncreaseSpellPower			413 // *not implemented - Increases the power of spells(bard only?)
 #define SE_LimitSpellSkill				414 // *not implemented - Limits to a skill of spells(ie wind, evocation)
+//#define SE_Unknown415					415 // not used
+#define SE_ACv2							416 // *not implemented - New AC spell effect
+#define SE_ManaRegen_v2					417 // *not implemented - New mana regen effect
+#define SE_AddSkillDmg					418 // *not implemented - adds base directly to certain attacks(ie piercing)
 #define SE_AddMeleeProc					419 // *not implemented - Adds a proc
+//#define SE_Unknown420					420 // not used
+//#define SE_Unknown421					421 // not used
+//#define SE_Unknown422					422 // not used
+//#define SE_Unknown423					423 // not used
 #define SE_GravityEffect				424 // implemented - Pulls/pushes you toward/away the mob at a set pace
+#define SE_Display						425 // *not implemented - Illusion: Flying Dragon(21626)
+//#define SE_Unknown426					426 // not used
+#define SE_SkillProc					427 // *not implemented - chance to proc when using a skill(ie taunt)
 #define SE_LimitToSkill					428 // *not implemented - Only fires when a particular skills is used(ie dodge)	
+#define SE_HitLimitedProc				429 // *not implemented - Noira's Song of Suffering(26019)
+//#define SE_Unknown430					430 // *not implemented - Fear of the Dark(27641)
+//#define SE_Unknown431					431 // *not implemented - Fear of the Dark(27641)
 // LAST
 
 

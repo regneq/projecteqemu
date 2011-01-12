@@ -559,6 +559,10 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 			pet.duration = spells[spell_id].max[x];
 		}
 	}
+	
+	if(IsClient())
+		pet.duration += (CastToClient()->GetFocusEffect(focusSwarmPetDuration, spell_id) / 1000);
+	
 	pet.npc_id = record.npc_type;
 
 	NPCType *made_npc = NULL;
