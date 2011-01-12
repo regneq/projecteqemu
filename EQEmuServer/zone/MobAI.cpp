@@ -1275,8 +1275,12 @@ void Mob::AI_Process() {
 			// See if we can summon the mob to us
 			if (!HateSummon()) 
 			{
-				//could not summon them, start pursuing...
-// TODO: Check here for another person on hate list with close hate value
+				//could not summon them, check ranged...
+				if(SpecAttacks[SPECATK_RANGED_ATK])
+					RangedAttack(target);
+
+				// Now pursue
+				// TODO: Check here for another person on hate list with close hate value
 				if(AI_PursueCastCheck()){
 					//we did something, so do not process movement.
 				}
@@ -1291,7 +1295,7 @@ void Mob::AI_Process() {
 							bool WaypointChanged, NodeReached;
 
 							VERTEX Goal = UpdatePath(target->GetX(), target->GetY(), target->GetZ(),
-										 GetRunspeed(), WaypointChanged, NodeReached);
+											GetRunspeed(), WaypointChanged, NodeReached);
 
 							if(WaypointChanged)
 								tar_ndx = 20;
@@ -1299,12 +1303,14 @@ void Mob::AI_Process() {
 							CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetRunspeed());
 						}
 
-					} else if(IsMoving()) {
+					} 
+					else if(IsMoving()) {
 						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
 						SetRunAnimSpeed(0);
 						SendPosition();
 						SetMoving(false);
 						moved=false;
+					
 					}
 				}
 			}

@@ -91,6 +91,8 @@ typedef enum {	//focus types
 	focusTwincast,
 	focusSympatheticProc,
 	focusSpellDamage,
+	focusSpellDurByTic,
+	focusSwarmPetDuration,
 } focusType;
 
 enum {
@@ -293,6 +295,9 @@ struct StatBonuses {
 	sint16	IncreaseBlockChance;				// overall block chance modifier
 	uint16	PersistantCasting;					// chance to continue casting through a stun
 	int 	XPRateMod;							//i
+	int		HPPercCap;							//Spell effect that limits you to being healed/regening beyond a % of your max
+	int		ManaPercCap;						// ^^
+	int		EndPercCap;							// ^^
 		
 	// AAs
 	sint8	Packrat;							//weight reduction for items, 1 point = 10%

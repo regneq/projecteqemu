@@ -243,9 +243,17 @@ sint32 Client::CalcMaxHP() {
 	max_hp += GroupLeadershipAAHealthEnhancement();
 	
 	max_hp += max_hp * (spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
-
+	
 	if (cur_hp > max_hp)
 		cur_hp = max_hp;
+	
+	int hp_perc_cap = spellbonuses.HPPercCap;
+	if(hp_perc_cap) {
+		int curHP_cap = (max_hp * hp_perc_cap) / 100;
+		if (cur_hp > curHP_cap)
+			cur_hp = curHP_cap;
+	}
+	
 	return max_hp;
 }
 
@@ -969,12 +977,21 @@ sint32 Client::CalcMaxMana()
 			break;
 		}
 	}
+	if (max_mana < 0) {
+		max_mana = 0;
+	}
+	
 	if (cur_mana > max_mana) {
 		cur_mana = max_mana;
 	}
-	else if (max_mana < 0) {
-		max_mana = 0;
+	
+	int mana_perc_cap = spellbonuses.ManaPercCap;
+	if(mana_perc_cap) {
+		int curMana_cap = (max_mana * mana_perc_cap) / 100;
+		if (cur_mana > curMana_cap)
+			cur_mana = curMana_cap;
 	}
+	
 #if EQDEBUG >= 11
 	LogFile->write(EQEMuLog::Debug, "Client::CalcMaxMana() called for %s - returning %d", GetName(), max_mana);
 #endif
@@ -1898,14 +1915,21 @@ void Client::CalcMaxEndurance()
 {
 	max_end = CalcBaseEndurance() + spellbonuses.Endurance + itembonuses.Endurance;
 	
-	if (cur_end > max_end) {
-		cur_end = max_end;
-	}
 	if (max_end < 0) {
 		max_end = 0;
 	}
+		
+	if (cur_end > max_end) {
+		cur_end = max_end;
+	}
+	
+	int end_perc_cap = spellbonuses.EndPercCap;
+	if(end_perc_cap) {
+		int curEnd_cap = (max_end * end_perc_cap) / 100;
+		if (cur_end > curEnd_cap)
+			cur_end = curEnd_cap;
+	}
 }
-
 
 sint32 Client::CalcBaseEndurance()
 {

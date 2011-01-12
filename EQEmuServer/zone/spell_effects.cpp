@@ -2272,8 +2272,83 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 				break;
 			}
+			
+			case SE_Forceful_Rejuv:
+			{
+				if(IsClient()) {
+					for(unsigned int i =0 ; i < MAX_PP_MEMSPELL; ++i) {
+						if(IsValidSpell(CastToClient()->m_pp.mem_spells[i])) {
+							CastToClient()->m_pp.spellSlotRefresh[i] = 1;
+							CastToClient()->GetPTimers().Clear(&database, (pTimerSpellStart + CastToClient()->m_pp.mem_spells[i]));
+						}
+					}
+					SetMana(GetMana());
+				}
+				break;
+			}
+			
+			case SE_HealFromMana:
+			{
+				int heal_amount = 0;
+				if(caster) {
+					sint32 mana_to_use = caster->GetMana() - spell.base[i];
+					if(mana_to_use > -1) {
+						caster->SetMana(caster->GetMana() - spell.base[i]);
+						// we get the full amount of the heal, which is broken into 10 mana increments
+						heal_amount = spell.base[i] / 10 * spell.base2[i];
+					}
+					else {
+						heal_amount = GetMana() / 10 * spell.base2[i];
+						caster->SetMana(0);
+					}
+				}
+				HealDamage(heal_amount, caster);
+				break;
+			}
+			
+			case SE_ManaDrainWithDmg:
+			{
+				int mana_damage = 0;
+				sint32 mana_to_use = GetMana() - spell.base[i];
+				if(mana_to_use > -1) {
+					SetMana(GetMana() - spell.base[i]);
+					// we take full dmg(-10 to make the damage the right sign)
+					mana_damage = spell.base[i] / -10 * spell.base2[i];
+					Damage(caster, mana_damage, spell_id, spell.skill, false, i, true);
+				}
+				else {
+					mana_damage = GetMana() / -10 * spell.base2[i];
+					SetMana(0);
+					Damage(caster, mana_damage, spell_id, spell.skill, false, i, true);
+				}
+				break;
+			}
+			
+			case SE_EndDrainWithDmg:
+			{
+				if(IsClient()) {
+					int end_damage = 0;
+					sint32 end_to_use = CastToClient()->GetEndurance() - spell.base[i];
+					if(end_to_use > -1) {
+						CastToClient()->SetEndurance(CastToClient()->GetEndurance() - spell.base[i]);
+						// we take full dmg(-10 to make the damage the right sign)
+						end_damage = spell.base[i] / -10 * spell.base2[i];
+						Damage(caster, end_damage, spell_id, spell.skill, false, i, true);
+					}
+					else {
+						end_damage = CastToClient()->GetEndurance() / -10 * spell.base2[i];
+						CastToClient()->SetEndurance(0);
+						Damage(caster, end_damage, spell_id, spell.skill, false, i, true);
+					}
+				}
+				break;
+			}
 					
 			// Handled Elsewhere
+			case SE_SwarmPetDuration:
+			case SE_LimitHPPercent:
+			case SE_LimitManaPercent:
+			case SE_LimitEndPercent:
 			case SE_ExtraAttackChance:
 			case SE_ProcChance:
 			case SE_StunResist:
@@ -2367,7 +2442,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_LimitMinLevel:
 			case SE_LimitCastTime:
 			case SE_LimitManaCost:
-			case SE_NoCombatSkills:
+			case SE_CombatSkills:
+			case SE_SpellDurationIncByTic:
 			case SE_TriggerOnCast:
 			case SE_HealRate:
 			case SE_SkillDamageTaken:
@@ -3440,8 +3516,12 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 			}
 			break;
 			
-			case SE_NoCombatSkills:
-				if(IsDiscipline(spell_id))
+			case SE_CombatSkills:
+				// 1 is for disciplines only
+				if(base1 == 1 && !IsDiscipline(spell_id))
+					return 0;
+				// 0 is spells only
+				else if(base1 == 0 && IsDiscipline(spell_id))
 					return 0;
 			break;
 			
@@ -3479,6 +3559,13 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 				if (type == focusImprovedHeal && base1 > value)
 					value = base1;
 
+			break;
+			
+			case SE_SwarmPetDuration:
+			if (type == focusSwarmPetDuration && base1 > value)
+			{
+				value = base1;
+			}
 			break;
 			
 			// Unique Focus Effects
@@ -3620,9 +3707,13 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 
 			break;
 		
-		case SE_NoCombatSkills:
-			if(IsDiscipline(spell_id))
-				return 0;
+		case SE_CombatSkills:
+				// 1 is for disciplines only
+				if(focus_spell.base[i] == 1 && !IsDiscipline(spell_id))
+					return 0;
+				// 0 is for spells only
+				else if(focus_spell.base[i] == 0 && IsDiscipline(spell_id))
+					return 0;
 			break;
 		
 		case SE_LimitSpellGroup:
@@ -3687,6 +3778,18 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 				value = focus_spell.base[i];
 			}
 			break;
+		case SE_SpellDurationIncByTic:
+			if (type == focusSpellDurByTic && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;	
+		case SE_SwarmPetDuration:
+			if (type == focusSwarmPetDuration && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;	
 		case SE_IncreaseRange:
 			if (type == focusRange && focus_spell.base[i] > value)
 			{

@@ -2,6 +2,16 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/12/2011==
 gaeorn: possible fix for some short duration buffs (bard songs) fading one tick early
+Caryatis: Changed SE_NoCombatSkills to SE_CombatSkills(0 = spells only, 1 = discs only)
+Caryatis: Implemented SE_SpellDurationIncByTic(formerly SE_FocusCombatDurationMod), it adds tics to spells/discs
+Caryatis: Added support for Special Attack 'Y'(Ranged Attack), so when an NPC can't reach or summon his target, he will use range if able to
+Caryatis: Implemented SE_Forceful_Rejuv(refreshes spell gems), SE_HealFromMana, SE_ManaDrainWithDmg, SE_EndDrainWithDmg
+Caryatis: Implemented SE_LimitHPPercent, SE_LimitManaPercent, SE_LimitEndPercent(limit you to a certain % while you have the buff)
+Caryatis: Implemented SE_SwarmPetDuration(swarm pet focus)
+Caryatis: Res Timer changes have been reverted temporarily.
+
+Optional SQL:
+utils/sql/svn/1817_optional_npc_archery_bonus_rule.sql
 
 ==01/11/2011==
 gaeorn: fixed lull max level check to account for no max level

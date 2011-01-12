@@ -1508,6 +1508,33 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->PersistantCasting += effect_value;
 				break;
 			}
+			case SE_LimitHPPercent:
+			{
+				if(newbon->HPPercCap != 0 && newbon->HPPercCap > effect_value)
+					newbon->HPPercCap = effect_value;
+				else if(newbon->HPPercCap == 0)
+					newbon->HPPercCap = effect_value;
+					
+				break;
+			}
+			case SE_LimitManaPercent:
+			{
+				if(newbon->ManaPercCap != 0 && newbon->ManaPercCap > effect_value)
+					newbon->ManaPercCap = effect_value;
+				else if(newbon->ManaPercCap == 0)
+					newbon->ManaPercCap = effect_value;
+
+				break;
+			}
+			case SE_LimitEndPercent:
+			{
+				if(newbon->EndPercCap != 0 && newbon->EndPercCap > effect_value)
+					newbon->EndPercCap = effect_value;
+				else if(newbon->EndPercCap == 0)
+					newbon->EndPercCap = effect_value;
+
+				break;
+			}
 		}
 	}
 }

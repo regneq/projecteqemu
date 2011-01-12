@@ -698,9 +698,9 @@ void Client::RangedAttack(Mob* other) {
 	//make sure the attack and ranged timers are up
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) {
-	mlog(COMBAT__RANGED, "Throwing attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-	Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-	return;
+		mlog(COMBAT__RANGED, "Throwing attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		return;
 	}
 	const ItemInst* RangeWeapon = m_inv[SLOT_RANGE];
 	
@@ -943,7 +943,6 @@ void Client::RangedAttack(Mob* other) {
 
 void NPC::RangedAttack(Mob* other) 
 {
-
 	//make sure the attack and ranged timers are up
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) 
@@ -951,7 +950,7 @@ void NPC::RangedAttack(Mob* other)
 		mlog(COMBAT__RANGED, "Archery canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
 	}
-	
+
 	//if we have SPECATK_RANGED_ATK set then we range attack without weapon or ammo
 	const Item_Struct* weapon = NULL;
 	const Item_Struct* ammo = NULL;
@@ -961,7 +960,7 @@ void NPC::RangedAttack(Mob* other)
 		return;
 	}
 
-	float range = 150;
+	float range = 250; // needs to be longer than 200(most spells)
 	mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
 	range *= range;
 	if(DistNoRootNoZ(*GetTarget()) > range) {
@@ -991,6 +990,9 @@ void NPC::RangedAttack(Mob* other)
 	if(ammo)
 		SendItemAnimation(GetTarget(), ammo, ARCHERY);
 		
+	// Face the Target
+	FaceTarget(GetTarget());
+		
 	// Hit?
 	if (!GetTarget()->CheckHitChance(this, ARCHERY, 13)) 
 	{
@@ -1006,8 +1008,8 @@ void NPC::RangedAttack(Mob* other)
 			mlog(COMBAT__RANGED, "Ranged attack hit %s.", GetTarget()->GetName());
 			sint32 TotalDmg = 0;
 			
-			sint32 MaxDmg = max_dmg * 0.5;
-			sint32 MinDmg = min_dmg * 0.5;
+			sint32 MaxDmg = max_dmg * RuleR(Combat, ArcheryNPCMultiplier); // should add a field to npc_types
+			sint32 MinDmg = min_dmg * RuleR(Combat, ArcheryNPCMultiplier);
 
 			if(RuleB(Combat, UseIntervalAC))
 				TotalDmg = MaxDmg;

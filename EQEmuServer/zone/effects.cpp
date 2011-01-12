@@ -358,6 +358,8 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 {
 	int increase = 100;
 	increase += GetFocusEffect(focusSpellDuration, spell_id);
+	int tic_inc = 0;
+	tic_inc = GetFocusEffect(focusSpellDurByTic, spell_id);
 	
 	if(IsBeneficialSpell(spell_id))
 	{
@@ -376,7 +378,7 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 		}
 	}
 	
-	return (duration * increase) / 100;
+	return (((duration * increase) / 100) + tic_inc);
 }
 
 sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
