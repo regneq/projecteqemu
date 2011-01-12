@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/12/2011==
+gaeorn: possible fix for some short duration buffs (bard songs) fading one tick early
+
 ==01/11/2011==
 gaeorn: fixed lull max level check to account for no max level
 Caryatis: Change to Doppelganger NPCID due to PEQ's next rev already using the IDs.

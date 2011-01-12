@@ -2650,7 +2650,7 @@ void Mob::BuffProcess()
 				{
 					--buffs[buffs_i].ticsremaining;
 
-					if (buffs[buffs_i].ticsremaining <= 0)
+					if (buffs[buffs_i].ticsremaining < 0)
 					{
 						mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
 						BuffFadeBySlot(buffs_i);
