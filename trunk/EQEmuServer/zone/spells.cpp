@@ -2249,12 +2249,11 @@ int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caste
 	formula = spells[spell_id].buffdurationformula;
 	duration = spells[spell_id].buffduration;
 
-	//add one tic because we seem to fade at least one tic too soon
 	int castlevel = caster->GetCasterLevel(spell_id);
 	if(caster_level_override > 0)
 		castlevel = caster_level_override;
 
-	int res = 1 + CalcBuffDuration_formula(castlevel, formula, duration);
+	int res = CalcBuffDuration_formula(castlevel, formula, duration);
 	mlog(SPELLS__CASTING, "Spell %d: Casting level %d, formula %d, base_duration %d: result %d",
 		spell_id, castlevel, formula, duration, res);
 
