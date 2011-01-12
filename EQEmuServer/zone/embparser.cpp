@@ -761,7 +761,13 @@ void PerlembParser::Event(QuestEventID event, int32 itemid, const char* data, It
 	EventCommon(event, itemid, data, (NPC*)NULL, iteminst, mob, extradata);
 }
 
-void PerlembParser::ReloadQuests() {
+void PerlembParser::ReloadQuests(bool with_timers) {
+
+	if (with_timers)
+	{
+		// Clear all quest timers before reloading quests to prevent potential crashes
+		quest_manager.ClearAllTimers();
+	}
 
 	command_clear_perl();
 

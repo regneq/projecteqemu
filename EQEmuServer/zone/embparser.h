@@ -111,7 +111,7 @@ public:
 	//call the appropriate perl handler. afterwards, parse and dispatch the command queue
 	//SendCommands("qst1234", "EVENT_SAY") would trigger sub EVENT_SAY() from the qst1234.pl file
 	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst);
-	virtual void ReloadQuests();
+	virtual void ReloadQuests(bool with_timers = false);
 	
 	int	HasQuestFile(int32 npcid);
 	

@@ -40,6 +40,7 @@ public:
 	void Process();
 
 	void ClearTimers(Mob *who);
+	void ClearAllTimers();
 
 	//quest perl functions
 	void echo(int colour, const char *str);
@@ -62,6 +63,7 @@ public:
 	void Zone(const char *zone_name);
 	void settimer(const char *timer_name, int seconds);
 	void stoptimer(const char *timer_name);
+	void stopalltimers();
 	void emote(const char *str);
 	void shout(const char *str);
 	void shout2(const char *str);

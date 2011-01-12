@@ -195,6 +195,19 @@ void QuestManager::EndQuest() {
 	}
 }
 
+void QuestManager::ClearAllTimers() {
+
+	list<QuestTimer>::iterator cur = QTimerList.begin(), end, tmp;
+
+	end = QTimerList.end();
+	while (cur != end)
+	{
+		tmp = cur;
+		tmp++;
+		QTimerList.erase(cur);
+		cur = tmp;
+	}
+}
 
 //quest perl functions
 void QuestManager::echo(int colour, const char *str) {
@@ -471,6 +484,27 @@ void QuestManager::stoptimer(const char *timer_name) {
 			return;
 		}
 		cur++;
+	}
+}
+
+void QuestManager::stopalltimers() {
+
+	list<QuestTimer>::iterator cur = QTimerList.begin(), end, tmp;
+
+	end = QTimerList.end();
+	while (cur != end)
+	{
+		if(cur->mob == owner)
+		{
+			tmp = cur;
+			tmp++;
+			QTimerList.erase(cur);
+			cur = tmp;
+		}
+		else
+		{
+			cur++;
+		}
 	}
 }
 

@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/11/2011==
 gaeorn: fixed lull max level check to account for no max level
 Caryatis: Change to Doppelganger NPCID due to PEQ's next rev already using the IDs.
+Trevius: Added quest::stopalltimers() to allow stopping all current timers on an NPC at one time.
+Trevius: Added option to stop all timers when using #reloadquest by adding any argument after the command (ie. "#reloadquest 1"). Also added new #rq alias for the command.
 
 Required SQL:
 utils/sql/svn/1813_required_doppelganger_npcid_change.sql
