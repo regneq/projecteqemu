@@ -100,7 +100,7 @@ public:
 
 	int	HasQuestFile(int32 npcid);
 	
-	virtual void ReloadQuests();
+	virtual void ReloadQuests(bool with_timers = false);
 
 private:
 

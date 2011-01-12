@@ -1690,7 +1690,7 @@ int Parser::ParseCommands(string text, int line, int justcheck, int32 npcid, Mob
 	return 1;
 }
 
-void Parser::ReloadQuests() {
+void Parser::ReloadQuests(bool with_timers) {
 	ClearCache();
 }
 

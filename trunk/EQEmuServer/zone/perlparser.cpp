@@ -562,6 +562,18 @@ XS(XS__stoptimer)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__stopalltimers);
+XS(XS__stopalltimers)
+{
+	dXSARGS;
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: stopalltimers()");
+
+	quest_manager.stopalltimers();
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__emote);
 XS(XS__emote)
 {
@@ -3112,6 +3124,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "zone"), XS__zone, file);
 		newXS(strcpy(buf, "settimer"), XS__settimer, file);
 		newXS(strcpy(buf, "stoptimer"), XS__stoptimer, file);
+		newXS(strcpy(buf, "stopalltimers"), XS__stopalltimers, file);
 		newXS(strcpy(buf, "emote"), XS__emote, file);
 		newXS(strcpy(buf, "shout"), XS__shout, file);
 		newXS(strcpy(buf, "shout2"), XS__shout2, file);

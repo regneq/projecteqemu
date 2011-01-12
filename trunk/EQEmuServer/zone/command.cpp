@@ -271,9 +271,10 @@ int command_init(void) {
 		command_add("fz",NULL,100,command_findzone) ||
 		command_add("viewnpctype","[npctype id] - Show info about an npctype",100,command_viewnpctype) ||
 		command_add("reloadstatic","- Reload Static Zone Data",150,command_reloadstatic) ||
-		command_add("reloadquest","- Clear quest cache",150,command_reloadqst) ||
+		command_add("reloadquest"," - Clear quest cache (any argument causes it to also stop all timers)",150,command_reloadqst) ||
 		command_add("reloadqst",NULL,0,command_reloadqst) ||
 		command_add("reloadpl",NULL,0,command_reloadqst) ||
+		command_add("rq",NULL,0,command_reloadqst) ||
 		command_add("reloadzonepoints","- Reload zone points from database",150,command_reloadzps) ||
 		command_add("reloadzps",NULL,0,command_reloadzps) ||
 		command_add("zoneshutdown","[shortname] - Shut down a zone server",150,command_zoneshutdown) ||
@@ -3429,8 +3430,17 @@ void command_viewnpctype(Client *c, const Seperator *sep)
 
 void command_reloadqst(Client *c, const Seperator *sep)
 {
-	c->Message(0, "Clearing quest memory cache.");
-	parse->ReloadQuests();
+	if (sep->arg[1][0] == 0)
+	{
+		c->Message(0, "Clearing quest memory cache.");
+		parse->ReloadQuests();
+	}
+	else
+	{
+		c->Message(0, "Clearing quest memory cache and stopping timers.");
+		parse->ReloadQuests(true);
+	}
+
 }
 
 void command_reloadzps(Client *c, const Seperator *sep)
