@@ -2511,3 +2511,8 @@ void QuestManager::voicetell(char *str, int macronum, int racenum, int gendernum
 	}
 }
 
+void QuestManager::LearnRecipe(uint32 recipe_id) {
+    if(!initiator)
+        return;
+    initiator->LearnRecipe(recipe_id);
+}
