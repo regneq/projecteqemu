@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/13/2011==
+JJ: (Leere) Exported quest::LearnRecipe(recipe_id) to PERL
+
 ==01/12/2011==
 gaeorn: possible fix for some short duration buffs (bard songs) fading one tick early
 Caryatis: Changed SE_NoCombatSkills to SE_CombatSkills(0 = spells only, 1 = discs only)

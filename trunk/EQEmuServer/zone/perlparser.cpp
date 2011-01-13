@@ -3084,6 +3084,19 @@ XS(XS__voicetell)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__LearnRecipe);
+XS(XS__LearnRecipe)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: LearnRecipe(recipe_id)");
+
+    uint32 recipe_id = (uint32)SvIV(ST(0));
+
+    quest_manager.LearnRecipe(recipe_id);
+
+    XSRETURN_EMPTY;
+}
 
 /*
 This is the callback perl will look for to setup the
@@ -3285,6 +3298,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "removetitle"), XS__removetitle, file);
 		newXS(strcpy(buf, "wearchange"), XS__wearchange, file);
 		newXS(strcpy(buf, "voicetell"), XS__voicetell, file);
+        newXS(strcpy(buf, "LearnRecipe"), XS__LearnRecipe, file);
 	XSRETURN_YES;
 }
 
