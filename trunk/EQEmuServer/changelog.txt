@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/14/2011==
+Trevius: (l0stmancd) Fix for invalid slot move warnings on SoF+ clients.
+
 ==01/13/2011==
 JJ: (Leere) Exported quest::LearnRecipe(recipe_id) to PERL
 
