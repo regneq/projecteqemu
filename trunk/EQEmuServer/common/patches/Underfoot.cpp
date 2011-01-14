@@ -3111,11 +3111,11 @@ DECODE(OP_PetCommands)
 		case 0x0c:
 			emu->command = 0x0b;	// Taunt
 			break;
-		case 0x1c:
-			emu->command = 0x01;	// Back
-			break;
 		case 0x0f:
 			emu->command = 0x0c;	// Hold
+			break;
+		case 0x1c:
+			emu->command = 0x01;	// Back
 			break;
 		case 0x1d:
 			emu->command = 0x02;	// Leave/Go Away
