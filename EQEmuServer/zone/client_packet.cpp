@@ -6661,6 +6661,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->WipeHateList();
 			mypet->SetHeld(true);
 		}
+		break;
 	}
 	default:
 		printf("Client attempted to use a unknown pet command:\n");
