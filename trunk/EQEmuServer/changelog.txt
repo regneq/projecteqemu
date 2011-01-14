@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/14/2011==
 Trevius: (l0stmancd) Fix for invalid slot move warnings on SoF+ clients.
+Trevius: (l0stmancd) Fix for potential item loss issue while using an inventory augmentation sealer.
+Trevius: Adjustment to the augmentation code logic to remove potential issues.
+Trevius: Added updateclient option to Perl Client TakeMoneyFromPP(copper, updateclient=false).
 
 ==01/13/2011==
 JJ: (Leere) Exported quest::LearnRecipe(recipe_id) to PERL

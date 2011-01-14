@@ -1518,11 +1518,12 @@ XS(XS_Client_TakeMoneyFromPP); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_TakeMoneyFromPP)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::TakeMoneyFromPP(THIS, copper)");
+	if (items < 2 || items > 3)
+	   Perl_croak(aTHX_ "Usage: Client::TakeMoneyFromPP(THIS, copper, updateclient=false)");
 	{
-		Client *		THIS;
+		Client *	THIS;
 		bool		RETVAL;
+		bool		updateclient = false;
 		uint32		copper = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1534,7 +1535,10 @@ XS(XS_Client_TakeMoneyFromPP)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->TakeMoneyFromPP(copper);
+		if (items > 2)
+			updateclient = (bool)SvTRUE(ST(2));
+
+		RETVAL = THIS->TakeMoneyFromPP(copper, updateclient);
 		ST(0) = boolSV(RETVAL);
 		sv_2mortal(ST(0));
 	}
@@ -4885,7 +4889,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GuildRank"), XS_Client_GuildRank, file, "$");
 		newXSproto(strcpy(buf, "GuildID"), XS_Client_GuildID, file, "$");
 		newXSproto(strcpy(buf, "GetFace"), XS_Client_GetFace, file, "$");
-		newXSproto(strcpy(buf, "TakeMoneyFromPP"), XS_Client_TakeMoneyFromPP, file, "$$");
+		newXSproto(strcpy(buf, "TakeMoneyFromPP"), XS_Client_TakeMoneyFromPP, file, "$$;$");
 		newXSproto(strcpy(buf, "AddMoneyToPP"), XS_Client_AddMoneyToPP, file, "$$$$$$");
 		newXSproto(strcpy(buf, "TGB"), XS_Client_TGB, file, "$");
 		newXSproto(strcpy(buf, "GetSkillPoints"), XS_Client_GetSkillPoints, file, "$");

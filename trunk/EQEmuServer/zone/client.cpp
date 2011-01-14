@@ -2034,7 +2034,7 @@ void Client::SendClientMoneyUpdate(int8 type,int32 amount){
 	safe_delete(outapp);
 }
 
-bool Client::TakeMoneyFromPP(uint64 copper){
+bool Client::TakeMoneyFromPP(uint64 copper, bool updateclient) {
 	sint64 copperpp,silver,gold,platinum;
 	copperpp = m_pp.copper;
 	silver = static_cast<sint64>(m_pp.silver) * 10;
@@ -2059,6 +2059,8 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 		else
 		{
 			m_pp.copper = copperpp;
+			if(updateclient)
+				SendMoneyUpdate();
 			Save();
 			return true;
 		}
@@ -2072,6 +2074,8 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 		{
 			m_pp.silver = silver/10;
 			m_pp.copper += (silver-(m_pp.silver*10));
+			if(updateclient)
+				SendMoneyUpdate();
 			Save();
 			return true;
 		}
@@ -2090,6 +2094,8 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 			m_pp.silver += silvertest;
 			int64 coppertest = (gold-(static_cast<int64>(m_pp.gold)*100+silvertest*10));
 			m_pp.copper += coppertest;
+			if(updateclient)
+				SendMoneyUpdate();
 			Save();
 			return true;
 		}
@@ -2101,10 +2107,12 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 		m_pp.platinum = platinum/1000;
 		int64 goldtest = (platinum-(static_cast<int64>(m_pp.platinum)*1000))/100;
 		m_pp.gold += goldtest;
-		int32 silvertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100))/10;
+		int64 silvertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100))/10;
 		m_pp.silver += silvertest;
 		int64 coppertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100+silvertest*10));
 		m_pp.copper = coppertest;
+		if(updateclient)
+			SendMoneyUpdate();
 		RecalcWeight();
 		Save();
 		return true;
