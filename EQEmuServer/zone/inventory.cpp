@@ -797,16 +797,16 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	uint32 stack_count_check = move_in->number_in_stack;
 
 	if(!IsValidSlot(src_slot_check)){
-		// SoF+ sends a 3 billion+ to/from slot every 10 minutes. Don't warn for those.
-		if(src_slot_check < 3000000000)
+		// SoF+ sends a Unix timestamp (should be sint32) for src and dst slots every 10 minutes for some reason.
+		if(src_slot_check < 2147483647)
 			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
 		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
 		return false;
 	}
 
 	if(!IsValidSlot(dst_slot_check)) {
-		// SoF+ sends a 3 billion+ to/from slot every 10 minutes. Don't warn for those.
-		if(src_slot_check < 3000000000)
+		// SoF+ sends a Unix timestamp (should be sint32) for src and dst slots every 10 minutes for some reason.
+		if(src_slot_check < 2147483647)
 			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
 		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
 		return false;
