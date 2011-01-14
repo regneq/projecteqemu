@@ -41,38 +41,46 @@ static const SkillType TradeskillUnknown = _1H_BLUNT; /* an arbitrary non-trades
 
 void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augment, Object *worldo)
 {
-	if (!user || !in_augment) {
+	if (!user || !in_augment)
+	{
 		LogFile->write(EQEMuLog::Error, "Client or AugmentItem_Struct not set in Object::HandleAugmentation");
 		return;
 	}
 
 	ItemInst* container = NULL;
 
-	if (worldo) {
+	if (worldo)
+	{
 		container = worldo->m_inst;
 	} 
-	else {
+	else
+	{
 		// Check to see if they have an inventory container type 53 that is used for this.
 		Inventory& user_inv = user->GetInv();
 		ItemInst* inst = NULL;
 		
 		inst = user_inv.GetItem(in_augment->container_slot);
-		if (inst) {
+		if (inst)
+		{
 			const Item_Struct* item = inst->GetItem();
-			if (item && inst->IsType(ItemClassContainer) && item->BagType == 53) {
+			if (item && inst->IsType(ItemClassContainer) && item->BagType == 53)
+			{
 				// We have found an appropriate inventory augmentation sealer
 				container = inst;
 
 				// Verify that no more than two items are in container to guarantee no inadvertant wipes.
 				uint8 itemsFound = 0;
-				for (uint8 i=0; i<10; i++){
+				for (uint8 i=0; i<10; i++)
+				{
 					const ItemInst* inst = container->GetItem(i);
-					if (inst) {
+					if (inst)
+					{
 						itemsFound++;
 					}
 				}
 
-				if (itemsFound != 2) {
+				if (itemsFound != 2)
+				{
 					user->Message(13, "Error:  Too many/few items in augmentation container.");
 					return;
 				}
@@ -80,7 +88,8 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		}
 	}
 
-	if(!container) {
+	if(!container)
+	{
 		LogFile->write(EQEMuLog::Error, "Player tried to augment an item without a container set.");
 		user->Message(13, "Error: This item is not a container!");
 		return;
@@ -89,35 +98,62 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 	ItemInst *tobe_auged, *auged_with = NULL;
 	sint8 slot=-1;
 
-	if (!(tobe_auged = container->GetItem(0))) {
-		user->Message(13, "Error: No item in slot 0 of sealer");
-		return;
+	// Verify 2 items in the augmentation device
+	if (container->GetItem(0) && container->GetItem(1))
+	{
+		// Verify 1 item is augmentable and the other is not
+		if (container->GetItem(0)->IsAugmentable() && !container->GetItem(1)->IsAugmentable())
+		{
+			tobe_auged = container->GetItem(0);
+			auged_with = container->GetItem(1);
+		}
+		else if (!container->GetItem(0)->IsAugmentable() && container->GetItem(1)->IsAugmentable())
+		{
+			tobe_auged = container->GetItem(1);
+			auged_with = container->GetItem(0);
+		}
+		else
+		{
+			// Either 2 augmentable items found or none found
+			// This should never occur due to client restrictions, but prevent in case of a hack
+			user->Message(13, "Error: Must be 1 augmentable item in the sealer");
+			return;
+		}
 	}
-	if (tobe_auged->IsAugmentable()) {
-		if (!(auged_with=container->GetItem(1))) {;
-			user->Message(13, "Error: No item in slot 1 of sealer");
-			return;
+	else
+	{
+		// This happens if the augment button is clicked more than once quickly while augmenting
+		if (!container->GetItem(0))
+		{
+			user->Message(13, "Error: No item in slot 0 of sealer");
 		}
-	} else {
-		auged_with=tobe_auged;
-		if (!(tobe_auged=container->GetItem(1))) {
+		if (!container->GetItem(1))
+		{
 			user->Message(13, "Error: No item in slot 1 of sealer");
-			return;
 		}
+		return;
 	}
 
 	bool deleteItems = false;
 
+	ItemInst *itemOneToPush = NULL, *itemTwoToPush = NULL;
+
 	// Adding augment
-	if (in_augment->augment_slot == -1) {
-		if (((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) && (tobe_auged->AvailableWearSlot(auged_with->GetItem()->Slots))) {
+	if (in_augment->augment_slot == -1)
+	{
+		if (((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) && (tobe_auged->AvailableWearSlot(auged_with->GetItem()->Slots)))
+		{
 			tobe_auged->PutAugment(slot,*auged_with);
-			user->PushItemOnCursor(*tobe_auged,true);
+			itemOneToPush = tobe_auged->Clone();
 			deleteItems = true;
-		} else {
+		}
+		else
+		{
 			user->Message(13, "Error: No available slot for augment");
 		}
-	} else {
+	}
+	else
+	{
 		ItemInst *old_aug=NULL;
 		const uint32 id=auged_with->GetID();
 		if (id==40408 || id==40409 || id==40410)
@@ -125,15 +161,17 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		else
 			old_aug=tobe_auged->RemoveAugment(in_augment->augment_slot);
 
-		user->PushItemOnCursor(*tobe_auged,true);
+		itemOneToPush = tobe_auged->Clone();
 		if (old_aug)
-			user->PushItemOnCursor(*old_aug,true);
+			itemTwoToPush = old_aug->Clone();
 
 		deleteItems = true;
 	}
 
-	if (deleteItems) {
-		if (worldo) {
+	if (deleteItems)
+	{
+		if (worldo)
+		{
 			container->Clear();
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
 			ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
@@ -142,11 +180,14 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 			safe_delete(outapp);
 			database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
 		}
-		else {
+		else
+		{
 			// Delete items in our inventory container... 
-			for (uint8 i=0; i<10; i++){
+			for (uint8 i=0; i<10; i++)
+			{
 				const ItemInst* inst = container->GetItem(i);
-				if (inst) {
+				if (inst)
+				{
 					user->DeleteItemInInventory(Inventory::CalcSlotId(in_augment->container_slot,i),0,true);
 				}
 			}
@@ -154,6 +195,17 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 			container->Clear();
 		}
 	}
+
+	// Must push items after the items in inventory are deleted - necessary due to lore items...
+	if (itemOneToPush)
+	{
+		user->PushItemOnCursor(*itemOneToPush,true);
+	}
+	if (itemTwoToPush)
+	{
+		user->PushItemOnCursor(*itemTwoToPush,true);
+	}
+
 }
 
 // Perform tradeskill combine
