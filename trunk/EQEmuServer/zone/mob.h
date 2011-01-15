@@ -93,6 +93,8 @@ typedef enum {	//focus types
 	focusSpellDamage,
 	focusSpellDurByTic,
 	focusSwarmPetDuration,
+	focusReduceRecastTime,
+	focusBlockNextSpell,
 } focusType;
 
 enum {
@@ -284,6 +286,7 @@ struct StatBonuses {
 	sint16 	DSMitigation;						// Item Effect
 	uint32 	SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
 	uint32 	SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
+	uint32 	SpellOnDeath[MAX_SPELL_TRIGGER];		// Chance to have effect cast when you die
 	sint16 	CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
 	sint16 	SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
 	sint16 	SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
@@ -298,10 +301,14 @@ struct StatBonuses {
 	int		HPPercCap;							//Spell effect that limits you to being healed/regening beyond a % of your max
 	int		ManaPercCap;						// ^^
 	int		EndPercCap;							// ^^
-		
+	bool	BlockNextSpell;						// Indicates whether the client can block a spell or not
+	int16	BlockSpellEffect[EFFECT_COUNT];		// Prevents spells with certain effects from landing on you
+	bool	ImmuneToFlee;						// Bypass the fleeing flag
+	
 	// AAs
 	sint8	Packrat;							//weight reduction for items, 1 point = 10%
 	int8	BuffSlotIncrease;					// Increases number of available buff slots
+	int16	DelayDeath;							// how far below 0 hp you can go
 };
 
 typedef struct
@@ -835,6 +842,7 @@ bool logpos;
 	sint16 CalcResistChanceBonus();
 	sint16 CalcFearResistChance();
 	void TrySpellOnKill();
+	bool TrySpellOnDeath();
 	sint16 GetCritDmgMob(int16 skill);
 	sint16 GetMeleeDamageMod_SE(int16 skill);
 	sint16 GetCrippBlowChance();
@@ -842,6 +850,7 @@ bool logpos;
 	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
 	sint16 GetSkillDmgAmt(int16 skill);
 	bool TryReflectSpell(uint32 spell_id);
+	bool CanBlockSpell() const { return(spellbonuses.BlockNextSpell); }
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
@@ -871,6 +880,8 @@ bool logpos;
 	void TempPets(bool i) { hasTempPet = i; }
 
 	inline const bodyType GetBodyType() const { return bodytype; }
+	inline const bodyType GetOrigBodyType() const { return orig_bodytype; }
+	inline void SetBodyType(bodyType new_body) { bodytype = new_body; }
 
 	bool	invulnerable;
 	bool	invisible, invisible_undead, invisible_animals, sneaking, hidden, improved_hidden;
@@ -1147,6 +1158,7 @@ protected:
 	int16	base_race;
 	int8    class_;
 	bodyType    bodytype;
+	bodyType    orig_bodytype;
 	int16	deity;
 	uint8    level;
 	int32   npctype_id;

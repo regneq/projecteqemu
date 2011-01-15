@@ -3303,7 +3303,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		*/
 		
 		SetHP(GetHP() - damage);
-		
+
 		if(HasDied()) {
 			bool IsSaved = false;
 
@@ -3312,9 +3312,9 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 					IsSaved = true;
 				}
 			}
-			
-			if(!IsSaved) {
-				SetHP(-100);
+						
+			if(!IsSaved && !TrySpellOnDeath()) {
+				SetHP(-500);
 
 				if(attacker && attacker->IsClient() && (spell_id != SPELL_UNKNOWN) && damage>0) {
 					char val1[20]={0};
@@ -3325,7 +3325,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				return;
 			}
 		}
-		
+
     	//fade mez if we are mezzed
 		if (IsMezzed()) {
 			mlog(COMBAT__HITS, "Breaking mez due to attack.");
@@ -4119,19 +4119,12 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 
 bool Mob::HasDied() {
 	bool Result = false;
+	sint16 hp_below = 0;
 
-	/*
-	if(IsClient()) {
-		if((GetHP()) <= -10)
-			Result = true;
-	}
-	else {
-		if(GetHP() <= 0)
-			Result = true;
-	}
-	*/
+	if(IsClient())
+		hp_below = (CastToClient()->GetDelayDeath() * -1);
 
-	if(GetHP() <= 0)
+	if((GetHP()) <= (hp_below))
 		Result = true;
 
 	return Result;

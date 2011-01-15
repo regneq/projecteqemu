@@ -166,6 +166,7 @@ Mob::Mob(const char*   in_name,
 	base_race	= in_race;
 	class_		= in_class;
     bodytype    = in_bodytype;
+	orig_bodytype = in_bodytype;
 	deity		= in_deity;
 	level		= in_level;
 	npctype_id	= in_npctype_id; // rembrant, Dec. 20, 2001
@@ -3152,11 +3153,11 @@ void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
 					{
 						if(spells[spells[focus_spell].base2[i]].targettype == ST_Self || spells[spells[focus_spell].base2[i]].targettype == ST_Group)
 						{
-							SpellOnTarget(spells[focus_spell].base2[i], this);
+							SpellFinished(spells[focus_spell].base2[i], this);
 						}
 						else if (this->GetTarget())
 						{	
-							SpellOnTarget(spells[focus_spell].base2[i], this->GetTarget());
+							SpellFinished(spells[focus_spell].base2[i], this->GetTarget());
 						}
 						// Take into account the max hit limit
 						uint32 buff_count = GetMaxTotalSlots();
@@ -3183,11 +3184,11 @@ void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
 			{
 				if(spells[focus_spell].targettype == ST_Self || spells[focus_spell].targettype == ST_Group)
 				{
-					SpellOnTarget(focus_spell, this);
+					SpellFinished(focus_spell, this);
 				}
 				else if (this->GetTarget())
 				{	
-					SpellOnTarget(focus_spell, this->GetTarget());
+					SpellFinished(focus_spell, this->GetTarget());
 				}
 			}
 		}
@@ -3218,7 +3219,7 @@ void Mob::TrySpellTrigger(Mob *target, uint32 spell_id)
 				if(MakeRandomInt(0, trig_chance) <= spells[spell_id].base[i]) 
 				{
 					// If we trigger an effect then its over.
-					SpellOnTarget(spells[spell_id].base2[i], target);
+					SpellFinished(spells[spell_id].base2[i], target);
 					break;
 				}
 				else
@@ -3239,7 +3240,7 @@ void Mob::TrySpellTrigger(Mob *target, uint32 spell_id)
 			{
 				if(MakeRandomInt(0, 100) <= spells[spell_id].base[i]) 
 				{
-					SpellOnTarget(spells[spell_id].base2[i], target);
+					SpellFinished(spells[spell_id].base2[i], target);
 				}
 			}
 		}
@@ -3263,7 +3264,7 @@ void Mob::TryApplyEffect(Mob *target, uint32 spell_id)
 					target = target->GetTarget();
 				
 				if(target)
-					SpellOnTarget(spells[spell_id].base2[i], target);
+					SpellFinished(spells[spell_id].base2[i], target);
 			}
 		}
 	}
@@ -3293,7 +3294,7 @@ void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 						this->Message(MT_Spells,"You twincast %s!",spells[spell_id].name);
 					}
 					this->SetMana(GetMana() - mana_cost);
-					SpellOnTarget(spell_id, target);
+					SpellFinished(spell_id, target);
 				}
 			}
 		}
@@ -3448,11 +3449,11 @@ void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
 		{
 			if(IsBeneficialSpell(focus_trigger))
 			{
-				SpellOnTarget(focus_trigger, target);
+				SpellFinished(focus_trigger, target);
 			}
 			else
 			{
-				SpellOnTarget(focus_trigger, this);
+				SpellFinished(focus_trigger, this);
 			}
 		}
 		// For detrimental spells, if the triggered spell is beneficial, then it will land on the caster
@@ -3461,11 +3462,11 @@ void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
 		{
 			if(IsBeneficialSpell(focus_trigger))
 			{
-				SpellOnTarget(focus_trigger, this);
+				SpellFinished(focus_trigger, this);
 			}
 			else
 			{
-				SpellOnTarget(focus_trigger, target);
+				SpellFinished(focus_trigger, target);
 			}
 		}
 	}
@@ -4094,27 +4095,56 @@ void Mob::DoKnockback(Mob *caster, uint32 pushback, uint32 pushup)
 void Mob::TrySpellOnKill()
 {
 	for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2) {
-		if(IsClient() && this->aabonuses.SpellOnKill[0]) {
-			if(this->aabonuses.SpellOnKill[i]) {
-				if(MakeRandomInt(0,99) < this->aabonuses.SpellOnKill[i+1])
-					SpellOnTarget(this->aabonuses.SpellOnKill[i], this);
+		if(IsClient() && aabonuses.SpellOnKill[i]) {
+			if(MakeRandomInt(0,99) < aabonuses.SpellOnKill[i+1])
+				SpellFinished(aabonuses.SpellOnKill[i], this);
+		}
+		else {
+			if(itembonuses.SpellOnKill[i]) {
+				if(MakeRandomInt(0,99) < itembonuses.SpellOnKill[i+1]) 
+					SpellFinished(itembonuses.SpellOnKill[i], this);
+			}
+			if(spellbonuses.SpellOnKill[i]) {
+				if(MakeRandomInt(0,99) < spellbonuses.SpellOnKill[i+1]) 
+					SpellFinished(spellbonuses.SpellOnKill[i], this);
+			}
+		}
+	}
+}
+
+bool Mob::TrySpellOnDeath()
+{
+	for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2) {
+		if(IsClient() && aabonuses.SpellOnDeath[i]) {
+			if(MakeRandomInt(0,99) < aabonuses.SpellOnDeath[i+1]) {
+				BuffFadeAll();
+				SpellFinished(aabonuses.SpellOnDeath[i], this);
 			}
 		}
 		else {
-			if(this->itembonuses.SpellOnKill[0]) {
-				if(this->itembonuses.SpellOnKill[i]) {
-					if(MakeRandomInt(0,99) < this->itembonuses.SpellOnKill[i+1]) 
-						SpellOnTarget(this->itembonuses.SpellOnKill[i], this);
+			if(itembonuses.SpellOnDeath[i]) {
+				if(MakeRandomInt(0,99) < itembonuses.SpellOnDeath[i+1]) {
+					BuffFadeAll();
+					SpellFinished(itembonuses.SpellOnDeath[i], this);
 				}
 			}
-			if(this->spellbonuses.SpellOnKill[0]) {
-				if(this->spellbonuses.SpellOnKill[i]) {
-					if(MakeRandomInt(0,99) < this->spellbonuses.SpellOnKill[i+1]) 
-						SpellOnTarget(this->spellbonuses.SpellOnKill[i], this);
+			if(spellbonuses.SpellOnDeath[i]) {
+				if(MakeRandomInt(0,99) < spellbonuses.SpellOnDeath[i+1])  {
+					int temp_id = spellbonuses.SpellOnDeath[i];
+					BuffFadeAll();
+					SpellFinished(temp_id, this);
 				}
 			}
 		}
 	}
+	int death_hp = 0;
+	if(IsClient())
+		death_hp = CastToClient()->GetDelayDeath();
+		
+	if(GetHP() > death_hp)
+		return true;
+	else
+		return false;
 }
 
 sint16 Mob::GetCritDmgMob(int16 skill)

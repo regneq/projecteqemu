@@ -1925,6 +1925,10 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot,
 			{
 				recast -= GetAA(aaTouchoftheWicked) * 420;
 			}
+			int reduction = CastToClient()->GetFocusEffect(focusReduceRecastTime, spell_id);
+			if(reduction)
+				recast -= reduction;
+
 			mlog(SPELLS__CASTING, "Spell %d: Setting long reuse timer to %d s (orig %d)", spell_id, recast, spells[spell_id].recast_time);
 			CastToClient()->GetPTimers().Start(pTimerSpellStart + spell_id, recast);
 		}
@@ -3049,6 +3053,33 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 			return false;
 		}
 	}
+	// Block next spell effect should be used up first(since its blocking the next spell)
+	if(CanBlockSpell()) {
+		uint32 buff_count = GetMaxTotalSlots();
+		int focus = 0;
+		for (int b=0; b < buff_count; b++) {
+			if(IsEffectInSpell(buffs[b].spellid, SE_BlockNextSpellFocus)) {
+				focus = CalcFocusEffect(focusBlockNextSpell, buffs[b].spellid, spell_id);
+				if(focus) {
+					CheckHitsRemaining(b);
+					Message_StringID(MT_Shout, SPELL_WOULDNT_HOLD);
+					return false;
+				}
+			}
+
+			if(IsEffectInSpell(buffs[b].spellid, SE_BlockSpellEffect)) {
+				for(int e = 0; e < EFFECT_COUNT; e++) {
+					if ((spellbonuses.BlockSpellEffect[e]) &&
+						(IsEffectInSpell(spell_id, spellbonuses.BlockSpellEffect[e]))) 
+					{
+						CheckHitsRemaining(b);
+						Message_StringID(MT_Shout, SPELL_WOULDNT_HOLD);
+						return false;
+					}
+				}
+			}
+		}
+	}
 	// Reflect
 	if(TryReflectSpell(spell_id) && spelltar && !reflect && IsDetrimentalSpell(spell_id) && this != spelltar) {
 		int reflect_chance = 0;
@@ -3674,7 +3705,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 	{
 		return 0;
 	}
-
+	
 	if(SpecAttacks[IMMUNE_CASTING_FROM_RANGE])
 	{
 		if(!caster->CombatRange(this))
@@ -5181,4 +5212,3 @@ void NPC::UninitializeBuffSlots()
 {
 	safe_delete_array(buffs);
 }
-

@@ -46,7 +46,7 @@ void Mob::CheckFlee() {
 		return;
 	
 	//dont bother if we are immune to fleeing
-	if(SpecAttacks[IMMUNE_FLEEING])
+	if(SpecAttacks[IMMUNE_FLEEING] || spellbonuses.ImmuneToFlee)
 		return;
 	
 	if(!flee_timer.Check())
