@@ -244,7 +244,7 @@ typedef enum  {
 //#define SE_Unknown107					107	// not used
 #define SE_Familiar						108	// implemented 
 #define SE_SummonItemIntoBag			109	// implemented - summons stuff into container
-//#define SE_Unknown110					110	//not used
+//#define SE_Unknown110					110	// not used
 #define SE_ResistAll					111	// implemented 
 #define SE_CastingLevel					112	// implemented 
 #define	SE_SummonHorse					113	// implemented 
@@ -361,12 +361,12 @@ typedef enum  {
 #define	SE_GiveDoubleRiposte			224 // not implemented as bonus
 #define SE_GiveDoubleAttack				225	// not implemented as bonus
 #define SE_TwoHandBash					226 // not implemented as bonus
-#define SE_ReduceSkillTimer				227	// not implemented
+#define SE_ReduceSkillTimer				227	// implemented
 //#define SE_Unknown228					228	// not used
 #define SE_PersistantCasting			229 // implemented
 //#define SE_Unknown230					230	// not used
 //#define SE_Unknown231					231	// not used
-#define SE_DivineSave					232	// not implemented (base == % chance on death to insta-res)
+#define SE_DivineSave					232	// implemented (base == % chance on death to insta-res)
 //#define SE_Unknown233					233	// not used
 //#define SE_Unknown234					234	// not used
 #define	SE_ChannelingChance				235 // not implemented
@@ -444,7 +444,7 @@ typedef enum  {
 #define SE_Appraisal					307 // *not implemented
 #define SE_SuspendMinion				308 // not implemented as bonus
 #define SE_YetAnotherGate				309 // implemented
-#define SE_ReduceReuseTimer				310 // *not implemented
+#define SE_ReduceReuseTimer				310 // implemented
 #define SE_CombatSkills					311 // implemented
 #define SE_Sanctuary					312 // *not implemented
 //#define SE_Unknown313					313	// not used
@@ -462,21 +462,21 @@ typedef enum  {
 //#define SE_Unknown325					325	// not used
 #define SE_SpellSlotIncrease			326 // not implemented as bonus - increases your spell slot availability
 #define SE_MysticalAttune				327 // implemented - increases amount of buffs that a player can have
-#define SE_DelayDeath					328 // not implemented as bonus - increases how far you can fall below 0 hp before you die
+#define SE_DelayDeath					328 // implemented - increases how far you can fall below 0 hp before you die
 #define SE_ManaAbsorbPercentDamage		329 // implemented
 #define SE_CriticalDamageMob			330	// implemented
 #define SE_Salvage						331 // *not implemented - chance to recover items that would be destroyed in failed tradeskill combine
 #define SE_SummonToCorpse				332 // *not implemented
 #define SE_EffectOnFade					333 // implemented
 #define SE_BardAEDot					334	// implemented
-#define SE_BlockNextSpellFocus			335	// *not implemented - base1 chance to block next spell ie Puratus (8494)
+#define SE_BlockNextSpellFocus			335	// implemented - base1 chance to block next spell ie Puratus (8494)
 //#define SE_Unknown336					336	// not used
 #define SE_PercentXPIncrease			337	// implemented
 #define SE_SummonAndResAllCorpses		338	// implemented
 #define SE_TriggerOnCast				339	// implemented
 #define SE_SpellTrigger     			340	// implemented - chance to trigger spell
 //#define SE_Unknown341					341	// not used
-#define SE_ImmuneFleeing				342	// *not implemented
+#define SE_ImmuneFleeing				342	// implemented - stop mob from fleeing
 #define SE_InterruptCasting				343	// implemented - % chance to interrupt spells being cast every tic. Cacophony (8272)
 //#define SE_Unknown344					344	// not used
 //#define SE_Unknown345					345	// not used
@@ -495,17 +495,17 @@ typedef enum  {
 #define SE_CurrentManaOnce				358	// implemented
 //#define SE_Unknown359					359	// not used
 #define SE_SpellOnKill					360	// implemented - has a base1 % to cast spell base2 when you kill a "challenging foe" (>= max?)
-#define SE_SpellOnDeath2				361	// *not implemented - same as spellondeath
+#define SE_SpellOnDeath					361	// implemented - casts spell on death of buffed 
 //#define SE_Unknown362					362	// not used
 //#define SE_Unknown363					363	// not used
 //#define SE_Unknown364					364	// not used
-#define SE_SpellOnDeath					365	// *not implemented - casts base2 spell on the originator of the spell base1 % of the time when the person it was cast on dies. have to be >= max (level) for it to work?
+#define SE_SpellOnKill2					365	// *not implemented - Same as SpellOnKill except casts based on a min level of mob regardless of con
 //#define SE_Unknown366					366	// not used - corr test(9429) only spell
-#define SE_AddBodyType					367	// *not implemented - adds body type of base1 so it can be affected by spells that are limited to that type (Plant, Animal, Undead, etc)
+#define SE_SetBodyType					367	// implemented - set body type of base1 so it can be affected by spells that are limited to that type (Plant, Animal, Undead, etc)
 #define SE_FactionMod					368	// *not implemented - increases faction with base1 (faction id, live won't match up w/ ours) by base2
 #define SE_CorruptionCounter			369	// implemented
 #define SE_ResistCorruption				370	// implemented
-#define SE_InhibitMeleeAttacks			371 // *not implemented - some type of melee slow
+#define SE_AttackSpeed4					371 // *not implemented - some type of melee slow
 //#define SE_Unknown372					372	// not used
 #define SE_CastOnWearoff				373 // implemented
 #define SE_ApplyEffect					374 // implemented 
@@ -513,12 +513,12 @@ typedef enum  {
 //#define SE_Unknown376					376	// *not implemented - used in 2 spells
 #define SE_BossSpellTrigger				377	// implemented - spell is cast on fade
 //#define SE_Unknown372					378	// not used
-#define SE_ShadowStepDirectional		379 // *not implemented - Shadowstep in a certain direction
-#define SE_Knockdown					380 // *not implemented - small knock back + stun or feign?
+#define SE_ShadowStepDirectional		379 // implemented - handled by client
+#define SE_Knockdown					380 // implemented - small knock back(handled by client)
 //#define SE_Unknown381					381	// not used
-#define SE_BlockDS						382 // *not implemented - something to do with blocking a % of certain ds?
+#define SE_BlockSpellEffect				382 // implemented - blocks a spell effect from landing while this buff is on
 #define SE_SympatheticProc				383 // implemented - focus on items that has chance to proc a spell when you cast
-#define SE_Leap							384	// *not implemented - Leap effect, ie stomping leap
+#define SE_Leap							384	// implemented - Leap effect, ie stomping leap
 #define SE_LimitSpellGroup				385	// implemented - Limits to spell group(ie type 3 reuse reduction augs that are class specific and thus all share s SG)
 #define SE_CastOnCurer					386 // *not implemented - Casts a spell on the person curing
 #define SE_CastOnCure					387 // *not implemented - Casts a spell on the cured person
@@ -553,7 +553,7 @@ typedef enum  {
 #define SE_ACv2							416 // *not implemented - New AC spell effect
 #define SE_ManaRegen_v2					417 // *not implemented - New mana regen effect
 #define SE_AddSkillDmg					418 // *not implemented - adds base directly to certain attacks(ie piercing)
-#define SE_AddMeleeProc					419 // *not implemented - Adds a proc
+#define SE_AddMeleeProc					419 // implemented - Adds a proc
 //#define SE_Unknown420					420 // not used
 //#define SE_Unknown421					421 // not used
 //#define SE_Unknown422					422 // not used

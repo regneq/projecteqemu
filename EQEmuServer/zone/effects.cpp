@@ -628,13 +628,15 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	
 	if(spell.recast_time > 0)
 	{
-		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT, -1, -1, 0, -1, (uint32)DiscTimer, (spell.recast_time / 1000));
+		uint32 reduced_recast = spell.recast_time / 1000;
+		reduced_recast -= CastToClient()->GetFocusEffect(focusReduceRecastTime, spell_id);
+		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT, -1, -1, 0, -1, (uint32)DiscTimer, reduced_recast);
 		if(spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
 		{
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
 			DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)outapp->pBuffer;
 			dts->TimerID = spells[spell_id].EndurTimerIndex;
-			dts->Duration = spell.recast_time / 1000;
+			dts->Duration = reduced_recast;
 			QueuePacket(outapp);
 			safe_delete(outapp);
 		}	

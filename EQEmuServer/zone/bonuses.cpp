@@ -756,6 +756,19 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				}
 				break;
 				
+			case SE_SpellOnDeath:
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				{
+					if(!newbon->SpellOnDeath[i])
+					{
+						// base1 = SpellID to be triggered, base2 = chance to fire
+						newbon->SpellOnDeath[i] = base1;
+						newbon->SpellOnDeath[i+1] = base2;
+						break;
+					}
+				}
+				break;
+				
 			case SE_CriticalDamageMob:
 			{
 				// base1 = effect value, base2 = skill restrictions(-1 for all)
@@ -791,6 +804,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_PersistantCasting:
 			{
 				newbon->PersistantCasting += base1;
+				break;
+			}
+			case SE_DelayDeath:
+			{
+				newbon->DelayDeath += base1;
 				break;
 			}
 		}
@@ -1403,11 +1421,11 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			
 			case SE_TriggerOnCast:
 			{
-				for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
+				for(int e = 0; e < MAX_SPELL_TRIGGER; e++)
 				{
-					if(!newbon->SpellTriggers[i])
+					if(!newbon->SpellTriggers[e])
 					{
-						newbon->SpellTriggers[i] = spell_id;
+						newbon->SpellTriggers[e] = spell_id;
 						break;
 					}
 				}
@@ -1444,13 +1462,28 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_SpellOnKill:
 			{
-				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				for(int e = 0; e < MAX_SPELL_TRIGGER; e+=2)
 				{
-					if(!newbon->SpellOnKill[i])
+					if(!newbon->SpellOnKill[e])
 					{
 						// Base2 = Spell to fire | Base1 = % chance
-						newbon->SpellOnKill[i] = spells[spell_id].base2[i];
-						newbon->SpellOnKill[i+1] = effect_value;
+						newbon->SpellOnKill[e] = spells[spell_id].base2[i];
+						newbon->SpellOnKill[e+1] = effect_value;
+						break;
+					}
+				}
+				break;
+			}
+			
+			case SE_SpellOnDeath:
+			{
+				for(int e = 0; e < MAX_SPELL_TRIGGER; e+=2)
+				{
+					if(!newbon->SpellOnDeath[e])
+					{
+						// Base2 = Spell to fire | Base1 = % chance
+						newbon->SpellOnDeath[e] = spells[spell_id].base2[i];
+						newbon->SpellOnDeath[e+1] = effect_value;
 						break;
 					}
 				}
@@ -1533,6 +1566,34 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				else if(newbon->EndPercCap == 0)
 					newbon->EndPercCap = effect_value;
 
+				break;
+			}
+			case SE_BlockNextSpellFocus:
+			{
+				newbon->BlockNextSpell = true;
+				break;
+			}
+			case SE_BlockSpellEffect:
+			{
+				newbon->BlockNextSpell = true;
+				for(int e = 0; e < EFFECT_COUNT; e++)
+				{
+					if(!newbon->BlockSpellEffect[e])
+					{
+						newbon->BlockSpellEffect[e] = spells[spell_id].base2[i];
+						break;
+					}
+				}
+				break;
+			}
+			case SE_ImmuneFleeing:
+			{
+				newbon->ImmuneToFlee = true;
+				break;
+			}
+			case SE_DelayDeath:
+			{
+				newbon->DelayDeath += effect_value;
 				break;
 			}
 		}

@@ -405,6 +405,8 @@ public:
 	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
 	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
 	
+	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath; }
+	
 	sint32 Additional_SpellDmg(int16 spell_id);
 	float GetActSpellRange(int16 spell_id, float range);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);

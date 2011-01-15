@@ -1551,7 +1551,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 				break;
 			}
-
+			case SE_AddMeleeProc:
 			case SE_WeaponProc:
 			{
 				uint16 procid = GetProcID(spell_id, i);
@@ -2343,8 +2343,61 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 				break;
 			}
+			
+			case SE_SetBodyType:
+			{
+				SetBodyType((bodyType)spell.base[i]);
+				break;
+			}
+			
+			case SE_Leap:
+			{
+				// These effects remove lev and only work a certain distance away.
+				BuffFadeByEffect(SE_Levitate);
+				if (caster && caster->GetTarget()) {
+					float my_x = caster->GetX();
+					float my_y = caster->GetY();
+					float my_z = caster->GetZ();
+					float target_x = GetX();
+					float target_y = GetY();
+					float target_z = GetZ();
+					if ((CalculateDistance(my_x, my_y, my_z) > 10) &&
+						(CalculateDistance(my_x, my_y, my_z) < 75) &&
+						(caster->CheckLosFN(caster->GetTarget()))) 
+					{
+						float value, x_vector, y_vector, hypot;
+						
+						value = (float)spell.base[i]; // distance away from target
+
+						x_vector = target_x - my_x;
+						y_vector = target_y - my_y;
+						hypot = sqrt(x_vector*x_vector + y_vector*y_vector);
 					
+						x_vector /= hypot;
+						y_vector /= hypot;
+					
+						my_x = target_x - (x_vector * value);
+						my_y = target_y - (y_vector * value);
+		
+						float new_ground = GetGroundZ(my_x, my_y);
+		
+						if(caster->IsClient()) 
+							caster->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), my_x, my_y, new_ground, GetHeading()*2);
+						else
+							caster->GMMove(my_x, my_y, new_ground, GetHeading());
+					}
+				}
+				break;
+			}
+			
 			// Handled Elsewhere
+			case SE_ImmuneFleeing:
+			case SE_BlockSpellEffect:
+			case SE_Knockdown: // handled by client
+			case SE_ShadowStepDirectional: // handled by client
+			case SE_SpellOnDeath:
+			case SE_BlockNextSpellFocus:
+			case SE_ReduceReuseTimer:
 			case SE_SwarmPetDuration:
 			case SE_LimitHPPercent:
 			case SE_LimitManaPercent:
@@ -2396,6 +2449,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_STR:
 			case SE_ATK:
 			case SE_ArmorClass:
+			case SE_EndurancePool:
 			case SE_Stamina:
 			case SE_UltraVision:
 			case SE_InfraVision:
@@ -3038,6 +3092,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 		switch (spells[buffs[slot].spellid].effectid[i])
 		{
+			case SE_AddMeleeProc:
 			case SE_WeaponProc:
 			{
 				uint16 procid = GetProcID(buffs[slot].spellid, i);
@@ -3259,6 +3314,12 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 					CastToClient()->SetBindSightTarget(NULL);
 				}
 				break;			
+			}
+			
+			case SE_SetBodyType:
+			{
+				SetBodyType(GetOrigBodyType());
+				break;
 			}
 
 			case SE_MovementSpeed:
@@ -3847,6 +3908,14 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 					value = focus_spell.base[i];
 			}
 			break;
+			
+		case SE_ReduceReuseTimer:
+		{ 
+			if(type == focusReduceRecastTime)
+				value = focus_spell.base[i] / 1000;
+				
+			break;
+		}
 
 		case SE_TriggerOnCast:
 		{
@@ -3860,6 +3929,15 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			if(type == focusSpellVulnerability)
 			{
 				value = 1;
+			}
+			break;
+		}
+		case SE_BlockNextSpellFocus:
+		{
+			if(type == focusBlockNextSpell)
+			{
+				if(MakeRandomInt(1, 100) <= focus_spell.base[i]) 
+					value = 1;
 			}
 			break;
 		}
@@ -4071,7 +4149,7 @@ bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate
 	}
 	// This is where hit limited DS and other effects are processed
 	else if(spells[buffs[buff_slot].spellid].numhits > 0 || negate)  {
-		if(buffs[buff_slot].numhits > 0) {
+		if(buffs[buff_slot].numhits > 1) {
 			buffs[buff_slot].numhits--;
 			return true;
 		}

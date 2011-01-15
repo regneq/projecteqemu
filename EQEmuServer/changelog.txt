@@ -6,6 +6,12 @@ Trevius: (l0stmancd) Fix for potential item loss issue while using an inventory 
 Trevius: Adjustment to the augmentation code logic to remove potential issues.
 Trevius: Added updateclient option to Perl Client TakeMoneyFromPP(copper, updateclient=false).
 Derision: UF: Translated command code for /pet hold
+Caryatis: Implemented SE_ReduceReuseTimer(epic 1.5/2.0 focuses, sof type3), SE_BlockNextSpellFocus(chance to block next spell matching focus)
+Caryatis: Implemented SE_SetBodyType, SE_SpellOnDeath, SE_BlockSpellEffect, SE_Leap, SE_ImmuneFleeing, SE_AddMeleeProc
+Caryatis: Delay Death AA is now functional(optional sql).
+
+Optional SQL:
+utils/sql/svn/1823_optional_delay_death.sql
 
 ==01/13/2011==
 JJ: (Leere) Exported quest::LearnRecipe(recipe_id) to PERL
