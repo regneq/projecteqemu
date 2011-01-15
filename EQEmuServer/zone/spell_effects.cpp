@@ -2779,8 +2779,18 @@ void Mob::BuffProcess()
 				if(!zone->BuffTimersSuspended() || IsDetrimentalSpell(buffs[buffs_i].spellid))
 				{
 					--buffs[buffs_i].ticsremaining;
-
-					if (buffs[buffs_i].ticsremaining < 0)
+					
+					if (IsClient() && buffs[buffs_i].ticsremaining == 0) {
+						if (!IsShortDurationBuff(buffs[buffs_i].spellid) || 
+							IsFearSpell(buffs[buffs_i].spellid) || 
+							IsCharmSpell(buffs[buffs_i].spellid) || 
+							IsMezSpell(buffs[buffs_i].spellid))
+						{
+							mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
+							BuffFadeBySlot(buffs_i);
+						}
+					}
+					else if (buffs[buffs_i].ticsremaining < 0)
 					{
 						mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
 						BuffFadeBySlot(buffs_i);

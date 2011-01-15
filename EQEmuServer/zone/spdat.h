@@ -782,5 +782,6 @@ DmgShieldType GetDamageShieldType(int16 spell_id);
 bool DetrimentalSpellAllowsRest(int16 spell_id);
 uint32 GetNimbusEffect(int16 spell_id);
 sint32 GetFuriousBash(int16 spell_id);
+bool IsShortDurationBuff(int16 spell_id);
 
 #endif
