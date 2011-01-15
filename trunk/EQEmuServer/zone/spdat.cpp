@@ -995,3 +995,12 @@ sint32 GetFuriousBash(int16 spell_id)
 	else
 		return 0;
 }
+
+bool IsShortDurationBuff(int16 spell_id)
+{
+	if((spell_id > 0) && (spell_id < SPDAT_RECORDS)) {
+		if(spells[spell_id].short_buff_box != 0)
+			return true;
+	}
+	return false;
+}

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/15/2011==
+Caryatis: Fix for fear effects not fading when the buff does, also added check so that a negative recast is not set with SE_ReduceReuse
+
 ==01/14/2011==
 Trevius: (l0stmancd) Fix for invalid slot move warnings on SoF+ clients.
 Trevius: (l0stmancd) Fix for potential item loss issue while using an inventory augmentation sealer.

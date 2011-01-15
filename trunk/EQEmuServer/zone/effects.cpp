@@ -630,6 +630,9 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	{
 		uint32 reduced_recast = spell.recast_time / 1000;
 		reduced_recast -= CastToClient()->GetFocusEffect(focusReduceRecastTime, spell_id);
+		if(reduced_recast < 0)
+			reduced_recast = 0;
+			
 		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT, -1, -1, 0, -1, (uint32)DiscTimer, reduced_recast);
 		if(spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
 		{
