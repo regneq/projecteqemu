@@ -1406,18 +1406,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
-			case SE_VoiceGraft:
-			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Voice Graft");
-#endif
-				//should set a flag to make this easy to check.
-				//dont know how to make it expire when the spell fades right now...
-				//const char *msg = "Voice Graft is not implemented.";
-				//if(caster) caster->Message(13, msg);
-				break;
-			}
-
 			case SE_Sentinel:
 			{
 #ifdef SPELL_EFFECT_SPAM
@@ -2387,6 +2375,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							caster->GMMove(my_x, my_y, new_ground, GetHeading());
 					}
 				}
+				break;
+			}
+			case SE_VoiceGraft:
+			{
+				if(caster && caster->GetTarget())
+					spellbonuses.VoiceGraft = caster->GetTarget()->GetID();
+					
 				break;
 			}
 			
