@@ -2780,11 +2780,12 @@ void Mob::BuffProcess()
 				{
 					--buffs[buffs_i].ticsremaining;
 					
-					if (IsClient() && buffs[buffs_i].ticsremaining == 0) {
+					if (buffs[buffs_i].ticsremaining == 0) {
 						if (!IsShortDurationBuff(buffs[buffs_i].spellid) || 
 							IsFearSpell(buffs[buffs_i].spellid) || 
 							IsCharmSpell(buffs[buffs_i].spellid) || 
-							IsMezSpell(buffs[buffs_i].spellid))
+							IsMezSpell(buffs[buffs_i].spellid) ||
+							IsBlindSpell(buffs[buffs_i].spellid))
 						{
 							mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
 							BuffFadeBySlot(buffs_i);
