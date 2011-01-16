@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/16/2011==
 Caryatis: Fix for Phantom line of discs not working.
 Caryatis: Fix for buffdurationformula 5(0 value results in a 3 tick spell, was set to 1 tick).
+Caryatis: Fix for discs(and AAs) setting a reuse timer if used while not able to(ie stunned)
 
 ==01/15/2011==
 Caryatis: Fix for fear effects not fading when the buff does, also added check so that a negative recast is not set with SE_ReduceReuse
