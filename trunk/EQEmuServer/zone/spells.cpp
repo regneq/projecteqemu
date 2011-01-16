@@ -2260,8 +2260,11 @@ int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caste
 	int res = CalcBuffDuration_formula(castlevel, formula, duration);
 	// Only need this for clients, since the change was for bard songs, I assume we should keep non bard songs getting +1
 	// However if its bard or not and is mez, charm or fear, we need to add 1 so that client is in sync
-	if(target->IsClient() && 
-		(!IsShortDurationBuff(spell_id) || IsFearSpell(spell_id) || IsCharmSpell(spell_id) || IsMezSpell(spell_id)))
+	if(!IsShortDurationBuff(spell_id) || 
+		IsFearSpell(spell_id) || 
+		IsCharmSpell(spell_id) || 
+		IsMezSpell(spell_id) ||
+		IsBlindSpell(spell_id))
 		res += 1;
 	
 	mlog(SPELLS__CASTING, "Spell %d: Casting level %d, formula %d, base_duration %d: result %d",
@@ -2301,7 +2304,8 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 
 		case 5:	// solar: 2/7/04
 			i = duration;
-			return i < 3 ? (i < 1 ? 1 : i) : 3;
+			// 0 value results in a 3 tick spell, else its between 1-3 ticks.
+			return i < 3 ? (i < 1 ? 3 : i) : 3;
 
 		case 6:	// solar: 2/7/04
 			i = (int)ceil(level / 2.0f);

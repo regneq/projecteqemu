@@ -864,9 +864,8 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 		
 			case SE_ChangeFrenzyRad:
 			{
-				// only applies to certain level ranges
-				if( ( spells[spell_id].max[i] == 0 || GetLevel() <= spells[spell_id].max[i] ) &&
-					(newbon->AggroRange == -1 || effect_value < newbon->AggroRange) )
+				// redundant to have level check here
+				if(newbon->AggroRange == -1 || effect_value < newbon->AggroRange)
 				{
 					newbon->AggroRange = effect_value;
 				}
@@ -878,8 +877,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				// neotokyo: Harmony effect as buff - kinda tricky
 				// harmony could stack with a lull spell, which has better aggro range
 				// take the one with less range in any case
-				if( ( spells[spell_id].max[i] == 0 || GetLevel() <= spells[spell_id].max[i] ) &&
-					(newbon->AssistRange == -1 || effect_value < newbon->AssistRange) )
+				if(newbon->AssistRange == -1 || effect_value < newbon->AssistRange)
 				{
 					newbon->AssistRange = effect_value;
 				}
