@@ -304,6 +304,7 @@ struct StatBonuses {
 	bool	BlockNextSpell;						// Indicates whether the client can block a spell or not
 	int16	BlockSpellEffect[EFFECT_COUNT];		// Prevents spells with certain effects from landing on you
 	bool	ImmuneToFlee;						// Bypass the fleeing flag
+	int16	VoiceGraft;							// Stores the ID of the mob with which to talk through
 	
 	// AAs
 	sint8	Packrat;							//weight reduction for items, 1 point = 10%

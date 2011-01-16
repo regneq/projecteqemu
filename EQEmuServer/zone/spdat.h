@@ -89,39 +89,53 @@ enum RESISTTYPE
 
 //Target Type IDs
 typedef enum {
-	ST_TargetOptional = 0x01,
-	ST_AEClientV1 = 0x02,
-	ST_GroupTeleport = 0x03,
-	ST_AECaster = 0x04,
-	ST_Target = 0x05,
-	ST_Self = 0x06,
-	ST_AETarget = 0x08,
-	ST_Animal = 0x09,
-	ST_Undead = 0x0a,
-	ST_Summoned = 0x0b,
-	ST_Tap = 0x0d,
-	ST_Pet = 0x0e,
-	ST_Corpse = 0x0f,
-	ST_Plant = 0x10,
-	ST_Giant = 0x11, //special giant
-	ST_Dragon = 0x12, //special dragon
-	ST_TargetAETap = 0x14,
-	ST_UndeadAE = 0x18,
-	ST_SummonedAE = 0x19,
-	ST_AECaster2 = 0x20, //ae caster hatelist maybe?
-	ST_HateList = 0x21,
-	ST_LDoNChest_Cursed = 0x22,
-	ST_Muramite = 0x23, //only works on special muramites
-	ST_AreaClientOnly = 0x24,
-	ST_AreaNPCOnly = 0x25,
-	ST_SummonedPet = 0x26,
-	ST_GroupNoPets = 0x27,
-	ST_AEBard = 0x28,
-	ST_Group = 0x29,
-	ST_Directional = 0x2a, //ae around this target between two angles
-	ST_GroupClientAndPet = 0x2b,
-	ST_Beam = 0x2c, //like directional but facing in front of you always
-	ST_TargetsTarget = 0x2E, // uses the target of your target
+/* 01 */	ST_TargetOptional = 0x01,
+/* 02 */	ST_AEClientV1 = 0x02,
+/* 03 */	ST_GroupTeleport = 0x03,
+/* 04 */	ST_AECaster = 0x04,
+/* 05 */	ST_Target = 0x05,
+/* 06 */	ST_Self = 0x06,
+/* 07 */	// NOT USED
+/* 08 */	ST_AETarget = 0x08,
+/* 09 */	ST_Animal = 0x09,
+/* 10 */	ST_Undead = 0x0a,
+/* 11 */	ST_Summoned = 0x0b,
+/* 12 */	// NOT USED
+/* 13 */	ST_Tap = 0x0d,
+/* 14 */	ST_Pet = 0x0e,
+/* 15 */	ST_Corpse = 0x0f,
+/* 16 */	ST_Plant = 0x10,
+/* 17 */	ST_Giant = 0x11, //special giant
+/* 18 */	ST_Dragon = 0x12, //special dragon
+/* 19 */	// NOT USED
+/* 20 */	ST_TargetAETap = 0x14,
+/* 21 */	// NOT USED
+/* 22 */	// NOT USED
+/* 23 */	// NOT USED
+/* 24 */	ST_UndeadAE = 0x18,
+/* 25 */	ST_SummonedAE = 0x19,
+/* 26 */	// NOT USED
+/* 27 */	// NOT USED
+/* 28 */	// NOT USED
+/* 29 */	// NOT USED
+/* 30 */	// NOT USED
+/* 31 */	// NOT USED
+/* 32 */	ST_AECaster2 = 0x20, //ae caster hatelist maybe?
+/* 33 */	ST_HateList = 0x21,
+/* 34 */	ST_LDoNChest_Cursed = 0x22,
+/* 35 */	ST_Muramite = 0x23, //only works on special muramites
+/* 36 */	ST_AreaClientOnly = 0x24,
+/* 37 */	ST_AreaNPCOnly = 0x25,
+/* 38 */	ST_SummonedPet = 0x26,
+/* 39 */	ST_GroupNoPets = 0x27,
+/* 40 */	ST_AEBard = 0x28,
+/* 41 */	ST_Group = 0x29,
+/* 42 */	ST_Directional = 0x2a, //ae around this target between two angles
+/* 43 */	ST_GroupClientAndPet = 0x2b,
+/* 44 */	ST_Beam = 0x2c, //like directional but facing in front of you always
+/* 45 */	//ST_Ring = 0x2d, // Like a mix of PB ae + rain spell(has ae duration)
+/* 46 */	ST_TargetsTarget = 0x2e, // uses the target of your target
+/* 47 */	//ST_PetMaster = 0x2e, // uses the master as target
 } SpellTargetType;
 
 typedef enum  {
@@ -209,7 +223,7 @@ typedef enum  {
 //#define SE_Unknown72					72	// not used
 #define SE_BindSight					73	// implemented
 #define SE_FeignDeath					74	// implemented
-#define SE_VoiceGraft					75	// *not implemented
+#define SE_VoiceGraft					75	// implemented
 #define SE_Sentinel						76	// *not implemented?(just seems to send a message)
 #define SE_LocateCorpse					77	// implemented
 #define SE_AbsorbMagicAtt				78	// implemented - Rune for spells
@@ -260,7 +274,7 @@ typedef enum  {
 #define SE_Screech						123	// implemented? Spell Blocker(can only have one buff with this effect at one time)
 #define SE_ImprovedDamage				124 // implemented
 #define SE_ImprovedHeal					125 // implemented
-#define SE_SpellResistReduction			126 // implemented
+#define SE_SpellResistReduction			126 // *not implemented
 #define SE_IncreaseSpellHaste			127 // implemented
 #define SE_IncreaseSpellDuration		128 // implemented
 #define SE_IncreaseRange				129 // implemented

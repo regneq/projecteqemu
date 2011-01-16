@@ -2625,7 +2625,11 @@ void Mob::Say(const char *format, ...)
 	vsnprintf(buf, 1000, format, ap);
 	va_end(ap);
 	
-	entity_list.MessageClose_StringID(this, false, 200, 10,
+	Mob* talker = this;
+	if(spellbonuses.VoiceGraft != 0)
+		talker = entity_list.GetMob(spellbonuses.VoiceGraft);
+	
+	entity_list.MessageClose_StringID(talker, false, 200, 10,
 		GENERIC_SAY, GetCleanName(), buf);
 }
 
