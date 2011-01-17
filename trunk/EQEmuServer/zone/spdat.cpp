@@ -233,7 +233,7 @@ bool IsBeneficialSpell(int16 spell_id)
 					return false;
 			}else{
 				// Bind Sight and Cast Sight
-				if(sai == SAI_Dispell_Sight && spells[spell_id].skill == 18)
+				if(sai == SAI_Dispell_Sight && spells[spell_id].skill == 18 && !IsEffectInSpell(spell_id, SE_VoiceGraft))
 					return false;
 			}
 		}

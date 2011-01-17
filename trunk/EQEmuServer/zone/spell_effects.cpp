@@ -2379,8 +2379,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			}
 			case SE_VoiceGraft:
 			{
-				if(caster && caster->GetTarget())
-					spellbonuses.VoiceGraft = caster->GetTarget()->GetID();
+				if(caster && caster->GetPet())
+					caster->spellbonuses.VoiceGraft = caster->GetPetID();
 					
 				break;
 			}
