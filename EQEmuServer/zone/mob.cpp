@@ -2626,8 +2626,15 @@ void Mob::Say(const char *format, ...)
 	va_end(ap);
 	
 	Mob* talker = this;
-	if(spellbonuses.VoiceGraft != 0)
-		talker = entity_list.GetMob(spellbonuses.VoiceGraft);
+	if(spellbonuses.VoiceGraft != 0) {
+		if(spellbonuses.VoiceGraft == GetPetID())
+			talker = entity_list.GetMob(spellbonuses.VoiceGraft);
+		else
+			spellbonuses.VoiceGraft = 0;
+	}
+	
+	if(!talker)
+		talker = this;
 	
 	entity_list.MessageClose_StringID(talker, false, 200, 10,
 		GENERIC_SAY, GetCleanName(), buf);

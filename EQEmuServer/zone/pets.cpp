@@ -248,15 +248,18 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	NPCType *npc_type = new NPCType;
 	memcpy(npc_type, base, sizeof(NPCType));
 	
-	if (this->IsClient() && CastToClient()->GetFocusEffect(focusPetPower, spell_id) > 0)
+	if (this->IsClient())
 	{
-		npc_type->max_hp *= 1.20;
-		npc_type->cur_hp = npc_type->max_hp;
-		npc_type->AC *= 1.20;
-		npc_type->level += 1;
-		npc_type->min_dmg = (npc_type->min_dmg * 110 / 100);
-		npc_type->max_dmg = (npc_type->max_dmg * 110 / 100);
-		npc_type->size *= 1.15;
+		float pet_power = (float)CastToClient()->GetFocusEffect(focusPetPower, spell_id) / 100.0f;
+		if(pet_power > 0) {
+			npc_type->max_hp *= (1 + pet_power);
+			npc_type->cur_hp = npc_type->max_hp;
+			npc_type->AC *= (1 + pet_power);
+			npc_type->level += 1 + ((int)(pet_power*100) / 25); // gains an additional level for every 25 pet power
+			npc_type->min_dmg = ((npc_type->min_dmg * (1 + pet_power)) / 100);
+			npc_type->max_dmg = ((npc_type->max_dmg * (1 + pet_power)) / 100);
+			npc_type->size *= (1 + pet_power/2);
+		}
 	}
 
 	switch (GetAA(aaElementalDurability))

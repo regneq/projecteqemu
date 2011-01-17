@@ -274,7 +274,7 @@ typedef enum  {
 #define SE_Screech						123	// implemented? Spell Blocker(can only have one buff with this effect at one time)
 #define SE_ImprovedDamage				124 // implemented
 #define SE_ImprovedHeal					125 // implemented
-#define SE_SpellResistReduction			126 // *not implemented
+#define SE_SpellResistReduction			126 // implemented
 #define SE_IncreaseSpellHaste			127 // implemented
 #define SE_IncreaseSpellDuration		128 // implemented
 #define SE_IncreaseRange				129 // implemented
