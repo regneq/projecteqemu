@@ -579,7 +579,7 @@ void Client::SendDisciplineUpdate() {
 
 bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	// Dont let client waste a reuse timer if they can't use the disc
-	if (IsStunned() || IsFeared() || IsMezzed() || IsAmnesiad() || IsCharmed())
+	if (IsStunned() || IsFeared() || IsMezzed() || IsAmnesiad() || IsPet())
 	{
 		return(false);
 	}
