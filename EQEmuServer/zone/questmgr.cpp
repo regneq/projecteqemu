@@ -420,10 +420,10 @@ void QuestManager::selfcast(int spell_id) {
 		initiator->SpellFinished(spell_id, initiator, 10, 0, -1, spells[spell_id].ResistDiff);
 }
 
-void QuestManager::addloot(int item_id, int charges) {
+void QuestManager::addloot(int item_id, int charges, bool equipitem) {
 	if(item_id != 0){
 		if(owner->IsNPC())
-			owner->CastToNPC()->AddItem(item_id, charges);
+			owner->CastToNPC()->AddItem(item_id, charges, equipitem);
 	}
 }
 

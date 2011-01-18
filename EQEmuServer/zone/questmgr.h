@@ -59,7 +59,7 @@ public:
 	void incstat(int stat, int value); //old setstat command
 	void castspell(int spell_id, int target_id);
 	void selfcast(int spell_id);
-	void addloot(int item_id, int charges = 0);
+	void addloot(int item_id, int charges = 0, bool equipitem = true);
 	void Zone(const char *zone_name);
 	void settimer(const char *timer_name, int seconds);
 	void stoptimer(const char *timer_name);
