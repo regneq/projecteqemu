@@ -130,8 +130,8 @@ public:
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
-	void	AddItem(const Item_Struct* item, int8 charges, int8 slot = 0);
-	void	AddItem(int32 itemid, int8 charges, int8 slot = 0);
+	void	AddItem(const Item_Struct* item, int8 charges, bool equipitem = true);
+	void	AddItem(int32 itemid, int8 charges, bool equipitem = true);
 	void	AddLootTable();
 /*
 	void	NPCSpecialAttacks(const char* parse, int permtag);

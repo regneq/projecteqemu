@@ -94,13 +94,13 @@ XS(XS_NPC_AddItem); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_AddItem)
 {
 	dXSARGS;
-	if (items < 3 || items > 4)
-		Perl_croak(aTHX_ "Usage: NPC::AddItem(THIS, itemid, charges, slot= 0)");
+	if (items < 2 || items > 4)
+		Perl_croak(aTHX_ "Usage: NPC::AddItem(THIS, itemid, charges = 0, equipitem = true)");
 	{
 		NPC *		THIS;
 		int32		itemid = (int32)SvUV(ST(1));
-		int8		charges = (int8)SvUV(ST(2));
-		int8		slot;
+		int8		charges = 0;
+		bool		equipitem = true;
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -111,13 +111,12 @@ XS(XS_NPC_AddItem)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if (items < 4)
-			slot = 0;
-		else {
-			slot = (int8)SvUV(ST(3));
-		}
+		if (items > 2)
+			charges = (int8)SvUV(ST(2));
+		if (items > 3)
+			equipitem = (bool)SvTRUE(ST(3));
 
-		THIS->AddItem(itemid, charges, slot);
+		THIS->AddItem(itemid, charges, equipitem);
 	}
 	XSRETURN_EMPTY;
 }
@@ -1969,7 +1968,7 @@ XS(boot_NPC)
 
 		newXSproto(strcpy(buf, "SignalNPC"), XS_NPC_SignalNPC, file, "$$");
 		newXSproto(strcpy(buf, "CheckNPCFactionAlly"), XS_NPC_CheckNPCFactionAlly, file, "$$");
-		newXSproto(strcpy(buf, "AddItem"), XS_NPC_AddItem, file, "$$$;$");
+		newXSproto(strcpy(buf, "AddItem"), XS_NPC_AddItem, file, "$$;$$");
 		newXSproto(strcpy(buf, "AddLootTable"), XS_NPC_AddLootTable, file, "$");
 		newXSproto(strcpy(buf, "RemoveItem"), XS_NPC_RemoveItem, file, "$$;$$");
 		newXSproto(strcpy(buf, "ClearItemList"), XS_NPC_ClearItemList, file, "$");

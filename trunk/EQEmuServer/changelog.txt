@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/18/2011==
+Trevius: Changed Perl NPC AddItem(itemid, charges, slot = 0) to AddItem(itemid, charges = 0, equipitem = true) since slot was unused anyway.
+Trevius: Added equipitem option to quest::addloot(item_id, charges = 0, equipitem = true).
+
 ==01/16/2011==
 Caryatis: Fix for Phantom line of discs not working.
 Caryatis: Fix for buffdurationformula 5(0 value results in a 3 tick spell, was set to 1 tick).

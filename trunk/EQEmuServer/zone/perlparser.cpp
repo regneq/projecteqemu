@@ -508,13 +508,19 @@ XS(XS__addloot);
 XS(XS__addloot)
 {
 	dXSARGS;
+	if(items < 1 || items > 3)
+		Perl_croak(aTHX_ "Usage: addloot(item_id, charges = 0, equipitem = true)");
 
-	if(items == 1)
-		quest_manager.addloot(SvIV(ST(0)));
-	else if(items == 2)
-		quest_manager.addloot(SvIV(ST(0)), SvIV(ST(1)));
-	else
-		Perl_croak(aTHX_ "Usage: addloot(item_id, charges = 0)");
+	int32	itemid = (int32)SvUV(ST(0));
+	int8	charges = 0;
+	bool	equipitem = true;
+
+	if (items > 1)
+		charges = (int8)SvUV(ST(1));
+	if (items > 2)
+		equipitem = (bool)SvTRUE(ST(2));
+
+	quest_manager.addloot(itemid, charges, equipitem);
 
 	XSRETURN_EMPTY;
 }

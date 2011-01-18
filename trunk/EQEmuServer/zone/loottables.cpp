@@ -567,17 +567,17 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint8 charge
 	}
 }
 	  
-void NPC::AddItem(const Item_Struct* item, int8 charges, uint8 slot) {
+void NPC::AddItem(const Item_Struct* item, int8 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
-	AddLootDrop(item, &itemlist, charges, true, true);
+	AddLootDrop(item, &itemlist, charges, equipitem, equipitem);
 }
 
-void NPC::AddItem(int32 itemid, int8 charges, uint8 slot) {
+void NPC::AddItem(int32 itemid, int8 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
 	const Item_Struct * i = database.GetItem(itemid);
 	if(i == NULL)
 		return;
-	AddLootDrop(i, &itemlist, charges, true, true);
+	AddLootDrop(i, &itemlist, charges, equipitem, equipitem);
 }
 	  
 void NPC::AddLootTable() {
