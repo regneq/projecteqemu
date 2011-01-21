@@ -99,7 +99,8 @@ public:
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	virtual void DoRiposte(Mob* defender);
-	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
+	inline virtual sint16 GetATK();
+	uint16 GetPrimarySkillValue();
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
 	virtual void TryBackstab(Mob *other);
@@ -109,6 +110,7 @@ public:
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses();
+	void CalcItemBonuses();
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
 	inline virtual bool IsPet() { return false; }
@@ -119,6 +121,7 @@ public:
 	virtual sint32 CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual sint32 CalcMaxMana();
 	virtual void SetAttackTimer();
+	int32 GetClassHPFactor();
 	virtual sint32 CalcMaxHP();
 	bool DoFinishedSpellAETarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	bool DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
@@ -137,6 +140,27 @@ public:
 	bool IsStanding();
 	bool IsBotCasterCombatRange(Mob *target);
 	bool CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true) ;
+	inline virtual sint16  GetMaxStat();
+	inline virtual sint16  GetMaxResist();
+	inline virtual sint16  GetMaxSTR();
+	inline virtual sint16  GetMaxSTA();
+	inline virtual sint16  GetMaxDEX();
+	inline virtual sint16  GetMaxAGI();
+	inline virtual sint16  GetMaxINT();
+	inline virtual sint16  GetMaxWIS();
+	inline virtual sint16  GetMaxCHA();
+	inline virtual sint16  GetMaxMR();
+	inline virtual sint16  GetMaxPR();
+	inline virtual sint16  GetMaxDR();
+	inline virtual sint16  GetMaxCR();
+	inline virtual sint16  GetMaxFR();
+	inline virtual sint16  GetMaxCorrup();
+	sint32  CalcHPRegenCap();
+	sint32 	CalcManaRegenCap();
+	sint32	LevelRegen();
+	sint32	CalcHPRegen();
+	sint32	CalcManaRegen();
+	void CalcRestState();
 
 	// AI Methods
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
@@ -233,6 +257,7 @@ public:
 	static BotSpell GetBestBotMagicianPetSpell(Bot* botCaster);
 	static std::string GetBotMagicianPetType(Bot* botCaster);
 	static BotSpell GetBestBotSpellForNukeByTargetType(Bot* botCaster, SpellTargetType targetType);
+	static BotSpell GetBestBotSpellForStunByTargetType(Bot* botCaster, SpellTargetType targetType);
 	static BotSpell GetBestBotWizardNukeSpellByTargetResists(Bot* botCaster, Mob* target);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
 
@@ -263,6 +288,57 @@ public:
 	bool GetRangerAutoWeaponSelect() { return _rangerAutoWeaponSelect; }
 	BotRoleType GetBotRole() { return _botRole; }
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
+	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
+	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
+	inline virtual sint16 GetAC()	{ return AC; }
+	inline virtual sint16 GetSTR(); 
+	inline virtual sint16 GetSTA(); 
+	inline virtual sint16 GetDEX(); 
+	inline virtual sint16 GetAGI(); 
+	inline virtual sint16 GetINT(); 
+	inline virtual sint16 GetWIS(); 
+	inline virtual sint16 GetCHA(); 
+	inline virtual sint16 GetMR(); 
+	inline virtual sint16 GetFR(); 
+	inline virtual sint16 GetDR(); 
+	inline virtual sint16 GetPR(); 
+	inline virtual sint16 GetCR(); 
+	inline virtual sint16 GetCorrup();
+	//Heroic
+	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
+	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
+	inline virtual sint16	GetHeroicDEX()	const { return itembonuses.HeroicDEX; }
+	inline virtual sint16	GetHeroicAGI()	const { return itembonuses.HeroicAGI; }
+	inline virtual sint16	GetHeroicINT()	const { return itembonuses.HeroicINT; }
+	inline virtual sint16	GetHeroicWIS()	const { return itembonuses.HeroicWIS; }
+	inline virtual sint16	GetHeroicCHA()	const { return itembonuses.HeroicCHA; }
+	inline virtual sint16	GetHeroicMR()	const { return itembonuses.HeroicMR; }
+	inline virtual sint16	GetHeroicFR()	const { return itembonuses.HeroicFR; }
+	inline virtual sint16	GetHeroicDR()	const { return itembonuses.HeroicDR; }
+	inline virtual sint16	GetHeroicPR()	const { return itembonuses.HeroicPR; }
+	inline virtual sint16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
+	inline virtual sint16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
+	// Mod2
+	inline virtual sint16	GetShielding()		const { return itembonuses.MeleeMitigation; }
+	inline virtual sint16	GetSpellShield()	const { return itembonuses.SpellShield; }
+	inline virtual sint16	GetDoTShield()		const { return itembonuses.DoTShielding; }
+	inline virtual sint16	GetStunResist()		const { return itembonuses.StunResist; }
+	inline virtual sint16	GetStrikeThrough()	const { return itembonuses.StrikeThrough; }
+	inline virtual sint16	GetAvoidance()		const { return itembonuses.AvoidMeleeChance; }
+	inline virtual sint16	GetAccuracy()		const { return itembonuses.HitChance; }
+	inline virtual sint16	GetCombatEffects()	const { return itembonuses.ProcChance; }
+	inline virtual sint16	GetDS()				const { return itembonuses.DamageShield; }
+	// Mod3
+	inline virtual sint16	GetHealAmt()		const { return itembonuses.HealAmt; }
+	inline virtual sint16	GetSpellDmg()		const { return itembonuses.SpellDmg; }
+	inline virtual sint16	GetClair()			const { return itembonuses.Clairvoyance; }
+	inline virtual sint16	GetDSMit()			const { return itembonuses.DSMitigation; }
+
+	inline virtual sint16	GetSingMod()		const { return itembonuses.singingMod; }
+	inline virtual sint16	GetBrassMod()		const { return itembonuses.brassMod; }
+	inline virtual sint16	GetPercMod()		const { return itembonuses.percussionMod; }
+	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
+	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
 
 	// "SET" Class Methods
 	void SetBotSpellID(uint32 newSpellID);
@@ -315,6 +391,9 @@ private:
 	int32 _lastZoneId;
 	bool _rangerAutoWeaponSelect;
 	BotRoleType _botRole;
+	unsigned int RestRegenHP;
+	unsigned int RestRegenMana;
+	Timer rest_timer;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
@@ -336,12 +415,13 @@ private:
 	int8 _baseGender;	// Bots gender. Necessary to preserve the original value otherwise it can be changed by illusions.
 
 	// Class Methods
+	sint16 acmod();
 	void GenerateBaseStats();
 	void GenerateAppearance();
 	void GenerateArmorClass();
-	void GenerateBaseHitPoints();
+	sint32 GenerateBaseHitPoints();
 	void GenerateAABonuses();
-	void GenerateBaseManaPoints();
+	sint32 GenerateBaseManaPoints();
 	void GenerateSpecialAttacks();
 	void SetBotID(uint32 botID);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);

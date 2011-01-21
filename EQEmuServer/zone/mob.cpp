@@ -4182,7 +4182,11 @@ void Mob::SetGrouped(bool v)
 		israidgrouped = false;
 	}
 	isgrouped = v;
-	parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
+
+	if(IsClient())
+	{
+		parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this);
+	}
 }
 
 void Mob::SetRaidGrouped(bool v)
@@ -4192,7 +4196,11 @@ void Mob::SetRaidGrouped(bool v)
 		isgrouped = false;
 	}
 	israidgrouped = v;
-	parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
+
+	if(IsClient())
+	{
+		parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this);
+	}
 }
 
 sint16 Mob::GetCriticalChanceBonus(int16 skill, bool aa_bonus)
