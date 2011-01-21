@@ -209,8 +209,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			break;
 							   }
 		case SpellType_Nuke: {
-			if(((MakeRandomInt(1, 100) <= iChance) || ((botClass == BARD) || (botClass == SHAMAN) || (botClass == ENCHANTER)))
-				&& ((tar->GetHPRatio() <= 95.0f) || ((botClass == BARD) || (botClass == SHAMAN) || (botClass == ENCHANTER))))
+			if((tar->GetHPRatio() <= 95.0f) || ((botClass == BARD) || (botClass == SHAMAN) || (botClass == ENCHANTER)))
 			{
 				if(!checked_los) {
 					if(!CheckLosFN(tar))
@@ -228,7 +227,17 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				else if(botClass == WIZARD) {
 					botSpell = GetBestBotWizardNukeSpellByTargetResists(this, tar);
 				}
-			
+
+				if(botClass == PALADIN || botClass == DRUID || botClass == CLERIC || botClass == ENCHANTER) {
+					if(botSpell.SpellId == 0) {
+						int8 stunChance = (tar->IsCasting() ? 30: 15);
+
+						if(!tar->IsStunned() && ( botClass == PALADIN || (MakeRandomInt(1, 100) <= stunChance))) {
+							botSpell = GetBestBotSpellForStunByTargetType(this, ST_Target);
+						}
+					}
+				}
+
 				if(botSpell.SpellId == 0)
 					botSpell = GetBestBotSpellForNukeByTargetType(this, ST_Target);
 
@@ -880,7 +889,7 @@ BotSpell Bot::GetBestBotSpellForFastHeal(Bot *botCaster) {
 
 		for(std::list<BotSpell>::iterator botSpellListItr = botSpellList.begin(); botSpellListItr != botSpellList.end(); botSpellListItr++) {
 			// Assuming all the spells have been loaded into this list by level and in descending order
-			if(IsFastHealSpell(botSpellListItr->SpellId)) {
+			if(IsPureNukeSpell(botSpellListItr->SpellId) && IsDamageSpell(botSpellListItr->SpellId)) {
 				result.SpellId = botSpellListItr->SpellId;
 				result.SpellIndex = botSpellListItr->SpellIndex;
 				result.ManaCost = botSpellListItr->ManaCost;
@@ -1212,6 +1221,34 @@ BotSpell Bot::GetBestBotSpellForNukeByTargetType(Bot* botCaster, SpellTargetType
 				result.SpellIndex = botSpellListItr->SpellIndex;
 				result.ManaCost = botSpellListItr->ManaCost;
 				
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+BotSpell Bot::GetBestBotSpellForStunByTargetType(Bot* botCaster, SpellTargetType targetType)
+{
+	BotSpell result;
+
+	result.SpellId = 0;
+	result.SpellIndex = 0;
+	result.ManaCost = 0;
+
+	if(botCaster)
+	{
+		std::list<BotSpell> botSpellList = GetBotSpellsForSpellEffectAndTargetType(botCaster, SE_Stun, targetType);
+
+		for(std::list<BotSpell>::iterator botSpellListItr = botSpellList.begin(); botSpellListItr != botSpellList.end(); botSpellListItr++)
+		{
+			// Assuming all the spells have been loaded into this list by level and in descending order
+			if(IsStunSpell(botSpellListItr->SpellId))
+			{
+				result.SpellId = botSpellListItr->SpellId;
+				result.SpellIndex = botSpellListItr->SpellIndex;
+				result.ManaCost = botSpellListItr->ManaCost;
 				break;
 			}
 		}

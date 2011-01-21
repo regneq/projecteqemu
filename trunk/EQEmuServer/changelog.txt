@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/20/2011==
+Congdar: bad_captain: Bot Updates / Fixes V 2.0
+
 ==01/18/2011==
 Trevius: Changed Perl NPC AddItem(itemid, charges, slot = 0) to AddItem(itemid, charges = 0, equipitem = true) since slot was unused anyway.
 Trevius: Added equipitem option to quest::addloot(item_id, charges = 0, equipitem = true).
