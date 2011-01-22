@@ -5339,6 +5339,33 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	sint16 freeslotid=0;
 	ItemInst* inst = database.CreateItem(item, mp->quantity);
 
+	int SinglePrice = 0;
+	if (RuleB(Merchant, UsePriceMod))
+		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate * Client::CalcPriceMod(tmp, false));	
+	else
+		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate);
+
+	mpo->price = SinglePrice * mp->quantity;
+	if(mpo->price < 0 )
+	{
+		safe_delete(outapp);
+		safe_delete(inst);
+		return;
+	}
+
+	if(!TakeMoneyFromPP(mpo->price))
+	{
+		char *hacker_str = NULL;
+		MakeAnyLenString(&hacker_str, "Vendor Cheat: attempted to buy %i of %i: %s that cost %d cp but only has %d pp %d gp %d sp %d cp\n",
+			mpo->quantity, item->ID, item->Name,
+			mpo->price, m_pp.platinum, m_pp.gold, m_pp.silver, m_pp.copper);
+		database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
+		safe_delete_array(hacker_str);
+		safe_delete(outapp);
+		safe_delete(inst);
+		return;
+	}
+
 	bool stacked = TryStacking(inst);
 	if(!stacked)
 		freeslotid = m_inv.FindFreeSlot(false, true, item->Size);
@@ -5353,17 +5380,9 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 	}
 
-	int SinglePrice = 0;
-
-	if (RuleB(Merchant, UsePriceMod))
-		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate * Client::CalcPriceMod(tmp, false));	
-	else
-		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate);
-
-	mpo->price = SinglePrice * mp->quantity;
-
-	if(freeslotid == SLOT_INVALID || (mpo->price < 0 ) || !TakeMoneyFromPP(mpo->price))
+	if(freeslotid == SLOT_INVALID)
 	{
+		Message(13, "You do not have room for any more items.");
 		safe_delete(outapp);
 		safe_delete(inst);
 		return;
