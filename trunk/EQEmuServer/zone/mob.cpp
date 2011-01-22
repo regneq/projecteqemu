@@ -4615,7 +4615,7 @@ void Client::SendClientStatWindow(Client* client)
   //second field(heroic stat)
 	char 	h_stat[5];
 	int 	h_stat_length;
-	char 	h_stat_spacing[20];
+	char 	h_stat_spacing[60];
   //third field(resist)
 	char 	a_resist[5];
 	int 	a_resist_length;
@@ -4633,7 +4633,7 @@ void Client::SendClientStatWindow(Client* client)
 		memset(a_stat_name, 0, 10);
 		memset(a_stat_spacing, 0, 20);
 		memset(h_stat, 0, 5);
-		memset(h_stat_spacing, 0, 20);
+		memset(h_stat_spacing, 0, 60);
 		memset(a_resist, 0, 5);
 		memset(a_resist_name, 0, 10);
 		memset(a_resist_spacing, 0, 20);

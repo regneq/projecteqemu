@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/22/2011==
+Congdar: fix stack buffer overflow
+
 ==01/20/2011==
 Congdar: bad_captain: Bot Updates / Fixes V 2.0
 
