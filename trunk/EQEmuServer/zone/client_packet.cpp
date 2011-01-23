@@ -2002,6 +2002,10 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		if (p_inst)
 			((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK, p_inst->GetID(), "", p_inst, this);
 
+		// If the item was removed during EVENT_ITEM_CLICK, prevent a crash
+		if (!inst)
+			return;
+
 		if((spell_id == 0 || spell_id == 4294967295) && (item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol && item->ItemType != ItemTypeSpell))
 		{
 			LogFile->write(EQEMuLog::Debug, "Item with no effect right clicked by %s",GetName());
