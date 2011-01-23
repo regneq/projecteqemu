@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/24/2011==
 Trevius: Exported GetFreeSpellBookSlot(start_slot=0) and GetSpellBookSlotBySpellID(spell_id) to Perl Client.
 Trevius: Fix for potential crash with EVENT_ITEM_CLICK.
+Trevius: (Secrets) Identified OP_SpellEffect for Titanium.
 
 ==01/22/2011==
 Congdar: fix stack buffer overflow
