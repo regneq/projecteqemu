@@ -4813,6 +4813,63 @@ XS(XS_Client_ClearCompassMark)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_GetFreeSpellBookSlot); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetFreeSpellBookSlot)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::GetFreeSpellBookSlot(THIS, start_slot=0)");
+	{
+		Client *	THIS;
+		int			RETVAL;
+		uint32		start_slot = 0;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 1)
+			start_slot = SvUV(ST(1));
+
+		RETVAL = THIS->GetNextAvailableSpellBookSlot(start_slot);
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetSpellBookSlotBySpellID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetSpellBookSlotBySpellID)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetSpellBookSlotBySpellID(THIS, spell_id)");
+	{
+		Client *	THIS;
+		int			RETVAL;
+		uint32		spell_id = SvUV(ST(1));
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->FindSpellBookSlotBySpellID(spell_id);
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5009,6 +5066,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetAALevel"), XS_Client_GetAALevel, file, "$$");
 		newXSproto(strcpy(buf, "MarkCompassLoc"), XS_Client_MarkCompassLoc, file, "$$$$");
 		newXSproto(strcpy(buf, "ClearCompassMark"), XS_Client_ClearCompassMark, file, "$");
+		newXSproto(strcpy(buf, "GetFreeSpellBookSlot"), XS_Client_GetFreeSpellBookSlot, file, "$;$");
+		newXSproto(strcpy(buf, "GetSpellBookSlotBySpellID"), XS_Client_GetSpellBookSlotBySpellID, file, "$$");
 	XSRETURN_YES;
 }
 
