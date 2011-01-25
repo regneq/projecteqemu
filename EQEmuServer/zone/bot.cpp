@@ -447,7 +447,7 @@ void Bot::GenerateBaseStats() {
 				PoisonResist += 4;
 				DiseaseResist += 4;
 				break;
-			case 6: // DiseaseResistuid
+			case 6: // Druid
 				BotSpellID = 707;
 				Stamina += 15;
 				Wisdom += 35;
@@ -483,7 +483,7 @@ void Bot::GenerateBaseStats() {
 				Charisma += 10;
 				Attack += 28;
 				break;
-			case 11: // NeColdResistomancer
+			case 11: // Necromancer
 				BotSpellID = 703;
 				Dexterity += 10;
 				Agility += 10;
@@ -8534,7 +8534,6 @@ sint32 Bot::GenerateBaseManaPoints()
 					bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
 				}
 			}
-			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
 			break;
 
 		case 'W':
@@ -8578,7 +8577,6 @@ sint32 Bot::GenerateBaseManaPoints()
 					bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
 				}
 			}
-			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
 			break;
 
 		default:
@@ -8714,7 +8712,28 @@ bool Bot::DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slo
 }
 
 void Bot::CalcBonuses() {
+	GenerateBaseStats();
+	CalcItemBonuses();
 	CalcSpellBonuses(&spellbonuses);
+	GenerateAABonuses();
+
+	CalcSTR();
+	CalcSTA();
+	CalcDEX();
+	CalcAGI();
+	CalcINT();
+	CalcWIS();
+	CalcCHA();
+
+	CalcMR();
+	CalcFR();
+	CalcDR();
+	CalcPR();
+	CalcCR();
+	CalcCorrup();
+
+	GenerateArmorClass();
+
 	CalcMaxHP();
 	CalcMaxMana();
 	hp_regen = CalcHPRegen();
@@ -8907,122 +8926,227 @@ sint16 Bot::GetMaxCorrup() {
 		+ spellbonuses.CorrupCapMod;
 }
 
-sint16	Bot::GetSTR() { 
-	sint16 max = GetMaxSTR();
+sint16 Bot::CalcSTR() {
 	sint16 val = STR + itembonuses.STR + spellbonuses.STR;
 
-	if(val > max)
-		val = max;
+	//sint16 mod = aabonuses.STR;
 
-	return val; 
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+	//STR = val + mod;
+	STR = val;
+
+	if(STR < 1)
+		STR = 1;
+	
+	int m = GetMaxSTR();
+	if(STR > m)
+		STR = m;
+	
+	return(STR);
 }
-sint16	Bot::GetSTA() { 
-	sint16 max = GetMaxSTA();
+
+sint16 Bot::CalcSTA() {
 	sint16 val = STA + itembonuses.STA + spellbonuses.STA;
- 
-	if(val > max)
-		val = max;
+	
+	//sint16 mod = aabonuses.STA;
+	
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+	//STA = val + mod;
+	STA = val;
+	
+	if(STA < 1)
+		STA = 1;
 
-	return val; 
+	int m = GetMaxSTA();
+	if(STA > m)
+		STA = m;
+	
+	return(STA);
 }
-sint16	Bot::GetDEX() { 
-	sint16 max = GetMaxDEX();
-	sint16 val = DEX + itembonuses.DEX + spellbonuses.DEX;
 
-	if(val > max)
-		val = max;
-
-	return val; 
-}
-sint16	Bot::GetAGI() { 
-	sint16 max = GetMaxAGI();
+sint16 Bot::CalcAGI() {
 	sint16 val = AGI + itembonuses.AGI + spellbonuses.AGI;
- 
-	if(val > max)
-		val = max;
+	//sint16 mod = aabonuses.AGI;
 
-	return val; 
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+
+	//AGI = val + mod;
+	AGI = val;
+
+	if(AGI < 1)
+		AGI = 1;
+
+	int m = GetMaxAGI();
+	if(AGI > m)
+		AGI = m;
+	
+	return(AGI);
 }
-sint16	Bot::GetINT() { 
-	sint16 max = GetMaxINT();
+
+sint16 Bot::CalcDEX() {
+	sint16 val = DEX + itembonuses.DEX + spellbonuses.DEX;
+	
+	//sint16 mod = aabonuses.DEX;
+	
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+	//DEX = val + mod;
+	DEX = val;
+	
+	if(DEX < 1)
+		DEX = 1;
+
+	int m = GetMaxDEX();
+	if(DEX > m)
+		DEX = m;
+	
+	return(DEX);
+}
+
+sint16 Bot::CalcINT() {
 	sint16 val = INT + itembonuses.INT + spellbonuses.INT;
- 
-	if(val > max)
-		val = max;
-
-	return val; 
+	
+	//sint16 mod = aabonuses.INT;
+	
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+	//INT = val + mod;
+	INT = val;
+	
+	if(INT < 1)
+		INT = 1;
+	int m = GetMaxINT();
+	if(INT > m)
+		INT = m;
+	
+	return(INT);
 }
-sint16	Bot::GetWIS() { 
-	sint16 max = GetMaxWIS();
+
+sint16 Bot::CalcWIS() {
 	sint16 val = WIS + itembonuses.WIS + spellbonuses.WIS;
+	
+	//sint16 mod = aabonuses.WIS;
+	
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+	//WIS = val + mod;
+	WIS = val;
+	
+	if(WIS < 1)
+		WIS = 1;
 
-	if(val > max)
-		val = max;
-
-	return val; 
+	int m = GetMaxWIS();
+	if(WIS > m)
+		WIS = m;
+	
+	return(WIS);
 }
-sint16	Bot::GetCHA() { 
-	sint16 max = GetMaxCHA();
+
+sint16 Bot::CalcCHA() {
 	sint16 val = CHA + itembonuses.CHA + spellbonuses.CHA;
- 
-	if(val > max)
-		val = max;
+	
+	//sint16 mod = aabonuses.CHA;
+	
+	if(val>255 && GetLevel() <= 60)
+		val = 255;
+	//CHA = val + mod;
+	CHA = val;
+	
+	if(CHA < 1)
+		CHA = 1;
 
-	return val; 
+	int m = GetMaxCHA();
+	if(CHA > m)
+		CHA = m;
+	
+	return(CHA);
 }
-sint16	Bot::GetMR() { 
-	sint16 max = GetMaxMR();
-	sint16 val = MR + itembonuses.MR + spellbonuses.MR;
- 
-	if(val > max)
-		val = max;
 
-	return val; 
+//The AA multipliers are set to be 5, but were 2 on WR
+//The resistant discipline which I think should be here is implemented
+//in Mob::ResistSpell
+sint16	Bot::CalcMR()
+{
+	MR += itembonuses.MR + spellbonuses.MR;
+	//MR += (GetAA(aaInnateMagicProtection) + GetAA(aaMarrsProtection))*2;
+	
+	if(MR < 1)
+		MR = 1;
+
+	if(MR > GetMaxMR())
+		MR = GetMaxMR();
+
+	return(MR);
 }
-sint16	Bot::GetFR()	{ 
-	sint16 max = GetMaxFR();
-	sint16 val = FR + itembonuses.FR + spellbonuses.FR;
 
-	if(val > max)
-		val = max;
+sint16	Bot::CalcFR()
+{
+	FR += itembonuses.FR + spellbonuses.FR;
+	//FR += (GetAA(aaInnateFireProtection) + GetAA(aaWardingofSolusek))*2;
+	
+	if(FR < 1)
+		FR = 1;
+	
+	if(FR > GetMaxFR())
+		FR = GetMaxFR();
 
-	return val; 
+	return(FR); 
 }
-sint16	Bot::GetDR() { 
-	sint16 max = GetMaxDR();
-	sint16 val = DR + itembonuses.DR + spellbonuses.DR;
- 
-	if(val > max)
-		val = max;
 
-	return val; 
+sint16	Bot::CalcDR()
+{
+	DR += itembonuses.DR + spellbonuses.DR;
+	//DR += (GetAA(aaInnateDiseaseProtection) + GetAA(aaBertoxxulousGift))*2;
+	
+	if(DR < 1)
+		DR = 1;
+
+	if(DR > GetMaxDR())
+		DR = GetMaxDR();
+
+	return(DR);
 }
-sint16	Bot::GetPR() { 
-	sint16 max = GetMaxPR();
-	sint16 val = PR + itembonuses.PR + spellbonuses.PR;
 
-	if(val > max)
-		val = max;
+sint16	Bot::CalcPR()
+{
+	PR += itembonuses.PR + spellbonuses.PR;
+	//PR += (GetAA(aaInnatePoisonProtection) + GetAA(aaShroudofTheFaceless))*2;
+	
+	if(PR < 1)
+		PR = 1;
 
-	return val; 
+	if(PR > GetMaxPR())
+		PR = GetMaxPR();
+
+	return(PR);
 }
-sint16	Bot::GetCR() { 
-	sint16 max = GetMaxCR();
-	sint16 val = CR + itembonuses.CR + spellbonuses.CR;
 
-	if(val > max)
-		val = max;
+sint16	Bot::CalcCR()
+{
+	CR += itembonuses.CR + spellbonuses.CR;
+	//CR += (GetAA(aaInnateColdProtection) + GetAA(aaBlessingofEci))*2;
+	
+	if(CR < 1)
+		CR = 1;
 
-	return val; 
+	if(CR > GetMaxCR())
+		CR = GetMaxCR();
+
+	return(CR);
 }
-sint16	Bot::GetCorrup() { 
-	sint16 max = GetMaxCorrup();
-	sint16 val = Corrup + itembonuses.Corrup + spellbonuses.Corrup;
 
-	if(val > max)
-		val = max;
+sint16	Bot::CalcCorrup()
+{
+	//Corrup = Corrup + itembonuses.Corrup + spellbonuses.Corrup + aabonuses.Corrup;
+	Corrup = Corrup + itembonuses.Corrup + spellbonuses.Corrup;
+	
+	if(Corrup > GetMaxCorrup())
+		Corrup = GetMaxCorrup();
 
-	return val; 
+	return(Corrup);
 }
 
 void Bot::CalcRestState() {
@@ -9823,10 +9947,6 @@ void Bot::CalcBotStats(bool showtext) {
 	if(GetBotOwner()->GetLevel() != GetLevel())
 		SetLevel(GetBotOwner()->GetLevel());
 
-	GenerateBaseStats();
-
-	GenerateAABonuses();
-
 	GenerateSpecialAttacks();
 
 	if(showtext) {
@@ -9835,23 +9955,13 @@ void Bot::CalcBotStats(bool showtext) {
 		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i, Corruption: %i.",MR,PR,FR,CR,DR,Corrup);
 	}
 
-	// Let's find the items in the bot inventory
-
 	/*if(this->Save())
 		this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
 	else
 		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());*/
-
-	CalcItemBonuses();
-	CalcSpellBonuses(&spellbonuses);
-	GenerateArmorClass();
-
-	CalcMaxHP();
-	CalcMaxMana();
-
-	hp_regen = CalcHPRegen();
-	mana_regen = CalcManaRegen();
 	
+	CalcBonuses();
+
 	AI_AddNPCSpells(this->GetBotSpellID());
 
 	if(showtext) {
@@ -12448,7 +12558,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		Mob *target = c->GetTarget();
 		if(target && target->IsBot())
 		{
-			for(int i=0; i<16; i++)
+			for(int i=0; i<target->CastToBot()->AIspells.size(); i++)
 			{
 				if(target->CastToBot()->BotGetSpells(i) != 0)
 				{

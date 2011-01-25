@@ -155,6 +155,19 @@ public:
 	inline virtual sint16  GetMaxCR();
 	inline virtual sint16  GetMaxFR();
 	inline virtual sint16  GetMaxCorrup();
+	sint16  CalcSTR();
+	sint16  CalcSTA();
+	sint16  CalcDEX();
+	sint16  CalcAGI();
+	sint16  CalcINT();
+	sint16  CalcWIS();
+	sint16  CalcCHA();
+	sint16	CalcMR();
+	sint16	CalcFR();
+	sint16	CalcDR();
+	sint16	CalcPR();
+	sint16	CalcCR();
+	sint16	CalcCorrup();
 	sint32  CalcHPRegenCap();
 	sint32 	CalcManaRegenCap();
 	sint32	LevelRegen();
@@ -290,20 +303,20 @@ public:
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
-	inline virtual sint16 GetAC()	{ return AC; }
-	inline virtual sint16 GetSTR(); 
-	inline virtual sint16 GetSTA(); 
-	inline virtual sint16 GetDEX(); 
-	inline virtual sint16 GetAGI(); 
-	inline virtual sint16 GetINT(); 
-	inline virtual sint16 GetWIS(); 
-	inline virtual sint16 GetCHA(); 
-	inline virtual sint16 GetMR(); 
-	inline virtual sint16 GetFR(); 
-	inline virtual sint16 GetDR(); 
-	inline virtual sint16 GetPR(); 
-	inline virtual sint16 GetCR(); 
-	inline virtual sint16 GetCorrup();
+	inline virtual sint16	GetAC()	{ return AC; }
+	inline virtual sint16	GetSTR()	const { return STR; }
+	inline virtual sint16	GetSTA()	const { return STA; }
+	inline virtual sint16	GetDEX()	const { return DEX; }
+	inline virtual sint16	GetAGI()	const { return AGI; }
+	inline virtual sint16	GetINT()	const { return INT; }
+	inline virtual sint16	GetWIS()	const { return WIS; }
+	inline virtual sint16	GetCHA()	const { return CHA; }
+	inline virtual sint16	GetMR()	const { return MR; }
+	inline virtual sint16	GetFR()	const { return FR; }
+	inline virtual sint16	GetDR()	const { return DR; }
+	inline virtual sint16	GetPR()	const { return PR; }
+	inline virtual sint16	GetCR()	const { return CR; }
+	inline virtual sint16	GetCorrup()	const { return Corrup; }
 	//Heroic
 	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
 	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
