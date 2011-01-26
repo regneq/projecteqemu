@@ -361,7 +361,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		}
 	}
 
-    if((opentype == 58) && (strncmp(dest_zone, "NONE", strlen("NONE")) != 0))
+    if(((opentype == 57) || (opentype == 58)) && (strncmp(dest_zone, "NONE", strlen("NONE")) != 0))
 	{ // Teleport door! 
 		if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (!keyneeded)) 
 		{

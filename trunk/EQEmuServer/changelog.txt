@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/26/2011==
+Derision: Support for door opentype 57 (instant intra-zone portals which don't require the client to click, such as in the bazaar).
+
+Note: For opentype 57, the client automatically sends the click when the player moves onto the portal.
+
+Optional SQL, to set the bazaar portal discs to type 57 (they are type 58 in the PEQ database, but collects show they should be type 57):
+
+update doors set opentype = 57 where zone = 'bazaar' and name = 'PORTAL_DISC';
+
 ==01/24/2011==
 Trevius: Exported GetFreeSpellBookSlot(start_slot=0) and GetSpellBookSlotBySpellID(spell_id) to Perl Client.
 Trevius: Fix for potential crash with EVENT_ITEM_CLICK.
