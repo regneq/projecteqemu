@@ -227,7 +227,6 @@ namespace EQApplicationLayer
                                     
                     if (zp != null)
                     {                        
-                        d.OpenType = 58;
                         d.DestZone = ZoneNumberToName(zp.Value.TargetZoneID);
                         d.DestX = zp.Value.TargetX;
                         d.DestY = zp.Value.TargetY;

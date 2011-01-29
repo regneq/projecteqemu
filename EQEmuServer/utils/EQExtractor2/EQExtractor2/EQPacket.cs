@@ -462,22 +462,40 @@ namespace EQPacket
                                 BufferPosition += 3;
                             }
                             else
-                                Size = Uncompressed[BufferPosition++];                            
+                                Size = Uncompressed[BufferPosition++];
 
-                            int AppOpCode = Uncompressed[BufferPosition++] + (Uncompressed[BufferPosition++] * 256);
+                            int OpCodeBytes = 2;
+                            int AppOpCode = Uncompressed[BufferPosition++];
+
+                            if (AppOpCode == 0)
+                            {
+                                ++BufferPosition;
+                                OpCodeBytes = 3;
+                            }
                             
-                            ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - 2, Uncompressed, BufferPosition, Direction, PacketTime);
+                            AppOpCode += (Uncompressed[BufferPosition++] * 256);
                             
-                            BufferPosition = BufferPosition + (Size - 2);
+                            ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - OpCodeBytes, Uncompressed, BufferPosition, Direction, PacketTime);
+                            
+                            BufferPosition = BufferPosition + (Size - OpCodeBytes);
                         }
                     }
                     else
                     {
                         int BufferPosition = 2;
 
-                        int AppOpCode = Uncompressed[BufferPosition++] + (Uncompressed[BufferPosition++] * 256);                     
+                        int OpCodeBytes = 2;
+                        int AppOpCode = Uncompressed[BufferPosition++];
 
-                        ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Uncompressed.Length - 4, Uncompressed, BufferPosition, Direction, PacketTime);
+                        if (AppOpCode == 0)
+                        {
+                            ++BufferPosition;
+                            OpCodeBytes = 3;
+                        }
+
+                        AppOpCode += (Uncompressed[BufferPosition++] * 256);                        
+
+                        ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Uncompressed.Length - (2 + OpCodeBytes), Uncompressed, BufferPosition, Direction, PacketTime);
                     }
                     break;
                 }
@@ -685,20 +703,39 @@ namespace EQPacket
                                     else
                                         Size = Fragments[BufferPosition++];
 
-                                    int AppOpCode = Fragments[BufferPosition++] + (Fragments[BufferPosition++] * 256);
+                                    int OpCodeBytes = 2;
+                                    int AppOpCode = Fragments[BufferPosition++];
+
+                                    if (AppOpCode == 0)
+                                    {
+                                        ++BufferPosition;
+                                        OpCodeBytes = 3;
+                                    }
+
+                                    AppOpCode += (Fragments[BufferPosition++] * 256);                                    
                                                                         
-                                    ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - 2, Fragments, BufferPosition, Direction, PacketTime);
+                                    ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - OpCodeBytes, Fragments, BufferPosition, Direction, PacketTime);
                                     
-                                    BufferPosition = BufferPosition + (Size - 2);
+                                    BufferPosition = BufferPosition + (Size - OpCodeBytes);
                                 }
                             }
                             else
                             {
-                                int AppOpCode = Fragments[0] + (Fragments[1] * 256);
+                                int BufferPosition = 0;
+                                int OpCodeBytes = 2;
+                                int AppOpCode = Fragments[BufferPosition++];
 
-                                byte[] NewPacket = new byte[Fragments.Length - 2];
+                                if (AppOpCode == 0)
+                                {
+                                    ++BufferPosition;
+                                    OpCodeBytes = 3;
+                                }
 
-				                Array.Copy(Fragments, 2, NewPacket, 0, Fragments.Length - 2);
+                                AppOpCode += (Fragments[BufferPosition++] * 256);                                
+
+                                byte[] NewPacket = new byte[Fragments.Length - OpCodeBytes];
+
+				                Array.Copy(Fragments, BufferPosition, NewPacket, 0, Fragments.Length - OpCodeBytes);
                                 
                                 ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction, PacketTime);
                             }

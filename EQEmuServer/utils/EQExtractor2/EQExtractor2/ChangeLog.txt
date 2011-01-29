@@ -1,5 +1,10 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==01/29/2011==
+Derision: Doors with opentype 57 are no longer automatically changed to type 58.
+Derision: Handling of opcodes with zero low-byte (e.g. 0x4200).
+Derision: Band-aid for crash when parsing OP_ZoneEntry for player with Otherdata & 0x01 set.
+
 ==12/25/2010==
 Derision: Heading appears to be multiplied by 2 in ZonePoint packets.
 
