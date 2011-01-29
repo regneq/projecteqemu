@@ -428,7 +428,7 @@ namespace EQExtractor2.Patches
                 NewSpawn.DestructableString2 = "";
                 NewSpawn.DestructableString3 = "";
 
-                if ((OtherData & 3) > 0)
+                if ((NewSpawn.IsNPC == 1) && ((OtherData & 3) > 0))
                 {
                     // Destructable Objects. Not handled yet
                     //
@@ -863,6 +863,7 @@ namespace EQExtractor2.Patches
             //OpManager.RegisterExplorer("OP_SpawnAppearance", ExploreSpawnAppearance);
             //OpManager.RegisterExplorer("OP_HPUpdate", ExploreHPUpdate);
             //OpManager.RegisterExplorer("OP_Animation", ExploreAnimation);
+            //OpManager.RegisterExplorer("OP_CharInventory", ExploreCharInventoryPacket);
             
         }
 
@@ -1107,6 +1108,244 @@ namespace EQExtractor2.Patches
             string SpawnName = FindExplorerSpawn(SpawnID);
 
             OutputStream.WriteLine("SpawnID: {0} {1} Decay: {2}\r\n", SpawnID, SpawnName, Decay);
+        }
+
+        public void ExploreCharInventoryPacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 ItemCount = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("There are {0} items in the inventory.\r\n", ItemCount);
+
+            for (int i = 0; i < ItemCount; ++i)
+            {
+                ExploreSubItem(OutputStream, ref Buffer);
+            }
+
+            OutputStream.WriteLine("");
+        }
+
+        public void ExploreItemPacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            Buffer.SkipBytes(4);    // Skip type field.
+
+            ExploreSubItem(OutputStream, ref Buffer);
+
+            OutputStream.WriteLine("");
+        }
+
+        void ExploreSubItem(StreamWriter OutputStream, ref ByteStream Buffer)
+        {
+            UInt32 StackSize = Buffer.ReadUInt32();
+            Buffer.SkipBytes(4);
+            UInt32 Slot = Buffer.ReadUInt32();
+            UInt32 Price = Buffer.ReadUInt32();
+            UInt32 MerchantSlot = Buffer.ReadUInt32();
+            Buffer.SkipBytes(16);
+            Buffer.SkipBytes(28);
+            string Name = Buffer.ReadString(true);
+            Buffer.ReadString(true);    // Lore
+            Buffer.ReadString(true);    // IDFile
+
+            OutputStream.WriteLine("Item Name: {0}", Name);
+
+            Buffer.SkipBytes(236);      // ItemBodyStruct
+            Buffer.ReadString(true);    // CharmFile
+            Buffer.SkipBytes(64);       // ItemSecondaryBodyStruct
+            Buffer.ReadString(true);    // Filename
+
+            Buffer.SkipBytes(76);       // ItemTertiaryBodyStruct
+
+            //Buffer.SkipBytes(30);       // Click Effect Struct
+            UInt32 Effect = Buffer.ReadUInt32();
+            byte Level2 = Buffer.ReadByte();
+            UInt32 Type = Buffer.ReadUInt32();
+            byte Level = Buffer.ReadByte();
+            UInt32 Unknown1 = Buffer.ReadUInt32();
+            UInt32 Unknown2 = Buffer.ReadUInt32();
+            UInt32 Unknown3 = Buffer.ReadUInt32();
+            UInt32 Unknown4 = Buffer.ReadUInt32();
+            UInt32 Unknown5 = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("Buffer pos is {0}" + Buffer.GetPosition());
+            string ClickName = Buffer.ReadString(true);    // Clickname
+            OutputStream.WriteLine(" Click Name: {0}", ClickName);
+            //Buffer.SkipBytes(4);        // Clickunk7
+            UInt32 Unknown7 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("    Effect: {0} Level2: {1} Type {2} Level {3}", Effect, Level2, Type, Level);
+            OutputStream.WriteLine("    Unks: {0} {1} {2} {3} {4} {5}", Unknown1, Unknown2, Unknown3, Unknown4, Unknown5, Unknown7);
+
+            Buffer.SkipBytes(30);       // Proc Effect Struct
+            Buffer.ReadString(true);    // Clickname
+            Buffer.SkipBytes(4);        // Unknown5
+
+            Buffer.SkipBytes(30);       // Worn Effect Struct
+            Buffer.ReadString(true);    // Wornname
+            Buffer.SkipBytes(4);        // Unknown6
+
+            //Buffer.SkipBytes(30);       // Worn Effect Struct
+            Effect = Buffer.ReadUInt32();
+            Level2 = Buffer.ReadByte();
+            Type = Buffer.ReadUInt32();
+            Level = Buffer.ReadByte();
+            Unknown1 = Buffer.ReadUInt32();
+            Unknown2 = Buffer.ReadUInt32();
+            Unknown3 = Buffer.ReadUInt32();
+            Unknown4 = Buffer.ReadUInt32();
+            Unknown5 = Buffer.ReadUInt32();
+            string FocusName = Buffer.ReadString(true);    // Focusname
+            OutputStream.WriteLine("   Focusname is {0}", FocusName);
+            UInt32 Unknown6 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("    Effect: {0} Level2: {1} Type {2} Level {3}", Effect, Level2, Type, Level);
+            OutputStream.WriteLine("    Unks: {0} {1} {2} {3} {4} {5}", Unknown1, Unknown2, Unknown3, Unknown4, Unknown5, Unknown6);
+            //Buffer.SkipBytes(4);        // Unknown6
+
+            Buffer.SkipBytes(30);       // Scroll Effect Struct
+            Buffer.ReadString(true);    // Scrollname
+            Buffer.SkipBytes(4);        // Unknown6
+
+            Buffer.SkipBytes(30);       // Bard Effect Struct
+            Buffer.ReadString(true);    // Wornname
+            Buffer.SkipBytes(4);        // Unknown6
+
+            Buffer.SkipBytes(103);      // Quaternarybodystruct - 4
+
+            UInt32 SubLengths = Buffer.ReadUInt32();
+
+            //return;
+
+            for (int i = 0; i < SubLengths; ++i)
+            {
+                Buffer.SkipBytes(4);
+                ExploreSubItem(OutputStream, ref Buffer);
+            }
+
+            return;
+
+            //Buffer.SkipBytes(236);  // Item Body Struct
+
+            UInt32 ID = Buffer.ReadUInt32();
+            byte Weight = Buffer.ReadByte();
+            byte NoRent = Buffer.ReadByte();
+            byte NoDrop = Buffer.ReadByte();
+            byte Attune = Buffer.ReadByte();
+            byte Size = Buffer.ReadByte();
+
+            OutputStream.WriteLine("   ID: {0} Weight: {1} NoRent: {2} NoDrop: {3} Attune {4} Size {5}", ID, Weight, NoRent, NoDrop, Attune, Size);
+
+            UInt32 Slots = Buffer.ReadUInt32();
+            //UInt32 Price = Buffer.ReadUInt32();
+            UInt32 Icon = Buffer.ReadUInt32();
+            Buffer.SkipBytes(2);
+            UInt32 BenefitFlags = Buffer.ReadUInt32();
+            byte Tradeskills = Buffer.ReadByte();
+
+            OutputStream.WriteLine("   Slots: {0} Price: {1} Icon: {2} BenefitFlags {3} Tradeskills: {4}", Slots, Price, Icon, BenefitFlags, Tradeskills);
+
+            byte CR = Buffer.ReadByte();
+            byte DR = Buffer.ReadByte();
+            byte PR = Buffer.ReadByte();
+            byte MR = Buffer.ReadByte();
+            byte FR = Buffer.ReadByte();
+            byte SVC = Buffer.ReadByte();
+
+            OutputStream.WriteLine("   CR: {0} DR: {1} PR: {2} MR: {3} FR: {4} SVC: {5}", CR, DR, PR, MR, FR, SVC);
+
+            byte AStr = Buffer.ReadByte();
+            byte ASta = Buffer.ReadByte();
+            byte AAgi = Buffer.ReadByte();
+            byte ADex = Buffer.ReadByte();
+            byte ACha = Buffer.ReadByte();
+            byte AInt = Buffer.ReadByte();
+            byte AWis = Buffer.ReadByte();
+
+            OutputStream.WriteLine("   AStr: {0} ASta: {1} AAgi: {2} ADex: {3} ACha: {4} AInt: {5} AWis: {6}", AStr, ASta, AAgi, ADex, ACha, AInt, AWis);
+
+            Int32 HP = Buffer.ReadInt32();
+            Int32 Mana = Buffer.ReadInt32();
+            UInt32 Endurance = Buffer.ReadUInt32();
+            Int32 AC = Buffer.ReadInt32();
+            Int32 Regen = Buffer.ReadInt32();
+            Int32 ManaRegen = Buffer.ReadInt32();
+            Int32 EndRegen = Buffer.ReadInt32();
+            UInt32 Classes = Buffer.ReadUInt32();
+            UInt32 Races = Buffer.ReadUInt32();
+            UInt32 Deity = Buffer.ReadUInt32();
+            Int32 SkillModValue = Buffer.ReadInt32();
+            Buffer.SkipBytes(4);
+            UInt32 SkillModType = Buffer.ReadUInt32();
+            UInt32 BaneDamageRace = Buffer.ReadUInt32();
+            UInt32 BaneDamageBody = Buffer.ReadUInt32();
+            UInt32 BaneDamageRaceAmount = Buffer.ReadUInt32();
+            Int32 BaneDamageAmount = Buffer.ReadInt32();
+            byte Magic = Buffer.ReadByte();
+            Int32 CastTime = Buffer.ReadInt32();
+            UInt32 ReqLevel = Buffer.ReadUInt32();
+            UInt32 RecLevel = Buffer.ReadUInt32();
+            UInt32 ReqSkill = Buffer.ReadUInt32();
+            UInt32 BardType = Buffer.ReadUInt32();
+            Int32 BardValue = Buffer.ReadInt32();
+            byte Light = Buffer.ReadByte();
+            byte Delay = Buffer.ReadByte();
+            byte ElemDamageAmount = Buffer.ReadByte();
+            byte ElemDamageType = Buffer.ReadByte();
+            byte Range = Buffer.ReadByte();
+            UInt32 Damage = Buffer.ReadUInt32();
+            UInt32 Color = Buffer.ReadUInt32();
+            byte ItemType = Buffer.ReadByte();
+            UInt32 Material = Buffer.ReadUInt32();
+            Buffer.SkipBytes(4);
+            UInt32 EliteMaterial = Buffer.ReadUInt32();
+            float SellRate = Buffer.ReadSingle();
+            Int32 CombatEffects = Buffer.ReadInt32();
+            Int32 Shielding = Buffer.ReadInt32();
+            Int32 StunResist = Buffer.ReadInt32();
+            Int32 StrikeThrough = Buffer.ReadInt32();
+            Int32 ExtraDamageSkill = Buffer.ReadInt32();
+            Int32 ExtraDamageAmount = Buffer.ReadInt32();
+            Int32 SpellShield = Buffer.ReadInt32();
+            Int32 Avoidance = Buffer.ReadInt32();
+            Int32 Accuracy = Buffer.ReadInt32();
+            UInt32 CharmFileID = Buffer.ReadUInt32();
+            UInt32 FactionMod1 = Buffer.ReadUInt32();
+            Int32 FactionAmount1 = Buffer.ReadInt32();
+            UInt32 FactionMod2 = Buffer.ReadUInt32();
+            Int32 FactionAmount2 = Buffer.ReadInt32();
+            UInt32 FactionMod3 = Buffer.ReadUInt32();
+            Int32 FactionAmount3 = Buffer.ReadInt32();
+            UInt32 FactionMod4 = Buffer.ReadUInt32();
+            Int32 FactionAmount4 = Buffer.ReadInt32();
+
+            Buffer.ReadString(true);    // Charm File
+            Buffer.SkipBytes(64);   // Item Secondary Body Struct
+            Buffer.ReadString(true);    // Filename
+            Buffer.SkipBytes(76);   // Item Tertiary Body Struct
+            Buffer.SkipBytes(30);   // Click Effect Struct
+            Buffer.ReadString(true);    // Clickname
+            Buffer.SkipBytes(4);    // clickunk7
+            Buffer.SkipBytes(30);   // Proc Effect Struct
+            Buffer.ReadString(true);    // Proc Name
+            Buffer.SkipBytes(4);    // unknown5            
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6            
+            Buffer.SkipBytes(103);   // Item Quaternary Body Struct - 4 (we want to read the SubLength field at the end)
+
+            //UInt32 SubLengths = Buffer.ReadUInt32();
+
+            for (int i = 0; i < SubLengths; ++i)
+            {
+                Buffer.SkipBytes(4);
+                ExploreSubItem(OutputStream, ref Buffer);
+            }
         }
 
         override public bool DumpAAs(string FileName)
