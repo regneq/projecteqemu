@@ -4469,10 +4469,8 @@ void Client::SendClientStatWindow(Client* client)
 		strcat(HME_row, "</c> / ");
 		strncat(HME_row, total_field, max_HME_value_len); // Add Total value to string
 		strcat(HME_row, "<br>"); // END LINE
-		
-		strncpy(HME_row_real, HME_row, 1499); // Copy Completed String
 	}
-
+	strncpy(HME_row_real, HME_row, 1499); // Copy Completed String
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	  Regen String
@@ -4604,10 +4602,8 @@ void Client::SendClientStatWindow(Client* client)
 		strcat(regen_string, div); // Divider
 		strncat(regen_string, total_regen_field, max_regen_value_len); // Add current Regen value to string
 		strcat(regen_string, "</c><br>");
-		
-		strncpy(regen_string_real, regen_string, 1499); // Copy Completed String
 	}
-		
+	strncpy(regen_string_real, regen_string, 1499); // Copy Completed String	
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	  Stat String
@@ -4742,9 +4738,8 @@ void Client::SendClientStatWindow(Client* client)
 			strncat(stat_field, h_resist_field, max_stat_value_len); // Add second Herocic
 			strcat(stat_field, "</c><br>"); 
 		}
-		
-		strncpy(stat_field_real, stat_field, 1499); // copy completed string
 	}
+	strncpy(stat_field_real, stat_field, 1499); // copy completed string
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	  Mod2 String
@@ -4865,9 +4860,9 @@ void Client::SendClientStatWindow(Client* client)
 		strcat(mod2_field, " / "); 
 		strncat(mod2_field, mod2b_cap, max_mod2_value_len); 
 		strcat(mod2_field, "<br>");
-		
-		strncpy(mod2_field_real, mod2_field, 1499); // Copy completed string
 	}
+	strncpy(mod2_field_real, mod2_field, 1499); // Copy completed string
+	
 	client->SendWindow(0,0,0,1,this,"", " "
 			/* 01 - C/L/R	*/		" %s Class: %s %s Level: %i %s Race: %s<br>"
 			/* 02 - LineBr	*/		" %s Rune: %i (%i)<br>"
