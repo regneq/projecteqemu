@@ -4357,7 +4357,7 @@ void Client::SendClientStatWindow(Client* client)
 		case 10: strcpy(race_Name, "Ogre"); break;
 		case 11: strcpy(race_Name, "Halfing"); break;
 		case 12: strcpy(race_Name, "Gnome"); break;
-		case 127: strcpy(race_Name, "Iksar"); break;
+		case 128: strcpy(race_Name, "Iksar"); break;
 		case 130: strcpy(race_Name, "Vah Shir"); break;
 		case 330: strcpy(race_Name, "Froglok"); break;
 		case 522: strcpy(race_Name, "Drakkin"); break;
@@ -4390,26 +4390,29 @@ void Client::SendClientStatWindow(Client* client)
 	  H/M/E String
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 	##########################################################*/
-	char HME_row[1000] = "";
+	char HME_row[1000];
+	char HME_row_real[1000];
   //Loop Variables
   /*===========================*/
-	char 	cur_field[8];
+	char 	cur_field[20];
+	char 	total_field[20];
 	char 	cur_name[8];
 	char	cur_spacing[20];
 	char	cur_color[20];
 	int		cur_length = 0;
-	char 	total_field[8];
-	
-	int hme_rows = 3; // Rows in display
-	memset(HME_row, 0, 1000);
-	for(int hme_row_counter = 0; hme_row_counter < hme_rows; hme_row_counter++) {
 		
-		memset(cur_field, 0, 8);
+	int 	hme_rows = 3; // Rows in display
+	int		max_HME_value_len = 9; // 9 digits in the displayed value
+	memset(HME_row, 0, 1000);
+	memset(HME_row_real, 0, 1000);
+	for(int hme_row_counter = 0; hme_row_counter < hme_rows; hme_row_counter++) {
+
+		memset(cur_field, 0, 20);
+		memset(total_field, 0, 20);
 		memset(cur_name, 0, 8);
 		memset(cur_spacing, 0, 20);
 		memset(cur_color, 0, 20);
-		memset(total_field, 0, 8);
-		
+				
 		switch(hme_row_counter) {
 			
 			case 0: {
@@ -4454,18 +4457,20 @@ void Client::SendClientStatWindow(Client* client)
 			}
 		}
 		
-		for(int a = cur_length; a < 8; a++) {
+		for(int a = cur_length; a < max_HME_value_len; a++) {
 			strcat(cur_spacing, " .");
 		}
-		
+
 		strcat(HME_row, indM); // Indent
 		strcat(HME_row, cur_name); // Row name
 		strcat(HME_row, cur_spacing); // Add spacing
 		strcat(HME_row, cur_color); // Color
-		strcat(HME_row, cur_field); // Add Current value to string
+		strncat(HME_row, cur_field, max_HME_value_len); // Add Current value to string
 		strcat(HME_row, "</c> / ");
-		strcat(HME_row, total_field); // Add Total value to string
+		strncat(HME_row, total_field, max_HME_value_len); // Add Total value to string
 		strcat(HME_row, "<br>"); // END LINE
+		
+		strncpy(HME_row_real, HME_row, 1499); // Copy Completed String
 	}
 
   /*##########################################################
@@ -4474,44 +4479,47 @@ void Client::SendClientStatWindow(Client* client)
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 	##########################################################*/
 	char regen_string[1500];
+	char regen_string_real[1500];
   //Loop Variables
   /*===========================*/
 	char	regen_row_header[5];
 	char	regen_row_color[30];
-  	char 	base_regen_field[5];
+  	char 	base_regen_field[10];
 	char 	base_regen_spacing[20];
 	int		base_regen_length = 0;
-	char 	item_regen_field[5];
+	char 	item_regen_field[10];
 	char 	item_regen_spacing[20];
 	int 	item_regen_length = 0;
-	char 	cap_regen_field[5];
+	char 	cap_regen_field[10];
 	char 	cap_regen_spacing[20];
 	int 	cap_regen_length = 0;
-	char 	spell_regen_field[5];
+	char 	spell_regen_field[10];
 	char 	spell_regen_spacing[20];
 	int 	spell_regen_length = 0;
-	char 	aa_regen_field[5];
+	char 	aa_regen_field[10];
 	char	aa_regen_spacing[20];
 	int 	aa_regen_length = 0;
-	char 	total_regen_field[5];
+	char 	total_regen_field[10];
 	
-	int regen_rows = 3; // Number of rows
+	int 	regen_rows = 3; // Number of rows
+	int		max_regen_value_len = 5; // 5 digits in the displayed value
 	memset(regen_string, 0 , 1500);
+	memset(regen_string_real, 0 , 1500);
 	for(int regen_row_counter = 0; regen_row_counter < regen_rows; regen_row_counter++) 
 	{
 		memset(regen_row_header, 0, 5);
 		memset(regen_row_color, 0, 30);
-		memset(base_regen_field, 0, 5);
+		memset(base_regen_field, 0, 10);
 		memset(base_regen_spacing, 0, 20);
-		memset(item_regen_field, 0, 5);
+		memset(item_regen_field, 0, 10);
 		memset(item_regen_spacing, 0, 20);
-		memset(cap_regen_field, 0, 5);
+		memset(cap_regen_field, 0, 10);
 		memset(cap_regen_spacing, 0, 20);
-		memset(spell_regen_field, 0, 5);
+		memset(spell_regen_field, 0, 10);
 		memset(spell_regen_spacing, 0, 20);
-		memset(aa_regen_field, 0, 5);
+		memset(aa_regen_field, 0, 10);
 		memset(aa_regen_spacing, 0, 20);
-		memset(total_regen_field, 0, 5);
+		memset(total_regen_field, 0, 10);
 		
 		switch(regen_row_counter)
 		{
@@ -4559,19 +4567,19 @@ void Client::SendClientStatWindow(Client* client)
 			}
 		}
 		
-		for(int b = base_regen_length; b < 5; b++) {
+		for(int b = base_regen_length; b < max_regen_value_len; b++) {
 			strcat(base_regen_spacing, " ."); 
 		}
-		for(int b = item_regen_length; b < 5; b++) {
+		for(int b = item_regen_length; b < max_regen_value_len; b++) {
 			strcat(item_regen_spacing, " ."); 
 		}
-		for(int b = cap_regen_length; b < 5; b++) {
+		for(int b = cap_regen_length; b < max_regen_value_len; b++) {
 			strcat(cap_regen_spacing, " ."); 
 		}
-		for(int b = spell_regen_length; b < 5; b++) {
+		for(int b = spell_regen_length; b < max_regen_value_len; b++) {
 			strcat(spell_regen_spacing, " ."); 
 		}
-		for(int b = aa_regen_length; b < 5; b++) {
+		for(int b = aa_regen_length; b < max_regen_value_len; b++) {
 			strcat(aa_regen_spacing, " ."); 
 		}
 		
@@ -4579,23 +4587,25 @@ void Client::SendClientStatWindow(Client* client)
 		strcat(regen_string, regen_row_color); // Color
 		strcat(regen_string, regen_row_header); // Header
 		strcat(regen_string, base_regen_spacing); // Spacing
-		strcat(regen_string, base_regen_field); // Add base Regen value to string
+		strncat(regen_string, base_regen_field, max_regen_value_len); // Add base Regen value to string
 		strcat(regen_string, div); // Divider
 		strcat(regen_string, item_regen_spacing); // Spacing
-		strcat(regen_string, item_regen_field); // Add item Regen value to string
+		strncat(regen_string, item_regen_field, max_regen_value_len); // Add item Regen value to string
 		strcat(regen_string, " ("); // Bracket
-		strcat(regen_string, cap_regen_field); // Add Regen cap value to string
+		strncat(regen_string, cap_regen_field, max_regen_value_len); // Add Regen cap value to string
 		strcat(regen_string, ") ");
 		strcat(regen_string, cap_regen_spacing); // Spacing
 		strcat(regen_string, div); // Divider
 		strcat(regen_string, spell_regen_spacing); // Spacing
-		strcat(regen_string, spell_regen_field); // Add spell Regen value to string
+		strncat(regen_string, spell_regen_field, max_regen_value_len); // Add spell Regen value to string
 		strcat(regen_string, div); // Divider
 		strcat(regen_string, aa_regen_spacing); // Spacing
-		strcat(regen_string, aa_regen_field); // Add AA Regen value to string
+		strncat(regen_string, aa_regen_field, max_regen_value_len); // Add AA Regen value to string
 		strcat(regen_string, div); // Divider
-		strcat(regen_string, total_regen_field); // Add current Regen value to string
+		strncat(regen_string, total_regen_field, max_regen_value_len); // Add current Regen value to string
 		strcat(regen_string, "</c><br>");
+		
+		strncpy(regen_string_real, regen_string, 1499); // Copy Completed String
 	}
 		
   /*##########################################################
@@ -4604,40 +4614,42 @@ void Client::SendClientStatWindow(Client* client)
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 	##########################################################*/
 	char stat_field[1500];
+	char stat_field_real[1500];
 	const char heroic_color[] = "<c \"#d6b228\"> +";
   //Loop Variables
   /*===========================*/
   //first field(stat)
-	char	a_stat[5];
+	char	a_stat[10];
 	int		a_stat_length;
 	char 	a_stat_name[10];
 	char 	a_stat_spacing[20];
   //second field(heroic stat)
-	char 	h_stat[5];
+	char 	h_stat[10];
 	int 	h_stat_length;
-	char 	h_stat_spacing[60];
+	char 	h_stat_spacing[70];
   //third field(resist)
-	char 	a_resist[5];
+	char 	a_resist[10];
 	int 	a_resist_length;
 	char 	a_resist_name[10];
 	char 	a_resist_spacing[20];
   //fourth field(heroic resist)
-	char 	h_resist_field[5];
+	char 	h_resist_field[10];
 	
-	int stat_rows = 7; // Number of rows
+	int 	stat_rows = 7; // Number of rows
+	int		max_stat_value_len = 3; // 3 digits in the displayed value
 	memset(stat_field, 0, 1500);
-	
+	memset(stat_field_real, 0, 1500);
 	for(int stat_row_counter = 0; stat_row_counter < stat_rows; stat_row_counter++) {
 		
-		memset(a_stat, 0, 5);
+		memset(a_stat, 0, 10);
 		memset(a_stat_name, 0, 10);
 		memset(a_stat_spacing, 0, 20);
-		memset(h_stat, 0, 5);
-		memset(h_stat_spacing, 0, 60);
-		memset(a_resist, 0, 5);
+		memset(h_stat, 0, 10);
+		memset(h_stat_spacing, 0, 70);
+		memset(a_resist, 0, 10);
 		memset(a_resist_name, 0, 10);
 		memset(a_resist_spacing, 0, 20);
-		memset(h_resist_field, 0, 5);
+		memset(h_resist_field, 0, 10);
 		
 		switch(stat_row_counter) {
 			case 0: {
@@ -4704,32 +4716,34 @@ void Client::SendClientStatWindow(Client* client)
 				break;
 			}
 		}
-		for(int a = a_stat_length; a < 3; a++) { // Spacing before the stat
+		for(int a = a_stat_length; a < max_stat_value_len; a++) { // Spacing before the stat
 			strcat(a_stat_spacing, " . "); 
 		}
 		for(int h = h_stat_length; h < 20; h++) { // between groups = 17 + 3...
 			strcat(h_stat_spacing, " . "); 
 		}
-		for(int h = a_resist_length; h < 3; h++) { // Spacing before the resist
+		for(int h = a_resist_length; h < max_stat_value_len; h++) { // Spacing before the resist
 			strcat(a_resist_spacing, " . "); 
 		}
 		
 		strcat(stat_field, indP); // Indent
 		strcat(stat_field, a_stat_name); // Stat name
 		strcat(stat_field, a_stat_spacing); // Stat spacing
-		strcat(stat_field, a_stat); // Add Stat
+		strncat(stat_field, a_stat, max_stat_value_len); // Add Stat
 		strcat(stat_field, heroic_color);  
-		strcat(stat_field, h_stat); // Add Herocic Stat
+		strncat(stat_field, h_stat, max_stat_value_len); // Add Herocic Stat
 		strcat(stat_field, "</c>");  
 		if(stat_row_counter < 6) {
 			strcat(stat_field, h_stat_spacing); // Spacing between groups
 			strcat(stat_field, a_resist_name);  // Resist Header
 			strcat(stat_field, a_resist_spacing); // Add Second spacing
-			strcat(stat_field, a_resist); // Add second stat
+			strncat(stat_field, a_resist, max_stat_value_len); // Add second stat
 			strcat(stat_field, heroic_color);  
-			strcat(stat_field, h_resist_field); // Add second Herocic
+			strncat(stat_field, h_resist_field, max_stat_value_len); // Add second Herocic
 			strcat(stat_field, "</c><br>"); 
 		}
+		
+		strncpy(stat_field_real, stat_field, 1499); // copy completed string
 	}
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -4737,37 +4751,40 @@ void Client::SendClientStatWindow(Client* client)
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 	##########################################################*/
 	char mod2_field[1500];
+	char mod2_field_real[1500];
   //Loop Variables
   /*===========================*/
-	char	mod2a[5];
+	char	mod2a[10];
 	int		mod2a_length;
 	char 	mod2a_name[40];
-	char 	mod2a_spacing[20];
-	char	mod2a_cap[5];
+	char 	mod2a_spacing[40];
+	char	mod2a_cap[10];
 	int		mod2a_cap_length;
-	char	mod_row_spacing[20];
+	char	mod_row_spacing[40];
 	int		mod2a_space_count;
 	int		mod2b_space_count;
  
-	char	mod2b[5];
+	char	mod2b[10];
 	int		mod2b_length;
 	char 	mod2b_name[40];
-	char 	mod2b_spacing[20];
-	char	mod2b_cap[5];
+	char 	mod2b_spacing[40];
+	char	mod2b_cap[10];
 
-	int mod2_rows = 4;
+	int 	mod2_rows = 4;
+	int		max_mod2_value_len = 3; // 3 digits in the displayed value
 	memset(mod2_field, 0, 1500);
+	memset(mod2_field_real, 0, 1500);
 	for(int mod2_row_counter = 0; mod2_row_counter < mod2_rows; mod2_row_counter++) {
 		
-		memset(mod2a, 0, 5);
-		memset(mod2a_cap, 0, 5);
+		memset(mod2a, 0, 10);
+		memset(mod2a_cap, 0, 10);
 		memset(mod2a_name, 0, 40);
-		memset(mod2a_spacing, 0, 20);
-		memset(mod_row_spacing, 0, 20);
-		memset(mod2b, 0, 5);
-		memset(mod2b_cap, 0, 5);
+		memset(mod2a_spacing, 0, 40);
+		memset(mod_row_spacing, 0, 40);
+		memset(mod2b, 0, 10);
+		memset(mod2b_cap, 0, 10);
 		memset(mod2b_name, 0, 40);
-		memset(mod2b_spacing, 0, 20);
+		memset(mod2b_spacing, 0, 40);
 		
 		switch (mod2_row_counter)
 		{
@@ -4825,29 +4842,31 @@ void Client::SendClientStatWindow(Client* client)
 			}
 		}
 		
-		for(int a = mod2a_length; a < (3 + mod2a_space_count); a++) { // Spacing before first mod
+		for(int a = mod2a_length; a < (max_mod2_value_len + mod2a_space_count); a++) { // Spacing before first mod
 			strcat(mod2a_spacing, " . "); 
 		}
 		for(int a = mod2a_cap_length; a < 6 ; a++) { // Row Spacing
 			strcat(mod_row_spacing, " . "); 
 		}
-		for(int a = mod2b_length; a < (3 + mod2b_space_count); a++) { // Spacing before second mod
+		for(int a = mod2b_length; a < (max_mod2_value_len + mod2b_space_count); a++) { // Spacing before second mod
 			strcat(mod2b_spacing, " . "); 
 		}
 	
 		strcat(mod2_field, indP); // Indent
 		strcat(mod2_field, mod2a_name); // Mod name
 		strcat(mod2_field, mod2a_spacing); // Stat spacing
-		strcat(mod2_field, mod2a); // First Mod
+		strncat(mod2_field, mod2a, max_mod2_value_len); // First Mod
 		strcat(mod2_field, " / "); 
-		strcat(mod2_field, mod2a_cap); 
+		strncat(mod2_field, mod2a_cap, max_mod2_value_len); 
 		strcat(mod2_field, mod_row_spacing); // Spacing between columns
 		strcat(mod2_field, mod2b_name);  
 		strcat(mod2_field, mod2b_spacing);  
-		strcat(mod2_field, mod2b);  
+		strncat(mod2_field, mod2b, max_mod2_value_len);  
 		strcat(mod2_field, " / "); 
-		strcat(mod2_field, mod2b_cap); 
+		strncat(mod2_field, mod2b_cap, max_mod2_value_len); 
 		strcat(mod2_field, "<br>");
+		
+		strncpy(mod2_field_real, mod2_field, 1499); // Copy completed string
 	}
 	client->SendWindow(0,0,0,1,this,"", " "
 			/* 01 - C/L/R	*/		" %s Class: %s %s Level: %i %s Race: %s<br>"
@@ -4888,7 +4907,7 @@ void Client::SendClientStatWindow(Client* client)
 			/* 33 - DSmit	*/		" %s Dmg Shld Mit: %i / %i<br>",
 			/* 01 - C/L/R 	*/		indP, class_Name, indS, GetLevel(), indS, race_Name,
 			/* 02 - LineBr 	*/		indP, rune_number, magic_rune_number,
-			/* 03 - HP	 	*/		HME_row,
+			/* 03 - HP	 	*/		HME_row_real,
 			/* 04 - MANA 	*/		
 			/* 05 - END 	*/		
 			/* 06 - LineBr 	*/		
@@ -4901,11 +4920,11 @@ void Client::SendClientStatWindow(Client* client)
 			/* 10 - LineBr	*/		
 			/* 11 - Labels 	*/		indL, indS,
 			/* 12 - Labels 	*/		indS, indP, indP, indP,
-			/* 13 - HP 		*/		regen_string,
+			/* 13 - HP 		*/		regen_string_real,
 			/* 14 - Mana 	*/		
 			/* 15 - End. 	*/		
 			/* 16 - LineBr 	*/		 
-			/* 17 - STR/MR 	*/		stat_field,
+			/* 17 - STR/MR 	*/		stat_field_real,
 			/* 18 - STA/CR 	*/
 			/* 19 - AGI/FR 	*/
 			/* 20 - DEX/PR 	*/
@@ -4913,7 +4932,7 @@ void Client::SendClientStatWindow(Client* client)
 			/* 22 - WIS/Cp 	*/
 			/* 23 - CHA 	*/
 			/* 24 - LineBr 	*/		 
-			/* 25 - Avd/CE	*/		mod2_field,
+			/* 25 - Avd/CE	*/		mod2_field_real,
 			/* 26 - Acc/STr	*/		
 			/* 27 - Shld/SS	*/		
 			/* 28 - SR/DotS	*/

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/30/2011==
+Caryatis: Stability fixes for Mystats window.
+
 ==01/26/2011==
 Derision: Support for door opentype 57 (instant intra-zone portals which don't require the client to click, such as in the bazaar).
 
