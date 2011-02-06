@@ -1340,7 +1340,7 @@ void Raid::SendHPPacketsFrom(Mob *m)
 			if(members[x].member != c)
 			{
 				members[x].member->QueuePacket(&hpapp, false);
-                                if(m->CastToClient()->GetClientVersion() >= EQClientSoD)
+                                if(members[x].member->GetClientVersion() >= EQClientSoD)
                                 {
                                         outapp.SetOpcode(OP_MobManaUpdate);
                                         MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
