@@ -454,7 +454,7 @@ int main(int argc, char** argv) {
 			database.ping();
 			AsyncLoadVariables(dbasync, &database);
 			ReconnectCounter++;
-			if (ReconnectCounter >= 60) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
+			if (ReconnectCounter >= 12) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
 				ReconnectCounter = 0;
 				if (loginserverlist.AllConnected() == false) {
 #ifdef WIN32

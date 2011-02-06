@@ -1314,18 +1314,18 @@ void Raid::SendHPPacketsTo(Client *c)
                                         MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
                                         mmus->spawn_id = members[x].member->GetID();
                                         mmus->mana = members[x].member->GetManaPercent();
-                                        c->QueuePacket(&outapp);
+                                        c->QueuePacket(&outapp, false);
                                         outapp.SetOpcode(OP_MobEnduranceUpdate);
                                         MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
                                         meus->endurance = members[x].member->GetEndurancePercent();
-                                        c->QueuePacket(&outapp);
+                                        c->QueuePacket(&outapp, false);
                                 }
 			}
 		}
 	}
 }
 
-void Raid::SendHPPacketsFrom(Client *c)
+void Raid::SendHPPacketsFrom(Mob *m)
 {
 	if(!c)
 		return;
@@ -1333,24 +1333,24 @@ void Raid::SendHPPacketsFrom(Client *c)
 	EQApplicationPacket hpapp;
         EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 
-	c->CreateHPPacket(&hpapp);
+	m->CreateHPPacket(&hpapp);
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(members[x].member){
 			if(members[x].member != c)
 			{
 				members[x].member->QueuePacket(&hpapp, false);
-                                if(c->GetClientVersion() >= EQClientSoD)
+                                if(m->CastToClient()->GetClientVersion() >= EQClientSoD)
                                 {
                                         outapp.SetOpcode(OP_MobManaUpdate);
                                         MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
-                                        mmus->spawn_id = c->GetID();
-                                        mmus->mana = c->GetManaPercent();
-                                        members[x].member->QueuePacket(&outapp);
+                                        mmus->spawn_id = m->GetID();
+                                        mmus->mana = m->GetManaPercent();
+                                        members[x].member->QueuePacket(&outapp, false);
                                         outapp.SetOpcode(OP_MobEnduranceUpdate);
                                         MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
-                                        meus->endurance = c->GetEndurancePercent();
-                                        members[x].member->QueuePacket(&outapp);
+                                        meus->endurance = m->GetEndurancePercent();
+                                        members[x].member->QueuePacket(&outapp, false);
                                 }
 			}
 		}

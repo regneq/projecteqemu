@@ -278,7 +278,6 @@ void Group::SendHPPacketsTo(Mob *member)
 	if(member && member->IsClient())
 	{
 		EQApplicationPacket hpapp;
-
 		EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 
 		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
@@ -286,28 +285,18 @@ void Group::SendHPPacketsTo(Mob *member)
 			if(members[i] && members[i] != member)
 			{
 				members[i]->CreateHPPacket(&hpapp);
-
 				member->CastToClient()->QueuePacket(&hpapp, false);
-
 				if(member->CastToClient()->GetClientVersion() >= EQClientSoD)
 				{
 					outapp.SetOpcode(OP_MobManaUpdate);
-
 					MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
-
 					mmus->spawn_id = members[i]->GetID();
-
 					mmus->mana = members[i]->GetManaPercent();
-
-					member->CastToClient()->QueuePacket(&outapp);
-
+					member->CastToClient()->QueuePacket(&outapp, false);
 					MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
-
 					outapp.SetOpcode(OP_MobEnduranceUpdate);
-
 					meus->endurance = members[i]->GetEndurancePercent();
-
-					member->CastToClient()->QueuePacket(&outapp);
+					member->CastToClient()->QueuePacket(&outapp, false);
 				}
 			}
 		}
@@ -321,7 +310,6 @@ void Group::SendHPPacketsFrom(Mob *member)
 		return;
 
  	member->CreateHPPacket(&hp_app);
-
 	EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 
 	uint32 i;
@@ -329,27 +317,17 @@ void Group::SendHPPacketsFrom(Mob *member)
 		if(members[i] && members[i] != member && members[i]->IsClient())
 		{
 			members[i]->CastToClient()->QueuePacket(&hp_app);
-
 			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
 			{
 				outapp.SetOpcode(OP_MobManaUpdate);
-
 				MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
-
 				mmus->spawn_id = member->GetID();
-
 				mmus->mana = member->GetManaPercent();
-
-				members[i]->CastToClient()->QueuePacket(&outapp);
-
+				members[i]->CastToClient()->QueuePacket(&outapp, false);
 				MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
-
 				outapp.SetOpcode(OP_MobEnduranceUpdate);
-
 				meus->endurance = member->GetEndurancePercent();
-
-				members[i]->CastToClient()->QueuePacket(&outapp);
-
+				members[i]->CastToClient()->QueuePacket(&outapp, false);
 			}
 		}
 	}
@@ -632,11 +610,12 @@ bool Group::IsGroupMember(const char *Name)
 {
 	if(Name)
 		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
-			if(!strncmp(membername[i], Name, (sizeof(Name) < sizeof(membername[i])) ? sizeof(Name) : sizeof(membername[i])))
+			if((strlen(Name) == strlen(membername[i])) && !strncmp(membername[i], Name, strlen(Name)))
 				return true;
 
 	return false;
 }
+
 void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
