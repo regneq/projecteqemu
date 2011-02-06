@@ -902,7 +902,7 @@ void Mob::SendHPUpdate()
 	if(IsClient()){
 		Raid *r = entity_list.GetRaidByClient(CastToClient());
 		if(r){
-			r->SendHPPacketsFrom(CastToClient());
+			r->SendHPPacketsFrom(this);
 		}
 	}
 
@@ -910,6 +910,12 @@ void Mob::SendHPUpdate()
 	if(GetOwner() && GetOwner()->IsClient())
 	{
 		GetOwner()->CastToClient()->QueuePacket(&hp_app, false);
+		group = entity_list.GetGroupByMob(GetOwner()->CastToClient());
+		if(group)
+			group->SendHPPacketsFrom(this);
+		Raid *r = entity_list.GetRaidByClient(GetOwner()->CastToClient());
+		if(r)
+			r->SendHPPacketsFrom(this);
 	}
 
 	// send to pet

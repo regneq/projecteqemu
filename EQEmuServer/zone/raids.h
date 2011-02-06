@@ -166,7 +166,7 @@ public:
 	void	VerifyRaid();
 	void	MemberZoned(Client *c);
 	void	SendHPPacketsTo(Client *c);
-	void	SendHPPacketsFrom(Client *c);
+	void	SendHPPacketsFrom(Mob *m);
 	void	RaidSay(const char *msg, Client *c);
 	void	RaidGroupSay(const char *msg, Client *c);
 

@@ -2647,24 +2647,20 @@ void EntityList::SendPositionUpdates(Client* client, int32 cLastUpdate, float ra
 			ppu = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
 		}
 		mob = iterator.GetData()->CastToMob();
-		if (!mob->IsCorpse() 
-			&& (iterator.GetData() != client)
+		if (mob && !mob->IsCorpse() && (iterator.GetData() != client)
 			&& (mob->IsClient() || iSendEvenIfNotChanged || (mob->LastChange() >= cLastUpdate)) 
-			&& (!iterator.GetData()->IsClient() || !iterator.GetData()->CastToClient()->GMHideMe(client))
-			) {
+			&& (!iterator.GetData()->IsClient() || !iterator.GetData()->CastToClient()->GMHideMe(client))) {
 
-				bool Grouped = client->HasGroup() && mob->IsClient() && (client->GetGroup() == mob->CastToClient()->GetGroup());
+			//bool Grouped = client->HasGroup() && mob->IsClient() && (client->GetGroup() == mob->CastToClient()->GetGroup());
 
-				if (range == 0 || (iterator.GetData() == alwayssend) || Grouped || (mob->DistNoRootNoZ(*client) <= range)) {
-					mob->MakeSpawnUpdate(ppu);
+			//if (range == 0 || (iterator.GetData() == alwayssend) || Grouped || (mob->DistNoRootNoZ(*client) <= range)) {
+			if (range == 0 || (iterator.GetData() == alwayssend) || mob->IsClient() || (mob->DistNoRootNoZ(*client) <= range)) {
+				mob->MakeSpawnUpdate(ppu);
+			}
+			if(mob && mob->IsClient() && mob->GetID()>0) {
+				client->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
 			}
 		}
-		if(mob && mob->IsClient() && mob->GetID()>0)
-/*#ifdef PACKET_UPDATE_MANAGER
-			client->GetUpdateManager()->QueuePacket(outapp, false, mob, mob->DistNoRoot(*client));
-#else*/
-			client->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
-//#endif
 		safe_delete(outapp);
 		outapp = 0;	
 		iterator.Advance();
@@ -3181,7 +3177,7 @@ bool EntityList::MakeTrackPacket(Client* client)
 				track_ent->distance = MobDistance;
 				track_ent->level = cur_entity->GetLevel();
 				track_ent->NPC = !cur_entity->IsClient();
-				if(g && cur_entity->IsClient() && g->IsGroupMember(cur_entity->GetName()))
+				if(g && cur_entity->IsClient() && g->IsGroupMember(cur_entity->CastToMob()))
 					track_ent->GroupMember = 1;
 				else
 					track_ent->GroupMember = 0;
