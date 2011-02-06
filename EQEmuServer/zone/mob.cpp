@@ -910,7 +910,7 @@ void Mob::SendHPUpdate()
 	if(GetOwner() && GetOwner()->IsClient())
 	{
 		GetOwner()->CastToClient()->QueuePacket(&hp_app, false);
-		group = entity_list.GetGroupByMob(GetOwner()->CastToClient());
+		group = entity_list.GetGroupByClient(GetOwner()->CastToClient());
 		if(group)
 			group->SendHPPacketsFrom(this);
 		Raid *r = entity_list.GetRaidByClient(GetOwner()->CastToClient());

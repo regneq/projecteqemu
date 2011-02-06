@@ -2654,7 +2654,7 @@ void EntityList::SendPositionUpdates(Client* client, int32 cLastUpdate, float ra
 			//bool Grouped = client->HasGroup() && mob->IsClient() && (client->GetGroup() == mob->CastToClient()->GetGroup());
 
 			//if (range == 0 || (iterator.GetData() == alwayssend) || Grouped || (mob->DistNoRootNoZ(*client) <= range)) {
-			if (range == 0 || (iterator.GetData() == alwayssend) || mob->IsClient() || (mob->DistNoRootNoZ(*client) <= range)) {
+			if (range == 0 || (iterator.GetData() == alwayssend) || mob->IsClient() || (mob->DistNoRoot(*client) <= range)) {
 				mob->MakeSpawnUpdate(ppu);
 			}
 			if(mob && mob->IsClient() && mob->GetID()>0) {
