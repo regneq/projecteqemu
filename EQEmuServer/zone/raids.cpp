@@ -1327,7 +1327,7 @@ void Raid::SendHPPacketsTo(Client *c)
 
 void Raid::SendHPPacketsFrom(Mob *m)
 {
-	if(!c)
+	if(!m)
 		return;
 
 	EQApplicationPacket hpapp;
@@ -1337,7 +1337,7 @@ void Raid::SendHPPacketsFrom(Mob *m)
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(members[x].member){
-			if(members[x].member != c)
+			if(!m->IsClient() || members[x].member != m->CastToClient())
 			{
 				members[x].member->QueuePacket(&hpapp, false);
                                 if(members[x].member->GetClientVersion() >= EQClientSoD)
