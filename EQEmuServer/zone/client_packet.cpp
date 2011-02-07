@@ -375,6 +375,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_BuffRemoveRequest] = &Client::Handle_OP_BuffRemoveRequest;
 	ConnectedOpcodes[OP_CorpseDrag] = &Client::Handle_OP_CorpseDrag;
 	ConnectedOpcodes[OP_CorpseDrop] = &Client::Handle_OP_CorpseDrop;
+	ConnectedOpcodes[OP_GroupMakeLeader] = &Client::Handle_OP_GroupMakeLeader;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11708,6 +11709,27 @@ void Client::Handle_OP_CorpseDrop(const EQApplicationPacket *app)
 			Message_StringID(MT_DefaultText, CORPSEDRAG_STOP);
 			Iterator = DraggedCorpses.erase(Iterator);
 			return;
+		}
+	}
+}
+
+void Client::Handle_OP_GroupMakeLeader(const EQApplicationPacket *app)
+{
+	VERIFY_PACKET_LENGTH(OP_GroupMakeLeader, app, GroupMakeLeader_Struct);
+
+	GroupMakeLeader_Struct *gmls = (GroupMakeLeader_Struct *)app->pBuffer;
+
+	Mob* NewLeader = entity_list.GetClientByName(gmls->NewLeader);
+
+	Group* g = GetGroup();
+			
+	if (NewLeader && g)
+	{
+		if(g->IsLeader(this)) 
+			g->ChangeLeader(NewLeader);
+		else {
+			LogFile->write(EQEMuLog::Debug, "Group /makeleader request originated from non-leader member: %s", GetName());
+			DumpPacket(app);
 		}
 	}
 }

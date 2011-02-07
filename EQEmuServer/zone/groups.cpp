@@ -419,7 +419,8 @@ bool Group::DelMemberOOZ(const char *Name) {
 	return false;
 }
 
-bool Group::DelMember(Mob* oldmember,bool ignoresender){
+bool Group::DelMember(Mob* oldmember,bool ignoresender)
+{
 	if (oldmember == NULL){
 		return false;
 	}
@@ -434,7 +435,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 	}
 
 	//handle leader quitting group gracefully
-	if (oldmember == GetLeader() && GroupCount() > 2) {
+	if (oldmember == GetLeader() && GroupCount() >= 2) {
 		for(uint32 nl = 0; nl < MAX_GROUP_MEMBERS; nl++) {
 			if(members[nl]) {
 				ChangeLeader(members[nl]);

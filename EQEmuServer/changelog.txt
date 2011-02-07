@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/07/2011==
+Derision: SoD/UF: /makeleader and changing Group Leader via Roles works.
+Derision: If the leader of a group of exactly 3 members quits, leadership should now be transferred to another member.
+
 ==01/30/2011==
 Caryatis: Stability fixes for Mystats window.
 

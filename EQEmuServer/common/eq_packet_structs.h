@@ -4529,6 +4529,17 @@ struct ChangeSize_Struct
 /*12*/ float Unknown12;		// Observed 1.0f
 /*16*/
 };
+
+// New OpCode/Struct for SoD+
+struct GroupMakeLeader_Struct
+{
+/*000*/ uint32 Unknown000;
+/*004*/ char CurrentLeader[64];
+/*068*/ char NewLeader[64];
+/*132*/ char Unknown072[324];
+/*456*/
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 
