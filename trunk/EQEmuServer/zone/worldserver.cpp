@@ -40,6 +40,7 @@ using namespace std;
 #include "worldserver.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/packet_dump.h"
+#include "../common/MiscFunctions.h"
 #include "zonedb.h"
 #include "zone.h"
 #include "entity.h"
@@ -314,7 +315,7 @@ void WorldServer::Process() {
 				}
 				else {
 					entity->CastToClient()->UpdateWho(1);
-					strncpy(zc2->char_name,entity->CastToMob()->GetName(),64);
+					strn0cpy(zc2->char_name,entity->CastToMob()->GetName(),64);
 					zc2->zoneID=ztz->requested_zone_id;
 					zc2->instanceID=ztz->requested_instance_id;
 					zc2->success = 1;
@@ -1006,7 +1007,7 @@ void WorldServer::Process() {
 				Raid *r = entity_list.GetRaidByID(rga->rid);
 				if(r){
 					Client *c = entity_list.GetClientByName(rga->playername);
-					strncpy(r->leadername, rga->playername, 64);
+					strn0cpy(r->leadername, rga->playername, 64);
 					if(c){
 						r->SetLeader(c);
 					}
@@ -1046,8 +1047,8 @@ void WorldServer::Process() {
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupUpdate_Struct));
 					GroupUpdate_Struct* gu = (GroupUpdate_Struct*) outapp->pBuffer;
 					gu->action = groupActDisband;
-					strncpy(gu->leadersname, c->GetName(), 64);
-					strncpy(gu->yourname, c->GetName(), 64);
+					strn0cpy(gu->leadersname, c->GetName(), 64);
+					strn0cpy(gu->yourname, c->GetName(), 64);
 					c->FastQueuePacket(&outapp);
 				}
 			}
@@ -1063,7 +1064,7 @@ void WorldServer::Process() {
 					r->VerifyRaid();
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 					GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-					strncpy(gj->membername, rga->membername, 64);
+					strn0cpy(gj->membername, rga->membername, 64);
 					gj->action = groupActJoin;
 
 					for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -1073,7 +1074,7 @@ void WorldServer::Process() {
 							if(strcmp(r->members[x].member->GetName(), rga->membername) != 0){
 								if((rga->gid < 12) && rga->gid == r->members[x].GroupNumber)
 								{
-									strncpy(gj->yourname, r->members[x].member->GetName(), 64);
+									strn0cpy(gj->yourname, r->members[x].member->GetName(), 64);
 									r->members[x].member->QueuePacket(outapp);
 								}
 							}
@@ -1094,7 +1095,7 @@ void WorldServer::Process() {
 					r->VerifyRaid();
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 					GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-					strncpy(gj->membername, rga->membername, 64);
+					strn0cpy(gj->membername, rga->membername, 64);
 					gj->action = groupActLeave;
 
 					for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -1104,7 +1105,7 @@ void WorldServer::Process() {
 							if(strcmp(r->members[x].member->GetName(), rga->membername) != 0){
 								if((rga->gid < 12) && rga->gid == r->members[x].GroupNumber)
 								{
-									strncpy(gj->yourname, r->members[x].member->GetName(), 64);
+									strn0cpy(gj->yourname, r->members[x].member->GetName(), 64);
 									r->members[x].member->QueuePacket(outapp);
 								}
 							}
@@ -1562,10 +1563,8 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 		scm->to[0] = 0;
 		scm->deliverto[0] = '\0';
 	} else {
-		strncpy(scm->to, to, sizeof(scm->to));
-		scm->to[sizeof(scm->to)-1] = 0;
-		strncpy(scm->deliverto, to, sizeof(scm->deliverto));
-		scm->deliverto[sizeof(scm->deliverto)-1] = 0;
+		strn0cpy(scm->to, to, sizeof(scm->to));
+		strn0cpy(scm->deliverto, to, sizeof(scm->deliverto));
 	}
 	scm->noreply = false;
 	scm->chan_num = chan_num;

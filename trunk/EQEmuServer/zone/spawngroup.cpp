@@ -37,7 +37,7 @@ SpawnEntry::SpawnEntry( uint32 in_NPCType, int in_chance, uint8 in_npc_spawn_lim
 
 SpawnGroup::SpawnGroup( uint32 in_id, char* name, int in_group_spawn_limit, float dist, float maxx, float minx, float maxy, float miny, int delay_in ) {
 	id = in_id;
-	strncpy( name_, name, 120);
+	strn0cpy( name_, name, 120);
 	group_spawn_limit = in_group_spawn_limit;
 	roambox[0]=maxx;
 	roambox[1]=minx;

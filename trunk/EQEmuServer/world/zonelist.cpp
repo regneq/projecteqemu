@@ -23,6 +23,7 @@
 #include "console.h"
 #include "WorldConfig.h"
 #include "../common/servertalk.h"
+#include "../common/MiscFunctions.h"
 
 extern uint32			numzones;
 extern bool holdzones;
@@ -479,7 +480,7 @@ void ZSList::SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_m
 	strcpy(&sem->message[0], message);
 	char tempto[64]={0};
 	if(to)
-		strncpy(tempto,to,64);
+		strn0cpy(tempto,to,64);
 	pack->Deflate();
 	if (tempto[0] == 0) {
 		SendPacket(pack);

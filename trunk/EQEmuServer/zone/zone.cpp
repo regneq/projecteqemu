@@ -46,6 +46,7 @@ using namespace std;
 #include "../common/packet_dump_file.h"
 #include "../common/EQStreamFactory.h"
 #include "../common/EQStream.h"
+#include "../common/MiscFunctions.h"
 #include "ZoneConfig.h"
 #include "../common/breakdowns.h"
 #include "map.h"
@@ -200,7 +201,7 @@ bool Zone::LoadZoneObjects() {
 					Door d;
 					memset(&d, 0, sizeof(d));
 
-					strncpy(d.zone_name, shortname, sizeof(d.zone_name));
+					strn0cpy(d.zone_name, shortname, sizeof(d.zone_name));
 					d.db_id = 1000000000 + atoi(row[0]); // Out of range of normal use for doors.id
 					d.door_id = -1; // Client doesn't care if these are all the same door_id
 					d.pos_x = atof(row[2]); // xpos
@@ -208,7 +209,7 @@ bool Zone::LoadZoneObjects() {
 					d.pos_z = atof(row[4]); // zpos
 					d.heading = atof(row[5]); // heading
 
-					strncpy(d.door_name, row[8], sizeof(d.door_name)); // objectname
+					strn0cpy(d.door_name, row[8], sizeof(d.door_name)); // objectname
 					// Strip trailing "_ACTORDEF" if present. Client won't accept it for doors.
 					int len = strlen(d.door_name);
 					if ((len > 9) && (memcmp(&d.door_name[len - 9], "_ACTORDEF", 10) == 0))

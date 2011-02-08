@@ -16,6 +16,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "../common/debug.h"
+#include "../common/MiscFunctions.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,8 +68,7 @@ Map* Map::LoadMapfile(const char* in_zonename, const char *directory) {
 	
 	//have to convert to lower because the short names im getting
 	//are not all lower anymore, copy since strlwr edits the str.
-	strncpy(zBuf, in_zonename, 64);
-	zBuf[63] = '\0';
+	strn0cpy(zBuf, in_zonename, 64);
 	
 	if(directory == NULL)
 		directory = MAP_DIR;

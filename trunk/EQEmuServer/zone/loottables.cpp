@@ -477,7 +477,7 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint8 charge
 			memset(newid, 0, sizeof(newid));
 			for(int i=0;i<7;i++){
 				if (!isalpha(item2->IDFile[i])){
-					strncpy(newid, &item2->IDFile[i],5);
+					strn0cpy(newid, &item2->IDFile[i],6);
 					i=8;
 				}
 			}

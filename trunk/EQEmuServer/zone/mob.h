@@ -65,6 +65,7 @@
 #include "../common/Kaiyodo-LList.h"
 #include "../common/skills.h"
 #include "../common/bodytypes.h"
+#include "../common/MiscFunctions.h"
 #include "pathing.h"
 #include "map.h"
 #include <set>
@@ -612,7 +613,7 @@ bool logpos;
 	inline const char*	GetOrigName()			const { return orig_name; }
 	inline const char*	GetLastName()			const { return lastname; }
 	const char *GetCleanName();
-	virtual void SetName(const char *new_name = NULL) { new_name ? strncpy(name, new_name, 64) : strncpy(name, GetName(), 64); return;};
+	virtual void SetName(const char *new_name = NULL) { new_name ? strn0cpy(name, new_name, 64) : strn0cpy(name, GetName(), 64); return;};
 	inline Mob*			GetTarget()			const { return target; }
 	virtual void SetTarget(Mob* mob);
 	virtual inline float		GetHPRatio() const { return max_hp == 0 ? 0 : ((float)cur_hp/max_hp*100); }

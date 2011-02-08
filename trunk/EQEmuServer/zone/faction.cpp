@@ -800,8 +800,7 @@ bool ZoneDatabase::GetFactionName(sint32 faction_id, char* name, int32 buflen) {
 	if ((faction_id <= 0) || faction_id > sint32(max_faction) ||(faction_array[faction_id] == 0))
 		return false;
 	if (faction_array[faction_id]->name[0] != 0) {
-		strncpy(name, faction_array[faction_id]->name, buflen - 1);
-		name[buflen - 1] = 0;
+		strn0cpy(name, faction_array[faction_id]->name, buflen);
 		return true;
 	}
 	return false;
@@ -911,7 +910,7 @@ bool ZoneDatabase::LoadFactionData()
 					uint32 index = atoi(row[0]);
 					faction_array[index] = new Faction;
 					memset(faction_array[index], 0, sizeof(Faction));
-					strncpy(faction_array[index]->name, row[1], 50);					
+					strn0cpy(faction_array[index]->name, row[1], 50);					
 					faction_array[index]->base = atoi(row[2]);
 					int16 i;
 					for (i=3;i != 19;i++)

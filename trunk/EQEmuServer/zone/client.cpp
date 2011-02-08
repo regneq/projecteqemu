@@ -62,6 +62,7 @@ extern bool spells_loaded;
 #include "../common/guilds.h"
 #include "../common/breakdowns.h"
 #include "../common/rulesys.h"
+#include "../common/MiscFunctions.h"
 #include "forage.h"
 #include "command.h"
 #include "StringIDs.h"
@@ -1918,10 +1919,7 @@ void Client::Stand() {
 
 void Client::ChangeLastName(const char* in_lastname) {
 	memset(m_pp.last_name, 0, sizeof(m_pp.last_name));
-	if (strlen(in_lastname) >= sizeof(m_pp.last_name))
-		strncpy(m_pp.last_name, in_lastname, sizeof(m_pp.last_name) - 1);
-	else
-		strcpy(m_pp.last_name, in_lastname);
+	strn0cpy(m_pp.last_name, in_lastname, sizeof(m_pp.last_name));
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));
 	GMLastName_Struct* gmn = (GMLastName_Struct*)outapp->pBuffer;
 	strcpy(gmn->name, name);
@@ -1957,9 +1955,9 @@ bool Client::ChangeFirstName(const char* in_firstname, const char* gmname)
 	// send name update packet
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMNameChange, sizeof(GMName_Struct));
 	GMName_Struct* gmn=(GMName_Struct*)outapp->pBuffer;
-	strncpy(gmn->gmname,gmname,64);
-	strncpy(gmn->oldname,GetName(),64);
-	strncpy(gmn->newname,in_firstname,64);
+	strn0cpy(gmn->gmname,gmname,64);
+	strn0cpy(gmn->oldname,GetName(),64);
+	strn0cpy(gmn->newname,in_firstname,64);
 	gmn->unknown[0] = 1;
 	gmn->unknown[1] = 1;
 	gmn->unknown[2] = 1;
@@ -3089,110 +3087,110 @@ void Client::Insight(int32 t_id)
 	int cur_hp = who->GetHP();
 	if (cur_hp == avg_hp)
 	{
-		strncpy(hitpoints,"averagely tough",32);
+		strn0cpy(hitpoints,"averagely tough",32);
 	}
 	else if (cur_hp >= avg_hp*5)
 	{
-		strncpy(hitpoints,"extremely tough",32);
+		strn0cpy(hitpoints,"extremely tough",32);
 	}
 	else if (cur_hp >= avg_hp*4)
 	{
-		strncpy(hitpoints,"exceptionally tough",32);
+		strn0cpy(hitpoints,"exceptionally tough",32);
 	}
 	else if (cur_hp >= avg_hp*3)
 	{
-		strncpy(hitpoints,"very tough",32);
+		strn0cpy(hitpoints,"very tough",32);
 	}
 	else if (cur_hp >= avg_hp*2)
 	{
-		strncpy(hitpoints,"quite tough",32);
+		strn0cpy(hitpoints,"quite tough",32);
 	}
 	else if (cur_hp >= avg_hp*1.25)
 	{
-		strncpy(hitpoints,"rather tough",32);
+		strn0cpy(hitpoints,"rather tough",32);
 	}
 	else if (cur_hp > avg_hp)
 	{
-		strncpy(hitpoints,"slightly tough",32);
+		strn0cpy(hitpoints,"slightly tough",32);
 	}
 	else if (cur_hp <= avg_hp*0.20)
 	{
-		strncpy(hitpoints,"extremely frail",32);
+		strn0cpy(hitpoints,"extremely frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.25)
 	{
-		strncpy(hitpoints,"exceptionally frail",32);
+		strn0cpy(hitpoints,"exceptionally frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.33)
 	{
-		strncpy(hitpoints,"very frail",32);
+		strn0cpy(hitpoints,"very frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.50)
 	{
-		strncpy(hitpoints,"quite frail",32);
+		strn0cpy(hitpoints,"quite frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.75)
 	{
-		strncpy(hitpoints,"rather frail",32);
+		strn0cpy(hitpoints,"rather frail",32);
 	}
 	else if (cur_hp < avg_hp)
 	{
-		strncpy(hitpoints,"slightly frail",32);
+		strn0cpy(hitpoints,"slightly frail",32);
 	}
 
 	int avg_dmg = who->CastToNPC()->GetMaxDamage(who->GetLevel());
 	int cur_dmg = who->CastToNPC()->GetMaxDMG();
 	if (cur_dmg == avg_dmg)
 	{
-		strncpy(dmg,"averagely strong",32);
+		strn0cpy(dmg,"averagely strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*4)
 	{
-		strncpy(dmg,"extremely strong",32);
+		strn0cpy(dmg,"extremely strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*3)
 	{
-		strncpy(dmg,"exceptionally strong",32);
+		strn0cpy(dmg,"exceptionally strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*2)
 	{
-		strncpy(dmg,"very strong",32);
+		strn0cpy(dmg,"very strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*1.25)
 	{
-		strncpy(dmg,"quite strong",32);
+		strn0cpy(dmg,"quite strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*1.10)
 	{
-		strncpy(dmg,"rather strong",32);
+		strn0cpy(dmg,"rather strong",32);
 	}
 	else if (cur_dmg > avg_dmg)
 	{
-		strncpy(dmg,"slightly strong",32);
+		strn0cpy(dmg,"slightly strong",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.20)
 	{
-		strncpy(dmg,"extremely weak",32);
+		strn0cpy(dmg,"extremely weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.25)
 	{
-		strncpy(dmg,"exceptionally weak",32);
+		strn0cpy(dmg,"exceptionally weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.33)
 	{
-		strncpy(dmg,"very weak",32);
+		strn0cpy(dmg,"very weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.50)
 	{
-		strncpy(dmg,"quite weak",32);
+		strn0cpy(dmg,"quite weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.75)
 	{
-		strncpy(dmg,"rather weak",32);
+		strn0cpy(dmg,"rather weak",32);
 	}
 	else if (cur_dmg < avg_dmg)
 	{
-		strncpy(dmg,"slightly weak",32);
+		strn0cpy(dmg,"slightly weak",32);
 	}
 
 	//Resists
@@ -5430,7 +5428,7 @@ void Client::SendAdventureError(const char *error)
 {
 	size_t error_size = strlen(error);
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (error_size + 2));
-	strncpy((char*)outapp->pBuffer, error, error_size);
+	strn0cpy((char*)outapp->pBuffer, error, error_size);
 	FastQueuePacket(&outapp);
 }
 
@@ -5486,7 +5484,7 @@ void Client::NewAdventure(int id, int theme, const char *text, int member_count,
 {
 	size_t text_size = strlen(text);
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureDetails, text_size + 2);
-	strncpy((char*)outapp->pBuffer, text, text_size);
+	strn0cpy((char*)outapp->pBuffer, text, text_size);
 	FastQueuePacket(&outapp);
 
 	adv_requested_id = id;

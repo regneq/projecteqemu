@@ -40,8 +40,8 @@ Doors::Doors(const Door* door)
 {
 	db_id = door->db_id;
 	door_id = door->door_id;
-	strncpy(zone_name,door->zone_name,16);
-	strncpy(door_name,door->door_name,32);
+	strn0cpy(zone_name,door->zone_name,32);
+	strn0cpy(door_name,door->door_name,32);
 	pos_x = door->pos_x;
 	pos_y = door->pos_y;
 	pos_z = door->pos_z;
@@ -62,7 +62,7 @@ Doors::Doors(const Door* door)
 
 	close_timer.Disable();
 
-	strncpy(dest_zone,door->dest_zone,16);
+	strn0cpy(dest_zone,door->dest_zone,32);
 	dest_instance_id = door->dest_instance_id;
 	dest_x = door->dest_x;
 	dest_y = door->dest_y;
@@ -564,8 +564,8 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			memset(&into[r], 0, sizeof(Door));
 			into[r].db_id = atoi(row[0]);
 			into[r].door_id = atoi(row[1]);
-			strncpy(into[r].zone_name,row[2],16);
-			strncpy(into[r].door_name,row[3],32);
+			strn0cpy(into[r].zone_name,row[2],32);
+			strn0cpy(into[r].door_name,row[3],32);
 			into[r].pos_x = (float)atof(row[4]);
 			into[r].pos_y = (float)atof(row[5]);
 			into[r].pos_z = (float)atof(row[6]);
@@ -577,7 +577,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			into[r].nokeyring = atoi(row[12]);
 			into[r].trigger_door = atoi(row[13]);
 			into[r].trigger_type = atoi(row[14]);
-            strncpy(into[r].dest_zone, row[15], 16);
+            strn0cpy(into[r].dest_zone, row[15], 32);
 			into[r].dest_instance_id = atoi(row[16]);
             into[r].dest_x = (float) atof(row[17]);
             into[r].dest_y = (float) atof(row[18]);

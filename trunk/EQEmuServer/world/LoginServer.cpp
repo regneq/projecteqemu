@@ -61,6 +61,7 @@ using namespace std;
 #include "LoginServerList.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/packet_dump.h"
+#include "../common/MiscFunctions.h"
 #include "zoneserver.h"
 #include "worlddb.h"
 #include "zonelist.h"
@@ -76,10 +77,10 @@ extern volatile bool	RunLoops;
 LoginServer::LoginServer(const char* iAddress, int16 iPort, const char* Account, const char* Password)
 : statusupdate_timer(LoginServer_StatusUpdateInterval)
 {
-	strncpy(LoginServerAddress,iAddress,256);
+	strn0cpy(LoginServerAddress,iAddress,256);
 	LoginServerPort = iPort;
-	strncpy(LoginAccount,Account,31);
-	strncpy(LoginPassword,Password,31);
+	strn0cpy(LoginAccount,Account,31);
+	strn0cpy(LoginPassword,Password,31);
 	CanAccountUpdate = false;
 	tcpc = new EmuTCPConnection(true);
 	tcpc->SetPacketMode(EmuTCPConnection::packetModeLogin);
@@ -330,8 +331,8 @@ void LoginServer::SendAccountUpdate(ServerPacket* pack) {
 	ServerLSAccountUpdate_Struct* s = (ServerLSAccountUpdate_Struct *) pack->pBuffer;
 	if(CanUpdate()) {
 		_log(WORLD__LS, "Sending ServerOP_LSAccountUpdate packet to loginserver: %s:%d",LoginServerAddress,LoginServerPort);
-		strncpy(s->worldaccount, LoginAccount, 30);
-		strncpy(s->worldpassword, LoginPassword, 30);
+		strn0cpy(s->worldaccount, LoginAccount, 30);
+		strn0cpy(s->worldpassword, LoginPassword, 30);
 		SendPacket(pack);
 	}
 }

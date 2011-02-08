@@ -152,11 +152,11 @@ Mob::Mob(const char*   in_name,
 	clean_name[0]=0;
 	lastname[0]=0;
 	if(in_name) {
-		strncpy(name,in_name,64);
-		strncpy(orig_name,in_name,64);
+		strn0cpy(name,in_name,64);
+		strn0cpy(orig_name,in_name,64);
 	}
 	if(in_lastname)
-		strncpy(lastname,in_lastname,64);
+		strn0cpy(lastname,in_lastname,64);
 	cur_hp		= in_cur_hp;
 	max_hp		= in_max_hp;
 	base_hp		= in_max_hp;
@@ -734,8 +734,7 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	strcpy(ns->spawn.name, name);
 	if(IsClient())
         {
-		strncpy(ns->spawn.lastName,lastname,sizeof(ns->spawn.lastName));
-                ns->spawn.lastName[sizeof(ns->spawn.lastName)-1] = '\0';
+		strn0cpy(ns->spawn.lastName,lastname,sizeof(ns->spawn.lastName));
         }
 	ns->spawn.heading	= FloatToEQ19(heading);
 	ns->spawn.x			= FloatToEQ19(x_pos);//((sint32)x_pos)<<3;
@@ -804,8 +803,7 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 
 	ns->spawn.lastName[0] = '\0';
 	
-	strncpy(ns->spawn.lastName, lastname, sizeof(ns->spawn.lastName));
-        ns->spawn.lastName[sizeof(ns->spawn.lastName)-1] = '\0';
+	strn0cpy(ns->spawn.lastName, lastname, sizeof(ns->spawn.lastName));
 
 	for(i = 0; i < MAX_MATERIALS; i++)
 	{
@@ -1521,30 +1519,30 @@ void Mob::TempName(const char *newname)
 {
 	char temp_name[64];
 	char old_name[64];
-	strncpy(old_name, GetName(), 64);
+	strn0cpy(old_name, GetName(), 64);
 
 	if(newname)
-		strncpy(temp_name, newname, 64);	
+		strn0cpy(temp_name, newname, 64);	
 
 	// Reset the name to the original if left null.
 	if(!newname) {
-		strncpy(temp_name, GetOrigName(), 64);
+		strn0cpy(temp_name, GetOrigName(), 64);
 		SetName(temp_name);
 		//CleanMobName(GetName(), temp_name);
-		strncpy(temp_name, GetCleanName(), 64);
+		strn0cpy(temp_name, GetCleanName(), 64);
 	}
 
 	// Make the new name unique and set it
-	strncpy(temp_name, entity_list.MakeNameUnique(temp_name), 64);
+	strn0cpy(temp_name, entity_list.MakeNameUnique(temp_name), 64);
 	
 
 	// Send the new name to all clients
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MobRename, sizeof(MobRename_Struct));
 	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
 	MobRename_Struct* mr = (MobRename_Struct*) outapp->pBuffer;
-	strncpy(mr->old_name, old_name, 64);
-	strncpy(mr->old_name_again, old_name, 64);
-	strncpy(mr->new_name, temp_name, 64);
+	strn0cpy(mr->old_name, old_name, 64);
+	strn0cpy(mr->old_name_again, old_name, 64);
+	strn0cpy(mr->new_name, temp_name, 64);
 	mr->unknown192 = 0;
 	mr->unknown196 = 1;
 	entity_list.QueueClients(this, outapp);
@@ -4476,7 +4474,7 @@ void Client::SendClientStatWindow(Client* client)
 		strncat(HME_row, total_field, max_HME_value_len); // Add Total value to string
 		strcat(HME_row, "<br>"); // END LINE
 	}
-	strncpy(HME_row_real, HME_row, 1499); // Copy Completed String
+	strn0cpy(HME_row_real, HME_row, 1499); // Copy Completed String
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	  Regen String
@@ -4609,7 +4607,7 @@ void Client::SendClientStatWindow(Client* client)
 		strncat(regen_string, total_regen_field, max_regen_value_len); // Add current Regen value to string
 		strcat(regen_string, "</c><br>");
 	}
-	strncpy(regen_string_real, regen_string, 1499); // Copy Completed String	
+	strn0cpy(regen_string_real, regen_string, 1499); // Copy Completed String	
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	  Stat String
@@ -4745,7 +4743,7 @@ void Client::SendClientStatWindow(Client* client)
 			strcat(stat_field, "</c><br>"); 
 		}
 	}
-	strncpy(stat_field_real, stat_field, 1499); // copy completed string
+	strn0cpy(stat_field_real, stat_field, 1499); // copy completed string
   /*##########################################################
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	  Mod2 String
@@ -4867,7 +4865,7 @@ void Client::SendClientStatWindow(Client* client)
 		strncat(mod2_field, mod2b_cap, max_mod2_value_len); 
 		strcat(mod2_field, "<br>");
 	}
-	strncpy(mod2_field_real, mod2_field, 1499); // Copy completed string
+	strn0cpy(mod2_field_real, mod2_field, 1499); // Copy completed string
 	
 	client->SendWindow(0,0,0,1,this,"", " "
 			/* 01 - C/L/R	*/		" %s Class: %s %s Level: %i %s Race: %s<br>"

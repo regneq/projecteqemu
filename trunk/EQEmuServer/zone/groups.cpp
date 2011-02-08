@@ -20,6 +20,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "NpcAI.h"
 #include "../common/packet_functions.h"
 #include "../common/packet_dump.h"
+#include "../common/MiscFunctions.h"
 #include "worldserver.h"
 extern EntityList entity_list;
 extern WorldServer worldserver;
@@ -347,7 +348,7 @@ bool Group::UpdatePlayer(Mob* update){
 			if(membername[0] == '\0')
 				memset(pp.groupMembers[i], 0, 64);
 			else
-				strncpy(pp.groupMembers[i], membername[i], 64);
+				strn0cpy(pp.groupMembers[i], membername[i], 64);
 		}
 		if(IsNPCMarker(update->CastToClient()))
 		{
@@ -851,7 +852,7 @@ bool Group::LearnMembers() {
 			if(!row[0])
 				continue;
 			members[i] = NULL;
-			strncpy(membername[i], row[0], 64);
+			strn0cpy(membername[i], row[0], 64);
 
 			i++;
 		}
