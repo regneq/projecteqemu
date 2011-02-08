@@ -1257,7 +1257,7 @@ void Mob::SendItemAnimation(Mob *to, const Item_Struct *item, SkillType skillInU
 	as->item_type = item->ItemType;
 	as->skill = (uint8)skillInUse;
 
-	strncpy(as->model_name, item->IDFile, 16);
+	strn0cpy(as->model_name, item->IDFile, 16);
 	
 
 	/*
@@ -1336,7 +1336,7 @@ void Mob::ProjectileAnimation(Mob* to, int16 item_id, bool IsArrow, float speed,
 	as->item_id = item->ID;
 	as->item_type = item_type;
 	as->skill = 0;	// Doesn't seem to have any effect
-	strncpy(as->model_name, item->IDFile, 16);
+	strn0cpy(as->model_name, item->IDFile, 16);
 	as->velocity = speed;
 	as->launch_angle = angle;
 	as->tilt = tilt;

@@ -51,6 +51,7 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 #include "../common/EQPacket.h"
 #include "../common/guilds.h"
 #include "../common/rulesys.h"
+#include "../common/MiscFunctions.h"
 //#include "../common/servertalk.h" // for oocmute and revoke
 #include "worldserver.h"
 #include "masterentity.h"
@@ -1132,7 +1133,7 @@ void command_showpetspell(Client *c, const Seperator *sep)
 		int count=0;
 		char sName[64];
 		char sCriteria[65];
-		strncpy(sCriteria, sep->argplus[1], 64);
+		strn0cpy(sCriteria, sep->argplus[1], 64);
 		strupr(sCriteria);
 		for (int i = 0; i < SPDAT_RECORDS; i++)
 		{
@@ -2408,9 +2409,9 @@ void command_setlsinfo(Client *c, const Seperator *sep)
 		ServerPacket* pack = new ServerPacket(ServerOP_LSAccountUpdate, sizeof(ServerLSAccountUpdate_Struct));
 		ServerLSAccountUpdate_Struct* s = (ServerLSAccountUpdate_Struct *) pack->pBuffer;
 		s->useraccountid = c->LSAccountID();
-		strncpy(s->useraccount, c->AccountName(), 30);
-		strncpy(s->useremail, sep->arg[1], 100);
-		strncpy(s->userpassword, sep->arg[2], 50);
+		strn0cpy(s->useraccount, c->AccountName(), 30);
+		strn0cpy(s->useremail, sep->arg[1], 100);
+		strn0cpy(s->userpassword, sep->arg[2], 50);
 		worldserver.SendPacket(pack);
 		c->Message(0, "Login Server update packet sent.");
 	}
@@ -2563,7 +2564,7 @@ void command_findspell(Client *c, const Seperator *sep)
 		//int iSearchLen = strlen(sep->argplus[1])+1;
 		char sName[64];
 		char sCriteria[65];
-		strncpy(sCriteria, sep->argplus[1], 64);
+		strn0cpy(sCriteria, sep->argplus[1], 64);
 		strupr(sCriteria);
 		for (int i=0; i<SPDAT_RECORDS; i++) {
 			if (spells[i].name[0] != 0) {
@@ -3553,8 +3554,8 @@ void command_motd(Client *c, const Seperator *sep)
 {
 	ServerPacket* outpack = new ServerPacket(ServerOP_Motd, sizeof(ServerMotd_Struct));
 	ServerMotd_Struct* mss = (ServerMotd_Struct*) outpack->pBuffer;
-	strncpy(mss->myname, c->GetName(),64);
-	strncpy(mss->motd, sep->argplus[1],512);
+	strn0cpy(mss->myname, c->GetName(),64);
+	strn0cpy(mss->motd, sep->argplus[1],512);
 	worldserver.SendPacket(outpack);
 	safe_delete(outpack);
 }
@@ -3611,7 +3612,7 @@ void command_zonelock(Client *c, const Seperator *sep)
 {
 	ServerPacket* pack = new ServerPacket(ServerOP_LockZone, sizeof(ServerLockZone_Struct));
 	ServerLockZone_Struct* s = (ServerLockZone_Struct*) pack->pBuffer;
-	strncpy(s->adminname, c->GetName(), sizeof(s->adminname));
+	strn0cpy(s->adminname, c->GetName(), sizeof(s->adminname));
 	if (strcasecmp(sep->arg[1], "list") == 0) {
 		s->op = 0;
 		worldserver.SendPacket(pack);
@@ -6533,8 +6534,8 @@ void command_revoke(Client *c, const Seperator *sep)
 #endif
 				ServerPacket * outapp = new ServerPacket (ServerOP_Revoke,sizeof(RevokeStruct));
 				RevokeStruct* revoke = (RevokeStruct*)outapp->pBuffer;
-				strncpy(revoke->adminname, c->GetName(), 64);
-				strncpy(revoke->name, sep->arg[1], 64);
+				strn0cpy(revoke->adminname, c->GetName(), 64);
+				strn0cpy(revoke->name, sep->arg[1], 64);
 				revoke->toggle = flag;
 				worldserver.SendPacket(outapp);
 				safe_delete(outapp);
@@ -9553,7 +9554,7 @@ void command_object(Client *c, const Seperator *sep)
 					od.z = atof(row[col++]);
 					od.heading = atof(row[col++]);
 					itemid = atoi(row[col++]);
-					strncpy(od.object_name, row[col++], sizeof(od.object_name));
+					strn0cpy(od.object_name, row[col++], sizeof(od.object_name));
 					od.object_name[sizeof(od.object_name) - 1] = '\0'; // Required if strlen(row[col++]) exactly == sizeof(object_name)
 
 					od.object_type = atoi(row[col++]);
@@ -9757,8 +9758,7 @@ void command_object(Client *c, const Seperator *sep)
 			}
 
 			// Strip any single quotes from objectname (SQL injection FTL!)
-			strncpy(od.object_name, sep->arg[3 + col], sizeof(od.object_name));
-			od.object_name[sizeof(od.object_name) - 1] = '\0'; // Required if strlen(arg) exactly == sizeof(object_name)
+			strn0cpy(od.object_name, sep->arg[3 + col], sizeof(od.object_name));
 
 			len = strlen(od.object_name);
 			for (col = 0; col < (int32)len; col++)
@@ -9788,7 +9788,7 @@ void command_object(Client *c, const Seperator *sep)
 				
 				// If there's a problem retrieving an ID from the database, it'll end up being object # 1. No biggie.
 
-				strncpy(query, "SELECT MAX(id) FROM object", sizeof(query));
+				strn0cpy(query, "SELECT MAX(id) FROM object", sizeof(query));
 
 				if (database.RunQuery(query, strlen(query), errbuf, &result))
 				{
@@ -9967,8 +9967,7 @@ void command_object(Client *c, const Seperator *sep)
 							return;
 						}
 
-						strncpy(od.object_name, sep->arg[4], sizeof(od.object_name));
-						od.object_name[sizeof(od.object_name) - 1] = '\0'; // Required if strlen(arg) exactly == sizeof(object_name)
+						strn0cpy(od.object_name, sep->arg[4], sizeof(od.object_name));
 
 						o->SetObjectData(&od);
 
@@ -10495,8 +10494,7 @@ void command_object(Client *c, const Seperator *sep)
 
 				memset(&door, 0, sizeof(door));
 
-				strncpy(door.zone_name, zone->GetShortName(), sizeof(door.zone_name));
-				door.zone_name[sizeof(door.zone_name) - 1] = '\0'; // Required if strlen(shortname) exactly == sizeof(door.zone_name)
+				strn0cpy(door.zone_name, zone->GetShortName(), sizeof(door.zone_name));
 
 				door.db_id = 1000000000 + id; // Out of range of normal use for doors.id
 				door.door_id = -1; // Client doesn't care if these are all the same door_id
@@ -10505,8 +10503,7 @@ void command_object(Client *c, const Seperator *sep)
 				door.pos_z = od.z; // zpos
 				door.heading = od.heading; // heading
 
-				strncpy(door.door_name, od.object_name, sizeof(door.door_name)); // objectname
-				door.door_name[sizeof(door.door_name) - 1] = '\0'; // Required if strlen(object_name) exactly == sizeof(door.door_name)
+				strn0cpy(door.door_name, od.object_name, sizeof(door.door_name)); // objectname
 
 				// Strip trailing "_ACTORDEF" if present. Client won't accept it for doors.
 				len = strlen(door.door_name);
@@ -10806,8 +10803,7 @@ void command_object(Client *c, const Seperator *sep)
 			od.y = atof(row[col++]);
 			od.z = atof(row[col++]);
 			od.heading = atof(row[col++]);
-			strncpy(od.object_name, row[col++], sizeof(od.object_name));
-			od.object_name[sizeof(od.object_name) - 1] = '\0'; // Required if strlen(row[col++]) exactly == sizeof(object_name)
+			strn0cpy(od.object_name, row[col++], sizeof(od.object_name));
 			od.object_type = atoi(row[col++]);
 			icon = atoi(row[col++]);
 			od.unknown008[0] = atoi(row[col++]);

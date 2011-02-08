@@ -22,6 +22,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "masterentity.h"
 #include "../common/Item.h"
 #include "../common/linked_list.h"
+#include "../common/MiscFunctions.h"
 #include <math.h>
 #include <assert.h>
 #include "worldserver.h"
@@ -33,8 +34,7 @@ Horse::Horse(Client *_owner, int16 spell_id, float x, float y, float z, float he
  : NPC(GetHorseType(spell_id), NULL, x, y, z, heading, FlyMode3)
 {
 	//give the horse its proper name.
-	strncpy(name, _owner->GetCleanName(), 55);
-	name[55] = '\0';
+	strn0cpy(name, _owner->GetCleanName(), 55);
 	strcat(name,"`s_Mount00");
 	
 	owner = _owner;

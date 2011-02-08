@@ -29,6 +29,7 @@
 #include "../common/guilds.h"
 #include "../common/packet_dump.h"
 #include "../common/misc.h"
+#include "../common/MiscFunctions.h"
 #include "cliententry.h"
 #include "wguild_mgr.h"
 #include "lfplist.h"
@@ -90,12 +91,10 @@ bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 
 	if (zn)
 	{
-		strncpy(zone_name, zn, sizeof(zone_name));
-                zone_name[sizeof(zone_name)-1] = '\0';
+		strn0cpy(zone_name, zn, sizeof(zone_name));
 		if( database.GetZoneLongName( (char*)zone_name, &longname, NULL, NULL, NULL, NULL, NULL, NULL ) )
 		{
-			strncpy(long_name, longname, sizeof(long_name));
-                	long_name[sizeof(long_name)-1] = '\0';
+			strn0cpy(long_name, longname, sizeof(long_name));
 			safe_delete_array( longname );
 		}
 		else

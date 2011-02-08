@@ -1662,7 +1662,7 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 		if(it != zone->adventure_entry_list_flavor.end())
 		{
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (it->second.size() + 2));
-			strncpy((char*)outapp->pBuffer, it->second.c_str(), it->second.size());
+			strn0cpy((char*)outapp->pBuffer, it->second.c_str(), it->second.size());
 			FastQueuePacket(&outapp);
 		}
 		else
@@ -1671,7 +1671,7 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 			{
 				std::string text = "Choose your difficulty and preferred adventure type.";
 				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
-				strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
+				strn0cpy((char*)outapp->pBuffer, text.c_str(), text.size());
 				FastQueuePacket(&outapp);
 			}
 		}
@@ -2233,7 +2233,7 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 	//^Item Name,Item ID,Cost in Points,Theme (0=none),0,1,races bit map,classes bitmap
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantResponse,ss.str().size()+2);
 	outapp->pBuffer[0] = count;
-	strncpy((char*)&outapp->pBuffer[1],ss.str().c_str(),ss.str().size());
+	strn0cpy((char*)&outapp->pBuffer[1],ss.str().c_str(),ss.str().size());
 	FastQueuePacket(&outapp);
 }
 
@@ -6014,8 +6014,8 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 	if(inviter != NULL && inviter->IsClient()) {
 		isgrouped = true;
-		strncpy(gf->name1,inviter->GetName(), 64);
-		strncpy(gf->name2,this->GetName(), 64);
+		strn0cpy(gf->name1,inviter->GetName(), 64);
+		strn0cpy(gf->name2,this->GetName(), 64);
 
 		Raid* raid = entity_list.GetRaidByClient(inviter->CastToClient());
 		Raid* iraid = entity_list.GetRaidByClient(this);
@@ -9254,8 +9254,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 					//This sends an "invite" to the client in question.
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 					RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
-					strncpy(rg->leader_name, ri->leader_name, 64);
-					strncpy(rg->player_name, ri->player_name, 64);
+					strn0cpy(rg->leader_name, ri->leader_name, 64);
+					strn0cpy(rg->player_name, ri->player_name, 64);
 
 					rg->parameter = 0;
 					rg->action = 20;
@@ -9267,8 +9267,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 				//This sends an "invite" to the client in question.
 				EQApplicationPacket* outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 				RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
-				strncpy(rg->leader_name, ri->leader_name, 64);
-				strncpy(rg->player_name, ri->player_name, 64);
+				strn0cpy(rg->leader_name, ri->leader_name, 64);
+				strn0cpy(rg->player_name, ri->player_name, 64);
 
 				rg->parameter = 0;
 				rg->action = 20;
@@ -9575,7 +9575,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 					rga->rid = GetID();
 					rga->zoneid = zone->GetZoneID();
 					rga->instance_id = zone->GetInstanceID();
-					strncpy(rga->playername, ri->leader_name, 64);
+					strn0cpy(rga->playername, ri->leader_name, 64);
 					worldserver.SendPacket(pack);
 					safe_delete(pack);
 				}
@@ -9627,7 +9627,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 												ServerPacket *pack = new ServerPacket(ServerOP_RaidChangeGroup, sizeof(ServerRaidGeneralAction_Struct));
 												ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 												rga->rid = r->GetID();
-												strncpy(rga->playername, r->members[x].membername, 64);
+												strn0cpy(rga->playername, r->members[x].membername, 64);
 												rga->zoneid = zone->GetZoneID();
 												rga->instance_id = zone->GetInstanceID();
 												worldserver.SendPacket(pack);
@@ -9652,7 +9652,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 							rga->rid = r->GetID();
 							rga->zoneid = zone->GetZoneID();
 							rga->instance_id = zone->GetInstanceID();
-							strncpy(rga->playername, ri->leader_name, 64);
+							strn0cpy(rga->playername, ri->leader_name, 64);
 							worldserver.SendPacket(pack);
 							safe_delete(pack);
 						}
@@ -9693,7 +9693,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 									ServerPacket *pack = new ServerPacket(ServerOP_RaidChangeGroup, sizeof(ServerRaidGeneralAction_Struct));
 									ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 									rga->rid = r->GetID();
-									strncpy(rga->playername,r->members[x].membername, 64);
+									strn0cpy(rga->playername,r->members[x].membername, 64);
 									rga->zoneid = zone->GetZoneID();
 									rga->instance_id = zone->GetInstanceID();
 									worldserver.SendPacket(pack);
@@ -9713,7 +9713,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 						rga->rid = r->GetID();
 						rga->zoneid = zone->GetZoneID();
 						rga->instance_id = zone->GetInstanceID();
-						strncpy(rga->playername, ri->leader_name, 64);
+						strn0cpy(rga->playername, ri->leader_name, 64);
 						worldserver.SendPacket(pack);
 						safe_delete(pack);
 					}

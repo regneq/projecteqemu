@@ -447,14 +447,14 @@ void ZoneDatabase::GetEventLogs(const char* name,char* target,int32 account_id,i
 			if(count > 255)
 				break;
 			cel->eld[count].id = atoi(row[0]);
-			strncpy(cel->eld[count].accountname,row[1],64);
+			strn0cpy(cel->eld[count].accountname,row[1],64);
 			cel->eld[count].account_id = atoi(row[2]);
 			cel->eld[count].status = atoi(row[3]);
-			strncpy(cel->eld[count].charactername,row[4],64);
-			strncpy(cel->eld[count].targetname,row[5],64);
+			strn0cpy(cel->eld[count].charactername,row[4],64);
+			strn0cpy(cel->eld[count].targetname,row[5],64);
 			sprintf(cel->eld[count].timestamp,"%s",row[6]);
-			strncpy(cel->eld[count].descriptiontype,row[7],64);
-			strncpy(cel->eld[count].details,row[8],128);
+			strn0cpy(cel->eld[count].descriptiontype,row[7],64);
+			strn0cpy(cel->eld[count].details,row[8],128);
 			cel->eventid = eventid;
 			count++;
 			cel->count = count;
@@ -1113,7 +1113,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				int r = 0;
 				tmpNPCType->npc_id = atoi(row[r++]);
 				
-				strncpy(tmpNPCType->name, row[r++], 50);
+				strn0cpy(tmpNPCType->name, row[r++], 50);
 
 				tmpNPCType->level = atoi(row[r++]);
 				tmpNPCType->race = atoi(row[r++]);
@@ -1254,7 +1254,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Set see_invis flag
 				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag
 				if (row[r] != NULL)
-					strncpy(tmpNPCType->lastname, row[r], 32);
+					strn0cpy(tmpNPCType->lastname, row[r], 32);
 				r++;
 				
 				tmpNPCType->qglobal = atoi(row[r++])==0?false:true;	// qglobal
@@ -1738,8 +1738,7 @@ bool ZoneDatabase::LoadBlockedSpells(sint32 blockedSpellsCount, ZoneSpellsBlocke
 				into[r].xdiff = atof(row[6]);
 				into[r].ydiff = atof(row[7]);
 				into[r].zdiff = atof(row[8]);
-				strncpy(into[r].message, row[9], 255);
-				into[r].message[255] = '\0';
+				strn0cpy(into[r].message, row[9], 255);
 			}
 		}
 		mysql_free_result(result);

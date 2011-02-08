@@ -97,8 +97,8 @@ bool Database::DBLoadDoors(int32 iDoorCount, int32 iMaxDoorID) {
 						memset(&tmpDoor, 0, sizeof(Door));
 						tmpDoor.db_id = atoi(row[0]);
 						tmpDoor.door_id = atoi(row[1]);
-						strncpy(tmpDoor.zone_name,row[2],16);
-						strncpy(tmpDoor.door_name,row[3],32);
+						strn0cpy(tmpDoor.zone_name,row[2],32);
+						strn0cpy(tmpDoor.door_name,row[3],32);
 						tmpDoor.pos_x = (float)atof(row[4]);
 						tmpDoor.pos_y = (float)atof(row[5]);
 						tmpDoor.pos_z = (float)atof(row[6]);

@@ -663,7 +663,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		reply->component_count = comp_count;
 		reply->recipe_id = recipe;
 		reply->trivial = trivial;
-		strncpy(reply->recipe_name, name, 63);
+		strn0cpy(reply->recipe_name, name, sizeof(reply->recipe_name));
 		
 		//DumpPacket(outapp);
 		FastQueuePacket(&outapp);
@@ -779,10 +779,10 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 			*itemptr = item;
 			*iconptr = icon;
 			strncpy(cblock, name, len);
-			
+
 			cblock[len] = '\0';	//just making sure.
 			cblock += len + 1;	//get the null
-			datalen += len + 1;	//gte the null
+			datalen += len + 1;	//get the null
 			count++;
 		}
 		

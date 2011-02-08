@@ -26,6 +26,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 #include "../common/skills.h"
 #include "../common/bodytypes.h"
 #include "../common/classes.h"
+#include "../common/MiscFunctions.h"
 #include "pets.h"
 #include <math.h>
 #include <assert.h>
@@ -281,7 +282,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	//TODO: think about regen (engaged vs. not engaged)
 	
 	if(petname != NULL) {
-		strncpy(npc_type->name, petname, 64);
+		strn0cpy(npc_type->name, petname, 64);
 	} else if (strncmp("Familiar", pettype, 8) == 0) {
 		strcpy(npc_type->name, this->GetName());
 		npc_type->name[19] = '\0';
@@ -464,8 +465,7 @@ void Mob::SetPetID(int16 NewPetID) {
 
 void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 	//save the pet name
-	strncpy(name, GetName(), 64);
-	name[63] = '\0';
+	strn0cpy(name, GetName(), 64);
 	
 	//save their items
 	int i;

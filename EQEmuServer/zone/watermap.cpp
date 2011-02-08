@@ -24,6 +24,7 @@
 
 #include "../common/files.h"
 #include "watermap.h"
+#include "../common/MiscFunctions.h"
 #ifdef WIN32
 #define snprintf        _snprintf
 #endif
@@ -114,8 +115,7 @@ WaterMap* WaterMap::LoadWaterMapfile(const char* in_zonename, const char *direct
 
 	//have to convert to lower because the short names im getting
 	//are not all lower anymore, copy since strlwr edits the str.
-	strncpy(zBuf, in_zonename, 64);
-	zBuf[63] = '\0';
+	strn0cpy(zBuf, in_zonename, 64);
 
 	if(directory == NULL)
 		directory = MAP_DIR;

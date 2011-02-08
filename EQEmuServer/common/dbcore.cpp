@@ -89,27 +89,27 @@ bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, int
 			{
 				if (!strncasecmp (type, "host", 4))
 				{
-					strncpy (host, buf, 199);
+					strn0cpy (host, buf, 199);
 					items[0] = true;
 				}
 				if (!strncasecmp (type, "user", 4))
 				{
-					strncpy (user, buf, 199);
+					strn0cpy (user, buf, 199);
 					items[1] = true;
 				}
 				if (!strncasecmp (type, "pass", 4))
 				{
-					strncpy (passwd, buf, 199);
+					strn0cpy (passwd, buf, 199);
 					items[2] = true;
 				}
 				if (!strncasecmp (type, "data", 4))
 				{
-					strncpy (database, buf, 199);
+					strn0cpy (database, buf, 199);
 					items[3] = true;
 				}
 				if (!strncasecmp (type, "port", 4))
 				{
-					strncpy(cport,buf,5);
+					strn0cpy(cport,buf,5);
 					port=atoi(cport);
 					items[4] = true;
 				}

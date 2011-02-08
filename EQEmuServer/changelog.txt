@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/08/2011==
+Trevius: Replaced most uses of strncpy with strn0cpy for consistency and stability.
+Trevius: Increased zone name loading to 32 characters for doors.
+
+Required SQL:
+utils/sql/svn/1847_required_doors_dest_zone_size_32.sql
+
 ==02/07/2011==
 Derision: SoD/UF: /makeleader and changing Group Leader via Roles works.
 Derision: If the leader of a group of exactly 3 members quits, leadership should now be transferred to another member.

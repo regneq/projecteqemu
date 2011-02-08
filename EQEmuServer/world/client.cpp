@@ -47,6 +47,7 @@ using namespace std;
 #include "../common/languages.h"
 #include "../common/skills.h"
 #include "../common/extprofile.h"
+#include "../common/MiscFunctions.h"
 #include "WorldConfig.h"
 #include "LoginServer.h"
 #include "LoginServerList.h"
@@ -252,8 +253,8 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			// Quagmire - max len for name is 18, pass 15
 			char name[19] = {0};
 			char password[16] = {0};
-			strncpy(name, (char*)li->login_info,18);
-			strncpy(password, (char*)&(li->login_info[strlen(name)+1]), 15);
+			strn0cpy(name, (char*)li->login_info,18);
+			strn0cpy(password, (char*)&(li->login_info[strlen(name)+1]), 15);
 
 			if (strlen(password) <= 1) {
 				// TODO: Find out how to tell the client wrong username/password
@@ -530,7 +531,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
             }
 
 			EnterWorld_Struct *ew=(EnterWorld_Struct *)app->pBuffer;
-			strncpy(char_name, ew->name, 64);
+			strn0cpy(char_name, ew->name, 64);
 
 			EQApplicationPacket *outapp;
 			int32 tmpaccid = 0;
@@ -1151,7 +1152,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 
 	InitExtendedProfile(&ext);
 
-	strncpy(pp.name, name, 63);
+	strn0cpy(pp.name, name, 63);
 	// clean the capitalization of the name
 #if 0	// on second thought, don't - this will just make the creation fail
 // because the name won't match what was already reserved earlier

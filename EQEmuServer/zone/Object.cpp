@@ -797,7 +797,7 @@ void Object::SetZ(float pos)
 
 void Object::SetModelName(const char* modelname)
 {
-	strncpy(m_data.object_name, modelname, sizeof(m_data.object_name)); // 32 is the max for chars in object_name, this should be safe
+	strn0cpy(m_data.object_name, modelname, sizeof(m_data.object_name)); // 32 is the max for chars in object_name, this should be safe
 	EQApplicationPacket* app = new EQApplicationPacket();
 	EQApplicationPacket* app2 = new EQApplicationPacket();
 	this->CreateDeSpawnPacket(app);

@@ -719,10 +719,10 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inven
 	const char *zname = GetZoneName(pp->zone_id);
 	if(zname == NULL) {
 		//zone not in the DB, something to prevent crash...
-		strncpy(zone, "qeynos", 49);
+		strn0cpy(zone, "qeynos", 49);
 		pp->zone_id = 1;
 	} else
-		strncpy(zone, zname, 49);
+		strn0cpy(zone, zname, 49);
 	x=pp->x;
 	y=pp->y;
 	z=pp->z;

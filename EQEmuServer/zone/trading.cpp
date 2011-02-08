@@ -1066,7 +1066,7 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 
 	outtbs->Action = BazaarBuyItem;
 
-	strncpy(outtbs->ItemName, BuyItem->GetItem()->Name, 64);
+	strn0cpy(outtbs->ItemName, BuyItem->GetItem()->Name, 64);
 
 	int TraderSlot = 0;
 

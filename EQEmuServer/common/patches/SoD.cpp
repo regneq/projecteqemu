@@ -1822,8 +1822,8 @@ ENCODE(OP_RaidUpdate)
 		
 		add_member->raidGen.action = in_add_member->raidGen.action;
 		add_member->raidGen.parameter = in_add_member->raidGen.parameter;
-		strncpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
-		strncpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
+		strn0cpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
+		strn0cpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
 		add_member->_class = in_add_member->_class;
 		add_member->level= in_add_member->level;
 		add_member->isGroupLeader = in_add_member->isGroupLeader;
@@ -1840,8 +1840,8 @@ ENCODE(OP_RaidUpdate)
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
 		structs::RaidGeneral_Struct *raid_general = (structs::RaidGeneral_Struct*)outapp->pBuffer;
-		strncpy(raid_general->leader_name, in_raid_general->leader_name, 64);
-		strncpy(raid_general->player_name, in_raid_general->player_name, 64);
+		strn0cpy(raid_general->leader_name, in_raid_general->leader_name, 64);
+		strn0cpy(raid_general->player_name, in_raid_general->player_name, 64);
 		raid_general->action = in_raid_general->action;
 		raid_general->parameter = in_raid_general->parameter;
 		dest->FastQueuePacket(&outapp);
@@ -1860,8 +1860,8 @@ ENCODE(OP_RaidJoin)
 
 	general->action = 8;
 	general->parameter = 1;
-	strncpy(general->leader_name, raid_create->leader_name, 64);
-	strncpy(general->player_name, raid_create->leader_name, 64);
+	strn0cpy(general->leader_name, raid_create->leader_name, 64);
+	strn0cpy(general->player_name, raid_create->leader_name, 64);
 
 	dest->FastQueuePacket(&outapp_create);
 	delete[] __emu_buffer;
@@ -2403,8 +2403,8 @@ DECODE(OP_RaidInvite) {
 	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
 	SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
 
-	strncpy(emu->leader_name, eq->leader_name, 64);
-	strncpy(emu->player_name, eq->player_name, 64);
+	strn0cpy(emu->leader_name, eq->leader_name, 64);
+	strn0cpy(emu->player_name, eq->player_name, 64);
 	IN(action);
 	IN(parameter);
 
