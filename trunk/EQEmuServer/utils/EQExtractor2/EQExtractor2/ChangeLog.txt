@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==02/10/2011==
+Derision: Support for Feb 8 2011 client
+
 ==01/29/2011==
 Derision: Doors with opentype 57 are no longer automatically changed to type 58.
 Derision: Handling of opcodes with zero low-byte (e.g. 0x4200).
