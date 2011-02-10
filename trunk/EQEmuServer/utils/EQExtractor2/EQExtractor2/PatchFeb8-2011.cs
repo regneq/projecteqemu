@@ -26,7 +26,8 @@ namespace EQExtractor2.Patches
             if ((OpCode == OpManager.OpCodeNameToNumber("OP_ZoneEntry")) && (Direction == PacketDirection.ClientToServer))
                 return IdentificationStatus.Tentative;
 
-            if ((OpCode == OpManager.OpCodeNameToNumber("OP_PlayerProfile")) && (Direction == PacketDirection.ServerToClient))
+            if ((OpCode == OpManager.OpCodeNameToNumber("OP_PlayerProfile")) && (Direction == PacketDirection.ServerToClient) &&
+                (Size == ExpectedPPLength))
                 return IdentificationStatus.Yes;
 
             return IdentificationStatus.No;
