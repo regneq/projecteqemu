@@ -18,7 +18,7 @@ namespace EQExtractor2
 {
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.2.12 SVN";
+        string Version = "EQExtractor2 Version 2.2.13 SVN";
 
         static int PacketsSeen = 0;
         static long BytesRead = 0;
