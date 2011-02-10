@@ -3,6 +3,7 @@
 ==02/10/2011==
 Derision: Support for Feb 8 2011 client
 Derision: Corrected Identifier for Feb 8 2011 patch
+Derision: Corrected OP_SendAATable for Feb 8 2011 patch
 
 ==01/29/2011==
 Derision: Doors with opentype 57 are no longer automatically changed to type 58.
