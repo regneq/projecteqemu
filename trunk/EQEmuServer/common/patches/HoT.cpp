@@ -3330,6 +3330,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
+	ss.write((const char*)&null_term, sizeof(uint8));
 	//_log(NET__ERROR, "ItemBody struct is %i bytes", sizeof(HoT::structs::ItemBodyStruct));
 	HoT::structs::ItemBodyStruct ibs;
 	memset(&ibs, 0, sizeof(HoT::structs::ItemBodyStruct));

@@ -888,7 +888,7 @@ struct PlayerProfile_Struct
 /*07884*/ uint32  thirst_level;			// Drink (ticks till next drink)
 /*07888*/ uint32  hunger_level;			// Food (ticks till next eat)
 /*07892*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [1900] Buffs currently on the player (30 Max) - (Each Size 76)
-/*09792*/ uint8   unknown08492[380];		// End of Buffs - was [360]
+/*09792*/ uint8   unknown08492[740];		// End of Buffs - was [360] - Added 360 for Feb 8 2011, not sure exactly where these extra bytes go, but know they go before zone_id.
 /*10172*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
 /*10572*/ uint8   unknown09252[400];		// Discs?
 /*10972*/ uint32  recastTimers[MAX_RECAST_TYPES]; // Timers (UNIX Time of last use)
@@ -3936,6 +3936,7 @@ struct ItemSerializationHeader
 	uint32 unknowna3;
 	uint8 unknowna4;
 /*063*/	uint8 ItemClass; //0, 1, or 2
+	uint8 unknownx;
 };
 
 struct ItemBodyStruct
@@ -4162,7 +4163,7 @@ struct ItemQuaternaryBodyStruct
 	uint32 unknown20;	// Bard Stuff?
 	uint32 unknown21;
 	uint32 unknown22;
-	uint8 unknownHoT[58];	// Don't know where these fit into the overall item struct yet, so put them here for now.
+	uint8 unknownHoT[57];	// Don't know where these fit into the overall item struct yet, so put them here for now.
 	uint32 subitem_count;
 };
 
