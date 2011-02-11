@@ -452,10 +452,31 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 			newbon->skillmod[item->SkillModType] = (sint8)item->SkillModValue;
 	}
 
-	int i;
-	for(i = 0; i < MAX_AUGMENT_SLOTS; i++) {
-		AddItemBonuses(inst->GetAugment(i),newbon,true);
+	if (item->FactionMod1 && item->FactionAmt1 > GetFactionBonus(item->FactionMod1))
+	{
+		AddFactionBonus(item->FactionMod1, item->FactionAmt1);
 	}
+	if (item->FactionMod2 && item->FactionAmt2 > GetFactionBonus(item->FactionMod2))
+	{
+		AddFactionBonus(item->FactionMod2, item->FactionAmt2);
+	}
+	if (item->FactionMod3 && item->FactionAmt3 > GetFactionBonus(item->FactionMod3))
+	{
+		AddFactionBonus(item->FactionMod3, item->FactionAmt3);
+	}
+	if (item->FactionMod4 && item->FactionAmt4 > GetFactionBonus(item->FactionMod4))
+	{
+		AddFactionBonus(item->FactionMod4, item->FactionAmt4);
+	}
+
+	if (!isAug)
+	{
+		int i;
+		for(i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+			AddItemBonuses(inst->GetAugment(i),newbon,true);
+		}
+	}
+
 }
 
 void Client::CalcEdibleBonuses(StatBonuses* newbon) {
@@ -1682,6 +1703,13 @@ void Client::CalcItemScale()
 
 	if(CalcItemScale(400, 405))
 		changed = true;
+
+	//Power Source Slot
+	if (GetClientVersion() >= EQClientSoF)
+	{
+		if(CalcItemScale(9999, 10000))
+			changed = true;
+	}
 
 	if(changed)
 	{

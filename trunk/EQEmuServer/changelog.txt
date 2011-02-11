@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/11/2011==
+Trevius: Implemented item faction modifier stats (i.e. factionmod1, factionamt1).
+Trevius: Added Power Source slot to item stat (charm) scaling.
+
 ==02/10/2011==
 JJ: (c0ncrete) Fixed shared bank database query to match schema.
 
