@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/10/2011==
+JJ: (c0ncrete) Fixed shared bank database query to match schema.
+
 ==02/08/2011==
 Trevius: Replaced most uses of strncpy with strn0cpy for consistency and stability.
 Trevius: Increased zone name loading to 32 characters for doors.
