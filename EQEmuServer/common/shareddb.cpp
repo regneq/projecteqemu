@@ -233,8 +233,8 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if (ret && Inventory::SupportsContainers(slot_id)) {
 				safe_delete_array(query);
 				sint16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
-				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM sharedbank WHERE charid=%i AND slotid>=%i AND slotid<%i",
-					char_id, base_slot_id, (base_slot_id+10)), errbuf);
+				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM sharedbank WHERE acctid=%i AND slotid>=%i AND slotid<%i",
+					account_id, base_slot_id, (base_slot_id+10)), errbuf);
 			}
 			
 			// @merth: need to delete augments here
