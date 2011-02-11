@@ -108,7 +108,7 @@ std::string Strategy::Describe() const {
 static inline int32 TitaniumToSoDSlot(int32 TitaniumSlot) {
 	int32 SoDSlot = 0;
 
-	if(TitaniumSlot >= 21 && TitaniumSlot <= 50)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	if(TitaniumSlot >= 21 && TitaniumSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
 		SoDSlot = TitaniumSlot + 1;
 	}
