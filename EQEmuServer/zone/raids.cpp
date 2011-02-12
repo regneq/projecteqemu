@@ -1299,12 +1299,15 @@ void Raid::SendHPPacketsTo(Client *c)
 	if(!c)
 		return;
 	
+	int32 gid = this->GetGroup(c);
 	EQApplicationPacket hpapp;
         EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(members[x].member){
-			if(members[x].member != c){
+		if(members[x].member)
+		{
+			if((members[x].member != c) && (members[x].GroupNumber == gid))
+			{
 				members[x].member->CreateHPPacket(&hpapp);
 				c->QueuePacket(&hpapp, false);
                                 if(c->GetClientVersion() >= EQClientSoD)
@@ -1329,14 +1332,18 @@ void Raid::SendHPPacketsFrom(Mob *m)
 	if(!m)
 		return;
 
+	int32 gid = 0;
+	if(m->IsClient())
+		gid = this->GetGroup(m->CastToClient());
 	EQApplicationPacket hpapp;
         EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 
 	m->CreateHPPacket(&hpapp);
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(members[x].member){
-			if(!m->IsClient() || members[x].member != m->CastToClient())
+		if(members[x].member)
+		{
+			if(!m->IsClient() || ((members[x].member != m->CastToClient()) && (members[x].GroupNumber == gid)))
 			{
 				members[x].member->QueuePacket(&hpapp, false);
                                 if(members[x].member->GetClientVersion() >= EQClientSoD)
