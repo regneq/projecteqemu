@@ -362,7 +362,7 @@ void Raid::RaidSay(const char *msg, Client *c)
 	rga->gid = 0xFFFFFFFF;
 	strn0cpy(rga->from, c->GetName(), 64);
 
-	strn0cpy(rga->message, msg, strlen(msg));
+	strcpy(rga->message, msg); // this is safe because we are allocating enough space for the entire msg above
 
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
@@ -384,8 +384,7 @@ void Raid::RaidGroupSay(const char *msg, Client *c)
 	rga->gid = groupToUse;
 	strn0cpy(rga->from, c->GetName(), 64);
 
-
-	strn0cpy(rga->message, msg, strlen(msg));
+	strcpy(rga->message, msg); // this is safe because we are allocating enough space for the entire msg above
 
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
