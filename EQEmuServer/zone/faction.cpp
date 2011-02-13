@@ -263,18 +263,42 @@ bool NPC::IsFactionListAlly(uint32 other_faction) {
 	return(CheckNPCFactionAlly(other_faction) == FACTION_ALLY);
 }
 
-// EverHood - Faction Mods for Alliance type spells
+// Faction Mods for Alliance type spells
 void Mob::AddFactionBonus(uint32 pFactionID,sint32 bonus) {
     map <uint32, sint32> :: const_iterator faction_bonus;
 	typedef std::pair <uint32, sint32> NewFactionBonus;
 
 	faction_bonus = faction_bonuses.find(pFactionID);
-	if(faction_bonus == faction_bonuses.end()){
+	if(faction_bonus == faction_bonuses.end())
+	{
 		faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
-	}else{
-		if(faction_bonus->second<bonus){
+	}
+	else
+	{
+		if(faction_bonus->second<bonus)
+		{
 			faction_bonuses.erase(pFactionID);
 			faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
+		}
+	}
+}
+
+// Faction Mods from items
+void Mob::AddItemFactionBonus(uint32 pFactionID,sint32 bonus) {
+    map <uint32, sint32> :: const_iterator faction_bonus;
+	typedef std::pair <uint32, sint32> NewFactionBonus;
+
+	faction_bonus = item_faction_bonuses.find(pFactionID);
+	if(faction_bonus == item_faction_bonuses.end())
+	{
+		item_faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
+	}
+	else
+	{
+		if((bonus > 0 && faction_bonus->second < bonus) || (bonus < 0 && faction_bonus->second > bonus))
+		{
+			item_faction_bonuses.erase(pFactionID);
+			item_faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
 		}
 	}
 }
@@ -282,12 +306,30 @@ void Mob::AddFactionBonus(uint32 pFactionID,sint32 bonus) {
 sint32 Mob::GetFactionBonus(uint32 pFactionID) {
     map <uint32, sint32> :: const_iterator faction_bonus;
 	faction_bonus = faction_bonuses.find(pFactionID);
-	if(faction_bonus != faction_bonuses.end()){
-			return (*faction_bonus).second;
+	if(faction_bonus != faction_bonuses.end())
+	{
+		return (*faction_bonus).second;
 	}
 	return 0;
 }
 
+sint32 Mob::GetItemFactionBonus(uint32 pFactionID) {
+    map <uint32, sint32> :: const_iterator faction_bonus;
+	faction_bonus = item_faction_bonuses.find(pFactionID);
+	if(faction_bonus != item_faction_bonuses.end())
+	{
+		return (*faction_bonus).second;
+	}
+	return 0;
+}
+
+void Mob::ClearItemFactionBonuses() {
+	map <uint32, sint32> :: iterator itr;
+	for(itr = item_faction_bonuses.begin(); itr != item_faction_bonuses.end(); itr++)
+	{
+		item_faction_bonuses.erase(itr->first);
+	}
+}
 
 FACTION_VALUE Mob::GetSpecialFactionCon(Mob* iOther) {
 #if FACTIONS_DEBUG >= 5
@@ -461,6 +503,7 @@ FACTION_VALUE Client::GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race,
 			tmpFactionValue = GetCharacterFactionLevel(pFaction);
 			// Everhood - tack on any bonuses from Alliance type spell effects
 			tmpFactionValue += GetFactionBonus(pFaction);
+			tmpFactionValue += GetItemFactionBonus(pFaction);
 			//Return the faction to the client
 			fac = CalculateFaction(&fmods, tmpFactionValue);
 			//Message(0,"Faction: %i %i %i %i",fmods.base,fmods.class_mod,fmods.race_mod,fmods.deity_mod);

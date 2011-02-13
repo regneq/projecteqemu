@@ -129,6 +129,9 @@ int Client::CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat)
 void Client::CalcItemBonuses(StatBonuses* newbon) {
 	//memset assumed to be done by caller.
 	
+	// Clear item faction mods
+	ClearItemFactionBonuses();
+
 	unsigned int i;
 	//should not include 21 (SLOT_AMMO)
 	for (i=0; i<21; i++) {
@@ -452,21 +455,50 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 			newbon->skillmod[item->SkillModType] = (sint8)item->SkillModValue;
 	}
 
-	if (item->FactionMod1 && item->FactionAmt1 > GetFactionBonus(item->FactionMod1))
+	// Add Item Faction Mods
+	if (item->FactionMod1)
 	{
-		AddFactionBonus(item->FactionMod1, item->FactionAmt1);
+		if (item->FactionAmt1 > 0 && item->FactionAmt1 > GetItemFactionBonus(item->FactionMod1))
+		{
+			AddItemFactionBonus(item->FactionMod1, item->FactionAmt1);
+		}
+		else if (item->FactionAmt1 < 0 && item->FactionAmt1 < GetItemFactionBonus(item->FactionMod1))
+		{
+			AddItemFactionBonus(item->FactionMod1, item->FactionAmt1);
+		}
 	}
-	if (item->FactionMod2 && item->FactionAmt2 > GetFactionBonus(item->FactionMod2))
+	if (item->FactionMod2)
 	{
-		AddFactionBonus(item->FactionMod2, item->FactionAmt2);
+		if (item->FactionAmt2 > 0 && item->FactionAmt2 > GetItemFactionBonus(item->FactionMod2))
+		{
+			AddItemFactionBonus(item->FactionMod2, item->FactionAmt2);
+		}
+		else if (item->FactionAmt2 < 0 && item->FactionAmt2 < GetItemFactionBonus(item->FactionMod2))
+		{
+			AddItemFactionBonus(item->FactionMod2, item->FactionAmt2);
+		}
 	}
-	if (item->FactionMod3 && item->FactionAmt3 > GetFactionBonus(item->FactionMod3))
+	if (item->FactionMod3)
 	{
-		AddFactionBonus(item->FactionMod3, item->FactionAmt3);
+		if (item->FactionAmt3 > 0 && item->FactionAmt3 > GetItemFactionBonus(item->FactionMod3))
+		{
+			AddItemFactionBonus(item->FactionMod3, item->FactionAmt3);
+		}
+		else if (item->FactionAmt3 < 0 && item->FactionAmt3 < GetItemFactionBonus(item->FactionMod3))
+		{
+			AddItemFactionBonus(item->FactionMod3, item->FactionAmt3);
+		}
 	}
-	if (item->FactionMod4 && item->FactionAmt4 > GetFactionBonus(item->FactionMod4))
+	if (item->FactionMod4)
 	{
-		AddFactionBonus(item->FactionMod4, item->FactionAmt4);
+		if (item->FactionAmt4 > 0 && item->FactionAmt4 > GetItemFactionBonus(item->FactionMod4))
+		{
+			AddItemFactionBonus(item->FactionMod4, item->FactionAmt4);
+		}
+		else if (item->FactionAmt4 < 0 && item->FactionAmt4 < GetItemFactionBonus(item->FactionMod4))
+		{
+			AddItemFactionBonus(item->FactionMod4, item->FactionAmt4);
+		}
 	}
 
 	if (!isAug)
