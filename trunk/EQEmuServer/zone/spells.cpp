@@ -2333,6 +2333,9 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 		case 12:	// solar: 2/7/04
 			return duration;
 
+		case 15:	// Don't know what the real formula for this should be. Used by Skinspikes potion.
+			return duration;
+
 		case 50:	// solar: lucy says this is unlimited?
 			return 72000;	// 5 days
 

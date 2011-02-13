@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==02/13/2011==
 Trevius: Finalized implementation of Item Faction Mods.  The bonuses now remove if the item is unequiped.
 Trevius: Added Rule Character::ItemCastsUseFocus - If true, this allows item clickies to use focuses that have limited max levels on them
+Derision: Handle Spell duration formula 15 (for Distillate of Skinspikes).
 
 Optional SQL:
 utils/sql/svn/1859_optional_item_casts_use_focus_rule.sql
