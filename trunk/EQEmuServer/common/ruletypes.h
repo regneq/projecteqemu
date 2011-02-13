@@ -85,6 +85,7 @@ RULE_BOOL ( Character, UseRaceClassExpBonuses, true)	// Setting this to true wil
 RULE_BOOL ( Character, RespawnFromHover, false)		// Use Respawn window, or not.
 RULE_INT ( Character, RespawnFromHoverTimer, 300)	// Respawn Window countdown timer, in SECONDS
 RULE_BOOL ( Character, UseNewStatsWindow, true) 	// New stats window shows everything
+RULE_BOOL ( Character, ItemCastsUseFocus, false) // If true, this allows item clickies to use focuses that have limited max levels on them
 
 RULE_CATEGORY_END()
 

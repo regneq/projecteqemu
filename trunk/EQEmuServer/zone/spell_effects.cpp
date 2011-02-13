@@ -3462,8 +3462,8 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 	
 	sint16 value = 0;
 	int lvlModifier = 100;
+	int spell_level = 0;
 	int lvldiff = 0;
-
 	int32 effect = 0;
 	sint32 base1 = 0;
 	sint32 base2 = 0;
@@ -3500,9 +3500,10 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 					return 0;
 			break;
 			case SE_LimitMaxLevel:
-				lvldiff = (spell.classes[(GetClass()%16) - 1]) - base1;
-				//every level over cap reduces the effect by base2 percent
-				if(lvldiff > 0)
+				spell_level = spell.classes[(GetClass()%16) - 1];
+				lvldiff = spell_level - base1;
+				//every level over cap reduces the effect by base2 percent unless from a clicky when ItemCastsUseFocus is true
+				if(lvldiff > 0 && (spell_level <= RuleI(Character, MaxLevel) || RuleB(Character, ItemCastsUseFocus) == false))
 				{ 
 					if(base2 > 0)
 					{
@@ -3655,6 +3656,8 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 
 	sint16 value = 0;
 	int lvlModifier = 100;
+	int spell_level = 0;
+	int lvldiff = 0;
 
 	for (int i = 0; i < EFFECT_COUNT; i++) {
 		switch (focus_spell.effectid[i]) {
@@ -3677,9 +3680,11 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 		}
 
 		case SE_LimitMaxLevel:{
-			int lvldiff = (spell.classes[(GetClass()%16) - 1]) - focus_spell.base[i];
-
-			if(lvldiff > 0){ //every level over cap reduces the effect by spell.base2[i] percent
+			spell_level = spell.classes[(GetClass()%16) - 1];
+			lvldiff = spell_level - focus_spell.base[i];
+			//every level over cap reduces the effect by spell.base2[i] percent unless from a clicky when ItemCastsUseFocus is true
+			if(lvldiff > 0 && (spell_level <= RuleI(Character, MaxLevel) || RuleB(Character, ItemCastsUseFocus) == false))
+			{
 				if(spell.base2[i] > 0)
 				{
 					lvlModifier -= spell.base2[i]*lvldiff;
