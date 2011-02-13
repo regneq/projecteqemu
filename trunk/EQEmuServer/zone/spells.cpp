@@ -1465,7 +1465,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 						}
 						else if(IsRaidGrouped())
 						{
-							group_id_caster = GetRaid()->GetID();
+							group_id_caster = GetRaid()->GetGroup();
 						}
 					}
 					else if(IsPet())
@@ -1477,7 +1477,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 						}
 						else if(owner->IsRaidGrouped())
 						{
-							group_id_caster = owner->GetRaid()->GetID();
+							group_id_caster = owner->GetRaid()->GetGroup();
 						}
 					}
 
@@ -1489,7 +1489,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 						}
 						else if(spell_target->IsRaidGrouped())
 						{
-							group_id_target = spell_target->GetRaid()->GetID();
+							group_id_target = spell_target->GetRaid()->GetGroup();
 						}
 					}
 					else if(spell_target->IsPet())
@@ -1501,7 +1501,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 						}
 						else if(owner->IsRaidGrouped())
 						{
-							group_id_target = owner->GetRaid()->GetID();
+							group_id_target = owner->GetRaid()->GetGroup();
 						}
 					}
 
