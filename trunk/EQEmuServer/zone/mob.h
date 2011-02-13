@@ -1301,10 +1301,15 @@ protected:
 	int32	pLastFightingDelayMoving;
 	HateList hate_list;
 	std::set<int32> feign_memory_list;
-	// EverHood - This is to keep track of mobs we cast faction mod spells on
+	// This is to keep track of mobs we cast faction mod spells on
 	std::map<uint32,sint32> faction_bonuses; // Primary FactionID, Bonus
 	void	AddFactionBonus(uint32 pFactionID,sint32 bonus);
 	sint32	GetFactionBonus(uint32 pFactionID);
+	// This is to keep track of item faction modifiers
+	std::map<uint32,sint32> item_faction_bonuses; // Primary FactionID, Bonus
+	void	AddItemFactionBonus(uint32 pFactionID,sint32 bonus);
+	sint32	GetItemFactionBonus(uint32 pFactionID);
+	void	ClearItemFactionBonuses();
 
 	void CalculateFearPosition();
 	int32 move_tic_count;
