@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/17/2011==
 Derision: Fixed bug in GetZoneForage where generally only the first three zone specific items could actually be foraged.
+gaeorn: (sorvani) fix for bard pacify songs
 
 ==02/13/2011==
 Trevius: Finalized implementation of Item Faction Mods.  The bonuses now remove if the item is unequiped.
