@@ -90,7 +90,7 @@ int32 ZoneDatabase::GetZoneForage(int32 ZoneID, int8 skill) {
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	int8 index = 0, rindex;
+	int8 index = 0;
 	int32 item[FORAGE_ITEM_LIMIT];
 	int32 chance[FORAGE_ITEM_LIMIT];
 	int32 ret;
@@ -129,7 +129,8 @@ LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[ind
 	
 	ret = 0;
 
-	rindex = MakeRandomInt(1, chancepool);
+	int32 rindex = MakeRandomInt(1, chancepool);
+
 	for(int i = 0; i < index; i++) {
 		if(rindex <= chance[i]) {
 			ret = item[i];
