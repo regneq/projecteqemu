@@ -93,6 +93,13 @@ bool WaterMap::InWater(float y, float x, float z) const {
 	return(BSPReturnRegionType(1, y, x, z) == RegionTypeWater);
 }
 
+bool WaterMap::InVWater(float y, float x, float z) const {
+	if(BSP_Root == NULL) {
+		return false;
+	}
+	return(BSPReturnRegionType(1, y, x, z) == RegionTypeVWater);
+}
+
 bool WaterMap::InLava(float y, float x, float z) const {
 	if(BSP_Root == NULL) {
 		return false;

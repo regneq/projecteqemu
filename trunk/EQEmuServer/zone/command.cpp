@@ -7991,7 +7991,7 @@ void command_bestz(Client *c, const Seperator *sep) {
 			z=c->GetZ();
 			RegionType = zone->watermap->BSPReturnRegionType(1, c->GetX(), c->GetY(),z);
 			c->Message(0,"InWater returns %d", zone->watermap->InWater(c->GetX(), c->GetY(), z));
-					c->Message(0,"InLava returns %d", zone->watermap->InLava(c->GetX(), c->GetY(), z));
+			c->Message(0,"InLava returns %d", zone->watermap->InLava(c->GetX(), c->GetY(), z));
 	
 		}
 	
@@ -7999,6 +7999,7 @@ void command_bestz(Client *c, const Seperator *sep) {
 			case RegionTypeNormal:	{ c->Message(0,"There is nothing special about the region you are in!"); break; }
 			case RegionTypeWater:	{ c->Message(0,"You/your target are in Water."); break; }
 			case RegionTypeLava:	{ c->Message(0,"You/your target are in Lava."); break; }
+			case RegionTypeVWater:	{ c->Message(0,"You/your target are in VWater (Icy Water?)."); break; }
 			default:  c->Message(0,"You/your target are in an unknown region type."); 
 		}
 	}
