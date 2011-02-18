@@ -3551,10 +3551,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	Underfoot::structs::WornEffectStruct ibes;
 	memset(&ibes, 0, sizeof(Underfoot::structs::WornEffectStruct));
 
-	ibes.effect = 0xffffffff;
-	ibes.level2 = 0;
-	ibes.type = 0;
-	ibes.level = 0;
+	ibes.effect = item->Bard.Effect;
+	ibes.level2 = item->Bard.Level2;
+	ibes.type = item->Bard.Type;
+	ibes.level = item->Bard.Level;
 	//ibes.unknown6 = 0xffffffff;
 
 	ss.write((const char*)&ibes, sizeof(Underfoot::structs::WornEffectStruct));
