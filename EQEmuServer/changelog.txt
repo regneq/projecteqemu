@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/18/2011==
+Trevius: Fixed a potential crash in TrySpellOnKill().
+
 ==02/17/2011==
 Derision: Fixed bug in GetZoneForage where generally only the first three zone specific items could actually be foraged.
 gaeorn: (sorvani) fix for bard pacify songs

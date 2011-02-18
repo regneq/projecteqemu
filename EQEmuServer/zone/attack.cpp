@@ -2098,7 +2098,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		{
 			if(!IsLdonTreasure) {
 				kr->SplitExp((EXP_FORMULA), this);
-				if(kr->IsRaidMember(killerMob->GetName()) || kr->IsRaidMember(killerMob->GetUltimateOwner()->GetName()))
+				if(killerMob && (kr->IsRaidMember(killerMob->GetName()) || kr->IsRaidMember(killerMob->GetUltimateOwner()->GetName())))
 					killerMob->TrySpellOnKill();
 			}
 			/* Send the EVENT_KILLED_MERIT event for all raid members */
@@ -2114,7 +2114,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		{
 			if(!IsLdonTreasure) {
 				kg->SplitExp((EXP_FORMULA), this);
-				if(kg->IsGroupMember(killerMob->GetName()) || kg->IsGroupMember(killerMob->GetUltimateOwner()->GetName()))
+				if(killerMob && (kg->IsGroupMember(killerMob->GetName()) || kg->IsGroupMember(killerMob->GetUltimateOwner()->GetName())))
 					killerMob->TrySpellOnKill();
 			}
 			/* Send the EVENT_KILLED_MERIT event and update kill tasks
@@ -2248,7 +2248,10 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		Mob *oos = killerMob->GetOwnerOrSelf();
 		parse->Event(EVENT_DEATH, this->GetNPCTypeID(),0, this, oos);
 		if(oos->IsNPC())
+		{
 			parse->Event(EVENT_NPC_SLAY, this->GetNPCTypeID(), 0, oos->CastToNPC(), this);
+			killerMob->TrySpellOnKill();
+		}
 	}
 	
 	this->WipeHateList();
