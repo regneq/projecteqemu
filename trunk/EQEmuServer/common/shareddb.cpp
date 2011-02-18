@@ -941,6 +941,10 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Scroll.Type = (uint8)atoul(row[ItemField::scrolltype]);
 			item.Scroll.Level = (uint8)atoul(row[ItemField::scrolllevel]);
 			item.Scroll.Level2 = (uint8)atoul(row[ItemField::scrolllevel2]);
+			item.Bard.Effect = (uint16)atoul(row[ItemField::bardeffect]);
+			item.Bard.Type = (uint8)atoul(row[ItemField::bardtype]);
+			item.Bard.Level = (uint8)atoul(row[ItemField::bardlevel]);
+			item.Bard.Level2 = (uint8)atoul(row[ItemField::bardlevel2]);
 			item.QuestItemFlag = (atoi(row[ItemField::questitemflag])==0) ? false : true;
 			item.SVCorruption = (sint32)atoi(row[ItemField::svcorruption]);
 			item.Purity = (uint32)atoul(row[ItemField::purity]);

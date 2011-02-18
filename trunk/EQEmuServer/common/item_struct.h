@@ -207,7 +207,7 @@ struct Item_Struct {
 	bool	QuestItemFlag;
 	uint8	StackSize;
 	uint8	PotionBeltSlots;
-	ItemEffect_Struct Click, Proc, Worn, Focus, Scroll;
+	ItemEffect_Struct Click, Proc, Worn, Focus, Scroll, Bard;
 
 	uint8	Book;			// 0=Not book, 1=Book
 	uint32	BookType;
