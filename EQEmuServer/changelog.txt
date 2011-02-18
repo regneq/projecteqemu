@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==02/18/2011==
 Trevius: Fixed a potential crash in TrySpellOnKill().
 Derision: Underfoot: Bard instrument modifiers now show (as focus effects) in the item stats window.
+Derision: Allowed fishing in 'VWater' (Region type 7) on the basis this is the only type of water in Sleeper and you can apparently fish there.
 
 ==02/17/2011==
 Derision: Fixed bug in GetZoneForage where generally only the first three zone specific items could actually be foraged.

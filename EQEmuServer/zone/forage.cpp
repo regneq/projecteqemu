@@ -248,7 +248,7 @@ bool Client::CanFish() {
 		if(n != NODE_NONE) {
 			RodZ = zone->zonemap->FindBestZ(n, dest, NULL, NULL) - 1;
 			bool in_lava = zone->watermap->InLava(RodX, RodY, RodZ);
-			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ);
+			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ) || zone->watermap->InVWater(RodX, RodY, RodZ);
 			//Message(0, "Rod is at %4.3f, %4.3f, %4.3f, InWater says %d, InLava says %d", RodX, RodY, RodZ, in_water, in_lava);
 			if (in_lava) {
 				Message_StringID(0, FISHING_LAVA);	//Trying to catch a fire elemental or something?
