@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/19/2011==
+Trevius: Added variable export $slotid to EVENT_ITEM_CLICK and EVENT_ITEM_CLICK_CAST, which exports the slot id of the item that triggered the event.
+
 ==02/18/2011==
 Trevius: Fixed a potential crash in TrySpellOnKill().
 Derision: Underfoot: Bard instrument modifiers now show (as focus effects) in the item stats window.

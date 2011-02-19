@@ -684,6 +684,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		case EVENT_ITEM_CLICK: {
 			ExportVar(packagename.c_str(), "itemid", objid);
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
+			ExportVar(packagename.c_str(), "slotid", extradata);
 			break;
 		}
 		case EVENT_GROUP_CHANGE: {
