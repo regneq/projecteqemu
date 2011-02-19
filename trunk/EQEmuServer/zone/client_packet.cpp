@@ -2000,12 +2000,15 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	if ((slot_id < 30) || (slot_id == 9999) || (slot_id > 250 && slot_id < 331 && ((item->ItemType == ItemTypePotion) || item->PotionBelt))) // sanity check
 	{
 		ItemInst* p_inst = (ItemInst*)inst;
-		if (p_inst)
-			((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK, p_inst->GetID(), "", p_inst, this);
-
-		// If the item was removed during EVENT_ITEM_CLICK, prevent a crash
-		if (!inst)
+		if (!p_inst)
 			return;
+
+		if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK"))
+		{
+			//TODO: need to enforce and set recast timers here because the spell may not be cast.
+			((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK, p_inst->GetID(), "", p_inst, this, slot_id);
+			return;
+		}
 
 		if((spell_id == 0 || spell_id == 4294967295) && (item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol && item->ItemType != ItemTypeSpell))
 		{
@@ -2037,7 +2040,8 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 						if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 						{
 							//TODO: need to enforce and set recast timers here because the spell may not be cast.
-							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, slot_id);
+							return;
 						}
 						else
 						{
@@ -2054,7 +2058,8 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 				{
 					if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 					{
-						((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+						((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, slot_id);
+						return;
 					}
 					else
 					{
@@ -4432,7 +4437,8 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 							ItemInst* p_inst = (ItemInst*)inst;
 							if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 							{
-								((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+								((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, castspell->inventoryslot);
+								return;
 							}
 							else
 							{
@@ -4451,7 +4457,8 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 						ItemInst* p_inst = (ItemInst*)inst;
 						if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 						{
-							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, castspell->inventoryslot);
+							return;
 						}
 						else
 						{
