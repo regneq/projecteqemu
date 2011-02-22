@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/22/2011==
+gaeorn: (sorvani) fix to make swarm pets not be targetable as NPCs
+
 ==02/19/2011==
 Trevius: Added variable export $slotid to EVENT_ITEM_CLICK and EVENT_ITEM_CLICK_CAST, which exports the slot id of the item that triggered the event.
 
