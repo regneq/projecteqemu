@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/24/2011==
+Trevius: Power Source slot can now be augmented.
+Trevius: Corrected spell formula 122 (Splurt) and implemented the reverse splurt (Ex. Corath Venom) where damage reduces each tic.
+
 ==02/22/2011==
 gaeorn: (sorvani) fix to make swarm pets not be targetable as NPCs
 

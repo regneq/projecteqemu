@@ -2000,14 +2000,16 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	if ((slot_id < 30) || (slot_id == 9999) || (slot_id > 250 && slot_id < 331 && ((item->ItemType == ItemTypePotion) || item->PotionBelt))) // sanity check
 	{
 		ItemInst* p_inst = (ItemInst*)inst;
-		if (!p_inst)
-			return;
 
 		if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK"))
 		{
-			//TODO: need to enforce and set recast timers here because the spell may not be cast.
 			((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK, p_inst->GetID(), "", p_inst, this, slot_id);
-			return;
+			inst = m_inv[slot_id];
+			if (!inst)
+			{
+				// Item was deleted by the perl event
+				return;
+			}
 		}
 
 		if((spell_id == 0 || spell_id == 4294967295) && (item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol && item->ItemType != ItemTypeSpell))
@@ -2033,38 +2035,28 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 					Message_StringID(13, ITEM_OUT_OF_CHARGES);
 					return;
 				}
-				if(item->Click.Level2 > 0)
-				{
-					if(GetLevel() >= item->Click.Level2)
-					{
-						if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
-						{
-							//TODO: need to enforce and set recast timers here because the spell may not be cast.
-							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, slot_id);
-							return;
-						}
-						else
-						{
-							CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
-						}
-					}
-					else
-					{
-						Message_StringID(13, ITEMS_INSUFFICIENT_LEVEL);
-						return;
-					}					
-				}
-				else
+				if(GetLevel() >= item->Click.Level2)
 				{
 					if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 					{
+						//TODO: need to enforce and set recast timers here because the spell may not be cast.
 						((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, slot_id);
-						return;
+						inst = m_inv[slot_id];
+						if (!inst)
+						{
+							// Item was deleted by the perl event
+							return;
+						}
 					}
 					else
 					{
 						CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
 					}
+				}
+				else
+				{
+					Message_StringID(13, ITEMS_INSUFFICIENT_LEVEL);
+					return;
 				}
 			}
 			else

@@ -2704,11 +2704,17 @@ snare has both of them negative, yet their range should work the same:
 			result = ubase + (caster_level / 8); break;
 		case 121:	// solar: corrected 2/6/04
 			result = ubase + (caster_level / 3); break;
-		case 122: {
-			int ticdif = spells[spell_id].buffduration - (ticsremaining-1);
+		case 122:
+		{
+			// May need to account for duration focus effects
+			int ticdif = spells[spell_id].buffduration - (ticsremaining - 1);
 			if(ticdif < 0)
 				ticdif = 0;
-			result = -(11 + 11*ticdif);
+			if (base > 0)
+				result = base - (12 + 12 * ticdif);
+			else
+				result = base + (12 * ticdif);
+
 			break;
 		}
 		case 123:	// solar: added 2/6/04

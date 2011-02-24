@@ -264,14 +264,14 @@ bool ItemInst::AvailableWearSlot(uint32 aug_wear_slots) const
 		return false;
 
 	int i;
-	for(i=0; i<22; i++) {
+	for(i=0; i<23; i++) {
 		if(m_item->Slots & (1<<i)) {
 			if(aug_wear_slots & (1<<i))
 				break;
 		}
 	}
 
-	return (i<22) ? true : false;
+	return (i<23) ? true : false;
 }
 
 uint32 ItemInst::GetAugmentItemID(uint8 slot) const
