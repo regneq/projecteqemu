@@ -1305,12 +1305,11 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		case 0:
 			break;
 		case 1:
+			HateMod -= 5;
 		case 2:
+			HateMod -= 10;
 		case 3:
-			HateMod -= ((aaSubtlety * 3) + 3);
-			break;
-		default:
-			HateMod -= (12 + aaSubtlety);
+			HateMod -= 20;
 			break;
 		}
 
@@ -1374,13 +1373,11 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 		case 0:
 			break;
 		case 1:
+			HateMod -= 5;
 		case 2:
+			HateMod -= 10;
 		case 3:
-			//AggroAount = (AggroAmount * ((aaSubtlety * 3) + 3)) / 100;
-			HateMod -= ((aaSubtlety * 3) + 3);
-			break;
-		default:
-			HateMod -= (12 + aaSubtlety);
+			HateMod -= 20;
 			break;
 		}
 
