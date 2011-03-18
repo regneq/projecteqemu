@@ -630,8 +630,6 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 
 		//removing this prevents the pet from attacking
 		npca->GetSwarmInfo()->owner_id = GetID();
-		//this sets the owner ID correctly which has the effect of removing the pets from the cycle NPC tab order
-		npca->SetOwnerID(GetID());
 
 		//give the pets somebody to "love"
 		if(targ != NULL){

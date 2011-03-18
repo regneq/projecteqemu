@@ -2040,30 +2040,68 @@ void Zone::ClearBlockedSpells()
 
 bool Zone::IsSpellBlocked(int32 spell_id, float nx, float ny, float nz)
 {
-	if(blocked_spells){
-		for(int x = 0; x < totalBS; x++)
+	if (blocked_spells)
+	{
+		bool exception = false;
+		bool block_all = false;
+		for (int x = 0; x < totalBS; x++)
 		{
-			if(spell_id != blocked_spells[x].spellid)
-				continue;
+			if (blocked_spells[x].spellid == spell_id)
+			{
+				exception = true;
+			}
+				
+			if (blocked_spells[x].spellid == 0)
+			{
+				block_all = true;
+			}	
+		}
 
-			switch(blocked_spells[x].type){
-				case 1:{
+		for (int x = 0; x < totalBS; x++)
+		{
+			// If spellid is 0, block all spells in the zone
+			if (block_all)
+			{
+				// If the same zone has entries other than spellid 0, they act as exceptions and are allowed
+				if (exception)
+				{
+					return false;
+				}
+				else
+				{
 					return true;
-					break;
+				}
+			}
+			else
+			{
+				if (spell_id != blocked_spells[x].spellid)
+				{
+					continue;
 				}
 
-				case 2:{
-					if((( nx >= (blocked_spells[x].x-blocked_spells[x].xdiff)) && (nx <= (blocked_spells[x].x+blocked_spells[x].xdiff))) &&
-						(( ny >= (blocked_spells[x].y-blocked_spells[x].ydiff)) && (ny <= (blocked_spells[x].y+blocked_spells[x].ydiff))) &&
-						(( nz >= (blocked_spells[x].z-blocked_spells[x].zdiff)) && (nz <= (blocked_spells[x].z+blocked_spells[x].zdiff))))
+				switch (blocked_spells[x].type)
+				{
+					case 1:
 					{
 						return true;
+						break;
 					}
-					break;
+					case 2:
+					{
+						if ((( nx >= (blocked_spells[x].x-blocked_spells[x].xdiff)) && (nx <= (blocked_spells[x].x+blocked_spells[x].xdiff))) &&
+							(( ny >= (blocked_spells[x].y-blocked_spells[x].ydiff)) && (ny <= (blocked_spells[x].y+blocked_spells[x].ydiff))) &&
+							(( nz >= (blocked_spells[x].z-blocked_spells[x].zdiff)) && (nz <= (blocked_spells[x].z+blocked_spells[x].zdiff))))
+						{
+							return true;
+						}
+						break;
+					}
+					default:
+					{
+						continue;
+						break;
+					}
 				}
-				default:
-					continue;
-					break;
 			}
 		}
 	}
@@ -2072,19 +2110,22 @@ bool Zone::IsSpellBlocked(int32 spell_id, float nx, float ny, float nz)
 
 const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz)
 {
-	if(blocked_spells){
+	if(blocked_spells)
+	{
 		for(int x = 0; x < totalBS; x++)
 		{
-			if(spell_id != blocked_spells[x].spellid)
+			if(spell_id != blocked_spells[x].spellid && blocked_spells[x].spellid != 0)
 				continue;
 
-			switch(blocked_spells[x].type){
-				case 1:{
+			switch(blocked_spells[x].type)
+			{
+				case 1:
+				{
 					return blocked_spells[x].message;
 					break;
 				}
-
-				case 2:{
+				case 2:
+				{
 					if((( nx > (blocked_spells[x].x-blocked_spells[x].xdiff)) && (nx < (blocked_spells[x].x+blocked_spells[x].xdiff))) &&
 						(( ny > (blocked_spells[x].y-blocked_spells[x].ydiff)) && (ny < (blocked_spells[x].y+blocked_spells[x].ydiff))) &&
 						(( nz > (blocked_spells[x].z-blocked_spells[x].zdiff)) && (nz < (blocked_spells[x].z+blocked_spells[x].zdiff))))
@@ -2094,8 +2135,10 @@ const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, flo
 					break;
 				}
 				default:
+				{
 					continue;
 					break;
+				}
 			}
 		}
 	}
