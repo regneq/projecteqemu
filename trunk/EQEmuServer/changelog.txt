@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/11/2011==
+Trevius: Skill caps now use the MaxLevel rule for deciding max level of skill caps instead of being hard capped at level 75.
+Trevius: All spells can be blocked in a zone by setting a spell id of 0 in the blocked_spells table.
+Trevius: If a zone has all spells blocked by setting spell id 0 in blocked_spells, any additional spells added for that zone will become exceptions and be allowed.
+Trevius: Reverted Sorvani's swarm pet change from Rev1872 due to some bugs it caused for normal pets.
+
 ==02/24/2011==
 Trevius: Power Source slot can now be augmented.
 Trevius: Corrected spell formula 122 (Splurt) and implemented the reverse splurt (Ex. Corath Venom) where damage reduces each tic.
