@@ -1,7 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/23/2011==
+JJ: (Danyelle) Face fix for Iksar Beastlord pet.
+
 ==03/21/2011==
-JJ: (Jaekob/Danyelle) Texture fix for Iksar Beastlord pet
+JJ: (Jaekob/Danyelle) Texture fix for Iksar Beastlord pet.
 
 ==03/11/2011==
 Trevius: Skill caps now use the MaxLevel rule for deciding max level of skill caps instead of being hard capped at level 75.

@@ -327,7 +327,8 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 			npc_type->race = WOLF; 
 			npc_type->texture = 0; 
 			npc_type->gender = 1; 
-			npc_type->size *= 2.0f; 
+			npc_type->size *= 2.0f;
+			npc_type->luclinface = 0;
 			break;
 		default: 
 			npc_type->race = WOLF; 
