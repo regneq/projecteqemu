@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/30/2011==
+Trevius: Implemented spell formulas 1001 to 1998.  They subtract/add values by increasing amounts each tick based on the formula - 1000 value.
+
 ==03/23/2011==
 JJ: (Danyelle) Face fix for Iksar Beastlord pet.
 

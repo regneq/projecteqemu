@@ -879,14 +879,14 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	uint32 buff_count = GetMaxTotalSlots();
 	for(i = 0; i < buff_count; i++) {
 		if(buffs[i].spellid != SPELL_UNKNOWN)
-			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid);
+			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid, false, buffs[i].ticsremaining);
 	}
 	
 	//this prolly suffer from roundoff error slightly...
 	newbon->AC = newbon->AC * 10 / 34;	//ratio determined impirically from client.
 }
 
-void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId, bool item_bonus)
+void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId, bool item_bonus, int32 ticsremaining)
 {
 	int i, effect_value;
 	Mob *caster = NULL;
@@ -902,7 +902,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 		if(IsBlankSpellEffect(spell_id, i))
 			continue;
 
-		effect_value = CalcSpellEffectValue(spell_id, i, casterlevel, caster);
+		effect_value = CalcSpellEffectValue(spell_id, i, casterlevel, caster, ticsremaining);
 
 		switch (spells[spell_id].effectid[i])
 		{
