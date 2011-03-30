@@ -645,7 +645,7 @@ bool logpos;
 	void SetRunning(bool val) { m_is_running = val; }
 
 	virtual int GetCasterLevel(int16 spell_id);
-	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0, bool item_bonus = false);
+	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0, bool item_bonus = false, int32 ticsremaining = 0);
 
 	inline sint32	GetMaxMana()	const { return max_mana; }
 	inline sint32	GetMana()		const { return cur_mana; }

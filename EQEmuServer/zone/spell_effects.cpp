@@ -2710,11 +2710,8 @@ snare has both of them negative, yet their range should work the same:
 			int ticdif = spells[spell_id].buffduration - (ticsremaining - 1);
 			if(ticdif < 0)
 				ticdif = 0;
-			if (base > 0)
-				result = base - (12 + 12 * ticdif);
-			else
-				result = base + (12 * ticdif);
 
+			result = updownsign * (ubase - (12 * ticdif));
 			break;
 		}
 		case 123:	// solar: added 2/6/04
@@ -2727,8 +2724,19 @@ snare has both of them negative, yet their range should work the same:
 			result = max;
 			break;
 		default:
+		{
 			if (formula < 100)
 				result = ubase + (caster_level * formula);
+			else if((formula > 1000) && (formula < 1999))
+			{
+				// These work like splurt, accept instead of being hard coded to 12, it is formula - 1000.
+				// Formula 1999 seems to have a slightly different effect, so is not included here
+				int ticdif = spells[spell_id].buffduration - (ticsremaining - 1);
+				if(ticdif < 0)
+					ticdif = 0;
+
+				result = updownsign * (ubase - ((formula - 1000) * ticdif));
+			}
 			else if((formula >= 2000) && (formula <= 2650))
 			{
 				// Source: http://crucible.samanna.net/viewtopic.php?f=38&t=6259
@@ -2736,6 +2744,7 @@ snare has both of them negative, yet their range should work the same:
 			}
 			else
 				LogFile->write(EQEMuLog::Debug, "Unknown spell effect value forumula %d", formula);
+		}
 	}
 
 	int oresult = result;
@@ -2869,90 +2878,70 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		switch(effect)
 		{
-		case SE_CurrentHP:
-		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
+			case SE_CurrentHP:
+			{
+				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
 
-			//TODO: account for AAs and stuff
+				//TODO: account for AAs and stuff
 
-			//dont know what the signon this should be... - makes sense
-			if (caster && caster->IsClient() &&
-				IsDetrimentalSpell(spell_id) &&
-				effect_value < 0) {
-				sint32 modifier = 100;
-				modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
+				//dont know what the signon this should be... - makes sense
+				if (caster && caster->IsClient() &&
+					IsDetrimentalSpell(spell_id) &&
+					effect_value < 0) {
+					sint32 modifier = 100;
+					modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
 
-				if(caster){
-					if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
-						AddToHateList(caster, -effect_value);
-					}
-					else if(!caster->IsClient())
-					{
-						if(!IsClient())
+					if(caster){
+						if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
 							AddToHateList(caster, -effect_value);
+						}
+						else if(!caster->IsClient())
+						{
+							if(!IsClient())
+								AddToHateList(caster, -effect_value);
+						}
+						effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
+						caster->TryDotCritical(spell_id, effect_value);
 					}
-					effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
-					caster->TryDotCritical(spell_id, effect_value);
+					effect_value = effect_value * modifier / 100;
 				}
-				effect_value = effect_value * modifier / 100;
-			}
 
-			if(effect_value < 0) {
-				if(caster && !caster->IsClient())
-					effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
-				effect_value = -effect_value;
-				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
-			} else if(effect_value > 0) {
-				// Regen spell...
-				// handled with bonuses
-			}
-			break;
-		}
-		case SE_HealOverTime:
-		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-			if(caster)
-				effect_value = caster->GetActSpellHealing(spell_id, effect_value);
-			effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
-			HealDamage(effect_value, caster);
-			//healing aggro would go here; removed for now
-			break;
-		}
-
-		case SE_CurrentEndurance: {
-			// Handled with bonuses
-			break;
-		}
-
-		case SE_BardAEDot:
-		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-
-			if (invulnerable || /*effect_value > 0 ||*/ DivineAura())
+				if(effect_value < 0) {
+					if(caster && !caster->IsClient())
+						effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
+					effect_value = -effect_value;
+					Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
+				} else if(effect_value > 0) {
+					// Regen spell...
+					// handled with bonuses
+				}
 				break;
-
-			if(effect_value < 0) {
-				effect_value = -effect_value;
-				if(caster){
-					if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
-						AddToHateList(caster, effect_value);
-					}
-					else if(!caster->IsClient())
-						AddToHateList(caster, effect_value);
-				}
-				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
-			} else if(effect_value > 0) {
-				//healing spell...
+			}
+			case SE_HealOverTime:
+			{
+				effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+				if(caster)
+					effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+				effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
 				HealDamage(effect_value, caster);
 				//healing aggro would go here; removed for now
+				break;
 			}
-			break;
-		}
 
-		case SE_Hate2:{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-			if(caster){
-				if(effect_value > 0){
+			case SE_CurrentEndurance: {
+				// Handled with bonuses
+				break;
+			}
+
+			case SE_BardAEDot:
+			{
+				effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+
+				if (invulnerable || /*effect_value > 0 ||*/ DivineAura())
+					break;
+
+				if(effect_value < 0) {
+					effect_value = -effect_value;
 					if(caster){
 						if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
 							AddToHateList(caster, effect_value);
@@ -2960,111 +2949,143 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 						else if(!caster->IsClient())
 							AddToHateList(caster, effect_value);
 					}
-				}else{
-					sint32 newhate = GetHateAmount(caster) + effect_value;
-					if (newhate < 1) {
-						SetHate(caster,1);
-					} else {
-						SetHate(caster,newhate);
+					Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
+				} else if(effect_value > 0) {
+					//healing spell...
+					HealDamage(effect_value, caster);
+					//healing aggro would go here; removed for now
+				}
+				break;
+			}
+
+			case SE_Hate2:{
+				effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+				if(caster){
+					if(effect_value > 0){
+						if(caster){
+							if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
+								AddToHateList(caster, effect_value);
+							}
+							else if(!caster->IsClient())
+								AddToHateList(caster, effect_value);
+						}
+					}else{
+						sint32 newhate = GetHateAmount(caster) + effect_value;
+						if (newhate < 1) {
+							SetHate(caster,1);
+						} else {
+							SetHate(caster,newhate);
+						}
 					}
 				}
-			}
-			break;
-		}
-
-		case SE_Charm: {
-			if (!caster || !PassCharismaCheck(caster, this, spell_id)) {
-				BuffFadeByEffect(SE_Charm);
+				break;
 			}
 
-			break;
-		}
+			case SE_Charm: {
+				if (!caster || !PassCharismaCheck(caster, this, spell_id)) {
+					BuffFadeByEffect(SE_Charm);
+				}
 
-		case SE_Root: {
-			float SpellEffectiveness = ResistSpell(spells[spell_id].resisttype, spell_id, caster);
-			if(SpellEffectiveness < 25) {
-				BuffFadeByEffect(SE_Root);
+				break;
 			}
 
-			break;
-		}
+			case SE_Root: {
+				float SpellEffectiveness = ResistSpell(spells[spell_id].resisttype, spell_id, caster);
+				if(SpellEffectiveness < 25) {
+					BuffFadeByEffect(SE_Root);
+				}
 
-		case SE_Hunger: {
-			// this procedure gets called 7 times for every once that the stamina update occurs so we add 1/7 of the subtraction.  
-			// It's far from perfect, but works without any unnecessary buff checks to bog down the server.
-			if(IsClient()) {
-				CastToClient()->m_pp.hunger_level += 5;
-				CastToClient()->m_pp.thirst_level += 5;
+				break;
 			}
-			break;
-		}
-		case SE_Invisibility:
-		case SE_InvisVsAnimals:
-		case SE_InvisVsUndead:
-		{
-			if(ticsremaining > 3)
+
+			case SE_Hunger: {
+				// this procedure gets called 7 times for every once that the stamina update occurs so we add 1/7 of the subtraction.  
+				// It's far from perfect, but works without any unnecessary buff checks to bog down the server.
+				if(IsClient()) {
+					CastToClient()->m_pp.hunger_level += 5;
+					CastToClient()->m_pp.thirst_level += 5;
+				}
+				break;
+			}
+			case SE_Invisibility:
+			case SE_InvisVsAnimals:
+			case SE_InvisVsUndead:
 			{
-				if(!IsBardSong(spell_id))
+				if(ticsremaining > 3)
 				{
-					double break_chance = 2.0;
-					if(caster)
+					if(!IsBardSong(spell_id))
 					{
-						break_chance -= (2 * (((double)caster->GetSkill(DIVINATION) + ((double)caster->GetLevel() * 3.0)) / 650.0));
-					}
-					else
-					{
-						break_chance -= (2 * (((double)GetSkill(DIVINATION) + ((double)GetLevel() * 3.0)) / 650.0));
-					}
+						double break_chance = 2.0;
+						if(caster)
+						{
+							break_chance -= (2 * (((double)caster->GetSkill(DIVINATION) + ((double)caster->GetLevel() * 3.0)) / 650.0));
+						}
+						else
+						{
+							break_chance -= (2 * (((double)GetSkill(DIVINATION) + ((double)GetLevel() * 3.0)) / 650.0));
+						}
 
-					if(MakeRandomFloat(0.0, 100.0) < break_chance)
-					{
-						BuffModifyDurationBySpellID(spell_id, 3);
+						if(MakeRandomFloat(0.0, 100.0) < break_chance)
+						{
+							BuffModifyDurationBySpellID(spell_id, 3);
+						}
 					}
 				}
 			}
-		}
-		case SE_Invisibility2:
-		case SE_InvisVsUndead2:
-		{
-			if(ticsremaining <= 3 && ticsremaining > 1)
+			case SE_Invisibility2:
+			case SE_InvisVsUndead2:
 			{
-				Message_StringID(MT_Spells, INVIS_BEGIN_BREAK);
-			}
-			break;
-		}
-		case SE_InterruptCasting:
-		{	
-			if(IsCasting())
-			{
-				if(MakeRandomInt(0, 100) <= spells[spell_id].base[i])
+				if(ticsremaining <= 3 && ticsremaining > 1)
 				{
-					InterruptSpell();
+					Message_StringID(MT_Spells, INVIS_BEGIN_BREAK);
 				}
+				break;
 			}
-			break;
-		}
-		// These effects always trigger when they fade.
-		case SE_ImprovedSpellEffect:
-		case SE_BossSpellTrigger:
-		case SE_CastOnWearoff:
-		{
-			if (ticsremaining == 1) 
+			case SE_InterruptCasting:
+			{	
+				if(IsCasting())
+				{
+					if(MakeRandomInt(0, 100) <= spells[spell_id].base[i])
+					{
+						InterruptSpell();
+					}
+				}
+				break;
+			}
+			// These effects always trigger when they fade.
+			case SE_ImprovedSpellEffect:
+			case SE_BossSpellTrigger:
+			case SE_CastOnWearoff:
 			{
-				SpellOnTarget(spells[spell_id].base[i], this);
+				if (ticsremaining == 1) 
+				{
+					SpellOnTarget(spells[spell_id].base[i], this);
+				}
+				break;
 			}
-			break;
-		}
-		case SE_LocateCorpse:
-		{
-			// This is handled by the client prior to SoD.
+			case SE_LocateCorpse:
+			{
+				// This is handled by the client prior to SoD.
 
-			if(IsClient() && (CastToClient()->GetClientVersionBit() & BIT_SoDAndLater))
-				CastToClient()->LocateCorpse();
-		}
-			
-		default: {
-			// do we need to do anyting here?
-		}
+				if(IsClient() && (CastToClient()->GetClientVersionBit() & BIT_SoDAndLater))
+					CastToClient()->LocateCorpse();
+			}
+			case SE_TotalHP:
+			{
+				if (spell.formula[i] > 1000 && spell.formula[i] < 1999)
+				{
+					// These formulas can affect Max HP each tick
+					// Maybe there is a more efficient way to recalculate this for just Max HP each tic...
+					//CalcBonuses();
+					CalcSpellBonuses(&spellbonuses);
+					CalcMaxHP();
+				}	
+				break;
+			}
+			default:
+			{
+				// do we need to do anyting here?
+			}
 		}
 	}
 }
