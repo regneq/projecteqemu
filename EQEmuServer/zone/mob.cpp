@@ -4915,7 +4915,7 @@ void Client::SendClientStatWindow(Client* client)
 			/* 08 - AC	 	*/		indP, CalcAC(),
 			/* 08b - AC	 	*/		indP, GetACMit(), GetACAvoid(), spellbonuses.AC, GetShieldACBonus(),
 			/* 09 - Haste 	*/		indP, GetHaste(), 
-			/* 09b - Haste 	*/		indP, itembonuses.haste, RuleI(Character, HasteCap), (spellbonuses.haste + spellbonuses.hastetype2), (spellbonuses.hastetype3 + ExtraHaste),
+			/* 09b - Haste 	*/		indP, itembonuses.haste, (spellbonuses.haste + spellbonuses.hastetype2), RuleI(Character, HasteCap), (spellbonuses.hastetype3 + ExtraHaste),
 			/* 10 - LineBr	*/		
 			/* 11 - Labels 	*/		indL, indS,
 			/* 12 - Labels 	*/		indS, indP, indP, indP,
