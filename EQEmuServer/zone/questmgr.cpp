@@ -120,7 +120,6 @@ void QuestManager::Process() {
 					((PerlembParser*)parse)->Event(EVENT_TIMER, 0, cur->name.c_str(), (NPC*)NULL, cur->mob);
 				}
 #else
-			if(entity_list.IsMobInZone(cur->mob)) {
 				parse->Event(EVENT_TIMER, cur->mob->GetNPCTypeID(), cur->name.c_str(), cur->mob, NULL);
 #endif
 

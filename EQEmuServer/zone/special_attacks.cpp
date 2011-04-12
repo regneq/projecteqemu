@@ -164,11 +164,13 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	//throwing weapons
 	if(ca_atk->m_atk == 11) {
 		if (ca_atk->m_skill == THROWING) {
+			SetAttackTimer();
 			ThrowingAttack(GetTarget());
 			return;
 		}
 		//ranged attack (archery)
 		if (ca_atk->m_skill == ARCHERY) {
+			SetAttackTimer();
 			RangedAttack(GetTarget());
 			return;
 		}
@@ -699,7 +701,8 @@ void Client::RangedAttack(Mob* other) {
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) {
 		mlog(COMBAT__RANGED, "Throwing attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-		Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		// The server and client timers are not exact matches currently, so this would spam too often if enabled
+		//Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
 	}
 	const ItemInst* RangeWeapon = m_inv[SLOT_RANGE];
@@ -1104,7 +1107,8 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) {
 		mlog(COMBAT__RANGED, "Throwing attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-		Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		// The server and client timers are not exact matches currently, so this would spam too often if enabled
+		//Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
 	}
 		
