@@ -2583,7 +2583,9 @@ int Mob::CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level, M
 	(spells[spell_id].effectid[effect_id] != SE_AttackSpeed3) &&
 	(spells[spell_id].effectid[effect_id] != SE_Lull) &&
 	(spells[spell_id].effectid[effect_id] != SE_ChangeFrenzyRad) &&
-	(spells[spell_id].effectid[effect_id] != SE_Harmony)) {
+	(spells[spell_id].effectid[effect_id] != SE_Harmony) &&
+	(spells[spell_id].effectid[effect_id] != SE_CurrentMana))
+	{
 		int oval = effect_value;
 		int mod = caster->GetInstrumentMod(spell_id);
 		effect_value = effect_value * mod / 10;
