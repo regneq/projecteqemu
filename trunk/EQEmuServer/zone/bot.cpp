@@ -66,6 +66,11 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	hp_regen = CalcHPRegen();
 	mana_regen = CalcManaRegen();
 
+	for (int i = 0; i < MaxSpellTimer; i++)
+	{
+		spellRecastTimers[i] = 0;
+	}
+
 	strcpy(this->name, this->GetCleanName());
 }
 
@@ -127,6 +132,11 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 		// TODO: log error message to zone error log
 		if(GetBotOwner())
 			GetBotOwner()->Message(13, TempErrorMessage.c_str());
+	}
+
+	for (int i = 0; i < MaxSpellTimer; i++)
+	{
+		spellRecastTimers[i] = 0;
 	}
 
 	GenerateBaseStats();
@@ -2182,6 +2192,8 @@ bool Bot::Process()
 		return false;
 	}
 
+	SpellProcess();
+
 	if(tic_timer.Check())
 	{
 		//6 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
@@ -2196,8 +2208,6 @@ bool Bot::Process()
 				}
 			}
 		}
-
-		SpellProcess();
 
 		BuffProcess();
 		
@@ -2236,6 +2246,20 @@ bool Bot::Process()
 		PetAIProcess();
 
 	return true;
+}
+
+void Bot::SpellProcess()
+{
+	// check the rapid recast prevention timer
+	if(spellend_timer.Check(false))
+	{
+		NPC::SpellProcess();
+
+		if(GetClass() == BARD) {
+			if (casting_spell_id != 0) 
+				casting_spell_id = 0;
+		}
+	}
 }
 
 void Bot::BotMeditate(bool isSitting) {
@@ -2904,7 +2928,7 @@ void Bot::AI_Process() {
 			}
 		} // end in combat range
 		else {
-			if(GetTarget()->IsFeared()){
+			if(GetTarget()->IsFeared() && !spellend_timer.Enabled()){
 				// This is a mob that is fleeing either because it has been feared or is low on hitpoints
 				AI_PursueCastCheck();
 			}
@@ -2923,7 +2947,7 @@ void Bot::AI_Process() {
 			}
 		} // end not in combat range
 
-		if(!IsMoving()) {
+		if(!IsMoving() && !spellend_timer.Enabled()) {
 			AI_EngagedCastCheck();
 			BotMeditate(false);
 		}
@@ -2932,7 +2956,7 @@ void Bot::AI_Process() {
 		// Not engaged in combat
 		SetTarget(0);
 
-		if(!IsMoving() && AIthink_timer->Check()) {
+		if(!IsMoving() && AIthink_timer->Check() && !spellend_timer.Enabled()) {
 			if(!AI_IdleCastCheck() && !IsCasting())
 				BotMeditate(true);
 		}
@@ -13210,15 +13234,15 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) &&
 								g->members[i]->GetHPRatio() < 95) 
 							{
-								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
 							else if(g->members[i]->GetClass() ==  ENCHANTER && g->members[i]->GetHPRatio() < 80) {
-								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
 							else if(g->members[i]->GetHPRatio() < 70) {
-								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
 						}
@@ -13227,7 +13251,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 							if(g->members[i]->GetPet()->GetOwner() != caster && caster->IsEngaged() && g->members[i]->IsCasting() && g->members[i]->GetClass() != ENCHANTER )
 								continue;
 
-							if(caster->AICastSpell(g->members[i]->GetPet(), iChance, SpellType_Heal))
+							if(caster->AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
 								return true;
 						}
 					}
@@ -13254,10 +13278,10 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 			if(g) {
 				for( int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(g->members[i]) {
-						if(caster->AICastSpell(g->members[i], iChance, SpellType_Buff))
+						if(caster->AICastSpell(g->members[i], 100, SpellType_Buff))
 							return true;
 
-						if(caster->AICastSpell(g->members[i]->GetPet(), iChance, SpellType_Buff))
+						if(caster->AICastSpell(g->members[i]->GetPet(), 100, SpellType_Buff))
 							return true;
 					}
 				}
@@ -13563,6 +13587,33 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 	client->SendPopupToClient(WindowTitle, WindowText.c_str());
 
 	return; 
+}
+
+int8 Bot::GetNumberNeedingHealedInGroup(int8 hpr, bool includePets) {
+	int8 needHealed = 0;
+	Group *g;
+	
+	if(this->HasGroup()) {
+		g = this->GetGroup();
+			
+		if(g) {
+			for( int i = 0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g->members[i] && !g->members[i]->qglobal) {
+
+					if(g->members[i]->GetHPRatio() <= hpr) 
+						needHealed++;
+
+					if(includePets) {
+						if(g->members[i]->GetPet() && g->members[i]->GetPet()->GetHPRatio() <= hpr) {
+							needHealed++;
+						}
+					}
+				}
+			}	
+		}
+	}
+
+	return needHealed;
 }
 
 #endif

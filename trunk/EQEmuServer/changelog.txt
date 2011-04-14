@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/13/2011==
+BadCaptain: Bot spell update- Group Heals, debuff spells, spell recast timers, healing AI tweaked, bot bards can now have more than one song active
+Optional SQL: utils/sql/svn/1884_optional_bot_spells_update.sql
+
 ==04/12/2011==
 Trevius: The mana regen portion of bard songs is no longer affected by instrument mods.
 
