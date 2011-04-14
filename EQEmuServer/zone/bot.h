@@ -24,7 +24,7 @@ extern bool spells_loaded;
 extern WorldServer worldserver;
 
 const int BotAISpellRange = 100; // TODO: Write a method that calcs what the bot's spell range is based on spell, equipment, AA, whatever and replace this
-const int SpellType_Slow = 8192;
+const int MaxSpellTimer = 15;
 
 class Bot : public NPC {
 public:
@@ -140,6 +140,7 @@ public:
 	bool IsStanding();
 	bool IsBotCasterCombatRange(Mob *target);
 	bool CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true) ;
+	int8 GetNumberNeedingHealedInGroup(int8 hpr, bool includePets);
 	inline virtual sint16  GetMaxStat();
 	inline virtual sint16  GetMaxResist();
 	inline virtual sint16  GetMaxSTR();
@@ -186,6 +187,7 @@ public:
 	virtual void AI_Stop();
 
 	// Mob Spell Virtual Override Methods
+	virtual void SpellProcess();
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
 	virtual sint32 GetActSpellHealing(int16 spell_id, sint32 value);
 	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
@@ -255,6 +257,8 @@ public:
 	static void ProcessBotOwnerRefDelete(Mob* botOwner);	// Removes a Client* reference when the Client object is destroyed
 	static void ProcessGuildInvite(Client* guildOfficer, Bot* botToGuild);	// Processes a client's request to guild a bot
 	static bool ProcessGuildRemoval(Client* guildOfficer, std::string botName);	// Processes a client's request to deguild a bot
+	static sint32 GetSpellRecastTimer(Bot *caster, int timer_index);
+	static bool CheckSpellRecastTimers(Bot *caster, int SpellIndex);
 	static std::list<BotSpell> GetBotSpellsForSpellEffect(Bot* botCaster, int spellEffect);
 	static std::list<BotSpell> GetBotSpellsForSpellEffectAndTargetType(Bot* botCaster, int spellEffect, SpellTargetType targetType);
 	static std::list<BotSpell> GetBotSpellsBySpellType(Bot* botCaster, int16 spellType);
@@ -263,6 +267,10 @@ public:
 	static BotSpell GetBestBotSpellForHealOverTime(Bot* botCaster);
 	static BotSpell GetBestBotSpellForPercentageHeal(Bot* botCaster);
 	static BotSpell GetBestBotSpellForRegularSingleTargetHeal(Bot* botCaster);
+	static BotSpell GetFirstBotSpellForSingleTargetHeal(Bot* botCaster);
+	static BotSpell GetBestBotSpellForGroupHealOverTime(Bot* botCaster);
+	static BotSpell GetBestBotSpellForGroupCompleteHeal(Bot* botCaster);
+	static BotSpell GetBestBotSpellForGroupHeal(Bot* botCaster);
 	static BotSpell GetBestBotSpellForMagicBasedSlow(Bot* botCaster);
 	static BotSpell GetBestBotSpellForDiseaseBasedSlow(Bot* botCaster);
 	static Mob* GetFirstIncomingMobToMez(Bot* botCaster, BotSpell botSpell);
@@ -272,6 +280,7 @@ public:
 	static BotSpell GetBestBotSpellForNukeByTargetType(Bot* botCaster, SpellTargetType targetType);
 	static BotSpell GetBestBotSpellForStunByTargetType(Bot* botCaster, SpellTargetType targetType);
 	static BotSpell GetBestBotWizardNukeSpellByTargetResists(Bot* botCaster, Mob* target);
+	static BotSpell GetDebuffBotSpell(Bot* botCaster, Mob* target);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
 
 	// Static Bot Group Methods
@@ -364,6 +373,7 @@ public:
 	// void SetBotOwnerCharacterID(uint32 botOwnerCharacterID) { _botOwnerCharacterID = botOwnerCharacterID; }
 	void SetRangerAutoWeaponSelect(bool enable) { GetClass() == RANGER ? _rangerAutoWeaponSelect = enable : _rangerAutoWeaponSelect = false; }
 	void SetBotRole(BotRoleType botRole) { _botRole = botRole; }
+	void SetSpellRecastTimer(int timer_index, sint32 recast_delay);
 
 	// Class Destructors
 	virtual ~Bot();
@@ -407,6 +417,7 @@ private:
 	unsigned int RestRegenHP;
 	unsigned int RestRegenMana;
 	Timer rest_timer;
+	int32 spellRecastTimers[MaxSpellTimer];
 
 	// Private "base stats" Members
 	sint16 _baseMR;

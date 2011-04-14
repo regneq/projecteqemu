@@ -856,7 +856,7 @@ sint32 GetSpellTargetType(int16 spell_id)
 }
 
 bool IsHealOverTimeSpell(int16 spell_id) {
-	if(IsEffectInSpell(spell_id, SE_HealOverTime))
+	if(IsEffectInSpell(spell_id, SE_HealOverTime) && !IsGroupSpell(spell_id))
 		return true;
 	else
 		return false;
@@ -864,7 +864,7 @@ bool IsHealOverTimeSpell(int16 spell_id) {
 
 bool IsCompleteHealSpell(int16 spell_id) {
 	
-	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsPercentalHealSpell(spell_id))
+	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsPercentalHealSpell(spell_id) && !IsGroupSpell(spell_id))
 		return true;
 	else
 		return false;
@@ -873,7 +873,7 @@ bool IsCompleteHealSpell(int16 spell_id) {
 bool IsFastHealSpell(int16 spell_id) {
 	const int MaxFastHealCastingTime = 2000;
 
-	if(spells[spell_id].cast_time <= MaxFastHealCastingTime && spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0)
+	if(spells[spell_id].cast_time <= MaxFastHealCastingTime && spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && !IsGroupSpell(spell_id))
 		return true;
 	else
 		return false;
@@ -882,12 +882,46 @@ bool IsFastHealSpell(int16 spell_id) {
 bool IsRegularSingleTargetHealSpell(int16 spell_id) {
 	bool result = false;
 
-	if(spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && spells[spell_id].targettype == ST_Target
-		&& !IsFastHealSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsHealOverTimeSpell(spell_id)) {
+	if(spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && spells[spell_id].targettype == ST_Target && spells[spell_id].buffduration == 0
+		&& !IsFastHealSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsHealOverTimeSpell(spell_id) && !IsGroupSpell(spell_id)) {
 		result = true;
 	}
 
 	return result;
+}
+
+bool IsRegularGroupHealSpell(int16 spell_id) {
+
+        if(IsGroupSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsHealOverTimeSpell(spell_id))
+                return true;
+        else
+                return false;
+}
+
+bool IsGroupCompleteHealSpell(int16 spell_id) {
+
+        if(IsGroupSpell(spell_id) && IsCompleteHealSpell(spell_id))
+                return true;
+        else
+                return false;
+}
+
+bool IsGroupHealOverTimeSpell(int16 spell_id) {
+
+        if(IsGroupSpell(spell_id) && IsHealOverTimeSpell(spell_id) && spells[spell_id].buffduration < 10)
+                return true;
+        else
+                return false;
+}
+
+bool IsDebuffSpell(int16 spell_id) {
+
+        if(IsBeneficialSpell(spell_id) || IsEffectHitpointsSpell(spell_id) || IsStunSpell(spell_id) || IsMezSpell(spell_id) 
+			|| IsCharmSpell(spell_id) || IsSlowSpell(spell_id) || IsEffectInSpell(spell_id, SE_Root) 
+			|| IsEffectInSpell(spell_id, SE_MovementSpeed) || IsFearSpell(spell_id))
+                return false;
+        else
+                return true;
 }
 
 uint32 GetMorphTrigger(uint32 spell_id) 

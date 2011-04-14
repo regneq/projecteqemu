@@ -61,8 +61,10 @@ const int SpellType_Dispel=512;
 const int SpellType_InCombatBuff=1024;
 const int SpellType_Mez=2048;
 const int SpellType_Charm=4096;
+const int SpellType_Slow = 8192;
+const int SpellType_Debuff = 16384;
 
-const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm;
+const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm|SpellType_Debuff;
 const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff;
 
 #define SpellType_Any		0xFFFF
@@ -783,6 +785,10 @@ bool IsHealOverTimeSpell(int16 spell_id);
 bool IsCompleteHealSpell(int16 spell_id);
 bool IsFastHealSpell(int16 spell_id);
 bool IsRegularSingleTargetHealSpell(int16 spell_id);
+bool IsRegularGroupHealSpell(int16 spell_id);
+bool IsGroupCompleteHealSpell(int16 spell_id);
+bool IsGroupHealOverTimeSpell(int16 spell_id);
+bool IsDebuffSpell(int16 spell_id);
 uint32 GetMorphTrigger(uint32 spell_id);
 uint32 GetPartialMeleeRuneReduction(uint32 spell_id);
 uint32 GetPartialMagicRuneReduction(uint32 spell_id);
