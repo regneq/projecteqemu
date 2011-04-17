@@ -349,7 +349,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 
 				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
 
-				if (inst->GetItem()->NoDrop != 0 || other == this) {
+				if (inst->GetItem()->NoDrop != 0 || RuleI(Character, MinStatusForNoDropExemptions) >= Admin() || RuleI(World, FVNoDropFlag) == 1 || other == this) {
 					bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
 					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 

@@ -213,8 +213,9 @@ void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2,
 void Client::DropItem(sint16 slot_id)
 {
 
-	if (GetInv().CheckNoDrop(slot_id)) {
-		Message(0, "No Drop Exploit: Items Destroyed.");
+	if (GetInv().CheckNoDrop(slot_id) && RuleI(World, FVNoDropFlag) == 0 || RuleI(Character, MinStatusForNoDropExemptions) < Admin() && RuleI(World, FVNoDropFlag) == 2) {
+		//Message(0, "No Drop Exploit: Items Destroyed.");
+		database.SetHackerFlag(this->AccountName(), this->GetCleanName(), "Tried to drop an item on the ground that was nodrop!");
 		GetInv().DeleteItem(slot_id);
 		return;
 	}
@@ -949,7 +950,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	Mob* with = trade->With();
 	if (((with && with->IsClient() && dst_slot_id>=3000 && dst_slot_id<=3007) || // Trade
 	(dst_slot_id >= 2500 && dst_slot_id <= 2550)) // Shared Bank
-	&& GetInv().CheckNoDrop(src_slot_id)) {
+	&& GetInv().CheckNoDrop(src_slot_id)
+	&& RuleI(World, FVNoDropFlag) == 0 || RuleI(Character, MinStatusForNoDropExemptions) < Admin() && RuleI(World, FVNoDropFlag) == 2) {
 		DeleteItemInInventory(src_slot_id);
 		WorldKick();
 		return false;
