@@ -138,12 +138,14 @@ void Client::SendLogServer()
 
 	if(RuleB(Chat, EnableVoiceMacros))
 		l->enablevoicemacros = 1;
+	
+	l->enable_pvp = (RuleI(World, PVPSettings));
 
-	if(database.GetServerType() == 1)
-		l->enable_pvp = 1;
+	if(RuleB(World, IsGMPetitionWindowEnabled))
+		l->enable_petition_wnd = 1;
 
-	//enable when we are ready to implement this!
-	//l->enable_petition_wnd = 1;
+	if(RuleI(World, FVNoDropFlag) == 1 || RuleI(World, FVNoDropFlag) == 2 && GetAdmin() > RuleI(Character, MinStatusForNoDropExemptions))
+		l->enable_FV = 1;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -170,13 +172,7 @@ char char_name[32]= { 0 };
 void Client::SendExpansionInfo() {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ExpansionInfo, sizeof(ExpansionInfo_Struct));
 	ExpansionInfo_Struct *eis = (ExpansionInfo_Struct*)outapp->pBuffer;
-	char val[20] = {0};
-	if (database.GetVariable("Expansions", val, 20)) {
-		eis->Expansions = atoi(val);
-	}
-	else {
-		eis->Expansions = 0x1FF;
-	}
+	eis->Expansions = (RuleI(World, ExpansionSettings));
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
