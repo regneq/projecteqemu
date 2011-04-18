@@ -5,6 +5,7 @@ Secrets: Converted PVP flags to be a variable, as there are other PVP rulesets e
 Secrets: Enabled Firiona Vie ruleset as an option. This disables OOC, makes languages hard to understand between races (somehow), and disables no-drop. If set to 2, this rule will only affect GMs, allowing players to be traded no-drop items from GMs. Player-to-Player trades are still considered active hacks, and are still detected.
 Secrets: Made a rule to toggle the GM Petition Window in titanium. You will need the guide petition files for that client, and it still needs code support to work. (find these yourself.)
 Secrets: Added expansion settings to the rule_values table instead of the variables. The PVP settings will also be here now, too. (See Optional SQL with this update.)
+Secrets: Fixed an issue pointed out by Trevius in the previous commit.
 
 Optional SQL: utils/sql/svn/1885_optional_rules_fv_pvp_expansions.sql
 
