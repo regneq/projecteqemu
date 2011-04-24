@@ -649,6 +649,8 @@ bool logpos;
 
 	inline sint32	GetMaxMana()	const { return max_mana; }
 	inline sint32	GetMana()		const { return cur_mana; }
+	sint32	GetItemHPBonuses();
+	sint32	GetSpellHPBonuses();
 	virtual const sint32& SetMana(sint32 amount);
 	inline float	GetManaRatio()	const { return max_mana == 0 ? 100 : (((float)cur_mana/max_mana)*100); }
 	void			SetZone(int32 zone_id, int32 instance_id);
@@ -673,7 +675,6 @@ bool logpos;
 	inline virtual sint16	GetPR()	const { return PR + itembonuses.PR + spellbonuses.PR; }
 	inline virtual sint16	GetCR() const { return CR + itembonuses.CR + spellbonuses.CR; }
 	inline virtual sint16	GetCorrup() const { return Corrup + itembonuses.Corrup + spellbonuses.Corrup; }
-
 	inline StatBonuses GetItemBonuses() const { return itembonuses; }
 	inline StatBonuses GetSpellBonuses() const { return spellbonuses; }
 	inline StatBonuses GetAABonuses() const { return aabonuses; }

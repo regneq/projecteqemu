@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/24/2011==
+Trevius: Added new Perl Mob quest objects GetItemHPBonuses() and GetSpellHPBonuses().
+
 ==04/17/2011==
 Secrets: Converted PVP flags to be a variable, as there are other PVP rulesets embedded in the client. These will need code support to work properly. (IsAttackAllowed specifically.)
 Secrets: Enabled Firiona Vie ruleset as an option. This disables OOC, makes languages hard to understand between races (somehow), and disables no-drop. If set to 2, this rule will only affect GMs, allowing players to be traded no-drop items from GMs. Player-to-Player trades are still considered active hacks, and are still detected.
@@ -16,6 +19,7 @@ Optional SQL: utils/sql/svn/1884_optional_bot_spells_update.sql
 
 ==04/12/2011==
 Trevius: The mana regen portion of bard songs is no longer affected by instrument mods.
+Trevius: (scruffy) Identified opcodes for /zone and petition queue on Titanium.
 
 ==04/06/2011==
 Derision: Underfoot: Corrected OP_CompletedTasks.

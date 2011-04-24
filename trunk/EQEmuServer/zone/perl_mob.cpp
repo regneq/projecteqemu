@@ -2238,6 +2238,58 @@ XS(XS_Mob_GetMaxHP)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_GetItemHPBonuses); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetItemHPBonuses)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetItemHPBonuses(THIS)");
+	{
+		Mob *		THIS;
+		sint32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetItemHPBonuses();
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetSpellHPBonuses); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetSpellHPBonuses)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetSpellHPBonuses(THIS)");
+	{
+		Mob *		THIS;
+		sint32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSpellHPBonuses();
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Mob_GetWalkspeed); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetWalkspeed)
 {
@@ -7393,6 +7445,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "IsWarriorClass"), XS_Mob_IsWarriorClass, file, "$");
 		newXSproto(strcpy(buf, "GetHP"), XS_Mob_GetHP, file, "$");
 		newXSproto(strcpy(buf, "GetMaxHP"), XS_Mob_GetMaxHP, file, "$");
+		newXSproto(strcpy(buf, "GetItemHPBonuses"), XS_Mob_GetItemHPBonuses, file, "$");
+		newXSproto(strcpy(buf, "GetSpellHPBonuses"), XS_Mob_GetSpellHPBonuses, file, "$");
 		newXSproto(strcpy(buf, "GetWalkspeed"), XS_Mob_GetWalkspeed, file, "$");
 		newXSproto(strcpy(buf, "GetRunspeed"), XS_Mob_GetRunspeed, file, "$");
 		newXSproto(strcpy(buf, "GetCasterLevel"), XS_Mob_GetCasterLevel, file, "$$");
