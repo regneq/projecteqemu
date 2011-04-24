@@ -11272,11 +11272,18 @@ void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
 				break;
 			}
 
-			PushItemOnCursor(*inst);
+			if (gbwis->Quantity > 0)
+			{
+				PushItemOnCursor(*inst);
 
-			SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
+				SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
 
-			GuildBanks->DeleteItem(GuildID(), gbwis->Area, gbwis->SlotID, gbwis->Quantity);
+				GuildBanks->DeleteItem(GuildID(), gbwis->Area, gbwis->SlotID, gbwis->Quantity);
+			}
+			else
+			{
+				Message(0, "Unable to withdraw 0 quantity of %s", inst->GetItem()->Name);
+			}
 
 			safe_delete(inst);
 

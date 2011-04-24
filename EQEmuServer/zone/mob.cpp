@@ -614,14 +614,24 @@ sint32 Mob::CalcMaxMana() {
 	return max_mana;
 }
 
-sint32 Mob::CalcMaxHP() 
-{
-
+sint32 Mob::CalcMaxHP() {
 	max_hp = (base_hp + itembonuses.HP + spellbonuses.HP);
-	
 	max_hp += max_hp * (spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
-	
 	return max_hp;
+}
+
+sint32 Mob::GetItemHPBonuses() {
+	sint32 item_hp = 0;
+	item_hp = itembonuses.HP;
+	item_hp += item_hp * itembonuses.MaxHPChange / 10000;
+	return item_hp;
+}
+
+sint32 Mob::GetSpellHPBonuses() {
+	sint32 spell_hp = 0;
+	spell_hp = spellbonuses.HP;
+	spell_hp += spell_hp * spellbonuses.MaxHPChange / 10000;
+	return spell_hp;
 }
 
 char Mob::GetCasterClass() const {
