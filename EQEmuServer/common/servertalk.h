@@ -162,8 +162,13 @@
 #define ServerOP_LauncherConnectInfo	0x3000
 #define ServerOP_LauncherZoneRequest	0x3001
 #define ServerOP_LauncherZoneStatus		0x3002
+#define ServerOP_DoZoneCommand		0x3003
 
 #define ServerOP_UCSMessage		0x4000
+#define ServerOP_ReloadRules	0x4001
+#define ServerOP_ReloadRulesWorld	0x4002
+#define ServerOP_CameraShake	0x4003
+
 /************ PACKET RELATED STRUCT ************/
 class ServerPacket
 {
@@ -994,6 +999,12 @@ struct ServerLeaderboardRequest_Struct
 {
 	char player[64];
 	uint8 type;
+};
+
+struct ServerCameraShake_Struct
+{
+	uint32 duration; // milliseconds
+	uint32 intensity; // number from 1-10
 };
 
 #pragma pack()

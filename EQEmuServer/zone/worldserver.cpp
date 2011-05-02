@@ -1524,7 +1524,20 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
+		case ServerOP_ReloadRules:
+		{
+			rules->LoadRules(&database, rules->GetActiveRuleset());
+			break;
+		}
+		case ServerOP_CameraShake:
+		{
+			if(zone)
+			{
+					ServerCameraShake_Struct *scss = (ServerCameraShake_Struct*)pack->pBuffer;
+					entity_list.CameraEffect(scss->duration, scss->intensity);
+			}
+			break;
+		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

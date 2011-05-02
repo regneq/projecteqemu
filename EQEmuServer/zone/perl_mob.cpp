@@ -7027,13 +7027,15 @@ XS(XS_Mob_CameraEffect); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_CameraEffect)
 {
 	dXSARGS;
-	if (items < 2 || items > 4)
-		Perl_croak(aTHX_ "Usage: Mob::CameraEffect(THIS, duration, intensity, singleclient)");
+	if (items < 2 || items > 5)
+		Perl_croak(aTHX_ "Usage: Mob::CameraEffect(THIS, duration, intensity, singleclient, global)");
 	{
 		Mob *		THIS;
 		uint32		duration = (uint32)SvUV(ST(1));
 		uint32		intensity = 0;
 		Client*		client = NULL;
+		bool		global = false;
+		bool		nullcli = false;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7051,12 +7053,17 @@ XS(XS_Mob_CameraEffect)
 				client = INT2PTR(Client *,tmp);
 			}
 			else
-				Perl_croak(aTHX_ "client is not of type Client");
+			nullcli = true;
 			if(client == NULL)
-				Perl_croak(aTHX_ "client is NULL, avoiding crash.");
+			nullcli = true;
+				//Perl_croak(aTHX_ "client is NULL, avoiding crash.");
 		}
+		if (items > 4)	{	global = (bool)SvTRUE(ST(4));	}
 
-		THIS->CameraEffect(duration, intensity, client);
+		if(nullcli)
+		THIS->CameraEffect(duration, intensity, 0, global);
+		else
+		THIS->CameraEffect(duration, intensity, client, global);
 	}
 	XSRETURN_EMPTY;
 }
@@ -7613,7 +7620,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SendIllusion"), XS_Mob_SendIllusion, file, "$$;$$$$$$$$$$$$");
 		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$");
 		newXSproto(strcpy(buf, "QuestReward"), XS_Mob_QuestReward, file, "$$;$$$");
-		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$;$$");
+		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$;$$$");
 		newXSproto(strcpy(buf, "SpellEffect"), XS_Mob_SpellEffect, file, "$$;$$$$$$");
 		newXSproto(strcpy(buf, "TempName"), XS_Mob_TempName, file, "$:$");
 		newXSproto(strcpy(buf, "GetItemStat"), XS_Mob_GetItemStat, file, "$$$");
