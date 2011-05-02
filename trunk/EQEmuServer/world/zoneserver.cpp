@@ -765,6 +765,22 @@ bool ZoneServer::Process() {
 			client_list.SendClientVersionSummary(srcvss->Name);
 			break;
 		}
+		case ServerOP_ReloadRules:
+		{
+			zoneserver_list.SendPacket(pack);
+			rules->LoadRules(&database, "default");
+			break;
+		}
+		case ServerOP_ReloadRulesWorld:
+		{
+			rules->LoadRules(&database, "default");
+			break;
+		}
+		case ServerOP_CameraShake:
+		{
+			zoneserver_list.SendPacket(pack);
+			break;
+		}
 		case ServerOP_FriendsWho: {
 			ServerFriendsWho_Struct* FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
 			client_list.SendFriendsWho(FriendsWho, this);

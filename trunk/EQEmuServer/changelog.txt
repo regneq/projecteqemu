@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/02/2011
+Secrets: Added OP_CameraEffect for Titanium.
+Secrets: Added commands: #reloadallrules, #reloadrulesworld, and #camerashake. These default to 
+Secrets: Added optional "global" flag as item 5 in the $mob->CameraEffect() quest object. This does #camerashake, but in quest form.
+Secrets: #reloadallrules reloads rules in every single zone plus world. #reloadrulesworld reloads the rules in world only.
+Secrets: #camerashake shakes the camera in every zone with required args intensity and duration.
+
 ==04/24/2011==
 Trevius: Added new Perl Mob quest objects GetItemHPBonuses() and GetSpellHPBonuses().
 

@@ -1477,7 +1477,20 @@ void Mob::QuestReward(Client *c, int32 silver, int32 gold, int32 platinum) {
 	safe_delete(outapp);
 }
 
-void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c) {
+void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c, bool global) {
+
+
+	if(global == true)
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_CameraShake, sizeof(ServerCameraShake_Struct));
+		memset(pack->pBuffer, 0, sizeof(pack->pBuffer));
+		ServerCameraShake_Struct* scss = (ServerCameraShake_Struct*) pack->pBuffer;
+		scss->duration = duration;
+		scss->intensity = intensity;
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+		return;
+	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CameraEffect, sizeof(Camera_Struct));
 	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));

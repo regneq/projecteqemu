@@ -448,7 +448,11 @@ int command_init(void) {
 		command_add("distance","- Reports the distance between you and your target.", 80, command_distance) ||
 		command_add("cvs","- Summary of client versions currently online.", 200, command_cvs) ||
 		command_add("maxskills","Maxes skills for you.", 200, command_max_all_skills) ||
-		command_add("showbonusstats","[item|spell|all] Shows bonus stats for target from items or spells. Shows both by default.",50, command_showbonusstats)
+		command_add("showbonusstats","[item|spell|all] Shows bonus stats for target from items or spells. Shows both by default.",50, command_showbonusstats) ||
+		command_add("reloadallrules","Executes a reload of all rules.",80, command_reloadallrules) ||
+		command_add("reloadrulesworld","Executes a reload of all rules in world specifically.",80, command_reloadworldrules) ||
+		command_add("camerashake", "Shakes the camera on everyone's screen globally.", 80, command_camerashake)
+
 		)
 	{
 		command_deinit();
@@ -6368,8 +6372,8 @@ void command_embperl_eval(Client *c, const Seperator *sep)
 
 }
 
-#endif //EMBPERL_EVAL_COMMANDS
 #endif //EMBPERL_PLUGIN
+#endif //EMBPERL_EVAL_COMMANDS
 
 void command_ban(Client *c, const Seperator *sep)
 {
@@ -11038,4 +11042,48 @@ void command_showbonusstats(Client *c, const Seperator *sep)
 		}
 		c->Message(0, "  Effective Casting Level: %i",c->GetTarget()->GetCasterLevel(0));
 	}
+}
+
+void command_reloadallrules(Client *c, const Seperator *sep)
+{
+	if(c)
+	{
+		ServerPacket *pack = new ServerPacket(ServerOP_ReloadRules, 0);
+		worldserver.SendPacket(pack);
+		c->Message(13, "Successfully sent the packet to world to reload rules globally. (including world)");
+		safe_delete(pack);
+
+	}
+}
+
+void command_reloadworldrules(Client *c, const Seperator *sep)
+{
+	if(c)
+	{
+		ServerPacket *pack = new ServerPacket(ServerOP_ReloadRulesWorld, 0);
+		worldserver.SendPacket(pack);
+		c->Message(13, "Successfully sent the packet to world to reload rules. (only world)");
+		safe_delete(pack);
+	}
+}
+
+void command_camerashake(Client *c, const Seperator *sep)
+{
+	if(c)
+	{
+
+		if(sep->arg[1][0] &&  sep->arg[2][0]);
+		{
+		ServerPacket *pack = new ServerPacket(ServerOP_CameraShake, sizeof(ServerCameraShake_Struct));
+		memset(pack->pBuffer, 0, sizeof(pack->pBuffer));
+		ServerCameraShake_Struct* scss = (ServerCameraShake_Struct*) pack->pBuffer;
+		scss->duration = atoi(sep->arg[1]);
+		scss->intensity = atoi(sep->arg[2]);
+		worldserver.SendPacket(pack);
+		c->Message(13, "Successfully sent the packet to world! Shake it, world, shake it!");
+		safe_delete(pack);
+		return;
+		}
+	}
+	c->Message(13, "Usage -- #camerashake [duration], [intensity [1-10])");
 }

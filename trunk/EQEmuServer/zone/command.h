@@ -308,6 +308,9 @@ void command_distance(Client *c, const Seperator *sep);
 void command_cvs(Client *c, const Seperator *sep);
 void command_max_all_skills(Client *c, const Seperator *sep);
 void command_showbonusstats(Client *c, const Seperator *sep);
+void command_reloadallrules(Client *c, const Seperator *sep);
+void command_reloadworldrules(Client *c, const Seperator *sep);
+void command_camerashake(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);
