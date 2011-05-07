@@ -162,6 +162,8 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
 			if (retry) {
 				cout << "Database Error: Lost connection, attempting to recover...." << endl;
 				ret = RunQuery(query, querylen, errbuf, result, affected_rows, last_insert_id, errnum, false);
+				if (!ret)
+					cout << "Reconnection to database successful." << endl;
 			}
 			else {
 				pStatus = Error;
@@ -262,6 +264,7 @@ bool DBcore::Open(int32* errnum, char* errbuf) {
 		return true;
 	if (GetStatus() == Error)
 		mysql_close(&mysql);
+		mysql_init(&mysql);		// Initialize structure again
 	if (!pHost)
 		return false;
 	/*
