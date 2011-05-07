@@ -252,17 +252,12 @@ Embperl::~Embperl()
 {
 	in_use = true;
 #ifdef EMBPERL_IO_CAPTURE
-	//removed to try to stop perl from exploding on reload, we'll see
-/*	eval_pv(
+	eval_pv(
 		"package quest;"
-		"	untie *STDOUT;"
-		"	untie *STDERR;"
-  	,FALSE);
-*/
+		"	if(tied *STDOUT) { untie(*STDOUT); }"
+		"	if(tied *STDERR) { untie(*STDERR); }"
+		,FALSE);
 #endif
-//I am commenting this out in the veign hope that it will help with crashes
-//under the assumption that we are not leaking a ton of memory and that this
-//will not be a regular part of a production server's activity, only when debugging
 	perl_free(my_perl);
 }
 

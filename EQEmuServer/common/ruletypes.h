@@ -87,6 +87,7 @@ RULE_INT ( Character, RespawnFromHoverTimer, 300)	// Respawn Window countdown ti
 RULE_BOOL ( Character, UseNewStatsWindow, true) 	// New stats window shows everything
 RULE_BOOL ( Character, ItemCastsUseFocus, false) // If true, this allows item clickies to use focuses that have limited max levels on them
 RULE_INT ( Character, MinStatusForNoDropExemptions, 80) // This allows status x and higher to trade no drop items.
+RULE_INT ( Character, SkillCapMaxLevel, -1 )	// Sets the Max Level used for Skill Caps (from skill_caps table).  Default of -1 makes it use MaxLevel rule value.
 
 RULE_CATEGORY_END()
 

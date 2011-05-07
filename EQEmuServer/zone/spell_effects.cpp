@@ -3714,12 +3714,12 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 		case SE_LimitMaxLevel:{
 			spell_level = spell.classes[(GetClass()%16) - 1];
 			lvldiff = spell_level - focus_spell.base[i];
-			//every level over cap reduces the effect by spell.base2[i] percent unless from a clicky when ItemCastsUseFocus is true
+			//every level over cap reduces the effect by focus_spell.base2[i] percent unless from a clicky when ItemCastsUseFocus is true
 			if(lvldiff > 0 && (spell_level <= RuleI(Character, MaxLevel) || RuleB(Character, ItemCastsUseFocus) == false))
 			{
-				if(spell.base2[i] > 0)
+				if(focus_spell.base2[i] > 0)
 				{
-					lvlModifier -= spell.base2[i]*lvldiff;
+					lvlModifier -= focus_spell.base2[i]*lvldiff;
 					if(lvlModifier < 1)
 						return 0;
 				}

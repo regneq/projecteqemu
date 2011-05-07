@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/03/2011
+Trevius: (Vaion) Fix for focus effect decay over max level.
+Trevius: (Zothen) Crash fix for UCS.
+Trevius: Rule added for Skill Caps Max Level to resolve issues with servers that have Chars over level 75 after Rev1875.
+
+Optional SQL: utils/sql/svn/1889_optional_skill_cap_rule.sql
+
 ==05/02/2011
 Secrets: Added OP_CameraEffect for Titanium.
 Secrets: Added commands: #reloadallrules, #reloadrulesworld, and #camerashake. These default to 
