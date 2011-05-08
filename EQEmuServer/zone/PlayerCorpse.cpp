@@ -25,6 +25,7 @@ Child of the Mob class.
 #include <stdio.h>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 using namespace std;
 #ifdef WIN32
 #define snprintf	_snprintf
@@ -360,14 +361,18 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 		// to go into the regular slots on the player, out of bags
 	
 		// worn + inventory + cursor
+        std::list<uint32> removed_list;
+        bool cursor = false;
 		for(i = 0; i <= 30; i++)
 		{
 			item = client->GetInv().GetItem(i);
 			if((item && (!client->IsBecomeNPC())) || (item && client->IsBecomeNPC() && !item->GetItem()->NoRent))
 			{
 				MoveItemToCorpse(client, item, i);
+                removed_list.push_back(i);
 			}
 		}
+
 		// cursor queue
 		iter_queue it;
 		for(it=client->GetInv().cursor_begin(),i=8000; it!=client->GetInv().cursor_end(); it++,i++) {
@@ -375,9 +380,35 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 			if((item && (!client->IsBecomeNPC())) || (item && client->IsBecomeNPC() && !item->GetItem()->NoRent))
 			{
 				MoveItemToCorpse(client, item, i);
+                cursor = true;
 			}
 		}
 		
+        if(removed_list.size() != 0) {
+            std::stringstream ss("");
+            ss << "DELETE FROM inventory WHERE charid=" << client->CharacterID();
+            ss << " AND (";
+            std::list<uint32>::const_iterator iter = removed_list.begin();
+            bool first = true;
+            while(iter != removed_list.end()) {
+                if(first) {
+                    first = false;
+                } else {
+                    ss << " OR ";
+                }
+                ss << "slotid=" << (*iter);
+                iter++;
+            }
+            ss << ")";
+            database.RunQuery(ss.str().c_str(), ss.str().length());
+        }
+        
+        if(cursor) {
+            database.SaveCursor(client->CharacterID(), 
+                client->GetInv().cursor_begin(), 
+                client->GetInv().cursor_end());
+        }
+
 		client->Save();
 	} //end "not leaving naked corpses"
 	
@@ -403,11 +434,11 @@ void Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
 			if(interior_item)
 			{
 				AddItem(interior_item->GetItem()->ID, interior_item->GetCharges(), interior_slot, interior_item->GetAugmentItemID(0), interior_item->GetAugmentItemID(1), interior_item->GetAugmentItemID(2), interior_item->GetAugmentItemID(3), interior_item->GetAugmentItemID(4));
-				client->DeleteItemInInventory(interior_slot, 0, true);
+				client->DeleteItemInInventory(interior_slot, 0, true, false);
 			}
 		}
 	}
-	client->DeleteItemInInventory(equipslot, 0, true);
+	client->DeleteItemInInventory(equipslot, 0, true, false);
 }
 
 // To be called from LoadFromDBData
