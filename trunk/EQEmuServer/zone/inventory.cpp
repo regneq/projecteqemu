@@ -289,7 +289,7 @@ uint32 Client::GetAugmentIDAt(sint16 slot_id, uint8 augslot) {
 }
 
 // Remove item from inventory
-void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_update) {
+void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_update, bool update_db) {
 	#if (EQDEBUG >= 5)
 		LogFile->write(EQEMuLog::Debug, "DeleteItemInInventory(%i, %i, %s)", slot_id, quantity, (client_update) ? "true":"false");
 	#endif
@@ -314,12 +314,14 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 	const ItemInst* inst=NULL;
 	if (slot_id==SLOT_CURSOR) {
 		list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
-		database.SaveCursor(character_id, s, e);
+        if(update_db)
+		    database.SaveCursor(character_id, s, e);
 	}
 	else {
 		// Save change to database
 		inst = m_inv[slot_id];
-		database.SaveInventory(character_id, inst, slot_id);
+        if(update_db)
+		    database.SaveInventory(character_id, inst, slot_id);
 	}
 
 	if(client_update) {

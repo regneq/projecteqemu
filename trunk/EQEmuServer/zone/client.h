@@ -704,7 +704,7 @@ public:
 	uint32	GetAugmentIDAt(sint16 slot_id, uint8 augslot);
 	bool	PutItemInInventory(sint16 slot_id, const ItemInst& inst, bool client_update = false);
 	bool	PushItemOnCursor(const ItemInst& inst, bool client_update = false);
-	void	DeleteItemInInventory(sint16 slot_id, sint8 quantity = 0, bool client_update = false);
+	void	DeleteItemInInventory(sint16 slot_id, sint8 quantity = 0, bool client_update = false, bool update_db = true);
 	bool	SwapItem(MoveItem_Struct* move_in);
 	void	PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data = 0);
 	bool	AutoPutLootInInventory(ItemInst& inst, bool try_worn = false, bool try_cursor = true, ServerLootItem_Struct** bag_item_data = 0);
