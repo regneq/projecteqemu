@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/08/2011
+Congdar: (Timothy_nonax) Add Bot Command ( #bot pull )
+
 ==05/03/2011
 Trevius: (Vaion) Fix for focus effect decay over max level.
 Trevius: (Zothen) Crash fix for UCS.

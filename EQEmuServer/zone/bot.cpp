@@ -10077,9 +10077,46 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face|eyes|heritage|tattoo|details <value>] - Change your BOTs appearance.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
+		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
 		return;
 	}
-
+	
+	// pull
+	if(!strcasecmp(sep->arg[1], "pull")) {
+		Mob *target = c->GetTarget();
+		if(target == NULL || target == c || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
+		{
+			c->Message(15, "You must select a monster");
+			return;
+		}
+		
+		if(c->IsGrouped())
+		{
+			bool haspuller = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+			{
+				if(g && g->members[i] && g->members[i]->IsBot() && !strcasecmp(g->members[i]->GetName() , sep->arg[2]))
+				{
+					haspuller = true;
+					Mob *puller = g->members[i];
+					if (puller->CastToBot()->IsArcheryRange(target))
+					{
+						puller->Say("Trying to Pull %s \n", target->GetCleanName());
+						puller->CastToBot()->BotRangedAttack(target);
+					}
+					else {
+						puller->Say("Out of Range %s \n", target->GetCleanName());
+					}
+				}
+			}
+			if(!haspuller) {
+				c->Message(15, "You must have an Puller in your group.");
+			}
+		}
+		return;
+	}
+	
 	if(!strcasecmp(sep->arg[1], "augmentitem")) {
 		AugmentItem_Struct* in_augment = new AugmentItem_Struct[sizeof(AugmentItem_Struct)];
 		in_augment->container_slot = 1000;
