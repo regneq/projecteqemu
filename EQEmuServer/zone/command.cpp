@@ -451,8 +451,10 @@ int command_init(void) {
 		command_add("showbonusstats","[item|spell|all] Shows bonus stats for target from items or spells. Shows both by default.",50, command_showbonusstats) ||
 		command_add("reloadallrules","Executes a reload of all rules.",80, command_reloadallrules) ||
 		command_add("reloadrulesworld","Executes a reload of all rules in world specifically.",80, command_reloadworldrules) ||
-		command_add("camerashake", "Shakes the camera on everyone's screen globally.", 80, command_camerashake)
-
+		command_add("camerashake", "Shakes the camera on everyone's screen globally.", 80, command_camerashake) ||
+        command_add("disarmtrap", "Analog for ldon disarm trap for the newer clients since we still don't have it working.", 0, command_disarmtrap) ||
+        command_add("sensetrap", "Analog for ldon sense trap for the newer clients since we still don't have it working.", 0, command_sensetrap) ||
+        command_add("picklock", "Analog for ldon pick lock for the newer clients since we still don't have it working.", 0, command_picklock)
 		)
 	{
 		command_deinit();
@@ -11087,3 +11089,61 @@ void command_camerashake(Client *c, const Seperator *sep)
 	}
 	c->Message(13, "Usage -- #camerashake [duration], [intensity [1-10])");
 }
+
+void command_disarmtrap(Client *c, const Seperator *sep) 
+{
+    Mob * target = c->GetTarget();
+	if(target->IsNPC())
+	{
+		if(c->HasSkill(DISARM_TRAPS))
+		{
+			if(c->DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+			{
+				c->Message(13, "%s is too far away.", target->GetCleanName());
+				return;
+			}
+			c->HandleLDoNDisarm(target->CastToNPC(), c->GetSkill(DISARM_TRAPS), LDoNTypeMechanical);
+		}
+		else
+			c->Message(13, "You do not have the disarm trap skill.");
+	}
+}
+
+void command_sensetrap(Client *c, const Seperator *sep) 
+{
+    Mob * target = c->GetTarget();
+	if(target->IsNPC())
+	{
+		if(c->HasSkill(SENSE_TRAPS))
+		{
+			if(c->DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+			{
+				c->Message(13, "%s is too far away.", target->GetCleanName());
+				return;
+			}
+			c->HandleLDoNSenseTraps(target->CastToNPC(), c->GetSkill(SENSE_TRAPS), LDoNTypeMechanical);
+		}
+		else
+			c->Message(13, "You do not have the sense traps skill.");
+	}
+}
+
+void command_picklock(Client *c, const Seperator *sep) 
+{
+    Mob * target = c->GetTarget();
+	if(target->IsNPC())
+	{
+		if(c->HasSkill(PICK_LOCK))
+		{
+			if(c->DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+			{
+				c->Message(13, "%s is too far away.", target->GetCleanName());
+				return;
+			}
+			c->HandleLDoNPickLock(target->CastToNPC(), c->GetSkill(PICK_LOCK), LDoNTypeMechanical);
+		}
+		else
+			c->Message(13, "You do not have the pick locks skill.");
+	}
+}
+
