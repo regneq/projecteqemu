@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/09/2011==
 KLS: (lerxst2112) *nix compile fix.
+KLS: Added #picklock #sensetrap and #disarmtrap for LDoN traps since they still don't work quite right on the newer clients because we don't implement destructable objects yet.
 
 ==05/08/2011==
 Congdar: (Timothy_nonax) Add Bot Command ( #bot pull )

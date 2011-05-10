@@ -311,6 +311,9 @@ void command_showbonusstats(Client *c, const Seperator *sep);
 void command_reloadallrules(Client *c, const Seperator *sep);
 void command_reloadworldrules(Client *c, const Seperator *sep);
 void command_camerashake(Client *c, const Seperator *sep);
+void command_disarmtrap(Client *c, const Seperator *sep);
+void command_sensetrap(Client *c, const Seperator *sep);
+void command_picklock(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);
