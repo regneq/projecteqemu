@@ -11,20 +11,15 @@
 #include "../common/Item.h"
 #include "QuestInterface.h"
 
-enum QuestStatus {
-    Unloaded,
-    FailedToLoad,
-    LoadedByPerl,
-    LoadedByQst
-};
+#define QuestFailedToLoad 0xFFFFFFFF
+#define QuestUnloaded 0x00
 
 class QuestParserCollection {
 public:
     QuestParserCollection();
     ~QuestParserCollection();
 
-    void RegisterQuestInterface(QuestInterface *qi, std::string name);
-    void UnregisterQuestInterface(std::string name);
+    void RegisterQuestInterface(QuestInterface *qi);
 
     void EventSay(const char *message, uint32_t language, NPC * npc, Client * client, std::string zone);
     void EventItem(NPC *npc, Client *client, std::string zone);
@@ -57,16 +52,16 @@ public:
     void EventPlayerPickup(Client *client, std::string item_id, std::string zone);
     void EventPopupResponse(Client *client, std::string popup_id, std::string zone);
     void EventProximitySay(const char *message, uint32_t language, NPC * npc, Client * client, std::string zone);
-    void EventCast(Client *client, std::string spell_id);
+    void EventCast(Client *client, uint32_t spell_id);
     void EventScaleCalc(Client *client, ItemInst *item);
     void EventTargetChange(NPC *npc, Mob *other, std::string zone);
     void EventTargetChange(Client *client, std::string zone);
     void EventHateList(NPC *npc, Mob *other, bool join, std::string zone);
-    void EventSpellEffectClient(Client *target, std::string spell_id, uint32_t caster_id);
-    void EventSpellEffectNPC(NPC *target, std::string spell_id, uint32_t caster_id);
-    void EventSpellEffectBuffTicClient(Client *target, std::string spell_id, uint32_t caster_id);
-    void EventSpellEffectBuffTicNPC(NPC *target, std::string spell_id, uint32_t caster_id);
-    void EventSpellEffectTranslocateComplete(Client *client, std::string spell_id);
+    void EventSpellEffectClient(Client *target, uint32_t spell_id, uint32_t caster_id);
+    void EventSpellEffectNPC(NPC *target, uint32_t spell_id, uint32_t caster_id);
+    void EventSpellEffectBuffTicClient(Client *target, uint32_t spell_id, uint32_t caster_id);
+    void EventSpellEffectBuffTicNPC(NPC *target, uint32_t spell_id, uint32_t caster_id);
+    void EventSpellEffectTranslocateComplete(Client *client, uint32_t spell_id);
     void EventCombineSuccess(Client *client, uint32_t recipe_id, std::string recipe_name, std::string zone);
     void EventCombineFailure(Client *client, uint32_t recipe_id, std::string recipe_name, std::string zone);
     void EventItemClick(Client *client, ItemInst *item, uint32_t slot_id);
@@ -86,19 +81,22 @@ private:
     void _EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string zone, std::string data, uint32_t extra_data);
     void _EventPlayer(QuestEventID evt, Client *client, std::string zone, std::string data, uint32_t extra_data);
     void _EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32_t extra_data);
-    void _EventSpell(QuestEventID evt, NPC* npc, Client *client, std::string data, uint32_t extra_data);
+    void _EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32_t spell_id, uint32_t extra_data);
 
-    QuestStatus LoadNPCQuest(std::string zone, uint32_t npc_id);
-    QuestStatus LoadPlayerQuest(std::string zone);
-    QuestStatus LoadItemQuest(std::string item_script);
-    QuestStatus LoadSpellQuest(uint32_t spell_id);
-
-    std::map<std::string, QuestInterface*> _interfaces;
+    QuestInterface *_LoadNPCQuest(std::string zone, uint32_t npc_id);
+    QuestInterface *_LoadPlayerQuest(std::string zone);
+    QuestInterface *_LoadItemQuest(std::string item_script);
+    QuestInterface *_LoadSpellQuest(uint32_t spell_id);
+                  
+    std::map<uint32_t, QuestInterface*> _interfaces;
     std::list<QuestInterface*> _load_precedence;
-    std::map<uint32_t, QuestStatus> _npc_quest_status;
-    QuestStatus _player_quest_status;
-    std::map<std::string, QuestStatus> _item_quest_status;
-    std::map<uint32_t, QuestStatus> _spell_quest_status;
+
+    //0x00 = Unloaded
+    //0xFFFFFFFF = Failed to Load
+    std::map<uint32_t, uint32_t> _npc_quest_status;
+    uint32_t _player_quest_status;
+    std::map<std::string, uint32_t> _item_quest_status;
+    std::map<uint32_t, uint32_t> _spell_quest_status;
 };
 
 #endif
