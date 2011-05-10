@@ -1401,7 +1401,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 		}*/
 		uint32 item = (uint32)atoi(row[0]);
 		uint8 num = (uint8) atoi(row[1]);
-		spec->onsuccess.push_back(pair<uint32,uint8>::pair(item, num));
+		spec->onsuccess.push_back(pair<uint32,uint8>(item, num));
 	}
 	mysql_free_result(result);
 	
@@ -1424,7 +1424,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 			}*/
 			uint32 item = (uint32)atoi(row[0]);
 			uint8 num = (uint8) atoi(row[1]);
-			spec->onfail.push_back(pair<uint32,uint8>::pair(item, num));
+			spec->onfail.push_back(pair<uint32,uint8>(item, num));
 		}
 		mysql_free_result(result);
 	}
