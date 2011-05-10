@@ -1,16 +1,19 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==05/08/2011
+==05/09/2011==
+KLS: (lerxst2112) *nix compile fix.
+
+==05/08/2011==
 Congdar: (Timothy_nonax) Add Bot Command ( #bot pull )
 
-==05/03/2011
+==05/03/2011==
 Trevius: (Vaion) Fix for focus effect decay over max level.
 Trevius: (Zothen) Crash fix for UCS.
 Trevius: Rule added for Skill Caps Max Level to resolve issues with servers that have Chars over level 75 after Rev1875.
 
 Optional SQL: utils/sql/svn/1889_optional_skill_cap_rule.sql
 
-==05/02/2011
+==05/02/2011==
 Secrets: Added OP_CameraEffect for Titanium.
 Secrets: Added commands: #reloadallrules, #reloadrulesworld, and #camerashake. These default to 
 Secrets: Added optional "global" flag as item 5 in the $mob->CameraEffect() quest object. This does #camerashake, but in quest form.

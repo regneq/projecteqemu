@@ -404,9 +404,10 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
         }
         
         if(cursor) {
+            std::list<ItemInst*>::const_iterator start = client->GetInv().cursor_begin();
+            std::list<ItemInst*>::const_iterator finish = client->GetInv().cursor_end();
             database.SaveCursor(client->CharacterID(), 
-                client->GetInv().cursor_begin(), 
-                client->GetInv().cursor_end());
+                start, finish);
         }
 
 		client->Save();
