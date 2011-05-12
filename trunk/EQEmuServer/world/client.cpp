@@ -493,8 +493,12 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				break;
 			}
 
+            if(database.GetCharacterID(char_name) != 0) {
+                break;
+            }
+
 			CharCreate_Struct *cc = (CharCreate_Struct*)app->pBuffer;
-			if(OPCharCreate(char_name,cc) == false)
+			if(OPCharCreate(char_name, cc) == false)
 			{
 				database.DeleteCharacter(char_name);
 				EQApplicationPacket *outapp = new EQApplicationPacket(OP_ApproveName, 1);
@@ -502,8 +506,8 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				QueuePacket(outapp);
 				safe_delete(outapp);
 			}
-                  else
-			StartInTutorial = true;
+            else
+			    StartInTutorial = true;
 			SendCharInfo();
 
 			break;
