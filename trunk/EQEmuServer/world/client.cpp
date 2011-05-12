@@ -381,6 +381,11 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			outapp->pBuffer[0] = valid? 1 : 0;
 			QueuePacket(outapp);
 			safe_delete(outapp);
+
+            if(!valid) {
+                memset(char_name, 0, sizeof(char_name));
+            }
+
 			break;
 		}
 		case OP_RandomNameGenerator:
@@ -492,10 +497,6 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				DumpPacket(app);
 				break;
 			}
-
-            if(database.GetCharacterID(char_name) != 0) {
-                break;
-            }
 
 			CharCreate_Struct *cc = (CharCreate_Struct*)app->pBuffer;
 			if(OPCharCreate(char_name, cc) == false)
