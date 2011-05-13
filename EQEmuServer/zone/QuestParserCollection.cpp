@@ -1,3 +1,4 @@
+#include "../common/debug.h"
 #include "QuestParserCollection.h"
 #include "QuestInterface.h"
 

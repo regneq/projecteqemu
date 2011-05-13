@@ -7,7 +7,6 @@
 class ItemInst;
 class Client;
 class NPC;
-enum QuestStatus;
 
 class QuestInterface {
 public:
