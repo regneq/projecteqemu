@@ -642,7 +642,7 @@ namespace EQExtractor2.Patches
             return Updates;
         }
 
-        private PositionUpdate Decode_OP_NPCMoveUpdate(byte[] UpdatePacket)
+        override public  PositionUpdate Decode_OP_NPCMoveUpdate(byte[] UpdatePacket)
         {
             PositionUpdate PosUpdate = new PositionUpdate();
 
@@ -677,7 +677,7 @@ namespace EQExtractor2.Patches
             return Updates;
         }
 
-        private PositionUpdate Decode_OP_MobUpdate(byte[] MobUpdatePacket)
+        override public PositionUpdate Decode_OP_MobUpdate(byte[] MobUpdatePacket)
         {
             PositionUpdate PosUpdate = new PositionUpdate();
 

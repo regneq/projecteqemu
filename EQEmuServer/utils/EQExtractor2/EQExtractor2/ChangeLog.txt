@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==05/15/2011
+Derision: Support for May 12 2011 client. Based on info by posters on the ShowEQ forums.
+
 ==03/21/2011==
 Derision: Support for March 15 2011 client
 
