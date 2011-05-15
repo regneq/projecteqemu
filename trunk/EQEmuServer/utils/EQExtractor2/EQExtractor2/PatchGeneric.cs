@@ -18,6 +18,7 @@ namespace EQExtractor2.Patches
             ExpectedPPLength = 0;
             PPZoneIDOffset = 0;
             PatchConfFileName = "";
+            IDStatus = IdentificationStatus.No;
         }
 
         public string GetVersion()
@@ -114,6 +115,20 @@ namespace EQExtractor2.Patches
             return Updates;
         }
 
+        virtual public  PositionUpdate Decode_OP_NPCMoveUpdate(byte[] UpdatePacket)
+        {
+            PositionUpdate PosUpdate = new PositionUpdate();            
+
+            return PosUpdate;
+        }
+
+        virtual public PositionUpdate Decode_OP_MobUpdate(byte[] MobUpdatePacket)
+        {
+            PositionUpdate PosUpdate = new PositionUpdate();
+
+            return PosUpdate;
+        }
+
         virtual public List<PositionUpdate> GetClientMovementUpdates()
         {
             List<PositionUpdate> Updates = new List<PositionUpdate>();
@@ -167,7 +182,7 @@ namespace EQExtractor2.Patches
             {
                 if ((app.OpCode == OpCodeNumber) && (app.Direction == Direction) && (app.Locked))
                     ReturnList.Add(app.Buffer);
-            }
+        }
 
             return ReturnList;
         }
@@ -267,6 +282,8 @@ namespace EQExtractor2.Patches
         protected int PPZoneIDOffset;
 
         protected string PatchConfFileName;
+
+        protected IdentificationStatus IDStatus;
 
         private List<ExplorerSpawnRecord> ExplorerSpawns = new List<ExplorerSpawnRecord>();
     }

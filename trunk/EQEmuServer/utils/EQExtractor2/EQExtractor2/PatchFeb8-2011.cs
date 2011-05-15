@@ -24,7 +24,13 @@ namespace EQExtractor2.Patches
         override public IdentificationStatus Identify(int OpCode, int Size, PacketDirection Direction)
         {
             if ((OpCode == OpManager.OpCodeNameToNumber("OP_ZoneEntry")) && (Direction == PacketDirection.ClientToServer))
+            {
+                IDStatus = IdentificationStatus.Tentative;
                 return IdentificationStatus.Tentative;
+            }
+
+            if (IDStatus != IdentificationStatus.Tentative)
+                return IdentificationStatus.No;
 
             if ((OpCode == OpManager.OpCodeNameToNumber("OP_PlayerProfile")) && (Direction == PacketDirection.ServerToClient) &&
                 (Size == ExpectedPPLength))

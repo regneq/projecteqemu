@@ -77,6 +77,8 @@ namespace EQApplicationLayer
 
             PatchList.Add(new PatchMarch152011Decoder());
 
+            PatchList.Add(new PatchMay122011Decoder());
+
             PatchList.Add(new PatchSoD());
 
         }        
@@ -102,6 +104,7 @@ namespace EQApplicationLayer
 
             foreach (PatchSpecficDecoder p in PatchList)
             {
+                Logger("Initialising patch " + p.GetVersion());
                 if (!p.Init(ConfDirectory, ref ErrorMessage))
                     Logger(ErrorMessage);
                 else

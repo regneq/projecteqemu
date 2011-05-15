@@ -86,6 +86,7 @@
     <Compile Include="InternalTypes.cs" />
     <Compile Include="PatchMarch15-2011.cs" />
     <Compile Include="PatchMay12-2010.cs" />
+    <Compile Include="PatchMay12-2011.cs" />
     <Compile Include="PatchOct20-2010.cs" />
     <Compile Include="PatchSoD.cs" />
     <Compile Include="PatchJuly13-2010.cs" />
@@ -130,6 +131,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="patch_March15-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_May12-2011.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="patch_Sep01-2010.conf">
