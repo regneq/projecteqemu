@@ -138,5 +138,102 @@ namespace EQExtractor2.Patches
 
             return ZonePointList;
         }
+        override public bool DumpAAs(string FileName)
+        {
+            List<byte[]> AAPackets = GetPacketsOfType("OP_SendAATable", PacketDirection.ServerToClient);
+
+
+            if (AAPackets.Count < 1)
+                return false;
+
+            StreamWriter OutputFile;
+
+            try
+            {
+                OutputFile = new StreamWriter(FileName);
+            }
+            catch
+            {
+                return false;
+
+            }
+
+            OutputFile.WriteLine("-- There are " + AAPackets.Count + " OP_SendAATable packets.");
+            OutputFile.WriteLine("");
+
+            foreach (byte[] Packet in AAPackets)
+            {
+                UInt32 AAID = BitConverter.ToUInt32(Packet, 0);
+                UInt32 Unknown004 = BitConverter.ToUInt32(Packet, 4);
+                UInt32 HotKeySID = BitConverter.ToUInt32(Packet, 5);
+                UInt32 HotKeySID2 = BitConverter.ToUInt32(Packet, 9);
+                UInt32 TitleSID = BitConverter.ToUInt32(Packet, 13);
+                UInt32 DescSID = BitConverter.ToUInt32(Packet, 17);
+                UInt32 ClassType = BitConverter.ToUInt32(Packet, 21);
+                UInt32 Cost = BitConverter.ToUInt32(Packet, 25);
+                UInt32 Seq = BitConverter.ToUInt32(Packet, 29);
+                UInt32 CurrentLevel = BitConverter.ToUInt32(Packet, 33);
+                UInt32 PrereqSkill = BitConverter.ToUInt32(Packet, 41);
+                UInt32 PrereqMinpoints = BitConverter.ToUInt32(Packet, 45);
+                UInt32 Type = BitConverter.ToUInt32(Packet, 49);
+                UInt32 SpellID = BitConverter.ToUInt32(Packet, 53);
+                UInt32 SpellType = BitConverter.ToUInt32(Packet, 61);
+                UInt32 SpellRefresh = BitConverter.ToUInt32(Packet, 65);
+                UInt16 Classes = BitConverter.ToUInt16(Packet, 69);
+                UInt16 Berserker = BitConverter.ToUInt16(Packet, 71);
+                UInt32 MaxLevel = BitConverter.ToUInt32(Packet, 73);
+                UInt32 LastID = BitConverter.ToUInt32(Packet, 77);
+                UInt32 NextID = BitConverter.ToUInt32(Packet, 81);
+                UInt32 Cost2 = BitConverter.ToUInt32(Packet, 85);
+                UInt32 AAExpansion = BitConverter.ToUInt32(Packet, 96);
+                UInt32 SpecialCategory = BitConverter.ToUInt32(Packet, 100);
+                UInt32 TotalAbilities = BitConverter.ToUInt32(Packet, 108);
+
+                OutputFile.WriteLine(String.Format("AAID: {0}", AAID));
+                OutputFile.WriteLine(" Unknown004:\t" + Unknown004);
+                OutputFile.WriteLine(" HotkeySID:\t" + HotKeySID);
+                OutputFile.WriteLine(" HotkeySID2:\t" + HotKeySID2);
+                OutputFile.WriteLine(" TitleSID:\t" + TitleSID);
+                OutputFile.WriteLine(" DescSID:\t" + DescSID);
+                OutputFile.WriteLine(" ClassType:\t" + ClassType);
+                OutputFile.WriteLine(" Cost:\t\t" + Cost);
+                OutputFile.WriteLine(" Seq:\t\t" + Seq);
+                OutputFile.WriteLine(" CurrentLevel:\t" + CurrentLevel);
+                OutputFile.WriteLine(" PrereqSkill:\t" + PrereqSkill);
+                OutputFile.WriteLine(" PrereqMinPt:\t" + PrereqMinpoints);
+                OutputFile.WriteLine(" Type:\t\t" + Type);
+                OutputFile.WriteLine(" SpellID:\t" + SpellID);
+                OutputFile.WriteLine(" SpellType:\t" + SpellType);
+                OutputFile.WriteLine(" SpellRefresh:\t" + SpellRefresh);
+                OutputFile.WriteLine(" Classes:\t" + Classes);
+                OutputFile.WriteLine(" Berserker:\t" + Berserker);
+                OutputFile.WriteLine(" MaxLevel:\t" + MaxLevel);
+                OutputFile.WriteLine(" LastID:\t" + LastID);
+                OutputFile.WriteLine(" NextID:\t" + NextID);
+                OutputFile.WriteLine(" Cost2:\t\t" + Cost2);
+                OutputFile.WriteLine(" AAExpansion:\t" + AAExpansion);
+                OutputFile.WriteLine(" SpecialCat:\t" + SpecialCategory);
+                OutputFile.WriteLine("");
+                OutputFile.WriteLine(" TotalAbilities:\t" + TotalAbilities);
+                OutputFile.WriteLine("");
+
+                for (int i = 0; i < TotalAbilities; ++i)
+                {
+                    UInt32 Ability = BitConverter.ToUInt32(Packet, 112 + (i * 16));
+                    UInt32 Base1 = BitConverter.ToUInt32(Packet, 116 + (i * 16));
+                    UInt32 Base2 = BitConverter.ToUInt32(Packet, 120 + (i * 16));
+                    UInt32 Slot = BitConverter.ToUInt32(Packet, 124 + (i * 16));
+
+                    OutputFile.WriteLine(String.Format("    Ability:\t{0}\tBase1:\t{1}\tBase2:\t{2}\tSlot:\t{3}", Ability, Base1, Base2, Slot));
+
+                }
+                OutputFile.WriteLine("");
+
+            }
+
+            OutputFile.Close();
+
+            return true;
+        }
     }
 }
