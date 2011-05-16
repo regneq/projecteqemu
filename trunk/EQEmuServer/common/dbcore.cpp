@@ -162,7 +162,7 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
 			if (retry) {
 				cout << "Database Error: Lost connection, attempting to recover...." << endl;
 				ret = RunQuery(query, querylen, errbuf, result, affected_rows, last_insert_id, errnum, false);
-				if (!ret)
+				if (ret)
 					cout << "Reconnection to database successful." << endl;
 			}
 			else {
@@ -268,7 +268,7 @@ bool DBcore::Open(int32* errnum, char* errbuf) {
 	if (!pHost)
 		return false;
 	/*
-	Quagmire - added CLIENT_FOUND_ROWS flag to the connect
+	Added CLIENT_FOUND_ROWS flag to the connect
 	otherwise DB update calls would say 0 rows affected when the value already equalled
 	what the function was tring to set it to, therefore the function would think it failed 
 	*/

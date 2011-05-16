@@ -1792,7 +1792,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 
 		gmtsc->Cost = Cost;
 
-		strcpy(gmtsc->TrainerName, pTrainer->GetName());
+		strcpy(gmtsc->TrainerName, pTrainer->GetCleanName());
 		QueuePacket(outapp);
 		safe_delete(outapp);
 	}

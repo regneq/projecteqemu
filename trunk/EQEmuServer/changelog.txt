@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/16/2011==
+JJ: (Zothen) UCS message logic fix.
+JJ: (Zothen) Learning basics clean name fix.
+
 ==05/09/2011==
 KLS: (lerxst2112) *nix compile fix.
 KLS: Added #picklock #sensetrap and #disarmtrap for LDoN traps since they still don't work quite right on the newer clients because we don't implement destructable objects yet.
