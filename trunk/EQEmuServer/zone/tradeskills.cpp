@@ -1164,7 +1164,6 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		return(false);	//no items == no recipe
 	}
 
-
 	qlen = MakeAnyLenString(&query, "SELECT tre.recipe_id "
 	" FROM tradeskill_recipe_entries AS tre"
 	" WHERE ( tre.item_id IN(%s) AND tre.componentcount>0 )"
@@ -1218,30 +1217,25 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 	
 		qcount = mysql_num_rows(result);
 	}
-//updated this section to fix the tradeskill bug of multiple recipies, but different containers.
-	/*
-	if (qcount != 1) {
-		if(qcount > 1) {
-			LogFile->write(EQEMuLog::Error, "Combine error: Recipe is not unique!");
-		
-		
-		}
-		//else, just not found i guess..
-		return(false);
-	}*/
 	
 	if(qcount < 1)
 		return(false);
-	
 	
 	if(qcount > 1)
 	{
 		//The recipe is not unique, so we need to compare the container were using.
 
-		if(!container->GetItem()) 
-			return false;
-		
-		uint32 containerId = container->GetID();
+		uint32 containerId = 0;
+
+		if(some_id) { //Standard container
+			containerId = some_id;
+		}
+		else if(c_type) { //World container
+			containerId = c_type;
+		}
+		else { //Invalid container
+			return(false);
+		}
 
 		qlen = MakeAnyLenString(&query,"SELECT tre.recipe_id FROM tradeskill_recipe_entries as tre WHERE tre.recipe_id IN (%s)"
 		" AND tre.item_id = %u;",buf2,containerId);
@@ -1254,17 +1248,17 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		}
 		safe_delete_array(query);
 
-		
 		uint32 resultRowTotal = mysql_num_rows(result); 
 		
-		//If all the recipes were correct, but no container type matched, drop out.
-		if(resultRowTotal == 0 || resultRowTotal > 1){
-			LogFile->write(EQEMuLog::Error, "Combine error: Recipe is not unique OR incorrect container is being used!");
+		if(resultRowTotal == 0) { //Recipe contents matched more than 1 recipe, but not in this container
+			LogFile->write(EQEMuLog::Error, "Combine error: Incorrect container is being used!");
 			return(false);
 		}
-	
+		if(resultRowTotal > 1) { //Recipe contents matched more than 1 recipe in this container
+			LogFile->write(EQEMuLog::Error, "Combine error: Recipe is not unique! %u matches found for container %u. Continuing with first recipe match.", resultRowTotal, containerId);
+		}
 	}
-	
+
 	row = mysql_fetch_row(result);
 	uint32 recipe_id = (uint32)atoi(row[0]);
 	mysql_free_result(result);
