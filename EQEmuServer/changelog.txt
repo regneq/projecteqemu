@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/17/2011==
+JJ: Changed tradeskills to distinguish world containers in multiple recipe matches. Split invalid container vs. non-unique recipe error log entries. Allowed server to select first match for duplicate recipe contents.
+
 ==05/16/2011==
 JJ: (Zothen) UCS message logic fix.
 JJ: (Zothen) Learning basics clean name fix.
