@@ -209,7 +209,6 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 }
 
 // Perform tradeskill combine
-// complete tradeskill rewrite by father nitwit, 8/2004
 void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Object *worldo)
 {
 	if (!user || !in_combine) {
@@ -614,7 +613,6 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
     MYSQL_RES *result;
     MYSQL_ROW row;
     
-//printf("TradeskillSearchResults query ' %s '\n", query);
 	if (!database.RunQuery(query, qlen, errbuf, &result)) {
 		LogFile->write(EQEMuLog::Error, "Error in TradeskillSearchResults query '%s': %s", query, errbuf);
 		return;
@@ -643,7 +641,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		uint32 comp_count = (uint32) atoi(row[3]);
 		uint32 tradeskill = (uint16) atoi(row[5]);
 		
-		// Leere: Skip the recipes that exceed the threshold in skill difference
+		// Skip the recipes that exceed the threshold in skill difference
 		// Recipes that have either been made before or were
 		// explicitly learned are excempt from that limit
 		if (RuleB(Skills, UseLimitTradeskillSearchSkillDiff)) {
@@ -672,20 +670,6 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 }
 
 void Client::SendTradeskillDetails(unsigned long recipe_id) {
-
-//from server in response to a 4 byte OP_RecipeDetails, just the item id
-/*struct RecipeDetails_Struct {
-	unsigned long recipe_id;	//backwards byte order from the Reply
-	//dynamic part...
-	// there are as many as 10 0xFFFFFFFF here in a row..
-	// there are (10 - component count) of them...
-	
-	//then one of these for each component:
-	// unsigned long item_id;	//in backwards byte order
-	// unsigned long icon_id;	//in backwards byte order
-	// NULL terminated name...
-	
-};*/
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -1118,7 +1102,7 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
     MYSQL_RES *result;
     MYSQL_ROW row;
     char *query = 0;
-	char buf2[2048];
+	char buf2[4096];
 	
 	uint32 sum = 0;
 	uint32 count = 0;
@@ -1189,16 +1173,18 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		pos = buf2;
 		for (i = 0; i < qcount; i++) {
 			row = mysql_fetch_row(result);
-			uint32 recipeid = (uint32) atoi(row[0]);
+			uint32 recipeid = (uint32)atoi(row[0]);
 			if(first) {
 				pos += snprintf(pos, 19, "%u", recipeid);
 				first = false;
 			} else {
 				pos += snprintf(pos, 19, ",%u", recipeid);
 			}
-			//length sanity check on buf2
-			if(pos > (buf2 + 2020))
+			//length limit on buf2
+			if(i == 214) { //Maximum number of recipe matches (19 * 215 = 4096)
+				LogFile->write(EQEMuLog::Error, "GetTradeRecipe warning: Too many matches. Unable to search all recipe entries. Searched %u of %u possible entries.", i + 1, qcount);
 				break;
+			}
 		}
 		
 		qlen = MakeAnyLenString(&query, "SELECT tre.recipe_id"
@@ -1385,14 +1371,6 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	spec->onsuccess.clear();
 	for(r = 0; r < qcount; r++) {
 		row = mysql_fetch_row(result);
-		/*if(r == 0) {
-			*product1_id	= (uint32)atoi(row[0]);
-			*productcount	= (uint32)atoi(row[1]);
-		} else if(r == 1) {
-			*product2_id	= (uint32)atoi(row[0]);
-		} else {
-			LogFile->write(EQEMuLog::Warning, "Warning: recipe returned more than 2 products, not yet supported.");
-		}*/
 		uint32 item = (uint32)atoi(row[0]);
 		uint8 num = (uint8) atoi(row[1]);
 		spec->onsuccess.push_back(pair<uint32,uint8>(item, num));
@@ -1411,11 +1389,6 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 		uint8 r;
 		for(r = 0; r < qcount; r++) {
 			row = mysql_fetch_row(result);
-			/*if(r == 0) {
-				*failproduct_id	= (uint32)atoi(row[0]);
-			} else {
-				LogFile->write(EQEMuLog::Warning, "Warning: recipe returned more than 1 fail product, not yet supported.");
-			}*/
 			uint32 item = (uint32)atoi(row[0]);
 			uint8 num = (uint8) atoi(row[1]);
 			spec->onfail.push_back(pair<uint32,uint8>(item, num));

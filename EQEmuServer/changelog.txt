@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/20/2011==
+JJ: Doubled buffer for tradeskill search when using experiment mode. Outputs message in error log when matches exceed buffer.
+
 ==05/17/2011==
 JJ: Changed tradeskills to distinguish world containers in multiple recipe matches. Split invalid container vs. non-unique recipe error log entries. Allowed server to select first match for duplicate recipe contents.
 
