@@ -563,6 +563,16 @@ bool Database::DeleteCharacter(char *name)
 	}
 
 #if DEBUG >= 5
+	printf(" mail");
+#endif
+	RunQuery(query, MakeAnyLenString(&query, "DELETE from mail WHERE charid='%d'", charid), errbuf, NULL, &affected_rows);
+	if(query)
+	{
+		safe_delete_array(query);
+		query = NULL;
+	}
+
+#if DEBUG >= 5
 	printf(" ptimers");
 #endif
 	RunQuery(query, MakeAnyLenString(&query, "DELETE from timers WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
@@ -698,6 +708,7 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inven
 		errbuf,
 		&result
 	)) {
+        safe_delete_array(charidquery);
 		LogFile->write(EQEMuLog::Error, "Error in char store id query: %s: %s", charidquery, errbuf);
 		return(false);
 	}
@@ -771,13 +782,13 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inven
 			{
 				LogFile->write(EQEMuLog::Error, "StoreCharacter inventory failed.  Query '%s' %s", invquery, errbuf);
 			}
-			safe_delete_array(invquery);
 #if EQDEBUG >= 9
 			else
 			{
 				LogFile->write(EQEMuLog::Debug, "StoreCharacter inventory succeeded.  Query '%s' %s", invquery, errbuf);
 			}
 #endif
+            safe_delete_array(invquery);
 		}
 
 		if(i==30){ //end of standard inventory/cursor, jump to internals of bags/cursor

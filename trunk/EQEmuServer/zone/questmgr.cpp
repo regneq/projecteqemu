@@ -896,11 +896,7 @@ void QuestManager::gmmove(float x, float y, float z) {
 }
 
 void QuestManager::movegrp(int zoneid, float x, float y, float z) {
-#ifdef IPC
-    if (initiator && initiator->IsClient()|| (initiator->IsNPC() && initiator->CastToNPC()->IsInteractive()) )
-#else
     if (initiator && initiator->IsClient())
-#endif
 	{
 		Group *g = entity_list.GetGroupByClient(initiator);
        		if (g != NULL){

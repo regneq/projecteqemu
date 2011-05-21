@@ -83,6 +83,8 @@ extern DBAsyncFinishedQueue MTdbafq;
 extern DBAsync *dbasync;
 void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result);
 
+
+
 bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	_ZP(Zone_Bootup);
 	const char* zonename = database.GetZoneName(iZoneID);
@@ -707,6 +709,7 @@ void Zone::Shutdown(bool quite)
 	zone->ResetAuth();
 	safe_delete(zone);
 	dbasync->CommitWrites();
+    if(parse) { parse->ReloadQuests(true); }
 	UpdateWindowTitle();
 }
 
@@ -1057,7 +1060,7 @@ bool Zone::LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDe
 	//overwrite with our internal variables
 	strcpy(newzone_data.zone_short_name, GetShortName());
 	strcpy(newzone_data.zone_long_name, GetLongName());
-	strcpy(newzone_data.zone_short_name2,GetShortName());
+	strcpy(newzone_data.zone_short_name2, GetShortName());
 	
 	LogFile->write(EQEMuLog::Status, "Successfully loaded Zone Config.");
 	return true;
