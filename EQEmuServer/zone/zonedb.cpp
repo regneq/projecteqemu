@@ -1032,6 +1032,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
             "npc_types.race,"
 			"npc_types.class,"
 			"npc_types.hp,"
+            "npc_types.mana,"
             "npc_types.gender,"
 			"npc_types.texture,"
 			"npc_types.helmtexture,"
@@ -1056,6 +1057,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.Corrup,"
             "npc_types.mindmg,"
             "npc_types.maxdmg,"
+            "npc_types.attack_count,"
 			"npc_types.npcspecialattks,"
             "npc_types.npc_spells_id,"
 			"npc_types.d_meele_texture1,"
@@ -1099,7 +1101,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.maxlevel,"
 			"npc_types.scalerate,"
 			"npc_types.private_corpse,"
-			"npc_types.unique_spawn_by_name";
+            "npc_types.unique_spawn_by_name";
 
 		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
@@ -1120,6 +1122,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->class_ = atoi(row[r++]);
 				tmpNPCType->max_hp = atoi(row[r++]);
 				tmpNPCType->cur_hp = tmpNPCType->max_hp;
+                tmpNPCType->Mana = atoi(row[r++]);
 				tmpNPCType->gender = atoi(row[r++]);
 				tmpNPCType->texture = atoi(row[r++]);
 				tmpNPCType->helmtexture = atoi(row[r++]);
@@ -1144,6 +1147,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->Corrup = atoi(row[r++]);
 				tmpNPCType->min_dmg = atoi(row[r++]);
 				tmpNPCType->max_dmg = atoi(row[r++]);
+                tmpNPCType->attack_count = atoi(row[r++]);
 				strcpy(tmpNPCType->npc_attacks,row[r++]);
 				tmpNPCType->npc_spells_id = atoi(row[r++]);
 				tmpNPCType->d_meele_texture1 = atoi(row[r++]);

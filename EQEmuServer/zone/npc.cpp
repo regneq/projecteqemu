@@ -140,6 +140,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	platinum = 0;
 	max_dmg = d->max_dmg;
 	min_dmg = d->min_dmg;
+    attack_count = d->attack_count;
 	grid = 0;
 	wp_m = 0;
 	max_wp=0;
@@ -174,6 +175,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	INT = d->INT;
 	WIS = d->WIS;
 	CHA = d->CHA;
+    npc_mana = d->Mana;
 
 	//quick fix of ordering if they screwed it up in the DB
 	if(max_dmg < min_dmg) {
@@ -1580,43 +1582,51 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 		AC = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "str")
 	{
 		STR = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "sta")
 	{
 		STA = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "agi")
 	{
 		AGI = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "dex")
 	{
 		DEX = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "wis")
 	{
 		WIS = atoi(val.c_str());
 		CalcMaxMana();
 		return;
 	}
+
 	if(id == "int" || id == "_int")
 	{
 		INT = atoi(val.c_str());
 		CalcMaxMana();
 		return;
 	}
+
 	if(id == "cha")
 	{
 		CHA = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "max_hp")
 	{
 		base_hp = atoi(val.c_str());
@@ -1625,103 +1635,138 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 			cur_hp = max_hp;
 		return;
 	}
+
+    if(id == "max_mana")
+	{
+		npc_mana = atoi(val.c_str());
+		CalcMaxMana();
+		if(cur_mana > max_mana)
+			cur_mana = max_mana;
+		return;
+	}
+
 	if(id == "mr")
 	{
 		MR = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "fr")
 	{
 		FR = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "cr")
 	{
 		CR = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "pr")
 	{
 		PR = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "dr")
 	{
 		DR = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "runspeed")
 	{
 		runspeed = (float)atof(val.c_str());
 		CalcBonuses();
 		return;
 	}
+
 	if(id == "special_attacks")
 	{
 		NPCSpecialAttacks(val.c_str(), 0);
 		return;
 	}
+
 	if(id == "attack_speed")
 	{
 		attack_speed = (float)atof(val.c_str());
 		CalcBonuses();
 		return;
 	}
+
 	if(id == "atk")
 	{
 		ATK = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "accuracy")
 	{
 		accuracy_rating = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "trackable")
 	{
 		trackable = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "min_hit")
 	{
 		min_dmg = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "max_hit")
 	{
 		max_dmg = atoi(val.c_str());
 		return;
 	}
+
+    if(id == "attack_count")
+	{
+		attack_count = atoi(val.c_str());
+		return;
+	}
+
 	if(id == "see_invis")
 	{
 		see_invis = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "see_invis_undead")
 	{
 		see_invis_undead = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "see_hide")
 	{
 		see_hide = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "see_improved_hide")
 	{
 		see_improved_hide = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "hp_regen")
 	{
 		hp_regen = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "mana_regen")
 	{
 		mana_regen = atoi(val.c_str());
 		return;
 	}
+
 	if(id == "level")
 	{
 		SetLevel(atoi(val.c_str()));
@@ -1954,4 +1999,42 @@ void NPC::SetSwarmTarget(int target_id)
 	return;
 }
 
-
+sint32 NPC::CalcMaxMana() {
+	if(npc_mana == 0) {
+        switch (GetCasterClass()) {
+		    case 'I':
+			    max_mana = (((GetINT()/2)+1) * GetLevel()) + spellbonuses.Mana + itembonuses.Mana;
+			    break;
+		    case 'W':
+			    max_mana = (((GetWIS()/2)+1) * GetLevel()) + spellbonuses.Mana + itembonuses.Mana;
+			    break;
+		    case 'N':
+		    default:
+			    max_mana = 0;
+			    break;
+	    }
+	    if (max_mana < 0) {
+		    max_mana = 0;
+	    }
+	
+	    return max_mana;
+    } else {
+        switch (GetCasterClass()) {
+		    case 'I':
+			    max_mana = npc_mana + spellbonuses.Mana + itembonuses.Mana;
+			    break;
+		    case 'W':
+			    max_mana = npc_mana + spellbonuses.Mana + itembonuses.Mana;
+			    break;
+		    case 'N':
+		    default:
+			    max_mana = 0;
+			    break;
+	    }
+	    if (max_mana < 0) {
+		    max_mana = 0;
+	    }
+	
+	    return max_mana;
+    }
+}

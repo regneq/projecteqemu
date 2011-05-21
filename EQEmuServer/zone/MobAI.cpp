@@ -1151,7 +1151,19 @@ void Mob::AI_Process() {
 				
 				//try main hand first
 				if(attack_timer.Check()) {
-					Attack(target, 13);
+                    if(IsNPC()) {
+                        sint16 n_atk = CastToNPC()->GetNumberOfAttacks();
+                        if(n_atk <= 1) {
+                            Attack(target, 13);
+                        } else {
+                            for(int i = 0; i < n_atk; ++i) {
+                                Attack(target, 13);
+                            }
+                        }
+                    } else {
+                        Attack(target, 13);
+                    }
+					
 					if (target) 
 					{
 						//we use this random value in three comparisons with different
