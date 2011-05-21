@@ -49,7 +49,6 @@ struct NPCType
     int8    deity;		//not loaded from DB
     int8    level;
 	int32   npc_id;
-//	int8    skills[75]; // socket 12-29-01, not loaded from DB
 	int8	texture;
 	int8	helmtexture;
 	int32	loottable_id;
@@ -59,10 +58,8 @@ struct NPCType
 	int32	adventure_template;
 	int32	trap_template;
     int8    light;		//not loaded from DB
-//    int32    equipment[MAX_MATERIALS];		//not loaded from DB
-	
 	int16	AC;
-	int16	Mana;	//not loaded from DB
+	int32	Mana;	//not loaded from DB
 	int16	ATK;	//not loaded from DB
 	int16	STR;
 	int16	STA;
@@ -88,11 +85,10 @@ struct NPCType
 	int32	drakkin_tattoo;
 	int32	drakkin_details;
 	int32  armor_tint[MAX_MATERIALS];
-//	int8	aa_title;	////not loaded from DB
 	int32	min_dmg;
 	int32	max_dmg;
+    sint16  attack_count;
 	char	npc_attacks[30];
-//	float	fixedZ;
     int16	d_meele_texture1;
 	int16	d_meele_texture2;
 	int8	prim_melee_type;
@@ -100,7 +96,6 @@ struct NPCType
 	sint32	hp_regen;
 	sint32  mana_regen;
 	sint32	aggroradius; // added for AI improvement - neotokyo
-//	bool	ipc;
 	bool	see_invis;			// See Invis flag added
 	bool	see_invis_undead;   // See Invis vs. Undead flag added 
 	bool	see_hide;

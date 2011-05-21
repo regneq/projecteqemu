@@ -112,9 +112,8 @@ public:
 
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other) { }
+    sint32 GetNumberOfAttacks() const { return attack_count; }
 
-	//void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	bool	DatabaseCastAccepted(int spell_id);
 	bool	IsFactionListAlly(uint32 other_faction);
 	FACTION_VALUE CheckNPCFactionAlly(sint32 other_faction);
@@ -133,19 +132,9 @@ public:
 	void	AddItem(const Item_Struct* item, int8 charges, bool equipitem = true);
 	void	AddItem(int32 itemid, int8 charges, bool equipitem = true);
 	void	AddLootTable();
-/*
-	void	NPCSpecialAttacks(const char* parse, int permtag);
-	void	NPCDatabaseSpells(const char* parse);
-	void	NPCUnharmSpell(int spell_id);
-	void	CheckFriendlySpellStatus();
 
-	void	CheckEnemySpellStatus();
-	void	NPCHarmSpell(int target,int type);
-	void    HateSummon();
-*/	
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
 	void    RemoveItem(uint32 item_id, int16 quantity = 0, int16 slot = 0);
-//	bool	AddNPCSpells(int32 iDBSpellsID, AISpells_Struct* AIspells);
 	void	ClearItemList();
 	ServerLootItem_Struct*	GetItem(int slot_id);
 	void	AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum);
@@ -155,7 +144,6 @@ public:
 	int32	CountLoot();
 	void	DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPCLootindex);
 	inline int32	GetLoottableID()	const { return loottable_id; }
-//	void	SetPetType(int16 in_type)	{ typeofpet = in_type; } // put this here because only NPCs can be anything but charmed pets
 
 	inline uint32	GetCopper()		const { return copper; }
 	inline uint32	GetSilver()		const { return silver; }
@@ -168,7 +156,7 @@ public:
 	inline void	SetPlatinum(uint32 amt)		{ platinum = amt; }
 
 
-
+    virtual sint32 CalcMaxMana();
 	void SetGrid(sint32 grid_){ grid=grid_; }
 	void SetSp2(int32 sg2){ spawn_group=sg2; }
 	void SetWaypointMax(int16 wp_){ wp_m=wp_; }
@@ -231,11 +219,10 @@ public:
 	int                 GetMaxWp() const { return max_wp; }
 	void				DisplayWaypointInfo(Client *to);
 	void				CalculateNewWaypoint();
-//	int8				CalculateHeadingToNextWaypoint();
-//	float				CalculateDistanceToNextWaypoint();
 	void				AssignWaypoints(sint32 grid);
 	void				SetWaypointPause();
 	void				UpdateWaypoint(int wp_index);
+
 	// quest wandering commands
 	void				StopWandering();
 	void				ResumeWandering();
@@ -352,7 +339,9 @@ protected:
 	int32	max_dmg;
 	int32	min_dmg;
 	sint32	accuracy_rating;
-	
+	sint16  attack_count;
+    uint32  npc_mana;
+
 	//pet crap:
 	int16	pet_spell_id;
 	bool	taunting;
