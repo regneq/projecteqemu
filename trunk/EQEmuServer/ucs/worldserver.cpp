@@ -29,15 +29,17 @@ using namespace std;
 #include "worldserver.h"
 #include "clientlist.h"
 #include "ucsconfig.h"
+#include "database.h"
 #include "../common/packet_functions.h"
 #include "../common/md5.h"
 #include "../common/files.h"
 
 extern WorldServer worldserver;
-
 extern Clientlist *CL;
-
 extern const ucsconfig *Config;
+extern Database database;
+
+void ProcessMailTo(Client *c, string from, string subject, string message);
 
 WorldServer::WorldServer()
 : WorldConnection(EmuTCPConnection::packetModeUCS, Config->SharedKey.c_str())
@@ -113,11 +115,21 @@ void WorldServer::Process()
 
 				break;
 			}
+
+            case ServerOP_UCSMailMessage:
+            {
+                ServerMailMessageHeader_Struct *mail = (ServerMailMessageHeader_Struct*)pack->pBuffer;
+                database.SendMail(string("SOE.EQ.") + Config->ShortName + string(".") + string(mail->to), 
+                    string(mail->from), 
+                    mail->subject, 
+                    mail->message, 
+                    string());
+                break;
+            }
 		}
 	}
 
 	safe_delete(pack);
-
 	return;
 }
 

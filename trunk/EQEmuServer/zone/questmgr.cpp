@@ -2512,3 +2512,21 @@ void QuestManager::LearnRecipe(uint32 recipe_id) {
         return;
     initiator->LearnRecipe(recipe_id);
 }
+
+void QuestManager::SendMail(const char *to, const char *from, const char *subject, const char *message) {
+    if(to == NULL || from == NULL || subject == NULL || message == NULL) {
+        return;
+    }
+
+    uint32 message_len = strlen(message) + 1;
+    ServerPacket* pack = new ServerPacket(ServerOP_UCSMailMessage, sizeof(ServerMailMessageHeader_Struct) + message_len);
+	ServerMailMessageHeader_Struct* mail = (ServerMailMessageHeader_Struct*) pack->pBuffer;
+
+    strn0cpy(mail->to, to, 64);
+    strn0cpy(mail->from, from, 64);
+    strn0cpy(mail->subject, subject, 128);
+    strcpy(mail->message, message);
+
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+}
