@@ -594,7 +594,7 @@ float Mob::_GetMovementSpeed(int mod) const {
 	return speed_mod;
 }
 
-sint32 Mob::CalcMaxMana() {
+sint32 Mob::CalcMaxMana() {  
 	switch (GetCasterClass()) {
 		case 'I':
 			max_mana = (((GetINT()/2)+1) * GetLevel()) + spellbonuses.Mana + itembonuses.Mana;

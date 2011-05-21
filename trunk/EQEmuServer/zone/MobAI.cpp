@@ -351,6 +351,9 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float i
 	if(caster->AI_HasSpells() == false)
 		return false;
 
+    if(caster->SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS])
+        return false;
+
 	if (iChance < 100) {
 		int8 tmp = MakeRandomInt(0, 99);
 		if (tmp >= iChance)

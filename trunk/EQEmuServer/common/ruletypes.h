@@ -324,11 +324,12 @@ RULE_CATEGORY ( Aggro )
 RULE_BOOL ( Aggro, SmartAggroList, true )
 RULE_INT ( Aggro, SittingAggroMod, 35 ) //35%
 RULE_INT ( Aggro, MeleeRangeAggroMod, 10 ) //10%
-RULE_INT ( Aggro, CurrentTargetAggroMod, 0 ) //0% --will prefer our current target to any other; makes it harder for our npcs to switch targets.
+RULE_INT ( Aggro, CurrentTargetAggroMod, 0 ) //0% -- will prefer our current target to any other; makes it harder for our npcs to switch targets.
 RULE_INT ( Aggro, CriticallyWoundedAggroMod, 100 ) //100%
 RULE_INT ( Aggro, SpellAggroMod, 100 )
 RULE_INT ( Aggro, SongAggroMod, 33 )
 RULE_INT ( Aggro, PetSpellAggroMod, 10 )
+RULE_REAL ( Aggro, TunnelVisionAggroMod, 0.75 ) //people not currently the top hate generate this much hate on a Tunnel Vision mob
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( TaskSystem)

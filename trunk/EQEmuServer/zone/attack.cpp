@@ -2300,6 +2300,13 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	if(other->SpecAttacks[IMMUNE_TARGET])
 		return;
 
+    if(SpecAttacks[NPC_TUNNELVISION]) {
+        Mob *top = GetTarget();
+        if(top && top != other) {
+            hate *= RuleR(Aggro, TunnelVisionAggroMod);
+        }
+    }
+
 	// first add self
 	
 	// The damage on the hate list is used to award XP to the killer. This check is to prevent Killstealing.

@@ -1410,6 +1410,22 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
 			SpecAttacks[SPECATK_INNATE_DW] = true;
 			break;
 
+        case 't':
+			SpecAttacks[NPC_TUNNELVISION] = true;
+			break;
+
+        case 'n':
+			SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS] = true;
+			break;
+
+        case 'i':
+			SpecAttacks[NPC_INTELLIGENT] = true;
+			break;
+
+        case 's':
+			SpecAttacks[NPC_STUPID] = true;
+			break;
+
         default:
             break;
         }
