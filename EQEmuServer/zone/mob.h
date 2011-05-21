@@ -98,6 +98,15 @@ typedef enum {	//focus types
 	focusBlockNextSpell,
 } focusType;
 
+/*Used:
+S,E,R,r,F,T,Q,L,b,m,Y,U,M,C,N,I,D,A,B,f,O,W,H,G,g,d,t,n,i
+*/
+
+/*Unused
+a,c,e,h,j,k,l,o,p,q,u,v,w,x,y,z
+J,K,P,V,X,Y,Z
+*/
+
 enum {
 	SPECATK_NONE = 0,
 	SPECATK_SUMMON,		//S
@@ -126,6 +135,10 @@ enum {
 	IMMUNE_TARGET, //G, can't be aggroed, ever
 	IMMUNE_CASTING_FROM_RANGE, //g
 	IMMUNE_FEIGN_DEATH, //d
+    NPC_TUNNELVISION, //t
+    NPC_NO_BUFFHEAL_FRIENDS, //n
+    NPC_INTELLIGENT, //i
+    NPC_STUPID, //s
 	SPECATK_MAXNUM
 };
 
