@@ -6990,6 +6990,14 @@ void Client::Handle_OP_Fishing(const EQApplicationPacket *app)
 	}
 	
 	if (CanFish()) {
+        #ifdef EMBPERL
+        ((PerlembParser*)parse)->Event(
+            EVENT_FISH_START, 
+            0, 
+            "", 
+            (NPC*)NULL, 
+            this);
+        #endif
 		//these will trigger GoFish() after a delay if we're able to actually fish, and if not, we won't stop the client from trying again immediately (although we may need to tell it to repop the button)
 		p_timers.Start(pTimerFishing, FishingReuseTime-1);
 		fishing_timer.Start();
