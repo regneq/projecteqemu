@@ -240,12 +240,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	attack_speed = d->attack_speed;
 
 	EntityList::RemoveNumbers(name);
-#ifdef IPC
-	if(!IsInteractive())
-		entity_list.MakeNameUnique(name);
-#else
     entity_list.MakeNameUnique(name);
-#endif
 
 	npc_aggro = d->npc_aggro;
 
@@ -365,16 +360,6 @@ NPC::~NPC()
 	entity_list.LimitRemoveNPC(this);
 	
 	safe_delete(NPCTypedata_ours);
- #ifdef IPC	  
-	if(IsInteractive())
-	{
-	    Group* group = entity_list.GetGroupByMob(this);
-		if(group != 0)
-		{
-		    group->DelMember(this);
-	    }
-    }
-#endif
 	
 	{
 	ItemList::iterator cur,end;

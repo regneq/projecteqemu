@@ -173,11 +173,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 
 					case SpellType_Escape: {
-	                #ifdef IPC          
-                        if (GetHPRatio() <= 5 || (IsNPC() && CastToNPC()->IsInteractive() && tar != this) )
-					#else
                         if (GetHPRatio() <= 5 )	
-                    #endif
                     	{
                             AIDoSpellCast(i, tar, mana_cost);
 							return true;

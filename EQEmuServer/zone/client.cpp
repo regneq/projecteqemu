@@ -1035,12 +1035,6 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 						if(GetTarget()->CastToNPC()->IsMoving() && !GetTarget()->CastToNPC()->IsOnHatelist(GetTarget()))
 							GetTarget()->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
 						parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
-					#ifdef IPC
-						if(GetTarget()->CastToNPC()->IsInteractive()) {
-							GetTarget()->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
-						}
-					#endif
-						//parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, target->CastToNPC(), this);
 					}
 #ifdef EMBPERL
 				}	

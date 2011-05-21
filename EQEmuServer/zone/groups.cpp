@@ -472,11 +472,6 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender)
 			if(members[i]->IsClient())
 				members[i]->CastToClient()->QueuePacket(outapp);
 		}
-		#ifdef IPC
-		if(members[i] == oldmember && members[i]->IsNPC() && members[i]->CastToNPC()->IsGrouped() && members[i]->CastToNPC()->IsInteractive()) {
-			 members[i]->CastToNPC()->TakenAction(23,0);
-		}
-		#endif	
 	}
 
 	if (!ignoresender) {
@@ -626,11 +621,6 @@ void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char
 
 		if (members[i]->IsClient() && members[i]->CastToClient()->GetFilter(FILTER_GROUP)!=0)
 			members[i]->CastToClient()->ChannelMessageSend(sender->GetName(),members[i]->GetName(),2,language,lang_skill,message);
-		#ifdef IPC
-		if (members[i]->CastToNPC()->IsInteractive() && members[i] != sender)
-			members[i]->CastToNPC()->InteractiveChat(2,1,message,(sender->GetTarget() != NULL) ? sender->GetTarget()->GetName():sender->GetName(),sender);
-				//InteractiveChat(int8 chan_num, int8 language, const char * message, const char* targetname,Mob* sender);
-  		 #endif
 	}
 
 	ServerPacket* pack = new ServerPacket(ServerOP_OOZGroupMessage, sizeof(ServerGroupChannelMessage_Struct) + strlen(message) + 1);
@@ -823,11 +813,7 @@ void Group::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x,
 	uint32 i;
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++)
 	 {
-	 #ifdef IPC
-		if (members[i] != NULL && (members[i]->IsClient() || (members[i]->IsNPC() && members[i]->CastToNPC()->IsInteractive())) && members[i] != sender)
-	 #else
-		  if (members[i] != NULL && members[i]->IsClient() && members[i] != sender)
-	 #endif
+		if (members[i] != NULL && members[i]->IsClient() && members[i] != sender)
 	 	{
 			members[i]->CastToClient()->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 		}
