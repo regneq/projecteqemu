@@ -165,9 +165,10 @@
 #define ServerOP_DoZoneCommand		0x3003
 
 #define ServerOP_UCSMessage		0x4000
-#define ServerOP_ReloadRules	0x4001
-#define ServerOP_ReloadRulesWorld	0x4002
-#define ServerOP_CameraShake	0x4003
+#define ServerOP_UCSMailMessage 0x4001
+#define ServerOP_ReloadRules	0x4002
+#define ServerOP_ReloadRulesWorld	0x4003
+#define ServerOP_CameraShake	0x4004
 
 /************ PACKET RELATED STRUCT ************/
 class ServerPacket
@@ -1005,6 +1006,13 @@ struct ServerCameraShake_Struct
 {
 	uint32 duration; // milliseconds
 	uint32 intensity; // number from 1-10
+};
+
+struct ServerMailMessageHeader_Struct {
+    char from[64];
+    char to[64];
+    char subject[128];
+    char message[0];
 };
 
 #pragma pack()

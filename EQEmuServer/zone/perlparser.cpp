@@ -3104,6 +3104,23 @@ XS(XS__LearnRecipe)
     XSRETURN_EMPTY;
 }
 
+XS(XS__SendMail);
+XS(XS__SendMail)
+{
+    dXSARGS;
+    if (items != 4)
+        Perl_croak(aTHX_ "Usage: SendMail(to, from, subject, message)");
+
+    char *to = (char *)SvPV_nolen(ST(0));
+    char *from = (char *)SvPV_nolen(ST(1));
+    char *subject = (char *)SvPV_nolen(ST(2));
+    char *message = (char *)SvPV_nolen(ST(3));
+
+    quest_manager.SendMail(to, from, subject, message);
+
+    XSRETURN_EMPTY;
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -3305,6 +3322,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "wearchange"), XS__wearchange, file);
 		newXS(strcpy(buf, "voicetell"), XS__voicetell, file);
         newXS(strcpy(buf, "LearnRecipe"), XS__LearnRecipe, file);
+        newXS(strcpy(buf, "SendMail"), XS__SendMail, file);
 	XSRETURN_YES;
 }
 

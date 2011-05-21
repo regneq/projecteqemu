@@ -220,6 +220,7 @@ public:
 	void wearchange(int8 slot, int16 texture);
 	void voicetell(char *str, int macronum, int racenum, int gendernum);
     void LearnRecipe(uint32 recipe_id);
+    void SendMail(const char *to, const char *from, const char *subject, const char *message);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

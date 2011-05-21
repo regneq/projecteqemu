@@ -353,8 +353,9 @@ static void ProcessMailTo(Client *c, string MailMessage) {
 
 		safe_delete(outapp);
 	}
+}
 
-
+static void ProcessMailTo(Client *c, string from, string subject, string message) {
 }
 
 static void ProcessSetMessageStatus(string SetMessageCommand) {
