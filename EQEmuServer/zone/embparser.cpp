@@ -774,19 +774,19 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 	HandleQueue();
 }
 
-void PerlembParser::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32_t extra_data) {
+void PerlembParser::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data) {
     EventCommon(evt, npc->GetNPCTypeID(), data.c_str(), npc, NULL, init, extra_data);
 }
 
-void PerlembParser::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32_t extra_data) {
+void PerlembParser::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {
     EventCommon(evt, 0, data.c_str(), NULL, NULL, client, extra_data);
 }
 
-void PerlembParser::EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32_t objid, uint32_t extra_data) {
+void PerlembParser::EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) {
     EventCommon(evt, objid, NULL, NULL, item, client, extra_data);
 }
 
-void PerlembParser::EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32_t spell_id, uint32_t extra_data) {
+void PerlembParser::EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data) {
     EventCommon(evt, 0, itoa(spell_id), npc, NULL, client, extra_data);
 }
 

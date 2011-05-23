@@ -1,7 +1,7 @@
 #ifndef _EQE_QUESTPARSERCOLLECTION_H
 #define _EQE_QUESTPARSERCOLLECTION_H
 
-#include <stdint.h>
+#include "../common/types.h"
 #include <string.h>
 #include <string>
 #include <list>
@@ -29,27 +29,27 @@ public:
 	bool SpellHasQuestSub(uint32 spell_id, const char *subname);
     bool ItemHasQuestSub(ItemInst *itm, const char *subname);
 
-    void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32_t extra_data);
-    void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32_t extra_data);
-    void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32_t objid, uint32_t extra_data);
-    void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32_t spell_id, uint32_t extra_data);
+    void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data);
+    void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
+    void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data);
+    void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data);
 
 private:
-    QuestInterface *GetQIByNPCQuest(uint32_t npcid);
+    QuestInterface *GetQIByNPCQuest(uint32 npcid);
     QuestInterface *GetQIByPlayerQuest();
-    QuestInterface *GetQIBySpellQuest(uint32_t spell_id);
+    QuestInterface *GetQIBySpellQuest(uint32 spell_id);
     QuestInterface *GetQIByItemQuest(std::string item_script);
 
-    std::map<uint32_t, QuestInterface*> _interfaces;
-    std::map<uint32_t, std::string> _extensions;
+    std::map<uint32, QuestInterface*> _interfaces;
+    std::map<uint32, std::string> _extensions;
     std::list<QuestInterface*> _load_precedence;
 
     //0x00 = Unloaded
     //0xFFFFFFFF = Failed to Load
-    std::map<uint32_t, uint32_t> _npc_quest_status;
-    uint32_t _player_quest_status;
-    std::map<uint32_t, uint32_t> _spell_quest_status;
-    std::map<std::string, uint32_t> _item_quest_status;
+    std::map<uint32, uint32> _npc_quest_status;
+    uint32 _player_quest_status;
+    std::map<uint32, uint32> _spell_quest_status;
+    std::map<std::string, uint32> _item_quest_status;
 };
 
 extern QuestParserCollection *parse;

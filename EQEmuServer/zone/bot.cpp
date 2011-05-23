@@ -3,6 +3,7 @@
 #include "bot.h"
 #include "object.h"
 #include "doors.h"
+#include "QuestParserCollection.h"
 
 // This constructor is used during the bot create command
 Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false), rest_timer(1) {
@@ -5273,7 +5274,7 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 	//handle EVENT_ATTACK. Resets after we have not been attacked for 12 seconds
 	if(attacked_timer.Check()) {
 		mlog(COMBAT__HITS, "Triggering EVENT_ATTACK due to attack by %s", from->GetName());
-		parse->Event(EVENT_ATTACK, this->GetBotID(), 0, this, from);
+		parse->EventNPC(EVENT_ATTACK, this, from, "", 0);
 	}
 
 	attacked_timer.Start(CombatEventTimer_expire);
@@ -13408,7 +13409,7 @@ void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 				safe_delete(ns);
 			}
 
-			parse->Event(EVENT_SPAWN, 0, 0, 0, newBot);
+            parse->EventNPC(EVENT_SPAWN, newBot, NULL, "", 0);
 		}
 
 		bot_list.push_back(newBot);
