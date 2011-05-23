@@ -1,7 +1,7 @@
 #ifndef _EQE_QUESTINTERFACE_H
 #define _EQE_QUESTINTERFACE_H
 
-#include <stdint.h>
+#include "../common/types.h"
 #include "event_codes.h"
 
 class ItemInst;
@@ -10,10 +10,10 @@ class NPC;
 
 class QuestInterface {
 public:
-    virtual void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32_t extra_data) { }
-    virtual void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32_t extra_data) { }
-    virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32_t objid, uint32_t extra_data) { }
-    virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32_t spell_id, uint32_t extra_data) { }
+    virtual void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data) { }
+    virtual void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) { }
+    virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) { }
+    virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data) { }
 
 	virtual bool HasQuestSub(int32 npcid, const char *subname) { return false; }
 	virtual bool PlayerHasQuestSub(const char *subname) { return false; }
@@ -22,7 +22,7 @@ public:
 
     virtual void AddVar(std::string name, std::string val) { }
     virtual void ReloadQuests(bool reset_timers = true) { }
-    virtual uint32_t GetIdentifier() { return 0; }
+    virtual uint32 GetIdentifier() { return 0; }
 };
 
 #endif

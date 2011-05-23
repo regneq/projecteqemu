@@ -4134,7 +4134,7 @@ struct ItemVerifyReply_Struct {
 #if 0
 struct spawnShroudSelf
 {
-/*00000*/ uint32_t spawnId;            // Spawn Id of you
+/*00000*/ uint32 spawnId;            // Spawn Id of you
 /*00004*/ Spawn_Struct spawn;           // Updated spawnStruct for you
 //this is a sub-struct of PlayerProfile, which we havent broken out yet.
 /*00586*/ playerProfileStruct profile; // Character profile for shrouded char
