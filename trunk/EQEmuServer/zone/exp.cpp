@@ -21,10 +21,8 @@
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
+#include "QuestParserCollection.h"
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
 
 static uint32 MaxBankedGroupLeadershipPoints(int Level)
 {
@@ -370,10 +368,7 @@ void Client::SetLevel(int8 set_level, bool command)
                 m_pp.level2 = set_level;
         }
         if(set_level > m_pp.level) {
-
-#ifdef EMBPERL
-                ((PerlembParser*)parse)->Event(EVENT_LEVEL_UP, 0, "", (NPC*)NULL, this);
-#endif
+            parse->EventPlayer(EVENT_LEVEL_UP, this, "", 0);
         }
 
         m_pp.level = set_level;

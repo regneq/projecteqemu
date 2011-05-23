@@ -69,10 +69,7 @@ extern bool spells_loaded;
 #include "NpcAI.h"
 #include "client_logs.h"
 #include "guild_mgr.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 
 extern EntityList entity_list;
@@ -1028,17 +1025,13 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 			if(!GetTarget()->CastToNPC()->IsEngaged()) {
 				CheckLDoNHail(GetTarget());
 
-#ifdef EMBPERL
-				if(((PerlembParser *)parse)->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_SAY")){
-#endif
+				if(parse->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_SAY")){
 					if (DistNoRootNoZ(*GetTarget()) <= 200) {
 						if(GetTarget()->CastToNPC()->IsMoving() && !GetTarget()->CastToNPC()->IsOnHatelist(GetTarget()))
 							GetTarget()->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
-						parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
+                        parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, message, language);
 					}
-#ifdef EMBPERL
 				}	
-#endif
 
 				if (RuleB(TaskSystem, EnableTaskSystem) && DistNoRootNoZ(*GetTarget()) <= 200) {
 
@@ -1054,15 +1047,11 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 				}
 			}
 			else {
-#ifdef EMBPERL
-				if(((PerlembParser *)parse)->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
-#endif
+				if(parse->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
 					if (DistNoRootNoZ(*GetTarget()) <= 200) {
-						parse->Event(EVENT_AGGRO_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
+                        parse->EventNPC(EVENT_AGGRO_SAY, GetTarget()->CastToNPC(), this, message, language);
 					}
-#ifdef EMBPERL
 				}	
-#endif
 			}
 
 		}
@@ -4688,12 +4677,10 @@ void Client::SetPortExemption(bool v)
 
 void Client::Signal(int32 data)
 {
-#ifdef EMBPERL
 	char buf[32];
 	snprintf(buf, 31, "%d", data);
 	buf[31] = '\0';
-	((PerlembParser *)parse)->Event(EVENT_SIGNAL, 0, buf, (NPC*)NULL, this);
-#endif
+    parse->EventPlayer(EVENT_SIGNAL, this, buf, 0);
 }
 
 const bool Client::IsMQExemptedArea(int32 zoneID, float x, float y, float z) const

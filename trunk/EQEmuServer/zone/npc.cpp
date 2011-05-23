@@ -54,9 +54,7 @@ extern EntityList entity_list;
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float heading, int iflymode, bool IsCorpse)
 : Mob(d->name,

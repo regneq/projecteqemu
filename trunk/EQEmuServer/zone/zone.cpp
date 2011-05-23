@@ -60,6 +60,7 @@ using namespace std;
 #include "client_logs.h"
 #include "../common/rulesys.h"
 #include "guild_mgr.h"
+#include "QuestParserCollection.h"
 
 #ifdef WIN32
 #define snprintf	_snprintf
@@ -78,7 +79,7 @@ Mutex MZoneShutdown;
 extern bool staticzone;
 Zone* zone = 0;
 volatile bool ZoneLoaded = false;
-extern Parser* parse;
+extern QuestParserCollection* parse;
 extern DBAsyncFinishedQueue MTdbafq;
 extern DBAsync *dbasync;
 void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result);
@@ -977,9 +978,7 @@ bool Zone::Init(bool iStaticZone) {
 			rules->LoadRules(&database, r_name.c_str());
 		}
 	}
-	
-	parse->ClearCache();
-	
+		
 	LogFile->write(EQEMuLog::Status, "Loading timezone data...");
 	zone->zone_time.setEQTimeZone(database.GetZoneTZ(zoneid, GetInstanceVersion()));
 	

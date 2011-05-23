@@ -1,24 +1,30 @@
 #include "../common/debug.h"
 #include "QuestParserCollection.h"
 #include "QuestInterface.h"
+#include "zone.h"
+#include "zonedb.h"
+#include "features.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
+extern Zone* zone;
+
 QuestParserCollection::QuestParserCollection() {
+    _player_quest_status = QuestUnloaded;
 }
 
 QuestParserCollection::~QuestParserCollection() {
 }
 
-void QuestParserCollection::RegisterQuestInterface(QuestInterface *qi) 
-{
+void QuestParserCollection::RegisterQuestInterface(QuestInterface *qi, std::string ext) {
     _interfaces[qi->GetIdentifier()] = qi;
+    _extensions[qi->GetIdentifier()] = ext;
     _load_precedence.push_back(qi);
 }
 
-void QuestParserCollection::AddVar(std::string name, std::string val) 
-{
+void QuestParserCollection::AddVar(std::string name, std::string val) {
     std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
     while(iter != _load_precedence.end()) {
         (*iter)->AddVar(name, val);
@@ -26,466 +32,415 @@ void QuestParserCollection::AddVar(std::string name, std::string val)
     }
 }
 
-void QuestParserCollection::Reload(bool reset_timers) 
-{
-    _player_quest_status = QuestUnloaded;
+void QuestParserCollection::ReloadQuests(bool reset_timers) {
     _npc_quest_status.clear();
-    _item_quest_status.clear();
+    _player_quest_status = QuestUnloaded;
     _spell_quest_status.clear();
-
+    _item_quest_status.clear();
     std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
     while(iter != _load_precedence.end()) {
-        (*iter)->Reload(reset_timers);
+        (*iter)->ReloadQuests(reset_timers);
         iter++;
     }
 }
 
-void QuestParserCollection::_EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string zone, std::string data, 
-    uint32_t extra_data) 
-{
-    uint32_t npc_id = npc->GetNPCTypeID();
-    std::map<uint32_t, uint32_t>::iterator iter = _npc_quest_status.find(npc_id);
+bool QuestParserCollection::HasQuestSub(uint32 npcid, const char *subname) {
+    std::map<uint32_t, uint32_t>::iterator iter = _npc_quest_status.find(npcid);
     if(iter != _npc_quest_status.end()) {
-        if((*iter).second != QuestFailedToLoad) {
-            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find((*iter).second);
-            qiter->second->EventNPC(evt, npc, init, data, extra_data);
+        //loaded or failed to load
+        if(iter->second != QuestFailedToLoad) {
+            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
+            return qiter->second->HasQuestSub(npcid, subname);
+        }
+    } else {
+        QuestInterface *qi = GetQIByNPCQuest(npcid);
+        if(qi) {
+            _npc_quest_status[npcid] = qi->GetIdentifier();
+            return qi->HasQuestSub(npcid, subname);
+        } else {
+            _npc_quest_status[npcid] = QuestFailedToLoad;
         }
     }
-    else {
-        QuestInterface *res = _LoadNPCQuest(zone, npc_id);
-        if(res != NULL) {
-            res->EventNPC(evt, npc, init, data, extra_data);
-        }
-    }
+    return false;
 }
 
-void QuestParserCollection::_EventPlayer(QuestEventID evt, Client *client, std::string zone, std::string data, 
-    uint32_t extra_data) 
-{
+bool QuestParserCollection::PlayerHasQuestSub(const char *subname) {
     if(_player_quest_status == QuestUnloaded) {
-        QuestInterface *res = _LoadPlayerQuest(zone);
-        if(res != NULL) {
-            res->EventPlayer(evt, client, zone, data, extra_data);
+        QuestInterface *qi = GetQIByPlayerQuest();
+        if(qi) {
+            _player_quest_status = qi->GetIdentifier();
+            return qi->PlayerHasQuestSub(subname);
         }
     } else if(_player_quest_status != QuestFailedToLoad) {
-        std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(_player_quest_status);
-        qiter->second->EventPlayer(evt, client, zone, data, extra_data);
+        std::map<uint32_t, QuestInterface*>::iterator iter = _interfaces.find(_player_quest_status);
+        return iter->second->PlayerHasQuestSub(subname);
     }
+    return false;
 }
 
-void QuestParserCollection::_EventItem(QuestEventID evt, Client *client, ItemInst *item, 
-    uint32_t extra_data) 
-{
-    std::string name = "item_";
-    if(evt == EVENT_SCALE_CALC) {
-        name += item->GetItem()->CharmFile;
-    } else {
-        name += itoa(item->GetItem()->ScriptFileID);
-    }
-    
-    std::map<std::string, uint32_t>::iterator iter = _item_quest_status.find(name);
-    if(iter != _item_quest_status.end()) {
-        if((*iter).second != QuestFailedToLoad) {
-            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find((*iter).second);
-            qiter->second->EventItem(evt, client, item, extra_data);
-        }
-    }
-    else {
-        QuestInterface *res = _LoadItemQuest(name);
-        if(res != NULL) {
-            res->EventItem(evt, client, item, extra_data);
-        }
-    }
-}
-
-void QuestParserCollection::_EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32_t spell_id, 
-    uint32_t extra_data) 
-{
+bool QuestParserCollection::SpellHasQuestSub(uint32 spell_id, const char *subname) {
     std::map<uint32_t, uint32_t>::iterator iter = _spell_quest_status.find(spell_id);
     if(iter != _spell_quest_status.end()) {
-        if((*iter).second != QuestFailedToLoad) {
-            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find((*iter).second);
+        //loaded or failed to load
+        if(iter->second != QuestFailedToLoad) {
+            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
+            return qiter->second->SpellHasQuestSub(spell_id, subname);
+        }
+    } else {
+        QuestInterface *qi = GetQIBySpellQuest(spell_id);
+        if(qi) {
+            _spell_quest_status[spell_id] = qi->GetIdentifier();
+            return qi->SpellHasQuestSub(spell_id, subname);
+        } else {
+            _spell_quest_status[spell_id] = QuestFailedToLoad;
+        }
+    }
+    return false;
+}
+
+bool QuestParserCollection::ItemHasQuestSub(ItemInst *itm, const char *subname) {
+    std::string item_script;
+    if(strcmp("EVENT_SCALE_CALC", subname) == 0) {
+        item_script = itm->GetItem()->CharmFile;
+    } else if(strcmp("EVENT_ITEM_CLICK", subname) == 0 || strcmp("EVENT_ITEM_CLICK_CAST", subname) == 0) {
+        item_script = "script_";
+        item_script += itoa(itm->GetItem()->ScriptFileID);
+    } else {
+        item_script = itoa(itm->GetItem()->ID);
+    }
+
+    std::map<std::string, uint32_t>::iterator iter = _item_quest_status.find(item_script);
+    if(iter != _item_quest_status.end()) {
+        //loaded or failed to load
+        if(iter->second != QuestFailedToLoad) {
+            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
+            return qiter->second->ItemHasQuestSub(itm, subname);
+        }
+    } else {
+        QuestInterface *qi = GetQIByItemQuest(item_script);
+        if(qi) {
+            _item_quest_status[item_script] = qi->GetIdentifier();
+            return qi->ItemHasQuestSub(itm, subname);
+        } else {
+            _item_quest_status[item_script] = QuestFailedToLoad;
+        }
+    }
+    return false;
+}
+
+void QuestParserCollection::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32_t extra_data) {
+    std::map<uint32_t, uint32_t>::iterator iter = _npc_quest_status.find(npc->GetNPCTypeID());
+    if(iter != _npc_quest_status.end()) {
+        //loaded or failed to load
+        if(iter->second != QuestFailedToLoad) {
+            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
+            qiter->second->EventNPC(evt, npc, init, data, extra_data);
+        }
+    } else {
+        QuestInterface *qi = GetQIByNPCQuest(npc->GetNPCTypeID());
+        if(qi) {
+            _npc_quest_status[npc->GetNPCTypeID()] = qi->GetIdentifier();
+            qi->EventNPC(evt, npc, init, data, extra_data);
+        } else {
+            _npc_quest_status[npc->GetNPCTypeID()] = QuestFailedToLoad;
+        }
+    }
+}
+
+void QuestParserCollection::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32_t extra_data) {
+    if(_player_quest_status == QuestUnloaded) {
+        QuestInterface *qi = GetQIByPlayerQuest();
+        if(qi) {
+            _player_quest_status = qi->GetIdentifier();
+            qi->EventPlayer(evt, client, data, extra_data);
+        }
+    } else if(_player_quest_status != QuestFailedToLoad) {
+        std::map<uint32_t, QuestInterface*>::iterator iter = _interfaces.find(_player_quest_status);
+        iter->second->EventPlayer(evt, client, data, extra_data);
+    }
+}
+
+void QuestParserCollection::EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32_t objid, uint32_t extra_data) {
+    std::string item_script;
+    if(evt == EVENT_SCALE_CALC) {
+        item_script = item->GetItem()->CharmFile;
+    } else if(evt == EVENT_ITEM_CLICK || evt == EVENT_ITEM_CLICK_CAST) {
+        item_script = "script_";
+        item_script += itoa(item->GetItem()->ScriptFileID);
+    } else {
+        item_script = itoa(item->GetItem()->ID);
+    }
+
+    std::map<std::string, uint32_t>::iterator iter = _item_quest_status.find(item_script);
+    if(iter != _item_quest_status.end()) {
+        //loaded or failed to load
+        if(iter->second != QuestFailedToLoad) {
+            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
+            qiter->second->EventItem(evt, client, item, objid, extra_data);
+        }
+    } else {
+        QuestInterface *qi = GetQIByItemQuest(item_script);
+        if(qi) {
+            _item_quest_status[item_script] = qi->GetIdentifier();
+            qi->EventItem(evt, client, item, objid, extra_data);
+        } else {
+            _item_quest_status[item_script] = QuestFailedToLoad;
+        }
+    }
+}
+
+void QuestParserCollection::EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32_t spell_id, uint32_t extra_data) {
+    std::map<uint32_t, uint32_t>::iterator iter = _spell_quest_status.find(spell_id);
+    if(iter != _spell_quest_status.end()) {
+        //loaded or failed to load
+        if(iter->second != QuestFailedToLoad) {
+            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
             qiter->second->EventSpell(evt, npc, client, spell_id, extra_data);
         }
-    }
-    else {
-        QuestInterface *res = _LoadSpellQuest(spell_id);
-        if(res != NULL) {
-            res->EventSpell(evt, npc, client, spell_id, extra_data);
+    } else {
+        QuestInterface *qi = GetQIBySpellQuest(spell_id);
+        if(qi) {
+            _spell_quest_status[spell_id] = qi->GetIdentifier();
+            qi->EventSpell(evt, npc, client, spell_id, extra_data);
+        } else {
+            _spell_quest_status[spell_id] = QuestFailedToLoad;
         }
     }
 }
 
+QuestInterface *QuestParserCollection::GetQIByNPCQuest(uint32_t npcid) {
+    //first look for /quests/zone/npcid.ext (precedence)
+    std::string filename = "quests/";
+    filename += zone->GetShortName();
+    filename += "/";
+    filename += itoa(npcid);
+    std::string tmp;
+    FILE *f = NULL;
 
-QuestInterface *QuestParserCollection::_LoadNPCQuest(std::string zone, uint32_t npc_id) 
-{
-    std::list<QuestInterface*>::iterator i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadScript(zone, npc_id);
-        if(res != QuestFailedToLoad) {
-            _npc_quest_status[npc_id] = res;
-            return (*i);
+    std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
         }
-        ++i;
+
+        iter++;
     }
 
-    i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadDefaultScript(zone);
-        if(res != QuestFailedToLoad) {
-            _npc_quest_status[npc_id] = res;
-            return (*i);
+    //second look for /quests/zone/npcname.ext (precedence)
+    const NPCType *npc_type = database.GetNPCType(npcid);
+    if(!npc_type) {
+        return NULL;
+    }
+    std::string npc_name = npc_type->name;
+    int sz = npc_name.length();
+    for(int i = 0; i < sz; ++i) {
+        if(npc_name[i] == '`') {
+            npc_name[i] = '-';
         }
-        ++i;
     }
 
-    _npc_quest_status[npc_id] = QuestFailedToLoad;
+    filename = "quests/";
+    filename += zone->GetShortName();
+    filename += "/";
+    filename += npc_name;
+
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
+    //third look for /quests/zone/default.ext (precedence)
+    filename = "quests/";
+    filename += zone->GetShortName();
+    filename += "/";
+    filename += "default";
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
+    //fourth look for /quests/templates/npcid.ext (precedence)
+    filename = "quests/";
+    filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/";
+    filename += itoa(npcid);
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
+    //fifth look for /quests/templates/npcname.ext (precedence)
+    filename = "quests/";
+    filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/";
+    filename += npc_name;
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
+    //fifth look for /quests/templates/default.ext (precedence)
+    filename = "quests/";
+    filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/";
+    filename += "default";
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
     return NULL;
 }
 
-QuestInterface *QuestParserCollection::_LoadPlayerQuest(std::string zone) 
-{
-    std::list<QuestInterface*>::iterator i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadPlayerScript(zone);
-        if(res != QuestFailedToLoad) {
-            _player_quest_status = res;
-            return (*i);
+QuestInterface *QuestParserCollection::GetQIByPlayerQuest() {
+    //first look for /quests/zone/player.ext (precedence)
+    std::string filename = "quests/";
+    filename += zone->GetShortName();
+    filename += "/";
+    filename += "player";
+    std::string tmp;
+    FILE *f = NULL;
+
+    std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
         }
-        ++i;
+
+        iter++;
+    }    
+
+    //second look for /quests/templates/player.ext (precedence)
+    filename = "quests/";
+    filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/";
+    filename += "player";
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
     }
 
-    i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadDefaultPlayerScript();
-        if(res != QuestFailedToLoad) {
-            _player_quest_status = res;
-            return (*i);
-        }
-        ++i;
-    }
-
-    _player_quest_status = QuestFailedToLoad;
     return NULL;
 }
 
-QuestInterface *QuestParserCollection::_LoadItemQuest(std::string item_script) 
-{
-    std::list<QuestInterface*>::iterator i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadItemScript(item_script);
-        if(res != QuestFailedToLoad) {
-            _item_quest_status[item_script] = res;
-            return (*i);
-        }
-        ++i;
-    }
+QuestInterface *QuestParserCollection::GetQIBySpellQuest(uint32_t spell_id) {
+    //first look for /quests/spells/spell_id.ext (precedence)
+    std::string filename = "quests/spells/";
+    filename += itoa(spell_id);
+    std::string tmp;
+    FILE *f = NULL;
 
-    i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadDefaultItemScript();
-        if(res != QuestFailedToLoad) {
-            _item_quest_status[item_script] = res;
-            return (*i);
+    std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
         }
-        ++i;
-    }
 
-    _item_quest_status[item_script] = QuestFailedToLoad;
+        iter++;
+    }    
+
     return NULL;
 }
 
-QuestInterface *QuestParserCollection::_LoadSpellQuest(uint32_t spell_id) {
-    std::list<QuestInterface*>::iterator i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadSpellScript(spell_id);
-        if(res != QuestFailedToLoad) {
-            _spell_quest_status[spell_id] = res;
-            return (*i);
-        }
-        ++i;
-    }
+QuestInterface *QuestParserCollection::GetQIByItemQuest(std::string item_script) {
+    //first look for /quests/items/item_script.ext (precedence)
+    std::string filename = "quests/items/";
+    filename += item_script;
+    std::string tmp;
+    FILE *f = NULL;
 
-    i = _load_precedence.begin();
-    while(i != _load_precedence.end())
-    {
-        uint32_t res = (*i)->LoadDefaultSpellScript();
-        if(res != QuestFailedToLoad) {
-            _spell_quest_status[spell_id] = res;
-            return (*i);
+    std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32_t, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
         }
-        ++i;
-    }
 
-    _spell_quest_status[spell_id] = QuestFailedToLoad;
+        iter++;
+    }    
+
     return NULL;
 }
-
-bool QuestParserCollection::HaveScriptFunction(const char *zone, uint32_t npc_id, const char* sub) 
-{
-    std::map<uint32_t, uint32_t>::iterator iter = _npc_quest_status.find(npc_id);
-    if(iter != _npc_quest_status.end()) {
-        if((*iter).second != QuestFailedToLoad) {
-            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find((*iter).second);
-            return (*qiter).second->HaveScriptFunction(zone, npc_id, sub);
-        }
-    } else {
-        QuestInterface *res = _LoadNPCQuest(zone, npc_id);
-        if(res != NULL) {
-            return res->HaveScriptFunction(zone, npc_id, sub);
-        }
-    }
-    return false;
-}
-
-bool QuestParserCollection::HavePlayerScriptFunction(const char *zone, const char* sub) 
-{
-    if(_player_quest_status == QuestUnloaded) {
-        QuestInterface *res = _LoadPlayerQuest(zone);
-        if(res != NULL) {
-            return res->HavePlayerScriptFunction(zone, sub);
-        }
-    } 
-    else if(_player_quest_status != QuestFailedToLoad) {
-        std::map<uint32_t, QuestInterface*>::iterator iter = _interfaces.find(_player_quest_status);
-        return (*iter).second->HavePlayerScriptFunction(zone, sub);
-    }
-    return false;
-}
-
-bool QuestParserCollection::HaveItemScriptFunction(QuestEventID evt, ItemInst *inst, const char* sub) {
-
-    std::string name = "item_";
-    if(evt == EVENT_SCALE_CALC) {
-        name += inst->GetItem()->CharmFile;
-    } else {
-        name += itoa(inst->GetItem()->ScriptFileID);
-    }
-
-    std::map<std::string, uint32_t>::iterator iter = _item_quest_status.find(name);
-    if(iter != _item_quest_status.end()) {
-        if((*iter).second != QuestFailedToLoad) {
-            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find((*iter).second);
-            return (*qiter).second->HaveItemScriptFunction(evt, inst, sub);
-        }
-    } else {
-        QuestInterface *res = _LoadItemQuest(name);
-        if(res != NULL) {
-            return res->HaveItemScriptFunction(evt, inst, sub);
-        }
-    }
-    return false;
-}
-
-bool QuestParserCollection::HaveSpellScriptFunction(uint32_t spell_id, const char* sub) 
-{
-    std::map<uint32_t, uint32_t>::iterator iter = _spell_quest_status.find(spell_id);
-    if(iter != _spell_quest_status.end()) {
-        if((*iter).second != QuestFailedToLoad) {
-            std::map<uint32_t, QuestInterface*>::iterator qiter = _interfaces.find((*iter).second);
-            return (*qiter).second->HaveSpellScriptFunction(spell_id, sub);
-        }
-    } else {
-        QuestInterface *res = _LoadSpellQuest(spell_id);
-        if(res != NULL) {
-            return res->HaveSpellScriptFunction(spell_id, sub);
-        }
-    }
-    return false;
-}
-
-
-void QuestParserCollection::EventSay(const char *message, uint32_t language, NPC * npc, Client * client, std::string zone) {
-    _EventNPC(EVENT_SAY, npc, client, zone, message, 0);
-}
-
-void QuestParserCollection::EventItem(NPC *npc, Client *client, std::string zone) {
-    _EventNPC(EVENT_ITEM, npc, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventDeath(NPC *npc, Mob *killer, std::string zone) {
-    _EventNPC(EVENT_DEATH, npc, killer, zone, "", 0);
-}
-
-void QuestParserCollection::EventSpawn(NPC *npc, std::string zone) {
-    _EventNPC(EVENT_SPAWN, npc, NULL, zone, "", 0);
-}
-
-void QuestParserCollection::EventAttack(NPC *npc, Mob *attacker, std::string zone) {
-    _EventNPC(EVENT_ATTACK, npc, attacker, zone, "", 0);
-}
-
-void QuestParserCollection::EventCombat(uint32_t state, NPC *npc, Mob *attacker, std::string zone) {
-    _EventNPC(EVENT_ATTACK, npc, attacker, zone, state == 1 ? "1" : "0", 0);
-}
-
-void QuestParserCollection::EventAggro(NPC *npc, Mob *other, std::string zone) {
-    _EventNPC(EVENT_AGGRO, npc, other, zone, "", 0);
-}
-
-void QuestParserCollection::EventSlay(NPC *npc, Client *client, std::string zone) {
-    _EventNPC(EVENT_SLAY, npc, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventNPCSlay(NPC *npc, NPC *attacker, std::string zone) {
-    _EventNPC(EVENT_NPC_SLAY, npc, attacker, zone, "", 0);
-}
-
-void QuestParserCollection::EventWaypointArrive(NPC *npc, std::string wp, std::string zone) {
-    _EventNPC(EVENT_WAYPOINT_ARRIVE, npc, NULL, zone, wp, 0);
-}
-
-void QuestParserCollection::EventWaypointDepart(NPC *npc, std::string wp, std::string zone) {
-    _EventNPC(EVENT_WAYPOINT_DEPART, npc, NULL, zone, wp, 0);
-}
-
-void QuestParserCollection::EventTimer(NPC *npc, std::string timer, std::string zone) {
-    _EventNPC(EVENT_TIMER, npc, NULL, zone, timer, 0);
-}
-
-void QuestParserCollection::EventTimer(Client *client, std::string timer, std::string zone) {
-    _EventPlayer(EVENT_TIMER, client, zone, timer, 0);
-}
-
-void QuestParserCollection::EventSignal(NPC *npc, std::string signal, std::string zone) {
-    _EventNPC(EVENT_SIGNAL, npc, NULL, zone, signal, 0);
-}
-
-void QuestParserCollection::EventSignal(Client *client, std::string signal, std::string zone) {
-    _EventPlayer(EVENT_SIGNAL, client, zone, signal, 0);
-}
-
-void QuestParserCollection::EventHP(NPC *npc, std::string hp, bool inc_hp_event, std::string zone) {
-    _EventNPC(EVENT_HP, npc, NULL, zone, hp, inc_hp_event ? 1 : 0);
-}
-
-void QuestParserCollection::EventEnter(NPC *npc, Client *client, std::string zone) {
-    _EventNPC(EVENT_ENTER, npc, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventExit(NPC *npc, Client *client, std::string zone) {
-    _EventNPC(EVENT_EXIT, npc, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventEnterZone(Client *client, std::string zone) {
-     _EventPlayer(EVENT_ENTERZONE, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventClickDoor(Client *client, std::string door_id, std::string zone) {
-    _EventPlayer(EVENT_CLICKDOOR, client, zone, door_id, 0);
-}
-
-void QuestParserCollection::EventLoot(Client *client, std::string looted, std::string zone) {
-    _EventPlayer(EVENT_LOOT, client, zone, looted, 0);
-}
-
-void QuestParserCollection::EventZone(Client *client, std::string zone_id, std::string zone) {
-    _EventPlayer(EVENT_ZONE, client, zone, zone_id, 0);
-}
-
-void QuestParserCollection::EventLevelUp(Client *client, std::string zone) {
-    _EventPlayer(EVENT_LEVEL_UP, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventKilledMerit(NPC *npc, Client *client, std::string zone) {
-    _EventNPC(EVENT_KILLED_MERIT, npc, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventCastOn(NPC *npc, Client *client, std::string spell_id, std::string zone) {
-    _EventNPC(EVENT_CAST_ON, npc, client, zone, spell_id, 0);
-}
-
-void QuestParserCollection::EventTaskAccepted(NPC *npc, Client *client, std::string task_id, std::string zone) {
-    _EventNPC(EVENT_TASKACCEPTED, npc, client, zone, task_id, 0);
-}
-
-void QuestParserCollection::EventTaskStageComplete(Client *client, std::string task_info, std::string zone) {
-    _EventPlayer(EVENT_TASK_STAGE_COMPLETE, client, zone, task_info, 0);
-}
-
-void QuestParserCollection::EventAggroSay(const char *message, uint32_t language, NPC * npc, Client * client, std::string zone) {
-     _EventNPC(EVENT_AGGRO_SAY, npc, client, zone, message, language);
-}
-
-void QuestParserCollection::EventPlayerPickup(Client *client, std::string item_id, std::string zone) {
-    _EventPlayer(EVENT_PLAYER_PICKUP, client, zone, item_id, 0);
-}
-
-void QuestParserCollection::EventPopupResponse(Client *client, std::string popup_id, std::string zone) {
-    _EventPlayer(EVENT_POPUPRESPONSE, client, zone, popup_id, 0);
-}
-
-void QuestParserCollection::EventProximitySay(const char *message, uint32_t language, NPC * npc, Client * client, std::string zone) {
-    _EventNPC(EVENT_PROXIMITY_SAY, npc, client, zone, message, language);
-}
-
-void QuestParserCollection::EventCast(Client *client, uint32_t spell_id) {
-    _EventSpell(EVENT_CAST, NULL, client, spell_id, 0);
-}
-
-void QuestParserCollection::EventScaleCalc(Client *client, ItemInst *item) {
-    _EventItem(EVENT_SCALE_CALC, client, item, 0);
-}
-
-void QuestParserCollection::EventTargetChange(NPC *npc, Mob *other, std::string zone) {
-    _EventNPC(EVENT_TARGET_CHANGE, npc, other, zone, "", 0);
-}
-
-void QuestParserCollection::EventTargetChange(Client *client, std::string zone) {
-    _EventPlayer(EVENT_TARGET_CHANGE, client, zone, "", 0);
-}
-
-void QuestParserCollection::EventHateList(NPC *npc, Mob *other, bool join, std::string zone) {
-    _EventNPC(EVENT_HATE_LIST, npc, other, zone, join ? "1" : "0", 0);
-}
-
-void QuestParserCollection::EventSpellEffectClient(Client *target, uint32_t spell_id, uint32_t caster_id) {
-    _EventSpell(EVENT_SPELL_EFFECT_CLIENT, NULL, target, spell_id, caster_id);
-}
-
-void QuestParserCollection::EventSpellEffectNPC(NPC *target, uint32_t spell_id, uint32_t caster_id) {
-    _EventSpell(EVENT_SPELL_EFFECT_NPC, target, NULL, spell_id, caster_id);
-}
-
-void QuestParserCollection::EventSpellEffectBuffTicClient(Client *target, uint32_t spell_id, uint32_t caster_id) {
-    _EventSpell(EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT, NULL, target, spell_id, caster_id);
-}
-
-void QuestParserCollection::EventSpellEffectBuffTicNPC(NPC *target, uint32_t spell_id, uint32_t caster_id) {
-    _EventSpell(EVENT_SPELL_EFFECT_BUFF_TIC_NPC, target, NULL, spell_id, caster_id);
-}
-
-void QuestParserCollection::EventSpellEffectTranslocateComplete(Client *client, uint32_t spell_id) {
-    _EventSpell(EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE, NULL, client, spell_id, 0);
-}
-
-void QuestParserCollection::EventCombineSuccess(Client *client, uint32_t recipe_id, std::string recipe_name, std::string zone) {
-    _EventPlayer(EVENT_COMBINE_SUCCESS, client, zone, recipe_name, recipe_id);
-}
-
-void QuestParserCollection::EventCombineFailure(Client *client, uint32_t recipe_id, std::string recipe_name, std::string zone) {
-    _EventPlayer(EVENT_COMBINE_FAILURE, client, zone, recipe_name, recipe_id);
-}
-
-void QuestParserCollection::EventItemClick(Client *client, ItemInst *item, uint32_t slot_id) {
-    _EventItem(EVENT_ITEM_CLICK, client, item, slot_id);
-}
-
-void QuestParserCollection::EventItemClickCast(Client *client, ItemInst *item, uint32_t slot_id) {
-    _EventItem(EVENT_ITEM_CLICK_CAST, client, item, slot_id);
-}
-
-void QuestParserCollection::EventGroupChange(Client *client, std::string zone)
-{
-    _EventPlayer(EVENT_GROUP_CHANGE, client, zone, "", 0);
-}
-
-
-

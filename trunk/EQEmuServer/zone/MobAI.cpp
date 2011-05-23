@@ -33,6 +33,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #include "features.h"
+#include "QuestParserCollection.h"
 
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
@@ -41,7 +42,6 @@ using namespace std;
 extern EntityList entity_list;
 
 extern Zone *zone;
-extern Parser * parse;
 
 #ifdef _EQDEBUG
 	#define MobAI_DEBUG_Spells	-1
@@ -1596,7 +1596,7 @@ void NPC::AI_DoMovement() {
 						//kick off event_waypoint depart
 						char temp[16]; 
 						sprintf(temp, "%d", cur_wp);
-						parse->Event(EVENT_WAYPOINT_DEPART,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
+                        parse->EventNPC(EVENT_WAYPOINT_DEPART, CastToNPC(), NULL, temp, 0);
 					
 						//setup our next waypoint, if we are still on our normal grid
 						//remember that the quest event above could have done anything it wanted with our grid
@@ -1626,7 +1626,7 @@ void NPC::AI_DoMovement() {
 					//kick off event_waypoint arrive
 					char temp[16]; 
 					sprintf(temp, "%d", cur_wp);
-					parse->Event(EVENT_WAYPOINT_ARRIVE,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
+					parse->EventNPC(EVENT_WAYPOINT_ARRIVE, CastToNPC(), NULL, temp, 0);
 					
 					// EverHood - wipe feign memory since we reached our first waypoint
 					if(cur_wp == 1)
@@ -1739,7 +1739,7 @@ void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 			{
 				if(!CastToNPC()->GetCombatEvent() && GetHP() > 0)
 				{
-					parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "1", CastToNPC(), attacker);
+                    parse->EventNPC(EVENT_COMBAT, CastToNPC(), attacker, "1", 0);
 					CastToNPC()->SetCombatEvent(true);
 				}
 			}
@@ -1770,7 +1770,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 	{
 		if(CastToNPC()->GetCombatEvent() && GetHP() > 0)
 		{
-			parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "0", CastToNPC(), NULL);
+            parse->EventNPC(EVENT_COMBAT, CastToNPC(), NULL, "0", 0);
 			CastToNPC()->SetCombatEvent(false);
 		}
 	}
@@ -2143,7 +2143,7 @@ void NPC::CheckSignal() {
 		char buf[32];
 		snprintf(buf, 31, "%d", signal_id);
 		buf[31] = '\0';
-		parse->Event(EVENT_SIGNAL, GetNPCTypeID(), buf, this, NULL);
+        parse->EventNPC(EVENT_SIGNAL, this, NULL, buf, 0);
 		signaled=false;
 	}
 }

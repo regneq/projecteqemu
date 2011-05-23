@@ -34,6 +34,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #include "features.h"
+#include "QuestParserCollection.h"
 
 struct wp_distance
 {
@@ -127,7 +128,7 @@ void NPC::ResumeWandering()
 			itoa(cur_wp,temp,10);	//do this before updating to next waypoint
 			CalculateNewWaypoint(); 
 	        SetAppearance(eaStanding, false); 
-			parse->Event(EVENT_WAYPOINT_DEPART, this->GetNPCTypeID(), temp, this, NULL); 
+			parse->EventNPC(EVENT_WAYPOINT_DEPART, this, NULL, temp, 0);
 		}	// if not currently at a waypoint, we continue on to the one we were headed to before the stop
 	}
 	else

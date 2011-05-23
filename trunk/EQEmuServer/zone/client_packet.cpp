@@ -70,12 +70,10 @@
 #include "pathing.h"
 #include "watermap.h"
 #include "../common/ZoneNumbers.h"
+#include "QuestParserCollection.h"
 
 using namespace std;
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
 
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
@@ -1269,7 +1267,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	if(zone->watermap)
 	{
-		if(zone->watermap->InLava(x_pos, y_pos, z_pos))
+        if(zone->watermap->InLiquid(x_pos, y_pos, z_pos))
 		{
 			CheckIncreaseSkill(SWIMMING, NULL, -5);
 		}
@@ -2001,9 +1999,9 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	{
 		ItemInst* p_inst = (ItemInst*)inst;
 
-		if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK"))
+		if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK"))
 		{
-			((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK, p_inst->GetID(), "", p_inst, this, slot_id);
+            parse->EventItem(EVENT_ITEM_CLICK, this, p_inst, p_inst->GetID(), slot_id);
 			inst = m_inv[slot_id];
 			if (!inst)
 			{
@@ -2037,10 +2035,10 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 				}
 				if(GetLevel() >= item->Click.Level2)
 				{
-					if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+					if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 					{
 						//TODO: need to enforce and set recast timers here because the spell may not be cast.
-						((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, slot_id);
+						parse->EventItem(EVENT_ITEM_CLICK, this, p_inst, p_inst->GetID(), slot_id);
 						inst = m_inv[slot_id];
 						if (!inst)
 						{
@@ -3112,7 +3110,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 				{
 					if(silentsaylink)
 					{
-						parse->Event(EVENT_SAY, this->GetTarget()->GetNPCTypeID(), response, this->GetTarget()->CastToNPC(), this);
+                        parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, response, 0);
 					}
 					else
 					{
@@ -4427,9 +4425,9 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 						if(GetLevel() >= item->Click.Level2)
 						{
 							ItemInst* p_inst = (ItemInst*)inst;
-							if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+							if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 							{
-								((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, castspell->inventoryslot);
+                                parse->EventItem(EVENT_ITEM_CLICK_CAST, this, p_inst, p_inst->GetID(), castspell->inventoryslot);
 								return;
 							}
 							else
@@ -4447,9 +4445,9 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					else
 					{
 						ItemInst* p_inst = (ItemInst*)inst;
-						if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+						if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 						{
-							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this, castspell->inventoryslot);
+                            parse->EventItem(EVENT_ITEM_CLICK_CAST, this, p_inst, p_inst->GetID(), castspell->inventoryslot);
 							return;
 						}
 						else
@@ -5845,12 +5843,10 @@ void Client::Handle_OP_ClickDoor(const EQApplicationPacket *app)
 	        return;
 	}
 
-#ifdef EMBPERL
 	char buf[10];
 	snprintf(buf, 9, "%u", cd->doorid);
 	buf[9] = '\0';
-	((PerlembParser *)parse)->Event(EVENT_CLICKDOOR, 0, buf, (NPC*)NULL, this);
-#endif
+    parse->EventPlayer(EVENT_CLICKDOOR, this, buf, 0);
 
 	currentdoor->HandleClick(this,0);
 	return;
@@ -6990,14 +6986,8 @@ void Client::Handle_OP_Fishing(const EQApplicationPacket *app)
 	}
 	
 	if (CanFish()) {
-        #ifdef EMBPERL
-        ((PerlembParser*)parse)->Event(
-            EVENT_FISH_START, 
-            0, 
-            "", 
-            (NPC*)NULL, 
-            this);
-        #endif
+        parse->EventPlayer(EVENT_FISH_START, this, "", 0);
+
 		//these will trigger GoFish() after a delay if we're able to actually fish, and if not, we won't stop the client from trying again immediately (although we may need to tell it to repop the button)
 		p_timers.Start(pTimerFishing, FishingReuseTime-1);
 		fishing_timer.Start();
@@ -8968,9 +8958,7 @@ void Client::CompleteConnect()
 	
 	SendDisciplineTimers();
 
-#ifdef EMBPERL
-	((PerlembParser *)parse)->Event(EVENT_ENTERZONE, 0, "", (NPC*)NULL, this);
-#endif
+    parse->EventPlayer(EVENT_ENTERZONE, this, "", 0);
 
 	if(zone)
 	{
@@ -9830,9 +9818,9 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app) {
 	if(its->Complete == 1) {
 
 		int SpellID = PendingTranslocateData.SpellID;
-		if(((PerlembParser*)parse)->SpellHasQuestSub(SpellID, "EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE"))
+		if(parse->SpellHasQuestSub(SpellID, "EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE"))
 		{
-			parse->Event(EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE, 0, itoa(SpellID), NULL, this, 0);
+            parse->EventSpell(EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE, NULL, this, SpellID, 0);
 		}
 		else
 		{
@@ -9967,13 +9955,11 @@ void Client::Handle_OP_PopupResponse(const EQApplicationPacket *app) {
 	char *buf = 0;
 	MakeAnyLenString(&buf, "%d", prs->popupid);
 
-	parse->Event(EVENT_POPUPRESPONSE, 0, buf, (NPC*)NULL, this);
+    parse->EventPlayer(EVENT_POPUPRESPONSE, this, buf, 0);
 
 	Mob* Target = GetTarget();
-
 	if(Target && Target->IsNPC()) {
-
-		parse->Event(EVENT_POPUPRESPONSE, Target->GetNPCTypeID(), buf, Target->CastToNPC(), this);
+        parse->EventNPC(EVENT_POPUPRESPONSE, Target->CastToNPC(), this, buf, 0);
 	}
 
 	safe_delete_array(buf);

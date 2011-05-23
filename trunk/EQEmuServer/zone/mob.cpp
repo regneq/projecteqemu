@@ -28,7 +28,6 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "map.h"
 #include "StringIDs.h"
 #include "../common/rulesys.h"
-
 #include "../common/emu_opcodes.h"
 #include "../common/eq_packet_structs.h"
 #include "zonedb.h"
@@ -39,6 +38,8 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/MiscFunctions.h"
 #include "worldserver.h"
 #include "QGlobals.h"
+#include "QuestParserCollection.h"
+
 #include <stdio.h>
 #include <limits.h>
 #include <sstream>
@@ -866,7 +867,7 @@ void Mob::CreateHPPacket(EQApplicationPacket* app)
 			snprintf(buf, 9, "%i", GetNextHPEvent());
 			buf[9] = '\0';
 			SetNextHPEvent(-1);
-			parse->Event(EVENT_HP, GetNPCTypeID(), buf, CastToNPC(), NULL, 0);
+            parse->EventNPC(EVENT_HP, CastToNPC(), NULL, buf, 0); 
 		}
 	}
 
@@ -878,7 +879,7 @@ void Mob::CreateHPPacket(EQApplicationPacket* app)
 			snprintf(buf, 9, "%i", GetNextIncHPEvent());
 			buf[9] = '\0';
 			SetNextIncHPEvent(-1);
-			parse->Event(EVENT_HP, GetNPCTypeID(), buf, CastToNPC(), NULL, 1);
+            parse->EventNPC(EVENT_HP, CastToNPC(), NULL, buf, 1); 
 		}
 	}
 } 
@@ -2936,9 +2937,9 @@ void Mob::SetTarget(Mob* mob) {
 	target = mob;
 	entity_list.UpdateHoTT(this);
 	if(IsNPC())
-		parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
+		parse->EventNPC(EVENT_TARGET_CHANGE, CastToNPC(), mob, "", 0); //parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
 	else if (IsClient())
-		parse->Event(EVENT_TARGET_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
+        parse->EventPlayer(EVENT_TARGET_CHANGE, CastToClient(), "", 0); //parse->Event(EVENT_TARGET_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
 
 }
 
@@ -4212,7 +4213,7 @@ void Mob::SetGrouped(bool v)
 
 	if(IsClient())
 	{
-		parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this);
+        parse->EventPlayer(EVENT_GROUP_CHANGE, CastToClient(), "", 0);
 	}
 }
 
@@ -4226,7 +4227,7 @@ void Mob::SetRaidGrouped(bool v)
 
 	if(IsClient())
 	{
-		parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this);
+        parse->EventPlayer(EVENT_GROUP_CHANGE, CastToClient(), "", 0);
 	}
 }
 

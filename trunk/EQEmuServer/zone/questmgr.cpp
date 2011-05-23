@@ -77,6 +77,7 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "QGlobals.h"
 #include "spdat.h"
+#include "QuestParserCollection.h"
 
 #ifdef BOTS
 #include "bot.h"
@@ -86,10 +87,6 @@ using namespace std;
 extern Zone* zone;
 extern WorldServer worldserver;
 extern EntityList entity_list;
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
 
 #include "questmgr.h"
 
@@ -112,16 +109,13 @@ void QuestManager::Process() {
 		if (cur->Timer_.Enabled() && cur->Timer_.Check()) {
 			//make sure the mob is still in zone.
 			if(entity_list.IsMobInZone(cur->mob)){
-#ifdef EMBPERL
 				if(cur->mob->IsNPC()) {
-					parse->Event(EVENT_TIMER, cur->mob->GetNPCTypeID(), cur->name.c_str(), cur->mob->CastToNPC(), NULL);
+                    parse->EventNPC(EVENT_TIMER, cur->mob->CastToNPC(), NULL, cur->name, 0);
 				}
-				else{
-					((PerlembParser*)parse)->Event(EVENT_TIMER, 0, cur->name.c_str(), (NPC*)NULL, cur->mob);
-				}
-#else
-				parse->Event(EVENT_TIMER, cur->mob->GetNPCTypeID(), cur->name.c_str(), cur->mob, NULL);
-#endif
+				else {
+                    //this is inheriently unsafe if we ever make it so more than npc/client start timers
+                    parse->EventPlayer(EVENT_TIMER, cur->mob->CastToClient(), cur->name, 0);
+    			}
 
 				//we MUST reset our iterator since the quest could have removed/added any
 				//number of timers... worst case we have to check a bunch of timers twice
@@ -1404,7 +1398,7 @@ void QuestManager::set_proximity(float minx, float maxx, float miny, float maxy,
 	owner->CastToNPC()->proximity->min_z = minz;
 	owner->CastToNPC()->proximity->max_z = maxz;
 
-	owner->CastToNPC()->proximity->say = ((PerlembParser *)parse)->HasQuestSub(owner->CastToNPC()->GetNPCTypeID(),"EVENT_PROXIMITY_SAY");
+	owner->CastToNPC()->proximity->say = parse->HasQuestSub(owner->CastToNPC()->GetNPCTypeID(),"EVENT_PROXIMITY_SAY");
 
 	if(owner->CastToNPC()->proximity->say)
 		HaveProximitySays = true;

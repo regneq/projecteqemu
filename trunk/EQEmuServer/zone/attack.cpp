@@ -40,6 +40,7 @@ using namespace std;
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
+#include "QuestParserCollection.h"
 
 #ifdef WIN32
 #define snprintf	_snprintf
@@ -1496,7 +1497,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	if (killerMob != NULL)
 	{
 		if (killerMob->IsNPC()) {
-			parse->Event(EVENT_SLAY, killerMob->GetNPCTypeID(), 0, killerMob->CastToNPC(), this);
+            parse->EventNPC(EVENT_SLAY, killerMob->CastToNPC(), this, "", 0);
 			killerMob->TrySpellOnKill();
 		}
 		
@@ -1996,7 +1997,7 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 	if(attacked_timer.Check()) 
 	{
 		mlog(COMBAT__HITS, "Triggering EVENT_ATTACK due to attack by %s", other->GetName());
-		parse->Event(EVENT_ATTACK, this->GetNPCTypeID(), 0, this, other);
+        parse->EventNPC(EVENT_ATTACK, this, other, "", 0);
 	}
 	attacked_timer.Start(CombatEventTimer_expire);
     
@@ -2104,7 +2105,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			/* Send the EVENT_KILLED_MERIT event for all raid members */
 			for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
 				if (kr->members[i].member != NULL) { // If Group Member is Client
-					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, kr->members[i].member);
+                    parse->EventNPC(EVENT_KILLED_MERIT, this, kr->members[i].member, "killed", 0);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						kr->members[i].member->UpdateTasksOnKill(GetNPCTypeID());
 				}
@@ -2122,7 +2123,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 				if (kg->members[i] != NULL && kg->members[i]->IsClient()) { // If Group Member is Client
 					Client *c = kg->members[i]->CastToClient();
-					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, c);
+                    parse->EventNPC(EVENT_KILLED_MERIT, this, c, "killed", 0);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						c->UpdateTasksOnKill(GetNPCTypeID());
 				}
@@ -2144,7 +2145,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 				}
 			}
 			 /* Send the EVENT_KILLED_MERIT event */
-			parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, give_exp_client);
+            parse->EventNPC(EVENT_KILLED_MERIT, this, give_exp_client, "killed", 0);
 			if(RuleB(TaskSystem, EnableTaskSystem))
 				give_exp_client->UpdateTasksOnKill(GetNPCTypeID());
 		}
@@ -2246,10 +2247,10 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	// Parse quests even if we're killed by an NPC
 	if(killerMob) {
 		Mob *oos = killerMob->GetOwnerOrSelf();
-		parse->Event(EVENT_DEATH, this->GetNPCTypeID(),0, this, oos);
+        parse->EventNPC(EVENT_DEATH, this, oos, "", 0);
 		if(oos->IsNPC())
 		{
-			parse->Event(EVENT_NPC_SLAY, this->GetNPCTypeID(), 0, oos->CastToNPC(), this);
+            parse->EventNPC(EVENT_NPC_SLAY, oos->CastToNPC(), this, "", 0);
 			killerMob->TrySpellOnKill();
 		}
 	}
@@ -2355,7 +2356,7 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	}
 	if (!wasengaged) { 
 		if(IsNPC() && other->IsClient() && other->CastToClient())
-			parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
+            parse->EventNPC(EVENT_AGGRO, this->CastToNPC(), other, "", 0);
 		AI_Event_Engaged(other, iYellForHelp); 
 		adverrorinfo = 8293;
 	}

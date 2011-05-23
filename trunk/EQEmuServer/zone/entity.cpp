@@ -46,6 +46,7 @@ using namespace std;
 #include "../common/dbasync.h"
 #include "guild_mgr.h"
 #include "raids.h"
+#include "QuestParserCollection.h"
 
 #ifdef WIN32
 #define snprintf	_snprintf
@@ -598,7 +599,7 @@ void EntityList::AddCorpse(Corpse* corpse, int32 in_id) {
 
 void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	npc->SetID(GetFreeID());
-	parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
+    parse->EventNPC(EVENT_SPAWN, npc, NULL, "", 0);
 	
 	if (SendSpawnPacket) {
 		if (dontqueue) { // aka, SEND IT NOW BITCH!
@@ -2112,59 +2113,6 @@ void EntityList::MessageClose(Mob* sender, bool skipsender, float dist, int32 ty
 	}
 }
 
-#if 0	// solar: old code, see Mob functions: Say, Say_StringID, Shout, Emote
-void EntityList::NPCMessage(Mob* sender, bool skipsender, float dist, int32 type, const char* message, ...) { 
-   va_list argptr; 
-   char buffer[4096]; 
-   char *findzero; 
-    int  stripzero; 
-   va_start(argptr, message); 
-   vsnprintf(buffer, 4095, message, argptr); 
-   va_end(argptr); 
-    findzero = strstr( buffer, "0" ); 
-    stripzero = (int)(findzero - buffer + 2); 
-   if (stripzero > 2 && stripzero<4096) //Incase its not an npc, you dont want to crash the zone 
-      strncpy(buffer + stripzero," ",1); 
-   float dist2 = dist * dist; 
-   char *tmp = new char[strlen(buffer)];
-   memset(tmp,0x0,sizeof(tmp));
-   LinkedListIterator<Client*> iterator(client_list); 
-   if (dist2==0) {
-      iterator.Reset(); 
-      while(iterator.MoreElements()) 
-      {  
-		Client* client = iterator.GetData()->CastToClient(); 
-		client->Message(type, buffer); 
-		iterator.Advance(); 
-      } 
-   } 
-   else { 
-      iterator.Reset(); 
-      while(iterator.MoreElements()) 
-      { 
-         if (iterator.GetData()->DistNoRoot(*sender) <= dist2 && (!skipsender || iterator.GetData() != sender)) { 
-            iterator.GetData()->Message(type, buffer); 
-         } 
-         iterator.Advance(); 
-      } 
-   }
-
-   if (sender->GetTarget() && sender->GetTarget()->IsNPC() && buffer)
-   {
-	   strcpy(tmp,strstr(buffer,"says"));
-	   tmp[strlen(tmp) - 1] = '\0';
-	   while (*tmp)
-	   {
-    	   tmp++;
-		   if (*tmp == '\'') { tmp++; break; }
-	   }
-	   if (tmp)
-		parse->Event(EVENT_SAY, sender->GetTarget()->GetNPCTypeID(), tmp, sender->GetTarget(), sender);
-   }
-
-} 
-#endif
-
 void EntityList::RemoveAllMobs(){
 	LinkedListIterator<Mob*> iterator(mob_list);
 	iterator.Reset();
@@ -3466,14 +3414,14 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 		
 		if(old_in && !new_in) {
 			//we were in the proximity, we are no longer, send event exit
-			parse->Event(EVENT_EXIT, d->GetNPCTypeID(), "", d, c);
+            parse->EventNPC(EVENT_EXIT, d, c, "", 0);
 			
 			//Reentrant fix
 			iterator.Reset();
 			skip_ids.push_back(d->GetID());
 		} else if(new_in && !old_in) {
 			//we were not in the proximity, we are now, send enter event
-			parse->Event(EVENT_ENTER, d->GetNPCTypeID(), "", d, c);
+			parse->EventNPC(EVENT_ENTER, d, c, "", 0);
 
 			//Reentrant fix
 			iterator.Reset();
@@ -3501,7 +3449,7 @@ void EntityList::ProcessProximitySay(const char *Message, Client *c, int8 langua
 		   || c->GetZ() < l->min_z || c->GetZ() > l->max_z )
 			continue;
 
-		parse->Event(EVENT_PROXIMITY_SAY, d->GetNPCTypeID(), Message, d, c, language);
+        parse->EventNPC(EVENT_PROXIMITY_SAY, d, c, Message, language);
 	}
 }
 

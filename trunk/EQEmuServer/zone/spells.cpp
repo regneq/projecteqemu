@@ -95,10 +95,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #endif
 
 #include "StringIDs.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
@@ -1124,13 +1121,11 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 
 	// if the spell is cast by a client, trigger the EVENT_CAST player quest
 	if(this->IsClient()) {
-	#ifdef EMBPERL
-		if( ((PerlembParser*)parse)->PlayerHasQuestSub("EVENT_CAST") ) {
+		if(parse->PlayerHasQuestSub("EVENT_CAST") ) {
 			char temp[64];
             sprintf(temp, "%d", spell_id);
-			((PerlembParser*)parse)->Event(EVENT_CAST, 0, temp, (NPC*)NULL, this->CastToClient());
+            parse->EventPlayer(EVENT_CAST, CastToClient(), temp, 0);
 		}
-	#endif
 	}
 
 	if(bard_song_mode)
@@ -2931,13 +2926,12 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 	// send to people in the area, ignoring caster and target
 	entity_list.QueueCloseClients(spelltar, action_packet, true, 200, this, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 
-// end of action packet
 
        /* Send the EVENT_CAST_ON event */
        if(spelltar->IsNPC())
        {       char temp1[100];
                sprintf(temp1, "%d", spell_id);
-               parse->Event(EVENT_CAST_ON, spelltar->GetNPCTypeID(), temp1, spelltar->CastToNPC(), this);
+               parse->EventNPC(EVENT_CAST_ON, spelltar->CastToNPC(), this, temp1, 0);
        }
 
 	// solar: now check if the spell is allowed to land
