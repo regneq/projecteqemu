@@ -11068,21 +11068,23 @@ void command_camerashake(Client *c, const Seperator *sep)
 {
 	if(c)
 	{
-
-		if(sep->arg[1][0] &&  sep->arg[2][0]);
+		if(sep->arg[1][0] &&  sep->arg[2][0])
 		{
-		ServerPacket *pack = new ServerPacket(ServerOP_CameraShake, sizeof(ServerCameraShake_Struct));
-		memset(pack->pBuffer, 0, sizeof(pack->pBuffer));
-		ServerCameraShake_Struct* scss = (ServerCameraShake_Struct*) pack->pBuffer;
-		scss->duration = atoi(sep->arg[1]);
-		scss->intensity = atoi(sep->arg[2]);
-		worldserver.SendPacket(pack);
-		c->Message(13, "Successfully sent the packet to world! Shake it, world, shake it!");
-		safe_delete(pack);
-		return;
+			ServerPacket *pack = new ServerPacket(ServerOP_CameraShake, sizeof(ServerCameraShake_Struct));
+			memset(pack->pBuffer, 0, sizeof(pack->pBuffer));
+			ServerCameraShake_Struct* scss = (ServerCameraShake_Struct*) pack->pBuffer;
+			scss->duration = atoi(sep->arg[1]);
+			scss->intensity = atoi(sep->arg[2]);
+			worldserver.SendPacket(pack);
+			c->Message(13, "Successfully sent the packet to world! Shake it, world, shake it!");
+			safe_delete(pack);
+			return;
+		}
+		else {
+			c->Message(13, "Usage -- #camerashake [duration], [intensity [1-10])");
+			return;
 		}
 	}
-	c->Message(13, "Usage -- #camerashake [duration], [intensity [1-10])");
 }
 
 void command_disarmtrap(Client *c, const Seperator *sep) 
