@@ -625,6 +625,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\QuestParserCollection.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\raids.cpp"
 				>
 			</File>
@@ -1090,10 +1094,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\Underfoot.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\common\patches\HoT.cpp"
 				>
 			</File>
@@ -1102,15 +1102,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\SoF.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\common\patches\SoD.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\common\patches\SoF.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\common\patches\Titanium.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\patches\Underfoot.cpp"
 				>
 			</File>
 		</Filter>
