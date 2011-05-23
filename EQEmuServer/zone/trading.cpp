@@ -20,10 +20,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 // The maximum amount of a single bazaar/barter transaction expressed in copper.
 // Equivalent to 2 Million plat
@@ -376,12 +373,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 	else if(tradingWith && tradingWith->IsNPC()) {
 
 		bool quest_npc = false;
-
-#ifdef EMBPERL
-		if(((PerlembParser *)parse)->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
-#else
-		if(parse->HasQuestFile(tradingWith->GetNPCTypeID())) {
-#endif
+		if(parse->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
 			// This is a quest NPC
 			quest_npc = true;
 		}
@@ -470,7 +462,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 			parse->AddVar(temp1,temp2);
 			//			  memset(temp1,0x0,100);
 			//			  memset(temp2,0x0,100);
-			parse->Event(EVENT_ITEM, tradingWith->GetNPCTypeID(), NULL, tradingWith->CastToNPC(), this);
+            parse->EventNPC(EVENT_ITEM, tradingWith->CastToNPC(), this, "", 0);
 		}
 	}
 }

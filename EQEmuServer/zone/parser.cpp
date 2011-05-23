@@ -1070,7 +1070,7 @@ int Parser::LoadScript(int npcid, const char * zone, Mob* activater)
 	{
 		getline(file,line);
 		string::iterator iterator = line.begin();
-		while (*iterator)
+        while (*iterator)
 		{
 			if (iterator[0] == '/' && iterator[1] == '/') break;
 			if (!ignore && *iterator == '/' && iterator[1] == '*') { ignore++; iterator++; iterator++; }

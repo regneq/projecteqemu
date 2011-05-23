@@ -23,10 +23,7 @@
 #include "../common/packet_dump.h"
 #include "../common/rulesys.h"
 #include "StringIDs.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 extern WorldServer worldserver;
 extern Zone* zone;
@@ -170,12 +167,11 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		return;
 	}
 
-#ifdef EMBPERL
-		char buf[10];
-		snprintf(buf, 9, "%d", target_zone_id);
-		buf[9] = '\0';
-		((PerlembParser*)parse)->Event(EVENT_ZONE, 0, buf, (NPC*)NULL, this);
-#endif
+	char buf[10];
+	snprintf(buf, 9, "%d", target_zone_id);
+	buf[9] = '\0';
+    parse->EventPlayer(EVENT_ZONE, this, buf, 0);
+
 
 	//handle circumvention of zone restrictions
 	//we need the value when creating the outgoing packet as well.

@@ -69,13 +69,7 @@ extern WorldServer worldserver;
 extern bool spells_loaded;
 extern TaskManager *taskmanager;
 
-#ifdef EMBPERL 
-//this should probably be broken up to allow one define to build a ver that _only_ allows plugins
-//instead of building both plugins and expression support
-const static int PERL_PRIVS = 200; //what admin status is required to use perl?  Think carefully.  If you use low values, you should consider looking into taint and changing the root and etc... (and making a seperate embperl instance)
-#include "embperl.h"
-#include "embparser.h"
-#endif //EMBPERL_PLUGIN
+#include "QuestParserCollection.h"
 
 #include "StringIDs.h"
 #include "command.h"
@@ -666,9 +660,10 @@ int command_realdispatch(Client *c, const char *message)
 	
 	if(cur->function == NULL) {
 #ifdef EMBPERL_COMMANDS
-		//dispatch perl command
-		PerlembParser *embparse = (PerlembParser *) parse;
-		embparse->ExecCommand(c, &sep);
+		//todo reimplement this stuff
+        //dispatch perl command
+		//PerlembParser *embparse = (PerlembParser *) parse;
+		//embparse->ExecCommand(c, &sep);
 #else
 		LogFile->write(EQEMuLog::Error, "Command '%s' has a null function, but perl commands are diabled!\n", cstr.c_str());
 		return(-1);

@@ -29,9 +29,7 @@
 #include "StringIDs.h"
 using namespace std;
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 const char DEFAULT_OBJECT_NAME[] = "IT63_ACTORDEF";
 const char DEFAULT_OBJECT_NAME_SUFFIX[] = "_ACTORDEF";
@@ -464,12 +462,10 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 					cursordelete = true;	// otherwise, we delete the new one
 			}
 
-#ifdef EMBPERL
 			char buf[10];
 			snprintf(buf, 9, "%u", m_inst->GetItem()->ID);
 			buf[9] = '\0';
-			((PerlembParser *)parse)->Event(EVENT_PLAYER_PICKUP, 0, buf, (NPC*)NULL, sender);
-#endif		
+            parse->EventPlayer(EVENT_PLAYER_PICKUP, sender, buf, 0);
 
 			// Transfer item to client
 			sender->PutItemInInventory(SLOT_CURSOR, *m_inst, false);

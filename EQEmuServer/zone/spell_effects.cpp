@@ -34,10 +34,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 #endif
 
 #include "StringIDs.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
@@ -150,18 +147,18 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 	if(IsNPC())
 	{
-		if(((PerlembParser*)parse)->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_NPC"))
+		if(parse->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_NPC"))
 		{
-			parse->Event(EVENT_SPELL_EFFECT_NPC, 0, itoa(spell_id), CastToNPC(), this, caster ? caster->GetID() : 0);
+            parse->EventSpell(EVENT_SPELL_EFFECT_NPC, CastToNPC(), NULL, spell_id, caster ? caster->GetID() : 0);
 			CalcBonuses();
 			return true;
 		}
 	}
 	else if(IsClient())
 	{
-		if(((PerlembParser*)parse)->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_CLIENT"))
+		if(parse->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_CLIENT"))
 		{
-			parse->Event(EVENT_SPELL_EFFECT_CLIENT, 0, itoa(spell_id), NULL, this, caster ? caster->GetID() : 0);
+            parse->EventSpell(EVENT_SPELL_EFFECT_CLIENT, NULL, CastToClient(), spell_id, caster ? caster->GetID() : 0);
 			CalcBonuses();
 			return true;
 		}
@@ -2849,17 +2846,17 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 	if(IsNPC())
 	{
-		if(((PerlembParser*)parse)->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_BUFF_TIC_NPC"))
+		if(parse->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_BUFF_TIC_NPC"))
 		{
-			parse->Event(EVENT_SPELL_EFFECT_BUFF_TIC_NPC, 0, itoa(spell_id), CastToNPC(), this, caster ? caster->GetID() : 0);
+            parse->EventSpell(EVENT_SPELL_EFFECT_BUFF_TIC_NPC, CastToNPC(), NULL, spell_id, caster ? caster->GetID() : 0);
 			return;
 		}
 	}
 	else
 	{
-		if(((PerlembParser*)parse)->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT"))
+		if(parse->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT"))
 		{
-			parse->Event(EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT, 0, itoa(spell_id), NULL, this, caster ? caster->GetID() : 0);
+            parse->EventSpell(EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT, NULL, CastToClient(), spell_id, caster ? caster->GetID() : 0);
 			return;
 		}
 	}

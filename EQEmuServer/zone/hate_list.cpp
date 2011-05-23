@@ -25,6 +25,7 @@
 #include "../common/rulesys.h"
 #include "../common/MiscFunctions.h"
 #include "hate_list.h"
+#include "QuestParserCollection.h"
 
 HateList::HateList()
 {
@@ -57,7 +58,7 @@ void HateList::Wipe()
 	while(iterator.MoreElements()) 
 	{
 		Mob* m = iterator.GetData()->ent;
-		parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "0", owner->CastToNPC(), m);
+        parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), m, "0", 0); 
        	iterator.RemoveCurrent();
 
 		if(m->IsClient())
@@ -194,7 +195,7 @@ void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool i
         p->hate = in_hate;
         p->bFrenzy = bFrenzy;
         list.Append(p);
-		parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "1", owner->CastToNPC(), ent);
+		parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "1", 0); 
 
 		if(ent->IsClient())
 			ent->CastToClient()->IncrementAggroCount();
@@ -211,7 +212,7 @@ bool HateList::RemoveEnt(Mob *ent)
 	{
 		if(iterator.GetData()->ent == ent)
 		{
-			parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "0", owner->CastToNPC(), ent);
+            parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "0", 0); 
 			iterator.RemoveCurrent();
 			found = true;
 

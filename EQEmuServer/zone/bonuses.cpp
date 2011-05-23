@@ -26,7 +26,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 #include "../common/bodytypes.h"
 #include "../common/classes.h"
 #include "../common/rulesys.h"
-#include "embparser.h"
+#include "QuestParserCollection.h"
 #include <math.h>
 #include <assert.h>
 #ifndef WIN32
@@ -1763,9 +1763,9 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y)
 		{
 			EvoItemInst* e_inst = (EvoItemInst*)inst;
 			uint16 oldexp = e_inst->GetExp();
-#ifdef EMBPERL
-			((PerlembParser *)parse)->Event(EVENT_SCALE_CALC, e_inst->GetID(), "", e_inst, this);
-#endif
+
+            parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
+
 			if (e_inst->GetExp() != oldexp) {	// if the scaling factor changed, rescale the item and update the client
 				e_inst->ScaleItem();
 				changed = true;
@@ -1784,9 +1784,9 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y)
 			{
 				EvoItemInst* e_inst = (EvoItemInst*)a_inst;
 				uint16 oldexp = e_inst->GetExp();
-#ifdef EMBPERL
-				((PerlembParser *)parse)->Event(EVENT_SCALE_CALC, e_inst->GetID(), "", e_inst, this);
-#endif
+
+                parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
+
 				if (e_inst->GetExp() != oldexp) 
 				{
 					e_inst->ScaleItem();

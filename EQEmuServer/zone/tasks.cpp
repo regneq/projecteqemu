@@ -31,10 +31,7 @@ Copyright (C) 2001-2008 EQEMu Development Team (http://eqemulator.net)
 #include "../common/rulesys.h"
 #include "masterentity.h"
 #include "features.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 
 TaskManager::TaskManager() {
@@ -1867,15 +1864,13 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 			  Task->Activity[ActivityID].GoalCount,
 			  ActivityID);
 
-#ifdef EMBPERL
 		if(Task->Activity[ActivityID].GoalMethod != METHODQUEST)
 		{
 			char buf[24];
 			snprintf(buf, 23, "%d %d", ActiveTasks[TaskIndex].TaskID, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID);
 			buf[23] = '\0';
-			((PerlembParser*)parse)->Event(EVENT_TASK_STAGE_COMPLETE, 0, buf, (NPC*)NULL, c);
+            parse->EventPlayer(EVENT_TASK_STAGE_COMPLETE, c, buf, 0);
 		}
-#endif
 
 		// Flag the activity as complete
 		ActiveTasks[TaskIndex].Activity[ActivityID].State = ActivityCompleted;
@@ -3018,7 +3013,7 @@ void ClientTaskState::AcceptNewTask(Client *c, int TaskID, int NPCID) {
 		return;
 	}
 	taskmanager->SaveClientState(c, this);
-	parse->Event(EVENT_TASKACCEPTED, npc->GetNPCTypeID(), buf, npc, c);
+    parse->EventNPC(EVENT_TASKACCEPTED, npc, c, buf, 0);
 	safe_delete_array(buf);
 
 }

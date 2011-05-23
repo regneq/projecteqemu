@@ -42,11 +42,7 @@ using namespace std;
 #include "StringIDs.h"
 #include "worldserver.h"
 #include "../common/rulesys.h"
-
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 extern EntityList entity_list;
 extern Zone* zone;
@@ -1097,14 +1093,12 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			return;
 		}
 
-#ifdef EMBPERL
 		char buf[88];
 		char corpse_name[64];
 		strcpy(corpse_name, orgname);
 		snprintf(buf, 87, "%d %d %s", inst->GetItem()->ID, inst->GetCharges(), EntityList::RemoveNumbers(corpse_name));
 		buf[87] = '\0';
-		((PerlembParser*)parse)->Event(EVENT_LOOT, 0, buf, (NPC*)NULL, client);
-#endif
+        parse->EventPlayer(EVENT_LOOT, client, buf, 0);
 
 		if (zone->lootvar != 0)
 		{

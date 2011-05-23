@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/22/2011==
+KLS and Co: 
+-All liquid should count for skill ups.
+-Finished unified quest interface... this is fairly large and will probably have a few problems here and there; report them to me and ill fix them asap.  
+The goal behind the system is to allow more than one scripting system to work at a time (though with limited interaction due to pre-existing implementation limitation).  
+This was a feature requested by the Dalaya community as they plan to merge back to the eqemu codebase and clients but are stuck with an old parser and thousands of files 
+that can't be realistically rewritten in a short time frame.
+
 ==05/20/2011==
 JJ: Doubled buffer for tradeskill search when using experiment mode. Outputs message in error log when matches exceed buffer.
 

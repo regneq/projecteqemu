@@ -101,6 +101,7 @@ extern volatile bool ZoneLoaded;
 #include "titles.h"
 #include "guild_mgr.h"
 #include "tasks.h"
+#include "QuestParserCollection.h"
 
 TimeoutManager          timeout_manager;
 NetConnection		net;
@@ -120,6 +121,7 @@ DBAsyncFinishedQueue MTdbafq;
 DBAsync *dbasync = NULL;
 RuleManager *rules = new RuleManager();
 TaskManager *taskmanager = 0;
+QuestParserCollection *parse = 0;
 
 bool zoneprocess;
 
@@ -325,30 +327,13 @@ int main(int argc, char** argv) {
 		taskmanager->LoadTasks();
 	}
 
-#ifdef EMBPERL
-#ifdef EMBPERL_XS
-	_log(ZONE__INIT, "Loading embedded perl XS");
- 	AutoDelete<PerlXSParser> ADparse;
-	try {
-		ADparse.init((PerlXSParser **)(&parse), new PerlXSParser);
-	}
-#else //old EMBPERL
-	_log(ZONE__INIT, "Loading embedded perl");
-	AutoDelete<PerlembParser> ADparse;
-	try {
-		ADparse.init((PerlembParser **)(&parse), new PerlembParser);
-	}
-#endif
-	catch(const char *err)
-	{//this should never happen, so if it does, it is something really serious (like a bad perl install), so we'll shutdown.
-		_log(ZONE__INIT_ERR, "Fatal error initializing perl: %s", err);
-		ADparse.ReallyClearIt();
-		return EXIT_FAILURE;
-	}
-#else	//old .qst
-	AutoDelete<Parser> ADparse(&parse, new Parser);
-#endif //EMBPERL
-	
+    parse = new QuestParserCollection();
+    PerlXSParser *pxs = new PerlXSParser();
+    Parser *ps = new Parser();
+    parse->RegisterQuestInterface(pxs, "pl");
+    //parse->RegisterQuestInterface(ps, "qst");
+
+
 	//now we have our parser, load the quests
 	_log(ZONE__INIT, "Loading quests");
 	parse->ReloadQuests();
@@ -593,6 +578,10 @@ int main(int argc, char** argv) {
 		}	//end extra profiler block
 		Sleep(ZoneTimerResolution);
 	}
+
+    safe_delete(parse);
+    safe_delete(pxs);
+    safe_delete(ps);
 	
 #ifdef CATCH_CRASH
 	if (error)
@@ -628,9 +617,6 @@ int main(int argc, char** argv) {
 #endif
 	safe_delete(taskmanager);
 	command_deinit();
-//	Needed if REUSE_ZLIB is defined in packet_functions.h
-//	DeflatePacket(NULL, 0, NULL, 0);
-//	InflatePacket(NULL, 0, NULL, 0, false);
 	
 	CheckEQEMuErrorAndPause();
 	_log(ZONE__INIT, "Proper zone shutdown complete.");

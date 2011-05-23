@@ -40,9 +40,7 @@ using namespace std;
 #define snprintf	_snprintf
 #endif
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 //max number of items which can be in the foraging table
 //for a given zone.
@@ -368,14 +366,7 @@ void Client::GoFish()
 			safe_delete(inst);
 		}
 
-        #ifdef EMBPERL
-        ((PerlembParser*)parse)->Event(
-            EVENT_FISH_SUCCESS, 
-            inst != NULL ? inst->GetItem()->ID : 0, 
-            "", 
-            (NPC*)NULL, 
-            this);
-        #endif
+        parse->EventPlayer(EVENT_FISH_SUCCESS, this, "",  inst != NULL ? inst->GetItem()->ID : 0);
 	}
 	else
 	{
@@ -391,14 +382,7 @@ void Client::GoFish()
 				Message_StringID(MT_Skills, FISHING_FAILED);	//You didn't catch anything.
 		}
 
-        #ifdef EMBPERL
-        ((PerlembParser*)parse)->Event(
-            EVENT_FISH_FAILURE, 
-            0, 
-            "", 
-            (NPC*)NULL, 
-            this);
-        #endif
+        parse->EventPlayer(EVENT_FISH_FAILURE, this, "",  0);
 	}
 	
 	//chance to break fishing pole...
@@ -491,26 +475,12 @@ void Client::ForageItem() {
 			safe_delete(inst);
 		}
 		
-    #ifdef EMBPERL
-        ((PerlembParser*)parse)->Event(
-            EVENT_FORAGE_SUCCESS, 
-            inst != NULL ? inst->GetItem()->ID : 0, 
-            "", 
-            (NPC*)NULL, 
-            this);
-    #endif
+        parse->EventPlayer(EVENT_FORAGE_SUCCESS, this, "",  inst != NULL ? inst->GetItem()->ID : 0);
 
 	} else {
 		Message_StringID(MT_Skills, FORAGE_FAILED);
-        #ifdef EMBPERL
-		    ((PerlembParser*)parse)->Event(
-            EVENT_FORAGE_FAILURE, 
-            0, 
-            "", 
-            (NPC*)NULL, 
-            this);
-        #endif
-	}
+        parse->EventPlayer(EVENT_FORAGE_FAILURE, this, "", 0);
+    }
 	
 	CheckIncreaseSkill(FORAGE, NULL, 5);
 	
