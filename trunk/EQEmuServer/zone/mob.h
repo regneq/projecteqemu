@@ -1012,7 +1012,7 @@ bool logpos;
 	float				GetGroundZ(float new_x, float new_y, float z_offset=0.0);
 	void				SendTo(float new_x, float new_y, float new_z);
 	void				SendToFixZ(float new_x, float new_y, float new_z);
-	void				NPCSpecialAttacks(const char* parse, int permtag);
+	void				NPCSpecialAttacks(const char* parse, int permtag, bool reset = true, bool remove = false);
 	inline int32		DontHealMeBefore() const { return pDontHealMeBefore; }
 	inline int32		DontBuffMeBefore() const { return pDontBuffMeBefore; }
 	inline int32		DontDotMeBefore() const { return pDontDotMeBefore; }

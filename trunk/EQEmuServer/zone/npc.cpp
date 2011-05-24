@@ -1313,115 +1313,126 @@ void NPC::PickPocket(Client* thief) {
 	safe_delete(inst);
 }
 
-void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
-    for(int i = 0; i < SPECATK_MAXNUM; i++)
-	{
-	    SpecAttacks[i] = false;
-        SpecAttackTimers[i] = NULL;
+void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool remove) {
+    if(!reset) {
+        for(int i = 0; i < SPECATK_MAXNUM; i++)
+	    {
+	        SpecAttacks[i] = false;
+            SpecAttackTimers[i] = NULL;
+        }
     }
-	
+
 	const char* orig_parse = parse;
     while (*parse)
     {
         switch(*parse)
         {
 	    case 'E':
-    	    SpecAttacks[SPECATK_ENRAGE] = true;
+    	    SpecAttacks[SPECATK_ENRAGE] = (remove ? false : true);
     		break;
 	    case 'F':
-    	    SpecAttacks[SPECATK_FLURRY] = true;
+    	    SpecAttacks[SPECATK_FLURRY] = (remove ? false : true);
     		break;
 	    case 'R':
-    	    SpecAttacks[SPECATK_RAMPAGE] = true;
+    	    SpecAttacks[SPECATK_RAMPAGE] = (remove ? false : true);
     		break;
 		case 'r':
-			SpecAttacks[SPECATK_AREA_RAMPAGE] = true;
+			SpecAttacks[SPECATK_AREA_RAMPAGE] = (remove ? false : true);
 			break;
 	    case 'S':
-    	    SpecAttacks[SPECATK_SUMMON] = true;
-            SpecAttackTimers[SPECATK_SUMMON] = new Timer(6000);
-            SpecAttackTimers[SPECATK_SUMMON]->Start();
+            if(remove) {
+                SpecAttacks[SPECATK_SUMMON] = false;
+                safe_delete(SpecAttackTimers[SPECATK_SUMMON]);
+            } else {
+                SpecAttacks[SPECATK_SUMMON] = true;
+                SpecAttackTimers[SPECATK_SUMMON] = new Timer(6000);
+                SpecAttackTimers[SPECATK_SUMMON]->Start();
+            }
     		break;
 	    case 'T':
-            SpecAttacks[SPECATK_TRIPLE] = true;
+            SpecAttacks[SPECATK_TRIPLE] = (remove ? false : true);
             break;
 	    case 'Q':
 	    	//quad requires triple to work properly
-            SpecAttacks[SPECATK_TRIPLE] = true;
-            SpecAttacks[SPECATK_QUAD] = true;
+            if(remove) {
+                SpecAttacks[SPECATK_QUAD] = false;
+            } else {
+                SpecAttacks[SPECATK_TRIPLE] = true;
+                SpecAttacks[SPECATK_QUAD] = true;
+            }
             break;
 	    case 'b':
-            SpecAttacks[SPECATK_BANE] = true;
+            SpecAttacks[SPECATK_BANE] = (remove ? false : true);
             break;
 		case 'm':
-            SpecAttacks[SPECATK_MAGICAL] = true;
+            SpecAttacks[SPECATK_MAGICAL] = (remove ? false : true);
             break;
 		case 'U':
-			SpecAttacks[UNSLOWABLE] = true;
+			SpecAttacks[UNSLOWABLE] = (remove ? false : true);
 			break;
 		case 'M':
-			SpecAttacks[UNMEZABLE] = true;
+			SpecAttacks[UNMEZABLE] = (remove ? false : true);
 			break;
 		case 'C':
-			SpecAttacks[UNCHARMABLE] = true;
+			SpecAttacks[UNCHARMABLE] = (remove ? false : true);
 			break;
 		case 'N':
-			SpecAttacks[UNSTUNABLE] = true;
+			SpecAttacks[UNSTUNABLE] = (remove ? false : true);
 			break;
 		case 'I':
-			SpecAttacks[UNSNAREABLE] = true;
+			SpecAttacks[UNSNAREABLE] = (remove ? false : true);
 			break;
 		case 'D':
-			SpecAttacks[UNFEARABLE] = true;
+			SpecAttacks[UNFEARABLE] = (remove ? false : true);
 			break;
 		case 'A':
-			SpecAttacks[IMMUNE_MELEE] = true;
+			SpecAttacks[IMMUNE_MELEE] = (remove ? false : true);
 			break;
 		case 'B':
-			SpecAttacks[IMMUNE_MAGIC] = true;
+			SpecAttacks[IMMUNE_MAGIC] = (remove ? false : true);
 			break;
 		case 'f':
-			SpecAttacks[IMMUNE_FLEEING] = true;
+			SpecAttacks[IMMUNE_FLEEING] = (remove ? false : true);
 			break;
 		case 'O':
-			SpecAttacks[IMMUNE_MELEE_EXCEPT_BANE] = true;
+			SpecAttacks[IMMUNE_MELEE_EXCEPT_BANE] = (remove ? false : true);
 			break;
 		case 'W':
-			SpecAttacks[IMMUNE_MELEE_NONMAGICAL] = true;
+			SpecAttacks[IMMUNE_MELEE_NONMAGICAL] = (remove ? false : true);
 			break;
 		case 'H':
-			SpecAttacks[IMMUNE_AGGRO] = true;
+			SpecAttacks[IMMUNE_AGGRO] = (remove ? false : true);
 			break;
 		case 'G':
-			SpecAttacks[IMMUNE_TARGET] = true;
+			SpecAttacks[IMMUNE_TARGET] = (remove ? false : true);
 			break;
 		case 'g':
-			SpecAttacks[IMMUNE_CASTING_FROM_RANGE] = true;
+			SpecAttacks[IMMUNE_CASTING_FROM_RANGE] = (remove ? false : true);
 			break;
 		case 'd':
-			SpecAttacks[IMMUNE_FEIGN_DEATH] = true;
+			SpecAttacks[IMMUNE_FEIGN_DEATH] = (remove ? false : true);
 			break;
 		case 'Y':
-			SpecAttacks[SPECATK_RANGED_ATK] = true;
+			SpecAttacks[SPECATK_RANGED_ATK] = (remove ? false : true);
 			break;
 		case 'L':
-			SpecAttacks[SPECATK_INNATE_DW] = true;
+			SpecAttacks[SPECATK_INNATE_DW] = (remove ? false : true);
 			break;
 
         case 't':
-			SpecAttacks[NPC_TUNNELVISION] = true;
+			SpecAttacks[NPC_TUNNELVISION] = (remove ? false : true);
 			break;
 
         case 'n':
-			SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS] = true;
+			SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS] = (remove ? false : true);
 			break;
 
         case 'i':
-			SpecAttacks[NPC_INTELLIGENT] = true;
+			SpecAttacks[NPC_INTELLIGENT] = (remove ? false : true);
 			break;
 
         case 's':
-			SpecAttacks[NPC_STUPID] = true;
+			SpecAttacks[NPC_STUPID] = (remove ? false : true);
 			break;
 
         default:
