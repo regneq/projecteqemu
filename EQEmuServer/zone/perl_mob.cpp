@@ -5790,12 +5790,14 @@ XS(XS_Mob_NPCSpecialAttacks); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_NPCSpecialAttacks)
 {
 	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: Mob::NPCSpecialAttacks(THIS, parse, permtag)");
+	if (items < 3 || items > 5)
+		Perl_croak(aTHX_ "Usage: Mob::NPCSpecialAttacks(THIS, parse, permtag, [reset], [remove])");
 	{
 		Mob *		THIS;
 		char*		parse = (char *)SvPV_nolen(ST(1));
-		int		permtag = (int)SvIV(ST(2));
+		int         permtag = (int)SvIV(ST(2));
+        bool        reset = items == 4 ? (bool)SvTRUE(ST(3)) : true;
+        bool        remove = items == 5 ? (bool)SvTRUE(ST(4)) : false;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5806,7 +5808,7 @@ XS(XS_Mob_NPCSpecialAttacks)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->NPCSpecialAttacks(parse, permtag);
+		THIS->NPCSpecialAttacks(parse, permtag, reset, remove);
 	}
 	XSRETURN_EMPTY;
 }
@@ -7580,7 +7582,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "CalculateDistance"), XS_Mob_CalculateDistance, file, "$$$$");
 		newXSproto(strcpy(buf, "SendTo"), XS_Mob_SendTo, file, "$$$$");
 		newXSproto(strcpy(buf, "SendToFixZ"), XS_Mob_SendToFixZ, file, "$$$$");
-		newXSproto(strcpy(buf, "NPCSpecialAttacks"), XS_Mob_NPCSpecialAttacks, file, "$$$");
+		newXSproto(strcpy(buf, "NPCSpecialAttacks"), XS_Mob_NPCSpecialAttacks, file, "$$$;$$");
 		newXSproto(strcpy(buf, "DontHealMeBefore"), XS_Mob_DontHealMeBefore, file, "$");
 		newXSproto(strcpy(buf, "DontBuffMeBefore"), XS_Mob_DontBuffMeBefore, file, "$");
 		newXSproto(strcpy(buf, "DontDotMeBefore"), XS_Mob_DontDotMeBefore, file, "$");

@@ -1,5 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/24/2011==
+KLS: Changed Mob::NPCSpecialAttacks(atk, perm) to Mob::NPCSpecialAttacks(atk, perm, [reset = 1], [remove = 0]).  
+This should allow one to add and remove flags individually without having to reset everything each time. 
+ex: 
+$npc->NPCSpecialAttacks(RQ, 0); //would enable the npc to rampage and quad.
+$npc->NPCSpecialAttacks(S, 0, 0); //Would enable the NPC to summon as well as rampage and quad by telling it to set S but don't reset the earlier flags.
+
+ex:
+$npc->NPCSpecialAttacks(RQS, 0); //would enable the npc to rampage, quad and summon.
+$npc->NPCSpecialAttacks(S, 0, 0, 1); //Would enable the NPC rampage and quad by telling it to set S but don't reset the earlier flags and also remove the flag being set.
+
 ==05/23/2011==
 JJ: (Akkadius) Fixed camera shake usage output.
 
