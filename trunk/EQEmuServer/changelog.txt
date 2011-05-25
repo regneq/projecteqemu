@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/25/2011==
+JJ: Implemented Arcane Tongues research AA. Chance for research success increases for each rank (10, 25, 50).
+JJ: Implemented New Tanaan Crafting Mastery tradeskill AA. Each rank allows an additional tradeskill above 200.
+Note: For servers with players who have tradeskills already above the limit without previously purchasing these AAs will freeze the chance to increase until they purchase the proper amount of NTCM AAs.
+
 ==05/24/2011==
 KLS: Changed Mob::NPCSpecialAttacks(atk, perm) to Mob::NPCSpecialAttacks(atk, perm, [reset = 1], [remove = 0]).  
 This should allow one to add and remove flags individually without having to reset everything each time. 
