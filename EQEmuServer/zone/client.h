@@ -229,6 +229,7 @@ public:
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
 	void	LearnRecipe(uint32 recipeID);
+	bool	CanIncreaseTradeskill(SkillType tradeskill);
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 

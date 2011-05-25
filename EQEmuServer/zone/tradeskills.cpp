@@ -995,6 +995,20 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			break;
 		}
 	}
+	
+	if (spec->tradeskill == RESEARCH) {
+		switch(GetAA(aaArcaneTongues)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
 
 	if (((spec->tradeskill==75) || GetGM() || (chance > res)) || MakeRandomInt(0, 99) < AAChance){
 		success_modifier = 1;
@@ -1047,11 +1061,10 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill)
 {
 	uint16 current_raw_skill = GetRawSkill(tradeskill);
-	int maxskill = MaxSkill(tradeskill);
 
-	if(current_raw_skill >= maxskill)
+	if(!CanIncreaseTradeskill(tradeskill))
 		return;	//not allowed to go higher.
-	
+
 	float chance_stage2 = 0;
 
 	//A successfull combine doubles the stage1 chance for an skillup
@@ -1063,7 +1076,7 @@ void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, flo
 	//formula instead of tweaking the below one.
 	if (chance_stage1 > MakeRandomFloat(0, 99)) {
 		if (current_raw_skill < 15) {
-			// Allways succeed
+			//Always succeed
 			chance_stage2 = 100;
 		} else if (current_raw_skill < 175) {
 			//From skill 16 to 174 your chance of success falls linearly from 92% to 13%.
@@ -1086,7 +1099,6 @@ void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, flo
 	_log(TRADESKILLS__TRACE, "...Stage1 chance was: %f percent",  chance_stage1);
 	_log(TRADESKILLS__TRACE, "...Stage2 chance was: %f percent. 0 percent means stage1 failed",  chance_stage2);
 }
-
 
 bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint32 some_id, 
 	uint32 char_id, DBTradeskillRecipe_Struct *spec)
@@ -1279,7 +1291,6 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 
 	return(GetTradeRecipe(recipe_id, c_type, some_id, char_id, spec));
 }
-	
 
 bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id, 
 	uint32 char_id, DBTradeskillRecipe_Struct *spec)
@@ -1370,7 +1381,6 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	}
 	mysql_free_result(result);
 	
-	
 	//Pull the on-fail items...
 	qlen = MakeAnyLenString(&query, "SELECT item_id,failcount FROM tradeskill_recipe_entries"
 	 " WHERE failcount>0 AND recipe_id=%u", recipe_id);
@@ -1409,7 +1419,6 @@ void ZoneDatabase::UpdateRecipeMadecount(uint32 recipe_id, uint32 char_id, uint3
 	}
 	safe_delete_array(query);
 }
-
 
 void Client::LearnRecipe(uint32 recipeID)
 {
@@ -1462,4 +1471,44 @@ void Client::LearnRecipe(uint32 recipeID)
 	
 	mysql_free_result(result);
 	
+}
+
+bool Client::CanIncreaseTradeskill(SkillType tradeskill) {
+	uint32 rawskill = GetRawSkill(tradeskill);
+	int16 maxskill = MaxSkill(tradeskill);
+
+	if (rawskill >= maxskill) //Max skill sanity check
+		return false;
+
+	uint8 Baking    = (GetRawSkill(BAKING) > 200) ? 1 : 0;
+	uint8 Smithing  = (GetRawSkill(BLACKSMITHING) > 200) ? 1 : 0;
+	uint8 Brewing   = (GetRawSkill(BREWING) > 200) ? 1 : 0;
+	uint8 Fletching = (GetRawSkill(FLETCHING) > 200) ? 1 : 0;
+	uint8 Jewelry   = (GetRawSkill(JEWELRY_MAKING) > 200) ? 1 : 0;
+	uint8 Pottery   = (GetRawSkill(POTTERY) > 200) ? 1 : 0;
+	uint8 Tailoring = (GetRawSkill(TAILORING) > 200) ? 1 : 0;
+	uint8 SkillTotal = Baking + Smithing + Brewing + Fletching + Jewelry + Pottery + Tailoring; //Tradeskills above 200
+	int32 aaLevel  = GetAA(aaNewTanaanCraftingMastery); //New Tanaan AA: Each level allows an additional tradeskill above 200 (first one is free)
+	
+	switch (tradeskill) {
+		case BAKING:
+		case BLACKSMITHING:
+		case BREWING:
+		case FLETCHING:
+		case JEWELRY_MAKING:
+		case POTTERY:
+		case TAILORING:
+			if (aaLevel == 6)
+				break; //Maxed AA
+			if (SkillTotal == 0)
+				break; //First tradeskill freebie
+			if ((SkillTotal == (aaLevel + 1)) && (rawskill > 200))
+				break; //One of the tradeskills already allowed to go over 200
+			if ((SkillTotal >= (aaLevel + 1)) && (rawskill >= 200))
+				return false; //One or more tradeskills already at or beyond limit
+				break;
+		default:
+			break; //Other skills unchecked and ability to increase assumed true
+	}
+	return true;
 }
