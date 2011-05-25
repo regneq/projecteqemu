@@ -87,6 +87,7 @@
     <Compile Include="PatchMarch15-2011.cs" />
     <Compile Include="PatchMay12-2010.cs" />
     <Compile Include="PatchMay12-2011.cs" />
+    <Compile Include="PatchMay24-2011.cs" />
     <Compile Include="PatchOct20-2010.cs" />
     <Compile Include="PatchSoD.cs" />
     <Compile Include="PatchJuly13-2010.cs" />
