@@ -79,6 +79,8 @@ namespace EQApplicationLayer
 
             PatchList.Add(new PatchMay122011Decoder());
 
+            PatchList.Add(new PatchMay242011Decoder());
+
             PatchList.Add(new PatchSoD());
 
         }        
