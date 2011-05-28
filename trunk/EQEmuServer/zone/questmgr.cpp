@@ -2374,6 +2374,14 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 
 }
 
+// Item Link for use in Variables - "my $example_link = quest::varlink(item_id);"
+const char* QuestManager::getguildnamebyid(int guild_id) {
+	if (guild_id > 0)
+		return guild_mgr.GetGuildName(guild_id);
+	else
+		return("");
+}
+
 void QuestManager::SetRunning(bool val)
 {
 	if(!owner)
