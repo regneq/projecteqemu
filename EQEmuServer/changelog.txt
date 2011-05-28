@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/28/2011==
+Trevius: Added quest::getguildnamebyid(guild_id) for getting a guild name from the guild ID.
+
 ==05/25/2011==
 JJ: Implemented Arcane Tongues research AA. Chance for research success increases for each rank (10, 25, 50).
 JJ: Implemented New Tanaan Crafting Mastery tradeskill AA. Each rank allows an additional tradeskill above 200.

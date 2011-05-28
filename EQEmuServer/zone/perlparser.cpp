@@ -2893,6 +2893,22 @@ XS(XS__saylink) {
 	XSRETURN(1);
 }
 
+XS(XS__getguildnamebyid);
+XS(XS__getguildnamebyid) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: getguildnamebyid(guild_id)");
+	dXSTARG;
+
+	Const_char * RETVAL;
+	uint32 guild_id = (int)SvUV(ST(0));
+
+	RETVAL = quest_manager.getguildnamebyid(guild_id);
+
+	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	XSRETURN(1);
+}
+
 XS(XS__SetRunning);
 XS(XS__SetRunning)
 {
@@ -3299,6 +3315,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
 		newXS(strcpy(buf, "varlink"), XS__varlink, file);
 		newXS(strcpy(buf, "saylink"), XS__saylink, file);
+		newXS(strcpy(buf, "getguildnamebyid"), XS__getguildnamebyid, file);
 		newXS(strcpy(buf, "CreateInstance"), XS__CreateInstance, file);
 		newXS(strcpy(buf, "DestroyInstance"), XS__DestroyInstance, file);
 		newXS(strcpy(buf, "GetInstanceID"), XS__GetInstanceID, file);
