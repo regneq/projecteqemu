@@ -1314,7 +1314,7 @@ void NPC::PickPocket(Client* thief) {
 }
 
 void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool remove) {
-    if(!reset) {
+    if(reset) {
         for(int i = 0; i < SPECATK_MAXNUM; i++)
 	    {
 	        SpecAttacks[i] = false;
