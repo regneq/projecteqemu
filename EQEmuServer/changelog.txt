@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/29/2011==
+Secrets: (Akkadius) Added quest::createguild(name, leader) for creating a brand new guild.
+
 ==05/28/2011==
 Trevius: Added quest::getguildnamebyid(guild_id) for getting a guild name from the guild ID.
 

@@ -1234,6 +1234,21 @@ XS(XS__setguild)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__createguild);
+XS(XS__createguild)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: createguild(guild_name, leader)");
+
+		char *	guild_name = (char *)SvPV_nolen(ST(0));
+		char *	leader = (char *)SvPV_nolen(ST(1));		
+
+	quest_manager.CreateGuild(guild_name, leader);
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__settime);
 XS(XS__settime)
 {
@@ -3218,6 +3233,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "faction"), XS__faction, file);
 		newXS(strcpy(buf, "setsky"), XS__setsky, file);
 		newXS(strcpy(buf, "setguild"), XS__setguild, file);
+		newXS(strcpy(buf, "createguild"), XS__createguild, file);
 		newXS(strcpy(buf, "settime"), XS__settime, file);
 		newXS(strcpy(buf, "itemlink"), XS__itemlink, file);
 		newXS(strcpy(buf, "signal"), XS__signal, file);
