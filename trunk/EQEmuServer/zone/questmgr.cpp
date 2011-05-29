@@ -1021,6 +1021,33 @@ void QuestManager::setguild(int32 new_guild_id, int8 new_rank) {
 	}
 }
 
+void QuestManager::CreateGuild(const char *guild_name, const char *leader) {
+	int32 cid = database.GetCharacterID(leader); 
+	char hString[250];
+			if (cid == 0) {
+				worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", "Guild Creation: Guild leader not found.");
+				return;
+			}
+
+			int32 tmp = guild_mgr.FindGuildByLeader(cid);
+			if (tmp != GUILD_NONE) {
+				sprintf(hString, "Guild Creation: Error: %s already is the leader of DB# %i '%s'.", leader, tmp, guild_mgr.GetGuildName(tmp));
+				worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", hString);
+			}
+			else {		
+				int32 gid = guild_mgr.CreateGuild(guild_name, cid);
+				if (gid == GUILD_NONE)
+					worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", "Guild Creation: Guild creation failed");
+				else {
+					sprintf(hString, "Guild Creation: Guild created: Leader: %i, number %i: %s", cid, gid, leader);
+					worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", hString);
+					if(!guild_mgr.SetGuild(cid, gid, GUILD_LEADER))
+						worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", "Unable to set guild leader's guild in the database. Your going to have to run #guild set");				
+				}
+				
+			}
+}
+
 void QuestManager::settime(int8 new_hour, int8 new_min) {
 	if (zone)
 		zone->SetTime(new_hour + 1, new_min);

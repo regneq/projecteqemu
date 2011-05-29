@@ -112,6 +112,7 @@ public:
 	void faction(int faction_id, int faction_value);
 	void setsky(uint8 new_sky);
 	void setguild(int32 new_guild_id, int8 new_rank);
+	void CreateGuild(const char *guild_name, const char *leader);
 	void settime(int8 new_hour, int8 new_min);
 	void itemlink(int item_id);
 	void signal(int npc_id, int wait_ms = 0);
