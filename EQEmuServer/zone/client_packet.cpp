@@ -5619,6 +5619,11 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	if (entity && entity->IsObject()) {
 		Object* object = entity->CastToObject();
 		object->HandleClick(this, click_object);
+
+		char buf[10];
+		snprintf(buf, 9, "%u", click_object->drop_id);
+		buf[9] = '\0';
+		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0);
 	}
 	return;
 }

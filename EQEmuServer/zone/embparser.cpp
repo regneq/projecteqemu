@@ -80,11 +80,12 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_ITEM_CLICK",
 	"EVENT_ITEM_CLICK_CAST",
 	"EVENT_GROUP_CHANGE",
-    "EVENT_FORAGE_SUCCESS",
-    "EVENT_FORAGE_FAILURE",
-    "EVENT_FISH_START",
-    "EVENT_FISH_SUCCESS",
-    "EVENT_FISH_FAILURE"
+	"EVENT_FORAGE_SUCCESS",
+	"EVENT_FORAGE_FAILURE",
+	"EVENT_FISH_START",
+	"EVENT_FISH_SUCCESS",
+	"EVENT_FISH_FAILURE",
+	"EVENT_CLICK_OBJECT"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -722,15 +723,20 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			break;
 		}
 
-        case EVENT_FORAGE_SUCCESS: {
-            ExportVar(packagename.c_str(), "foraged_item", extradata);
-            break; 
-        }
+		case EVENT_FORAGE_SUCCESS: {
+			ExportVar(packagename.c_str(), "foraged_item", extradata);
+			break; 
+		}
 
-        case EVENT_FISH_SUCCESS: {
-            ExportVar(packagename.c_str(), "fished_item", extradata);
-            break; 
-        }                        
+		case EVENT_FISH_SUCCESS: {
+			ExportVar(packagename.c_str(), "fished_item", extradata);
+			break; 
+		}
+
+		case EVENT_CLICK_OBJECT: {
+			ExportVar(packagename.c_str(), "objectid", data);
+			break;
+		}
 
 		//nothing special about these events
 		case EVENT_DEATH:

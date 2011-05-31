@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/31/2011==
+Trevius: Added EVENT_CLICK_OBJECT to player quest events.  It exports variable $objectid which holds the entity id of the clicked object.
+
 ==05/29/2011==
 Secrets: (Akkadius) Added quest::createguild(name, leader) for creating a brand new guild.
 
