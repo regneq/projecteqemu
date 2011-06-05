@@ -1211,9 +1211,9 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
 
 		if(GetLevel() < 10 && max_hit > 20)
-			max_hit = 20;
+			max_hit = (RuleI(Combat, HitCapPre10));
 		else if(GetLevel() < 20 && max_hit > 40)
-			max_hit = 40;
+			max_hit = (RuleI(Combat, HitCapPre20));
 
 		CheckIncreaseSkill(skillinuse, other, -15);
 		CheckIncreaseSkill(OFFENSE, other, -15);
@@ -1236,7 +1236,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 			// Damage bonuses apply only to hits from the main hand (Hand == 13) by characters level 28 and above
 			// who belong to a melee class. If we're here, then all of these conditions apply.
 
-			int8 ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
+			int ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
 
 			min_hit += (int) ucDamageBonus;
 			max_hit += (int) ucDamageBonus;

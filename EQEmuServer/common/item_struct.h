@@ -144,7 +144,7 @@ struct Item_Struct {
 	uint8	ElemDmgType;		// Elemental Damage Type (1=magic, 2=fire)
 	uint8	ElemDmgAmt;		// Elemental Damage
 	uint8	Range;			// Range of item
-	uint8	Damage;			// Delay between item usage (in 0.1 sec increments)
+	uint32	Damage;			// Delay between item usage (in 0.1 sec increments)
 	uint32	Color;			// RR GG BB 00 <-- as it appears in pc
 	uint32	Classes;		// Bitfield of classes that can equip item (1 << class#)
 	uint32	Races;			// Bitfield of races that can equip item (1 << race#)

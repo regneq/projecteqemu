@@ -1761,7 +1761,7 @@ void EvoItemInst::ScaleItem() {
 	m_scaledItem->BaneDmgAmt = (sint8)((float)m_item->BaneDmgAmt*Mult);
 	m_scaledItem->BardValue = (sint32)((float)m_item->BardValue*Mult);
 	m_scaledItem->ElemDmgAmt = (uint8)((float)m_item->ElemDmgAmt*Mult);
-	m_scaledItem->Damage = (uint8)((float)m_item->Damage*Mult);
+	m_scaledItem->Damage = (uint32)((float)m_item->Damage*Mult);
 
 	m_scaledItem->CombatEffects = (sint8)((float)m_item->CombatEffects*Mult);
 	m_scaledItem->Shielding = (sint8)((float)m_item->Shielding*Mult);

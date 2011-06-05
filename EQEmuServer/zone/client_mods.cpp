@@ -228,7 +228,7 @@ sint32 Client::CalcHPRegenCap()
 }
 
 sint32 Client::CalcMaxHP() {
-	int32 nd = 10000;
+	float nd = 10000;
 	max_hp = (CalcBaseHP() + itembonuses.HP);
 
 	//The AA desc clearly says it only applies to base hp..
@@ -237,7 +237,7 @@ sint32 Client::CalcMaxHP() {
 	//the aa description
 	nd += aabonuses.MaxHP;	//Natural Durability, Physical Enhancement, Planar Durability
 
-	max_hp = max_hp * nd / 10000;
+	max_hp = (float)max_hp * (float)nd / (float)10000; //this is to fix the HP-above-495k issue
 	max_hp += spellbonuses.HP + aabonuses.HP;
 
 	max_hp += GroupLeadershipAAHealthEnhancement();
