@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/04/2011==
+Secrets: Fixed pet HP resetting if the pet is above 32k when zoning.
+Secrets: Fixed player HP rollover bug (~495k hitpoints, rarely encountered) with AAs by temporarily casting it as a float.
+	 NOTE: the client only displays 10 million hitpoints in titanium. Keep that in mind when designing items. Only issue is displaying them, unlike the rollover bug you won't die and it will show on show/mystats.
+Secrets: Fixed damage on weapons above 255. They only display on SoF+ clients, and Titanium will simply show a cosmetic issue (an incorrect value). You can set an item to any value up to the max for an uint32 and it will work.
+Secrets: Added rules for the low-level damage cap. There is a rule for the pre-10 cap, and one for the pre-20 cap. Defaults to 20 and 40 respectively.
+
+REQUIRED: You will have to recompile sharedmem with this update. Items will fail to load otherwise.
+
 ==05/31/2011==
 Trevius: Added EVENT_CLICK_OBJECT to player quest events.  It exports variable $objectid which holds the entity id of the clicked object.
 

@@ -829,7 +829,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.ElemDmgType = (uint8)atoi(row[ItemField::elemdmgtype]);
 			item.ElemDmgAmt = (uint8)atoi(row[ItemField::elemdmgamt]);
 			item.Range = (uint8)atoi(row[ItemField::range]);
-			item.Damage = (uint8)atoi(row[ItemField::damage]);
+			item.Damage = (uint32)atoi(row[ItemField::damage]);
 			item.Color = (uint32)atoul(row[ItemField::color]);
 			item.Classes = (uint32)atoul(row[ItemField::classes]);
 			item.Races = (uint32)atoul(row[ItemField::races]);

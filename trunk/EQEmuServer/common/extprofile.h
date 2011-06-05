@@ -38,8 +38,8 @@
 struct ExtendedProfile_Struct {
 	// Pet stuff
 	int16				pet_id;
-	int16				pet_hp;
-	int16				pet_mana;
+	int16				old_pet_hp;
+	int16				old_pet_mana;
 	SpellBuff_Struct	pet_buffs[BUFF_COUNT];
 	int32				pet_items[MAX_MATERIALS];
 	char				pet_name[64];
@@ -47,6 +47,8 @@ struct ExtendedProfile_Struct {
 	uint32				aa_effects;
 	uint32				perAA;		//% of exp going to AAs
 	uint32				expended_aa;		// Total of expended AA
+	uint32				pet_hp;
+	uint32				pet_mana;
 };
 
 #pragma pack()
