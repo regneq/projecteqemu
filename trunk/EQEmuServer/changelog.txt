@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/05/2011==
+Derision: Fixed /yell
+
 ==06/04/2011==
 Secrets: Fixed pet HP resetting if the pet is above 32k when zoning.
 Secrets: Fixed player HP rollover bug (~495k hitpoints, rarely encountered) with AAs by temporarily casting it as a float.

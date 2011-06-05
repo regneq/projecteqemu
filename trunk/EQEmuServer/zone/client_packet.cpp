@@ -2662,7 +2662,10 @@ void Client::Handle_OP_ClearSurname(const EQApplicationPacket *app)
 
 void Client::Handle_OP_YellForHelp(const EQApplicationPacket *app)
 {
-	entity_list.QueueCloseClients(this,app, true, 100.0);
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_YellForHelp, 4);
+	*(uint32 *)outapp->pBuffer = GetID();
+	entity_list.QueueCloseClients(this, outapp, true, 100.0);
+	safe_delete(outapp);
 	return;
 }
 
