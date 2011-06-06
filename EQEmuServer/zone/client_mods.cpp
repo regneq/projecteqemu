@@ -34,6 +34,10 @@
 
 // Return max stat value for level
 sint16 Client::GetMaxStat() const {
+
+	if((RuleI(Character, StatCap)) > 0)
+		return (RuleI(Character, StatCap));
+
 	int level = GetLevel();
 	
 	sint16 base = 0;
