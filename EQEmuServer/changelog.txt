@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/06/2011==
+Secrets: Adjusted the default value for Character:SkillCapMaxLevel. It now defaults to 75 because PEQ only has skillcaps up to 75, and if the level is higher than 75 it will always return 0, breaking skills. (layer 8 issue fix)
+
 ==06/05/2011==
 Derision: Fixed /yell
 
