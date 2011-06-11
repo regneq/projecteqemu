@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/10/2011==
+JJ: Added more tables to remove entries from when deleting character.
+
 ==06/06/2011==
 Secrets: Adjusted the default value for Character:SkillCapMaxLevel. It now defaults to 75 because PEQ only has skillcaps up to 75, and if the level is higher than 75 it will always return 0, breaking skills. (layer 8 issue fix)
 Secrets: Made stat cap adjustable via rules, Character:StatCap. The client won't be in sync but that's what #mystats is for. 0 = feature disabled, defaults to 0.
