@@ -462,7 +462,7 @@ bool Database::DeleteCharacter(char *name)
 		return false;
 	}
 
-// SCORPIOUS2K - get id from character_ before deleting record so we can clean up inventory and qglobal
+// get id from character_ before deleting record so we can clean up inventory and qglobal
 
 #if DEBUG >= 5
 	printf("DeleteCharacter: Attempting to delete '%s'\n", name);
@@ -647,6 +647,46 @@ bool Database::DeleteCharacter(char *name)
 	}
 
 #if DEBUG >= 5
+	printf(" titlesets");
+#endif
+	RunQuery(query, MakeAnyLenString(&query, "DELETE FROM player_titlesets WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+	if(query)
+	{
+		safe_delete_array(query);
+		query = NULL;
+	}
+
+#if DEBUG >= 5
+    printf(" keyring");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM keyring WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
+    printf(" factions");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM faction_values WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
+    printf(" instances");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE charid='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
 	printf(" _character");
 #endif
 	RunQuery(query, MakeAnyLenString(&query, "DELETE from character_ WHERE id='%d'", charid), errbuf, NULL, &affected_rows);
@@ -660,15 +700,7 @@ bool Database::DeleteCharacter(char *name)
 		LogFile->write(EQEMuLog::Error, "DeleteCharacter: error: delete operation affected %d rows\n", affected_rows);
 		return false;
 	}
-#if DEBUG >= 5
-    printf(" keyring");
-#endif
-    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM keyring WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
-    if(query)
-    {
-        safe_delete_array(query);
-        query = NULL;
-    }
+
 #if DEBUG >= 5
 	printf("\n");
 #endif
