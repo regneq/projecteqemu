@@ -53,6 +53,7 @@ And then at then end of embparser.cpp, add:
 #include "../common/debug.h"
 #include "entity.h"
 #include "masterentity.h"
+#include <limits.h>
 
 #include <sstream>
 #include <iostream>
