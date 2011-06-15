@@ -15,7 +15,7 @@ SF= .obj/EQPacket.o .obj/EQStream.o .obj/EQStreamFactory.o .obj/CRC16.o \
    doors.o command.o beacon.o embxs.o AA.o trap.o client_packet.o \
    bonuses.o trading.o spdat.o  spell_effects.o aggro.o guild.o \
    inventory.o client_mods.o tradeskills.o waypoints.o pets.o zone_profile.o \
-   effects.o perl_client.o perl_entity.o perl_mob.o perl_questitem.o perl_npc.o \
+   effects.o perl_client.o perl_doors.o perl_entity.o perl_mob.o perl_questitem.o perl_npc.o \
    perl_PlayerCorpse.o perl_groups.o perl_raids.o questmgr.o client_logs.o perlparser.o \
    ../common/rdtsc.o ../common/extprofile.o horse.o exp.o pathing.o \
    fearpath.o special_attacks.o ../common/timeoutmgr.o ../common/Condition.o \

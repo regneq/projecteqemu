@@ -109,6 +109,7 @@ CLEAN :
 	-@erase "$(INTDIR)\parser.obj"
 	-@erase "$(INTDIR)\pathing.obj"
 	-@erase "$(INTDIR)\perl_client.obj"
+	-@erase "$(INTDIR)\perl_doors.obj"
 	-@erase "$(INTDIR)\perl_entity.obj"
 	-@erase "$(INTDIR)\perl_groups.obj"
 	-@erase "$(INTDIR)\perl_mob.obj"
@@ -233,6 +234,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\parser.obj" \
 	"$(INTDIR)\pathing.obj" \
 	"$(INTDIR)\perl_client.obj" \
+	"$(INTDIR)\perl_doors.obj" \
 	"$(INTDIR)\perl_entity.obj" \
 	"$(INTDIR)\perl_groups.obj" \
 	"$(INTDIR)\perl_mob.obj" \
@@ -457,6 +459,8 @@ CLEAN :
 	-@erase "$(INTDIR)\pathing.sbr"
 	-@erase "$(INTDIR)\perl_client.obj"
 	-@erase "$(INTDIR)\perl_client.sbr"
+	-@erase "$(INTDIR)\perl_doors.obj"
+	-@erase "$(INTDIR)\perl_doors.sbr"
 	-@erase "$(INTDIR)\perl_entity.obj"
 	-@erase "$(INTDIR)\perl_entity.sbr"
 	-@erase "$(INTDIR)\perl_groups.obj"
@@ -616,6 +620,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\parser.sbr" \
 	"$(INTDIR)\pathing.sbr" \
 	"$(INTDIR)\perl_client.sbr" \
+	"$(INTDIR)\perl_doors.sbr" \
 	"$(INTDIR)\perl_entity.sbr" \
 	"$(INTDIR)\perl_groups.sbr" \
 	"$(INTDIR)\perl_mob.sbr" \
@@ -730,6 +735,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\parser.obj" \
 	"$(INTDIR)\pathing.obj" \
 	"$(INTDIR)\perl_client.obj" \
+	"$(INTDIR)\perl_doors.obj" \
 	"$(INTDIR)\perl_entity.obj" \
 	"$(INTDIR)\perl_groups.obj" \
 	"$(INTDIR)\perl_mob.obj" \
@@ -954,6 +960,8 @@ CLEAN :
 	-@erase "$(INTDIR)\pathing.sbr"
 	-@erase "$(INTDIR)\perl_client.obj"
 	-@erase "$(INTDIR)\perl_client.sbr"
+	-@erase "$(INTDIR)\perl_doors.obj"
+	-@erase "$(INTDIR)\perl_doors.sbr"
 	-@erase "$(INTDIR)\perl_entity.obj"
 	-@erase "$(INTDIR)\perl_entity.sbr"
 	-@erase "$(INTDIR)\perl_groups.obj"
@@ -1113,6 +1121,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\parser.sbr" \
 	"$(INTDIR)\pathing.sbr" \
 	"$(INTDIR)\perl_client.sbr" \
+	"$(INTDIR)\perl_doors.sbr" \
 	"$(INTDIR)\perl_entity.sbr" \
 	"$(INTDIR)\perl_groups.sbr" \
 	"$(INTDIR)\perl_mob.sbr" \
@@ -1227,6 +1236,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\parser.obj" \
 	"$(INTDIR)\pathing.obj" \
 	"$(INTDIR)\perl_client.obj" \
+	"$(INTDIR)\perl_doors.obj" \
 	"$(INTDIR)\perl_entity.obj" \
 	"$(INTDIR)\perl_groups.obj" \
 	"$(INTDIR)\perl_mob.obj" \
@@ -1451,6 +1461,8 @@ CLEAN :
 	-@erase "$(INTDIR)\pathing.sbr"
 	-@erase "$(INTDIR)\perl_client.obj"
 	-@erase "$(INTDIR)\perl_client.sbr"
+	-@erase "$(INTDIR)\perl_doors.obj"
+	-@erase "$(INTDIR)\perl_doors.sbr"
 	-@erase "$(INTDIR)\perl_entity.obj"
 	-@erase "$(INTDIR)\perl_entity.sbr"
 	-@erase "$(INTDIR)\perl_groups.obj"
@@ -1610,6 +1622,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\parser.sbr" \
 	"$(INTDIR)\pathing.sbr" \
 	"$(INTDIR)\perl_client.sbr" \
+	"$(INTDIR)\perl_doors.sbr" \
 	"$(INTDIR)\perl_entity.sbr" \
 	"$(INTDIR)\perl_groups.sbr" \
 	"$(INTDIR)\perl_mob.sbr" \
@@ -1724,6 +1737,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\parser.obj" \
 	"$(INTDIR)\pathing.obj" \
 	"$(INTDIR)\perl_client.obj" \
+	"$(INTDIR)\perl_doors.obj" \
 	"$(INTDIR)\perl_entity.obj" \
 	"$(INTDIR)\perl_groups.obj" \
 	"$(INTDIR)\perl_mob.obj" \
@@ -1876,6 +1890,7 @@ CLEAN :
 	-@erase "$(INTDIR)\parser.obj"
 	-@erase "$(INTDIR)\pathing.obj"
 	-@erase "$(INTDIR)\perl_client.obj"
+	-@erase "$(INTDIR)\perl_doors.obj"
 	-@erase "$(INTDIR)\perl_entity.obj"
 	-@erase "$(INTDIR)\perl_groups.obj"
 	-@erase "$(INTDIR)\perl_mob.obj"
@@ -1997,6 +2012,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\parser.obj" \
 	"$(INTDIR)\pathing.obj" \
 	"$(INTDIR)\perl_client.obj" \
+	"$(INTDIR)\perl_doors.obj" \
 	"$(INTDIR)\perl_entity.obj" \
 	"$(INTDIR)\perl_groups.obj" \
 	"$(INTDIR)\perl_mob.obj" \
@@ -3343,6 +3359,40 @@ SOURCE=.\perl_client.cpp
 
 
 "$(INTDIR)\perl_client.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\perl_doors.cpp
+
+!IF  "$(CFG)" == "Zone - Win32 Release"
+
+
+"$(INTDIR)\perl_doors.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 Debug"
+
+
+"$(INTDIR)\perl_doors.obj"	"$(INTDIR)\perl_doors.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 Raid Addicts"
+
+
+"$(INTDIR)\perl_doors.obj"	"$(INTDIR)\perl_doors.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 DebugPerl"
+
+
+"$(INTDIR)\perl_doors.obj"	"$(INTDIR)\perl_doors.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 ReleasePerl"
+
+
+"$(INTDIR)\perl_doors.obj" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 

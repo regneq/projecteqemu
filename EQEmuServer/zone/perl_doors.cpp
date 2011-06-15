@@ -30,7 +30,7 @@
 #include "../common/debug.h"
 #include "embperl.h"
 
-#include "Doors.h"
+#include "doors.h"
 
 #ifdef THIS	 /* this macro seems to leak out on some systems */
 #undef THIS		
