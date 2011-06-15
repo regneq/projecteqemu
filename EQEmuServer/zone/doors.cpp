@@ -600,3 +600,53 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 	}
 	return true;
 }
+
+
+void Doors::SetLocation(float x, float y, float z)
+{
+	entity_list.DespawnAllDoors();
+	pos_x = x;
+	pos_y = y;
+	pos_z = z;
+	entity_list.RespawnAllDoors();
+}
+
+void Doors::SetX(float in) {
+	entity_list.DespawnAllDoors();
+	pos_x = in; 
+	entity_list.RespawnAllDoors();
+}
+void Doors::SetY(float in) { 
+	entity_list.DespawnAllDoors();
+	pos_y = in; 
+	entity_list.RespawnAllDoors();
+}
+void Doors::SetZ(float in) { 
+	entity_list.DespawnAllDoors();
+	pos_z = in; 
+	entity_list.RespawnAllDoors();
+}
+void Doors::SetHeading(float in) { 
+	entity_list.DespawnAllDoors();
+	heading = in; 
+	entity_list.RespawnAllDoors();
+}
+
+void Doors::SetIncline(int in) { 
+	entity_list.DespawnAllDoors();
+	incline = in; 
+	entity_list.RespawnAllDoors();
+}
+
+void Doors::SetOpenType(int8 in) { 
+	entity_list.DespawnAllDoors();
+	opentype = in; 
+	entity_list.RespawnAllDoors();
+}
+
+void Doors::SetDoorName(char* name) { 
+	entity_list.DespawnAllDoors();
+	memset(door_name, 0, 64); 
+	strncpy(door_name, name,64); 
+	entity_list.RespawnAllDoors();
+}

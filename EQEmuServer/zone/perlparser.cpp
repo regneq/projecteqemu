@@ -95,6 +95,9 @@ void PerlXSParser::map_funs() {
 	"package Object;"
 	"&boot_Object;"	// load quest Object XS
 
+	"package Doors;"
+	"&boot_Doors;"	// load quest Object XS
+
 #endif
 	"package main;"
 	"}"

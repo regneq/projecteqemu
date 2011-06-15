@@ -1111,6 +1111,50 @@ Object* EntityList::GetObjectByID(int16 id)
 	return 0;
 }
 
+Doors* EntityList::GetDoorsByID(int16 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Doors*> iterator(door_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToDoors()->GetID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+Doors* EntityList::GetDoorsByDBID(int32 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Doors*> iterator(door_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToDoors()->GetDoorDBID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 int16 EntityList::GetFreeID()
 {
 	if(last_insert_id > 1500)
@@ -2151,7 +2195,30 @@ void EntityList::RemoveAllDoors(){
 	iterator.Reset();
 	while(iterator.MoreElements())
 		iterator.RemoveCurrent();
+	DespawnAllDoors();
 }
+
+void EntityList::DespawnAllDoors(){
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RemoveAllDoors, 0);
+	this->QueueClients(0,outapp);
+	safe_delete(outapp);
+}
+
+void EntityList::RespawnAllDoors(){
+	LinkedListIterator<Client*> iterator(client_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData() != 0)
+		{
+		EQApplicationPacket* outapp = new EQApplicationPacket();
+		MakeDoorSpawnPacket(outapp, iterator.GetData());
+		iterator.GetData()->FastQueuePacket(&outapp);
+		}
+		iterator.Advance();
+	}
+}
+
 void EntityList::RemoveAllCorpses(){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
@@ -4415,6 +4482,19 @@ void EntityList::GetObjectList(list<Object*> &o_list)
 	while(iterator.MoreElements()) 
 	{
 		Object *ent = iterator.GetData();
+		o_list.push_back(ent);
+		iterator.Advance();
+	}
+}
+
+void EntityList::GetDoorsList(list<Doors*> &o_list)
+{
+	o_list.clear();
+	LinkedListIterator<Doors*> iterator(door_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Doors *ent = iterator.GetData();
 		o_list.push_back(ent);
 		iterator.Advance();
 	}

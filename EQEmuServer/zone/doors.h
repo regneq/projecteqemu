@@ -58,6 +58,15 @@ public:
 	void	ForceOpen(Mob *sender);
 	void	ForceClose(Mob *sender);
 
+	void	SetX(float in);
+	void	SetY(float in);
+	void	SetZ(float in);
+	void	SetHeading(float in);
+	void	SetIncline(int in);
+	void	SetDoorName(char* name);
+	void	SetOpenType(int8 in);
+	void	SetLocation(float x, float y, float z);
+
 private:
 	
 	int32	db_id;
