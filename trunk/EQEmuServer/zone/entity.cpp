@@ -1123,7 +1123,7 @@ Doors* EntityList::GetDoorsByID(int16 id)
 	{
 		if (iterator.GetData())
 		{
-			if (iterator.GetData()->CastToDoors()->GetID() == id)
+			if (iterator.GetData()->CastToDoors()->GetEntityID() == id)
 			{
 				return iterator.GetData();
 			}
@@ -3966,6 +3966,23 @@ int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float 
 	}
 	return 0; // fell through everything, this is bad/incomplete from perl
 }
+
+int16 EntityList::CreateDoor(const char *model, float x, float y, float z, float heading, int8 opentype, int16 size)
+{
+	if(model)
+	{
+			Doors* door = new Doors(model,x,y,z,heading,opentype, size);
+			RemoveAllDoors();
+			zone->LoadZoneDoors(zone->GetShortName(), zone->GetInstanceVersion());
+			entity_list.AddDoor(door);
+			entity_list.RespawnAllDoors();
+
+			if(door)
+				return door->GetEntityID();
+	}
+	return 0; // fell through everything, this is bad/incomplete from perl
+}
+
 
 Mob* EntityList::GetTargetForMez(Mob* caster)
 {

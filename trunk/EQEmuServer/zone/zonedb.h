@@ -5,6 +5,7 @@
 #include "../common/eq_packet_structs.h"
 #include "loottable.h"
 #include "faction.h"
+//#include "doors.h"
 
 struct wplist {
 	int   index;
@@ -296,6 +297,9 @@ public:
 	int32	GetGuildEQID(int32 guilddbid);
 	void	UpdateDoorGuildID(int doorid, int guild_id);
 	sint32	GetDoorsCount(int32* oMaxID, const char *zone_name, int16 version);
+	sint32	GetDoorsCountPlusOne(const char *zone_name, int16 version);
+	sint32	GetDoorsDBCountPlusOne(const char *zone_name, int16 version);
+	void InsertDoor(uint32 did, int16 ddoorid, const char* ddoor_name, float dxpos, float dypos, float dzpos, float dheading, int8 dopentype, uint16 dguildid, int32 dlockpick, int32 dkeyitem, int8 ddoor_param, int8 dinvert, int dincline, uint16 dsize);
 	
 	/*
 	 * Blocked Spells

@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Secrets: Opcode to remove all doors.
 Secrets: Perl door support.
 Secrets: Perl objects added for Doors since first PerlDoors commit: SetSize, GetSize, SetIncline, GetIncline, GetOpenType, SetOpenType
+Secrets: Added quest::createdoor(model, x, y, z, h, [opentype], [size]) . This spawns a door similar to quest::creategroundobjectfrommodel, and can be manipulated in the same way as other doors. To save it, get the door object using $entity_list->GetDoorByID(id), as it returns an entity ID (and preliminary DBID/DoorID is stored on the object itself) upon creation of the door. otherwise the door is temporary, and does not save the stored DBID.  $doorobj->CreateDatabaseEntry() saves it and its temporary DBID + DoorID.
+Secrets: Added door object perl functions GetLockpick() and SetLockpick([value]).
 
 ==06/10/2011==
 JJ: Added more tables to remove entries from when deleting character.
