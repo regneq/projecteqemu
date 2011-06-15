@@ -159,6 +159,8 @@ public:
 
 	Object*	GetObjectByID(int16 id);
 	Object*	GetObjectByDBID(int32 id);
+	Doors*	GetDoorsByID(int16 id);
+	Doors*	GetDoorsByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);
 	int RezzAllCorpsesByCharID(int32 charid);
 	bool IsMobInZone(Mob *who);
@@ -220,6 +222,9 @@ public:
 	void	RemoveAllGroups();
 	void	RemoveAllCorpses();
 	void	RemoveAllDoors();
+	void	DespawnAllDoors();
+	void	RespawnAllDoors();
+	void	RepopAllDoors();
 	void	RemoveAllTraps();
 	void	RemoveAllObjects();
 	void	RemoveAllLocalities();
@@ -370,6 +375,7 @@ public:
 	void GetClientList(list<Client*> &c_list);
 	void GetCorpseList(list<Corpse*> &c_list);
 	void GetObjectList(list<Object*> &o_list);
+	void GetDoorsList(list<Doors*> &d_list);
 	void GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height, list<Mob*> &m_list);
 
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);

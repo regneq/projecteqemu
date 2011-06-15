@@ -553,6 +553,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\perl_doors.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\perl_entity.cpp"
 				>
 			</File>
