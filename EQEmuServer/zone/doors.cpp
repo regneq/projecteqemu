@@ -100,7 +100,7 @@ Doors::Doors(const char *dmodel, float dx, float dy, float dz, float dheading, i
 
 	close_timer.Disable();
 
-	memset(dest_zone,0,32);
+	strn0cpy(dest_zone,"NONE",32);
 	dest_instance_id = 0;
 	dest_x = 0;
 	dest_y = 0;
