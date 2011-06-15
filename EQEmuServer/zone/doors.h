@@ -13,6 +13,7 @@ class Doors : public Entity
 {
 public:
 	Doors(const Door* door);
+	Doors(const char *dmodel, float dx, float dy, float dz, float dheading, int8 dopentype = 58, int16 dsize = 100);
 	~Doors();
 	bool	IsDoor() const { return true; }
 	void	HandleClick(Client* sender, int8 trigger);
@@ -39,6 +40,7 @@ public:
 	uint32	GetKeyItem() { return keyitem; }
 	int8	GetNoKeyring() { return nokeyring; }
 	int16	GetLockpick() { return lockpick; } 
+	void	SetLockpick(int16 in) { lockpick = in; } 
 	int16	GetSize() { return size; }
 	void	SetGuildID(int32 guild_id) { guild_id = guild_id; }
 
@@ -67,6 +69,7 @@ public:
 	void	SetOpenType(int8 in);
 	void	SetLocation(float x, float y, float z);
 	void	SetSize(int16 size);
+	void	CreateDatabaseEntry();
 
 private:
 	

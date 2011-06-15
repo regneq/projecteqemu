@@ -218,6 +218,32 @@ XS(XS_Doors_GetOpenType)
 	XSRETURN(1);
 }
 
+XS(XS_Doors_GetLockpick); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_GetLockpick)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Doors::GetLockpick(THIS)");
+	{
+		Doors *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetLockpick();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Doors_GetIncline); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Doors_GetIncline)
 {
@@ -292,6 +318,30 @@ XS(XS_Doors_SetOpenType)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		THIS->SetOpenType(type);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Doors_SetLockpick); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_SetLockpick)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Doors::SetLockpick(THIS, type)");
+	{
+		Doors *		THIS;
+		int32		type = (int32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetLockpick(type);
 	}
 	XSRETURN_EMPTY;
 }
@@ -517,6 +567,30 @@ XS(XS_Doors_GetModelName)
 	XSRETURN(1);
 }
 
+XS(XS_Doors_CreateDatabaseEntry); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_CreateDatabaseEntry)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Doors::InsertDoor(THIS)");
+	{
+		Doors *		THIS;
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->CreateDatabaseEntry();
+	}
+	XSRETURN_EMPTY;
+}
+
+
 
 #ifdef __cplusplus
 extern "C"
@@ -558,6 +632,9 @@ XS(boot_Doors)
 		newXSproto(strcpy(buf, "GetIncline"),XS_Doors_GetIncline, file, "$");
 		newXSproto(strcpy(buf, "SetOpenType"),XS_Doors_SetOpenType, file, "$$");
 		newXSproto(strcpy(buf, "GetOpenType"),XS_Doors_GetOpenType, file, "$");
+		newXSproto(strcpy(buf, "SetLockPick"),XS_Doors_SetLockpick, file, "$$");
+		newXSproto(strcpy(buf, "GetLockPick"),XS_Doors_GetLockpick, file, "$");
+		newXSproto(strcpy(buf, "CreateDatabaseEntry"),XS_Doors_CreateDatabaseEntry, file, "$");
 	XSRETURN_YES;
 }
 #endif //EMBPERL_XS_CLASSES

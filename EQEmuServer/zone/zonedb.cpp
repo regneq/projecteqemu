@@ -1868,3 +1868,13 @@ void ZoneDatabase::QGlobalPurge()
 		errbuf);
 	safe_delete_array(query);
 }
+
+void ZoneDatabase::InsertDoor(uint32 ddoordbid, int16 ddoorid, const char* ddoor_name, float dxpos, float dypos, float dzpos, float dheading, int8 dopentype, uint16 dguildid, int32 dlockpick, int32 dkeyitem, int8 ddoor_param, int8 dinvert, int dincline, uint16 dsize){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	int32 maxid;
+	if (!RunQuery(query, MakeAnyLenString(&query, "replace into doors (id, doorid,zone,name,pos_x,pos_y,pos_z,heading,opentype,guild,lockpick,keyitem,door_param,invert_state,incline,size) values('%i','%i','%s','%s','%f','%f','%f','%f','%i','%i','%i', '%i','%i','%i','%i','%i')", ddoordbid ,ddoorid ,zone->GetShortName(), ddoor_name, dxpos, dypos, dzpos, dheading, dopentype, dguildid, dlockpick, dkeyitem, ddoor_param, dinvert, dincline, dsize), errbuf))	{
+		cerr << "Error in InsertDoor" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+}

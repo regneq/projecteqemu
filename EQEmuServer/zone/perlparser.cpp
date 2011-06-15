@@ -2671,6 +2671,32 @@ XS(XS__CreateGroundObjectFromModel)
 	XSRETURN_IV(id);
 }
 
+XS(XS__CreateDoor);
+XS(XS__CreateDoor)
+{
+	dXSARGS;
+	if (items < 5 || items > 7)
+		Perl_croak(aTHX_ "Usage: createdoor(modelname, x, y, z, heading, [type], [size])");
+
+	char *		modelname = (char *)SvPV_nolen(ST(0));
+	float x = (float)SvNV(ST(1));
+	float y = (float)SvNV(ST(2));
+	float z = (float)SvNV(ST(3));
+	float heading = (float)SvNV(ST(4));
+	int32 type = 58;
+	int32 size = 100;
+	uint16 id = 0;
+
+	if (items > 5)
+		type = (int32)SvIV(ST(5));
+
+	if (items > 6)
+		size = (int32)SvIV(ST(6));
+
+	id = quest_manager.CreateDoor(modelname, x, y, z, heading, type, size);
+	XSRETURN_IV(id);
+}
+
 XS(XS__ModifyNPCStat);
 XS(XS__ModifyNPCStat)
 {
@@ -3327,6 +3353,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 		newXS(strcpy(buf, "creategroundobjectfrommodel"), XS__CreateGroundObjectFromModel, file);
+		newXS(strcpy(buf, "createdoor"), XS__CreateDoor, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
 		newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
 		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);

@@ -73,6 +73,45 @@ Doors::Doors(const Door* door)
 	client_version_mask = door->client_version_mask;
 }
 
+Doors::Doors(const char *dmodel, float dx, float dy, float dz, float dheading, int8 dopentype, int16 dsize)
+:    close_timer(5000)
+{
+	db_id = database.GetDoorsCountPlusOne(zone->GetShortName(), zone->GetInstanceVersion());
+	door_id = database.GetDoorsDBCountPlusOne(zone->GetShortName(), zone->GetInstanceVersion());
+	strn0cpy(zone_name,zone->GetShortName(),32);
+	strn0cpy(door_name,dmodel,32);
+	pos_x = dx;
+	pos_y = dy;
+	pos_z = dz;
+	heading = dheading;
+	incline = 0;
+	opentype = dopentype;
+	guild_id = 0;
+	lockpick = 0;
+	keyitem = 0;
+	nokeyring = 0;
+	trigger_door = 0;
+	trigger_type = 0;
+	triggered=false;
+	door_param = 0;
+	size = dsize;
+	invert_state = 0;
+	SetOpenState(false);
+
+	close_timer.Disable();
+
+	memset(dest_zone,0,32);
+	dest_instance_id = 0;
+	dest_x = 0;
+	dest_y = 0;
+	dest_z = 0;
+	dest_heading = 0;
+
+	is_ldon_door = 0;
+	client_version_mask = 4294967295;
+}
+
+
 Doors::~Doors()
 {
 }
@@ -508,6 +547,67 @@ sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, int16 v
 	return -1;
 }
 
+sint32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, int16 version) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	int32 oMaxID = 0;
+
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	query = new char[256];
+	sprintf(query, "SELECT MAX(id) FROM doors WHERE zone='%s' AND version=%u", zone_name, version);
+	if (RunQuery(query, strlen(query), errbuf, &result)) {
+		safe_delete_array(query);
+		row = mysql_fetch_row(result);
+		if (row != NULL && row[1] != 0) {
+				if (row[0])
+					oMaxID = atoi(row[0]) + 1;
+				else
+					oMaxID = 0;
+			mysql_free_result(result);
+			return oMaxID;
+		}
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetDoorsCountPlusOne query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return -1;
+	}
+
+	return -1;
+}
+
+sint32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, int16 version) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	int32 oMaxID = 0;
+
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	query = new char[256];
+	sprintf(query, "SELECT MAX(doorid) FROM doors WHERE zone='%s' AND version=%u", zone_name, version);
+	if (RunQuery(query, strlen(query), errbuf, &result)) {
+		safe_delete_array(query);
+		row = mysql_fetch_row(result);
+		if (row != NULL && row[1] != 0) {
+				if (row[0])
+					oMaxID = atoi(row[0]) + 1;
+				else
+					oMaxID = 0;
+			mysql_free_result(result);
+			return oMaxID;
+		}
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetDoorsCountPlusOne query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return -1;
+	}
+
+	return -1;
+}
 
 /*
 extern "C" bool extDBLoadDoors(sint32 iDoorCount, int32 iMaxDoorID) { return database.DBLoadDoors(iDoorCount, iMaxDoorID); }
@@ -655,4 +755,13 @@ void Doors::SetSize(int16 in) {
 	entity_list.DespawnAllDoors();
 	size = in;
 	entity_list.RespawnAllDoors();
+}
+
+void Doors::CreateDatabaseEntry()
+{
+	if(database.GetDoorsDBCountPlusOne(zone->GetShortName(), zone->GetInstanceVersion()) - 1 >= 255)
+	{
+		return;
+	}
+	database.InsertDoor(GetDoorDBID(), GetDoorID(), GetDoorName(), GetX(), GetY(), GetZ(), GetHeading(), GetOpenType(), GetGuildID(), GetLockpick(), GetKeyItem(), GetDoorParam(), GetInvertState(), GetIncline(), GetSize());
 }
