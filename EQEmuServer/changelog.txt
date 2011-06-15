@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/10/2011==
+Secrets: Opcode to remove all doors.
+Secrets: Perl door support.
+
+==06/10/2011==
 JJ: Added more tables to remove entries from when deleting character.
 
 ==06/06/2011==
