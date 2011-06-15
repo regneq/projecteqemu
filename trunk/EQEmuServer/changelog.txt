@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/15/2011==
+Secrets: Modified the pound command #reloadstatic to respawn doors after it despawns them.
+
 ==06/14/2011==
 Secrets: Opcode to remove all doors.
 Secrets: Perl door support.
