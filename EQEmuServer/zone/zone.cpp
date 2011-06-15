@@ -1017,6 +1017,8 @@ void Zone::ReloadStaticData() {
 	
 	entity_list.RemoveAllDoors();
 	zone->LoadZoneDoors(zone->GetShortName(), zone->GetInstanceVersion());
+	entity_list.RespawnAllDoors();
+
 	zone->LoadVeteranRewards();
 	
 	//load the zone config file.
