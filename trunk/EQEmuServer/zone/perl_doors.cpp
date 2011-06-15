@@ -218,6 +218,59 @@ XS(XS_Doors_GetOpenType)
 	XSRETURN(1);
 }
 
+XS(XS_Doors_GetIncline); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_GetIncline)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Doors::GetIncline(THIS)");
+	{
+		Doors *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetIncline();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Doors_GetSize); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_GetSize)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Doors::GetIncline(THIS)");
+	{
+		Doors *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSize();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+
 
 XS(XS_Doors_SetOpenType); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Doors_SetOpenType)
@@ -239,6 +292,54 @@ XS(XS_Doors_SetOpenType)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		THIS->SetOpenType(type);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Doors_SetIncline); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_SetIncline)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Doors::SetIncline(THIS, type)");
+	{
+		Doors *		THIS;
+		int32		type = (int32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetIncline(type);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Doors_SetSize); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Doors_SetSize)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Doors::SetSize(THIS, size)");
+	{
+		Doors *		THIS;
+		int32		type = (int32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Doors")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Doors *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Doors");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSize(type);
 	}
 	XSRETURN_EMPTY;
 }
@@ -451,6 +552,12 @@ XS(boot_Doors)
 		newXSproto(strcpy(buf, "GetOpenType"),XS_Doors_SetModelName, file, "$");
 		newXSproto(strcpy(buf, "SetOpenType"),XS_Doors_SetModelName, file, "$$");
 		newXSproto(strcpy(buf, "GetDoorDBID"),XS_Doors_GetDoorDBID, file, "$");
+		newXSproto(strcpy(buf, "SetSize"),XS_Doors_SetSize, file, "$$");
+		newXSproto(strcpy(buf, "GetSize"),XS_Doors_GetSize, file, "$");
+		newXSproto(strcpy(buf, "SetIncline"),XS_Doors_SetIncline, file, "$$");
+		newXSproto(strcpy(buf, "GetIncline"),XS_Doors_GetIncline, file, "$");
+		newXSproto(strcpy(buf, "SetOpenType"),XS_Doors_SetOpenType, file, "$$");
+		newXSproto(strcpy(buf, "GetOpenType"),XS_Doors_GetOpenType, file, "$");
 	XSRETURN_YES;
 }
 #endif //EMBPERL_XS_CLASSES

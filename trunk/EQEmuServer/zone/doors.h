@@ -66,6 +66,7 @@ public:
 	void	SetDoorName(char* name);
 	void	SetOpenType(int8 in);
 	void	SetLocation(float x, float y, float z);
+	void	SetSize(int16 size);
 
 private:
 	

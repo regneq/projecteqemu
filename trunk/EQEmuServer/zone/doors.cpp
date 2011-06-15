@@ -650,3 +650,9 @@ void Doors::SetDoorName(char* name) {
 	strncpy(door_name, name,64); 
 	entity_list.RespawnAllDoors();
 }
+
+void Doors::SetSize(int16 in) { 
+	entity_list.DespawnAllDoors();
+	size = in;
+	entity_list.RespawnAllDoors();
+}
