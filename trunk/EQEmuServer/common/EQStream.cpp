@@ -611,6 +611,7 @@ deque<EQProtocolPacket *>::iterator sitr;
 
 	// Find the next sequenced packet to send from the "queue"
 	sitr = SequencedQueue.begin();
+	if (sitr!=SequencedQueue.end())
 	sitr += NextSequencedSend;
 	
 	// Loop until both are empty or MaxSends is reached
