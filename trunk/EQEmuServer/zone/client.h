@@ -974,8 +974,8 @@ public:
 
 	void MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count=1);
 
-	void CalcItemScale();
-	bool CalcItemScale(int32 slot_x, int32 slot_y);
+	void CalcItemScale(bool login = false);
+	bool CalcItemScale(int32 slot_x, int32 slot_y, bool login = false);
 	void SummonAndRezzAllCorpses();
 	void SuspendMinion();
 	void Doppelganger(int16 spell_id, Mob *target, const char *name_override, int pet_count, int pet_duration);

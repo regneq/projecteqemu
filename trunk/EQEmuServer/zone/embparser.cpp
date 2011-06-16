@@ -68,6 +68,7 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_PROXIMITY_SAY",
 	"EVENT_CAST",
 	"EVENT_SCALE_CALC",
+    "EVENT_ITEM_ENTERZONE",
 	"EVENT_TARGET_CHANGE",
 	"EVENT_HATE_LIST",
 	"EVENT_SPELL_EFFECT_CLIENT",
@@ -261,7 +262,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		const Item_Struct* item = iteminst->GetItem();
 		if (!item) return;
 
-		if (event == EVENT_SCALE_CALC) {
+		if (event == EVENT_SCALE_CALC || event == EVENT_ITEM_ENTERZONE) {
 			packagename = item->CharmFile;
 			if(!isloaded(packagename.c_str())) {
 				LoadItemScript(iteminst, packagename, itemQuestScale);
@@ -681,7 +682,8 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "langid", extradata);
 			break;
 		}
-		case EVENT_SCALE_CALC: {
+		case EVENT_SCALE_CALC:
+        case EVENT_ITEM_ENTERZONE: {
 			ExportVar(packagename.c_str(), "itemid", objid);
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
 			break;
@@ -1289,7 +1291,7 @@ bool PerlembParser::ItemHasQuestSub(ItemInst *itm, const char *subname)
 	if(!item)
 		return false;
 
-	if(strcmp("EVENT_SCALE_CALC", subname) == 0)
+	if(strcmp("EVENT_SCALE_CALC", subname) == 0 || strcmp("EVENT_ITEM_ENTERZONE", subname) == 0)
 	{
 		packagename = item->CharmFile;
 		if(itemQuestLoaded.count(packagename) == 0)
