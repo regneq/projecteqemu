@@ -100,7 +100,7 @@ bool QuestParserCollection::SpellHasQuestSub(uint32 spell_id, const char *subnam
 
 bool QuestParserCollection::ItemHasQuestSub(ItemInst *itm, const char *subname) {
     std::string item_script;
-    if(strcmp("EVENT_SCALE_CALC", subname) == 0) {
+    if(strcmp("EVENT_SCALE_CALC", subname) == 0 || strcmp("EVENT_ITEM_ENTERZONE", subname) == 0) {
         item_script = itm->GetItem()->CharmFile;
     } else if(strcmp("EVENT_ITEM_CLICK", subname) == 0 || strcmp("EVENT_ITEM_CLICK_CAST", subname) == 0) {
         item_script = "script_";
@@ -162,7 +162,7 @@ void QuestParserCollection::EventPlayer(QuestEventID evt, Client *client, std::s
 
 void QuestParserCollection::EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) {
     std::string item_script;
-    if(evt == EVENT_SCALE_CALC) {
+    if(evt == EVENT_SCALE_CALC || evt == EVENT_ITEM_ENTERZONE) {
         item_script = item->GetItem()->CharmFile;
     } else if(evt == EVENT_ITEM_CLICK || evt == EVENT_ITEM_CLICK_CAST) {
         item_script = "script_";

@@ -9001,7 +9001,7 @@ void Client::CompleteConnect()
 	}
 
 	SendRewards();
-	CalcItemScale();
+	CalcItemScale(true);
 
 	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
 		GuildBanks->SendGuildBank(this);

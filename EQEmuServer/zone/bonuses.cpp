@@ -1720,26 +1720,26 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 	}
 }
 
-void Client::CalcItemScale()
+void Client::CalcItemScale(bool login)
 {
 	bool changed = false;
 
-	if(CalcItemScale(0, 21))
+	if(CalcItemScale(0, 21, login))
 		changed = true;
 
-	if(CalcItemScale(22, 30))
+	if(CalcItemScale(22, 30, login))
 		changed = true;
 
-	if(CalcItemScale(251, 341))
+	if(CalcItemScale(251, 341, login))
 		changed = true;
 
-	if(CalcItemScale(400, 405))
+	if(CalcItemScale(400, 405, login))
 		changed = true;
 
 	//Power Source Slot
 	if (GetClientVersion() >= EQClientSoF)
 	{
-		if(CalcItemScale(9999, 10000))
+		if(CalcItemScale(9999, 10000, login))
 			changed = true;
 	}
 
@@ -1749,7 +1749,7 @@ void Client::CalcItemScale()
 	}
 }
 
-bool Client::CalcItemScale(int32 slot_x, int32 slot_y)
+bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
 {
 	bool changed = false;
 	int i;
@@ -1763,8 +1763,10 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y)
 		{
 			EvoItemInst* e_inst = (EvoItemInst*)inst;
 			uint16 oldexp = e_inst->GetExp();
-
             parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
+            if(login) {
+                parse->EventItem(EVENT_ITEM_ENTERZONE, this, e_inst, e_inst->GetID(), 0);
+            }
 
 			if (e_inst->GetExp() != oldexp) {	// if the scaling factor changed, rescale the item and update the client
 				e_inst->ScaleItem();
@@ -1786,6 +1788,9 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y)
 				uint16 oldexp = e_inst->GetExp();
 
                 parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
+                if(login) {
+                    parse->EventItem(EVENT_ITEM_ENTERZONE, this, e_inst, e_inst->GetID(), 0);
+                }
 
 				if (e_inst->GetExp() != oldexp) 
 				{
