@@ -557,6 +557,21 @@ XS(XS__settimer)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__settimerMS);
+XS(XS__settimerMS)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: settimerMS(timer_name, milliseconds)");
+
+	char *		timer_name = (char *)SvPV_nolen(ST(0));
+	int	milliseconds = (int)SvIV(ST(1));
+
+	quest_manager.settimerMS(timer_name, milliseconds);
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__stoptimer);
 XS(XS__stoptimer)
 {
@@ -3219,6 +3234,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "addloot"), XS__addloot, file);
 		newXS(strcpy(buf, "zone"), XS__zone, file);
 		newXS(strcpy(buf, "settimer"), XS__settimer, file);
+        newXS(strcpy(buf, "settimerMS"), XS__settimerMS, file);
 		newXS(strcpy(buf, "stoptimer"), XS__stoptimer, file);
 		newXS(strcpy(buf, "stopalltimers"), XS__stopalltimers, file);
 		newXS(strcpy(buf, "emote"), XS__emote, file);

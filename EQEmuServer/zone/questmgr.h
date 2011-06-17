@@ -62,6 +62,7 @@ public:
 	void addloot(int item_id, int charges = 0, bool equipitem = true);
 	void Zone(const char *zone_name);
 	void settimer(const char *timer_name, int seconds);
+    void settimerMS(const char *timer_name, int milliseconds);
 	void stoptimer(const char *timer_name);
 	void stopalltimers();
 	void emote(const char *str);

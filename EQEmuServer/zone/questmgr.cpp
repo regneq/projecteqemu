@@ -456,14 +456,26 @@ void QuestManager::settimer(const char *timer_name, int seconds) {
 		cur++;
 	}
 
-/*	timers * tmp = new timers;
-	tmp->mob = npc;
-	tmp->Timer_ = new Timer(seconds * 1000,0);
-	tmp->Timer_->Start(seconds * 1000,false);
-	tmp->name = timer_name;
-	printf("Adding: %s for %d seconds\n", tmp->name.c_str(), seconds);
-	QTimerList.push_back(tmp);*/
 	QTimerList.push_back(QuestTimer(seconds * 1000, owner, timer_name));
+}
+
+void QuestManager::settimerMS(const char *timer_name, int milliseconds) {
+
+	list<QuestTimer>::iterator cur = QTimerList.begin(), end;
+
+	end = QTimerList.end();
+	while (cur != end) {
+		if (cur->mob == owner && cur->name == timer_name) {
+			cur->mob = owner;
+			cur->Timer_.Enable();
+			cur->Timer_.Start(milliseconds, false);
+			printf("Reseting: %s for %d seconds\n", cur->name.c_str(), milliseconds);
+			return;
+		}
+		cur++;
+	}
+
+	QTimerList.push_back(QuestTimer(milliseconds, owner, timer_name));
 }
 
 void QuestManager::stoptimer(const char *timer_name) {
