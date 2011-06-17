@@ -1763,10 +1763,11 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
 		{
 			EvoItemInst* e_inst = (EvoItemInst*)inst;
 			uint16 oldexp = e_inst->GetExp();
-            parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
-            if(login) {
+
+			if(login) {
                 parse->EventItem(EVENT_ITEM_ENTERZONE, this, e_inst, e_inst->GetID(), 0);
             }
+            parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
 
 			if (e_inst->GetExp() != oldexp) {	// if the scaling factor changed, rescale the item and update the client
 				e_inst->ScaleItem();
@@ -1787,10 +1788,10 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
 				EvoItemInst* e_inst = (EvoItemInst*)a_inst;
 				uint16 oldexp = e_inst->GetExp();
 
-                parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
                 if(login) {
                     parse->EventItem(EVENT_ITEM_ENTERZONE, this, e_inst, e_inst->GetID(), 0);
                 }
+                parse->EventItem(EVENT_SCALE_CALC, this, e_inst, e_inst->GetID(), 0);
 
 				if (e_inst->GetExp() != oldexp) 
 				{

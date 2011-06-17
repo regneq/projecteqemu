@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/17/2011==
+KLS: Lowered resolution on QuestTimer process timer to actually allow you to use sub 1 second times.
+KLS: Added quest::settimerMS(timer, duration) to allow timers not in integer second intervals.
+JJ: Moved ENTERZONE event for items to execute before CALC_SCALE.
+
 ==06/15/2011==
 Secrets: Modified the pound command #reloadstatic to respawn doors after it despawns them.
 Secrets: Made the default door dest zone be "NONE" for quest::createdoor's constructor
