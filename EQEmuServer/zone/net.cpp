@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
 	_log(COMMON__THREADS, "Main thread running with thread id %d", pthread_self());
 #endif
 	
-	Timer quest_timers(1000);	//highest resolution quest timer is 1 second
+	Timer quest_timers(100);
 	UpdateWindowTitle();
 	bool worldwasconnected = worldserver.Connected();
 	EQStream* eqss;
