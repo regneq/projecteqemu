@@ -1,9 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/18/2011==
+JJ: Depop with spawntimer reset option now works properly. Default use is changed to false.
+
 ==06/17/2011==
 KLS: Lowered resolution on QuestTimer process timer to actually allow you to use sub 1 second times.
 KLS: Added quest::settimerMS(timer, duration) to allow timers not in integer second intervals.
-JJ: Moved ENTERZONE event for items to execute before CALC_SCALE.
+JJ: Moved ENTERZONE event for items to execute before SCALE_CALC.
 
 ==06/15/2011==
 Secrets: Modified the pound command #reloadstatic to respawn doors after it despawns them.

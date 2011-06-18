@@ -80,7 +80,7 @@ public:
 	void	QueryLoot(Client* to);
 	int32	CountItems();
 	void	Delete();
-	virtual void	Depop(bool StartSpawnTimer = true);
+	virtual void	Depop();
 	virtual void    DepopCorpse();
 
 	uint32	GetCopper()		{ return copper; }
