@@ -174,6 +174,9 @@ public:
 	float GetGuardPointX()	const { return guard_x; }
 	float GetGuardPointY()	const { return guard_y; }
 	float GetGuardPointZ()	const { return guard_z; }
+    float GetGuardPointH()	const { return guard_heading; }
+    EmuAppearance GetGuardPointAnim() const { return guard_anim; }
+    void SaveGuardPointAnim(EmuAppearance anim) { guard_anim = anim; }
 
 	void SetFlyMode(int8 FlyMode){ flymode=FlyMode; }
 	int32 GetFlyMode() const { return flymode; }
@@ -359,6 +362,7 @@ protected:
 	int save_wp;
     float guard_x, guard_y, guard_z, guard_heading;
 	float guard_x_saved, guard_y_saved, guard_z_saved, guard_heading_saved;
+    EmuAppearance guard_anim;
 	float roambox_max_x;
 	float roambox_max_y;
 	float roambox_min_x;
