@@ -36,7 +36,7 @@ public:
 		float x, float y, float z, float heading, 
 		int32 respawn, int32 variance, 
 		int32 timeleft = 0, int32 grid = 0,
-		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0, bool in_enabled = true);
+		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0, bool in_enabled = true, EmuAppearance anim = eaStanding);
 	~Spawn2();
 
 	void	LoadGrid();
@@ -88,6 +88,7 @@ private:
 	uint16	condition_id;
 	sint16	condition_min_value;
 	bool enabled;
+    EmuAppearance anim;
 };
 
 class SpawnCondition {

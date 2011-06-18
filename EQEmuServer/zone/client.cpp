@@ -1981,7 +1981,16 @@ void Client::ReadBook(BookRequest_Struct *book) {
 
 		BookText_Struct *out = (BookText_Struct *) outapp->pBuffer;
 		out->window = book->window;
-		out->type = book->type;
+        if(GetClientVersion() >= EQClientSoF) {
+            const ItemInst *inst = m_inv[book->invslot];
+            if(inst) {
+                out->type = inst->GetItem()->BookType;
+            } else {
+                out->type = book->type;
+            }
+        } else {
+            out->type = book->type;
+        }
 		out->invslot = book->invslot;
 		memcpy(out->booktext, booktxt2.c_str(), length);
 

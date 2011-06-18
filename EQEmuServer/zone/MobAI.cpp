@@ -1469,22 +1469,7 @@ void Mob::AI_Process() {
 							moved=false;
 							SetMoving(false);
 						}
-					}
-					
-					/*
-					//fix up Z proble mssince CalculateNewPosition2 ignores pure-Z-movement now...
-					float zdiff = GetZ() - follow->GetZ();
-					if(zdiff < 0)
-						zdiff = 0 - zdiff;
-					if(zdiff > 2.0f) {
-						SendTo(GetX(), GetY(), follow->GetZ());
-						SendPosition();
-					}
-					
-					if(follow->IsClient())
-						printf("Follow pos: (%f, %f, %f)\n", GetX(), GetY(), GetZ());
-					*/
-					
+					}					
 				}
 			}
 			else //not a pet, and not following somebody...
@@ -1707,7 +1692,8 @@ void NPC::AI_DoMovement() {
 			} else { 
 				FaceTarget(GetTarget()); 
 			}
-			SendPosition();			
+			SendPosition();	
+            SetAppearance(GetGuardPointAnim());
 		}
 	 } 
   } 
@@ -1717,6 +1703,12 @@ void NPC::AI_DoMovement() {
 void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 	if (!IsAIControlled())
 		return;
+
+	if(GetAppearance() != eaStanding)
+    {
+        SetAppearance(eaStanding);
+    }
+
 	if (iYellForHelp) {
 		if(IsPet()) {
 			GetOwner()->AI_Event_Engaged(attacker, iYellForHelp);

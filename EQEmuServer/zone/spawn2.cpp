@@ -67,7 +67,7 @@ CREATE TABLE spawn_events (
 Spawn2::Spawn2(int32 in_spawn2_id, int32 spawngroup_id, 
 	float in_x, float in_y, float in_z, float in_heading, 
 	int32 respawn, int32 variance, int32 timeleft, int32 grid,
-	uint16 in_cond_id, sint16 in_min_value, bool in_enabled)
+	uint16 in_cond_id, sint16 in_min_value, bool in_enabled, EmuAppearance anim)
 : timer(100000)
 {
 	spawn2_id = in_spawn2_id;
@@ -83,7 +83,8 @@ Spawn2::Spawn2(int32 in_spawn2_id, int32 spawngroup_id,
 	condition_min_value = in_min_value;
 	npcthis = NULL;
 	enabled = in_enabled;
-	
+	this->anim = anim;
+
 	if(timeleft == 0xFFFFFFFF) {
 		//special disable timeleft
 		timer.Disable();
@@ -195,6 +196,8 @@ bool Spawn2::Process() {
 		npcthis = npc;
 		npc->AddLootTable();
 		npc->SetSp2(spawngroup_id_);
+        npc->SaveGuardPointAnim(anim);
+        npc->SetAppearance((EmuAppearance)anim);
 		entity_list.AddNPC(npc);
 		//this limit add must be done after the AddNPC since we need the entity ID.
 		entity_list.LimitAddNPC(npc);
@@ -288,8 +291,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 	
 	const char *zone_name = database.GetZoneName(zoneid);
 
-	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled FROM spawn2 WHERE zone='%s' AND version=%u", zone_name, version);
-	
+	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled, animation FROM spawn2 WHERE zone='%s' AND version=%u", zone_name, version);	
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -299,7 +301,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 			
 			bool perl_enabled = atoi(row[11]) == 1 ? true : false;
 			int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0]), zone->GetInstanceID()) * 1000);
-			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled);	
+			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled, (EmuAppearance)atoi(row[12]));	
 			spawn2_list.Insert( newSpawn );
 		}
 		mysql_free_result(result);
@@ -321,13 +323,12 @@ Spawn2* ZoneDatabase::LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2i
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled FROM spawn2 WHERE id=%i", spawn2id), errbuf, &result))
-	{
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled, animation FROM spawn2 WHERE id=%i", spawn2id), errbuf, &result))	{
 		if (mysql_num_rows(result) == 1)
 		{
 			row = mysql_fetch_row(result);
 			bool perl_enabled = atoi(row[11]) == 1 ? true : false;
-			Spawn2* newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), timeleft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled);
+			Spawn2* newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), timeleft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled, (EmuAppearance)atoi(row[12]));
 			spawn2_list.Insert( newSpawn );
 			mysql_free_result(result);
 			safe_delete_array(query);

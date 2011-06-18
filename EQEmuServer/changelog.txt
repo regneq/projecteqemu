@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/18/2011==
 JJ: Depop with spawntimer reset option now works properly. Default use is changed to false.
+KLS: Added some minor stuff
+KLS: Added animation field to spawn2 that will control what the spawned npc will do at their guard point. 0 = eaStanding, etc etc
+KLS: Tweaked books in SoF+ as they weren't displaying right; it may still not be perfect though I haven't tested it with every book in the game. Required SQL Provided.
 
 ==06/17/2011==
 KLS: Lowered resolution on QuestTimer process timer to actually allow you to use sub 1 second times.
