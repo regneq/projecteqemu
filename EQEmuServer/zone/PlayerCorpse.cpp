@@ -591,7 +591,7 @@ void Corpse::Delete() {
 	p_depop = true;
 }
 
-void Corpse::Depop(bool StartSpawnTimer) {
+void Corpse::Depop() {
 	if (IsNPCCorpse())
 		p_depop = true;
 }
