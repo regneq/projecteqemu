@@ -3117,8 +3117,8 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 					}
 					else
 					{
-						Message(7, "You say,'%s'",response);
-						this->ChannelMessageReceived(8, 0, 100, response);
+						Message(7, "You say, '%s'",response);
+						ChannelMessageReceived(8, 0, 100, response);
 					}
 					return;
 				}
@@ -3130,8 +3130,8 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 					}
 					else
 					{
-						Message(7, "You say,'%s'",response);
-						this->ChannelMessageReceived(8, 0, 100, response);
+						Message(7, "You say, '%s'",response);
+						ChannelMessageReceived(8, 0, 100, response);
 					}
 					return;
 				}

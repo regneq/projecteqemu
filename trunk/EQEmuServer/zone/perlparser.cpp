@@ -2940,8 +2940,11 @@ XS(XS__saylink) {
 	Const_char * RETVAL;
 	char text[250];
 	char text2[250];
+    bool silent = false;
 	strcpy(text,(char *)SvPV_nolen(ST(0)));
-	bool silent = ((int)SvIV(ST(1))) == 0?false:true;
+    if(items == 2) {
+	    silent = ((int)SvIV(ST(1))) == 0 ? false : true;
+    }
 	if (items == 3)
 		strcpy(text2,(char *)SvPV_nolen(ST(2)));
 	else

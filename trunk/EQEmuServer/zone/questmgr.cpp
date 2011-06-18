@@ -2349,8 +2349,12 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 	MYSQL_ROW row;
 	int sayid = 0;
 
+    int sz = strlen(Phrase);
+    char *escaped_string = new char[sz * 2];
+    database.DoEscapeString(escaped_string, Phrase, sz);
+
 	// Query for an existing phrase and id in the saylink table
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id` FROM `saylink` WHERE `phrase` = '%s'", Phrase),errbuf,&result))
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id` FROM `saylink` WHERE `phrase` = '%s'", escaped_string),errbuf,&result))
 	{
 		if (mysql_num_rows(result) >= 1)
 		{
@@ -2364,10 +2368,10 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 		{
 			safe_delete_array(query);
 
-			database.RunQuery(query,MakeAnyLenString(&query,"INSERT INTO `saylink` (`phrase`) VALUES ('%s')", Phrase),errbuf);
+			database.RunQuery(query,MakeAnyLenString(&query,"INSERT INTO `saylink` (`phrase`) VALUES ('%s')", escaped_string),errbuf);
 			safe_delete_array(query);
 
-			if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id` FROM saylink WHERE `phrase` = '%s'", Phrase),errbuf,&result))
+			if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id` FROM saylink WHERE `phrase` = '%s'", escaped_string),errbuf,&result))
 			{
 				if (mysql_num_rows(result) >= 1)
 				{
@@ -2386,6 +2390,7 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 		}
 	}
 	safe_delete_array(query);
+    safe_delete_array(escaped_string);
 
 	if(silent)
 		sayid = sayid + 750000;
