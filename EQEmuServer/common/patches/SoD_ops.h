@@ -105,5 +105,6 @@ D(OP_LoadSpellSet)
 D(OP_ApplyPoison)
 D(OP_DeleteItem)
 D(OP_AugmentItem)
+D(OP_Bug)
 #undef E
 #undef D
