@@ -2947,22 +2947,23 @@ struct GuildMakeLeader{
 	char	target[64];
 };
 
-
-
 struct BugStruct{
-/*0000*/	char	chartype[64];
-/*0064*/	char	name[96];
-/*0160*/	char	ui[128];
-/*0288*/	float	x;
-/*0292*/	float	y;
-/*0296*/	float	z;
-/*0300*/	float	heading;
-/*0304*/	int32	unknown304;
-/*0308*/	int32	type;
-/*0312*/	char	unknown312[2144];
-/*2456*/	char	bug[1024];
-/*3480*/	char	placeholder[2];
-/*3482*/	char	system_info[4098];
+/*0000*/    uint32  type1; //seems to be just a different way of seeing type; seems to be ordered completely differently
+/*0004*/	char	chartype[64];
+/*0068*/	char	name[96];
+/*0164*/	char	ui[128];
+/*0292*/	float	x;
+/*0296*/	float	y;
+/*0300*/	float	z;
+/*0304*/	float	heading;
+/*0308*/	uint32	unknown304;
+/*0312*/	char	unknown308[160];
+/*0472*/	char	target_name[64];
+/*0536*/	uint32	type;
+/*0540*/	char	unknown536[2052];
+/*2588*/	char	bug[2048];
+/*4636*/	char	unknown4632[6];
+/*4642*/	char	system_info[4094];
 };
 struct Make_Pet_Struct { //Simple struct for getting pet info
 	int8 level;
