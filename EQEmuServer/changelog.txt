@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/19/2011==
+JJ: (Leere) Fixed reagent consumption oddities
+
 ==06/18/2011==
 JJ: Depop with spawntimer reset option now works properly. Default use is changed to false.
 KLS: Added some minor stuff
