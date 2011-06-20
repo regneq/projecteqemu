@@ -9273,6 +9273,7 @@ void command_instance(Client *c, const Seperator *sep)
 
 		uint16 id = atoi(sep->arg[2]);
 		database.DeleteInstance(id);
+		c->Message(0, "Destroyed instance with id %lu.", (unsigned long)id);
 	}
 	else if(strcasecmp(sep->arg[1], "add") == 0)
 	{

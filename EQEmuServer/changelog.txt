@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/20/2011==
+JJ: Added message to client when using #instance destroy command.
+JJ: Altered doors index to include version to help bring door ids below 256 in zones with multiple versions. Required SQL provided.
+
+Required SQL: utils/sql/svn/1946_doors.sql
+
 ==06/19/2011==
 JJ: (Leere) Fixed reagent consumption oddities
 
