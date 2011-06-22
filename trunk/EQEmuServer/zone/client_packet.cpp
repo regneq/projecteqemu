@@ -5851,9 +5851,9 @@ void Client::Handle_OP_ClickDoor(const EQApplicationPacket *app)
 	        return;
 	}
 
-	char buf[10];
-	snprintf(buf, 9, "%u", cd->doorid);
-	buf[9] = '\0';
+	char buf[20];
+	snprintf(buf, 19, "%u %u", cd->doorid, zone->GetInstanceVersion());
+	buf[19] = '\0';
     parse->EventPlayer(EVENT_CLICKDOOR, this, buf, 0);
 
 	currentdoor->HandleClick(this,0);

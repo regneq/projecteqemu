@@ -624,7 +624,9 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		}
 
 		case EVENT_CLICKDOOR: {
-			ExportVar(packagename.c_str(), "doorid", data);
+			Seperator *sep = new Seperator(data);
+			ExportVar(packagename.c_str(), "doorid", sep->arg[0]);
+			ExportVar(packagename.c_str(), "version", sep->arg[1]);
 			break;
 		}
 

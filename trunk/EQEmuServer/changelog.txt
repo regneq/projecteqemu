@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/22/2011==
 Trevius: Added new Perl Mob quest object RemoveNimbusEffect(effectid) for removing permanent nimbus particle effects.
+JJ: EVENT_CLICKDOOR now passes the zone version to perl.
 
 ==06/20/2011==
 JJ: Added message to client when using #instance destroy command.
