@@ -545,6 +545,13 @@ struct BlockedBuffs_Struct
 /*86*/ uint16 Flags;
 };
 
+struct RemoveNimbusEffect_Struct
+{
+/*00*/ uint32 spawnid;			// Spawn ID
+/*04*/ sint32 nimbus_effect;	// Nimbus Effect Number
+/*08*/
+};
+
 struct ItemNamePacket_Struct {
 /*000*/	uint32 item_id;
 /*004*/	uint32 unkown004;

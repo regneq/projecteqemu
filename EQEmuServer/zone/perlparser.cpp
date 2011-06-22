@@ -2933,7 +2933,7 @@ XS(XS__FlagInstanceByRaidLeader) {
 XS(XS__saylink);
 XS(XS__saylink) {
 	dXSARGS;
-	if (items != 1 && items != 2 && items != 3)
+	if (items < 1 || items > 3)
 		Perl_croak(aTHX_ "Usage: saylink(phrase,[silent?],[linkname])");
 	dXSTARG;
 
@@ -2942,7 +2942,7 @@ XS(XS__saylink) {
 	char text2[250];
     bool silent = false;
 	strcpy(text,(char *)SvPV_nolen(ST(0)));
-    if(items == 2) {
+    if(items >= 2) {
 	    silent = ((int)SvIV(ST(1))) == 0 ? false : true;
     }
 	if (items == 3)

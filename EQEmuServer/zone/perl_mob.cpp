@@ -7357,6 +7357,31 @@ XS(XS_Mob_DoKnockback)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_RemoveNimbusEffect); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_RemoveNimbusEffect)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::RemoveNimbusEffect(THIS, effectid)");
+	{
+		Mob *		THIS;
+		sint32		effectid = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->RemoveNimbusEffect(effectid);
+	}
+	XSRETURN_EMPTY;
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -7632,6 +7657,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetSlotTint"), XS_Mob_SetSlotTint, file, "$$$$$");
 		newXSproto(strcpy(buf, "WearChange"), XS_Mob_WearChange, file, "$$$;$");
 		newXSproto(strcpy(buf, "DoKnockback"), XS_Mob_DoKnockback, file, "$$$$");
+		newXSproto(strcpy(buf, "RemoveNimbusEffect"), XS_Mob_RemoveNimbusEffect, file, "$$");
 	XSRETURN_YES;
 }
 
