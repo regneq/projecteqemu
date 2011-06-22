@@ -710,6 +710,7 @@ bool logpos;
 	inline virtual uint32  GetNimbusEffect1() const { return nimbus_effect1; }
 	inline virtual uint32  GetNimbusEffect2() const { return nimbus_effect2; }
 	inline virtual uint32  GetNimbusEffect3() const { return nimbus_effect3; }
+	void RemoveNimbusEffect(int effectid);
 
 	virtual float GetActSpellRange(int16 spell_id, float range){ return range;}
 	virtual sint32  GetActSpellDamage(int16 spell_id, sint32 value) { return value; }

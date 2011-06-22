@@ -5075,3 +5075,13 @@ void Mob::SpreadVirus(int16 spell_id, int16 casterID)
 		}
 	}
 }
+
+void Mob::RemoveNimbusEffect(int effectid) 
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RemoveNimbusEffect, sizeof(RemoveNimbusEffect_Struct));
+	RemoveNimbusEffect_Struct* rne = (RemoveNimbusEffect_Struct*)outapp->pBuffer;	
+	rne->spawnid = GetID();
+	rne->nimbus_effect = effectid;
+	entity_list.QueueClients(this, outapp);
+	safe_delete(outapp);
+}
