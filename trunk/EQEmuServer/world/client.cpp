@@ -508,9 +508,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				safe_delete(outapp);
 			}
             else
-			    StartInTutorial = true;
-			SendCharInfo();
-
+				SendCharInfo();
 			break;
 		}
 		case OP_EnterWorld: // Enter world
@@ -528,7 +526,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			}
 
 			if (RuleI(World, MaxClientsPerIP) >= 0) {
-	            client_list.GetCLEIP(this->GetIP());  //Lieka Edit Begin:  Check current CLE Entry IPs against incoming connection
+	            client_list.GetCLEIP(this->GetIP());  //Check current CLE Entry IPs against incoming connection
             }
 
 			EnterWorld_Struct *ew=(EnterWorld_Struct *)app->pBuffer;
