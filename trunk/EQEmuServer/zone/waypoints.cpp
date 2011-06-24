@@ -921,32 +921,6 @@ void NPC::AssignWaypoints(sint32 grid) {
 }
 
 void Mob::SendTo(float new_x, float new_y, float new_z) {
-//	float angle;
-//	float dx = new_x-x_pos;
-//	float dy = new_y-y_pos;
-	// 0.09 is a perfect magic number for a human pnj's
-//	AIwalking_timer->Start((int32) ( sqrtf( dx*dx + dy*dy ) * 0.09f ) * 1000 );
-	
-/*	if (new_x-x_pos > 0)
-		angle = - 90 + atan((float)(new_y-y_pos) / (float)(new_x-x_pos)) * 180 / M_PI;
-	else {
-		if (new_x-x_pos < 0)	
-			angle = + 90 + atan((float)(new_y-y_pos) / (float)(new_x-x_pos)) * 180 / M_PI;
-		else { // Added?
-			if (new_y-y_pos > 0)
-				angle = 0;
-			else
-				angle = 180;
-		}
-	}
-	if (angle < 0)
-		angle += 360;
-	if (angle > 360	)
-		angle -= 360;
-	
-	heading	= 256*(360-angle)/360.0f;
-	SetRunAnimSpeed(5);*/
-	//	SendPosUpdate();
 	x_pos = new_x;
 	y_pos = new_y;
 	z_pos = new_z;

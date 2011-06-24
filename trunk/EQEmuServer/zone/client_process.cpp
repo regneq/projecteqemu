@@ -591,14 +591,6 @@ bool Client::Process() {
 			// see this char disappear after 10-12 seconds of inactivity
 			if (position_timer_counter >= 36) { // Approx. 4 ticks per second
 				entity_list.SendPositionUpdates(this, pLastUpdateWZ, 500, GetTarget(), true);
-			/* if (position_timer_counter >= 3) { // Send every 750ms?
-				//Image (2k5): The trick of stopping MQ map without screwing up client updates, shorter distances, faster updates, however if its an admin we can send further updates
-				if(Admin() > 80)
-					entity_list.SendPositionUpdates(this, pLastUpdateWZ, 450, 0, true);
-				else
-					entity_list.SendPositionUpdates(this, pLastUpdateWZ, 150, 0, true);
-				}
-			*/
 				pLastUpdate = Timer::GetCurrentTime();
 				pLastUpdateWZ = pLastUpdate;
 				position_timer_counter = 0;
