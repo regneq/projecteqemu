@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/24/2011==
+Sorvani: Added door object perl functions GetKeyItem(), SetKeyItem([value]), GetNoKeyring(), SetNoKeyring([value]). Example Usage: my$doorobj = $entity_list->FindDoor(6); $doorbj->SetKeyItem(10615); $doorbj->SetNoKeyring(1);
+
 ==06/23/2011==
 JJ: (Sorvani) Stop forcing client to tutorial when button not selected.
 
