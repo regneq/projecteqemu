@@ -1,7 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/24/2011==
+KLS: Dest zone would buffer overflow if it was >= 16 characters, fixed.
+KLS: Comment clean up + added EntityList::FindDoor($doorid) to perlXS
+KLS: Fixed the PerlXS export for GetDoorByID and GetDoorByDBID
 Sorvani: Added door object perl functions GetKeyItem(), SetKeyItem([value]), GetNoKeyring(), SetNoKeyring([value]). Example Usage: my$doorobj = $entity_list->FindDoor(6); $doorbj->SetKeyItem(10615); $doorbj->SetNoKeyring(1);
+JJ: (Akkadius) Exported some task functions to perl.
 
 ==06/23/2011==
 JJ: (Sorvani) Stop forcing client to tutorial when button not selected.

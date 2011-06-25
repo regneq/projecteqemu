@@ -38,9 +38,9 @@ public:
 	int8	GetTriggerType() { return trigger_type; }
  
 	uint32	GetKeyItem() { return keyitem; }
-	uint32	SetKeyItem(uint32 in) { keyitem = in; }
+	void	SetKeyItem(uint32 in) { keyitem = in; }
 	int8	GetNoKeyring() { return nokeyring; }
-	int8	SetNoKeyring(int8 in) { nokeyring = in; }
+	void	SetNoKeyring(int8 in) { nokeyring = in; }
 	int16	GetLockpick() { return lockpick; } 
 	void	SetLockpick(int16 in) { lockpick = in; } 
 	int16	GetSize() { return size; }

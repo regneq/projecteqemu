@@ -4870,6 +4870,163 @@ XS(XS_Client_GetSpellBookSlotBySpellID)
 	XSRETURN(1);
 }
 
+XS(XS_Client_UpdateTaskActivity); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_UpdateTaskActivity)
+{
+	dXSARGS;
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: Client::UpdateTaskActivity(THIS, TaskID, ActivityID, Count)");
+	{
+		Client *	THIS;
+		int		TaskID = (int)SvIV(ST(1));
+		int		ActivityID = (int)SvIV(ST(2));
+		int		Count = (int)SvUV(ST(3));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->UpdateTaskActivity(TaskID, ActivityID, Count);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_AssignTask); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_AssignTask)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::AssignTask(THIS, TaskID, NPCID)");
+	{
+		Client *	THIS;
+		int		TaskID = (int)SvIV(ST(1));
+		int		NPCID = (int)SvIV(ST(2));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->AssignTask(TaskID, NPCID);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_FailTask); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_FailTask)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::FailTask(THIS, TaskID)");
+	{
+		Client *	THIS;
+		int		TaskID = (int)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->FailTask(TaskID);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_IsTaskCompleted); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_IsTaskCompleted)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::IsTaskCompleted(THIS, TaskID)");
+	{
+		Client *		THIS;
+		int		RETVAL;
+		int		TaskID = (int)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsTaskCompleted(TaskID);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_IsTaskActive); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_IsTaskActive)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::IsTaskActive(THIS, TaskID)");
+	{
+		Client *		THIS;
+		bool		RETVAL;
+		int		TaskID = (int)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsTaskActive(TaskID);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_IsTaskActivityActive); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_IsTaskActivityActive)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::IsTaskActivityActive(THIS, TaskID, ActivityID)");
+	{
+		Client *		THIS;
+		bool		RETVAL;
+		int		TaskID = (int)SvIV(ST(1));
+		int		ActivityID = (int)SvIV(ST(2));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsTaskActivityActive(TaskID, ActivityID);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5068,7 +5225,13 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "ClearCompassMark"), XS_Client_ClearCompassMark, file, "$");
 		newXSproto(strcpy(buf, "GetFreeSpellBookSlot"), XS_Client_GetFreeSpellBookSlot, file, "$;$");
 		newXSproto(strcpy(buf, "GetSpellBookSlotBySpellID"), XS_Client_GetSpellBookSlotBySpellID, file, "$$");
-	XSRETURN_YES;
+		newXSproto(strcpy(buf, "UpdateTaskActivity"), XS_Client_UpdateTaskActivity, file, "$$$$");
+		newXSproto(strcpy(buf, "AssignTask"), XS_Client_AssignTask, file, "$$$");
+		newXSproto(strcpy(buf, "FailTask"), XS_Client_FailTask, file, "$$");
+		newXSproto(strcpy(buf, "IsTaskCompleted"), XS_Client_IsTaskCompleted, file, "$$");
+		newXSproto(strcpy(buf, "IsTaskActive"), XS_Client_IsTaskActive, file, "$$");
+		newXSproto(strcpy(buf, "IsTaskActivityActive"), XS_Client_IsTaskActivityActive, file, "$$$");
+		XSRETURN_YES;
 }
 
 #endif //EMBPERL_XS_CLASSES
