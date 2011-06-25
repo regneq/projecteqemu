@@ -1032,7 +1032,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 					return;
 				}
 			}
-			else
+			else if (!bard_song_mode)
 			{
 				for(int t_count = 0; t_count < 4; t_count++) {
 					component = spells[spell_id].components[t_count];
