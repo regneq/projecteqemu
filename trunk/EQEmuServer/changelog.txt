@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/25/2011==
+JJ: (Leere) Fix for bards in reagent code
+
 ==06/24/2011==
 KLS: Dest zone would buffer overflow if it was >= 16 characters, fixed.
 KLS: Comment clean up + added EntityList::FindDoor($doorid) to perlXS
