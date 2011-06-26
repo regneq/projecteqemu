@@ -164,6 +164,9 @@ public:
 	int32	AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id);
 	bool	DeleteGraveyard(int32 zone_id, int32 graveyard_id);
 	int32   GetFirstCorpseID(int32 char_id);
+	int32   GetPlayerCorpseCount(int32 char_id);
+	int32   GetPlayerCorpseID(int32 char_id, int8 corpse);
+	uint32  GetPlayerCorpseItemAt(int32 corpse_id, int16 slotid);
 	
 	/*
 	 * Faction
