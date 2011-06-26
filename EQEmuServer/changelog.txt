@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/26/2011==
+JJ: Added functions to count all corpses, get corpse ids, and allow checking of items on player corpses
+
 ==06/25/2011==
 JJ: (Leere) Fix for bards in reagent code
 

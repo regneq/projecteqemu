@@ -1525,6 +1525,60 @@ int32 ZoneDatabase::GetPlayerBurriedCorpseCount(int32 char_id) {
 	return CorpseCount;
 }
 
+int32 ZoneDatabase::GetPlayerCorpseCount(int32 char_id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	int32 CorpseCount = 0;
+	
+	if (RunQuery(query, MakeAnyLenString(&query, "select count(*) from player_corpses where charid = '%u'", char_id), errbuf, &result)) {
+		row = mysql_fetch_row(result);
+		CorpseCount = atoi(row[0]);
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetPlayerCorpseCount query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
+
+	return CorpseCount;
+}
+
+int32 ZoneDatabase::GetPlayerCorpseID(int32 char_id, int8 corpse) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	int32 id = 0;
+	
+	if (RunQuery(query, MakeAnyLenString(&query, "select id from player_corpses where charid = '%u'", char_id), errbuf, &result)) {
+		for (int i=0; i<corpse;i++) {
+			row = mysql_fetch_row(result);
+			id = (int32)atoi(row[0]);
+		}
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetPlayerCorpseID query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
+
+	return id;
+}
+
+uint32 ZoneDatabase::GetPlayerCorpseItemAt(int32 corpse_id, int16 slotid) {
+	Corpse* tmp = LoadPlayerCorpse(corpse_id);
+	uint32 itemid = 0;
+
+	if (tmp)
+		itemid = tmp->GetWornItem(slotid);
+
+	return itemid;
+}
+
 Corpse* ZoneDatabase::SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
