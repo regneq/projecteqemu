@@ -5314,7 +5314,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "IsTaskActivityActive"), XS_Client_IsTaskActivityActive, file, "$$$");
 		newXSproto(strcpy(buf, "GetCorpseCount"), XS_Client_GetCorpseCount, file, "$");
 		newXSproto(strcpy(buf, "GetCorpseID"), XS_Client_GetCorpseID, file, "$$");
-		newXSproto(strcpy(buf, "GetCorpseItemAt"), XS_Client_GetCorpseItemAt, file, "$$");
+		newXSproto(strcpy(buf, "GetCorpseItemAt"), XS_Client_GetCorpseItemAt, file, "$$$");
 		XSRETURN_YES;
 }
 
