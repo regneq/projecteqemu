@@ -1573,9 +1573,10 @@ uint32 ZoneDatabase::GetPlayerCorpseItemAt(int32 corpse_id, int16 slotid) {
 	Corpse* tmp = LoadPlayerCorpse(corpse_id);
 	uint32 itemid = 0;
 
-	if (tmp)
+	if (tmp) {
 		itemid = tmp->GetWornItem(slotid);
-
+		tmp->DepopCorpse();
+	}
 	return itemid;
 }
 
