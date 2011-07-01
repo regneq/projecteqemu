@@ -720,9 +720,7 @@ XS(boot_Doors)
 		newXSproto(strcpy(buf, "SetY"),XS_Doors_SetY, file, "$$");
 		newXSproto(strcpy(buf, "SetZ"),XS_Doors_SetZ, file, "$$");
 		newXSproto(strcpy(buf, "SetHeading"),XS_Doors_SetHeading, file, "$$");
-		newXSproto(strcpy(buf, "SetLocation"),XS_Doors_SetLocation, file, "$$$$");
-		newXSproto(strcpy(buf, "GetOpenType"),XS_Doors_SetModelName, file, "$");
-		newXSproto(strcpy(buf, "SetOpenType"),XS_Doors_SetModelName, file, "$$");
+		newXSproto(strcpy(buf, "SetLocation"),XS_Doors_SetLocation, file, "$$$$");    
 		newXSproto(strcpy(buf, "GetDoorDBID"),XS_Doors_GetDoorDBID, file, "$");
 		newXSproto(strcpy(buf, "SetSize"),XS_Doors_SetSize, file, "$$");
 		newXSproto(strcpy(buf, "GetSize"),XS_Doors_GetSize, file, "$");
