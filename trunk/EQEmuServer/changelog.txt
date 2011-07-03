@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/02/2011==
+JJ: Split wander type 4 to allow depop with/without spawn timer. Type 4 is with, type 6 is without.
+
 ==06/26/2011==
 JJ: Added functions to count all corpses, get corpse ids, and allow checking of items on player corpses
 

@@ -317,7 +317,8 @@ void NPC::CalculateNewWaypoint()
 
 		break;
 	}
-	case 4: //goto the end and depop
+	case 4: //goto the end and depop with spawn timer
+	case 6: //goto the end and depop without spawn timer
 	{
 		cur_wp = cur_wp + 1;
 		break;

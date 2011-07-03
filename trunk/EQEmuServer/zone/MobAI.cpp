@@ -1559,8 +1559,12 @@ void NPC::AI_DoMovement() {
 		if (gridno > 0 || cur_wp==-2)  {
 			if (movetimercompleted==true) {  // time to pause at wp is over
 				if (wandertype == 4 && cur_wp == CastToNPC()->GetMaxWp()) {
-		           CastToNPC()->Depop(); 
-				} else {
+		           CastToNPC()->Depop(true); //depop and resart spawn timer
+				}
+				else if (wandertype == 6 && cur_wp == CastToNPC()->GetMaxWp()) {
+		           CastToNPC()->Depop(false);//depop without spawn timer
+				}
+				else {
 					movetimercompleted=false; 
 					
 					mlog(QUESTS__PATHING, "We are departing waypoint %d.", cur_wp);
