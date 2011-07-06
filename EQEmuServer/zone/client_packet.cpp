@@ -2038,7 +2038,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 					if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 					{
 						//TODO: need to enforce and set recast timers here because the spell may not be cast.
-						parse->EventItem(EVENT_ITEM_CLICK, this, p_inst, p_inst->GetID(), slot_id);
+						parse->EventItem(EVENT_ITEM_CLICK_CAST, this, p_inst, p_inst->GetID(), slot_id);
 						inst = m_inv[slot_id];
 						if (!inst)
 						{

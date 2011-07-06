@@ -427,14 +427,13 @@ RULE_CATEGORY ( AA )
 RULE_INT ( AA, ExpPerPoint, 23976503)	//Amount of exp per AA. Is the same as the amount of exp to go from level 51 to level 52.
 RULE_CATEGORY_END()
 
+RULE_CATEGORY( Console )
+RULE_INT ( Console, SessionTimeOut, 600000 )	// Amount of time in ms for the console session to time out
+RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL
 #undef RULE_BOOL
 #undef RULE_CATEGORY_END
-
-
-
-
-
 
