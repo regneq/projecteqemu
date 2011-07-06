@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/06/2011==
+Trevius: Fix for EVENT_ITEM_CLICK_CAST bugging Titanium clients.
+
 ==07/05/2011==
 Trevius: Fix for EVENT_ITEM_CLICK_CAST for SoF+ clients.
 Trevius: (Akkadius) Added new rule Console:SessionTimeOut for adjusting console session timeout.
