@@ -4431,6 +4431,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 							if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 							{
                                 parse->EventItem(EVENT_ITEM_CLICK_CAST, this, p_inst, p_inst->GetID(), castspell->inventoryslot);
+								SendSpellBarEnable(castspell->spell_id);
 								return;
 							}
 							else
@@ -4451,6 +4452,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 						if(parse->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
 						{
                             parse->EventItem(EVENT_ITEM_CLICK_CAST, this, p_inst, p_inst->GetID(), castspell->inventoryslot);
+							SendSpellBarEnable(castspell->spell_id);
 							return;
 						}
 						else
