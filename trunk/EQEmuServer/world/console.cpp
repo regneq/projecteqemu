@@ -38,6 +38,7 @@ using namespace std;
 #include "../common/files.h"
 #include "../common/opcodemgr.h"
 #include "../common/rulesys.h"
+#include "../common/ruletypes.h"
 #include "WorldConfig.h"
 #include "zoneserver.h"
 #include "zonelist.h"
@@ -66,7 +67,7 @@ ConsoleList console_list;
 
 Console::Console(EmuTCPConnection* itcpc)
 : WorldTCPConnection(),
-  timeout_timer(CONSOLE_TIMEOUT),
+  timeout_timer(RuleI(Console, SessionTimeOut)),
   prompt_timer(1000)
 {
 	tcpc = itcpc;
