@@ -1204,8 +1204,7 @@ struct ActionAlt_Struct
 /*02*/	int16 source;			// id of caster
 /*04*/	uint16 level;			// level of caster - Seen 0
 /*06*/  uint32 unknown06;
-/*10*/	uint16 instrument_focus;
-/*12*/	uint16 unknown12;		// seems to always be set to something and it doesn't change between casts except in special cases like changing instrument mods
+/*10*/	float instrument_mod;
 /*14*/  uint32 unknown14;       // seen 0
 /*18*/  float knockback_angle;  //seems to go from 0-512 then it rolls over again
 /*22*/  uint32 unknown22;

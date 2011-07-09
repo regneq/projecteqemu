@@ -1620,7 +1620,7 @@ ENCODE(OP_Action) {
 	OUT(target);
 	OUT(source);
 	OUT(level);
-	eq->instrument_focus = emu->bard_focus_id;
+	eq->instrument_mod = 1.0f + (emu->instrument_mod - 10) / 10.0f;
 	eq->knockback_angle = emu->sequence;
 	OUT(type);
 	OUT(spell);
