@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/09/2011==
+Derision: Underfoot - Instrument modifiers / AAs should now improve runspeed.
+
 ==07/06/2011==
 Trevius: Fix for EVENT_ITEM_CLICK_CAST bugging Titanium clients.
 
