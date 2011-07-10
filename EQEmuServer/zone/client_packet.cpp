@@ -374,6 +374,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_CorpseDrag] = &Client::Handle_OP_CorpseDrag;
 	ConnectedOpcodes[OP_CorpseDrop] = &Client::Handle_OP_CorpseDrop;
 	ConnectedOpcodes[OP_GroupMakeLeader] = &Client::Handle_OP_GroupMakeLeader;
+	ConnectedOpcodes[OP_GuildCreate] = &Client::Handle_OP_GuildCreate;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11740,6 +11741,84 @@ void Client::Handle_OP_GroupMakeLeader(const EQApplicationPacket *app)
 		else {
 			LogFile->write(EQEMuLog::Debug, "Group /makeleader request originated from non-leader member: %s", GetName());
 			DumpPacket(app);
+		}
+	}
+}
+
+void Client::Handle_OP_GuildCreate(const EQApplicationPacket *app)
+{
+	if(IsInAGuild())
+	{
+		Message(clientMessageError, "You are already in a guild!");
+		return;
+	}
+
+	if(!RuleB(Guild, PlayerCreationAllowed))
+	{
+		Message(clientMessageError, "This feature is disabled on this server. Contact a GM or post on your server message boards to create a guild.");
+		return;
+	}
+
+	if((Admin() < RuleI(Guild, PlayerCreationRequiredStatus)) ||
+	   (GetLevel() < RuleI(Guild, PlayerCreationRequiredLevel)) ||
+	   (database.GetTotalTimeEntitledOnAccount(AccountID()) < (unsigned int)RuleI(Guild, PlayerCreationRequiredTime)))
+	{
+		Message(clientMessageError, "Your status, level or time playing on this account are insufficient to use this feature.");
+		return;
+	}
+
+	// The Underfoot client Guild Creation window will only allow a guild name of <= around 30 characters, but the packet is 64 bytes. Sanity check the
+	// name anway.
+	//
+	
+	char *GuildName = (char *)app->pBuffer;
+
+	if(strnlen(GuildName, 64) > 60)
+	{
+		Message(clientMessageError, "Guild name too long.");
+		return;
+	}
+
+	for(unsigned int i = 0; i < strlen(GuildName); ++i)
+	{
+		if(!isalpha(GuildName[i]) && (GuildName[i] != ' '))
+		{
+			Message(clientMessageError, "Invalid character in Guild name.");
+			return;
+		}
+	}
+
+	sint32 GuildCount = guild_mgr.DoesAccountContainAGuildLeader(AccountID());
+
+	if(GuildCount >= RuleI(Guild, PlayerCreationLimit))
+	{
+		Message(clientMessageError, "You cannot create this guild because this account may only be leader of %i guilds.", RuleI(Guild, PlayerCreationLimit));
+		return;
+	}
+
+	if(guild_mgr.GetGuildIDByName(GuildName) != GUILD_NONE)
+	{
+		Message_StringID(clientMessageError, GUILD_NAME_IN_USE);
+		return;
+	}
+
+	int32 NewGuildID = guild_mgr.CreateGuild(GuildName, CharacterID());
+				
+	_log(GUILDS__ACTIONS, "%s: Creating guild %s with leader %d via UF+ GUI. It was given id %lu.", GetName(),
+		GuildName, CharacterID(), (unsigned long)NewGuildID);
+	
+	if (NewGuildID == GUILD_NONE)
+		Message(clientMessageError, "Guild creation failed.");
+	else
+	{
+		if(!guild_mgr.SetGuild(CharacterID(), NewGuildID, GUILD_LEADER))
+			Message(clientMessageError, "Unable to set guild leader's guild in the database. Contact a GM.");
+		else
+		{
+			Message(clientMessageYellow, "You are now the leader of %s", GuildName);
+
+			if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
+				GuildBanks->SendGuildBank(this);
 		}
 	}
 }

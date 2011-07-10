@@ -266,3 +266,4 @@
 	void Handle_OP_CorpseDrag(const EQApplicationPacket *app);
 	void Handle_OP_CorpseDrop(const EQApplicationPacket *app);
 	void Handle_OP_GroupMakeLeader(const EQApplicationPacket *app);
+	void Handle_OP_GuildCreate(const EQApplicationPacket *app);

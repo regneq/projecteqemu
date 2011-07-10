@@ -1148,6 +1148,19 @@ bool BaseGuildManager::GetGuildNameByID(int32 guild_id, std::string &into) const
 	return(true);
 }
 
+uint32 BaseGuildManager::GetGuildIDByName(const char *GuildName)
+{
+	map<uint32, GuildInfo *>::iterator Iterator;
+
+	for(Iterator = m_guilds.begin(); Iterator != m_guilds.end(); ++Iterator)
+	{
+		if(!strcasecmp((*Iterator).second->name.c_str(), GuildName))
+			return (*Iterator).first;
+	}
+
+	return GUILD_NONE;
+}
+
 bool BaseGuildManager::GetGuildMOTD(int32 guild_id, char *motd_buffer, char *setter_buffer) const {
 	map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(guild_id);
@@ -1298,6 +1311,30 @@ BaseGuildManager::RankInfo::RankInfo() {
 BaseGuildManager::GuildInfo::GuildInfo() {
 	leader_char_id = 0;
 	minstatus = 0;
+}
+
+uint32 BaseGuildManager::DoesAccountContainAGuildLeader(int32 AccountID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	
+	if (!m_db->RunQuery(query,
+			    MakeAnyLenString(&query,
+			    		     "select guild_id from guild_members where char_id in (select id from character_ where account_id = %i) and rank = 2",
+				     	     AccountID), errbuf, &result))
+	{
+		_log(GUILDS__ERROR, "Error executing query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+		return 0;
+	}
+	safe_delete_array(query);
+	
+	uint32 Rows = mysql_num_rows(result);
+	mysql_free_result(result);
+	
+	return Rows;
 }
 
 

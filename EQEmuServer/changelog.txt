@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/10/2011==
+Derision: Underfoot - Support for /emote
+Derision: Underfoot - Support for Guild Creation via new window in Underfoot.
+Derision: SoD+ - Changing group leader should update Group Leadership AA to that of the new leader.
+
+Optional SQL:
+
+utils/sql/svn/1962_optional_guild_creation_window_rules.sql
+
 ==07/09/2011==
 Derision: Underfoot - Instrument modifiers / AAs should now improve runspeed.
 

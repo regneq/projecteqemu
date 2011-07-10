@@ -1514,8 +1514,8 @@ void Group::ChangeLeader(Mob* newleader)
 		{
 			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
 				members[i]->CastToClient()->SendGroupLeaderChangePacket(newleader->GetName());
-			else
-				members[i]->CastToClient()->QueuePacket(outapp);
+	
+			members[i]->CastToClient()->QueuePacket(outapp);
 		}
 	}
 	safe_delete(outapp);
