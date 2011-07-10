@@ -3678,7 +3678,7 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any
 //assumes that spell_id is not a bard spell and that both ids are valid spell ids
-sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
+sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool best_focus) {
 
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spells[spell_id];
@@ -3825,48 +3825,66 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			break;
 	
 		//handle effects
-
 		case SE_ImprovedDamage:
-			switch (focus_spell.max[i])
-			{
-				case 0:
-					if (type == focusImprovedDamage && focus_spell.base[i] > value)
-					{
+		// No Spell used this, its handled by different spell effect IDs.
+			if (type == focusImprovedDamage) {
+				// This is used to determine which focus should be used for the random calculation
+				if(best_focus) {
+					// If the spell contains a value in the base2 field then that is the max value
+					if (focus_spell.base2[i] != 0) {
+						value = focus_spell.base2[i];
+					}
+					// If the spell does not contain a base2 value, then its a straight non random value
+					else {
 						value = focus_spell.base[i];
 					}
-					break;
-				case 1:
-					if (type == focusImprovedCritical && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
-				case 2:
-					if (type == focusImprovedUndeadDamage && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
-				case 3:
-					if (type == 10 && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
-				default: //Resist stuff
-					if (type == (focusType)focus_spell.max[i] && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
+				}
+				// Actual focus calculation starts here
+				else if (focus_spell.base2[i] == 0 || focus_spell.base[i] == focus_spell.base2[i]) {
+					value = focus_spell.base[i];
+				}
+				else {
+					value = MakeRandomInt(focus_spell.base[i], focus_spell.base2[i]);
+				}
 			}
 			break;
 		case SE_ImprovedHeal:
-			if (type == focusImprovedHeal && focus_spell.base[i] > value)
-			{
-				value = focus_spell.base[i];
+			if (type == focusImprovedHeal) {
+				if(best_focus) {
+					if (focus_spell.base2[i] != 0) {
+						value = focus_spell.base2[i];
+					}
+					else {
+						value = focus_spell.base[i];
+					}
+				}
+				else if (focus_spell.base2[i] == 0 || focus_spell.base[i] == focus_spell.base2[i]) {
+					value = focus_spell.base[i];
+				}
+				else {
+					value = MakeRandomInt(focus_spell.base[i], focus_spell.base2[i]);
+				}
 			}
 			break;
+		case SE_ReduceManaCost:
+			if (type == focusManaCost) {
+				if(best_focus) {
+					if (focus_spell.base2[i] != 0) {
+						value = focus_spell.base2[i];
+					}
+					else {
+						value = focus_spell.base[i];
+					}
+				}
+				else if (focus_spell.base2[i] == 0 || focus_spell.base[i] == focus_spell.base2[i]) {
+					value = focus_spell.base[i];
+				}
+				else {
+					value = MakeRandomInt(focus_spell.base[i], focus_spell.base2[i]);
+				}
+			}
+			break;
+
 		case SE_IncreaseSpellHaste:
 			if (type == focusSpellHaste && focus_spell.base[i] > value)
 			{
@@ -3901,15 +3919,6 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			if (type == focusReagentCost && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
-			}
-			break;
-		case SE_ReduceManaCost:
-			if (type == focusManaCost)
-			{
-				if(focus_spell.base[i] > value)
-				{
-					value = focus_spell.base[i];
-				}
 			}
 			break;
 		case SE_PetPowerIncrease:
@@ -4031,6 +4040,17 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	const Item_Struct* UsedItem = 0;
 	sint16 Total = 0;
 	sint16 realTotal = 0;
+	sint16 focus_max = 0;
+	sint16 focus_max_real = 0;
+	bool rand_effectiveness = false;
+
+	//Improved Healing, Damage & Mana Reduction are handled differently in that some are random percentages
+	//In these cases we need to find the most powerful effect, so that each piece of gear wont get its own chance
+	if((type == focusManaCost || type == focusImprovedHeal || type == focusImprovedDamage)
+		&& RuleB(Spells, LiveLikeFocusEffects)) 
+	{
+		rand_effectiveness = true;
+	}
 
 	//item focus
 	for(int x=0; x<=21; x++)
@@ -4041,16 +4061,28 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			continue;
 		TempItem = ins->GetItem();
 		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
-			Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
-
-			if (Total > 0 && realTotal >= 0 && Total > realTotal) {
-				realTotal = Total;
-				UsedItem = TempItem;
-			} else if (Total < 0 && Total < realTotal) {
-				realTotal = Total;
-				UsedItem = TempItem;
+			if(rand_effectiveness) {
+				focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
+				if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+					focus_max_real = focus_max;
+					UsedItem = TempItem;
+				} else if (focus_max < 0 && focus_max < focus_max_real) {
+					focus_max_real = focus_max;
+					UsedItem = TempItem;
+				}
+			}
+			else {
+				Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
+				if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+					realTotal = Total;
+					UsedItem = TempItem;
+				} else if (Total < 0 && Total < realTotal) {
+					realTotal = Total;
+					UsedItem = TempItem;
+				}
 			}
 		}
+		
 		for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
 		{
 			ItemInst *aug = NULL;
@@ -4059,13 +4091,25 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			{
 				const Item_Struct* TempItemAug = aug->GetItem();
 				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
-					Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
-					if (Total > 0 && realTotal >= 0 && Total > realTotal) {
-						realTotal = Total;
-						UsedItem = TempItem;
-					} else if (Total < 0 && Total < realTotal) {
-						realTotal = Total;
-						UsedItem = TempItem;
+					if(rand_effectiveness) {
+						focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
+						if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+							focus_max_real = focus_max;
+							UsedItem = TempItem;
+						} else if (focus_max < 0 && focus_max < focus_max_real) {
+							focus_max_real = focus_max;
+							UsedItem = TempItem;
+						}
+					}
+					else {
+						Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
+						if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+							realTotal = Total;
+							UsedItem = TempItem;
+						} else if (Total < 0 && Total < realTotal) {
+							realTotal = Total;
+							UsedItem = TempItem;
+						}
 					}
 				}
 			}
@@ -4080,29 +4124,42 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 		if (!ins)
 			continue;
 		TempItem = ins->GetItem();
-		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN)
-		{
-			Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
-			if (Total > 0 && realTotal >= 0 && Total > realTotal)
-			{
-				realTotal = Total;
-				UsedItem = TempItem;
+		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+			if(rand_effectiveness) {
+				focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
+				if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+					focus_max_real = focus_max;
+					UsedItem = TempItem;
+				} else if (focus_max < 0 && focus_max < focus_max_real) {
+					focus_max_real = focus_max;
+					UsedItem = TempItem;
+				}
 			}
-			else if (Total < 0 && Total < realTotal)
-			{
-				realTotal = Total;
-				UsedItem = TempItem;
+			else {
+				Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
+				if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+					realTotal = Total;
+					UsedItem = TempItem;
+				}
+				else if (Total < 0 && Total < realTotal) {
+					realTotal = Total;
+					UsedItem = TempItem;
+				}
 			}
 		}
 	}
 	
-	if (realTotal != 0 && UsedItem && spells[spell_id].buffduration == 0) {
+	if(UsedItem && rand_effectiveness && focus_max_real != 0)
+		realTotal = CalcFocusEffect(type, UsedItem->Focus.Effect, spell_id);
+	
+	if (realTotal != 0 && UsedItem) 
 		Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
-	}
-
+	
 	//Spell Focus
 	sint16 Total2 = 0;
 	sint16 realTotal2 = 0;
+	sint16 focus_max2 = 0;
+	sint16 focus_max_real2 = 0;
 	
 	int buff_tracker = -1;
 	int buff_slot = 0;
@@ -4113,9 +4170,22 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 		focusspellid = buffs[buff_slot].spellid;
 		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
 			continue;
-
-		Total2 = CalcFocusEffect(type, focusspellid, spell_id);
-		if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
+		
+		if(rand_effectiveness) {
+			focus_max2 = CalcFocusEffect(type, focusspellid, spell_id, true);
+			if (focus_max2 > 0 && focus_max_real2 >= 0 && focus_max2 > focus_max_real2) {
+				focus_max_real2 = focus_max2;
+				buff_tracker = buff_slot;
+				focusspell_tracker = focusspellid;
+			} else if (focus_max2 < 0 && focus_max2 < focus_max_real2) {
+				focus_max_real2 = focus_max2;
+				buff_tracker = buff_slot;
+				focusspell_tracker = focusspellid;
+			}
+		}
+		else {
+			Total2 = CalcFocusEffect(type, focusspellid, spell_id);
+			if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
 				realTotal2 = Total2;
 				buff_tracker = buff_slot;
 				focusspell_tracker = focusspellid;
@@ -4124,7 +4194,12 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				buff_tracker = buff_slot;
 				focusspell_tracker = focusspellid;
 			}
+		}
 	}
+	
+	if(focusspell_tracker && rand_effectiveness && focus_max_real2 != 0)
+		realTotal2 = CalcFocusEffect(type, focusspell_tracker, spell_id);
+	
 	// For effects like gift of mana that only fire once, save the spellid into an array that consists of all available buff slots.
 	if(buff_tracker >= 0 && buffs[buff_tracker].numhits > 0) {
 		m_spellHitsLeft[buff_tracker] = focusspell_tracker;

@@ -4,10 +4,12 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Underfoot - Support for /emote
 Derision: Underfoot - Support for Guild Creation via new window in Underfoot.
 Derision: SoD+ - Changing group leader should update Group Leadership AA to that of the new leader.
+Caryatis: Live like focus effect behaviour added(Improved Damage, Healing and Reduce Manacost focus effects will now be random if the spell contains both a min(effect_base_value) and max value(effect_limit_value)
 
 Optional SQL:
 
 utils/sql/svn/1962_optional_guild_creation_window_rules.sql
+utils/sql/svn/1963_optional_rule_live_like_focuses.sql
 
 ==07/09/2011==
 Derision: Underfoot - Instrument modifiers / AAs should now improve runspeed.
