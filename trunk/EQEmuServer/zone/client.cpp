@@ -1064,6 +1064,19 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 			Message(0, "Error: World server disconnected");
 		break;
 	}
+	case 22:
+	{
+		// Emotes for Underfoot and later.
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Emote, 4 + strlen(message) + strlen(GetName()) + 2);
+		Emote_Struct* es = (Emote_Struct*)outapp->pBuffer;
+		char *Buffer = (char *)es;
+		Buffer += 4;
+		snprintf(Buffer, sizeof(Emote_Struct) - 4, "%s %s", GetName(), message);
+		entity_list.QueueCloseClients(this, outapp, true, 100,0,true,FILTER_SOCIALS);
+		safe_delete(outapp);
+
+		break;
+	}
 	default: {
 		Message(0, "Channel (%i) not implemented",(int16)chan_num);
 	}

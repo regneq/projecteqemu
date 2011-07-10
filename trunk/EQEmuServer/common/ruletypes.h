@@ -94,6 +94,12 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )
 RULE_INT ( Guild, MaxMembers, 2048 )
+RULE_BOOL ( Guild, PlayerCreationAllowed, false)	// Allow players to create a guild using the window in Underfoot+
+RULE_INT ( Guild, PlayerCreationLimit, 1)		// Only allow use of the UF+ window if the account has < than this number of guild leaders on it
+RULE_INT ( Guild, PlayerCreationRequiredStatus, 0)	// Required admin status.
+RULE_INT ( Guild, PlayerCreationRequiredLevel, 0)	// Required Level of the player attempting to create the guild.
+RULE_INT ( Guild, PlayerCreationRequiredTime, 0)	// Required Time Entitled On Account (in Minutes) to create the guild.
+
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Skills )
