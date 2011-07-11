@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/11/2011==
+erde: FreeBSD compile fix for Rev1963 (no strncpy in FreeBSD).
+
 ==07/10/2011==
 Derision: Underfoot - Support for /emote
 Derision: Underfoot - Support for Guild Creation via new window in Underfoot.
