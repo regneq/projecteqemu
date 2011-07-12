@@ -192,6 +192,7 @@ void EQWHTTPHandler::SendPage(const std::string &file) {
 			SendBuf(buffer, len);
 	}
 	delete[] buffer;
+    fclose(f);
 #ifdef EMBPERL
 	if(process) {
 		//convert the base form into a useful perl exportable form
