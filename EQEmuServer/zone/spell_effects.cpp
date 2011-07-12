@@ -4092,7 +4092,7 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				const Item_Struct* TempItemAug = aug->GetItem();
 				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
 					if(rand_effectiveness) {
-						focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
+						focus_max = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id, true);
 						if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
 							focus_max_real = focus_max;
 							UsedItem = TempItem;
