@@ -574,7 +574,7 @@ ENCODE(OP_PlayerProfile) {
 		//OUT(buffs[r].reserved);
 		//OUT(buffs[r].player_id);
 	}
-	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
+	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
 		OUT(disciplines.values[r]);
 	}
 	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
@@ -2571,6 +2571,16 @@ ENCODE(OP_SpawnAppearance)
 	dest->FastQueuePacket(&outapp, ack_req);
 	
 	delete in;
+}
+
+ENCODE(OP_DisciplineUpdate)
+{
+	ENCODE_LENGTH_EXACT(Disciplines_Struct);
+	SETUP_DIRECT_ENCODE(Disciplines_Struct, structs::Disciplines_Struct);
+
+	memcpy(&eq->values, &emu->values, sizeof(Disciplines_Struct));
+
+	FINISH_ENCODE();
 }
 
 DECODE(OP_BazaarSearch)

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/13/2011==
+Derision: OP_DisciplineUpdate for SoF and Underfoot (expanded Disc struct in UF player profile, added encode for Disc update).
+
 ==07/12/2011==
 Caryatis: Added Perl Object: $mob->SetBodyType(bodytype).
 Caryatis: Fixed issue with swarm(and wake the dead) pets where they would not despawn if they spawned as the target died.
