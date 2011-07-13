@@ -1126,8 +1126,14 @@ void Mob::AI_Process() {
 		if(DivineAura())
 			return;
 
-		if (GetHPRatio() < 15)
+		if (GetHPRatio() < (RuleI(NPC, StartEnrageValue)+1) && 
+			(!RuleB(NPC, LiveLikeEnrage) || 
+			(RuleB(NPC, LiveLikeEnrage) && 
+			((IsPet() && !IsCharmed() && GetOwner() && GetOwner()->IsClient()) ||  
+			 (CastToNPC()->GetSwarmOwner() && entity_list.GetMob(CastToNPC()->GetSwarmOwner())->IsClient())))))
+		{
 			StartEnrage();
+		}
 		
 		bool is_combat_range = CombatRange(target);
 		
