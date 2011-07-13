@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/12/2011==
+Caryatis: Added Perl Object: $mob->SetBodyType(bodytype).
+Caryatis: Fixed issue with swarm(and wake the dead) pets where they would not despawn if they spawned as the target died.
+Caryatis: Changed when mobs enrage to 9%(from 14%) to match live, with a rule to customize the value if wanted.
+Caryatis: Added rule to allow matching of new live rules for enrage(it was removed from all non player-pet npcs).
+
+Optional SQL:
+utils/sql/svn/1968_optional_enrage_rules.sql
+
 ==07/11/2011==
 erde: FreeBSD compile fix for Rev1963 (no strncpy in FreeBSD).
 
