@@ -682,7 +682,7 @@ struct AA_Array
 };
 
 
-static const uint32 MAX_PP_DISCIPLINES = 100;
+static const uint32 MAX_PP_DISCIPLINES = 200;
 
 struct Disciplines_Struct {
 	uint32 values[MAX_PP_DISCIPLINES];
@@ -887,7 +887,6 @@ struct PlayerProfile_Struct
 /*07892*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [1900] Buffs currently on the player (30 Max) - (Each Size 76)
 /*09792*/ uint8   unknown09792[380];		// End of Buffs - was [360]
 /*10172*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
-/*10572*/ uint8   unknown10572[400];		// Discs?
 /*10972*/ uint32  recastTimers[MAX_RECAST_TYPES]; // Timers (UNIX Time of last use)
 /*11052*/ uint8   unknown11052[160];		// Some type of Timers
 /*11212*/ uint32  endurance;			// Current endurance
