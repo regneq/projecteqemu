@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/14/2011==
+Leere: Fix for reading books in SoF and later clients.
+
 ==07/13/2011==
 Derision: OP_DisciplineUpdate for SoF and Underfoot (expanded Disc struct in UF player profile, added encode for Disc update).
 
