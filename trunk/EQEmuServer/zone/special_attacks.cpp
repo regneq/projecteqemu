@@ -132,6 +132,7 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 		}
 		who->MeleeMitigation(this, max_damage, min_damage);
 		ApplyMeleeDamageBonus(skill, max_damage);
+		max_damage += (itembonuses.HeroicSTR / 10) + (max_damage * who->GetSkillDmgTaken(skill) / 100) + GetSkillDmgAmt(skill);
 		TryCriticalHit(who, skill, max_damage);
 	}
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);

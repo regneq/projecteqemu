@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/14/2011==
+Caryatis: Implemented the Extra Skill Damage itembonus(+bash, +kick dmg)
+
+Optional SQL:
+utils/sql/svn/1972_optional_extradmg_item_cap.sql
+
+==07/14/2011==
 Leere: Fix for reading books in SoF and later clients.
 
 ==07/13/2011==
