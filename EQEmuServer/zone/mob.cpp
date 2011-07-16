@@ -4292,9 +4292,9 @@ sint16 Mob::GetSkillDmgAmt(int16 skill)
 {
 	int skill_dmg = 0;
 
-	// All skill dmg + Skill specific
-	skill_dmg += this->itembonuses.SkillDamageAmount[HIGHEST_SKILL+1] + this->spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + 
-				this->itembonuses.SkillDamageAmount[skill] + this->spellbonuses.SkillDamageAmount[skill];
+	// All skill dmg(only spells do this) + Skill specific
+	skill_dmg += spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + 
+				itembonuses.SkillDamageAmount[skill] + spellbonuses.SkillDamageAmount[skill];
 	
 	// Deplete the buff if needed
 	uint32 buff_count = GetMaxTotalSlots();

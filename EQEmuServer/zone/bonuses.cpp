@@ -450,9 +450,12 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		}
 	}
 	
-	if (item->SkillModValue != 0 && item->SkillModType < HIGHEST_SKILL){
-		if (newbon->skillmod[item->SkillModType] < item->SkillModValue)
-			newbon->skillmod[item->SkillModType] = (sint8)item->SkillModValue;
+	if (item->SkillModValue != 0 && item->SkillModType <= HIGHEST_SKILL){
+		if ((item->SkillModValue > 0 && newbon->skillmod[item->SkillModType] < item->SkillModValue) ||
+			(item->SkillModValue < 0 && newbon->skillmod[item->SkillModType] > item->SkillModValue))
+		{
+			newbon->skillmod[item->SkillModType] = item->SkillModValue;
+		}
 	}
 
 	// Add Item Faction Mods
@@ -499,6 +502,13 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		{
 			AddItemFactionBonus(item->FactionMod4, item->FactionAmt4);
 		}
+	}
+	
+	if (item->ExtraDmgSkill != 0 && item->ExtraDmgSkill <= HIGHEST_SKILL) {
+		if((newbon->SkillDamageAmount[item->ExtraDmgSkill] + item->ExtraDmgAmt) > RuleI(Character, ItemExtraDmgCap))
+			newbon->SkillDamageAmount[item->ExtraDmgSkill] = RuleI(Character, ItemExtraDmgCap);
+		else
+			newbon->SkillDamageAmount[item->ExtraDmgSkill] += item->ExtraDmgAmt;
 	}
 
 	if (!isAug)
