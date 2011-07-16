@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/16/2011==
+Trevius: Exported AssignToInstance(instance_id) to Perl Client.
+
 ==07/14/2011==
 Caryatis: Implemented the Extra Skill Damage itembonus(+bash, +kick dmg)
 

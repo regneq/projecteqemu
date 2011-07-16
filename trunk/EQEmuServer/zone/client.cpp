@@ -5901,3 +5901,8 @@ void Client::Doppelganger(int16 spell_id, Mob *target, const char *name_override
 		summon_count--;
 	}
 }
+
+void Client::AssignToInstance(int16 instance_id)
+{
+	database.AddClientToInstance(instance_id, CharacterID());
+}
