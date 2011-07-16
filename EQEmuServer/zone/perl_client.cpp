@@ -5108,6 +5108,30 @@ XS(XS_Client_GetCorpseItemAt)
 	XSRETURN(1);
 }
 
+XS(XS_Client_AssignToInstance); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_AssignToInstance)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::AssignToInstance(THIS, instance_id)");
+	{
+		Client *		THIS;
+		int16		instance_id = (int16)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->AssignToInstance(instance_id);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5315,6 +5339,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetCorpseCount"), XS_Client_GetCorpseCount, file, "$");
 		newXSproto(strcpy(buf, "GetCorpseID"), XS_Client_GetCorpseID, file, "$$");
 		newXSproto(strcpy(buf, "GetCorpseItemAt"), XS_Client_GetCorpseItemAt, file, "$$$");
+		newXSproto(strcpy(buf, "AssignToInstance"), XS_Client_AssignToInstance, file, "$$");
 		XSRETURN_YES;
 }
 
