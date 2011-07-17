@@ -292,6 +292,7 @@ public:
 	static bool GroupHasClericClass(Group* group) { return GroupHasClass(group, CLERIC); }
 	static bool GroupHasDruidClass(Group* group) { return GroupHasClass(group, DRUID); }
 	static bool GroupHasShamanClass(Group* group) { return GroupHasClass(group, SHAMAN); }
+	static bool GroupHasEnchanterClass(Group* group) { return GroupHasClass(group, ENCHANTER); }
 	static bool GroupHasPriestClass(Group* group) { return GroupHasClass(group, CLERIC | DRUID | SHAMAN); }
 
 	// "GET" Class Methods

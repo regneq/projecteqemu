@@ -176,7 +176,7 @@ Mob::Mob(const char*   in_name,
 	runspeed   = in_runspeed;
 
 	
-    // neotokyo: sanity check
+    // sanity check
     if (runspeed < 0 || runspeed > 20)
         runspeed = 1.25f;
 	
@@ -668,6 +668,53 @@ char Mob::GetCasterClass() const {
 
 	default:
 		return 'N';
+		break;
+	}
+}
+
+uint8 Mob::GetArchetype() const {
+	switch(class_)
+	{
+	case PALADIN:
+	case RANGER:
+	case SHADOWKNIGHT:
+	case BARD:
+	case BEASTLORD:
+	case PALADINGM:
+	case RANGERGM:
+	case SHADOWKNIGHTGM:
+	case BARDGM:
+	case BEASTLORDGM:
+		return ARCHETYPE_HYBRID;
+		break;
+	case CLERIC:
+	case DRUID:
+	case SHAMAN:
+	case NECROMANCER:
+	case WIZARD:
+	case MAGICIAN:
+	case ENCHANTER:
+	case CLERICGM:
+	case DRUIDGM:
+	case SHAMANGM:
+	case NECROMANCERGM:
+	case WIZARDGM:
+	case MAGICIANGM:
+	case ENCHANTERGM:
+		return ARCHETYPE_CASTER;
+		break;
+	case WARRIOR:
+	case MONK:
+	case ROGUE:
+	case BERSERKER:
+	case WARRIORGM:
+	case MONKGM:
+	case ROGUEGM:
+	case BERSERKERGM:
+		return ARCHETYPE_MELEE;
+		break;
+	default:
+		return ARCHETYPE_HYBRID;
 		break;
 	}
 }
@@ -1597,7 +1644,7 @@ void Mob::SetAppearance(EmuAppearance app, bool iIgnoreSelf) {
 }
 
 void Mob::ChangeSize(float in_size = 0, bool bNoRestriction) {
-	//Neotokyo's Size Code
+	// Size Code
 	if (!bNoRestriction)
 	{
 		if (this->IsClient() || this->petid != 0)
@@ -1616,7 +1663,7 @@ void Mob::ChangeSize(float in_size = 0, bool bNoRestriction) {
 
 	if (in_size > 255.0)
 		in_size = 255.0;
-	//End of Neotokyo's Size Code
+	//End of Size Code
 	this->size = in_size;
 	SendAppearancePacket(AT_Size, (int32) in_size);
 }
@@ -1813,7 +1860,7 @@ void Mob::SetAttackTimer() {
 			if ((GetClass() == MONK) || (GetClass() == BEASTLORD)) {
 				//we are a monk, use special delay
 				int speed = (int)(GetMonkHandToHandDelay()*(100.0f+attack_speed)*PermaHaste);
-				// neotokyo: 1200 seemed too much, with delay 10 weapons available
+				// 1200 seemed too much, with delay 10 weapons available
 				if(speed < 1000)	//lower bound
 					speed = 1000;
 				TimerToUse->SetAtTrigger(speed, true);	// Hand to hand, delay based on level or epic

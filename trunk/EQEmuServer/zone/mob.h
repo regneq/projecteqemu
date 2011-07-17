@@ -45,6 +45,10 @@
 #define APPEAR_HEIGHT	0x001d
 #define	APPEAR_HP_TIC	0x0011
 
+#define ARCHETYPE_HYBRID	1
+#define ARCHETYPE_CASTER	2
+#define ARCHETYPE_MELEE		3
+
 #define CON_GREEN		2
 #define CON_LIGHTBLUE	18
 #define CON_BLUE		4
@@ -668,10 +672,11 @@ bool logpos;
 	inline float	GetManaRatio()	const { return max_mana == 0 ? 100 : (((float)cur_mana/max_mana)*100); }
 	void			SetZone(int32 zone_id, int32 instance_id);
 
-	// neotokyo: moved from client to use in NPC too
-	char GetCasterClass() const;
-	virtual sint32 CalcMaxMana();
-
+	// moved from client to use in NPC too
+ 	char GetCasterClass() const;
+	uint8 GetArchetype() const;
+ 	virtual sint32 CalcMaxMana();
+ 
 	inline virtual sint16	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
 	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual sint16	GetATKBonus()	const { return itembonuses.ATK + spellbonuses.ATK; }
