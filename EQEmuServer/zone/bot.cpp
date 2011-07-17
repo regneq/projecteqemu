@@ -7728,7 +7728,7 @@ void Bot::SetAttackTimer() {
 			if ((GetClass() == MONK) || (GetClass() == BEASTLORD)) {
 				//we are a monk, use special delay
 				int speed = (int)(GetMonkHandToHandDelay()*(100.0f+attack_speed)*PermaHaste);
-				// neotokyo: 1200 seemed too much, with delay 10 weapons available
+				// 1200 seemed too much, with delay 10 weapons available
 				if(speed < 800)	//lower bound
 					speed = 800;
 				TimerToUse->SetAtTrigger(speed, true);	// Hand to hand, delay based on level or epic
@@ -10061,7 +10061,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot levitate - Bot levitation (must have proper class in group)");
 		c->Message(0, "#bot resist - Bot resist buffs (must have proper class in group)");
 		c->Message(0, "#bot runeme - Enchanter Bot cast Rune spell on you");
-		c->Message(0, "#bot shrinkme - Shaman Bot will shrink you");
+		c->Message(0, "#bot shrink - Shaman Bot will shrink you");
 		c->Message(0, "#bot endureb - Bot enduring breath (must have proper class in group)");
 		c->Message(0, "#bot charm - (must have proper class in group)");
 		c->Message(0, "#bot dire charm - (must have proper class in group)");
@@ -10075,6 +10075,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot group help - Displays the commands available to manage any BOTs in your group.");
 		c->Message(0, "#bot botgroup help - Displays the commands available to manage BOT ONLY groups.");
 		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
+		c->Message(0, "#bot setfollowdistance ### - sets target bots follow distance to ### (ie 30 or 250).");
 		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face|eyes|heritage|tattoo|details <value>] - Change your BOTs appearance.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
@@ -10117,6 +10118,21 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 		return;
 	}
+
+	// added Bot follow distance - SetFollowDistance
+	if(!strcasecmp(sep->arg[1], "setfollowdistance")) {
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || (!c->GetTarget()->IsBot()) ) {
+			c->Message(15, "You must target a bot!");
+		}
+		else {
+			int32 BotFollowDistance = atoi(sep->arg[2]);
+			c->GetTarget()->SetFollowDistance(BotFollowDistance);
+
+		}
+
+		return;
+	}
+
 	
 	if(!strcasecmp(sep->arg[1], "augmentitem")) {
 		AugmentItem_Struct* in_augment = new AugmentItem_Struct[sizeof(AugmentItem_Struct)];
@@ -10910,18 +10926,18 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							Tracker = g->members[i];
 							TrackerClass = RANGER;
 							break;
-						case BARD:
-							// If we haven't found a tracker yet, use bard.
-							if(TrackerClass == 0) {
-								Tracker = g->members[i];
-								TrackerClass = BARD;
-							}
-							break;
 						case DRUID:
 							// Unless we have a ranger, druid is next best.
 							if(TrackerClass != RANGER) {
 								Tracker = g->members[i];
 								TrackerClass = DRUID;
+							}
+							break;
+						case BARD:
+							// If we haven't found a tracker yet, use bard.
+							if(TrackerClass == 0) {
+								Tracker = g->members[i];
+								TrackerClass = BARD;
 							}
 							break;
 						default:
@@ -11348,7 +11364,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				Group *g = c->GetGroup();
 
 				for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-					if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == ENCHANTER) || g->members[i]->GetClass() == CLERIC)) {
+					// seperated cleric and chanter so chanter is primary
+					if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER)) {
 						Bot *pacer = g->members[i]->CastToBot();
 						pacer->Say("Trying to pacify %s \n", target->GetCleanName());
 
@@ -11356,6 +11373,23 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							if(target->FindType(SE_Lull) || target->FindType(SE_Harmony) || target->FindType(SE_Calm))
 							//if(pacer->IsPacified(target))
 								c->Message(0, "I have successfully pacified %s.", target->GetCleanName());
+								return;
+							/*else
+								c->Message(0, "I failed to pacify %s.", target->GetCleanName());*/
+						}
+						else
+							c->Message(0, "I failed to pacify %s.", target->GetCleanName());
+					}
+					// seperated cleric and chanter so chanter is primary
+					if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (GroupHasEnchanterClass(g) == false)) {
+						Bot *pacer = g->members[i]->CastToBot();
+						pacer->Say("Trying to pacify %s \n", target->GetCleanName());
+
+						if(pacer->Bot_Command_CalmTarget(target)) {
+							if(target->FindType(SE_Lull) || target->FindType(SE_Harmony) || target->FindType(SE_Calm))
+							//if(pacer->IsPacified(target))
+								c->Message(0, "I have successfully pacified %s.", target->GetCleanName());
+								return;
 							/*else
 								c->Message(0, "I failed to pacify %s.", target->GetCleanName());*/
 						}
@@ -11730,12 +11764,16 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	}
 
 	// Shrink
-	if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
+	if ((!strcasecmp(sep->arg[1], "shrink")) && (c->IsGrouped())) {
 		Mob *Shrinker;
 		int32 ShrinkerClass = 0;
 		Group *g = c->GetGroup();
+		Mob *target = c->GetTarget();
 
-		if(g) {
+		if(target == NULL || (!target->IsClient() && !target->IsBot()))
+			c->Message(15, "You must select a player or bot");
+
+		else if(g) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
 				if(g->members[i] && g->members[i]->IsBot()) {
 					switch(g->members[i]->GetClass()) {
@@ -11760,7 +11798,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					if (c->GetLevel() >= 15) { 
 						Shrinker->Say("Casting Shrink...");
 						//Shrinker->CastToBot()->BotRaidSpell(345);
-						Shrinker->CastSpell(345, c->GetID(), 1);
+						//Shrinker->CastSpell(345, id), 1);
+						Shrinker->CastToBot()->SpellOnTarget(345, target);
 					}
 					else if (c->GetLevel() <= 14) {
 						Shrinker->Say("I'm not level 15 yet.");
@@ -11772,7 +11811,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					if (c->GetLevel() >= 23) {
 						Shrinker->Say("Casting Shrink...");
 						//Shrinker->CastToBot()->BotRaidSpell(345);
-						Shrinker->CastSpell(345, c->GetID(), 1);
+						//Shrinker->CastSpell(345, id), 1);
+						Shrinker->CastToBot()->SpellOnTarget(345, target);
 					}
 					else if (c->GetLevel() <= 22) {
 						Shrinker->Say("I'm not level 23 yet.");
@@ -13255,7 +13295,8 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 
 	int8 botCasterClass = caster->GetClass();
 
-	if( botCasterClass == CLERIC || botCasterClass == DRUID || botCasterClass == SHAMAN || botCasterClass == PALADIN || botCasterClass == BEASTLORD || botCasterClass == RANGER) {
+	// Changed so heal based on health percentage is different for hybrids
+	if( botCasterClass == CLERIC || botCasterClass == DRUID || botCasterClass == SHAMAN) {
 		//If AI_EngagedCastCheck() said to the healer that he had to heal
 		if( iSpellTypes == SpellType_Heal )	{
 			// check in group
@@ -13300,6 +13341,52 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 		}
 	}
 
+		// Changed so heal based on health percentage is different for hybrids
+		if( botCasterClass == PALADIN || botCasterClass == BEASTLORD || botCasterClass == RANGER) {
+		//If AI_EngagedCastCheck() said to the healer that he had to heal
+		if( iSpellTypes == SpellType_Heal )	{
+			// check in group
+			if(caster->HasGroup()) {
+				Group *g = caster->GetGroup();
+				
+				if(g) {
+					for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i] && !g->members[i]->qglobal) {
+							if(g->members[i]->IsClient() && g->members[i]->GetHPRatio() < 20) {
+								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+									return true;
+							}
+							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) &&
+								g->members[i]->GetHPRatio() < 20) 
+							{
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
+									return true;
+							}
+							else if(g->members[i]->GetClass() ==  ENCHANTER && g->members[i]->GetHPRatio() < 20) {
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
+									return true;
+							}
+							else if(g->members[i]->GetHPRatio() < 20) {
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
+									return true;
+							}
+						}
+
+						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->HasPet() && g->members[i]->GetPet()->GetHPRatio() < 20) {
+							if(g->members[i]->GetPet()->GetOwner() != caster && caster->IsEngaged() && g->members[i]->IsCasting() && g->members[i]->GetClass() != ENCHANTER )
+								continue;
+
+							if(caster->AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
+								return true;
+						}
+					}
+				}
+			}
+
+			// TODO: raid heals
+		}
+	}
+	
 	//Ok for the buffs..
 	if( iSpellTypes == SpellType_Buff) {
 		// Let's try to make Bard working...
@@ -13331,6 +13418,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 
 	return false;
 }
+
 
 Mob* EntityList::GetMobByBotID(uint32 botID) {
 	Mob* Result = 0;

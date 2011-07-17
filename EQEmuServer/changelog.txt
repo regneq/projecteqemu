@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/17/2011==
+Congdar: (pfyon, Criimson)Various bot tweaks
+        required bot sql: 1974_required_bot_spells_update
+
 ==07/16/2011==
 Trevius: Exported AssignToInstance(instance_id) to Perl Client.
 
