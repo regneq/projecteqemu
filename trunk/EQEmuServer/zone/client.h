@@ -331,7 +331,6 @@ public:
 	inline virtual sint16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual int	GetHaste() const { return Haste; }
 	int GetRawACNoShield(int &shield_ac) const;
-	sint32 GetShieldACBonus();
 
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -595,7 +594,7 @@ public:
 	void    SetLanguageSkill(int langid, int value);
 	void	SetHoTT(int32 mobid);
 	void	ShowSkillsWindow();
-	void	SendClientStatWindow(Client* client);
+	void	SendStatsWindow(Client* client, bool use_window);
 
 	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
 	inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
