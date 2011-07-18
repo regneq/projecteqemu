@@ -934,34 +934,6 @@ sint16 Client::GetACAvoid() {
 	return(avoidance*1000/847);
 }
 
-sint32 Client::GetShieldACBonus()
-{
-	int shield_ac_val = 0;
-	bool equiped = CastToClient()->m_inv.GetItem(14);
-	if(equiped) {
-		const Item_Struct *shield = CastToClient()->m_inv.GetItem(14)->GetItem();
-		if(shield->ItemType == ItemTypeShield) {
-			int slot_divider = 20; // Number to divide defense skill to simulate the items bonus
-			int shield_ac = shield->AC;
-			if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
-				shield_ac_val = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/(4*slot_divider) + 
-								(shield_ac);
-			} 
-			else {
-				shield_ac_val = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/(3*slot_divider) + 
-								((shield_ac*4)/3);
-				if(m_pp.class_ == MONK)
-					shield_ac_val += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
-			}
-			// Shield AC bonus for HeroicSTR
-			if(itembonuses.HeroicSTR) {
-				shield_ac_val += itembonuses.HeroicSTR/2;
-			}
-		}
-	}
-	return (shield_ac_val*1000/847);
-}
-
 sint32 Client::CalcMaxMana()
 {
 	switch(GetCasterClass())
