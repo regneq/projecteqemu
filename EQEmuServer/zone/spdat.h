@@ -666,7 +666,8 @@ struct SPDat_Spell_Struct
 /* 163 */ int spacing163[3];
 /* 166 */   int			EndurCost;
 /* 167 */   int			EndurTimerIndex;
-/* 168 */ int spacing168[5];
+/* 168 */   int			IsDisciplineBuff; //Will goto the combat window when cast
+/* 169 */ int spacing169[4];
 /* 173 */   int			HateAdded;
 /* 174 */   int			EndurUpkeep;
 /* 175 */ int spacing175;
@@ -687,6 +688,7 @@ struct SPDat_Spell_Struct
 /* 195 */ 	float 		directional_end;
 /* 207 */ 	int 		spellgroup;
 /* 209 */ 	int 		field209; // Need more investigation to figure out what to call this, for now we know -1 makes charm spells not break before their duration is complete, it does alot more though
+/* 211 */   int         CastRestriction; //Various restriction categories for spells most seem targetable race related but have also seen others for instance only castable if target hp 20% or lower or only if target out of combat
 /* 212 */ 	bool 		AllowRest;
 /* 219 */	int			maxtargets; // not in DB yet, is used for beam and ring spells for target # limits
 

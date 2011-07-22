@@ -723,7 +723,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		case EVENT_COMBINE_FAILURE:
 		{
 			ExportVar(packagename.c_str(), "recipe_id", extradata);
-			ExportVar(packagename.c_str(), "recipe_name", extradata);
+			ExportVar(packagename.c_str(), "recipe_name", data);
 			break;
 		}
 

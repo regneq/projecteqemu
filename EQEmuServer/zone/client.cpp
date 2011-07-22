@@ -1014,6 +1014,10 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 
 		printf("Message: %s\n",message);
 		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+        if(parse->PlayerHasQuestSub("EVENT_SAY")) 
+        {
+            parse->EventPlayer(EVENT_SAY, this, message, language);
+        }
 
 		if (sender != this)
 			break;
@@ -4022,10 +4026,10 @@ void Client::IncrementAggroCount() {
 	// rest state regen is stopped, and for SoF, it sends the opcode to show the crossed swords in-combat indicator.
 	//
 	//
+	AggroCount++;
+
 	if(!RuleI(Character, RestRegenPercent))
 		return;
-
-	AggroCount++;
 
 	// If we already had aggro before this method was called, the combat indicator should already be up for SoF clients,
 	// so we don't need to send it again.
@@ -4050,14 +4054,15 @@ void Client::DecrementAggroCount() {
 	// It checks whether any other mob is aggro on the player, and if not, starts the rest timer.
 	// For SoF, the opcode to start the rest state countdown timer in the UI is sent.
 	//
-	if(!RuleI(Character, RestRegenPercent))
-		return;
 	
 	// If we didn't have aggro before, this method should not have been called.
 	if(!AggroCount)
 		return;
 
 	AggroCount--;
+
+	if(!RuleI(Character, RestRegenPercent))
+		return;
 
 	// Something else is still aggro on us, can't rest yet.
 	if(AggroCount) return;
@@ -5342,6 +5347,7 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 		//Need to add the player inspect notes code here at some point...
 
 		requester->QueuePacket(outapp); // Send answer to requester
+        safe_delete(outapp);
 	}
 }
 

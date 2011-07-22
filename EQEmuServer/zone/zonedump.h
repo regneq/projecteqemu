@@ -113,6 +113,7 @@ struct NPCType
 	int32	scalerate;
 	bool	private_corpse;
 	bool	unique_spawn_by_name;
+    bool    underwater;
 };
 
 struct ZSDump_Spawn2 {

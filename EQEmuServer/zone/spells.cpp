@@ -2756,7 +2756,11 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	{
 		EQApplicationPacket *outapp = MakeBuffsPacket();
 
-		entity_list.QueueClientsByTarget(this, outapp, true, NULL, true, false, BIT_SoDAndLater);
+		entity_list.QueueClientsByTarget(this, outapp, false, NULL, true, false, BIT_SoDAndLater);
+ 
+        if(GetTarget() == this) {
+            CastToClient()->QueuePacket(outapp);
+        }
 
 		safe_delete(outapp);
 	}
@@ -2845,6 +2849,13 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 
 	if(spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
 		return false;
+
+    if(IsDetrimentalSpell(spell_id) && !IsAttackAllowed(spelltar)) {
+        if(!IsClient() || !CastToClient()->GetGM()) {
+            Message_StringID(MT_Shout, SPELL_NO_HOLD);
+            return false;
+        }
+    }
 
 	if(RuleB(Spells, EnableBlockedBuffs))
 	{

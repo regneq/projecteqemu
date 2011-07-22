@@ -420,7 +420,15 @@ Mob::~Mob()
 	
 	entity_list.RemoveFromTargets(this);
 	
-	safe_delete(trade);
+    if(trade) {
+        Mob *with = trade->With();
+        if(with && with->IsClient()) {
+            with->CastToClient()->FinishTrade(with);
+            with->trade->Reset();
+        }
+        delete trade;
+    }
+
 	if(HadTempPets()){
 		entity_list.DestroyTempPets(this);
 	}
@@ -2484,6 +2492,11 @@ void Mob::FaceTarget(Mob* MobToFace) {
 			SendPosition();
 		}
 	}
+
+    if(IsNPC() && !IsEngaged()) {
+        CastToNPC()->GetRefaceTimer()->Start(15000);
+        CastToNPC()->GetRefaceTimer()->Enable();
+    }
 }
 
 bool Mob::RemoveFromHateList(Mob* mob) 
@@ -4463,3 +4476,29 @@ void Mob::RemoveNimbusEffect(int effectid)
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);
 }
+
+bool Mob::IsBoat() {
+    return (race == 72 || race == 73 || race == 114 || race == 404 || race == 550 || race == 551 || race == 552);
+}
+
+void Mob::SetBodyType(bodyType new_body, bool overwrite_orig) {
+    bool needs_spawn_packet = false;
+    if(bodytype == 11 || bodytype >= 65 || new_body == 11 || new_body >= 65) {
+        needs_spawn_packet = true;
+    }
+
+    if(overwrite_orig) {
+        orig_bodytype = new_body;
+    }
+    bodytype = new_body;
+
+    if(needs_spawn_packet) {
+        EQApplicationPacket* app = new EQApplicationPacket;
+        CreateDespawnPacket(app, true);
+        entity_list.QueueClients(this, app);
+	    CreateSpawnPacket(app, this);
+	    entity_list.QueueClients(this, app);
+	    safe_delete(app);
+    }
+}
+

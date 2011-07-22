@@ -41,6 +41,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #include "QuestParserCollection.h"
+#include "watermap.h"
 
 #ifdef WIN32
 #define snprintf	_snprintf
@@ -2308,6 +2309,11 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
         }
     }
 
+    if(IsNPC() && CastToNPC()->IsUnderwaterOnly() && zone->HasWaterMap()) {
+        if(!zone->watermap->InLiquid(other->GetX(), other->GetY(), other->GetZ())) {
+            return;
+        }
+    }
 	// first add self
 	
 	// The damage on the hate list is used to award XP to the killer. This check is to prevent Killstealing.
@@ -3263,7 +3269,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		}	//end `if there is some damage being done and theres anattacker person involved`
 
 		Mob *pet = GetPet();
-		if (pet && !pet->IsFamiliar() && !pet->SpecAttacks[IMMUNE_AGGRO] && !pet->IsEngaged() && attacker && attacker != this) 
+		if (pet && !pet->IsFamiliar() && !pet->SpecAttacks[IMMUNE_AGGRO] && !pet->IsEngaged() && attacker && attacker != this && !attacker->IsCorpse()) 
 		{
 			mlog(PETS__AGGRO, "Sending pet %s into battle due to attack.", pet->GetName());
 			pet->AddToHateList(attacker, 1);

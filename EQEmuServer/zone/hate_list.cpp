@@ -26,6 +26,10 @@
 #include "../common/MiscFunctions.h"
 #include "hate_list.h"
 #include "QuestParserCollection.h"
+#include "zone.h"
+#include "watermap.h"
+
+extern Zone *zone;
 
 HateList::HateList()
 {
@@ -256,6 +260,8 @@ Mob *HateList::GetTop(Mob *center)
 	if (RuleB(Aggro,SmartAggroList)){
 		Mob* topClientInRange = NULL;
 		sint32 hateClientInRange = -1;
+        int skipped_count = 0;
+
 		LinkedListIterator<tHateEntry*> iterator(list);
 		iterator.Reset();
 		while(iterator.MoreElements())
@@ -272,6 +278,14 @@ Mob *HateList::GetTop(Mob *center)
 				iterator.Advance();
 				continue;
 			}
+
+            if(center->IsNPC() && center->CastToNPC()->IsUnderwaterOnly() && zone->HasWaterMap()) {
+                if(!zone->watermap->InLiquid(cur->ent->GetX(), cur->ent->GetY(), cur->ent->GetZ())) {
+                    skipped_count++;
+                    iterator.Advance();
+                    continue;
+                }
+            }
 
 			if(cur->ent->DivineAura() || cur->ent->IsMezzed() || cur->ent->IsFeared()){
 				if(hate == -1)
@@ -337,17 +351,31 @@ Mob *HateList::GetTop(Mob *center)
 			iterator.Advance();
 		}
 
-		if(topClientInRange != NULL && top != NULL && !top->IsClient())
+		if(topClientInRange != NULL && top != NULL && !top->IsClient()) {
 			return topClientInRange;
-		else
+        }
+		else {
+			if(top == NULL && skipped_count > 0) {
+                return center->GetTarget();
+            }
 			return top;
+        }
 	}
 	else{
 		LinkedListIterator<tHateEntry*> iterator(list);
 		iterator.Reset();
+        int skipped_count = 0;
 		while(iterator.MoreElements())
 		{
     		tHateEntry *cur = iterator.GetData();
+            if(center->IsNPC() && center->CastToNPC()->IsUnderwaterOnly() && zone->HasWaterMap()) {
+                if(!zone->watermap->InLiquid(cur->ent->GetX(), cur->ent->GetY(), cur->ent->GetZ())) {
+                    skipped_count++;
+                    iterator.Advance();
+                    continue;
+                }
+            }
+
 			if(cur->ent != NULL && ((cur->hate > hate) || cur->bFrenzy ))
 			{
 				top = cur->ent;
@@ -355,6 +383,9 @@ Mob *HateList::GetTop(Mob *center)
 			}
 			iterator.Advance();
 		}
+		if(top == NULL && skipped_count > 0) {
+            return center->GetTarget();
+        }
 		return top;
 	}
 }

@@ -34,6 +34,7 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "features.h"
 #include "QuestParserCollection.h"
+#include "watermap.h"
 
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
@@ -154,8 +155,14 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
 							&& !(tar->IsPet() && tar->GetOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
-							) {
-								int32 tempTime = 0;
+							) 
+                        {
+                            if(!checked_los) {
+                                if(!CheckLosFN(tar)) 
+                                    return(false); 
+                                checked_los = true; 
+                            } 
+							uint32 tempTime = 0;
 							AIDoSpellCast(i, tar, mana_cost, &tempTime);
 							tar->SetDontBuffMeBefore(tempTime);
 							return true;
@@ -1289,6 +1296,24 @@ void Mob::AI_Process() {
 		}	//end is within combat range
 		else {
 			//we cannot reach our target...
+            //underwater stuff only works with water maps in the zone!
+            if(IsNPC() && CastToNPC()->IsUnderwaterOnly() && zone->HasWaterMap()) {
+                if(!zone->watermap->InLiquid(target->GetX(), target->GetY(), target->GetZ())) {
+                    Mob *tar = hate_list.GetTop(this);
+                    if(tar == target) {
+                        WipeHateList();
+                        Heal();
+                        BuffFadeAll();
+                        AIwalking_timer->Start(100);
+	                    pLastFightingDelayMoving = Timer::GetCurrentTime();
+                        return;
+                    } else if(tar != NULL) {
+                        SetTarget(tar);
+                        return;
+                    }
+                }
+            }
+
 			// See if we can summon the mob to us
 			if (!HateSummon()) 
 			{
@@ -1820,7 +1845,7 @@ bool NPC::AI_EngagedCastCheck() {
 					//no spell to cast, try again soon.
 					AIautocastspell_timer->Start(RandomTimer(500, 1000), false);
 				}
-			} //else, spell casting finishing will reset the timer.
+			}	
 		}
 		return(true);
 	}
