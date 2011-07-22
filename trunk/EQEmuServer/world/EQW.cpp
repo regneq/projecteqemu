@@ -384,6 +384,75 @@ bool EQW::SetPublicNote(int32 charid, const char *note) {
 	return(guild_mgr.SetPublicNote(charid, note));
 }
 
+int EQW::CountBugs() {
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+    if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM bugs where status = 0"), errbuf, &result)) {
+		safe_delete_array(query);
+        if((row = mysql_fetch_row(result))) {
+            int count = atoi(row[0]);
+            mysql_free_result(result);
+            return count;
+        }
+        mysql_free_result(result);
+    }
+    safe_delete_array(query);
+    return 0;
+}
+
+vector<string> EQW::ListBugs(uint32 offset) {
+    vector<string> res;
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+    if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM bugs WHERE status = 0 limit %d, 30", offset), errbuf, &result)) {
+		safe_delete_array(query);
+        while((row = mysql_fetch_row(result))) {
+            res.push_back(row[0]);
+        }
+        mysql_free_result(result);
+    }
+    safe_delete_array(query);
+    return res;
+}
+
+map<string,string> EQW::GetBugDetails(Const_char *id) {
+    map<string,string> res;
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+    if(database.RunQuery(query, MakeAnyLenString(&query, "select name, zone, x, y, z, target, bug from bugs where id = %s", id), errbuf, &result)) {
+		safe_delete_array(query);
+        while((row = mysql_fetch_row(result))) {
+            res["name"] = row[0];
+            res["zone"] = row[1];
+            res["x"] = row[2];
+            res["y"] = row[3];
+            res["z"] = row[4];
+            res["target"] = row[5];
+            res["bug"] = row[6];
+            res["id"] = id;
+        }
+        mysql_free_result(result);
+    }
+    safe_delete_array(query);
+    return res;
+}
+
+void EQW::ResolveBug(const char *id) {
+    vector<string> res;
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_ROW row;
+    if(database.RunQuery(query, MakeAnyLenString(&query, "UPDATE bugs SET status=1 WHERE id=%s", id), errbuf)) {
+		safe_delete_array(query);
+    }
+    safe_delete_array(query);
+}
 
 
 #endif //EMBPERL

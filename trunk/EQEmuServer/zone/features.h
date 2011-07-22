@@ -216,7 +216,7 @@ enum {	//some random constants
 //tweak this if pathing mobs seem to jump forward or backwards
 //this should prolly be dynamic based on ping time or something.. who knows
 //Values found in the emu somewhere at one point in time: 36, 43
-#define NPC_RUNANIM_RATIO 34
+#define NPC_RUNANIM_RATIO 37
 
 //this is used to multiply an NPCs movement rate, yeilding map units..
 #define NPC_SPEED_MULTIPLIER 46		//used to be 2.8... no idea why it changed

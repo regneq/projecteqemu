@@ -335,6 +335,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		ldon_locked_skill = 0;
 		ldon_trap_detected = 0;
 	}
+    reface_timer = new Timer(15000);
+    reface_timer->Disable();
 	qGlobals = NULL;
 	guard_x_saved = 0;
 	guard_y_saved = 0;
@@ -380,6 +382,7 @@ NPC::~NPC()
 	faction_list.clear();
 	}
 
+    safe_delete(reface_timer);
 	safe_delete(swarmInfoPtr);
 	safe_delete(qGlobals);
 	UninitializeBuffSlots();
@@ -614,6 +617,12 @@ bool NPC::Process()
 		if(GravityTimer.Check())
 			DoGravityEffect();
 	}
+
+    if(reface_timer->Check() && !IsEngaged() && (guard_x == GetX() && guard_y == GetY() && guard_z == GetZ())) {
+        SetHeading(guard_heading);
+        SendPosition();
+        reface_timer->Disable();
+    }
 	
     if (IsMezzed())
 	    return true;
@@ -1315,7 +1324,7 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
         for(int i = 0; i < SPECATK_MAXNUM; i++)
 	    {
 	        SpecAttacks[i] = false;
-            SpecAttackTimers[i] = NULL;
+            safe_delete(SpecAttackTimers[i]);
         }
     }
 
@@ -1342,6 +1351,7 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
                 safe_delete(SpecAttackTimers[SPECATK_SUMMON]);
             } else {
                 SpecAttacks[SPECATK_SUMMON] = true;
+                safe_delete(SpecAttackTimers[SPECATK_SUMMON]);
                 SpecAttackTimers[SPECATK_SUMMON] = new Timer(6000);
                 SpecAttackTimers[SPECATK_SUMMON]->Start();
             }
@@ -1415,21 +1425,11 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
 		case 'L':
 			SpecAttacks[SPECATK_INNATE_DW] = (remove ? false : true);
 			break;
-
         case 't':
 			SpecAttacks[NPC_TUNNELVISION] = (remove ? false : true);
 			break;
-
         case 'n':
 			SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS] = (remove ? false : true);
-			break;
-
-        case 'i':
-			SpecAttacks[NPC_INTELLIGENT] = (remove ? false : true);
-			break;
-
-        case 's':
-			SpecAttacks[NPC_STUPID] = (remove ? false : true);
 			break;
 
         default:
@@ -1551,6 +1551,18 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 			break;
 		case 'Y':
 			if (!SpecAttacks[SPECATK_RANGED_ATK])
+				HasAllAttacks = false;
+			break;
+        case 'L':
+			if (!SpecAttacks[SPECATK_INNATE_DW])
+				HasAllAttacks = false;
+			break;
+        case 't':
+			if (!SpecAttacks[NPC_TUNNELVISION])
+				HasAllAttacks = false;
+			break;
+        case 'n':
+			if (!SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS])
 				HasAllAttacks = false;
 			break;
 

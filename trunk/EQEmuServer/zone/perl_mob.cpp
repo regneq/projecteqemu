@@ -7381,15 +7381,15 @@ XS(XS_Mob_RemoveNimbusEffect)
 	XSRETURN_EMPTY;
 }
 
-XS(XS_Mob_SetBodyType); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Mob_SetBodyType)
+XS(XS_Mob_SetRunning);
+XS(XS_Mob_SetRunning)
 {
 	dXSARGS;
 	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Mob::SetBodyType(THIS, new_body)");
+		Perl_croak(aTHX_ "Usage: Mob::SetRunning(THIS, value)");
 	{
-		Mob *		THIS;
-		bodyType	new_body = (bodyType)SvUV(ST(1));
+		Mob *	THIS;
+		bool value = (bool)SvTRUE(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7400,7 +7400,63 @@ XS(XS_Mob_SetBodyType)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->SetBodyType(new_body);
+        THIS->SetRunning(value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_IsRunning); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_IsRunning)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob:::IsRunning(THIS)");
+	{
+		Mob *	THIS;
+		bool RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        RETVAL = THIS->IsRunning();
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_SetBodyType); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetBodyType)
+{
+	dXSARGS;
+	if (items < 2 || items > 3)
+		Perl_croak(aTHX_ "Usage: Mob::SetBodyType(THIS, type, overwrite_orig = false)");
+	{
+		Mob *		THIS;
+		sint32		type = (sint32)SvIV(ST(1));
+        bool        overwrite_orig = false;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        if(items == 3) {
+            overwrite_orig = (bool)SvTRUE(ST(2));
+        }
+
+        THIS->SetBodyType((bodyType)type, overwrite_orig);
 	}
 	XSRETURN_EMPTY;
 }
@@ -7682,7 +7738,9 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "WearChange"), XS_Mob_WearChange, file, "$$$;$");
 		newXSproto(strcpy(buf, "DoKnockback"), XS_Mob_DoKnockback, file, "$$$$");
 		newXSproto(strcpy(buf, "RemoveNimbusEffect"), XS_Mob_RemoveNimbusEffect, file, "$$");
-		newXSproto(strcpy(buf, "SetBodyType"), XS_Mob_SetBodyType, file, "$$");
+        newXSproto(strcpy(buf, "IsRunning"), XS_Mob_IsRunning, file, "$");
+        newXSproto(strcpy(buf, "SetRunning"), XS_Mob_SetRunning, file, "$$");
+		newXSproto(strcpy(buf, "SetBodyType"), XS_Mob_SetBodyType, file, "$$;$");
 	XSRETURN_YES;
 }
 

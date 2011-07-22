@@ -1029,9 +1029,10 @@ This is hanging on freebsd for me, not sure why...
 
 		sp[tempid].EndurCost=atoi(sep.arg[166]);
 		sp[tempid].EndurTimerIndex=atoi(sep.arg[167]);
+        sp[tempid].IsDisciplineBuff=atoi(sep.arg[168]);
 
-		for(y = 0; y < 5;y++)
-			sp[tempid].spacing168[y]=atoi(sep.arg[168+y]);
+		for(y = 0; y < 4;y++)
+			sp[tempid].spacing169[y]=atoi(sep.arg[169+y]);
 
 		sp[tempid].HateAdded=atoi(sep.arg[173]);
 		sp[tempid].EndurUpkeep=atoi(sep.arg[174]);
@@ -1058,6 +1059,7 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].directional_end = (float)atoi(sep.arg[195]);
 		sp[tempid].spellgroup=atoi(row[207]);
 		sp[tempid].field209=atoi(row[209]);
+        sp[tempid].CastRestriction = atoi(sep.arg[211]);
 		sp[tempid].AllowRest = atoi(sep.arg[212]);
 	
 		// May crash zone
@@ -1226,9 +1228,10 @@ This is hanging on freebsd for me, not sure why...
 
 			sp[tempid].EndurCost=atoi(row[166]);
 			sp[tempid].EndurTimerIndex=atoi(row[167]);
+            sp[tempid].IsDisciplineBuff=atoi(row[168]);
 
-			for(y = 0; y < 5;y++)
-				sp[tempid].spacing168[y]=atoi(row[168+y]);
+			for(y = 0; y < 4; y++)
+				sp[tempid].spacing169[y]=atoi(row[169+y]);
 
 			sp[tempid].HateAdded=atoi(row[173]);
 			sp[tempid].EndurUpkeep=atoi(row[174]);
@@ -1255,6 +1258,7 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].directional_end = (float)atoi(row[195]);
 			sp[tempid].spellgroup=atoi(row[207]);
 			sp[tempid].field209=atoi(row[209]);
+            sp[tempid].CastRestriction = atoi(row[211]);
 			sp[tempid].AllowRest = atoi(row[212]);
 
 			// May crash zone

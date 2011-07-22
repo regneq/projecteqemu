@@ -602,49 +602,51 @@ void  Client::SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8
 				mod = MIN_FACTION;
 			
 			// Calculate the faction
-			tmpValue = current_value + mod + npc_value[i];
-			
-			// Make sure faction hits don't go to GMs...
-			if (m_pp.gm==1 && (tmpValue < current_value)) {
-				tmpValue = current_value;
-			}
-			
-			// Make sure we dont go over the min/max faction limits
-			if(tmpValue >= MAX_FACTION)
-			{
-				t = MAX_FACTION - mod;
-				if(current_value == t) {
-					//do nothing, it is already maxed out
-				} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, factionvalues)))
-				{
-					return;
-				}
-			}
-			else if(tmpValue <= MIN_FACTION)
-			{
-				t = MIN_FACTION - mod;
-				if(current_value == t) {
-					//do nothing, it is already maxed out
-				} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, factionvalues)))
-				{
-					return;
-				}
-			}
-			else
-			{
-				if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], current_value + npc_value[i], factionvalues)))
-				{
-					return;
-				}
-			}
-			if(tmpValue <= MIN_FACTION)
-				tmpValue = MIN_FACTION;
-			//ChannelMessageSend(0,0,7,0,BuildFactionMessage(npc_value[i], faction_id[i]));
-			char* msg = BuildFactionMessage(npc_value[i],faction_id[i],tmpValue);
-			if (msg != 0)
-				Message(0, msg);
-			safe_delete_array(msg);
-		}
+            if(npc_value[i] != 0) {
+			    tmpValue = current_value + mod + npc_value[i];
+			    
+			    // Make sure faction hits don't go to GMs...
+			    if (m_pp.gm==1 && (tmpValue < current_value)) {
+			    	tmpValue = current_value;
+			    }
+			    
+			    // Make sure we dont go over the min/max faction limits
+			    if(tmpValue >= MAX_FACTION)
+			    {
+			    	t = MAX_FACTION - mod;
+			    	if(current_value == t) {
+			    		//do nothing, it is already maxed out
+			    	} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, factionvalues)))
+			    	{
+			    		return;
+			    	}
+			    }
+			    else if(tmpValue <= MIN_FACTION)
+			    {
+			    	t = MIN_FACTION - mod;
+			    	if(current_value == t) {
+			    		//do nothing, it is already maxed out
+			    	} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, factionvalues)))
+			    	{
+			    		return;
+			    	}
+			    }
+			    else
+			    {
+			    	if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], current_value + npc_value[i], factionvalues)))
+			    	{
+			    		return;
+			    	}
+			    }
+			    if(tmpValue <= MIN_FACTION)
+			    	tmpValue = MIN_FACTION;
+			    
+			    char* msg = BuildFactionMessage(npc_value[i],faction_id[i],tmpValue);
+			    if (msg != 0)
+			    	Message(0, msg);
+			    safe_delete_array(msg);
+            }
+        }
 	}
 	return;
 }
@@ -656,7 +658,7 @@ void  Client::SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class
 	sint32 current_value;
 //	FactionMods fm;
 	//Get the npc faction list
-	if(faction_id > 0) {
+	if(faction_id > 0 && value != 0) {
 		//Get the faction modifiers
 		current_value = GetCharacterFactionLevel(faction_id) + value;
 		if(!(database.SetCharacterFactionLevel(char_id, faction_id, current_value, factionvalues)))

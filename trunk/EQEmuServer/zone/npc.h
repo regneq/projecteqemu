@@ -290,6 +290,7 @@ public:
 
 	//The corpse we make can only be looted by people who got credit for the kill
 	const bool HasPrivateCorpse() const { return NPCTypedata->private_corpse; }
+    const bool IsUnderwaterOnly() const { return NPCTypedata->underwater; }
 	const char* GetRawNPCTypeName() const { return NPCTypedata->name; }
 
 	bool GetDepop() { return p_depop; }
@@ -299,6 +300,7 @@ public:
 	uint32 GetAdventureTemplate() const { return adventure_template_id; }
 	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay, sint16 iResistAdjust);
 	void RemoveSpellFromNPCList(sint16 spell_id);
+    Timer *GetRefaceTimer() const { return reface_timer; }
 
 protected:
 	
@@ -328,6 +330,7 @@ protected:
 	bool	combat_event;	//true if we are in combat, false otherwise
     Timer	sendhpupdate_timer;
 	Timer	enraged_timer;
+    Timer *reface_timer;
 
 	int32	npc_spells_id;
 	int8	casting_spell_AIindex;

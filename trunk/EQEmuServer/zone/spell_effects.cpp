@@ -610,10 +610,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				//Typically we check for immunities else where but since stun immunities are different and only
 				//Block the stun part and not the whole spell, we do it here, also do the message here so we wont get the message on a resist
-				if(SpecAttacks[UNSTUNABLE])
+				int max_level = spell.max[i];
+                if(SpecAttacks[UNSTUNABLE])
 				{
 					caster->Message_StringID(MT_Shout, IMMUNE_STUN);
 				}
+                else if(max_level && max_level < GetLevel())
+                {
+                    caster->Message_StringID(MT_Shout, IMMUNE_STUN);
+                }
 				else
 				{
 					int stun_resist = itembonuses.StunResist+spellbonuses.StunResist; 
@@ -2331,7 +2336,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			
 			case SE_SetBodyType:
 			{
-				SetBodyType((bodyType)spell.base[i]);
+				SetBodyType((bodyType)spell.base[i], false);
 				break;
 			}
 			
@@ -3353,7 +3358,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			
 			case SE_SetBodyType:
 			{
-				SetBodyType(GetOrigBodyType());
+				SetBodyType(GetOrigBodyType(), false);
 				break;
 			}
 
@@ -3437,7 +3442,10 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 	{
 		EQApplicationPacket *outapp = MakeBuffsPacket();
 
-		entity_list.QueueClientsByTarget(this, outapp, true, NULL, true, false, BIT_SoDAndLater);
+		entity_list.QueueClientsByTarget(this, outapp, false, NULL, true, false, BIT_SoDAndLater);
+        if(GetTarget() == this) {
+            CastToClient()->QueuePacket(outapp);
+        }
 
 		safe_delete(outapp);
 	}

@@ -826,6 +826,146 @@ XS(XS_EQW_SetPublicNote)
 	XSRETURN(1);
 }
 
+XS(XS_EQW_CountBugs); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EQW_CountBugs)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: EQW::CountBugs(THIS)");
+	{
+		EQW *		THIS;
+		int		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "EQW")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EQW *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EQW");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->CountBugs();
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_EQW_ListBugs); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EQW_ListBugs)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EQW::ListBugs(THIS, id)");
+	{
+		EQW *		THIS;
+        uint32      id = (uint32)SvUV(ST(1));
+		vector<string>		RETVAL;
+
+
+		if (sv_derived_from(ST(0), "EQW")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EQW *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EQW");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+        
+		RETVAL = THIS->ListBugs(id);
+		ST(0) = sv_newmortal();
+	{
+			U32 ix_RETVAL;
+			/* pop crap off the stack we dont really want */
+			POPs;
+			POPs;
+			/* grow the stack to the number of elements being returned */
+			EXTEND(SP, RETVAL.size());
+			for (ix_RETVAL = 0; ix_RETVAL < RETVAL.size(); ix_RETVAL++) {
+					const string &it = RETVAL[ix_RETVAL];
+					ST(ix_RETVAL) = sv_newmortal();
+					sv_setpvn(ST(ix_RETVAL), it.c_str(), it.length());
+			}
+			/* hackish, but im over it. The normal xsubpp return will be right below this */
+			XSRETURN(RETVAL.size());
+	}
+	}
+	XSRETURN(1);
+}
+
+XS(XS_EQW_GetBugDetails); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EQW_GetBugDetails)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EQW::GetBugDetails(THIS, bug_ref)");
+	{
+		EQW *		THIS;
+		map<string,string>		RETVAL;
+		Const_char *		bug_ref = (Const_char *)SvPV_nolen(ST(1));
+
+		if (sv_derived_from(ST(0), "EQW")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EQW *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EQW");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetBugDetails(bug_ref);
+		ST(0) = sv_newmortal();
+		if (RETVAL.begin()!=RETVAL.end())
+		{
+				//NOTE: we are leaking the original ST(0) right now
+				HV *hv = newHV();
+				sv_2mortal((SV*)hv);
+				ST(0) = newRV((SV*)hv);
+
+				map<string,string>::const_iterator cur, end;
+				cur = RETVAL.begin();
+				end = RETVAL.end();
+				for(; cur != end; cur++) {
+						/* get the element from the hash, creating if needed (will be needed) */
+						SV**ele = hv_fetch(hv, cur->first.c_str(), cur->first.length(), TRUE);
+						if(ele == NULL) {
+								Perl_croak(aTHX_ "Unable to create a hash element for RETVAL");
+								break;
+						}
+						/* put our string in the SV associated with this element in the hash */
+						sv_setpvn(*ele, cur->second.c_str(), cur->second.length());
+				}
+		}
+	}
+	XSRETURN(1);
+}
+
+XS(XS_EQW_ResolveBug); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EQW_ResolveBug)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EQW::ResolveBug(THIS, id)");
+	{
+		EQW *		THIS;
+        const char *id = (const char*)SvPV_nolen(ST(1));
+
+		if (sv_derived_from(ST(0), "EQW")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EQW *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EQW");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+        
+		THIS->ResolveBug(id);
+	}
+	XSRETURN_EMPTY;
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -872,6 +1012,10 @@ XS(boot_EQW)
 		newXSproto(strcpy(buf, "SetBankerFlag"), XS_EQW_SetBankerFlag, file, "$$$");
 		newXSproto(strcpy(buf, "SetTributeFlag"), XS_EQW_SetTributeFlag, file, "$$$");
 		newXSproto(strcpy(buf, "SetPublicNote"), XS_EQW_SetPublicNote, file, "$$$");
+        newXSproto(strcpy(buf, "CountBugs"), XS_EQW_CountBugs, file, "$");
+        newXSproto(strcpy(buf, "ListBugs"), XS_EQW_ListBugs, file, "$$");
+		newXSproto(strcpy(buf, "GetBugDetails"), XS_EQW_GetBugDetails, file, "$$");
+        newXSproto(strcpy(buf, "ResolveBug"), XS_EQW_ResolveBug, file, "$$");
 	XSRETURN_YES;
 }
 

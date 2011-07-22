@@ -1270,7 +1270,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	{
         if(zone->watermap->InLiquid(x_pos, y_pos, z_pos))
 		{
-			CheckIncreaseSkill(SWIMMING, NULL, -5);
+			CheckIncreaseSkill(SWIMMING, NULL, -17);
 		}
 	}
 
@@ -3115,6 +3115,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 					if(silentsaylink)
 					{
                         parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, response, 0);
+                        parse->EventPlayer(EVENT_SAY, this, response, 0);
 					}
 					else
 					{
@@ -5540,6 +5541,7 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	mco->price=price;
 	QueuePacket(outapp);
 	safe_delete(outapp);
+    SendMoneyUpdate();
 	t1.start();
 	Save(1);
 	t1.stop();

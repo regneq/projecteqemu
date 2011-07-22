@@ -103,11 +103,11 @@ typedef enum {	//focus types
 } focusType;
 
 /*Used:
-S,E,R,r,F,T,Q,L,b,m,Y,U,M,C,N,I,D,A,B,f,O,W,H,G,g,d,t,n,i
+S,E,R,r,F,T,Q,L,b,m,Y,U,M,C,N,I,D,A,B,f,O,W,H,G,g,d,t,n
 */
 
 /*Unused
-a,c,e,h,j,k,l,o,p,q,u,v,w,x,y,z
+a,c,e,h,i,j,k,l,o,p,q,s,u,v,w,x,y,z
 J,K,P,V,X,Y,Z
 */
 
@@ -141,8 +141,6 @@ enum {
 	IMMUNE_FEIGN_DEATH, //d
     NPC_TUNNELVISION, //t
     NPC_NO_BUFFHEAL_FRIENDS, //n
-    NPC_INTELLIGENT, //i
-    NPC_STUPID, //s
 	SPECATK_MAXNUM
 };
 
@@ -753,6 +751,7 @@ bool logpos;
 	inline const float	GetBaseSize() const		{ return base_size; }
 	inline void			SetChanged()		{ pLastChange = Timer::GetCurrentTime(); }
 	inline const int32	LastChange() const	{ return pLastChange; }
+    bool IsBoat();
 
 	void	SetFollowID(int32 id) { follow = id; }
 	void	SetFollowDistance(int32 dist) { follow_dist = dist; }
@@ -903,7 +902,7 @@ bool logpos;
 
 	inline const bodyType GetBodyType() const { return bodytype; }
 	inline const bodyType GetOrigBodyType() const { return orig_bodytype; }
-	inline void SetBodyType(bodyType new_body) { bodytype = new_body; }
+	void SetBodyType(bodyType new_body, bool overwrite_orig);
 
 	bool	invulnerable;
 	bool	invisible, invisible_undead, invisible_animals, sneaking, hidden, improved_hidden;
