@@ -554,7 +554,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 	//do any event-specific stuff...
 	switch (event) {
 		case EVENT_SAY: {
-			if (npcmob->GetAppearance() != eaDead)
+			if (npcmob && npcmob->GetAppearance() != eaDead)
 			  npcmob->FaceTarget(mob);
 			ExportVar(packagename.c_str(), "data", objid);
 			ExportVar(packagename.c_str(), "text", data);
