@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/22/2011==
+Congdar: update check for Lore
+
 ==07/17/2011==
 Congdar: (pfyon, Criimson)Various bot tweaks
 Caryatis: Updated My/Showstats window.

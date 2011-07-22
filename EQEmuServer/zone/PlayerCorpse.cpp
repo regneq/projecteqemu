@@ -1093,6 +1093,25 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			return;
 		}
 
+		if(inst->IsAugmented())
+		{
+			for(int i=0; i<MAX_AUGMENT_SLOTS; i++)
+			{
+				ItemInst *itm = inst->GetAugment(i);
+				if(itm)
+				{
+					if(client->CheckLoreConflict(itm->GetItem()))
+					{
+						client->Message_StringID(0,LOOT_LORE_ERROR);
+						SendEndLootErrorPacket(client);
+						BeingLootedBy = 0;
+						delete inst;
+						return;
+					}
+				}
+			}
+		}
+
 		char buf[88];
 		char corpse_name[64];
 		strcpy(corpse_name, orgname);
