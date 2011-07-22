@@ -3128,7 +3128,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 				{
 					if(silentsaylink)
 					{
-						Message(13, "Error: Silent Say Links require an NPC target.");
+						parse->EventPlayer(EVENT_SAY, this, response, 0);
 					}
 					else
 					{
