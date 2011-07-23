@@ -217,6 +217,7 @@ public:
 	void BotTradeAddItem(uint32 id, const ItemInst* inst, sint16 charges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb = true);
 	void EquipBot(std::string* errorMessage);
 	bool CheckLoreConflict(const Item_Struct* item);
+	uint32 GetEquipmentColor(int8 material_slot) const;
 
 	// Static Class Methods
 	static void SaveBotGroup(Group* botGroup, std::string botGroupName, std::string* errorMessage);
@@ -296,7 +297,7 @@ public:
 	static bool GroupHasPriestClass(Group* group) { return GroupHasClass(group, CLERIC | DRUID | SHAMAN); }
 
 	// "GET" Class Methods
-	uint32 GetBotID() { return _botID; }
+	uint32 GetBotID() const { return _botID; }
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
 	uint32 GetBotSpellID() { return npc_spells_id; }
 	Mob* GetBotOwner() { return this->_botOwner; }
