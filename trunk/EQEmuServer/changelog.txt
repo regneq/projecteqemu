@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/23/2011==
 Congdar: (Criimson)Bot dyes (and tweaks)
+Congdar: (lerxst2112)Bot dyes (and tweaks)
 
 ==07/22/2011==
 Congdar: update check for Lore
