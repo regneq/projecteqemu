@@ -10142,13 +10142,15 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	//bot armor colors
 	if(!strcasecmp(sep->arg[1], "armorcolor")) {
 		if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c)) {
+
+			if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0') {
+				c->Message(0, "Usage: #bot armorcolor [slot] [red] [green] [blue] - use #bot help armorcolor for info");
+				return;
+			}
+
 			uint32 botid = c->GetTarget()->CastToBot()->GetBotID();
 			std::string errorMessage;
 			char* Query = 0;
-			//if(sep->argnum < 6) {
-			//	c->Message(0, "Usage: #bot armorcolor [slot] [red] [green] [blue] - use #bot help armorcolor for info");
-			//	return;
-			//}
 
 			int setslot = atoi(sep->arg[2]);
 			uint8 red = atoi(sep->arg[3]);
@@ -10156,22 +10158,14 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			uint8 blue = atoi(sep->arg[5]);
 			uint32 setcolor = (red << 16) | (green << 8) | blue;
 
-			if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0') {
-				c->Message(0, "Usage: #bot armorcolor [slot] [red] [green] [blue] - use #bot help armorcolor for info");
-				return;
+			if(database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE botinventory SET color = %u WHERE slotID = %i AND botID = %u",setcolor, setslot, botid))){
+				int slotmaterial = Inventory::CalcMaterialFromSlot(setslot);
+				c->GetTarget()->CastToBot()->SendWearChange(slotmaterial);
 			}
-			else{
-				if(database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE botinventory SET color = %i WHERE slotID = %i AND botID = %u",setcolor, setslot, botid))){
-					int slotmaterial = Inventory::CalcMaterialFromSlot(setslot);
-					c->GetTarget()->CastToBot()->SendWearChange(slotmaterial);
-				}
-			}
-			
 		}
 		else {
 			c->Message(15, "You must target a bot you own to do this.");
 		}
-
 		return;
 	}
 	// Help for coloring bot armor
