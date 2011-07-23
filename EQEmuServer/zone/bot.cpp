@@ -3567,6 +3567,9 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		const Item_Struct* item = 0;
 		const ItemInst* inst = 0;
 
+		uint32 spawnedbotid = 0;
+		spawnedbotid = this->GetBotID();
+
 		inst = GetBotItem(SLOT_HANDS);
 		if(inst) {
 			item = inst->GetItem();
@@ -3645,6 +3648,7 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 			if(item) {
 				if(strlen(item->IDFile) > 2)
 					ns->spawn.equipment[MATERIAL_PRIMARY] = atoi(&item->IDFile[2]);
+					ns->spawn.colors[MATERIAL_PRIMARY].color = GetEquipmentColor(MATERIAL_PRIMARY);
 			}
 		}
 
@@ -3654,6 +3658,7 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 			if(item) {
 				if(strlen(item->IDFile) > 2)
 					ns->spawn.equipment[MATERIAL_SECONDARY] = atoi(&item->IDFile[2]);
+					ns->spawn.colors[MATERIAL_SECONDARY].color = GetEquipmentColor(MATERIAL_SECONDARY);
 			}
 		}
 	}
@@ -5338,7 +5343,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough)
 		(!IsAttackAllowed(other)))
 	{
 		if(this->GetOwnerID())
-			entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
+			entity_list.MessageClose(this, 1, 200, 10, "%s says, '%s is not a legal target master.'", this->GetCleanName(), this->GetTarget()->GetCleanName());
 		if(other)
 			RemoveFromHateList(other);
 		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetCleanName());
@@ -10061,7 +10066,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot levitate - Bot levitation (must have proper class in group)");
 		c->Message(0, "#bot resist - Bot resist buffs (must have proper class in group)");
 		c->Message(0, "#bot runeme - Enchanter Bot cast Rune spell on you");
-		c->Message(0, "#bot shrink - Shaman Bot will shrink you");
+		c->Message(0, "#bot shrink - Shaman or Beastlord will shrink target");
 		c->Message(0, "#bot endureb - Bot enduring breath (must have proper class in group)");
 		c->Message(0, "#bot charm - (must have proper class in group)");
 		c->Message(0, "#bot dire charm - (must have proper class in group)");
@@ -10077,6 +10082,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
 		c->Message(0, "#bot setfollowdistance ### - sets target bots follow distance to ### (ie 30 or 250).");
 		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face|eyes|heritage|tattoo|details <value>] - Change your BOTs appearance.");
+		c->Message(0, "#bot armorcolor <slot> <red> <green> <blue> - #bot help armorcolor for info");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
@@ -10121,8 +10127,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 	// added Bot follow distance - SetFollowDistance
 	if(!strcasecmp(sep->arg[1], "setfollowdistance")) {
-		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || (!c->GetTarget()->IsBot()) ) {
-			c->Message(15, "You must target a bot!");
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || (!c->GetTarget()->IsBot()) || (c->GetTarget()->CastToBot()->GetBotOwner() != c)) {
+			c->Message(15, "You must target a bot you own!");
 		}
 		else {
 			int32 BotFollowDistance = atoi(sep->arg[2]);
@@ -10133,7 +10139,57 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-	
+	//bot armor colors
+	if(!strcasecmp(sep->arg[1], "armorcolor")) {
+		if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c)) {
+			uint32 botid = c->GetTarget()->CastToBot()->GetBotID();
+			std::string errorMessage;
+			char* Query = 0;
+			//if(sep->argnum < 6) {
+			//	c->Message(0, "Usage: #bot armorcolor [slot] [red] [green] [blue] - use #bot help armorcolor for info");
+			//	return;
+			//}
+
+			int setslot = atoi(sep->arg[2]);
+			uint8 red = atoi(sep->arg[3]);
+			uint8 green = atoi(sep->arg[4]);
+			uint8 blue = atoi(sep->arg[5]);
+			uint32 setcolor = (red << 16) | (green << 8) | blue;
+
+			if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0') {
+				c->Message(0, "Usage: #bot armorcolor [slot] [red] [green] [blue] - use #bot help armorcolor for info");
+				return;
+			}
+			else{
+				if(database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE botinventory SET color = %i WHERE slotID = %i AND botID = %u",setcolor, setslot, botid))){
+					int slotmaterial = Inventory::CalcMaterialFromSlot(setslot);
+					c->GetTarget()->CastToBot()->SendWearChange(slotmaterial);
+				}
+			}
+			
+		}
+		else {
+			c->Message(15, "You must target a bot you own to do this.");
+		}
+
+		return;
+	}
+	// Help for coloring bot armor
+		if(!strcasecmp(sep->arg[1], "help") && !strcasecmp(sep->arg[2], "armorcolor") ){
+		//read from db
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+		
+		c->Message(0, "-----------------#bot armorcolor help-----------------------------");
+		c->Message(0, "Armor:  17(Chest/Robe), 7(Arms), 9(Bracer), 12(Hands), 18(Legs), 19(Boots), 2(Helm)");
+		c->Message(0, "------------------------------------------------------------------");
+		c->Message(0, "Color: [red] [green] [blue]  (enter a number from 0-255 for each");
+		c->Message(0, "------------------------------------------------------------------");
+		c->Message(0, "Example: #bot armorcolor 17 0 255 0 - this would make the chest bright green");
+		return;
+	}
+
 	if(!strcasecmp(sep->arg[1], "augmentitem")) {
 		AugmentItem_Struct* in_augment = new AugmentItem_Struct[sizeof(AugmentItem_Struct)];
 		in_augment->container_slot = 1000;
@@ -11490,7 +11546,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// Remove Bot's Pet
 	if(!strcasecmp(sep->arg[1], "pet") && !strcasecmp(sep->arg[2], "remove")) {
 		if(c->GetTarget() != NULL) {
-			if (c->IsGrouped() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() != c->CharacterID()) &&
+			if (c->IsGrouped() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c) &&
 				((c->GetTarget()->GetClass() == NECROMANCER) || (c->GetTarget()->GetClass() == ENCHANTER) || (c->GetTarget()->GetClass() == DRUID))) {
 					if(c->GetTarget()->CastToBot()->IsBotCharmer()) {
 						c->GetTarget()->CastToBot()->SetBotCharmer(false);
@@ -11770,8 +11826,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		Group *g = c->GetGroup();
 		Mob *target = c->GetTarget();
 
-		if(target == NULL || (!target->IsClient() && !target->IsBot()))
-			c->Message(15, "You must select a player or bot");
+		if(target == NULL || (!target->IsClient() && (c->GetTarget()->CastToBot()->GetBotOwner() != c)))
+			c->Message(15, "You must select a player or bot you own");
 
 		else if(g) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
@@ -11797,8 +11853,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 					if (c->GetLevel() >= 15) { 
 						Shrinker->Say("Casting Shrink...");
-						//Shrinker->CastToBot()->BotRaidSpell(345);
-						//Shrinker->CastSpell(345, id), 1);
 						Shrinker->CastToBot()->SpellOnTarget(345, target);
 					}
 					else if (c->GetLevel() <= 14) {
@@ -11810,8 +11864,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 					if (c->GetLevel() >= 23) {
 						Shrinker->Say("Casting Shrink...");
-						//Shrinker->CastToBot()->BotRaidSpell(345);
-						//Shrinker->CastSpell(345, id), 1);
 						Shrinker->CastToBot()->SpellOnTarget(345, target);
 					}
 					else if (c->GetLevel() <= 22) {
@@ -13740,6 +13792,33 @@ int8 Bot::GetNumberNeedingHealedInGroup(int8 hpr, bool includePets) {
 	}
 
 	return needHealed;
+}
+
+uint32 Bot::GetEquipmentColor(int8 material_slot) const
+{
+	//Bot tints
+	int32 slotid = 0;
+	uint32 returncolor = 0;
+	uint32 botid = this->GetBotID();
+	
+	//Translate code slot # to DB slot #
+	slotid = Inventory::CalcSlotFromMaterial(material_slot);
+
+	//read from db
+	char* Query = 0;
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+	
+	if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT color FROM botinventory WHERE BotID = %u AND SlotID = %u", botid, slotid), 0, &DatasetResult)) {
+		if(mysql_num_rows(DatasetResult) == 1) {
+			DataRow = mysql_fetch_row(DatasetResult);
+			if(DataRow)
+				returncolor = atoi(DataRow[0]);
+		}
+		mysql_free_result(DatasetResult);
+		safe_delete_array(Query);
+	}
+	return returncolor;
 }
 
 #endif

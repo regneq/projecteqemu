@@ -298,6 +298,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							break;
 						case ARCHETYPE_MELEE:
 							if(IsEffectInSpell(selectedBotSpell.SpellId, SE_IncreaseSpellHaste) || IsEffectInSpell(selectedBotSpell.SpellId, SE_ManaPool) ||
+								IsEffectInSpell(selectedBotSpell.SpellId, SE_CastingLevel) || IsEffectInSpell(selectedBotSpell.SpellId, SE_ManaRegen_v2) ||
 								IsEffectInSpell(selectedBotSpell.SpellId, SE_CurrentMana))
 							{
 								continue;
@@ -558,8 +559,15 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						GroupHasShaman = true;
 					}
 					else if (botClass == ENCHANTER){
-						botSpell = GetBestBotSpellForMagicBasedSlow(this);
-						GroupHasEnchanter = true;
+						//Checking no adds before slow/debuff
+						Mob* addMob = GetFirstIncomingMobToMez(this, botSpell);
+
+						if(addMob){
+							break;}
+						else {
+ 						botSpell = GetBestBotSpellForMagicBasedSlow(this);
+ 						GroupHasEnchanter = true;
+						}
 					}
 					else if (botClass == BEASTLORD && GroupHasEnchanter == false && GroupHasShaman == false){
 						botSpell = GetBestBotSpellForDiseaseBasedSlow(this);
@@ -583,6 +591,13 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						break;	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 					
 					checked_los = true;
+				}
+				//if enchanter checking if no adds
+				if (botClass == ENCHANTER){
+					Mob* addMob = GetFirstIncomingMobToMez(this, botSpell);
+ 
+					if(addMob){
+						break;}
 				}
 
 				botSpell = GetDebuffBotSpell(this, tar);
