@@ -1292,19 +1292,35 @@ uint16 Bot::GetPrimarySkillValue()
 	return GetSkill(skill);
 }
 
-sint16 Bot::GetATK()
+uint16 Bot::GetTotalATK()
 {
 	int16 AttackRating = 0;
-	int16 WornCap = GetATKBonus();
+	int16 WornCap = itembonuses.ATK;
 
-	if(WornCap > (RuleI(Character, ItemATKCap) + spellbonuses.ATK)) // GetATKBonus returns item and spell bonuses, so to keep under cap need to take into account
-		WornCap = (RuleI(Character, ItemATKCap) + spellbonuses.ATK);
+	if(IsBot()) {
+		AttackRating = ((WornCap * 1.342) + (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69));
+		//AttackRating += aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 
-	AttackRating = ((WornCap * 1.342) + (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69));
+		if (AttackRating < 10)
+			AttackRating = 10;
+	}
+	else
+		AttackRating = GetATK();
+		
+	AttackRating += spellbonuses.ATK;
 
-	if(AttackRating < 10)
-		AttackRating = 10;
+	return AttackRating;
+}
 
+uint16 Bot::GetATKRating()
+{
+	int16 AttackRating = 0;
+	if(IsBot()) {
+		AttackRating = (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69);
+
+		if (AttackRating < 10)
+			AttackRating = 10;
+	}
 	return AttackRating;
 }
 
@@ -2222,6 +2238,8 @@ bool Bot::Process()
 
 		if(GetMana() < GetMaxMana())
 			SetMana(GetMana() + CalcManaRegen() + RestRegenMana);
+
+		CalcATK();
 	}
 
 	if (sendhpupdate_timer.Check()) {
@@ -8746,7 +8764,8 @@ void Bot::CalcBonuses() {
 	CalcItemBonuses();
 	CalcSpellBonuses(&spellbonuses);
 	GenerateAABonuses();
-
+	
+	CalcATK();
 	CalcSTR();
 	CalcSTA();
 	CalcDEX();
@@ -9177,6 +9196,11 @@ sint16	Bot::CalcCorrup()
 		Corrup = GetMaxCorrup();
 
 	return(Corrup);
+}
+
+sint16 Bot::CalcATK() {
+	ATK = itembonuses.ATK + spellbonuses.ATK; //+ aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
+	return(ATK);
 }
 
 void Bot::CalcRestState() {
