@@ -99,7 +99,10 @@ public:
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	virtual void DoRiposte(Mob* defender);
-	inline virtual sint16 GetATK();
+	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
+	inline virtual sint16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
+	uint16 GetTotalATK();
+	uint16 GetATKRating();
 	uint16 GetPrimarySkillValue();
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
@@ -156,6 +159,7 @@ public:
 	inline virtual sint16  GetMaxCR();
 	inline virtual sint16  GetMaxFR();
 	inline virtual sint16  GetMaxCorrup();
+	sint16  CalcATK();
 	sint16  CalcSTR();
 	sint16  CalcSTA();
 	sint16  CalcDEX();
@@ -314,7 +318,7 @@ public:
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
-	inline virtual sint16	GetAC()	{ return AC; }
+	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
 	inline virtual sint16	GetDEX()	const { return DEX; }
