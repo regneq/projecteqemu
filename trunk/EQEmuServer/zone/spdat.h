@@ -464,8 +464,8 @@ typedef enum  {
 #define SE_CombatSkills					311 // implemented
 #define SE_Sanctuary					312 // *not implemented
 //#define SE_Unknown313					313	// not used
-#define SE_Invisibility2				314 // *not implemented correctly, this is supposed to be a higher level invis than reg invis
-#define SE_InvisVsUndead2				315 // *not implemented correctly, this is supposed to be a higher level invis than reg invis
+#define SE_Invisibility2				314 // implemented - fixed duration invisible
+#define SE_InvisVsUndead2				315 // implemented  - fixed duration ITU
 //#define SE_Unknown316					316	// not used
 //#define SE_Unknown317					317	// not used
 #define SE_ItemManaRegenCapIncrease		318 // implemented - increases amount of mana regen you can gain via items
