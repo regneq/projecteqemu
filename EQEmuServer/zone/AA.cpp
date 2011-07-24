@@ -481,7 +481,7 @@ void Client::HandleAAAction(aaID activate) {
 
 		case aaActionFadingMemories:
 			entity_list.RemoveFromTargets(this);
-			SetInvisible(true);
+			SetInvisible(1);
 			break;
 			
 		default:

@@ -466,7 +466,7 @@ int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
 int32 Mob::GetPRange(float x, float y, float z){
 	return 0;
 }
-void Mob::SetInvisible(bool state)
+void Mob::SetInvisible(int8 state)
 {
 	invisible = state;
 	SendAppearancePacket(AT_Invis, invisible);
@@ -479,7 +479,6 @@ void Mob::SetInvisible(bool state)
         if(formerpet)
              formerpet->BuffFadeByEffect(SE_Charm);
     }
-   
 }
 
 //check to see if `this` is invisible to `other`
@@ -489,7 +488,7 @@ bool Mob::IsInvisible(Mob* other) const
 		return(false);
 	
 	//check regular invisibility
-	if (invisible && !other->SeeInvisible())
+	if (invisible && invisible > other->SeeInvisible())
 		return true;
 	
 	//check invis vs. undead
@@ -2793,36 +2792,6 @@ bool Mob::DivineAura() const
 	}
 	return false;
 }
-
-
-
-/*bool Mob::SeeInvisibleUndead()
-{
-	if (IsNPC() && CastToNPC()->Undead() && CastToNPC()->immunities[0] == 0)
-		return false;
-	return true;
-}
-
-bool Mob::SeeInvisible()
-{
-	if (IsNPC() && CastToNPC()->immunities[0] > 0)
-		return true;
-	int l;
-	for (l = 0; l < BUFF_COUNT; l++)
-	{
-		if (buffs[l].spellid != SPELL_UNKNOWN)
-		{
-			for (int k = 0; k < EFFECT_COUNT; k++)
-			{
-				if (spells[buffs[l].spellid].effectid[k] == SE_SeeInvis)
-				{
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}*/
 
 sint16 Mob::GetResist(int8 type) const
 {

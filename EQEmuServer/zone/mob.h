@@ -561,8 +561,8 @@ bool logpos;
 	bool RemoveProcFromWeapon(int16 spell_id, bool bAll = false);
 	bool HasProcs() const;
 
-	inline bool SeeInvisible() const { return see_invis; }				// Mongrel: Now using the flags
-	inline bool SeeInvisibleUndead() const { return see_invis_undead; }   // Mongrel: Now using the flags
+	inline int8 SeeInvisible() const { return see_invis; }				
+	inline bool SeeInvisibleUndead() const { return see_invis_undead; } 
 	inline bool SeeHide() const { return see_hide; }
 	inline bool SeeImprovedHide() const { return see_improved_hide; }
 
@@ -572,7 +572,7 @@ bool logpos;
 	inline bool GetQglobal() const {return qglobal;}		// SCORPIOUS2K - return quest global flag
 
 	bool IsInvisible(Mob* other = 0) const;
-	void SetInvisible(bool state);
+	void SetInvisible(int8 state);
 
 	void SetFlyMode(int8 flymode);
 
@@ -904,10 +904,10 @@ bool logpos;
 	inline const bodyType GetOrigBodyType() const { return orig_bodytype; }
 	void SetBodyType(bodyType new_body, bool overwrite_orig);
 
-	bool	invulnerable;
-	bool	invisible, invisible_undead, invisible_animals, sneaking, hidden, improved_hidden;
-	bool	see_invis, see_invis_undead, see_hide, see_improved_hide;   // Mongrel: See Invis and See Invis vs. Undead
-	bool	qglobal;		// SCORPIOUS2K - qglobal flag
+	int8	invisible, see_invis;
+	bool	invulnerable, invisible_undead, invisible_animals, sneaking, hidden, improved_hidden;
+	bool	see_invis_undead, see_hide, see_improved_hide;   
+	bool	qglobal;		
 
 	virtual void SetAttackTimer();
 	inline void	SetInvul(bool invul) { invulnerable=invul; }

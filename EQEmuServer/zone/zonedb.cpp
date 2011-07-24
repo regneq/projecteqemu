@@ -1256,7 +1256,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 					}
 				}
 
-				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Set see_invis flag
+				tmpNPCType->see_invis = atoi(row[r++]);
 				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag
 				if (row[r] != NULL)
 					strn0cpy(tmpNPCType->lastname, row[r], 32);

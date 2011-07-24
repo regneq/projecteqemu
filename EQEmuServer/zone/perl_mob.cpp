@@ -1366,7 +1366,7 @@ XS(XS_Mob_SetInvisible)
 		Perl_croak(aTHX_ "Usage: Mob::SetInvisible(THIS, state)");
 	{
 		Mob *		THIS;
-		bool		state = (bool)SvTRUE(ST(1));
+		int8		state = (int8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));

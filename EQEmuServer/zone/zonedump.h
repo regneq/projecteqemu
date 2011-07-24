@@ -96,7 +96,7 @@ struct NPCType
 	sint32	hp_regen;
 	sint32  mana_regen;
 	sint32	aggroradius; // added for AI improvement - neotokyo
-	bool	see_invis;			// See Invis flag added
+	int8	see_invis;			// See Invis flag added
 	bool	see_invis_undead;   // See Invis vs. Undead flag added 
 	bool	see_hide;
 	bool	see_improved_hide;

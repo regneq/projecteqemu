@@ -509,14 +509,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
-			case SE_Invisibility2:
 			case SE_Invisibility:
+			case SE_Invisibility2:
 			{
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Invisibility");
 #endif
-				// solar: TODO already invis message and spell kill from SpellOnTarget
-				SetInvisible(true);
+				SetInvisible(spell.base[i]);
 				break;
 			}
 
@@ -525,7 +524,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Invisibility to Animals");
 #endif
-				invisible_animals = true;		// Mongrel: We're now invis to undead
+				invisible_animals = true;		
 				break;
 			}
 
@@ -535,10 +534,18 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Invisibility to Undead");
 #endif
-				invisible_undead = true;		// Mongrel: We're now invis to undead
+				invisible_undead = true;		
 				break;
 			}
-
+			case SE_SeeInvis: 
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "See Invisible");
+#endif
+				see_invis = spell.base[i];
+				break;
+			}
+			
 			case SE_FleshToBone:
 			{
 #ifdef SPELL_EFFECT_SPAM
@@ -1949,7 +1956,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Fading Memories");
 #endif
 				entity_list.RemoveFromTargets(caster);
-				SetInvisible(true);
+				SetInvisible(1);
 				break;
 			}
 
@@ -2466,7 +2473,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_MovementSpeed:
 			case SE_HealOverTime:
 			case SE_PercentXPIncrease:
-			case SE_SeeInvis: // client
 			case SE_DivineSave:
 			case SE_Accuracy:
 			case SE_Flurry:
@@ -3207,7 +3213,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_Invisibility2:
 			case SE_Invisibility:
 			{
-				SetInvisible(false);
+				SetInvisible(0);
 				break;
 			}
 
@@ -3221,6 +3227,12 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_InvisVsAnimals:
 			{
 				invisible_animals = false;
+				break;
+			}
+			
+			case SE_SeeInvis: 
+			{
+				see_invis = 0;
 				break;
 			}
 
