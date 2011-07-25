@@ -503,7 +503,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 			coa->open		= 0x01;
 		else {
 			coa->open		= 0x00;
-			sender->Message(13, "Somebody is allready using that container.");
+			//sender->Message(13, "Somebody is allready using that container.");
 		}
 		m_inuse			= true;
 		coa->type		= m_type;
@@ -513,15 +513,21 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 		coa->player_id	= click_object->player_id;
 		coa->icon		= m_icon;
 		
+		if(sender->CastToMob()->GetAppearance() == eaLooting)
+		{
+			coa->open = 0x00;
+			user = sender;
+		}
+
 		sender->QueuePacket(outapp);
 		safe_delete(outapp);
-		
-		// Starting to use this object
-		sender->SetTradeskillObject(this);
 		
 		//if the object allready had a user, we are done
 		if(user != NULL)
 			return(false);
+		
+		// Starting to use this object
+		sender->SetTradeskillObject(this);
 		
 		user = sender;
 		
