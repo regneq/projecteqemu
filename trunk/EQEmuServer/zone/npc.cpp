@@ -1431,7 +1431,16 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
         case 'n':
 			SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS] = (remove ? false : true);
 			break;
-
+		case 'p':
+			SpecAttacks[IMMUNE_PACIFY] = (remove ? false : true);
+			break;
+		case 'J':
+			SpecAttacks[LEASH] = (remove ? false : true);
+			break;
+		case 'j':
+			SpecAttacks[TETHER] = (remove ? false : true);
+			break;
+			
         default:
             break;
         }
@@ -1563,6 +1572,18 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 			break;
         case 'n':
 			if (!SpecAttacks[NPC_NO_BUFFHEAL_FRIENDS])
+				HasAllAttacks = false;
+			break;
+		case 'p':
+			if(!SpecAttacks[IMMUNE_PACIFY])
+				HasAllAttacks = false;
+			break;
+		case 'J':
+			if(!SpecAttacks[LEASH])
+				HasAllAttacks = false;
+			break;
+		case 'j':
+			if(!SpecAttacks[TETHER])
 				HasAllAttacks = false;
 			break;
 

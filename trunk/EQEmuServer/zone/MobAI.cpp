@@ -1133,6 +1133,18 @@ void Mob::AI_Process() {
 		if(DivineAura())
 			return;
 
+		if(SpecAttacks[TETHER] || SpecAttacks[LEASH]) {
+			if(DistNoRootNoZ(CastToNPC()->GetSpawnPointX(), CastToNPC()->GetSpawnPointY()) > pAggroRange*pAggroRange) {
+				GMMove(CastToNPC()->GetSpawnPointX(), CastToNPC()->GetSpawnPointY(), CastToNPC()->GetSpawnPointZ(), CastToNPC()->GetSpawnPointH());
+				if(SpecAttacks[LEASH]) {
+					SetHP(GetMaxHP());
+					BuffFadeAll();
+					WipeHateList();
+					return;
+				}
+			}
+		}
+			
 		if (GetHPRatio() < (RuleI(NPC, StartEnrageValue)+1) && 
 			(!RuleB(NPC, LiveLikeEnrage) || 
 			(RuleB(NPC, LiveLikeEnrage) && 
