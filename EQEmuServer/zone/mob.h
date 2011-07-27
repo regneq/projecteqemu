@@ -102,45 +102,49 @@ typedef enum {	//focus types
 	focusBlockNextSpell,
 } focusType;
 
-/*Used:
-S,E,R,r,F,T,Q,L,b,m,Y,U,M,C,N,I,D,A,B,f,O,W,H,G,g,d,t,n
-*/
+/*
+Used:
+b,d,f,g,j,m,n,p,r,t
+A,B,C,D,E,F,G,H,I,J,L,M,N,O,Q,R,S,T,U,W,Y
 
-/*Unused
-a,c,e,h,i,j,k,l,o,p,q,s,u,v,w,x,y,z
-J,K,P,V,X,Y,Z
+Unused:
+a,c,e,h,i,k,l,o,q,s,u,v,w,x,y,z
+K,P,V,X,Z
 */
 
 enum {
 	SPECATK_NONE = 0,
-	SPECATK_SUMMON,		//S
-	SPECATK_ENRAGE,		//E
-	SPECATK_RAMPAGE,	//R
-	SPECATK_AREA_RAMPAGE,	//r
-	SPECATK_FLURRY,		//F
-	SPECATK_TRIPLE,		//T
-	SPECATK_QUAD,		//Q
-	SPECATK_INNATE_DW,   //L
-	SPECATK_BANE,		//b
-	SPECATK_MAGICAL,	//m
-	SPECATK_RANGED_ATK,	//Y
-	UNSLOWABLE,			//U
-	UNMEZABLE,			//M
-	UNCHARMABLE,		//C
-	UNSTUNABLE,			//N
-	UNSNAREABLE,		//I
-	UNFEARABLE,			//D
-	IMMUNE_MELEE,		//A
-	IMMUNE_MAGIC,		//B
-	IMMUNE_FLEEING,		//f
+	SPECATK_SUMMON,				//S
+	SPECATK_ENRAGE,				//E
+	SPECATK_RAMPAGE,			//R
+	SPECATK_AREA_RAMPAGE,		//r
+	SPECATK_FLURRY,				//F
+	SPECATK_TRIPLE,				//T
+	SPECATK_QUAD,				//Q
+	SPECATK_INNATE_DW,			//L
+	SPECATK_BANE,				//b
+	SPECATK_MAGICAL,			//m
+	SPECATK_RANGED_ATK,			//Y
+	UNSLOWABLE,					//U
+	UNMEZABLE,					//M
+	UNCHARMABLE,				//C
+	UNSTUNABLE,					//N
+	UNSNAREABLE,				//I
+	UNFEARABLE,					//D
+	IMMUNE_MELEE,				//A
+	IMMUNE_MAGIC,				//B
+	IMMUNE_FLEEING,				//f
 	IMMUNE_MELEE_EXCEPT_BANE,	//O
 	IMMUNE_MELEE_NONMAGICAL,	//W
-	IMMUNE_AGGRO, //H, wont aggro, ever.
-	IMMUNE_TARGET, //G, can't be aggroed, ever
-	IMMUNE_CASTING_FROM_RANGE, //g
-	IMMUNE_FEIGN_DEATH, //d
-    NPC_TUNNELVISION, //t
-    NPC_NO_BUFFHEAL_FRIENDS, //n
+	IMMUNE_AGGRO, 				//H, wont aggro, ever.
+	IMMUNE_TARGET,				//G, immune to target
+	IMMUNE_CASTING_FROM_RANGE,	//g
+	IMMUNE_FEIGN_DEATH,			//d
+    NPC_TUNNELVISION, 			//t
+    NPC_NO_BUFFHEAL_FRIENDS, 	//n
+	IMMUNE_PACIFY, 				//p
+	LEASH,						//J, dispell, wipe agro && return to spawn 
+	TETHER,						//j, return to spawn
 	SPECATK_MAXNUM
 };
 

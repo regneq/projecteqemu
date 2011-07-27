@@ -222,6 +222,19 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		return(false);
 	}
 	
+	if(IsClient() && GetTarget() && IsHarmonySpell(spell_id))
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++) {
+			// not important to check limit on SE_Lull as it doesnt have one and if the other components won't land, then SE_Lull wont either
+			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony) {
+				if((spells[spell_id].max[i] != 0 && GetTarget()->GetLevel() > spells[spell_id].max[i]) || GetTarget()->SpecAttacks[IMMUNE_PACIFY]) {
+					InterruptSpell(CANNOT_AFFECT_NPC, 0x121, spell_id);
+					return(false);
+				}
+			}
+		}
+	}
+	
 	// check for fizzle
 	// note that CheckFizzle itself doesn't let NPCs fizzle,
 	// but this code allows for it.
@@ -2998,20 +3011,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 		}
 	}
 	
-	if(IsHarmonySpell(spell_id))
-	{
-		for(int i = 0; i < EFFECT_COUNT; i++) {
-			// not important to check limit on SE_Lull as it doesnt have one and if the other components won't land, then SE_Lull wont either
-			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony) {
-				if(spells[spell_id].max[i] != 0 && spelltar->GetLevel() > spells[spell_id].max[i]) {
-					Message_StringID(MT_Spells, CANNOT_AFFECT_NPC);
-					safe_delete(action_packet);
-					return false;
-				}
-			}
-		}
-	}
-
 	if(!(IsClient() && CastToClient()->GetGM()) && !IsHarmonySpell(spell_id))	// GMs can cast on anything
 	{
 		// Beneficial spells check
