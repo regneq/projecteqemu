@@ -513,7 +513,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 		coa->player_id	= click_object->player_id;
 		coa->icon		= m_icon;
 		
-		if(sender->CastToMob()->GetAppearance() == eaLooting)
+		if(sender->IsLooting())
 		{
 			coa->open = 0x00;
 			user = sender;

@@ -3564,6 +3564,8 @@ void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 		return;
 	}
 
+	SetLooting(false);
+
 	Entity* entity = entity_list.GetID(*((int16*)app->pBuffer));
 	if (entity == 0) {
 		//DumpPacket(app);
@@ -3591,6 +3593,8 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		cout << "Wrong size: OP_LootRequest, size=" << app->size << ", expected " << sizeof(int32) << endl;
 		return;
 	}
+
+	SetLooting(true);
 
 	Entity* ent = entity_list.GetID(*((int32*)app->pBuffer));
 	if (ent == 0) {
