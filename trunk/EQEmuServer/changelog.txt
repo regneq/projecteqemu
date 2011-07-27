@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/26/2011==
+Congdar: redo world container check
+
 ==07/24/2011==
 Caryatis: Added support for higher level invis and see invis(eg Ethereal Invisibility & Skylight Sagacity)
 Congdar: update check to world containers

@@ -1038,6 +1038,8 @@ bool logpos;
 	void SetGrouped(bool v);
 	inline bool IsRaidGrouped() const { return israidgrouped; }
 	void SetRaidGrouped(bool v);
+	inline bool	IsLooting()	 const { return islooting; }
+	void SetLooting(bool val) { islooting = val; }
 
 	bool CheckWillAggro(Mob *mob);
 
@@ -1128,6 +1130,7 @@ protected:
 	bool	isgrouped; //These meant to be private?
 	bool	israidgrouped;
 	bool	pendinggroup;
+	bool	islooting;
 	int8	texture;
 	int8	helmtexture;
 
