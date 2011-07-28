@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Caryatis: Added Special Attack 'p' (Makes mob immune to pacify)
 Caryatis: Added Special Attack 'j' (Tether - returns mob to spawn point if its distance away from spawn point is greater than its aggro range)
 Caryatis: Added Special Attack 'J' (Leash - same as Tether except heals mob to full, strips all buffs and wipes the hatelist as well)
+Caryatis: Fixed TGB(if you cast a group buff with a corpse or an npc thats not a client's pet as target, it will use your group instead)
 
 ==07/26/2011==
 Congdar: redo world container check
