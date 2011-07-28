@@ -1438,7 +1438,9 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 		case ST_Group:
 		{
 			if(IsClient() && CastToClient()->TGB() && IsTGBCompatibleSpell(spell_id)) {
-				if(!target)	//target the group of our target, if we have a target, else our own
+				if( (!target) || 
+					(target->IsNPC() && !(target->GetOwner() && target->GetOwner()->IsClient())) ||
+					(target->IsCorpse()) )	
 					spell_target = this;
 				else
 					spell_target = target;
