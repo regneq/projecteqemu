@@ -279,6 +279,7 @@ Mob::Mob(const char*   in_name,
 	logging_enabled = false;
 	isgrouped = false;
 	israidgrouped = false;
+	islooting = false;
 	_appearance = eaStanding;
 	pRunAnimSpeed = 0;
 	
