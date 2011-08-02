@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/02/2011==
+Trevius: (Akkadius) Exported Freeze() and UnFreeze() to Perl Client.
+
 ==07/27/2011==
 Caryatis: Added Special Attack 'p' (Makes mob immune to pacify)
 Caryatis: Added Special Attack 'j' (Tether - returns mob to spawn point if its distance away from spawn point is greater than its aggro range)

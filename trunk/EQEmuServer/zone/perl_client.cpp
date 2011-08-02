@@ -5132,6 +5132,52 @@ XS(XS_Client_AssignToInstance)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_Freeze);
+XS(XS_Client_Freeze)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client:Freeze(THIS)");
+	{
+		Client *	THIS;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SendAppearancePacket(AT_Anim, ANIM_FREEZE);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_UnFreeze);
+XS(XS_Client_UnFreeze)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client:UnFreeze(THIS)");
+	{
+		Client *	THIS;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SendAppearancePacket(AT_Anim, ANIM_STAND);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5340,6 +5386,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetCorpseID"), XS_Client_GetCorpseID, file, "$$");
 		newXSproto(strcpy(buf, "GetCorpseItemAt"), XS_Client_GetCorpseItemAt, file, "$$$");
 		newXSproto(strcpy(buf, "AssignToInstance"), XS_Client_AssignToInstance, file, "$$");
+		newXSproto(strcpy(buf, "Freeze"), XS_Client_Freeze, file, "$");
+		newXSproto(strcpy(buf, "UnFreeze"), XS_Client_UnFreeze, file, "$");
 		XSRETURN_YES;
 }
 
