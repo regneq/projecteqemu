@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/04/2011==
+Bad_Captain: Updated Bot::MeleeMitigation to match mob version.
+
 ==08/02/2011==
 Trevius: (Akkadius) Exported Freeze() and UnFreeze() to Perl Client.
 
