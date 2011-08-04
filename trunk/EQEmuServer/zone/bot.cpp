@@ -6597,139 +6597,203 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		return;
 
 	Mob* defender = this;
-	int totalMit = 0;
+	float aa_mit = 0;
 	int8 botclass = GetClass();
 	uint8 botlevel = GetLevel();
 
 	// Everyone gets Combat Stability AA
 	if(botlevel >= 57)
 	{ // Combat Stability AA 3
-		totalMit += 10;
+		aa_mit += 0.10;
 	}
 	else if(botlevel >= 56)
 	{ // Combat Stability AA 2
-		totalMit += 5;
+		aa_mit += 0.05;
 	}
 	else if(botlevel >= 55)
 	{ // Combat Stability AA 1
-		totalMit += 2;
+		aa_mit += 0.02;
 	}
 
 	// All Melee get Physical Enhancement AA
 	if(!IsBotCaster() && botlevel >= 59)
 	{
-		totalMit += 2;
+		aa_mit += 0.02;
 	}
 
 	// Everyone gets Innate Defense AA
 	if(botlevel >= 65)
 	{ // Innate Defense AA 5
-		totalMit += 5;
+		aa_mit += 0.05;
 	}
 	else if(botlevel >= 64)
 	{ // Innate Defense AA 4
-		totalMit += 4;
+		aa_mit += 0.04;
 	}
 	else if(botlevel >= 63)
 	{ // Innate Defense AA 3
-		totalMit += 3;
+		aa_mit += 0.03;
 	}
 	else if(botlevel >= 62)
 	{ // Innate Defense AA 2
-		totalMit += 2;
+		aa_mit += 0.02;
 	}
 	else if(botlevel >= 61)
 	{ // Innate Defense AA 1
-		totalMit += 1;
+		aa_mit += 0.01;
 	}
 
 	// All but pure casters get Defensive Instincts AA
 	if(!IsBotINTCaster())
 	{
 		if(botlevel >= 70) { // Defensive Instincts AA 5
-			totalMit += 5;
+			aa_mit += 0.05;
 		}
 		else if(botlevel >= 69) { // Defensive Instincts AA 4
-			totalMit += 4;
+			aa_mit += 0.04;
 		}
 		else if(botlevel >= 68) { // Defensive Instincts AA 3
-			totalMit += 3;
+			aa_mit += 0.03;
 		}
 		else if(botlevel >= 67) { // Defensive Instincts AA 2
-			totalMit += 2;
+			aa_mit += 0.02;
 		}
 		else if(botlevel >= 66) { // Defensive Instincts AA 1
-			totalMit += 1;
+			aa_mit += 0.01;
 		}
 	}
 
-	if(RuleB(Combat, UseIntervalAC)){
-		//AC Mitigation
-		sint32 attackRating = 0;
-		uint16 ac_eq100 = 125;
-		if(defender->GetLevel() < 20)
+	if(RuleB(Combat, UseIntervalAC))
+	{
+		float softcap = 0.0;
+		float mitigation_rating = 0.0;
+		float attack_rating = 0.0;
+		int shield_ac = 0;
+		int armor;
+		float weight = 0.0;
+		if(IsBot())
 		{
-			ac_eq100 += 15 * defender->GetLevel();
-		}
-		else if(defender->GetLevel() < 50)
-		{
-			ac_eq100 += (285 + ((defender->GetLevel()-19)*30));
-		}
-		else if(defender->GetLevel() < 60)
-		{
-			ac_eq100 += (1185 + ((defender->GetLevel()-49)*60));
-		}
-		else if(defender->GetLevel() < 70)
-		{
-			ac_eq100 += (1785 + ((defender->GetLevel()-59)*90));
-		}
-		else
-		{
-			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
+			armor = GetRawACNoShield(shield_ac);
+			weight = (CalcCurrentWeight() / 10.0);
 		}
 
-		attackRating = 10 + attacker->GetATK();
-
-		sint32 defenseRating = defender->GetAC();
-		defenseRating += 125;
-		defenseRating += (totalMit * defenseRating / 100);
-
-		double d1_chance;
-		double d2_d19_chance;
-
-		double combat_rating = (defenseRating - attackRating);
-
-		combat_rating = 100 * combat_rating / (double)ac_eq100;
-
-		d1_chance = 6.0 + (((combat_rating * 0.39) / 3));
-		d2_d19_chance = 48.0 + (((combat_rating * 0.39) / 3) * 2);
-
-		if(d1_chance < 1.0)
-			d1_chance = 1.0;
-
-		if(d2_d19_chance < 5.0)
-			d2_d19_chance = 5.0;
-
-		double roll = MakeRandomFloat(0, 100);
-
-		int interval_used = 0;
-		if(roll <= d1_chance)
+		if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
 		{
-			interval_used = 1;
+			softcap = RuleI(Combat, ClothACSoftcap);
 		}
-		else if(roll <= (d2_d19_chance + d1_chance))
+		else if(GetClass() == MONK && weight <= 15.0)
 		{
-			interval_used = 1 + (int)((((roll-d1_chance) / d2_d19_chance) * 18) + 1);
+			softcap = RuleI(Combat, MonkACSoftcap);
+		}
+		else if(GetClass() == DRUID || GetClass() == BEASTLORD || GetClass() == MONK)
+		{
+			softcap = RuleI(Combat, LeatherACSoftcap);
+		}
+		else if(GetClass() == SHAMAN || GetClass() == ROGUE || GetClass() == BERSERKER || GetClass() == RANGER)
+		{
+			softcap = RuleI(Combat, ChainACSoftcap);
 		}
 		else
 		{
-			interval_used = 20;
+			softcap = RuleI(Combat, PlateACSoftcap);
+		}
+		
+		softcap += shield_ac;
+		armor += shield_ac;
+		softcap += (softcap * (aa_mit * RuleR(Combat, AAMitigationACFactor)));
+		if(armor > softcap)
+		{
+			int softcap_armor = armor - softcap;
+			if(GetClass() == WARRIOR)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, WarriorACSoftcapReturn);
+			}
+			else if(GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || (GetClass() == MONK && weight <= 15.0))
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, KnightACSoftcapReturn);
+			}
+			else if(GetClass() == CLERIC || GetClass() == BARD || GetClass() == BERSERKER || GetClass() == ROGUE || GetClass() == SHAMAN || GetClass() == MONK)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, LowPlateChainACSoftcapReturn);
+			}
+			else if(GetClass() == RANGER || GetClass() == BEASTLORD)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, LowChainLeatherACSoftcapReturn);
+			}
+			else if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER || GetClass() == DRUID)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, CasterACSoftcapReturn);
+			}
+			else
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, MiscACSoftcapReturn);
+			}
+			armor = softcap + softcap_armor;
 		}
 
-		//PS: this looks WRONG but there's a method to the madness
-		int db = minhit;
-		double di = ((double)(damage-minhit)/19);
-		damage = db + (di * (interval_used - 1));
+		mitigation_rating = 0.0;
+		if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
+		{
+			mitigation_rating = ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10) / 4.0) + armor + 1;
+		}
+		else
+		{
+			mitigation_rating = ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10) / 3.0) + (armor * 1.333333) + 1;
+		}
+		mitigation_rating *= 0.847;
+
+		if(attacker->IsClient())
+		{
+			attack_rating = (attacker->CastToClient()->GetATK() + ((attacker->GetSTR()-66) * 0.9) + (attacker->GetSkill(OFFENSE)*1.345));
+		}
+		else if(attacker->IsBot())
+		{
+			attack_rating = (attacker->CastToBot()->CalcATK() + ((attacker->GetSTR()-66) * 0.9) + (attacker->GetSkill(OFFENSE)*1.345));
+		}
+		else
+		{
+			attack_rating = (attacker->GetATK() + (attacker->GetSkill(OFFENSE)*1.345) + ((attacker->GetSTR()-66) * 0.9));
+		}
+
+		float d = 10.0;
+		float mit_roll = MakeRandomFloat(0, mitigation_rating);
+		float atk_roll = MakeRandomFloat(0, attack_rating);
+
+		if(atk_roll > mit_roll)
+		{
+			float a_diff = (atk_roll - mit_roll);
+			float thac0 = attack_rating * RuleR(Combat, ACthac0Factor);
+			d -= 10.0 * (a_diff / thac0);
+			float thac0cap = ((attacker->GetLevel() * 9) + 20);
+			if(thac0 > thac0cap)
+			{
+				thac0 = thac0cap;
+			}
+		}
+		else if(mit_roll > atk_roll)
+		{
+			float m_diff = (mit_roll - atk_roll);
+			float thac20 = mitigation_rating * RuleR(Combat, ACthac20Factor);
+			d += 10 * (m_diff / thac20);
+			float thac20cap = ((defender->GetLevel() * 9) + 20);
+			if(thac20 > thac20cap)
+			{
+				thac20 = thac20cap;
+			}
+		}
+
+		if(d < 0.0)
+		{
+			d = 0.0;
+		}
+
+		if(d > 20)
+		{
+			d = 20.0;
+		}
+
+		float interval = (damage - minhit) / 20.0;
+		damage = damage - ((int)d * interval);
 	}
 	else{
 		////////////////////////////////////////////////////////
@@ -6753,13 +6817,13 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 					acreduction=atof(tmp);
 					if (acreduction>100) acreduction=100;
 				}
-
+		
 				if (database.GetVariable("ACrandom", tmp, 9))
 				{
 					acrandom = (int) ((atof(tmp)+1) * 100);
 					if (acrandom>10100) acrandom=10100;
 				}
-
+				
 				if (acreduction>0) {
 					damage -= (int) (GetAC() * acreduction/100.0f);
 				}		
@@ -6773,7 +6837,7 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			}
 		}
 
-		damage -= (totalMit * damage / 100);
+		damage -= (aa_mit * damage);
 
 		if(damage != 0 && damage < minhit)
 			damage = minhit;
@@ -6782,13 +6846,13 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 	//reduce the damage from shielding item and aa based on the min dmg
 	//spells offer pure mitigation
-	damage -= (minhit * defender->GetItemBonuses().MeleeMitigation / 100);
-	damage -= (damage * defender->GetSpellBonuses().MeleeMitigation / 100);
+	damage -= (minhit * itembonuses.MeleeMitigation / 100);
+	damage -= (damage * spellbonuses.MeleeMitigation / 100);
 
 	if(damage < 0)
 		damage = 0;
 
-	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", totalMit, damage);
+	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", aa_mit, damage);
 }
 
 void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override) {
@@ -13837,6 +13901,48 @@ uint32 Bot::GetEquipmentColor(int8 material_slot) const
 		safe_delete_array(Query);
 	}
 	return returncolor;
+}
+
+int Bot::GetRawACNoShield(int &shield_ac)
+{
+	int ac = itembonuses.AC + spellbonuses.AC;
+	shield_ac = 0;
+	ItemInst* inst = GetBotItem(SLOT_SECONDARY);
+	if(inst)
+	{
+		if(inst->GetItem()->ItemType == ItemTypeShield)
+		{
+			ac -= inst->GetItem()->AC;
+			shield_ac = inst->GetItem()->AC;
+			for(uint8 i = 0; i < MAX_AUGMENT_SLOTS; i++)
+			{
+				if(inst->GetAugment(i))
+				{
+					ac -= inst->GetAugment(i)->GetItem()->AC;
+					shield_ac += inst->GetAugment(i)->GetItem()->AC;
+				}
+			}
+		}
+	}
+	return ac;
+}
+
+uint32 Bot::CalcCurrentWeight() {
+
+	const Item_Struct* TempItem = 0;
+	ItemInst* inst;
+	uint32 Total = 0;
+	
+	for(int i=0; i<=21; ++i) {
+		inst = GetBotItem(i);
+		if(inst) {
+			TempItem = inst->GetItem();
+		if (TempItem)
+			Total += TempItem->Weight;
+		}
+	}
+
+	return Total;
 }
 
 #endif

@@ -178,6 +178,7 @@ public:
 	sint32	LevelRegen();
 	sint32	CalcHPRegen();
 	sint32	CalcManaRegen();
+	uint32	CalcCurrentWeight();
 	void CalcRestState();
 
 	// AI Methods
@@ -318,6 +319,7 @@ public:
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
+	int GetRawACNoShield(int &shield_ac);
 	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
