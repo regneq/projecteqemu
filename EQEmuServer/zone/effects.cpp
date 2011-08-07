@@ -551,7 +551,7 @@ bool Client::TrainDiscipline(int32 itemid) {
 	int r;
 	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
 		if(m_pp.disciplines.values[r] == spell_id) {
-			Message(13, "You allready know this discipline.");
+			Message(13, "You already know this discipline.");
 			//summon them the item back...
 			SummonItem(itemid);
 			return(false);
