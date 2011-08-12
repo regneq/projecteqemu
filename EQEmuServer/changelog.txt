@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/12/2011==
+Bad_Captain: Fixed double class / race stats for bots.
+
 ==08/09/2011==
 Derision: Underfoot: OP_ClearSurname
 
