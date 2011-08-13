@@ -548,6 +548,7 @@ struct SpellBuff_Struct
 /*019*/ int8 reserved;				// proll not real
 /*020*/	int32 player_id;			// 'global' ID of the caster, for wearoff messages
 /*024*/ uint8 unknown0028[52];
+/*076*/
 };
 
 // Not functional yet, but this is what the packet looks like on Underfoot
@@ -584,6 +585,13 @@ struct SpellBuffFade_Struct {
 /*032*/	uint32 bufffade;
 /*036*/
 };
+
+struct BuffRemoveRequest_Struct
+{
+/*00*/ uint32 SlotID;
+/*04*/ uint32 EntityID;
+/*08*/
+ };
 
 struct GMTrainee_Struct
 {
@@ -885,7 +893,7 @@ struct PlayerProfile_Struct
 /*07884*/ uint32  thirst_level;			// Drink (ticks till next drink)
 /*07888*/ uint32  hunger_level;			// Food (ticks till next eat)
 /*07892*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [1900] Buffs currently on the player (30 Max) - (Each Size 76)
-/*09792*/ uint8   unknown09792[380];		// End of Buffs - was [360]
+/*09792*/ uint8   unknown09792[380];		// BUFF_COUNT has been left at 25. These are the extra 5 buffs in Underfoot
 /*10172*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
 /*10972*/ uint32  recastTimers[MAX_RECAST_TYPES]; // Timers (UNIX Time of last use)
 /*11052*/ uint8   unknown11052[160];		// Some type of Timers

@@ -16,7 +16,7 @@ void RegisterAllPatches(EQStreamIdentifier &into) {
 	SoF::Register(into);
 	SoD::Register(into);
 	Underfoot::Register(into);
-	HoT::Register(into);
+	//HoT::Register(into);
 }
 
 void ReloadAllPatches() {
@@ -25,7 +25,7 @@ void ReloadAllPatches() {
 	SoF::Reload();
 	SoD::Reload();
 	Underfoot::Reload();
-	HoT::Reload();
+	//HoT::Reload();
 }
 
 

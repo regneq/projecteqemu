@@ -115,5 +115,6 @@ D(OP_ChannelMessage)
 D(OP_DeleteItem)
 D(OP_PetCommands)
 D(OP_AugmentItem)
+D(OP_BuffRemoveRequest)
 #undef E
 #undef D
