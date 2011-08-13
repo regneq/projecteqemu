@@ -5060,8 +5060,8 @@ void Mob::SendPetBuffsToClient()
 
 	for(int buffslot = 0; buffslot < BUFF_COUNT; buffslot++) {
 		if(buffs[buffslot].spellid != SPELL_UNKNOWN) {
-			pbs->spellid[PetBuffCount] = buffs[buffslot].spellid;
-			pbs->ticsremaining[PetBuffCount] = buffs[buffslot].ticsremaining;
+			pbs->spellid[buffslot] = buffs[buffslot].spellid;
+			pbs->ticsremaining[buffslot] = buffs[buffslot].ticsremaining;
 			PetBuffCount++;
 		}
 	}

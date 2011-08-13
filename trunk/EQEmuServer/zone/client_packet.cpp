@@ -11655,22 +11655,30 @@ void Client::Handle_OP_ClearBlockedBuffs(const EQApplicationPacket *app)
 
 void Client::Handle_OP_BuffRemoveRequest(const EQApplicationPacket *app)
 {
-	// New for Underfoot+
+	// In SoD, this is used for clicking off Pet Buffs only. In Underfoot, it is used both for Client and Pets
+	// The payload contains buffslot and EntityID only, so we must check if the EntityID is ours or our pets.
 	//
 	VERIFY_PACKET_LENGTH(OP_BuffRemoveRequest, app, BuffRemoveRequest_Struct);
 
 	BuffRemoveRequest_Struct *brrs = (BuffRemoveRequest_Struct*)app->pBuffer;
 
-	if(brrs->EntityID != GetID())
+	Mob *m = NULL;
+
+	if(brrs->EntityID == GetID())
+		m = this;
+	else if(brrs->EntityID == GetPetID())
+		m = GetPet();
+
+	if(!m)
 		return;
 
-	if(brrs->SlotID > GetMaxTotalSlots())
+	if(brrs->SlotID > (uint32)m->GetMaxTotalSlots())
 		return;
 
-	int16 SpellID = GetSpellIDFromSlot(brrs->SlotID);
+	int16 SpellID = m->GetSpellIDFromSlot(brrs->SlotID);
 
 	if(SpellID && IsBeneficialSpell(SpellID))
-		BuffFadeBySlot(brrs->SlotID, true);
+		m->BuffFadeBySlot(brrs->SlotID, true);
 }
 
 void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)

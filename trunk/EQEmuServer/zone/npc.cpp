@@ -1597,22 +1597,20 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 	return HasAllAttacks;
 }
 
-void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
+void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
+{
 	Mob::FillSpawnStruct(ns, ForWho);
-	
-	if(GetOwnerID()) {
+	if(GetOwnerID())
+	{
 		ns->spawn.is_pet = 1;
-	} else {
+		Client *c = entity_list.GetClientByID(GetOwnerID());
+		if(c)
+			sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+	}
+	else
 		ns->spawn.is_pet = 0;
-	}
+
 	ns->spawn.is_npc = 1;
-	
-	//not sure what this is, but all 'useable' npcs seem to have it set to 3 on live
-//temp disabled until we find this again
-/*	if(GetClass() >= WARRIORGM) {
-		ns->spawn.unknown0167 = 3;
-	}
-*/
 }
 
 void NPC::SetLevel(uint8 in_level, bool command)

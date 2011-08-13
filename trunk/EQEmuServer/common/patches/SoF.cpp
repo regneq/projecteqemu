@@ -1927,6 +1927,28 @@ ENCODE(OP_BecomeTrader)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_PetBuffWindow)
+{
+	ENCODE_LENGTH_EXACT(PetBuff_Struct);
+	SETUP_DIRECT_ENCODE(PetBuff_Struct, PetBuff_Struct);
+
+	OUT(petid);
+	OUT(buffcount);
+
+	int EQBuffSlot = 0;
+
+	for(uint32 EmuBuffSlot = 0; EmuBuffSlot < BUFF_COUNT; ++EmuBuffSlot)
+	{
+		if(emu->spellid[EmuBuffSlot])
+		{
+			eq->spellid[EQBuffSlot] = emu->spellid[EmuBuffSlot];
+			eq->ticsremaining[EQBuffSlot++] = emu->ticsremaining[EmuBuffSlot];
+		}
+	}
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);

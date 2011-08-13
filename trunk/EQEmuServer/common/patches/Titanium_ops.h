@@ -32,6 +32,7 @@ E(OP_DzLeaderStatus)
 E(OP_DzJoinExpeditionConfirm)
 E(OP_Action)
 E(OP_BecomeTrader)
+E(OP_PetBuffWindow)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
