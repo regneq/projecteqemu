@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==08/13/2011==
 Derision: Player pets will now show their owners name. UF users can turn this off in options.
 Derision: SoD/UF: Beneficial Pet Buffs can be clicked off in the Pet Window.
+Derision: Underfoot: Can now click off buffs in the short buff box. Removed registraion of HoT in patches.cpp
 
 ==08/12/2011==
 Bad_Captain: Fixed double class / race stats for bots.

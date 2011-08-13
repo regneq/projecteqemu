@@ -3173,6 +3173,20 @@ DECODE(OP_ChannelMessage)
 	delete [] __eq_buffer;
 }
 
+DECODE(OP_BuffRemoveRequest)
+{
+	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
+	//
+	DECODE_LENGTH_EXACT(structs::BuffRemoveRequest_Struct);
+	SETUP_DIRECT_DECODE(BuffRemoveRequest_Struct, structs::BuffRemoveRequest_Struct);
+
+	emu->SlotID = (eq->SlotID < 30 ) ? eq->SlotID : (eq->SlotID - 5);
+
+	IN(EntityID);
+
+	FINISH_DIRECT_DECODE();
+}
+
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
 
