@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/18/2011==
+Leere: Removed lore item from the restrictions for pick pocket.
+
 ==08/13/2011==
 Derision: Player pets will now show their owners name. UF users can turn this off in options.
 Derision: SoD/UF: Beneficial Pet Buffs can be clicked off in the Pet Window.
