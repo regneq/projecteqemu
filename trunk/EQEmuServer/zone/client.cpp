@@ -3651,14 +3651,15 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 		olms->Duration = 0xffffffff;
 
 	olms->PopupID = PopupID;
-	olms->unknown4236 = 0x00000000;
-	olms->unknown4240 = 0xffffffff;
+	olms->NegativeID = 0;
 
+	sprintf(olms->ButtonName0, "%s", "Yes");
+	sprintf(olms->ButtonName1, "%s", "No");
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
 
-void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...) {
+void Client::SendWindow(int32 PopupID, int32 NegativeID, int32 Buttons, const char *ButtonName0, const char *ButtonName1, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...) {
 	va_list argptr;
 	char *buffer = new char[4096];
 
@@ -3710,14 +3711,17 @@ void Client::SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_
 	memcpy(olms->Text, buffer, len+1);
 
 	olms->Buttons = Buttons;
+
+	sprintf(olms->ButtonName0, "%s", ButtonName0);
+	sprintf(olms->ButtonName1, "%s", ButtonName1);
+
 	if(Duration > 0)
 		olms->Duration = Duration * 1000;
 	else
 		olms->Duration = 0xffffffff;
 	
 	olms->PopupID = PopupID;
-	olms->unknown4236 = 0x00000000;
-	olms->unknown4240 = 0xffffffff;
+	olms->NegativeID = NegativeID;
 	
 	FastQueuePacket(&app);
 
@@ -6382,8 +6386,10 @@ void Client::SendStatsWindow(Client* client, bool use_window)
 	
 				
 	if(use_window) {
-		if(final_stats.size() < 4096) {
-			client->SendWindow(0,0,0,1,this,"", "%s", final_stats.c_str());
+		if(final_stats.size() < 4096)
+		{
+			uint32 Buttons = (client->GetClientVersion() < EQClientSoD) ? 0 : 1;
+			client->SendWindow(0, POPUPID_UPDATE_SHOWSTATSWINDOW, Buttons, "Cancel", "Update", 0, 1, this, "", "%s", final_stats.c_str());
 			goto Extra_Info;
 		}
 		else {

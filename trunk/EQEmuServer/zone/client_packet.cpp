@@ -4573,6 +4573,22 @@ void Client::Handle_OP_DeleteItem(const EQApplicationPacket *app)
 	if (inst && inst->GetItem()->ItemType == ItemTypeAlcohol) {
 		entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
 		CheckIncreaseSkill(ALCOHOL_TOLERANCE, NULL, 25);
+
+		sint16 AlcoholTolerance = GetSkill(ALCOHOL_TOLERANCE);
+		sint16 IntoxicationIncrease;
+
+		if(GetClientVersion() < EQClientSoD)
+			IntoxicationIncrease = (200 - AlcoholTolerance) * 30 / 200 + 10;
+		else
+			IntoxicationIncrease = (270 - AlcoholTolerance) * 0.111111108 + 10;
+
+		if(IntoxicationIncrease < 0)
+			IntoxicationIncrease = 1;
+
+		m_pp.intoxication += IntoxicationIncrease;
+
+		if(m_pp.intoxication > 200)
+			m_pp.intoxication = 200;
 	}
 	DeleteItemInInventory(alc->from_slot, 1);
 
@@ -8139,6 +8155,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	max_AAXP = RuleI(AA, ExpPerPoint);
 
+	if(!RuleB(Character, MaintainIntoxicationAcrossZones))
+		m_pp.intoxication = 0;
+
 	//int32 aalen = database.GetPlayerAlternateAdv(account_id, name, &aa);
 	//if (aalen == 0) {
 	//	cout << "Client dropped: !GetPlayerAlternateAdv, name=" << name << endl;
@@ -9969,10 +9988,24 @@ void Client::Handle_OP_PopupResponse(const EQApplicationPacket *app) {
 	}
 	PopupResponse_Struct *prs = (PopupResponse_Struct*)app->pBuffer;
 
+	// Handle any EQEmu defined popup Ids first
+	switch(prs->popupid)
+	{
+		case POPUPID_UPDATE_SHOWSTATSWINDOW:
+			if(GetTarget() && GetTarget()->IsClient())
+				GetTarget()->CastToClient()->SendStatsWindow(this, true);
+			else
+				SendStatsWindow(this, true);
+			return;
+
+		default:
+			break;
+	}
+
 	char *buf = 0;
 	MakeAnyLenString(&buf, "%d", prs->popupid);
 
-    parse->EventPlayer(EVENT_POPUPRESPONSE, this, buf, 0);
+	parse->EventPlayer(EVENT_POPUPRESPONSE, this, buf, 0);
 
 	Mob* Target = GetTarget();
 	if(Target && Target->IsNPC()) {

@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/21/2011==
+Derision: Added rule to prevent looting corpses when a player has an item on the cursor (to prevent item loss using Loot All).
+Derision: Alcohol intoxication is maintained across zoning (can be turned off with a rule).
+Derision: Intoxication level affects STR/STA/DEX/AGI/WIS/INT.
+Derision: Added 'Update' button to #showstats window for SoD+ clients.
+
+Optional SQL: utils/sql/svn/1998_optional_intoxication_and_looting_rules.sql
+
 ==08/18/2011==
 Leere: Removed lore item from the restrictions for pick pocket.
 

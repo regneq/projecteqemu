@@ -1012,7 +1012,15 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 		SendEndLootErrorPacket(client);
 		return;
 	}
-	
+
+	// To prevent item loss for a player using 'Loot All' who doesn't have inventory space for all their items.
+	if(RuleB(Character, CheckCursorEmptyWhenLooting) && !client->GetInv().CursorEmpty())
+	{
+		client->Message(13, "You may not loot an item while you have an item on your cursor.");
+		SendEndLootErrorPacket(client);
+		return;
+	}
+
 	LootingItem_Struct* lootitem = (LootingItem_Struct*)app->pBuffer;
 
 	if (this->BeingLootedBy != client->GetID()) {

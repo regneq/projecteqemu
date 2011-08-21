@@ -135,6 +135,7 @@ enum {
 	HideCorpseNPC = 5
 };
 	
+const uint32 POPUPID_UPDATE_SHOWSTATSWINDOW = 1000000;
 
 struct ClientReward
 {
@@ -806,7 +807,7 @@ public:
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
 	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
-	void	SendWindow(int32 PopupID, int32 Buttons, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...);
+	void	SendWindow(int32 PopupID, int32 NegativeID, int32 Buttons, const char *ButtonName0, const char *ButtonName1, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
@@ -1075,6 +1076,7 @@ private:
 	sint16    CalcATK();
 	int      CalcHaste();
 
+	sint16   CalcAlcoholPhysicalEffect();
 	sint16   CalcSTR();
 	sint16   CalcSTA();
 	sint16   CalcDEX();

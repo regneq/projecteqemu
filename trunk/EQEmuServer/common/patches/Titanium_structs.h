@@ -1365,6 +1365,19 @@ struct GuildCommand_Struct {
 	int32 officer;
 };
 
+// 4244 bytes. Is not really an 'OnLevelMessage', it causes a popup box to display in the client
+// Text looks like HTML.
+struct OnLevelMessage_Struct {
+/*0000*/       char    Title[128];
+/*0128*/       char    Text[4096];
+/*4224*/       uint32  Buttons;
+/*4228*/       uint32  Duration;
+/*4232*/       uint32  PopupID;
+/*4236*/       uint32  unknown4236;
+/*4240*/       uint32  unknown4240;
+/*4244*/
+};
+
 // Opcode OP_GMZoneRequest
 // Size = 88 bytes
 struct GMZoneRequest_Struct {

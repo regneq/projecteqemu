@@ -1496,9 +1496,10 @@ ENCODE(OP_OnLevelMessage)
 	OUT(Buttons);
 	OUT(Duration);
 	OUT(PopupID);
-	// These two field names are used if Buttons == 1. We should add an interface to them via Perl.
-	sprintf(eq->ButtonName0, "Yes");
-	sprintf(eq->ButtonName1, "No");
+	OUT(NegativeID);
+	// These two field names are used if Buttons == 1.
+	OUT_str(ButtonName0);
+	OUT_str(ButtonName1);
 	FINISH_ENCODE();
 }
 

@@ -1213,8 +1213,16 @@ uint32 Client::CalcCurrentWeight() {
 	return Total;
 }
 
+sint16 Client::CalcAlcoholPhysicalEffect()
+{
+	if(m_pp.intoxication <= 55)
+		return 0;
+
+	return (m_pp.intoxication - 40) / 16;
+}
+
 sint16 Client::CalcSTR() {
-	sint16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR;
+	sint16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect();
 	
 	sint16 mod = aabonuses.STR;
 	
@@ -1233,7 +1241,7 @@ sint16 Client::CalcSTR() {
 }
 
 sint16 Client::CalcSTA() {
-	sint16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA;
+	sint16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA + CalcAlcoholPhysicalEffect();;
 	
 	sint16 mod = aabonuses.STA;
 	
@@ -1252,7 +1260,7 @@ sint16 Client::CalcSTA() {
 }
 
 sint16 Client::CalcAGI() {
-	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI;
+	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI - CalcAlcoholPhysicalEffect();;
 	sint16 mod = aabonuses.AGI;
 
 	if(val>255 && GetLevel() <= 60)
@@ -1280,7 +1288,7 @@ sint16 Client::CalcAGI() {
 }
 
 sint16 Client::CalcDEX() {
-	sint16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX;
+	sint16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX - CalcAlcoholPhysicalEffect();;
 	
 	sint16 mod = aabonuses.DEX;
 	
@@ -1300,13 +1308,23 @@ sint16 Client::CalcDEX() {
 
 sint16 Client::CalcINT() {
 	sint16 val = m_pp.INT + itembonuses.INT + spellbonuses.INT;
-	
+
 	sint16 mod = aabonuses.INT;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
 	INT = val + mod;
 	
+	if(m_pp.intoxication)
+	{
+		sint16 AlcINT  = INT - (sint16)((float)m_pp.intoxication / 200.0f * (float)INT) - 1;
+
+		if((AlcINT < (int)(0.2 * INT)))
+			INT = (int)(0.2f * (float)INT);
+		else
+			INT = AlcINT;
+	}
+
 	if(INT < 1)
 		INT = 1;
 
@@ -1325,7 +1343,17 @@ sint16 Client::CalcWIS() {
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
 	WIS = val + mod;
-	
+
+	if(m_pp.intoxication)
+	{
+		sint16 AlcWIS  = WIS - (sint16)((float)m_pp.intoxication / 200.0f * (float)WIS) - 1;
+
+		if((AlcWIS < (int)(0.2 * WIS)))
+			WIS = (int)(0.2f * (float)WIS);
+		else
+			WIS = AlcWIS;
+	}
+
 	if(WIS < 1)
 		WIS = 1;
 

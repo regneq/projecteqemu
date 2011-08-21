@@ -824,6 +824,22 @@ ENCODE(OP_PetBuffWindow)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_OnLevelMessage)
+{
+	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
+	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+	OUT_str(Title);
+	OUT_str(Text);
+	OUT(Buttons);
+	OUT(Duration);
+	OUT(PopupID);
+
+	eq->unknown4236 = 0x00000000;
+	eq->unknown4240 = 0xffffffff;
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_WearChange) {
 	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
 	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);

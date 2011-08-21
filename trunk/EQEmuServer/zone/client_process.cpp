@@ -677,6 +677,12 @@ bool Client::Process() {
 			if (autosave_timer.Check()) {
 				Save(0);
 			}
+
+			if(m_pp.intoxication > 0)
+			{
+				--m_pp.intoxication;
+				CalcBonuses();
+			}
 		}
 	}
 	
