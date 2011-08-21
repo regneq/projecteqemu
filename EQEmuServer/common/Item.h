@@ -143,6 +143,7 @@ public:
 
 	inline iter_queue cursor_begin()	{ return m_cursor.begin(); }
 	inline iter_queue cursor_end()		{ return m_cursor.end(); }
+	inline bool CursorEmpty()		{ return (m_cursor.size() == 0); }
 	
 	// Retrieve a read-only item from inventory
 	inline const ItemInst* operator[](sint16 slot_id) const { return GetItem(slot_id); }

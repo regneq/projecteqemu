@@ -1575,17 +1575,16 @@ struct GuildCommand_Struct {
 	int32 officer;
 };
 
-// 4244 bytes. Is not really an 'OnLevelMessage', it causes a popup box to display in the client
-// Text looks like HTML.
-struct OnLevelMessage_Struct {
-/*0000*/       char    Title[128];
-/*0128*/       char    Text[4096];
-/*4224*/       uint32  Buttons;
-/*4228*/       uint32  Duration;
-/*4232*/       uint32  PopupID;
-/*4236*/       uint32  unknown4236;
-/*4240*/       uint32  unknown4240;
-/*4244*/
+struct OnLevelMessage_Struct
+{
+	char    Title[128];
+	char    Text[4096];
+	uint32  Buttons;
+	uint32  Duration;
+	uint32  PopupID;
+	uint32	NegativeID;
+	char	ButtonName0[25];
+	char	ButtonName1[25];
 };
 
 struct PopupResponse_Struct {
