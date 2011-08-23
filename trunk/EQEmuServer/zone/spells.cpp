@@ -3018,31 +3018,75 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 		// Beneficial spells check
 		if(IsBeneficialSpell(spell_id))
 		{
-			if
-			(
-				IsClient() &&	//let NPCs do beneficial spells on anybody if they want, should be the job of the AI, not the spell code to prevent this from going wrong
-				spelltar != this &&
-				(
-					!IsBeneficialAllowed(spelltar) ||
-					(
-						IsGroupOnlySpell(spell_id) &&
+			if(IsClient() &&	//let NPCs do beneficial spells on anybody if they want, should be the job of the AI, not the spell code to prevent this from going wrong
+				spelltar != this)
+			{
+				Client* pClient = 0;
+				Raid* pRaid = 0;
+				Group* pBasicGroup = 0;
+				int32 nGroup = 0; //raid group
+
+				Client* pClientTarget = 0;
+				Raid* pRaidTarget = 0;
+				Group* pBasicGroupTarget = 0;
+				int32 nGroupTarget = 0; //raid group 
+
+				Client* pClientTargetPet = 0;
+				Raid* pRaidTargetPet = 0;
+				Group* pBasicGroupTargetPet = 0;
+				int32 nGroupTargetPet = 0; //raid group
+
+				const int32 cnWTF = 0xFFFFFFFF + 1; //this should be zero unless on 64bit? forced int64?
+
+				//Caster client pointers
+				pClient = this->CastToClient();
+				pRaid = entity_list.GetRaidByClient(pClient);
+				pBasicGroup = entity_list.GetGroupByMob(this);
+				if(pRaid)
+					nGroup = pRaid->GetGroup(pClient) + 1;
+					
+				//Target client pointers
+				if(spelltar->IsClient())
+				{
+					pClientTarget = spelltar->CastToClient();
+					pRaidTarget = entity_list.GetRaidByClient(pClientTarget);
+					pBasicGroupTarget = entity_list.GetGroupByMob(spelltar);
+					if(pRaidTarget)
+						nGroupTarget = pRaidTarget->GetGroup(pClientTarget) + 1;
+				}
+
+				if(spelltar->IsPet())
+				{
+					Mob *owner = spelltar->GetOwner();
+					if(owner->IsClient())
+					{
+						pClientTargetPet = owner->CastToClient();
+						pRaidTargetPet = entity_list.GetRaidByClient(pClientTargetPet);
+						pBasicGroupTargetPet = entity_list.GetGroupByMob(owner);
+						if(pRaidTargetPet)
+							nGroupTargetPet = pRaidTargetPet->GetGroup(pClientTargetPet) + 1;
+					}
+
+				}
+
+
+				if(!IsBeneficialAllowed(spelltar) ||
+					(IsGroupOnlySpell(spell_id) &&
 						!(
-							(entity_list.GetGroupByMob(this) &&
-							entity_list.GetGroupByMob(this)->IsGroupMember(spelltar)) ||
-							(spelltar->IsClient() &&
-							entity_list.GetRaidByMob(this) &&
-							entity_list.GetRaidByMob(this)->GetGroup(this->CastToClient()) ==
-								entity_list.GetRaidByMob(spelltar)->GetGroup(spelltar->CastToClient())) ||
+							(pBasicGroup && ((pBasicGroup == pBasicGroupTarget) || (pBasicGroup == pBasicGroupTargetPet))) || //Basic Group
+
+							((nGroup != cnWTF) && ((nGroup == nGroupTarget) || (nGroup == nGroupTargetPet))) || //Raid group
+
 							(spelltar == GetPet()) //should be able to cast grp spells on self and pet despite grped status.
 						)
 					)
 				)
-			)
-			{
-				mlog(SPELLS__CASTING_ERR, "Beneficial spell %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
-				Message_StringID(MT_Shout, SPELL_NO_HOLD);
-				safe_delete(action_packet);
-				return false;
+				{
+					mlog(SPELLS__CASTING_ERR, "Beneficial spell %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
+					Message_StringID(MT_Shout, SPELL_NO_HOLD);
+					safe_delete(action_packet);
+					return false;
+				}
 			}
 		}
 		else if	( !IsAttackAllowed(spelltar, true) && !IsResurrectionEffects(spell_id)) // Detrimental spells - PVP check
