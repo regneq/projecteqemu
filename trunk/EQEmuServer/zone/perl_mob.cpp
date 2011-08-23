@@ -7461,6 +7461,81 @@ XS(XS_Mob_SetBodyType)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_SetDeltas); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetDeltas)
+{
+	dXSARGS;
+	if (items != 5)
+		Perl_croak(aTHX_ "Usage: Mob::SetDeltas(THIS, delta_x, delta_y, delta_z, delta_h)");
+	{
+		Mob *		THIS;
+		float		delta_x = (float)SvNV(ST(1));
+		float		delta_y = (float)SvNV(ST(2));
+		float		delta_z = (float)SvNV(ST(3));
+		float		delta_h = (float)SvNV(ST(4));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetDeltas(delta_x, delta_y, delta_z, delta_h);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SetLD);
+XS(XS_Mob_SetLD)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetLD(THIS, value)");
+	{
+		Mob *	THIS;
+		bool value = (bool)SvTRUE(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        THIS->SendAppearancePacket(AT_Linkdead, value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SetTargetDestSteps); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetTargetDestSteps)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetTargetDestSteps(THIS, target_steps)");
+	{
+		Mob *		THIS;
+		int8		target_steps = (int8)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetTargetDestSteps(target_steps);
+	}
+	XSRETURN_EMPTY;
+}
+
 
 #ifdef __cplusplus
 extern "C"
@@ -7738,9 +7813,12 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "WearChange"), XS_Mob_WearChange, file, "$$$;$");
 		newXSproto(strcpy(buf, "DoKnockback"), XS_Mob_DoKnockback, file, "$$$$");
 		newXSproto(strcpy(buf, "RemoveNimbusEffect"), XS_Mob_RemoveNimbusEffect, file, "$$");
-        newXSproto(strcpy(buf, "IsRunning"), XS_Mob_IsRunning, file, "$");
-        newXSproto(strcpy(buf, "SetRunning"), XS_Mob_SetRunning, file, "$$");
+		newXSproto(strcpy(buf, "IsRunning"), XS_Mob_IsRunning, file, "$");
+		newXSproto(strcpy(buf, "SetRunning"), XS_Mob_SetRunning, file, "$$");
 		newXSproto(strcpy(buf, "SetBodyType"), XS_Mob_SetBodyType, file, "$$;$");
+		newXSproto(strcpy(buf, "SetDeltas"), XS_Mob_SetDeltas, file, "$$$$$");
+		newXSproto(strcpy(buf, "SetLD"), XS_Mob_SetLD, file, "$$");
+		newXSproto(strcpy(buf, "SetTargetDestSteps"), XS_Mob_SetTargetDestSteps, file, "$$");
 	XSRETURN_YES;
 }
 

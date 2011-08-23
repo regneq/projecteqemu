@@ -693,7 +693,11 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 	delta_z=z_pos-nz;
 	delta_heading=0;
 
-	SendPosUpdate();
+	if (IsClient())
+		SendPosUpdate(1);
+	else
+		SendPosUpdate();
+
 	SetAppearance(eaStanding, false);
 	pLastChange = Timer::GetCurrentTime();
 	return true;
