@@ -92,7 +92,6 @@ public:
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
 	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
     int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
-	virtual float GetHitChance(Mob* attacker, SkillType skillinuse, int Hand);
 	virtual float GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed);
 	virtual bool AvoidDamage(Mob* other, sint32 &damage);
 	virtual int GetMonkHandToHandDamage(void);
@@ -179,6 +178,10 @@ public:
 	sint32	CalcHPRegen();
 	sint32	CalcManaRegen();
 	uint32	CalcCurrentWeight();
+	int 	GroupLeadershipAAHealthEnhancement();
+	int 	GroupLeadershipAAManaEnhancement();
+	int	GroupLeadershipAAHealthRegeneration();
+	int 	GroupLeadershipAAOffenseEnhancement();
 	void CalcRestState();
 
 	// AI Methods
@@ -320,6 +323,7 @@ public:
 	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
 	int GetRawACNoShield(int &shield_ac);
+	int32 GetAA(int32 aa_id) const;
 	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -456,7 +460,6 @@ private:
 	sint32 GenerateBaseManaPoints();
 	void GenerateSpecialAttacks();
 	void SetBotID(uint32 botID);
-	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
 
 	// Private "Inventory" Methods
 	void GetBotItems(std::string* errorMessage, Inventory &inv);

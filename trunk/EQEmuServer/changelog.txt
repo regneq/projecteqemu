@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/28/2011==
+Bad_Captain: Rewrote Bot AAs to use aabonuses and GetAA(). Also added a few AAs.
+Bad_Captain: Fixed Bot chance to hit. (they never missed with their primary weapon attacks, and only missed ~5% with their offhand)
+Bad_Captain: Added WipeHateList to bot group attack, bot group follow, and bot group guard to allow target switching and keeps bots and their pets from attacking their target when you no longer want them to. (suggested by Criimson)
+
 ==08/23/2011==
 Trevius: Exported to Perl Mob: SetDeltas(delta_x, delta_y, delta_z, delta_h), SetLD(value), SetTargetDestSteps(target_steps).
 Trevius: (SuperUserJD) SpellOnTarget fix for casting beneficial spells on group members while in a raid.
