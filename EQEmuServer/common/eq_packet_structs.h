@@ -4546,6 +4546,38 @@ struct GroupMakeLeader_Struct
 /*456*/
 };
 
+//One packet i didn't include here is the alt currency merchant window.
+//it works much like the adventure merchant window
+//it is formated like: dbstringid|1|dbstringid|
+//ex for a blank crowns window you would send:
+//999999|1|999999|
+//any items come after in much the same way adventure merchant items do.. I'll update this as i figure that out.
+struct AltCurrencyPopulateEntry_Struct
+{
+/*000*/ uint32 currency_number; //corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
+/*004*/ uint32 unknown00; //always 1
+/*008*/ uint32 currency_number2; //always same as currency number
+/*012*/ uint32 item_id; //appears to be the item id
+/*016*/ uint32 item_icon; //actual icon
+/*020*/ uint32 stack_size; //most are set to 1000, the stack size for the item; should match db i think or there will be problems.
+};
+
+struct AltCurrencyPopulate_Struct {
+/*000*/ uint32 opcode; //8 for populate
+/*004*/ uint32 count; //number of entries
+/*008*/ AltCurrencyPopulateEntry_Struct entries[0];
+};
+
+struct AltCurrencyUpdate_Struct {
+/*000*/ uint32 opcode; //7 for update
+/*004*/ char name[64]; //name of client (who knows why just do it)
+/*068*/ uint32 currency_number; //matches currency_number from populate entry
+/*072*/ uint32 unknown072; //always 1
+/*076*/ uint32 amount; //new amount
+/*080*/ uint32 unknown080; //seen 0
+/*084*/ uint32 unknown084; //seen 0
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 
