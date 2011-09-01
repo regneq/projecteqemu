@@ -238,7 +238,7 @@ typedef enum {
 #define MT_LootMessages			286
 #define MT_DiceRoll				287
 #define MT_OtherSpells			288
-#define MT_Fizzles				289
+#define MT_SpellFailure				289
 #define MT_Chat					290
 #define MT_Channel1				291
 #define MT_Channel2				292

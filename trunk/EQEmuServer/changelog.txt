@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/01/2011==
+Derision: Spell resist messages now use the same MT as fizzles (for chat filter purposes).
+
 ==08/28/2011==
 Bad_Captain: Rewrote Bot AAs to use aabonuses and GetAA(). Also added a few AAs.
 Bad_Captain: Fixed Bot chance to hit. (they never missed with their primary weapon attacks, and only missed ~5% with their offhand)

@@ -3204,8 +3204,8 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 			if(spell_effectiveness == 0 || !IsPartialCapableSpell(spell_id) )
 			{
 				mlog(SPELLS__RESISTS, "Spell %d was completely resisted by %s", spell_id, spelltar->GetName());
-				Message_StringID(MT_Shout, TARGET_RESISTED, spells[spell_id].name);
-				spelltar->Message_StringID(MT_Shout, YOU_RESIST, spells[spell_id].name);
+				Message_StringID(MT_SpellFailure, TARGET_RESISTED, spells[spell_id].name);
+				spelltar->Message_StringID(MT_SpellFailure, YOU_RESIST, spells[spell_id].name);
 
 				if(spelltar->IsAIControlled()){
 					sint32 aggro = CheckAggroAmount(spell_id);
