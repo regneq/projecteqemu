@@ -205,7 +205,7 @@ struct Item_Struct {
 	bool	Stackable;
 	bool	NoTransfer;
 	bool	QuestItemFlag;
-	uint8	StackSize;
+    sint16	StackSize;
 	uint8	PotionBeltSlots;
 	ItemEffect_Struct Click, Proc, Worn, Focus, Scroll, Bard;
 

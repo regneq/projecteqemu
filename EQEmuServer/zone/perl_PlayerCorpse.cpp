@@ -295,7 +295,7 @@ XS(XS_Corpse_AddItem)
 	{
 		Corpse *		THIS;
 		uint32		itemnum = (uint32)SvUV(ST(1));
-		int8		charges = (int8)SvUV(ST(2));
+		int16		charges = (int16)SvUV(ST(2));
 		sint16		slot;
 
 		if (sv_derived_from(ST(0), "Corpse")) {

@@ -34,56 +34,153 @@
 
 
 // @merth: this needs to be touched up
-uint32 Client::NukeItem(uint32 itemnum) {
+uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 	if (itemnum == 0)
 		return 0;
 	uint32 x = 0;
-	
+	ItemInst *cur = NULL;
+    
 	int i;
-	for (i=0; i<=30; i++) { // Equipped, personal inventory, and cursor
-		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
-			DeleteItemInInventory(i, 0, true);
-			x++;
-		}
-	}
-	for (i=251; i<=339; i++) { // Main inventory's and cursor's containers
-		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
-			DeleteItemInInventory(i, 0, true);
-			x++;
-		}
-	}
-	for (i=2000; i<=2023; i++) { // Bank slots
-		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
-			DeleteItemInInventory(i, 0, true);
-			x++;
-		}
-	}
-	for (i=2031; i<=2270; i++) { // Bank's containers
-		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
-			DeleteItemInInventory(i, 0, true);
-			x++;
-		}
-	}
-	for (i=2500; i<=2501; i++) { // Shared bank
-		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
-			DeleteItemInInventory(i, 0, true);
-			x++;
-		}
-	}
-	for (i=2531; i<=2550; i++) { // Shared bank's containers
-		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
-			DeleteItemInInventory(i, 0, true);
-			x++;
-		}
-	}
-	// Power Source Slot
-	if (GetItemIDAt(9999) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(9999) != INVALID_ID)) {
-		if (GetClientVersion() >= EQClientSoF)
-			DeleteItemInInventory(9999, 0, true);
-		else
-			DeleteItemInInventory(9999, 0, false);	// Prevents Titanium crash
-		x = 1;
-	}	
+    if(where_to_check & invWhereWorn) {
+	    for (i=0; i<=21; i++) { // Equipped
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+
+        // Power Source Slot
+	    if (GetItemIDAt(9999) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(9999) != INVALID_ID)) {
+            cur = m_inv.GetItem(9999);
+            if(cur && cur->GetItem()->Stackable) {
+                x += cur->GetCharges();
+            } else {
+                x++;
+            }
+
+	    	if (GetClientVersion() >= EQClientSoF)
+	    		DeleteItemInInventory(9999, 0, true);
+	    	else
+	    		DeleteItemInInventory(9999, 0, false);	// Prevents Titanium crash
+	    }	
+    }
+
+    if(where_to_check & invWhereCursor) {
+	    if (GetItemIDAt(30) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(30) != INVALID_ID)) {
+            cur = m_inv.GetItem(30);
+            if(cur && cur->GetItem()->Stackable) {
+                x += cur->GetCharges();
+            } else {
+                x++;
+            }
+
+	    	DeleteItemInInventory(30, 0, true);
+	    }
+
+        for (i=331; i<=340; i++) { // cursor's containers
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+    }
+
+    if(where_to_check & invWherePersonal) {
+        for (i=22; i<=29; i++) { // Equipped
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+
+	    for (i=251; i<=330; i++) { // Main inventory's containers
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+    }
+
+    if(where_to_check & invWhereBank) {
+	    for (i=2000; i<=2023; i++) { // Bank slots
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+	    
+        for (i=2031; i<=2270; i++) { // Bank's containers
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+    }
+
+    if(where_to_check & invWhereSharedBank) {
+	    for (i=2500; i<=2501; i++) { // Shared bank
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+
+	    for (i=2531; i<=2550; i++) { // Shared bank's containers
+	    	if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
+                cur = m_inv.GetItem(i);
+                if(cur && cur->GetItem()->Stackable) {
+                    x += cur->GetCharges();
+                } else {
+                    x++;
+                }
+
+	    		DeleteItemInInventory(i, 0, true);
+	    	}
+	    }
+    }
+
 	return x;
 }
 
@@ -101,7 +198,7 @@ bool Client::CheckLoreConflict(const Item_Struct* item) {
 	return (m_inv.HasItemByLoreGroup(item->LoreGroup, ~invWhereSharedBank) != SLOT_INVALID);
 }
 
-void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned, uint16 to_slot) {
+void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned, uint16 to_slot) {
 	const Item_Struct* item = database.GetItem(item_id);
 	
 	if (item == NULL) {
@@ -987,8 +1084,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				if (world_item && src_item) {
 					// Case 2: Same item on cursor, stacks, transfer of charges needed
 					if ((world_item->ID == src_item->ID) && src_inst->IsStackable()) {
-						sint8 world_charges = world_inst->GetCharges();
-						sint8 src_charges = src_inst->GetCharges();
+						sint16 world_charges = world_inst->GetCharges();
+						sint16 src_charges = src_inst->GetCharges();
 						
 						// Fill up destination stack as much as possible
 						world_charges += src_charges;
@@ -1068,7 +1165,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				//we have a chance of stacking.
 				mlog(INVENTORY__SLOTS, "Move from %d to %d with stack size %d. dest has %d/%d charges", src_slot_id, dst_slot_id, move_in->number_in_stack, dst_inst->GetCharges(), dst_inst->GetItem()->StackSize);
 				// Charges can be emptied into dst
-				uint8 usedcharges = dst_inst->GetItem()->StackSize - dst_inst->GetCharges();
+				uint16 usedcharges = dst_inst->GetItem()->StackSize - dst_inst->GetCharges();
 				if (usedcharges > move_in->number_in_stack)
 					usedcharges = move_in->number_in_stack;
 				

@@ -434,7 +434,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 }
 
 //if itemlist is null, just send wear changes
-void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint8 charges, bool equipit, bool wearchange) {
+void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charges, bool equipit, bool wearchange) {
 	if(item2 == NULL)
 		return;
 	
@@ -567,12 +567,12 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint8 charge
 	}
 }
 	  
-void NPC::AddItem(const Item_Struct* item, int8 charges, bool equipitem) {
+void NPC::AddItem(const Item_Struct* item, int16 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
 	AddLootDrop(item, &itemlist, charges, equipitem, equipitem);
 }
 
-void NPC::AddItem(int32 itemid, int8 charges, bool equipitem) {
+void NPC::AddItem(int32 itemid, int16 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
 	const Item_Struct * i = database.GetItem(itemid);
 	if(i == NULL)

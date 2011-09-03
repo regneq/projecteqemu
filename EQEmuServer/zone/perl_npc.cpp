@@ -99,7 +99,7 @@ XS(XS_NPC_AddItem)
 	{
 		NPC *		THIS;
 		int32		itemid = (int32)SvUV(ST(1));
-		int8		charges = 0;
+		int16		charges = 0;
 		bool		equipitem = true;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -112,7 +112,7 @@ XS(XS_NPC_AddItem)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items > 2)
-			charges = (int8)SvUV(ST(2));
+			charges = (int16)SvUV(ST(2));
 		if (items > 3)
 			equipitem = (bool)SvTRUE(ST(3));
 

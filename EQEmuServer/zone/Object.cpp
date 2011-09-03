@@ -563,7 +563,7 @@ uint32 ZoneDatabase::AddObject(uint32 type, uint32 icon, const Object_Struct& ob
 	
 	uint32 database_id = 0;
 	uint32 item_id = 0;
-	sint8 charges = 0;
+	sint16 charges = 0;
 	
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
@@ -605,7 +605,7 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
     char* query = 0;
 	
 	uint32 item_id = 0;
-	sint8 charges = 0;
+	sint16 charges = 0;
 	
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;

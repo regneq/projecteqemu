@@ -47,7 +47,7 @@ public:
 	void say(const char *str);
 	void say(const char *str, int8 language);
 	void me(const char *str);
-	void summonitem(int32 itemid, uint8 charges = 0);
+	void summonitem(int32 itemid, uint16 charges = 0);
 	//getZoneID(const char *short_name)
 	void write(const char *file, const char *str);
 	int16 spawn2(int npc_type, int grid, int unused, float x, float y, float z, float heading);

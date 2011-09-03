@@ -60,6 +60,7 @@ E(OP_DzJoinExpeditionConfirm)
 E(OP_BecomeTrader)
 E(OP_PetBuffWindow)
 E(OP_OnLevelMessage)
+E(OP_AltCurrencySell)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -91,5 +92,7 @@ D(OP_InspectAnswer)
 D(OP_ApplyPoison)
 D(OP_DeleteItem)
 D(OP_AugmentItem)
+D(OP_AltCurrencySellSelection)
+D(OP_AltCurrencySell)
 #undef E
 #undef D

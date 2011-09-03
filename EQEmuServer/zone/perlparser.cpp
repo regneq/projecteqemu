@@ -515,11 +515,11 @@ XS(XS__addloot)
 		Perl_croak(aTHX_ "Usage: addloot(item_id, charges = 0, equipitem = true)");
 
 	int32	itemid = (int32)SvUV(ST(0));
-	int8	charges = 0;
+	int16	charges = 0;
 	bool	equipitem = true;
 
 	if (items > 1)
-		charges = (int8)SvUV(ST(1));
+		charges = (int16)SvUV(ST(1));
 	if (items > 2)
 		equipitem = (bool)SvTRUE(ST(2));
 

@@ -2891,7 +2891,7 @@ XS(XS_Client_SummonItem)
 	{
 		Client *		THIS;
 		uint32		item_id = (uint32)SvUV(ST(1));
-		sint8		charges = 0;
+		sint16		charges = 0;
 		bool		attune = false;
 		uint32		aug1 = 0;
 		uint32		aug2 = 0;
@@ -2910,7 +2910,7 @@ XS(XS_Client_SummonItem)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items > 2) {
-			charges = (sint8)SvIV(ST(2));
+			charges = (sint16)SvIV(ST(2));
 		}
 		if (items > 3) {
 			attune = (bool)SvTRUE(ST(3));

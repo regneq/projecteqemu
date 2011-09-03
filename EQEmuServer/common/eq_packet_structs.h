@@ -3389,6 +3389,9 @@ struct MerchantList{
 	uint32	id;
 	uint32	slot;
 	uint32	item;
+    sint16  faction_required;
+    sint8   level_required;
+    uint16  alt_currency_cost;    
 };
 struct TempMerchantList{
 	uint32	npcid;
@@ -3398,6 +3401,10 @@ struct TempMerchantList{
 	uint32	origslot;
 };
 
+struct AltCurrencyDefinition_Struct {
+    uint32 id;
+    uint32 item_id;
+};
 
 struct FindPerson_Point {
 	float y;
@@ -4548,10 +4555,15 @@ struct GroupMakeLeader_Struct
 
 //One packet i didn't include here is the alt currency merchant window.
 //it works much like the adventure merchant window
-//it is formated like: dbstringid|1|dbstringid|
+//it is formated like: dbstringid|1|dbstringid|count
 //ex for a blank crowns window you would send:
-//999999|1|999999|
-//any items come after in much the same way adventure merchant items do.. I'll update this as i figure that out.
+//999999|1|999999|0
+//any items come after in much the same way adventure merchant items do except there is no theme included
+#define ALT_CURRENCY_OP_POPULATE 8
+#define ALT_CURRENCY_OP_UPDATE 7
+    
+//Server -> Client
+//Populates the initial Alternate Currency Window
 struct AltCurrencyPopulateEntry_Struct
 {
 /*000*/ uint32 currency_number; //corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
@@ -4568,6 +4580,8 @@ struct AltCurrencyPopulate_Struct {
 /*008*/ AltCurrencyPopulateEntry_Struct entries[0];
 };
 
+//Server -> Client
+//Updates the value of a specific Alternate Currency
 struct AltCurrencyUpdate_Struct {
 /*000*/ uint32 opcode; //7 for update
 /*004*/ char name[64]; //name of client (who knows why just do it)
@@ -4576,6 +4590,72 @@ struct AltCurrencyUpdate_Struct {
 /*076*/ uint32 amount; //new amount
 /*080*/ uint32 unknown080; //seen 0
 /*084*/ uint32 unknown084; //seen 0
+};
+
+//Client -> Server 
+//When an item is selected while the alt currency merchant window is open
+struct AltCurrencySelectItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*008*/ uint32 unknown008;
+/*012*/ uint32 unknown012;
+/*016*/ uint32 unknown016;
+/*020*/ uint32 unknown020;
+/*024*/ uint32 unknown024;
+/*028*/ uint32 unknown028;
+/*032*/ uint32 unknown032;
+/*036*/ uint32 unknown036;
+/*040*/ uint32 unknown040;
+/*044*/ uint32 unknown044;
+/*048*/ uint32 unknown048;
+/*052*/ uint32 unknown052;
+/*056*/ uint32 unknown056;
+/*060*/ uint32 unknown060;
+/*064*/ uint32 unknown064;
+/*068*/ uint32 unknown068;
+/*072*/ uint32 unknown072;
+/*076*/ uint32 unknown076;
+};
+
+//Server -> Client
+//As setup it makes it so that item can't be sold to the merchant.
+//eg: "I will give you no doubloons for a cloth cap."
+//Probably also sends amounts somewhere
+struct AltCurrencySelectItemReply_Struct {
+/*000*/ uint32 unknown000; 
+/*004*/ uint8  unknown004; //0xff
+/*005*/ uint8  unknown005; //0xff
+/*006*/ uint8  unknown006; //0xff
+/*007*/ uint8  unknown007; //0xff
+/*008*/ char   item_name[64];
+/*072*/ uint32 unknown074;
+/*076*/ uint32 cost;
+/*080*/ uint32 unknown080;
+/*084*/ uint32 unknown084;
+};
+
+//Client -> Server
+//Requests purchase of a specific item from the vendor
+struct AltCurrencyPurchaseItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 item_id;
+/*008*/ uint32 unknown008; //1
+};
+
+//Client -> Server
+//Reclaims / Create currency button pushed.
+struct AltCurrencyReclaim_Struct {
+/*000*/ uint32 currency_id;
+/*004*/ uint32 unknown004;
+/*008*/ uint32 count;
+/*012*/ uint32 reclaim_flag; //1 = this is reclaim
+};
+
+struct AltCurrencySellItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*006*/ uint32 charges;
+/*010*/ uint32 cost;
 };
 
 //old structures live here:

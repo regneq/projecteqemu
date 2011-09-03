@@ -767,7 +767,7 @@ sint16 Inventory::HasItemByLoreGroup(uint32 loregroup, uint8 where)
 	return slot_id;
 }
 
-bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity) {
+bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
 
 	if(ItemToTry->Stackable) {
 

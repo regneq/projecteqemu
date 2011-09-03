@@ -3207,7 +3207,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
 	uint32 charges = inst->GetCharges();
-	if (charges > 254)
+	if (!stackable && charges > 254)
 		charges = 0xFFFFFFFF;
 
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);

@@ -1011,6 +1011,15 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 	int8 handychance = 0;
 	for(itr = merlist.begin();itr != merlist.end() && i<numItemSlots;itr++){
 		MerchantList ml = *itr;
+        if(GetLevel() < ml.level_required) {
+            continue;
+        }
+
+        sint32 fac = merch ? merch->GetPrimaryFaction() : 0;
+        if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+            continue;
+        }
+        
 		handychance = MakeRandomInt(0, merlist.size() + tmp_merlist.size() - 1 );
 		
 		item = database.GetItem(ml.item);

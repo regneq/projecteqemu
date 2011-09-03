@@ -129,8 +129,8 @@ public:
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
-	void	AddItem(const Item_Struct* item, int8 charges, bool equipitem = true);
-	void	AddItem(int32 itemid, int8 charges, bool equipitem = true);
+	void	AddItem(const Item_Struct* item, int16 charges, bool equipitem = true);
+	void	AddItem(int32 itemid, int16 charges, bool equipitem = true);
 	void	AddLootTable();
 
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
@@ -214,7 +214,7 @@ public:
 	void    SetTaunting(bool tog) {taunting = tog;}
 	void	PickPocket(Client* thief);
 	void	StartSwarmTimer(int32 duration) { swarm_timer.Start(duration); }
-	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint8 charges, bool equipit, bool wearchange = false);
+	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint16 charges, bool equipit, bool wearchange = false);
 	virtual void DoClassAttacks(Mob *target);
 	void	CheckSignal();
 	
@@ -301,6 +301,7 @@ public:
 	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay, sint16 iResistAdjust);
 	void RemoveSpellFromNPCList(sint16 spell_id);
     Timer *GetRefaceTimer() const { return reface_timer; }
+    const uint32 GetAltCurrencyType() const { return NPCTypedata->alt_currency_type; }
 
 protected:
 	

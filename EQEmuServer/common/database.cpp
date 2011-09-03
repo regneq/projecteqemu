@@ -702,6 +702,16 @@ bool Database::DeleteCharacter(char *name)
 	}
 
 #if DEBUG >= 5
+    printf(" alternate currency");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM character_alt_currency WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
 	printf("\n");
 #endif
 	printf("DeleteCharacter: successfully deleted '%s' (id %d)\n", name, charid);

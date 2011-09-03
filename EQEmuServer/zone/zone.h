@@ -173,6 +173,7 @@ public:
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 	list<InternalVeteranReward> VeteranRewards;
+    list<AltCurrencyDefinition_Struct> AlternateCurrencies;
 	char *adv_data;
 	bool did_adventure_actions;
 
@@ -180,6 +181,7 @@ public:
 	void	DoAdventureAssassinationCountIncrease();
 	void	DoAdventureActions();
 	void	LoadVeteranRewards();
+    void    LoadAlternateCurrencies();
 
 	Map*	zonemap;
 	WaterMap* watermap;
