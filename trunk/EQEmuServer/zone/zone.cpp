@@ -252,7 +252,7 @@ bool Zone::LoadZoneObjects() {
 			uint32 type = 0;
 			uint32 itemid = 0;
 			uint32 idx = 0;
-			sint8 charges = 0;
+			sint16 charges = 0;
 			
 			id							= (uint32)atoi(row[idx++]);
 			data.zone_id				= atoi(row[idx++]);
@@ -261,7 +261,7 @@ bool Zone::LoadZoneObjects() {
 			data.z						= atof(row[idx++]);
 			data.heading				= atof(row[idx++]);
 			itemid						= (uint32)atoi(row[idx++]);
-			charges						= (sint8)atoi(row[idx++]);
+			charges						= (sint16)atoi(row[idx++]);
 			strcpy(data.object_name, row[idx++]);
 			type						= (int8)atoi(row[idx++]);
 			icon						= (uint32)atoi(row[idx++]);
@@ -409,7 +409,7 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 	}
 	if(freeslot){
 		if(charges<0) //sanity check only, shouldnt happen
-			charges = 255;
+			charges = 0x7FFF;
 		database.SaveMerchantTemp(npcid, freeslot, item, charges);
 		tmp_merlist = tmpmerchanttable[npcid];
 		TempMerchantList ml2;
@@ -525,12 +525,15 @@ void Zone::LoadNewMerchantData(uint32 merchantid){
     MYSQL_RES *result;
     MYSQL_ROW row;
 	std::list<MerchantList> merlist;
-	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT item, slot FROM merchantlist WHERE merchantid=%d", merchantid), errbuf, &result)) {
+	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT item, slot, faction_required, level_required, alt_currency_cost FROM merchantlist WHERE merchantid=%d", merchantid), errbuf, &result)) {
 		while((row = mysql_fetch_row(result))) {
 			MerchantList ml;
 			ml.id = merchantid;
 			ml.item = atoul(row[0]);
 			ml.slot = atoul(row[1]);
+            ml.faction_required = atoul(row[2]);
+            ml.level_required = atoul(row[3]);
+            ml.alt_currency_cost = atoul(row[3]);            
 			merlist.push_back(ml);
 		}
 		merchanttable[merchantid] = merlist;
@@ -559,6 +562,9 @@ void Zone::LoadMerchantData_result(MYSQL_RES* result) {
 		}
 		ml.slot = atoul(row[1]);
 		ml.item = atoul(row[2]);
+        ml.faction_required = atoul(row[3]);
+        ml.level_required = atoul(row[4]);
+        ml.alt_currency_cost = atoul(row[5]);        
 		cur->second.push_back(ml);
 	}
 	//mysql_free_result(result);
@@ -574,7 +580,7 @@ void Zone::GetMerchantDataForZoneLoad(){
 	workpt.b1() = DBA_b1_Zone_MerchantLists;
 	DBAsyncWork* dbaw = new DBAsyncWork(&database, &MTdbafq, workpt, DBAsync::Read);
 	dbaw->AddQuery(1, &query, MakeAnyLenString(&query, 
-		"select ml.merchantid,ml.slot,ml.item "
+		"select ml.merchantid,ml.slot,ml.item,ml.faction_required,ml.level_required,ml.alt_currency_cost "
 		"from merchantlist ml, npc_types nt, spawnentry se, spawn2 s2 "
 		"where nt.merchant_id=ml.merchantid and nt.id=se.npcid "
 		"and se.spawngroupid=s2.spawngroupid and s2.zone='%s' and s2.version=%u "
@@ -948,7 +954,7 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadLDoNTraps();
 	zone->LoadLDoNTrapEntries();
 	zone->LoadVeteranRewards();
-
+    zone->LoadAlternateCurrencies();
 
 	//Load AA information
 	adverrornum = 500;
@@ -1020,6 +1026,7 @@ void Zone::ReloadStaticData() {
 	entity_list.RespawnAllDoors();
 
 	zone->LoadVeteranRewards();
+    zone->LoadAlternateCurrencies();
 	
 	//load the zone config file.
 	if (!LoadZoneCFG(zone->GetShortName(), zone->GetInstanceVersion(), true)) // try loading the zone name...
@@ -2292,6 +2299,35 @@ void Zone::LoadVeteranRewards()
 	else
 	{
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadVeteranRewards: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+	}
+}
+
+void Zone::LoadAlternateCurrencies()
+{
+	AlternateCurrencies.clear();
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	AltCurrencyDefinition_Struct current_currency;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, item_id from alternate_currency"),
+		errbuf,&result)) 
+	{
+		while((row = mysql_fetch_row(result))) 
+		{
+            current_currency.id = atoi(row[0]);
+            current_currency.item_id = atoi(row[1]);
+            AlternateCurrencies.push_back(current_currency);
+		}
+
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAlternateCurrencies: %s (%s)", query, errbuf);
 		safe_delete_array(query);
 	}
 }

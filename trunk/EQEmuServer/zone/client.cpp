@@ -6422,3 +6422,105 @@ void Client::SendStatsWindow(Client* client, bool use_window)
 		client->Message(0, "  CharID: %i  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", CharacterID(), GetID(), GetPetID(), GetOwnerID(), IsAIControlled(), targeted);
 	}
 }
+
+void Client::SendAltCurrencies() {
+    if(GetClientVersion() >= EQClientSoF) {
+        uint32 count = zone->AlternateCurrencies.size();
+        if(count == 0) {
+            return;
+        }
+
+        EQApplicationPacket *outapp = new EQApplicationPacket(OP_AltCurrency, 
+            sizeof(AltCurrencyPopulate_Struct) + sizeof(AltCurrencyPopulateEntry_Struct) * count);
+        AltCurrencyPopulate_Struct *altc = (AltCurrencyPopulate_Struct*)outapp->pBuffer;
+        altc->opcode = ALT_CURRENCY_OP_POPULATE;
+        altc->count = count;
+
+        uint32 i = 0;
+        list<AltCurrencyDefinition_Struct>::iterator iter = zone->AlternateCurrencies.begin();
+        while(iter != zone->AlternateCurrencies.end()) {
+            const Item_Struct* item = database.GetItem((*iter).item_id);
+            altc->entries[i].currency_number = (*iter).id;
+            altc->entries[i].unknown00 = 1;
+            altc->entries[i].currency_number2 = (*iter).id;
+            altc->entries[i].item_id = (*iter).item_id;
+            if(item) {
+                altc->entries[i].item_icon = item->Icon;
+                altc->entries[i].stack_size = item->StackSize;
+            } else {
+                altc->entries[i].item_icon = 1000;
+                altc->entries[i].stack_size = 1000;
+            }
+            i++;
+            iter++;
+        }
+
+        FastQueuePacket(&outapp);
+    }
+}
+
+void Client::SetAlternateCurrencyValue(uint32 currency_id, uint32 new_amount)
+{
+    alternate_currency[currency_id] = new_amount;
+    database.UpdateAltCurrencyValue(CharacterID(), currency_id, new_amount);
+    SendAlternateCurrencyValue(currency_id);
+}
+
+void Client::AddAlternateCurrencyValue(uint32 currency_id, sint32 amount)
+{
+    if(amount == 0) {
+        return;
+    }
+
+    int new_value = 0;
+    std::map<uint32, uint32>::iterator iter = alternate_currency.find(currency_id);
+    if(iter == alternate_currency.end()) {
+        new_value = amount;
+    } else {
+        new_value = (*iter).second + amount;
+    }
+
+    if(new_value < 0) {
+        alternate_currency[currency_id] = 0;
+        database.UpdateAltCurrencyValue(CharacterID(), currency_id, 0);
+    } else {
+        alternate_currency[currency_id] = new_value;
+        database.UpdateAltCurrencyValue(CharacterID(), currency_id, new_value);
+    }
+    SendAlternateCurrencyValue(currency_id);
+}
+
+void Client::SendAlternateCurrencyValues()
+{
+    list<AltCurrencyDefinition_Struct>::iterator iter = zone->AlternateCurrencies.begin();
+    while(iter != zone->AlternateCurrencies.end()) {
+        SendAlternateCurrencyValue((*iter).id, false);
+        iter++;
+    }
+}
+
+void Client::SendAlternateCurrencyValue(uint32 currency_id, bool send_if_null)
+{
+    uint32 value = GetAlternateCurrencyValue(currency_id);
+    if(value > 0 || (value == 0 && send_if_null)) {
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_AltCurrency, sizeof(AltCurrencyUpdate_Struct));
+        AltCurrencyUpdate_Struct *update = (AltCurrencyUpdate_Struct*)outapp->pBuffer;
+        update->opcode = 7;
+        strcpy(update->name, GetName());
+        update->currency_number = currency_id;
+        update->amount = value;
+        update->unknown072 = 1;
+        FastQueuePacket(&outapp);
+    }
+}
+
+uint32 Client::GetAlternateCurrencyValue(uint32 currency_id) const
+{
+    std::map<uint32, uint32>::const_iterator iter = alternate_currency.find(currency_id);
+    if(iter == alternate_currency.end()) {
+        return 0;
+    } else {
+        return (*iter).second;
+    }
+}
+

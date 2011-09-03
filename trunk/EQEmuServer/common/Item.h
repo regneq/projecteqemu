@@ -171,7 +171,7 @@ public:
 	sint16 HasItem(uint32 item_id, uint8 quantity=0, uint8 where=0xFF);
 
 	// Check whether there is space for the specified number of the specified item.
-	bool HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity);
+	bool HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity);
 	
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look

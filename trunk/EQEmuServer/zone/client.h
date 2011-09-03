@@ -697,7 +697,8 @@ public:
 	sint16 acmod();
 
 	// Item methods
-	uint32	NukeItem(uint32 itemnum);
+	uint32	NukeItem(uint32 itemnum, uint8 where_to_check = 
+        (invWhereWorn | invWherePersonal | invWhereBank | invWhereSharedBank | invWhereTrading | invWhereCursor));
 	void	SetTint(sint16 slot_id, uint32 color);
 	void	SetTint(sint16 slot_id, Color_Struct& color);
 	void	SetMaterial(sint16 slot_id, uint32 item_id);
@@ -710,7 +711,7 @@ public:
 	bool	SwapItem(MoveItem_Struct* move_in);
 	void	PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data = 0);
 	bool	AutoPutLootInInventory(ItemInst& inst, bool try_worn = false, bool try_cursor = true, ServerLootItem_Struct** bag_item_data = 0);
-	void	SummonItem(uint32 item_id, sint8 charges = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0, bool attuned=false, uint16 to_slot=SLOT_CURSOR);
+	void	SummonItem(uint32 item_id, sint16 charges = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0, bool attuned=false, uint16 to_slot=SLOT_CURSOR);
 	void	SetStats(int8 type,sint16 set_val);
 	void	IncStats(int8 type,sint16 increase_val);
 	void	DropItem(sint16 slot_id);
@@ -1014,6 +1015,12 @@ public:
 	inline bool IsDraggingCorpse() { return (DraggedCorpses.size() > 0); }
 	void DragCorpses();
 	inline void ClearDraggedCorpses() { DraggedCorpses.clear(); }
+    void SendAltCurrencies();
+    void SetAlternateCurrencyValue(uint32 currency_id, uint32 new_amount);
+    void AddAlternateCurrencyValue(uint32 currency_id, sint32 amount);
+    void SendAlternateCurrencyValues();
+    void SendAlternateCurrencyValue(uint32 currency_id, bool send_if_null = true);
+    uint32 GetAlternateCurrencyValue(uint32 currency_id) const;    
 
 protected:
 	friend class Mob;
@@ -1274,6 +1281,7 @@ private:
 	bool m_KnockBackExemption;
 	bool m_PortExemption;
 	bool m_SenseExemption;
+    std::map<uint32, uint32> alternate_currency;
 
 	//Connecting debug code.
 	enum { //connecting states, used for debugging only

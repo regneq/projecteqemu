@@ -55,6 +55,7 @@ struct NPCType
 	int32	npc_spells_id;
 	sint32	npc_faction_id;
 	uint32	merchanttype;
+    uint32  alt_currency_type;
 	int32	adventure_template;
 	int32	trap_template;
     int8    light;		//not loaded from DB

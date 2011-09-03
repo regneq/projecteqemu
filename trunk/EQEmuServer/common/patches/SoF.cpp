@@ -1965,6 +1965,18 @@ ENCODE(OP_OnLevelMessage)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_AltCurrencySell) 
+{
+    ENCODE_LENGTH_EXACT(AltCurrencySellItem_Struct);
+	SETUP_DIRECT_ENCODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+
+    OUT(merchant_entity_id);
+    eq->slot_id = TitaniumToSoFSlot(emu->slot_id);
+    OUT(charges);
+    OUT(cost);
+    FINISH_ENCODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
@@ -2374,7 +2386,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
 	uint32 charges = inst->GetCharges();
-	if (charges > 254)
+	if (!stackable && charges > 254)
 		charges = 0xFFFFFFFF;
 
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
@@ -2818,6 +2830,27 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	*length = ss.tellp();
 	return item_serial;
 }
+
+DECODE(OP_AltCurrencySellSelection) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySelectItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySelectItem_Struct, structs::AltCurrencySelectItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = SoFToTitaniumSlot(eq->slot_id);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySell) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySellItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = SoFToTitaniumSlot(eq->slot_id);
+    IN(charges);
+    IN(cost);
+    FINISH_DIRECT_DECODE();
+}
+
 
 } //end namespace SoF
 

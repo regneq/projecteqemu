@@ -70,7 +70,7 @@ public:
 
 	void	SetDecayTimer(int32 decaytime);
 	bool	IsEmpty() const;
-	void	AddItem(uint32 itemnum, int8 charges, sint16 slot = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
+	void	AddItem(uint32 itemnum, int16 charges, sint16 slot = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	uint32	GetWornItem(sint16 equipSlot) const;
 	ServerLootItem_Struct* GetItem(int16 lootslot, ServerLootItem_Struct** bag_item_data = 0);
 	void	RemoveItem(int16 lootslot);

@@ -100,7 +100,6 @@ void MapOpcodes() {
 
 	//Now put all the opcodes into their home...
 	//Begin Connecting opcodes:
-//	ConnectingOpcodes[OP_SetDataRate] = &Client::Handle_Connect_OP_SetDataRate;
 	ConnectingOpcodes[OP_ZoneEntry] = &Client::Handle_Connect_OP_ZoneEntry;
 	ConnectingOpcodes[OP_SetServerFilter] = &Client::Handle_Connect_OP_SetServerFilter;
 	ConnectingOpcodes[OP_SendAATable] = &Client::Handle_Connect_OP_SendAATable;
@@ -167,7 +166,6 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_MoveItem] = &Client::Handle_OP_MoveItem;
 	ConnectedOpcodes[OP_Camp] = &Client::Handle_OP_Camp;
 	ConnectedOpcodes[OP_Logout] = &Client::Handle_OP_Logout;
-//	ConnectedOpcodes[OP_SenseHeading] = &Client::Handle_OP_SenseHeading;
 	ConnectedOpcodes[OP_LDoNOpen] = &Client::Handle_OP_LDoNOpen;
 	ConnectedOpcodes[OP_LDoNSenseTraps] = &Client::Handle_OP_LDoNSenseTraps;
 	ConnectedOpcodes[OP_LDoNDisarmTraps] = &Client::Handle_OP_LDoNDisarmTraps;
@@ -257,7 +255,6 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GMEmoteZone] = &Client::Handle_OP_GMEmoteZone;
 	ConnectedOpcodes[OP_InspectRequest] = &Client::Handle_OP_InspectRequest;
 	ConnectedOpcodes[OP_InspectAnswer] = &Client::Handle_OP_InspectAnswer;
-//	ConnectedOpcodes[OP_Medding] = &Client::Handle_OP_Medding;
 	ConnectedOpcodes[OP_DeleteSpell] = &Client::Handle_OP_DeleteSpell;
 	ConnectedOpcodes[OP_PetitionBug] = &Client::Handle_OP_PetitionBug;
 	ConnectedOpcodes[OP_Bug] = &Client::Handle_OP_Bug;
@@ -375,6 +372,11 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_CorpseDrop] = &Client::Handle_OP_CorpseDrop;
 	ConnectedOpcodes[OP_GroupMakeLeader] = &Client::Handle_OP_GroupMakeLeader;
 	ConnectedOpcodes[OP_GuildCreate] = &Client::Handle_OP_GuildCreate;
+    ConnectedOpcodes[OP_AltCurrencyMerchantRequest] = &Client::Handle_OP_AltCurrencyMerchantRequest;
+    ConnectedOpcodes[OP_AltCurrencySellSelection] = &Client::Handle_OP_AltCurrencySellSelection;
+    ConnectedOpcodes[OP_AltCurrencyPurchase] = &Client::Handle_OP_AltCurrencyPurchase;
+    ConnectedOpcodes[OP_AltCurrencyReclaim] = &Client::Handle_OP_AltCurrencyReclaim;
+    ConnectedOpcodes[OP_AltCurrencySell] = &Client::Handle_OP_AltCurrencySell;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -2182,6 +2184,15 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 	std::list<MerchantList>::const_iterator itr;
 	for(itr = merlist.begin();itr != merlist.end() && count<255;itr++){
 		const MerchantList &ml = *itr;
+        if(GetLevel() < ml.level_required) {
+            continue;
+        }
+
+        sint32 fac = tmp->GetPrimaryFaction();
+        if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+            continue;
+        }
+        
 		item = database.GetItem(ml.item);
 		if(item)
 		{
@@ -2269,6 +2280,15 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 
 	for(itr = merlist.begin();itr != merlist.end();itr++){
 		MerchantList ml = *itr;
+        if(GetLevel() < ml.level_required) {
+            continue;
+        }
+
+        sint32 fac = tmp->GetPrimaryFaction();
+        if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+            continue;
+        }        
+        
 	    item = database.GetItem(ml.item);
 	    if(!item)
 	    	continue;
@@ -2392,7 +2412,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 		SetEbonCrystals(GetEbonCrystals() - (sint32)item->LDoNPrice);
 		SendCrystalCounts();
 	}
-	sint8 charges = 1;
+	sint16 charges = 1;
 	if(item->MaxCharges != 0)
 		charges = item->MaxCharges;
 
@@ -5232,7 +5252,7 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 	mco->playerid = 0;
 	mco->command = action; // Merchant command 0x01 = open
 	if (RuleB(Merchant, UsePriceMod)){
-	mco->rate = 1/((RuleR(Merchant, BuyCostMod))*Client::CalcPriceMod(tmp,true)); // works
+        mco->rate = 1/((RuleR(Merchant, BuyCostMod))*Client::CalcPriceMod(tmp,true)); // works
 	}
 	else
 		mco->rate = 1/(RuleR(Merchant, BuyCostMod));
@@ -5315,6 +5335,15 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	std::list<MerchantList>::const_iterator itr;
 	for(itr = merlist.begin();itr != merlist.end();itr++){
 		MerchantList ml = *itr;
+        if(GetLevel() < ml.level_required) {
+            continue;
+        }
+
+        sint32 fac = tmp->GetPrimaryFaction();
+        if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+            continue;
+        }
+        
 		if(mp->itemslot == ml.slot){
 			item_id = ml.item;
 			break;
@@ -9029,6 +9058,9 @@ void Client::CompleteConnect()
 	}
 
 	SendRewards();
+    SendAltCurrencies();
+    database.LoadAltCurrencyValues(CharacterID(), alternate_currency);
+    SendAlternateCurrencyValues();
 	CalcItemScale(true);
 
 	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
@@ -11872,3 +11904,346 @@ void Client::Handle_OP_GuildCreate(const EQApplicationPacket *app)
 		}
 	}
 }
+
+void Client::Handle_OP_AltCurrencyMerchantRequest(const EQApplicationPacket *app) {
+    VERIFY_PACKET_LENGTH(OP_AltCurrencyMerchantRequest, app, uint32);
+
+    NPC* tar = entity_list.GetNPCByID(*((uint32*)app->pBuffer));
+    if(tar) {
+        if(DistNoRoot(*tar) > USE_NPC_RANGE2)
+		    return;
+
+        if(tar->GetClass() != ALT_CURRENCY_MERCHANT) {
+            return;
+        }
+
+        uint32 alt_cur_id = tar->GetAltCurrencyType();
+        if(alt_cur_id == 0) {
+            return;
+        }
+        
+        list<AltCurrencyDefinition_Struct>::iterator altc_iter = zone->AlternateCurrencies.begin(); 
+        bool found = false;
+        while(altc_iter != zone->AlternateCurrencies.end()) {
+            if((*altc_iter).id == alt_cur_id) {
+                found = true;
+                break;
+            }
+            altc_iter++;
+        }
+
+        if(!found) {
+            return;
+        }
+
+        std::stringstream ss(std::stringstream::in | std::stringstream::out);
+        std::stringstream item_ss(std::stringstream::in | std::stringstream::out);
+        ss << alt_cur_id << "|1|" << alt_cur_id;
+        uint32 count = 0;
+        uint32 merchant_id = tar->MerchantType;
+        const Item_Struct *item = NULL;
+
+        std::list<MerchantList> merlist = zone->merchanttable[merchant_id];
+	    std::list<MerchantList>::const_iterator itr;
+	    for(itr = merlist.begin(); itr != merlist.end() && count < 255; itr++){
+		    const MerchantList &ml = *itr;
+            if(GetLevel() < ml.level_required) {
+                continue;
+            }
+
+            sint32 fac = tar->GetPrimaryFaction();
+            if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+                continue;
+            }
+
+		    item = database.GetItem(ml.item);
+		    if(item)
+		    {
+			    item_ss << "^" << item->Name << "|";
+			    item_ss << item->ID << "|";
+                item_ss << ml.alt_currency_cost << "|";
+			    item_ss << "0|";
+			    item_ss << "1|";
+			    item_ss << item->Races << "|";
+			    item_ss << item->Classes;
+			    count++;
+		    }
+	    }
+
+        if(count > 0) {
+            ss << "|" << count << item_ss.str();
+        } else {
+            ss << "|0";
+        }
+
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_AltCurrencyMerchantReply, ss.str().length() + 1);
+        memcpy(outapp->pBuffer, ss.str().c_str(), ss.str().length());
+        FastQueuePacket(&outapp);
+    }
+}
+
+void Client::Handle_OP_AltCurrencySellSelection(const EQApplicationPacket *app) {
+    VERIFY_PACKET_LENGTH(OP_AltCurrencySellSelection, app, AltCurrencySelectItem_Struct);
+
+    AltCurrencySelectItem_Struct *select = (AltCurrencySelectItem_Struct*)app->pBuffer;
+    NPC* tar = entity_list.GetNPCByID(select->merchant_entity_id);
+    if(tar) {
+        if(DistNoRoot(*tar) > USE_NPC_RANGE2)
+		    return;
+
+        if(tar->GetClass() != ALT_CURRENCY_MERCHANT) {
+            return;
+        }
+
+        uint32 alt_cur_id = tar->GetAltCurrencyType();
+        if(alt_cur_id == 0) {
+            return;
+        }
+
+        ItemInst *inst = m_inv.GetItem(select->slot_id);
+        if(!inst) {
+            return;
+        }
+
+        const Item_Struct* item = NULL;
+        uint32 cost = 0;
+        uint32 current_currency = GetAlternateCurrencyValue(alt_cur_id);
+        uint32 merchant_id = tar->MerchantType;
+        bool found = false;
+        std::list<MerchantList> merlist = zone->merchanttable[merchant_id];
+	    std::list<MerchantList>::const_iterator itr;
+	    for(itr = merlist.begin(); itr != merlist.end(); itr++) {
+            MerchantList ml = *itr;
+            if(GetLevel() < ml.level_required) {
+                continue;
+            }
+
+            sint32 fac = tar->GetPrimaryFaction();
+            if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+                continue;
+            }
+
+            item = database.GetItem(ml.item);
+	        if(!item)
+	    	    continue;
+
+            if(item->ID == inst->GetItem()->ID) {
+                cost = ml.alt_currency_cost;
+                found = true;
+	    	    break;
+	        }
+        }
+
+        if(!found) {
+            cost = 0;
+        }
+
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_AltCurrencySellSelection, sizeof(AltCurrencySelectItemReply_Struct));
+        AltCurrencySelectItemReply_Struct *reply = (AltCurrencySelectItemReply_Struct*)outapp->pBuffer;
+        reply->unknown004 = 0xFF;
+        reply->unknown005 = 0xFF;
+        reply->unknown006 = 0xFF;
+        reply->unknown007 = 0xFF;
+        strcpy(reply->item_name, inst->GetItem()->Name);
+        reply->cost = cost;
+        FastQueuePacket(&outapp);
+    }
+}
+
+void Client::Handle_OP_AltCurrencyPurchase(const EQApplicationPacket *app) {
+    VERIFY_PACKET_LENGTH(OP_AltCurrencyPurchase, app, AltCurrencyPurchaseItem_Struct);
+    AltCurrencyPurchaseItem_Struct *purchase = (AltCurrencyPurchaseItem_Struct*)app->pBuffer;
+    NPC* tar = entity_list.GetNPCByID(purchase->merchant_entity_id);
+    if(tar) {
+        if(DistNoRoot(*tar) > USE_NPC_RANGE2)
+		    return;
+
+        if(tar->GetClass() != ALT_CURRENCY_MERCHANT) {
+            return;
+        }
+
+        uint32 alt_cur_id = tar->GetAltCurrencyType();
+        if(alt_cur_id == 0) {
+            return;
+        }
+
+        const Item_Struct* item = NULL;
+        uint32 cost = 0;
+        uint32 current_currency = GetAlternateCurrencyValue(alt_cur_id);
+        uint32 merchant_id = tar->MerchantType;
+        bool found = false;
+        std::list<MerchantList> merlist = zone->merchanttable[merchant_id];
+	    std::list<MerchantList>::const_iterator itr;
+	    for(itr = merlist.begin(); itr != merlist.end(); itr++) {
+            MerchantList ml = *itr;
+            if(GetLevel() < ml.level_required) {
+                continue;
+            }
+
+            sint32 fac = tar->GetPrimaryFaction();
+            if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+                continue;
+            }
+
+            item = database.GetItem(ml.item);
+	        if(!item)
+	    	    continue;
+
+            if(item->ID == purchase->item_id) { //This check to make sure that the item is actually on the NPC, people attempt to inject packets to get items summoned...
+                cost = ml.alt_currency_cost;
+                found = true;
+			    break;
+		    }
+        }
+
+        if (!item || !found) {
+	    	Message(13, "Error: The item you purchased does not exist!");
+	    	return;
+	    }
+
+        if(cost > current_currency) {
+            Message(13, "You cannot afford that item right now.");
+            return;
+        }
+
+        if(CheckLoreConflict(item))
+	    {
+	    	Message(15,"You can only have one of a lore item.");
+	    	return;
+	    }
+
+        AddAlternateCurrencyValue(alt_cur_id, -((sint32)cost));
+        sint16 charges = 1;
+	    if(item->MaxCharges != 0)
+	    	charges = item->MaxCharges;
+
+        ItemInst *inst = database.CreateItem(item, charges);
+	    if(!AutoPutLootInInventory(*inst, true, true))
+	    {
+	    	PutLootInInventory(SLOT_CURSOR, *inst);
+	    }
+
+	    Save(1);
+    }
+}
+
+void Client::Handle_OP_AltCurrencyReclaim(const EQApplicationPacket *app) {
+    VERIFY_PACKET_LENGTH(OP_AltCurrencyReclaim, app, AltCurrencyReclaim_Struct);
+    AltCurrencyReclaim_Struct *reclaim = (AltCurrencyReclaim_Struct*)app->pBuffer;
+    uint32 item_id = 0;
+    list<AltCurrencyDefinition_Struct>::iterator iter = zone->AlternateCurrencies.begin();
+    while(iter != zone->AlternateCurrencies.end()) {
+        if((*iter).id == reclaim->currency_id) {
+            item_id = (*iter).item_id;
+        }
+        iter++;
+    }
+
+    if(item_id == 0) {
+        return;
+    }
+
+    if(reclaim->reclaim_flag == 1) { //item -> altcur
+        uint32 removed = NukeItem(item_id);
+        if(removed > 0) {
+            AddAlternateCurrencyValue(reclaim->currency_id, removed);
+        }
+    } else {
+        uint32 max_currency = GetAlternateCurrencyValue(reclaim->currency_id);
+        if(reclaim->count > max_currency) {
+            SummonItem(item_id, max_currency);
+            SetAlternateCurrencyValue(reclaim->currency_id, 0);
+        } else {
+            SummonItem(item_id, reclaim->count, 0, 0, 0, 0, 0, false, SLOT_CURSOR);
+            AddAlternateCurrencyValue(reclaim->currency_id, -((sint32)reclaim->count));
+        }
+    }
+}
+
+void Client::Handle_OP_AltCurrencySell(const EQApplicationPacket *app) {
+    VERIFY_PACKET_LENGTH(OP_AltCurrencySell, app, AltCurrencySellItem_Struct);
+    EQApplicationPacket *outapp = app->Copy();
+    AltCurrencySellItem_Struct *sell = (AltCurrencySellItem_Struct*)outapp->pBuffer;
+
+    NPC* tar = entity_list.GetNPCByID(sell->merchant_entity_id);
+    if(tar) {
+        if(DistNoRoot(*tar) > USE_NPC_RANGE2)
+		    return;
+
+        if(tar->GetClass() != ALT_CURRENCY_MERCHANT) {
+            return;
+        }
+
+        uint32 alt_cur_id = tar->GetAltCurrencyType();
+        if(alt_cur_id == 0) {
+            return;
+        }
+
+        ItemInst* inst = GetInv().GetItem(sell->slot_id);
+        if(!inst) {
+            return;
+        }
+
+        const Item_Struct* item = NULL;
+        uint32 cost = 0;
+        uint32 current_currency = GetAlternateCurrencyValue(alt_cur_id);
+        uint32 merchant_id = tar->MerchantType;
+        bool found = false;
+        std::list<MerchantList> merlist = zone->merchanttable[merchant_id];
+	    std::list<MerchantList>::const_iterator itr;
+	    for(itr = merlist.begin(); itr != merlist.end(); itr++) {
+            MerchantList ml = *itr;
+            if(GetLevel() < ml.level_required) {
+                continue;
+            }
+
+            sint32 fac = tar->GetPrimaryFaction();
+            if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+                continue;
+            }
+
+            item = database.GetItem(ml.item);
+	        if(!item)
+	    	    continue;
+
+            if(item->ID == inst->GetItem()->ID) {
+                cost = ml.alt_currency_cost;
+                found = true;
+	    	    break;
+	        }
+        }
+
+        if(!found) {
+            return;
+        }
+
+        if(!inst->IsStackable())
+	    {
+            DeleteItemInInventory(sell->slot_id, 0, false);
+	    }
+	    else
+	    {
+            if(inst->GetCharges() < sell->charges)
+	    	{
+                sell->charges = inst->GetCharges();
+	    	}
+
+	    	if(sell->charges == 0)
+	    	{
+	    		Message(13, "Charge mismatch error.");
+	    		return;
+	    	}
+
+	    	DeleteItemInInventory(sell->slot_id, sell->charges, false);
+	    	cost *= sell->charges;
+	    }
+
+        sell->cost = cost;
+
+        FastQueuePacket(&outapp);
+        this->AddAlternateCurrencyValue(alt_cur_id, cost);
+        Save(1);
+    }
+}
+
+

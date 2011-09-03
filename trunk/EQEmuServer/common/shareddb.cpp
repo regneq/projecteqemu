@@ -193,7 +193,7 @@ bool SharedDatabase::VerifyInventory(uint32 account_id, sint16 slot_id, const It
 		if(inst->GetCharges() >= 0)
 			expect_charges = inst->GetCharges();
 		else
-			expect_charges = 255;
+			expect_charges = 0x7FFF;
 		
 		if(id == inst->GetItem()->ID && charges == expect_charges)
 			found = true;
@@ -246,7 +246,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if(inst->GetCharges() >= 0)
 				charges = inst->GetCharges();
 			else
-				charges = 255;
+				charges = 0x7FFF;
 
 			uint32 len_query =  MakeAnyLenString(&query, 
 				"REPLACE INTO sharedbank "
@@ -282,7 +282,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if(inst->GetCharges() >= 0)
 				charges = inst->GetCharges();
 			else
-				charges = 255;
+				charges = 0x7FFF;
 			// Update/Insert item
 			uint32 len_query = MakeAnyLenString(&query, 
 				"REPLACE INTO inventory "
@@ -519,7 +519,7 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 						inst->SetInstNoDrop(true);
 				if (color > 0)
 					inst->SetColor(color);
-				if(charges==255)
+				if(charges==0x7FFF)
 					inst->SetCharges(-1);
 				else
 					inst->SetCharges(charges);
@@ -916,7 +916,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.PointType = (uint32)atoul(row[ItemField::pointtype]);
 			item.PotionBelt = (atoi(row[ItemField::potionbelt])==0) ? false : true;
 			item.PotionBeltSlots = (atoi(row[ItemField::potionbeltslots])==0) ? false : true;
-			item.StackSize = (uint8)atoi(row[ItemField::stacksize]);
+			item.StackSize = (uint16)atoi(row[ItemField::stacksize]);
             item.NoTransfer = disableNoTransfer ? false : (atoi(row[ItemField::notransfer])==0) ? false : true;
 			item.Stackable = (atoi(row[ItemField::stackable])==0) ? false : true;
 			//item.Unk134 = (uint32)atoul(row[ItemField::UNK134]);
