@@ -13470,6 +13470,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 								EndurerClass = RANGER;
 							}
 							break;
+						case BEASTLORD:
+							if(EndurerClass == 0) {
+								Endurer = g->members[i];
+								EndurerClass = BEASTLORD;
+							}
+							break;
 						default:
 							break;
 					}
@@ -13477,48 +13483,53 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 			switch(EndurerClass) {
 				case DRUID:
-
-					if  (c->GetLevel() <= 6) {
+					if  (c->GetLevel() < 6) {
 						Endurer->Say("I'm not level 6 yet.");
 					}
-					else if (zone->CanCastOutdoor()) {
+					else {
 						Endurer->Say("Casting Enduring Breath...");
 						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 						break;
 					}
 					break;
 				case SHAMAN:
-
-					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) { 
-						Endurer->Say("Casting Enduring Breath...");
-						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
-					}
-					else if (c->GetLevel() <= 12) {
+					if  (c->GetLevel() < 12) {
 						Endurer->Say("I'm not level 12 yet.");
+					}
+					else {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 					}
 					break;
 				case RANGER:
-
-					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 20)){
-						Endurer->Say("Casting Enduring Breath...");
-						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
-					}
-					else if (c->GetLevel() <= 20) {
+					if  (c->GetLevel() < 20) {
 						Endurer->Say("I'm not level 20 yet.");
+					}
+					else {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 					}
 					break;
 				case ENCHANTER:
-
-					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) {
-						Endurer->Say("Casting Enduring Breath...");
-						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
-					}
-					else if (c->GetLevel() <= 12) {
+					if  (c->GetLevel() < 12) {
 						Endurer->Say("I'm not level 12 yet.");
 					}
+					else {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
 					break;
+				case BEASTLORD:
+					if  (c->GetLevel() < 25) {
+						Endurer->Say("I'm not level 25 yet.");
+ 					}
+					else {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+ 					break;
 				default:
-					c->Message(15, "You must have a Druid, Shaman, Ranger, or Enchanter in your group.");
+					c->Message(15, "You must have a Druid, Shaman, Ranger, Enchanter, or Beastlord in your group.");
 					break;
 			}
 		}

@@ -4,7 +4,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 KLS: Added working Alternate Currency system for SoD and SoF(Untested but hopefully works).
 KLS: Added two fields to merchantlist that allows one to filter which items are offered to players by minimum faction and minimum level.
 KLS: Max stacks on items increased from 254 to 32767.
-
+Akkadius: Modified items id cap to 200,000
+Akkadius: Changed Perl Client Object 'NukeItem' to use the new fields implemented by KLS's Alternate Currency revision:
+$client->NukeItem(itemnum, [where_to_check, 1 = invWhereWorn, 2= invWherePersonal, 4 = invWhereBank, 8 = invWhereSharedBank, 16 = invWhereTrading, 32 = invWhereCursor]); Ex: $client->NukeItem(1001, 2);
+Akkadius: (Lerxst) Fixed Enduring Breath bot code, adjusted level requirements and added Beastlord class case.
 Required SQL: utils/sql/svn/2004_charges_alt_currency.sql
 
 ==09/01/2011==
