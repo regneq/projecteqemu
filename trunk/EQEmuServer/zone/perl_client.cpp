@@ -2693,13 +2693,14 @@ XS(XS_Client_NukeItem); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_NukeItem)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::NukeItem(THIS, itemnum)");
+	if (items != 3 && items != 2)
+		Perl_croak(aTHX_ "Usage: Client::NukeItem(THIS, itemnum, [where_to_check])");
 	{
 		Client *		THIS;
 		uint32		RETVAL;
 		dXSTARG;
 		uint32		itemnum = (uint32)SvUV(ST(1));
+		uint8		where_to_check;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2709,8 +2710,15 @@ XS(XS_Client_NukeItem)
 			Perl_croak(aTHX_ "THIS is not of type Client");
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+		
+		if(items < 3){
+			where_to_check = 0xFF;
+		}
+		if(items == 3){
+			where_to_check = (uint8)SvUV(ST(2));
+		}
 
-		RETVAL = THIS->NukeItem(itemnum);
+		RETVAL = THIS->NukeItem(itemnum, where_to_check);
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
@@ -5297,7 +5305,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "AutoSplitEnabled"), XS_Client_AutoSplitEnabled, file, "$");
 		newXSproto(strcpy(buf, "SetHorseId"), XS_Client_SetHorseId, file, "$$");
 		newXSproto(strcpy(buf, "GetHorseId"), XS_Client_GetHorseId, file, "$");
-		newXSproto(strcpy(buf, "NukeItem"), XS_Client_NukeItem, file, "$$");
+		newXSproto(strcpy(buf, "NukeItem"), XS_Client_NukeItem, file, "$$$");
 		newXSproto(strcpy(buf, "SetTint"), XS_Client_SetTint, file, "$$$");
 		newXSproto(strcpy(buf, "SetMaterial"), XS_Client_SetMaterial, file, "$$$");
 		newXSproto(strcpy(buf, "Undye"), XS_Client_Undye, file, "$");
