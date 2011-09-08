@@ -12144,7 +12144,7 @@ void Client::Handle_OP_AltCurrencyReclaim(const EQApplicationPacket *app) {
     }
 
     if(reclaim->reclaim_flag == 1) { //item -> altcur
-        uint32 removed = NukeItem(item_id);
+        uint32 removed = NukeItem(item_id, invWhereWorn | invWherePersonal | invWhereCursor);
         if(removed > 0) {
             AddAlternateCurrencyValue(reclaim->currency_id, removed);
         }
