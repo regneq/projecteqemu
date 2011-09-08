@@ -543,11 +543,10 @@ struct SpellBuff_Struct
 /*004*/	uint32 unknown004;			// Seen 1 for no buff
 /*008*/ int32 spellid;
 /*012*/	int32 duration;
-/*016*/ int16 dmg_shield_remaining;	//
-/*018*/ int8 persistant_buff;		// prolly not real
-/*019*/ int8 reserved;				// proll not real
+/*016*/ int32 unknown016;
 /*020*/	int32 player_id;			// 'global' ID of the caster, for wearoff messages
-/*024*/ uint8 unknown0028[52];
+/*024*/ uint32 counters;
+/*028*/ uint8 unknown0028[48];
 /*076*/
 };
 
@@ -4227,6 +4226,53 @@ struct ExpeditionCompass_Struct
 /*000*/ uint32 clientid;
 /*004*/ uint32 count;
 /*008*/ ExpeditionCompassEntry_Struct entries[0];
+};
+
+struct AltCurrencySelectItem_Struct {
+    uint32 merchant_entity_id;
+    uint32 slot_id;
+    uint32 unknown008;
+    uint32 unknown012;
+    uint32 unknown016;
+    uint32 unknown020;
+    uint32 unknown024;
+    uint32 unknown028;
+    uint32 unknown032;
+    uint32 unknown036;
+    uint32 unknown040;
+    uint32 unknown044;
+    uint32 unknown048;
+    uint32 unknown052;
+    uint32 unknown056;
+    uint32 unknown060;
+    uint32 unknown064;
+    uint32 unknown068;
+    uint32 unknown072;
+    uint32 unknown076;
+};
+
+struct AltCurrencySellItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*006*/ uint32 charges;
+/*010*/ uint32 cost;
+};
+
+struct AltCurrencyPopulateEntry_Struct
+{
+/*000*/ uint32 currency_number; //corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
+/*004*/ uint32 unknown00; //always 1
+/*008*/ uint32 currency_number2; //always same as currency number
+/*012*/ uint32 item_id; //appears to be the item id
+/*016*/ uint32 item_icon; //actual icon
+/*020*/ uint32 stack_size; //most are set to 1000, the stack size for the item; should match db i think or there will be problems.
+/*024*/ uint8  unknown024; //seen 0 and 1
+};
+
+struct AltCurrencyPopulate_Struct {
+/*000*/ uint32 opcode; //8 for populate
+/*004*/ uint32 count; //number of entries
+/*008*/ AltCurrencyPopulateEntry_Struct entries[0];
 };
 
 	};	//end namespace structs

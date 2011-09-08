@@ -73,6 +73,8 @@ E(OP_BuffCreate)
 E(OP_RespondAA)
 E(OP_SpawnAppearance)
 E(OP_DisciplineUpdate)
+E(OP_AltCurrencySell)
+E(OP_AltCurrency)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -116,5 +118,7 @@ D(OP_DeleteItem)
 D(OP_PetCommands)
 D(OP_AugmentItem)
 D(OP_BuffRemoveRequest)
+D(OP_AltCurrencySellSelection)
+D(OP_AltCurrencySell)
 #undef E
 #undef D
