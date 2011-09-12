@@ -2178,12 +2178,13 @@ int32 Mob::GetLevelCon(int8 mylevel, int8 iOtherLevel) {
 }
 
 void NPC::CheckSignal() {
-	if (signaled) {
+	if (!signal_q.empty()) {
+		int signal_id = signal_q.front();
+		signal_q.pop_front();
 		char buf[32];
 		snprintf(buf, 31, "%d", signal_id);
 		buf[31] = '\0';
-        parse->EventNPC(EVENT_SIGNAL, this, NULL, buf, 0);
-		signaled=false;
+		parse->EventNPC(EVENT_SIGNAL, this, NULL, buf, 0);
 	}
 }
 
