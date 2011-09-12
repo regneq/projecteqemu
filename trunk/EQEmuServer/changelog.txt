@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/12/2011==
+Leere: (Tabasco) Added a deque for signals received by an NPC.
+
 ==09/05/2011==
 Akkadius: (Akkadius/Lerxst) Fixed Beastlord 1.5 and 2.0 pet clickies.
 

@@ -144,8 +144,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	max_wp=0;
 	save_wp = 0;
 	spawn_group = 0;
-	signaled = false;
-	signal_id = 0;
 	swarmInfoPtr = NULL;
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
@@ -2090,4 +2088,9 @@ sint32 NPC::CalcMaxMana() {
 	
 	    return max_mana;
     }
+}
+
+void NPC::SignalNPC(int _signal_id)
+{
+	signal_q.push_back(_signal_id);
 }

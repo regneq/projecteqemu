@@ -24,6 +24,7 @@ class NPC;
 //#include "spawn.h"
 
 #include <list>
+#include <deque>
 using namespace std;
 
 #include "spawn2.h"
@@ -194,7 +195,7 @@ public:
 	int32	GetSwarmTarget();
 	void	SetSwarmTarget(int target_id = 0);
 	
-	inline void SignalNPC(int _signal_id) { signaled = true; signal_id = _signal_id; }
+	void	SignalNPC(int _signal_id);
 	
 	inline sint32	GetNPCFactionID()	const { return npc_faction_id; }
 	inline sint32			GetPrimaryFaction()	const { return primary_faction; }
@@ -356,8 +357,7 @@ protected:
 	
 	bool npc_aggro;
 	
-	int		signal_id;
-	bool	signaled;	// used by quest signal() command
+	deque<int> signal_q;
 	
 	//waypoint crap:
 	vector<wplist> Waypoints;
