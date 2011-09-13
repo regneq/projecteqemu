@@ -128,6 +128,7 @@
 #define LOSE_LEVEL					442		//You LOST a level! You are now level %1!
 #define GAIN_ABILITY_POINT			446		//You have gained an ability point!  You now have %1 ability point%2.
 #define GAIN_LEVEL					447		//You have gained a level! Welcome to level %1!
+#define LANG_SKILL_IMPROVED			449		//Your language skills have improved.
 #define OTHER_LOOTED_MESSAGE		466		//--%1 has looted a %2--
 #define LOOTED_MESSAGE				467		//--You have looted a %1--
 #define FACTION_WORST				469		//Your faction standing with %1 could not possibly get any worse.
@@ -155,6 +156,10 @@
 #define OTHER_REGAIN_CAST			1033	//%1 regains concentration and continues casting.
 #define GENERIC_SHOUT				1034	//%1 shouts '%2'
 #define GENERIC_EMOTE				1036	//%1 %2
+#define NPC_ENRAGE_START			1042	//%1 has become ENRAGED.
+#define NPC_ENRAGE_END				1043	//%1 is no longer enraged.
+#define NPC_RAMPAGE					1044	//%1 goes on a RAMPAGE!
+#define NPC_FLURRY					1045	//%1 executes a FLURRY of attacks on %2!
 #define DISCIPLINE_FEARLESS			1076	//%1 becomes fearless.
 #define DUEL_FINISHED				1088	//dont know text
 #define EATING_MESSAGE				1091	//Chomp, chomp, chomp...  %1 takes a bite from a %2.

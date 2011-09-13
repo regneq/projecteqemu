@@ -4487,7 +4487,7 @@ void Bot::AI_Process() {
 
 
 						if(MakeRandomInt(0, 999) < flurrychance) {
-							Message_StringID(MT_Flurry, 128);
+							Message_StringID(MT_NPCFlurry, 128);
 							Attack(GetTarget(), SLOT_PRIMARY, true);
 							Attack(GetTarget(), SLOT_PRIMARY, true);
 						}

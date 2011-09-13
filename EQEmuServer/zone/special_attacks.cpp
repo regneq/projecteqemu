@@ -1891,7 +1891,7 @@ void Mob::InstillDoubt(Mob *who) {
 		Message_StringID(4,NOT_SCARING);
 		//Idea from WR:
 		/* if (target->IsNPC() && MakeRandomInt(0,99) < 10 ) {
-			entity_list.MessageClose(target, false, 50, MT_Rampage, "%s lashes out in anger!",target->GetName());
+			entity_list.MessageClose(target, false, 50, MT_NPCRampage, "%s lashes out in anger!",target->GetName());
 			//should we actually do this? and the range is completely made up, unconfirmed
 			entity_list.AEAttack(target, 50);
 		}*/

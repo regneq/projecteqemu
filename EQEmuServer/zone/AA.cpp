@@ -240,7 +240,7 @@ void Client::ActivateAA(aaID activate){
 		case aaTargetCurrent:
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
+				Message_StringID(MT_DefaultText, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -338,7 +338,7 @@ void Client::HandleAAAction(aaID activate) {
 			
 		case aaActionMassBuff:
 			EnableAAEffect(aaEffectMassGroupBuff, 3600); 
-			Message_StringID(10, MGB_STRING);	//The next group buff you cast will hit all targets in range.
+			Message_StringID(MT_Disciplines, MGB_STRING);	//The next group buff you cast will hit all targets in range.
 			break;
 		
 		case aaActionFlamingArrows:
@@ -500,7 +500,7 @@ void Client::HandleAAAction(aaID activate) {
 		case aaTargetCurrent:
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
+				Message_StringID(MT_DefaultText, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
 			target_id = GetTarget()->GetID();

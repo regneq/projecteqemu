@@ -250,7 +250,7 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 	
  	DBTradeskillRecipe_Struct spec;
  	if (!database.GetTradeRecipe(container, c_type, some_id, user->CharacterID(), &spec)) {
- 		user->Message_StringID(4,TRADESKILL_NOCOMBINE);
+ 		user->Message_StringID(MT_Emote,TRADESKILL_NOCOMBINE);
  		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
  		user->QueuePacket(outapp);
  		safe_delete(outapp);
@@ -866,7 +866,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		// above critical still stands.
 		// Mastery modifier is: 10%/25%/50% for rank one/two/three
 		chance = 95.0f + (float(user_skill - spec->trivial) / 40.0f);
-		Message_StringID(4, TRADESKILL_TRIVIAL);
+		Message_StringID(MT_Emote, TRADESKILL_TRIVIAL);
 	} else if(chance < 5) {
 		// Minimum chance is always 5
 		chance = 5;
@@ -1040,7 +1040,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		if(over_trivial < 0)
 			CheckIncreaseTradeskill(bonusstat, stat_modifier, skillup_modifier, success_modifier, spec->tradeskill);
 		
-		Message_StringID(4,TRADESKILL_FAILED);
+		Message_StringID(MT_Emote,TRADESKILL_FAILED);
 
 		_log(TRADESKILLS__TRACE, "Tradeskill failed");
             if (this->GetGroup())

@@ -372,11 +372,12 @@ bool Client::Process() {
 
 			if (!CombatRange(auto_attack_target)) 
 			{
-				Message_StringID(13,TARGET_TOO_FAR);
+				//duplicate message not wanting to see it.
+				//Message_StringID(MT_TooFarAway,TARGET_TOO_FAR);
 			}
 			else if (auto_attack_target == this) 
 			{
-				Message_StringID(13,TRY_ATTACKING_SOMEONE);
+				Message_StringID(MT_TooFarAway,TRY_ATTACKING_SOMEONE);
 			}
 			else if (!los_status)
 			{
@@ -457,7 +458,7 @@ bool Client::Process() {
 
 					if(MakeRandomInt(0, 999) < flurrychance) 
 					{
-						Message_StringID(MT_Flurry, 128);
+						Message_StringID(MT_NPCFlurry, 128);
 						Attack(auto_attack_target, 13, false);
 						Attack(auto_attack_target, 13, false);
 					}
@@ -531,11 +532,12 @@ bool Client::Process() {
 		{	
 			// Range check
 			if(!CombatRange(auto_attack_target)) {
-				Message_StringID(13,TARGET_TOO_FAR);
+				// this is a duplicate message don't use it.
+				Message_StringID(MT_TooFarAway,TARGET_TOO_FAR);
 			}
 			// Don't attack yourself
 			else if(auto_attack_target == this) {
-				Message_StringID(13,TRY_ATTACKING_SOMEONE);
+				Message_StringID(MT_TooFarAway,TRY_ATTACKING_SOMEONE);
 			}
 			else if (!los_status)
 			{

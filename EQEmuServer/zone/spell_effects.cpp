@@ -620,11 +620,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				int max_level = spell.max[i];
                 if(SpecAttacks[UNSTUNABLE])
 				{
-					caster->Message_StringID(MT_Shout, IMMUNE_STUN);
+					caster->Message_StringID(MT_SpellFailure, IMMUNE_STUN);
 				}
                 else if(max_level && max_level < GetLevel())
                 {
-                    caster->Message_StringID(MT_Shout, IMMUNE_STUN);
+                    caster->Message_StringID(MT_SpellFailure, IMMUNE_STUN);
                 }
 				else
 				{
@@ -861,14 +861,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					{
 						if(!zone->CanBind())
 						{
-							Message_StringID(13, CANNOT_BIND);
+							Message_StringID(MT_SpellFailure, CANNOT_BIND);
 							break;
 						}
 						if(!zone->IsCity())
 						{
 							if(caster != this)
 							{
-								Message_StringID(13, CANNOT_BIND);
+								Message_StringID(MT_SpellFailure, CANNOT_BIND);
 								break;
 							}
 							else

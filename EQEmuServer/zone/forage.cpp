@@ -214,14 +214,14 @@ bool Client::CanFish() {
 
 	if(!Pole || !Pole->IsType(ItemClassCommon) || Pole->GetItem()->ItemType != ItemTypeFishingPole) {
 		if (m_inv.HasItemByUse(ItemTypeFishingPole, 1, invWhereWorn|invWherePersonal|invWhereBank|invWhereSharedBank|invWhereTrading|invWhereCursor))	//We have a fishing pole somewhere, just not equipped
-			Message_StringID(0, FISHING_EQUIP_POLE);	//You need to put your fishing pole in your primary hand.
+			Message_StringID(MT_Skills, FISHING_EQUIP_POLE);	//You need to put your fishing pole in your primary hand.
 		else	//We don't have a fishing pole anywhere
-			Message_StringID(0, FISHING_NO_POLE);	//You can't fish without a fishing pole, go buy one.
+			Message_StringID(MT_Skills, FISHING_NO_POLE);	//You can't fish without a fishing pole, go buy one.
 		return false;
 	}
 
 	if (!Bait || !Bait->IsType(ItemClassCommon) || Bait->GetItem()->ItemType != ItemTypeFishingBait) {
-		Message_StringID(0, FISHING_NO_BAIT);	//You can't fish without fishing bait, go buy some.
+		Message_StringID(MT_Skills, FISHING_NO_BAIT);	//You can't fish without fishing bait, go buy some.
 		return false;
 	}
 
@@ -251,11 +251,11 @@ bool Client::CanFish() {
 			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ) || zone->watermap->InVWater(RodX, RodY, RodZ);
 			//Message(0, "Rod is at %4.3f, %4.3f, %4.3f, InWater says %d, InLava says %d", RodX, RodY, RodZ, in_water, in_lava);
 			if (in_lava) {
-				Message_StringID(0, FISHING_LAVA);	//Trying to catch a fire elemental or something?
+				Message_StringID(MT_Skills, FISHING_LAVA);	//Trying to catch a fire elemental or something?
 				return false;
 			}
 			if((!in_water) || (z_pos-RodZ)>LineLength) {	//Didn't hit the water OR the water is too far below us
-				Message_StringID(0, FISHING_LAND);	//Trying to catch land sharks perhaps?
+				Message_StringID(MT_Skills, FISHING_LAND);	//Trying to catch land sharks perhaps?
 				return false;
 			}
 		}
