@@ -1910,9 +1910,7 @@ bool Mob::TryHeadShot(Mob* defender, SkillType skillInUse) {
 				int DefenderChance = MakeRandomInt(0, 100);
 				if(AttackerChance > DefenderChance) {
 					mlog(COMBAT__ATTACKS, "Landed a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
-					// WildcardX: At the time I wrote this, there wasnt a string id for something like HEADSHOT_BLOW
-					//entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetName());
-					entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s has scored a HEADSHOT!", GetName());
+					entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FATAL_BOW_SHOT, GetName());
 					defender->Damage(this, 32000, SPELL_UNKNOWN, skillInUse);
 					Result = true;
 				}

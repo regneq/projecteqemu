@@ -3866,7 +3866,7 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		if (MakeRandomInt(0, 99) < critChance) {
 			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = (damage * critMod) / 100;
-            entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+            entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRITICAL_HIT, GetCleanName(), itoa(damage));
 		}
 	}
 }
@@ -3968,7 +3968,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 			
 			if(IsClient() && CastToClient()->berserk || crip_success)
 			{
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
+				entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRIPPLING_BLOW, GetCleanName(), itoa(damage));
 				// Crippling blows also have a chance to stun
 				if(MakeRandomInt(0,99) < 50) //improbable to stun every hit
 					defender->Stun(0);
@@ -3976,7 +3976,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 			else
 			{
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+				entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRITICAL_HIT, GetCleanName(), itoa(damage));
 			}
 		}
 	}
