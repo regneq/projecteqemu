@@ -863,7 +863,7 @@ void Client::AI_Process()
 
 									if(MakeRandomInt(0, 999) < flurry_chance) 
 									{
-										Message_StringID(MT_Flurry, 128);
+										Message_StringID(MT_NPCFlurry, 128);
 										Attack(GetTarget(), 13, true);
 										Attack(GetTarget(), 13, true);
 									}
@@ -1923,13 +1923,13 @@ void Mob::StartEnrage()
     // start the timer. need to call IsEnraged frequently since we dont have callback timers :-/
     SpecAttackTimers[SPECATK_ENRAGE]->Start();
     bEnraged = true;
-	entity_list.MessageClose(this, true, 200, 13, "%s has become ENRAGED.", GetCleanName());
+	entity_list.MessageClose_StringID(this, true, 200, MT_NPCEnrage, NPC_ENRAGE_START, GetCleanName());
 }
 
 void Mob::ProcessEnrage(){
 	if(IsEnraged()){
 		if(SpecAttackTimers[SPECATK_ENRAGE] && SpecAttackTimers[SPECATK_ENRAGE]->Check()){
-			entity_list.MessageClose(this, true, 200, 13, "%s is no longer enraged.", GetCleanName());
+			entity_list.MessageClose_StringID(this, true, 200, MT_NPCEnrage, NPC_ENRAGE_END, GetCleanName());
 			SpecAttackTimers[SPECATK_ENRAGE]->Start(EnragedTimer);
 			bEnraged = false;
 		}
@@ -1946,7 +1946,7 @@ bool Mob::Flurry()
     // this is wrong, flurry is extra attacks on the current target
     Mob *target = GetTarget();
 	if (target) {
-		entity_list.MessageClose(this, true, 200, 13, "%s executes a FLURRY of attacks on %s!", GetCleanName(), target->GetCleanName());
+		entity_list.MessageClose_StringID(this, true, 200, MT_NPCFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
 		for (int i = 0; i < RuleI(Combat, MaxFlurryHits); i++)
 			Attack(target);
 	}
@@ -1979,7 +1979,7 @@ void Mob::ClearRampage(){
 bool Mob::Rampage()
 {
 	int index_hit = 0;
-	entity_list.MessageClose(this, true, 200, 13, "%s goes on a RAMPAGE!", GetCleanName());
+	entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
     for (int i = 0; i < RampageArray.size(); i++)
     {
 		if(index_hit >= RuleI(Combat, MaxRampageTargets))
@@ -2005,7 +2005,7 @@ bool Mob::Rampage()
 void Mob::AreaRampage()
 {
 	int index_hit = 0;
-	entity_list.MessageClose(this, true, 200, 13, "%s goes on a RAMPAGE!", GetCleanName());
+	entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
 	index_hit = hate_list.AreaRampage(this, GetTarget());
 
 	if(index_hit == 0)

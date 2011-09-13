@@ -238,7 +238,7 @@ typedef enum {
 #define MT_LootMessages			286
 #define MT_DiceRoll				287
 #define MT_OtherSpells			288
-#define MT_SpellFailure				289
+#define MT_SpellFailure			289
 #define MT_Chat					290
 #define MT_Channel1				291
 #define MT_Channel2				292
@@ -253,9 +253,9 @@ typedef enum {
 #define MT_CritMelee			301
 #define MT_SpellCrits			302
 #define MT_TooFarAway			303
-#define MT_Rampage				304
-#define MT_Flurry				305
-#define MT_Enrage				306
+#define MT_NPCRampage			304
+#define MT_NPCFlurry			305
+#define MT_NPCEnrage			306
 #define MT_SayEcho				307
 #define MT_TellEcho				308
 #define MT_GroupEcho			309
