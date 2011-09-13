@@ -1946,7 +1946,11 @@ bool Mob::Flurry()
     // this is wrong, flurry is extra attacks on the current target
     Mob *target = GetTarget();
 	if (target) {
-		entity_list.MessageClose_StringID(this, true, 200, MT_NPCFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
+		if (!IsPet()) {
+			entity_list.MessageClose_StringID(this, true, 200, MT_NPCFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
+		} else {
+			entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
+		}
 		for (int i = 0; i < RuleI(Combat, MaxFlurryHits); i++)
 			Attack(target);
 	}
@@ -1979,7 +1983,11 @@ void Mob::ClearRampage(){
 bool Mob::Rampage()
 {
 	int index_hit = 0;
-	entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
+	if (!IsPet()) {
+		entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
+	} else {
+		entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, NPC_RAMPAGE, GetCleanName());
+	}
     for (int i = 0; i < RampageArray.size(); i++)
     {
 		if(index_hit >= RuleI(Combat, MaxRampageTargets))
@@ -2005,7 +2013,11 @@ bool Mob::Rampage()
 void Mob::AreaRampage()
 {
 	int index_hit = 0;
-	entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
+	if (!IsPet()) {
+		entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
+	} else {
+		entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, NPC_RAMPAGE, GetCleanName());
+	}
 	index_hit = hate_list.AreaRampage(this, GetTarget());
 
 	if(index_hit == 0)

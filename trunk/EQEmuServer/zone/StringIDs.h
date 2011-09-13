@@ -146,6 +146,7 @@
 #define GM_GAINXP					1002	//[GM] You have gained %1 AXP and %2 EXP (%3).
 #define FINISHING_BLOW				1009	//%1 scores a Finishing Blow!!
 #define ASSASSINATES				1016	//%1 ASSASSINATES their victim!!
+#define CRIPPLING_BLOW				1021	//%1 lands a Crippling Blow!(%2)
 #define CRITICAL_HIT				1023	//%1 scores a critical hit! (%2)
 #define RESISTS_URGE				1025	//%1 resists their urge to flee.
 #define BERSERK_START				1027	//%1 goes into a berserker frenzy!
@@ -222,6 +223,7 @@
 #define GAIN_RAIDEXP				5085	//You gained raid experience!
 #define ADVENTURE_COMPLETE			5147	//You received %1 points for successfully completing the adventure.
 #define PET_ATTACKING				5501	//%1 tells you, 'Attacking %2 Master.'
+#define FATAL_BOW_SHOT				5745	//%1 performs a FATAL BOW SHOT!!
 #define MELEE_SILENCE				5806	//You *CANNOT* use this melee ability, you are suffering from amnesia!
 #define DISCIPLINE_REUSE_MSG		5807	//You can use the ability %1 again in %2 hour(s) %3 minute(s) %4 seconds.
 #define DISCIPLINE_REUSE_MSG2		5808	//You can use the ability %1 again in %2 minute(s) %3 seconds.
@@ -315,6 +317,7 @@
 #define SURNAME_EXISTS				12939	//You already have a surname.  Operation failed.
 #define SURNAME_LEVEL				12940	//You can only submit a surname upon reaching the 20th level.  Operation failed.
 #define SURNAME_TOO_LONG			12942	//Surname must be less than 20 characters in length.
+#define REPORT_ONCE					12945	//You may only submit a report once per time that you zone. Thank you.
 #define NOW_INVISIBLE				12950	//%1 is now Invisible.
 #define NOW_VISIBLE					12951	//%1 is now Visible.
 #define GUILD_NOT_MEMBER2			12966	//You are not in a guild.
