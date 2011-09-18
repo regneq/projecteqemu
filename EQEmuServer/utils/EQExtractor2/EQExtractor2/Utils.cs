@@ -30,6 +30,11 @@ namespace MyUtils
             BufferPointer = 0;
         }
 
+        public int Length()
+        {
+            return Buffer.Length;
+        }
+
         public UInt32 ReadUInt32()
         {
             UInt32 Value = BitConverter.ToUInt32(Buffer, BufferPointer);

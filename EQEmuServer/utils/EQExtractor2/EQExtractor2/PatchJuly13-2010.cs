@@ -28,9 +28,23 @@ namespace EQExtractor2.Patches
             //OpManager.RegisterExplorer("OP_ZoneEntry", ExploreZoneEntry);
             //OpManager.RegisterExplorer("OP_CastSpell", ExploreCastSpell);
             //OpManager.RegisterExplorer("OP_SpawnAppearance", ExploreSpawnAppearance);
-            //OpManager.RegisterExplorer("OP_MercenaryDataResponse", ExploreMercenaryDataResponse);
+            //OpManager.RegisterExplorer("OP_ItemPacket", ExploreItemPacket);
         }
 
+        public void ExploreItemPacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 StackSize = Buffer.ReadUInt32();
+            Buffer.SkipBytes(4);
+            UInt32 Slot = Buffer.ReadUInt32();
+            UInt32 MerchantSlot = Buffer.ReadUInt32();
+            UInt32 Price = Buffer.ReadUInt32();
+            Int32 Quantity = Buffer.ReadInt32();
+            Buffer.SetPosition(68);
+            string Name = Buffer.ReadString(true);
+
+            OutputStream.WriteLine("Item: {0} at Slot: {1}", Name, Slot);
+
+        }
         
 
         public void ExploreCastSpell(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)

@@ -319,7 +319,7 @@ namespace EQPacket
 
                     ExpectedServerSEQ = 0;
 
-                    CryptoFlag = 0;                    
+                    CryptoFlag = 0;
                     
                     break;
                 }

@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==08/06/2011==
+Derision: Support for August 04 2011 client (currently on test).
+
 ==05/25/2011==
 Derision: Support for May 24 2011 client.
 

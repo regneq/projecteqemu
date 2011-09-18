@@ -173,10 +173,12 @@ namespace EQExtractor2.Patches
                 UInt32 Cost = BitConverter.ToUInt32(Packet, 25);
                 UInt32 Seq = BitConverter.ToUInt32(Packet, 29);
                 UInt32 CurrentLevel = BitConverter.ToUInt32(Packet, 33);
+                UInt32 Unknown037 = BitConverter.ToUInt32(Packet, 37);
                 UInt32 PrereqSkill = BitConverter.ToUInt32(Packet, 41);
                 UInt32 PrereqMinpoints = BitConverter.ToUInt32(Packet, 45);
                 UInt32 Type = BitConverter.ToUInt32(Packet, 49);
                 UInt32 SpellID = BitConverter.ToUInt32(Packet, 53);
+                UInt32 Unknown057 = BitConverter.ToUInt32(Packet, 57);
                 UInt32 SpellType = BitConverter.ToUInt32(Packet, 61);
                 UInt32 SpellRefresh = BitConverter.ToUInt32(Packet, 65);
                 UInt16 Classes = BitConverter.ToUInt16(Packet, 69);
@@ -199,10 +201,12 @@ namespace EQExtractor2.Patches
                 OutputFile.WriteLine(" Cost:\t\t" + Cost);
                 OutputFile.WriteLine(" Seq:\t\t" + Seq);
                 OutputFile.WriteLine(" CurrentLevel:\t" + CurrentLevel);
+                OutputFile.WriteLine(" Unknown037:\t" + Unknown037);
                 OutputFile.WriteLine(" PrereqSkill:\t" + PrereqSkill);
                 OutputFile.WriteLine(" PrereqMinPt:\t" + PrereqMinpoints);
                 OutputFile.WriteLine(" Type:\t\t" + Type);
                 OutputFile.WriteLine(" SpellID:\t" + SpellID);
+                OutputFile.WriteLine(" Unknown057:\t" + Unknown057);
                 OutputFile.WriteLine(" SpellType:\t" + SpellType);
                 OutputFile.WriteLine(" SpellRefresh:\t" + SpellRefresh);
                 OutputFile.WriteLine(" Classes:\t" + Classes);
@@ -234,6 +238,59 @@ namespace EQExtractor2.Patches
             OutputFile.Close();
 
             return true;
+        }
+
+        public override void RegisterExplorers()
+        {
+            //base.RegisterExplorers();
+
+            //OpManager.RegisterExplorer("OP_SpawnDoor", ExploreSpawnDoor);
+            
+        }
+
+        public void ExploreSpawnDoor(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {            
+            int DoorCount = Buffer.Length() / 96;
+
+            OutputStream.WriteLine("Door Count: {0}", DoorCount);
+            
+            for (int d = 0; d < DoorCount; ++d)
+            {
+                string DoorName = Buffer.ReadFixedLengthString(32, false);
+
+                
+                float YPos = Buffer.ReadSingle();
+
+                float XPos = Buffer.ReadSingle();
+
+                float ZPos = Buffer.ReadSingle();
+
+                float Heading = Buffer.ReadSingle();
+
+                UInt32 Incline = Buffer.ReadUInt32();
+
+                Int32 Size = Buffer.ReadInt32();
+
+                Buffer.SkipBytes(4); // Skip Unknown
+
+                Byte DoorID = Buffer.ReadByte();
+
+                Byte OpenType = Buffer.ReadByte();
+
+                Byte StateAtSpawn = Buffer.ReadByte();
+
+                Byte InvertState = Buffer.ReadByte();
+
+                Int32 DoorParam = Buffer.ReadInt32();
+
+                OutputStream.WriteLine(" Name: {0} ID: {1} OT: {2} SAS: {3} IS: {4} DP: {5}",
+                                        DoorName, DoorID, OpenType, StateAtSpawn, InvertState, DoorParam);
+
+                // Skip past the trailing unknowns in the door struct, moving to the next door in the packet.
+
+                Buffer.SkipBytes(28);             
+            }
+            
         }
     }
 }
