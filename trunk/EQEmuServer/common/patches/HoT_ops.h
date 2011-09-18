@@ -73,6 +73,7 @@ E(OP_TargetBuffs)
 E(OP_BuffCreate)
 E(OP_RequestClientZoneChange)
 E(OP_ZoneChange)
+E(OP_SpawnAppearance)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -115,5 +116,6 @@ D(OP_ChannelMessage)
 D(OP_DeleteItem)
 D(OP_ZoneChange)
 D(OP_AugmentItem)
+D(OP_ZoneEntry)
 #undef E
 #undef D

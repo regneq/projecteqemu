@@ -519,10 +519,12 @@ ENCODE(OP_SendAATable) {
 		OUT(cost);
 		OUT(seq);
 		OUT(current_level);
+		eq->unknown037 = 1;	// Introduced during HoT
 		OUT(prereq_skill);
 		OUT(prereq_minpoints);
 		eq->type = emu->sof_type;
 		OUT(spellid);
+		eq->unknown057 = 1;	// Introduced during HoT
 		OUT(spell_type);
 		OUT(spell_refresh);
 		OUT(classes);
@@ -558,11 +560,12 @@ ENCODE(OP_LeadershipExpUpdate) {
 ENCODE(OP_PlayerProfile) {
 	SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
 	_log(NET__ERROR, "Player Profile is %i bytes", sizeof(structs::PlayerProfile_Struct));	
+
 	uint32 r;
 	
 	eq->available_slots=0xffffffff;
 	memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
-	memset(eq->unknown04396, 0xff, sizeof(eq->unknown04396));
+	memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
 	
 //	OUT(checksum);
 	OUT(gender);
@@ -792,7 +795,7 @@ const uint8 bytes[] = {
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
 
-	memcpy(eq->unknown12864, bytes, sizeof(bytes));
+	memcpy(eq->unknown18700, bytes, sizeof(bytes));
 		
 
 	
@@ -2678,6 +2681,36 @@ ENCODE(OP_ZoneChange)
 	OUT(success);
 	FINISH_ENCODE();
 }
+
+ENCODE(OP_SpawnAppearance)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *emu_buffer = in->pBuffer;
+
+	SpawnAppearance_Struct *sas = (SpawnAppearance_Struct *)emu_buffer;
+
+	if(sas->type != AT_Size)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+		return;
+	}
+	
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ChangeSize, sizeof(ChangeSize_Struct));
+
+	ChangeSize_Struct *css = (ChangeSize_Struct *)outapp->pBuffer;
+
+	css->EntityID = sas->spawn_id;
+	css->Size = (float)sas->parameter;
+	css->Unknown08 = 0;
+	css->Unknown12 = 1.0f;
+
+	dest->FastQueuePacket(&outapp, ack_req);
+	
+	delete in;
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -3235,6 +3268,13 @@ DECODE(OP_ChannelMessage)
 	delete [] __eq_buffer;
 }
 
+DECODE(OP_ZoneEntry)
+{
+	DECODE_LENGTH_EXACT(structs::ClientZoneEntry_Struct);
+	SETUP_DIRECT_DECODE(ClientZoneEntry_Struct, structs::ClientZoneEntry_Struct);
+	memcpy(emu->char_name, eq->char_name, sizeof(emu->char_name));
+	FINISH_DIRECT_DECODE();
+}
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
 
@@ -3291,11 +3331,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown060 = 0;
 	hdr.unknown061 = 0;
 	hdr.unknown062 = 0;
+	hdr.unknown063 = 0;
 	hdr.ItemClass = item->ItemClass;
-	hdr.unknowna1 = 0;
+	hdr.unknowna1 = 0xffffffff;
 	hdr.unknowna2 = 0;
-	hdr.unknowna3 = 0xffffffff;
-	hdr.unknowna4 = 0;
 
 	ss.write((const char*)&hdr, sizeof(HoT::structs::ItemSerializationHeader));
 
@@ -3409,6 +3448,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.RecSkill = item->RecSkill;
 	ibs.BardType = item->BardType;
 	ibs.BardValue = item->BardValue;
+	ibs.UnknownHoT2 = 0;
 	ibs.Light = item->Light;
 	ibs.Delay = item->Delay;
 	ibs.ElemDmgType = item->ElemDmgType;
@@ -3692,8 +3732,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	iqbs.clairvoyance = item->Clairvoyance;
 
 	iqbs.subitem_count = 0;
-
-	memset(&iqbs.unknownHoT, 0, sizeof(iqbs.unknownHoT));
 
 	char *SubSerializations[10];
 
