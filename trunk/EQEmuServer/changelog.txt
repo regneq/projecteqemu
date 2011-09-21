@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/20/2011==
+Trevius: New rule added to allow a cap for GM skill training on specializations (default is 50).
+Trevius: #maxskills will now only set specializations to 50 each to prevent them from all resetting to 1.
+Trevius: GM Trainers will no longer allow training more than 1 (or 2 if you have the AA) specializations above 50.
+
+Optional SQL:
+utils/sql/svn/2015_optional_specialization_training_rule.sql
+
 ==09/12/2011==
 Leere: (Tabasco) Added a deque for signals received by an NPC.
 Sorvani: Various message type fixes, most notably NPC Flurry/Enrage/Rampage and Pet Flurry/Rampage.

@@ -11009,8 +11009,15 @@ void command_max_all_skills(Client *c, const Seperator *sep)
 	{
 		for(int i = 0; i <= HIGHEST_SKILL; ++i)
 		{
-			int max_skill_level = database.GetSkillCap(c->GetClass(), (SkillType)i, c->GetLevel());
-			c->SetSkill((SkillType)i, max_skill_level);
+			if(i >= SPECIALIZE_ABJURE && i <= SPECIALIZE_EVOCATION)
+			{
+				c->SetSkill((SkillType)i, 50);
+			}
+			else
+			{
+				int max_skill_level = database.GetSkillCap(c->GetClass(), (SkillType)i, c->GetLevel());
+				c->SetSkill((SkillType)i, max_skill_level);
+			}
 		}
 	}
 }

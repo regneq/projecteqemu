@@ -1695,20 +1695,20 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 	int Cost = 0;
 
 	GMSkillChange_Struct* gmskill = (GMSkillChange_Struct*) app->pBuffer;
-	
+
 	Mob* pTrainer = entity_list.GetMob(gmskill->npcid);
 	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < WARRIORGM || pTrainer->GetClass() > BERSERKERGM)
 		return;
-	
+
 	//you can only use your own trainer, client enforces this, but why trust it
 	int trains_class = pTrainer->GetClass() - (WARRIORGM - WARRIOR);
 	if(GetClass() != trains_class)
 		return;
-	
+
 	//you have to be somewhat close to a trainer to be properly using them
 	if(DistNoRoot(*pTrainer) > USE_NPC_RANGE2)
 		return;
-	
+
 	if (gmskill->skillbank == 0x01)
 	{
 		// languages go here
@@ -1740,7 +1740,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			mlog(CLIENT__ERROR, "Tried to train skill %d, which is not allowed.", skill);
 			return;
 		}
-		
+
 		int16 skilllevel = GetRawSkill(skill);
 		if(skilllevel == 0) {
 			//this is a new skill..
@@ -1767,11 +1767,41 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 					Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
 					return;
 				}
+				break;
+			case SPECIALIZE_ABJURE:
+			case SPECIALIZE_ALTERATION:
+			case SPECIALIZE_CONJURATION:
+			case SPECIALIZE_DIVINATION:
+			case SPECIALIZE_EVOCATION:
+				if(skilllevel >= RuleI(Skills, MaxTrainSpecializations)) {
+					Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					return;
+				}
 			default:
 				break;
 			}
-            		// Client train a valid skill
-	    		//
+			
+			int MaxSkillValue = MaxSkill(skill);
+			if (skilllevel >= MaxSkillValue)
+			{
+				// Don't allow training over max skill level
+				Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+				return;
+			}
+			
+			if(gmskill->skill_id >= SPECIALIZE_ABJURE && gmskill->skill_id <= SPECIALIZE_EVOCATION)
+			{
+				int MaxSpecSkill = GetMaxSkillAfterSpecializationRules(skill, MaxSkillValue);
+				if (skilllevel >= MaxSpecSkill)
+				{
+					// Restrict specialization training to follow the rules
+					Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					return;
+				}
+			}
+
+			// Client train a valid skill
+			//
 			int AdjustedSkillLevel = skilllevel - 10;
 
 			if(AdjustedSkillLevel > 0)
@@ -1805,7 +1835,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		QueuePacket(outapp);
 		safe_delete(outapp);
 	}
-	
+
 	if(Cost)
 		TakeMoneyFromPP(Cost);
 
