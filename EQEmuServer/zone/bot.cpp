@@ -1511,209 +1511,247 @@ void Bot::GenerateAABonuses() {
 }
 
 int32 Bot::GetAA(int32 aa_id) const {
+	int maxAAExpansion = RuleI(Bots, BotAAExpansion);
 	int botLevel = GetLevel();
 	int botClass = GetClass();
 	int aaLevel = 0;
 
-	if(botLevel >= 51) {
+	if(botLevel >= 51 && maxAAExpansion > ExpansionNone) {
 	
 		switch(aa_id) {
 			case aaInnateStrength:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Strength
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Strength - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateStamina:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Stamina
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Stamina - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateAgility:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Agility
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Agility - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateDexterity:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Dexterity
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Dexterity - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateIntelligence:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Intelligence
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Intelligence - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateWisdom:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Wisdom
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Wisdom - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateCharisma:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Charisma
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Charisma - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateFireProtection:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Warding of Solusek
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Warding of Solusek - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateColdProtection:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Blessing of Eci
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Blessing of Eci - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateMagicProtection:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Marrs Protection
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Marrs Protection - PoP Advanced
 					}
 				}
 				break;
 			case aaInnatePoisonProtection:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Shroud of the Faceless
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Shroud of the Faceless - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateDiseaseProtection:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 5;
-					if(botLevel >= 61) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Bertoxxulous Gift
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Bertoxxulous Gift - PoP Advanced
 					}
 				}
 				break;
 			case aaInnateRunSpeed:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 3;
-					if(botLevel >= 61) {
-						aaLevel += 2;  //Swift Journey
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionGoD) {
+						aaLevel += 2;  //Swift Journey - GoD AA
 					}
 				}
 				break;
 			case aaInnateRegeneration:
-				if(botLevel >= 51) {
+				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 3;
-
 					if(IsWarriorClass() && botLevel >= 55) {
 						aaLevel += 3;   //Natural Healing
 					}
-
-					if(botLevel >= 61) {
-						aaLevel += 2;  //Convalescence
-						
-						if(botLevel >= 66) {
-							aaLevel += (botLevel - 65) > 20 ? 20 : botLevel - 65;  //Healthy Aura, Fast Healing, etc..
+					if(botLevel >= 61 && maxAAExpansion > ExpansionGoD) {
+						aaLevel += 2;  //Convalescence - GoD AA
+						if(botLevel >= 66 && maxAAExpansion >= ExpansionGoD) {
+							aaLevel += (botLevel - 65) > 5 ? 5 : botLevel - 65;  //Healthy Aura - GoD AA
+							if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+								aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Fast Healing - TSS AA
+								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+									aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AA
+									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+										aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AA
+									}
+								}
+							}
 						}
 					}
 				}
 			break;
 			case aaHealingAdept:
-				if((botClass == BEASTLORD)||(botClass == CLERIC)||(botClass == DRUID)||(botClass == PALADIN)||(botClass == RANGER)||(botClass == SHAMAN) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 62) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Advanced Healing Adept AA
+				if((botClass == BEASTLORD)||(botClass == CLERIC)||(botClass == DRUID)||(botClass == PALADIN)||(botClass == RANGER)||(botClass == SHAMAN) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
+					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Advanced Healing Adept - PoP Ability AA
+						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
+							aaLevel += (int)(((botLevel - 65)+1)/2) > 3 ? 3 : (int)(((botLevel - 65)+1)/2);  //Healing Adept Mastery - OoW AA
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
+								aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //UF AA
+							}
+						}
 					}
 				}
 				break;
 			case aaHealingGift:
-				if((botClass == BEASTLORD)||(botClass == CLERIC)||(botClass == DRUID)||(botClass == PALADIN)||(botClass == RANGER)||(botClass == SHAMAN) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 62) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Advanced Healing Gift AA
+				if((botClass == BEASTLORD)||(botClass == CLERIC)||(botClass == DRUID)||(botClass == PALADIN)||(botClass == RANGER)||(botClass == SHAMAN) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
+					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Advanced Healing Gift - PoP Ability AA
+						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
+							aaLevel += (int)(((botLevel - 65)+1)/2) > 3 ? 3 : (int)(((botLevel - 65)+1)/2);  //Healing Gift Mastery - OoW AA
+							if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+								aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);  //Healing Surge - TSS AA
+								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+									aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  //SoF AA
+									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+										aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD AA
+										if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
+											aaLevel += 3;  //UF AA
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 				break;
 			case aaSpellCastingMastery:
-				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
+				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
+				}
+				else if((botClass == PALADIN || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == BEASTLORD) && botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
+					aaLevel = 3;  //UF AAs
 				}
 				break;
 			case aaSpellCastingReinforcement:
-				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
+				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
 				}
 				break;
 			case aaMentalClarity:
-				if(!((botClass == WARRIOR)||(botClass == MONK)||(botClass == ROGUE)||(botClass == BERSERKER)) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 71) {
-						aaLevel += (botLevel - 70) > 15 ? 15 : botLevel - 70;  //TSS, SoF, SoD AA
-						
-						if(botLevel >= 85) {
-							aaLevel += 5;  //UF AA
+				if(!((botClass == WARRIOR)||(botClass == MONK)||(botClass == ROGUE)||(botClass == BERSERKER)) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
+					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+						aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //TSS AA
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+							aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AA
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+								aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AA
+								if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+									aaLevel += 5;  //UF AA
+								}
+							}
 						}
 					}
 				}
 			break;
 			case aaSpellCastingFury:
-				if(!((botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER)) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
+				if(!((botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER)) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;  //spell casting fury
+					
+					if(botClass == WIZARD && botLevel >= 59) {
+						aaLevel += (botLevel - 58) > 3 ? 3 : botLevel - 58;   // spell casting fury mastery - SoL AA
+					}
 				}
 				break;
 			case aaChanellingFocus:
 			break;
 			case aaSpellCastingSubtlety:
-				if((botClass == WIZARD || botClass == NECROMANCER || botClass == MAGICIAN || botClass == ENCHANTER || botClass == CLERIC || botClass == DRUID || botClass == SHAMAN) && botLevel >= 55) {
+				if((botClass == WIZARD || botClass == NECROMANCER || botClass == MAGICIAN || botClass == ENCHANTER || botClass == CLERIC || botClass == DRUID || botClass == SHAMAN) && botLevel >= 55 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = 3;
-					if(botLevel >= 71) {
+					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
 						aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);  //TSS AA
-						
-						if(botLevel >= 76) {
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
 							aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  //SoF AA
-							
-							if(botLevel >= 81) {
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
 								aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD AA
 							}
 						}
 					}
 				}
-				else if(botClass == BEASTLORD && botLevel >= 60) {
-					aaLevel = (botLevel - 59) > 3 ? 3 : botLevel - 59;
+				else if(botClass == BEASTLORD && botLevel >= 60 && maxAAExpansion >= ExpansionUF) {
+					aaLevel = (botLevel - 59) > 3 ? 3 : botLevel - 59;  //UF AAs
 				}
 				break;
 			case aaSpellCastingExpertise:
 			break;
 			case aaSpellCastingDeftness:
-				if((botClass == WIZARD || botClass == NECROMANCER || botClass == MAGICIAN || botClass == SHADOWKNIGHT) && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
+				if((botClass == WIZARD || botClass == NECROMANCER || botClass == MAGICIAN || botClass == SHADOWKNIGHT) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
 				}
 				break;
 			case aaNaturalDurability:
-				if(botLevel >= 55) {
+				if(botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 3;
-					if(botLevel >= 60) {
+					if(botLevel >= 60 && maxAAExpansion >= ExpansionSoD) {
 						aaLevel += 3;  //SoD AA
 					}
 				}
@@ -1722,36 +1760,34 @@ int32 Bot::GetAA(int32 aa_id) const {
 				//Innate Regeneration
 			break;
 			case aaCombatFury:
-				if(IsWarriorClass() && botLevel >= 55) {
+				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 62) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Fury of the Ages
+					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Fury of the Ages- PoP Ability AA
 					}
 				}
 				break;
 			case aaFearResistance:
-			break;
+				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;
+				}
+				break;
 			case aaFinishingBlow:
-				if(IsWarriorClass() && botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 62) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Coup de Grace
-						
-					}
-					if(botLevel >= 66) {
-						aaLevel += (botLevel - 65) > 3 ? 3 : botLevel - 65;  //Deathblow
-						
-						if(botLevel >= 71) {
-							aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;  //Mercy Kill
-							
-							if(botLevel >= 76) {
-								aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;  //SoF AA
-								
-								if(botLevel >= 81) {
-									aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;  //SoD AA
-									
-									if(botLevel >= 85) {
-										aaLevel += 3;  //UF AA
+				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;  //SoL
+					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Coup de Grace - PoP Ability AA
+						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
+							aaLevel += (botLevel - 65) > 3 ? 3 : botLevel - 65;  //Deathblow - OoW AA
+							if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+								aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;  //Mercy Kill - TSS AA
+								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+									aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;  //SoF AA
+									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+										aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;  //SoD AA
+										if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+											aaLevel += 3;  //UF AA
+										}
 									}
 								}
 							}
@@ -1761,36 +1797,45 @@ int32 Bot::GetAA(int32 aa_id) const {
 				break;
 			case aaCombatStability:
 				//aabonuses
-				if(botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					
-					if(botLevel >= 61) {
-						aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Innate Defense
-						
-						if(botLevel >= 66) {  
-							aaLevel = (botLevel - 5) > 5 ? 5 : botLevel - 65;   //Defensive Instincts
-							
-							if(botLevel >= 70) {
-								aaLevel = 5;  //Thick Skin
+				if(botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3;  //SoL
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Innate Defense - PoP Ability AA
+						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {  
+							aaLevel += (botLevel - 5) > 5 ? 5 : botLevel - 65;   //Defensive Instincts - OoW AA
+							if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+								aaLevel += 5;  //Thick Skin DoDH AA
+								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+									aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs
+									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {  
+										aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;   //SoD AAs
+										if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+											aaLevel += 5;  //UF AAs
+										}
+									}
+								}	
 							}
 						}
 					}		
 				}
 				break;
 			case aaCombatAgility:
-				if(botLevel >= 55) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 61) {
-						aaLevel += (botLevel - 60) > 10 ? 10 : botLevel - 60;  //Lightning Reflexes, Reflexive Mastery
-						
-						if(botLevel >= 70) {
-							aaLevel += 5;  //Precognition
-							
-							if(botLevel >= 76) {
-								aaLevel += (botLevel - 75) > 10 ? 10 : botLevel - 75;  //SoF, SoD AAs
-								
-								if(botLevel >= 85) {
-									aaLevel += 5;  //UF AAs
+				if(botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 3; //SoL AA
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Lightning Reflexes - PoP Ability AA
+						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
+							aaLevel += (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Reflexive Mastery - OoW AA
+							if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+								aaLevel += 5;  //Precognition - DoDH AA
+								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+									aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs
+									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {  
+										aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;   //SoD AAs
+										if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+											aaLevel += 5;  //UF AAs
+										}
+									}
 								}
 							}
 						}
@@ -1812,19 +1857,19 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaPurifySoul:
 			break;
 			case aaQuickEvacuation:
-				if((botClass == WIZARD || botClass == DRUID) && botLevel >= 59) {
+				if((botClass == WIZARD || botClass == DRUID) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
 			case aaExodus:
 			break;
 			case aaQuickDamage:
-				if((botClass == WIZARD || botClass == MAGICIAN || botClass == DRUID) && botLevel >= 59) {
+				if((botClass == WIZARD || botClass == MAGICIAN || botClass == DRUID) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
 			case aaEnhancedRoot:
-				if(botClass == DRUID && botLevel >= 59) {
+				if(botClass == DRUID && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 				break;
@@ -1833,7 +1878,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaCannibalization:
 			break;
 			case aaQuickBuff:
-				if((botClass == SHAMAN || botClass == ENCHANTER) && botLevel >= 59) {
+				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == BEASTLORD || botClass == RANGER || botClass == ENCHANTER || botClass == PALADIN) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
@@ -1854,7 +1899,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaMendCompanion:
 			break;
 			case aaQuickSummoning:
-				if(botClass == MAGICIAN && botLevel >= 59) {
+				if(botClass == MAGICIAN && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
@@ -1873,7 +1918,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaTurnSummoned:
 			break;
 			case aaElementalPact:
-				if(botClass == MAGICIAN && botLevel >= 59) {
+				if(botClass == MAGICIAN && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 				break;
@@ -1892,8 +1937,14 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaImprovedLayOnHands:
 			break;
 			case aaSlayUndead:
-				if(botClass == PALADIN && botLevel >= 59) {
+				if(botClass == PALADIN && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
+					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += 3;   //Vanquish undead - DoDH AA
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);  //TSS AA
+						}
+					}
 				}
 				break;
 			case aaActOfValor:
@@ -1903,16 +1954,19 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaFearless:
 			break;
 			case aa2HandBash:
-			break;
+				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = 1;
+				}
+				break;
 			case aaInnateCamouflage:
 			break;
 			case aaAmbidexterity:
-				if((botClass == WARRIOR || botClass == RANGER || botClass == ROGUE || botClass == MONK || botClass == BARD || botClass == BEASTLORD) && botLevel >= 59) {
+				if((botClass == WARRIOR || botClass == RANGER || botClass == ROGUE || botClass == MONK || botClass == BARD || botClass == BEASTLORD) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 				break;
 			case aaArcheryMastery:
-				if(botClass == RANGER && botLevel >= 59) {
+				if(botClass == RANGER && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
@@ -1929,12 +1983,19 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaDeathPeace:
 			break;
 			case aaSoulAbrasion:
-				if(botClass == SHADOWKNIGHT && botLevel >= 59) {
+				if(botClass == SHADOWKNIGHT && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
 			case aaInstrumentMastery:
-			break;
+				if(botClass == BARD && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
+					
+					if(botLevel >= 65) {
+						aaLevel += 1;   // Improved Instrument Mastery AA
+					}
+				}
+				break;
 			case aaJamFest:
 			break;
 			case aaSonicCall:
@@ -1948,8 +2009,8 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaRapidFeign:
 			break;
 			case aaReturnKick:
-				if(botClass == MONK && botLevel >= 65) {
-					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
+				if(botClass == MONK && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
 			case aaEscape:
@@ -1957,11 +2018,10 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaPoisonMastery:
 			break;
 			case aaDoubleRiposte:
-				if((botClass == WARRIOR || botClass == BERSERKER || botClass == BEASTLORD || botClass == MONK || botClass == PALADIN || botClass == RANGER || botClass == ROGUE || botClass == SHADOWKNIGHT) && botLevel >= 59) {
+				if((botClass == WARRIOR || botClass == BERSERKER || botClass == BEASTLORD || botClass == MONK || botClass == PALADIN || botClass == RANGER || botClass == ROGUE || botClass == SHADOWKNIGHT) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 3;  
-
-					if(botLevel >= 62) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;   // flash of steel
+					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
+						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;   // flash of steel - PoP Ability AA
 					}
 				}
 				break;
@@ -1972,7 +2032,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaPurgePoison:
 			break;
 			case aaFlurry:
-				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 59) {
+				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
@@ -1985,36 +2045,41 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaBandageWound:
 			break;
 			case aaSpellCastingReinforcementMastery:
-				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) && botLevel >= 59) {
+				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 3;
 				}
 				break;
 			case aaSpellCastingFuryMastery:
-				if(botClass == WIZARD && botLevel >= 59) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
+				// spell casting fury
 			break;
 			case aaExtendedNotes:
-				if(botClass == BARD && botLevel >= 59) {
+				if(botClass == BARD && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
 				}
 				break;
 			case aaDragonPunch:
-				if(botClass == MONK && botLevel >= 59) {
+				if(botClass == MONK && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 				break;
 			case aaStrongRoot:
 			break;
 			case aaSingingMastery:
-			break;
+				if(botClass == BARD && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
+					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
+					
+					if(botLevel >= 65) {
+						aaLevel += 1;   // Improved Singing Mastery AA
+					}
+				}
+				break;
 			case aaBodyAndMindRejuvenation:
-				if((botClass == BARD || botClass == RANGER || botClass == PALADIN || botClass == SHADOWKNIGHT || botClass == BEASTLORD) && botLevel >= 59) {
+				if((botClass == BARD || botClass == RANGER || botClass == PALADIN || botClass == SHADOWKNIGHT || botClass == BEASTLORD) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 			break;
 			case aaPhysicalEnhancement:
-				if(IsWarriorClass() && botLevel >= 59) {
+				if(IsWarriorClass() && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 				break;
@@ -2025,7 +2090,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaScribbleNotes:
 			break;
 			case aaChaoticStab:
-				if(botClass == ROGUE && botLevel >= 59) {
+				if(botClass == ROGUE && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 1;
 				}
 				break;
@@ -2076,17 +2141,26 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaNewTanaanCraftingMastery:
 			break;
 			case aaPlanarPower:
-				if(botLevel >= 61) {
-					aaLevel = (botLevel - 60) > 20 ? 20 : botLevel - 60;
+				if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;  //PoP Advance
+					if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
+						aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;  //Chaotic Potential - OoW
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel = (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Potential of Serpent Spine - TSS
+							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoD) {
+								aaLevel = (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoD
+							}
+						}
+					}
 				}
 				break;
 			case aaPlanarDurability:
-				if(IsWarriorClass() && botLevel >= 61) {
-						aaLevel += (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2); 
-					}
+				if(IsWarriorClass() && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2); 
+				}
 				break;
 			case aaInnateEnlightenment:
-				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == WIZARD) && botLevel >= 61) {
+				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == WIZARD) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
 				}
 			break;
@@ -2175,7 +2249,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaMendingoftheTranquil:
 			break;
 			case aaRagingFlurry:
-				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 63) {
+				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 63 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (botLevel - 62) > 3 ? 3 : botLevel - 62;
 				}
 				break;
@@ -2184,22 +2258,25 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaSpiritoftheWood:
 			break;
 			case aaBestialFrenzy:
-				if(botClass == BEASTLORD && botLevel >= 61) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
+				if(botClass == BEASTLORD && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;   
 				}
 				break;
 			case aaHarmoniousAttack:
-				if(botClass == BARD && botLevel >= 61) {
+				if(botClass == BARD && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
 				}
 				break;
 			case aaKnightsAdvantage:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 61) {
+				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
+					if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += 3;   //Knights Expertise - DoDH AA
+					} 
 				} 
 				break;  
 			case aaFerocity:
-				if((botClass == WARRIOR || botClass == RANGER || botClass == ROGUE || botClass == MONK || botClass == BERSERKER) && botLevel >= 61) {
+				if((botClass == WARRIOR || botClass == RANGER || botClass == ROGUE || botClass == MONK || botClass == BERSERKER) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
 					if(botLevel >= 70){
 						aaLevel += 3;  //  Relentless Assault
@@ -2209,7 +2286,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaViscidRoots:
 			break;
 			case aaSionachiesCrescendo:
-				if(botClass == BARD && botLevel >= 63) {
+				if(botClass == BARD && botLevel >= 63 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (botLevel - 62) > 3 ? 3 : botLevel - 62;
 				}
 				break;
@@ -2226,7 +2303,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaLivingShield:
 			break;
 			case aaConsumptionoftheSoul:
-				if(botClass == SHADOWKNIGHT && botLevel >= 61) {
+				if(botClass == SHADOWKNIGHT && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
 				}
 				break;
@@ -2237,21 +2314,20 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaTouchoftheWicked:
 			break;
 			case aaPunishingBlade:
-				if((botClass == WARRIOR || botClass == RANGER || botClass == MONK || botClass == BERSERKER) && botLevel >= 61) {
+				if((botClass == WARRIOR || botClass == RANGER || botClass == MONK || botClass == BERSERKER) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-					if(botLevel >= 70){
+					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH){
 						aaLevel += 3;  // Wicked Blade
 					}
 				}
 				break;
 			case aaSpeedoftheKnight:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 61) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-					if(botLevel >= 70){
-						aaLevel += 3;  // Swift Blade
-						
-						if(botLevel >= 76){
-							aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  // Quick Blade
+				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);  //PoP Ability
+					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH){
+						aaLevel += 3;  // Swift Blade - DoDH
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionTSS){
+							aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  // Quick Blade - TSS
 						}
 					}
 				}
@@ -2261,7 +2337,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaNimbleEvasion:
 			break;
 			case aaTechniqueofMasterWu:
-				if(botClass == MONK && botLevel >= 61) {
+				if(botClass == MONK && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
 				}
 				break;
@@ -2272,31 +2348,78 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaHastenedStealth:
 			break;
 			case aaIngenuity:
-				if((botClass == WARRIOR || botClass == BERSERKER || botClass == ROGUE || botClass == MONK) && botLevel >= 61) {
+				if((botClass == WARRIOR || botClass == BERSERKER || botClass == ROGUE || botClass == MONK) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
 				}
 				break;
 			case aaFleetofFoot:
-				if(botClass == BARD && botLevel >= 62) {
+				if(botClass == BARD && botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 61)+1)/2) > 2 ? 2 : (int)(((botLevel - 61)+1)/2);
 				}
 				break;
 			case aaFadingMemories:
 			break;
 			case aaTacticalMastery:
-			break;
-			case aaTheftofLife:
-				if((botClass == NECROMANCER || botClass == SHADOWKNIGHT) && botLevel >= 61) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
+				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+					aaLevel = (botLevel - 60) > 3 ? 3 : botLevel - 60;
 					
-					if(botLevel >= 65) {
-						aaLevel += (botLevel - 64) > 5 ? 5 : botLevel - 64;   //Advanced Theft of Life and Soul Thief
+					if(botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
+						aaLevel += (botLevel - 67) > 3 ? 3 : botLevel - 67;  // Overwhelming Attack - OoW AA
+						
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);   // Overbear - TSS AA
+						}
+					}
+				}
+				else if((botClass == BARD || botClass == BEASTLORD || botClass == MONK || botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 83 && maxAAExpansion >= ExpansionUF) {
+					aaLevel = (botLevel - 82) > 3 ? 3 : botLevel - 82;   //UF AAs
+				}
+				break;
+			case aaTheftofLife:
+				if((botClass == NECROMANCER || botClass == SHADOWKNIGHT) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
+					if(botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+						aaLevel += (botLevel - 64) > 3 ? 3 : botLevel - 64;   //Advanced Theft of Life
+						if(botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
+							aaLevel += (botLevel - 67) > 2 ? 2 : botLevel - 67;   // Soul Thief
+						}
 					}
 				}
 				break;
 			case aaFuryofMagic:
-				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == WIZARD) && botLevel >= 61) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
+				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == WIZARD) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
+						
+					if(botClass == WIZARD) {
+						aaLevel += (botLevel - 60) > 3 ? 3 : botLevel - 60;   // fury of magic mastery - PoP AA
+					}
+					else {
+						aaLevel += (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);    //fury of magic - PoP AA
+					}
+						
+					if(botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+		
+						if(botClass == WIZARD) {
+							aaLevel += (botLevel - 64) > 3 ? 3 : botLevel - 64;   // advanced fury of magic mastery - GoD AA
+						}
+						else {
+							aaLevel += 3;    //fury of magic mastery - GoD AA
+						}
+							
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);     //TSS AA
+							
+							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);   //SoF AA  
+								
+								if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
+									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);   //UF AA
+								}
+							}
+						}	
+					}
+				}
+				else if ((botClass == BEASTLORD || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BARD) && botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
+					aaLevel += (int)(((botLevel - 65)+1)/2) > 3 ? 3 : (int)(((botLevel - 65)+1)/2);    //fury of magic - OoW AA
 				}
 				break;
 			case aaFuryofMagicMastery2:
@@ -2304,18 +2427,33 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaProjectIllusion:
 			break;
 			case aaHeadshot:
-				if(botClass == RANGER && botLevel >= 60) {
+				if(botClass == RANGER && botLevel >= 60 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = 1;
-
-					if(botLevel >= 61) {
-						aaLevel += (int)(((botLevel - 60)+1)/2) > 11 ? 11 : (int)(((botLevel - 60)+1)/2);  //Improved Headshot, etc.
+					if(botLevel >= 61 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);  //Improved Headshot, etc.
+						
+						if(botLevel >= 67 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 66)+1)/2) > 3 ? 3 : (int)(((botLevel - 66)+1)/2);  // TSS AA
+							
+							if(botLevel >= 73 && maxAAExpansion >= ExpansionSoF) {
+								aaLevel += (int)(((botLevel - 72)+1)/2) > 3 ? 3 : (int)(((botLevel - 72)+1)/2);  // SoF AA
+								
+								if(botLevel >= 79 && maxAAExpansion >= ExpansionSoD) {
+									aaLevel += (int)(((botLevel - 78)+1)/2) > 3 ? 3 : (int)(((botLevel - 78)+1)/2);  //SoD AAs
+									
+									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+										aaLevel += (int)(((botLevel - 84)+1)/2) > 3 ? 3 : (int)(((botLevel - 84)+1)/2);   //UF AAs
+									}
+								}
+							}
+						}
 					}
 				}
 				break;
 			case aaEntrap:
 			break;
 			case aaUnholyTouch:
-				if(botClass == SHADOWKNIGHT && botLevel >= 61) {
+				if(botClass == SHADOWKNIGHT && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
 				}
 				break;
@@ -2346,22 +2484,20 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaLastingBreath:
 			break;
 			case aaPackrat:
-				if(botLevel >= 61) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
-
+				if(botLevel >= 61 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 5;   //GoD AAs
 					if(botLevel >= 65) {
-						aaLevel += (botLevel - 64) > 3 ? 3 : botLevel - 64;
-					}
-
-					if(botLevel >= 70) {
-						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;  //SoD AAs
+						aaLevel += 3;   //GoD AAs
+						if(botLevel >= 70 && maxAAExpansion >= ExpansionSoD) {
+							aaLevel += 5;  //SoD AAs
+						}
 					}
 				}
 				break;
 			case aaHeightenedEndurance:
 			break;
 			case aaWeaponAffinity:
-				if(IsWarriorClass() && botLevel >= 55) {
+				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 54) > 5 ? 5 : botLevel - 54;
 				}
 				break;
@@ -2372,8 +2508,10 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaTuneofPursuance:
 			break;
 			case aaImprovedInstrumentMastery:
+				//instrument mastery
 			break;
 			case aaImprovedSingingMastery:
+				//singing mastery
 			break;
 			case aaExultantBellowing:
 			break;
@@ -2390,9 +2528,39 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaFeralSwipe:
 			break;
 			case aaWardersFury:
-			break;
+				if(botClass == BEASTLORD && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 5;
+					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+						aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;   
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+							aaLevel += aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+								aaLevel += aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;
+							}
+						}
+					}
+				}
+				break;
 			case aaWardersAlacrity:
-			break;
+				if(botClass == BEASTLORD && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 5;
+					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);
+							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);
+								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD AAs
+									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+										aaLevel += 3;  //UF AAs
+									}
+								}
+							}
+						}
+					}
+				}
+				break;
 			case aaPetAffinity:
 			break;
 			case aaMasteryofthePast2:
@@ -2414,7 +2582,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaCriticalAffliction:
 			break;
 			case aaFuryofMagicMastery:
-				if(!(botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER) && botLevel >= 65) {
+				if(!(botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = 3;
 				}
 				break;
@@ -2429,34 +2597,70 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaSharedHealth:
 			break;
 			case aaElementalFury:
-			break;
+				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 5;
+					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+						aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+							aaLevel += aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+								aaLevel += aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;
+							}
+						}
+					}
+				}
+				break;
 			case aaElementalAlacrity:
-			break;
+				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 5;
+					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);
+							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);
+								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);   //SoD AAs
+									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+										aaLevel += 3;  //UF AAs
+									}
+								}
+							}
+						}
+					}
+				}
+				break;
 			case aaElementalAgility:
-			break;
+				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 3;
+				}
+				break;
 			case aaElementalDurability:
-			break;
+				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 3;
+				}
+				break;
 			case aaSinisterStrikes:
 			break;
 			case aaStrikethrough:
-				if(botClass == MONK && botLevel >= 65) {
+				if((botClass == MONK || botClass == ROGUE) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
 				}
 				break;
 			case aaStonewall:
 			break;
 			case aaRapidStrikes:
-				if(botClass == MONK && botLevel >= 65) {
+				if(botClass == MONK && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
 				}
 				break;
 			case aaKickMastery:
-				if(botClass == MONK && botLevel >= 65) {
+				if(botClass == MONK && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
 				}
 				break;
 			case aaHightenedAwareness:
-				if(botClass == MONK && botLevel >= 65) {
+				if(botClass == MONK && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
 				}
 				break;
@@ -2465,24 +2669,66 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaSwarmofDecay:
 			break;
 			case aaDeathsFury:
-			break;
+				if((botClass == NECROMANCER || botClass == SHADOWKNIGHT) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
+					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+						aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+							aaLevel += aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+								aaLevel += aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;
+							}
+						}
+					}
+				}
+				break;
 			case aaQuickeningofDeath:
-			break;
+				if(botClass == NECROMANCER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
+					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;
+						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);
+							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);
+								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD
+									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+										aaLevel += 3;  //UF
+									}
+								}
+							}
+						}
+					}
+				}
+				break;
 			case aaAdvancedTheftofLife:
 				// Theft of Life
 			break;
 			case aaTripleBackstab:
-				if(botClass == ROGUE && botLevel >= 65) {
+				if(botClass == ROGUE && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
 				}
 				break;
 			case aaHastenedPiety:
 			break;
 			case aaImmobilizingBash:
-			break;
+				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = 3;
+					if(botLevel >= 78 && maxAAExpansion >= ExpansionSoF) {
+						aaLevel += (botLevel - 77) > 3 ? 3 : botLevel - 77;  //SoF
+						if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
+							aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //UF
+						}
+					}
+				}
+				break;
 			case aaViciousSmash:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 65) {
+				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = 5;
+					if(botLevel >= 75 && maxAAExpansion >= ExpansionUF) {
+						aaLevel += 5;  //UF
+					}
 				}
 				break;
 			case aaRadiantCure2:
@@ -2490,12 +2736,12 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaPurification:
 			break;
 			case aaPrecisionofthePathfinder:
-				if(botClass == RANGER && botLevel >= 65) {
+				if(botClass == RANGER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
 				}
 				break;
 			case aaCoatofThistles:
-				if(botClass == RANGER && botLevel >= 65) {
+				if(botClass == RANGER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = 3;
 				}
 				break;
@@ -2520,16 +2766,17 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaCalloftheAncients:
 			break;
 			case aaSturdiness:
-				if(botLevel >= 65) {
+				if(botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					if(botClass == WARRIOR) {
 						aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
 					}
-					
-					if(botLevel >= 76) {
-						aaLevel += (botLevel - 75) > 10 ? 10 : botLevel - 75;  //General Sturdiness SoF, SoD AAs
-						
-						if(botLevel >= 85) {
-							aaLevel += 5;  //UF AAs
+					if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+						aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //General Sturdiness SoF AAs
+						if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+							aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AAs
+							if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
+								aaLevel += 5;  //UF AAs
+							}
 						}
 					}
 				}
@@ -2537,7 +2784,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaWarlordsTenacity:
 			break;
 			case aaStrengthenedStrike:
-				if((botClass == RANGER || botClass == WARRIOR) && botLevel >= 65) {
+				if((botClass == RANGER || botClass == WARRIOR) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
 				}
 				break;
@@ -2550,6 +2797,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaDruzzilsMysticalFamiliar:
 			break;
 			case aaAdvancedFuryofMagicMastery:
+				//fury of magic
 			break;
 			case aaWardofDestruction:
 			break;
@@ -2604,10 +2852,9 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaChaoticPotential:
 			break;
 			case aaDiscordantDefiance:
-				if(botLevel >= 66) {
-					aaLevel = (botLevel - 65) > 10 ? 10 : botLevel - 65;
-					
-					if(botLevel >= 80) {
+				if(botLevel >= 66 && maxAAExpansion >= ExpansionGoD) {
+					aaLevel = (botLevel - 65) > 10 ? 10 : botLevel - 65;  //GoD AAs
+					if(botLevel >= 80 && maxAAExpansion >= ExpansionSoD) {
 						aaLevel += 5;   //SoD AAs
 					}
 				}
@@ -2642,19 +2889,15 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaMnemonicRetention:
 			break;
 			case aaExpansiveMind:
-				if(botLevel >= 66) {
+				if(botLevel >= 66 && maxAAExpansion >= ExpansionGoD) {
 					aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;
-					
-					if(botLevel >= 71) {
-						aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Labyrinthine Mind AAs
-						
-						if(botLevel >= 76) {
-							aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs
-							
-							if(botLevel >= 81) {
-								aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AAs
-								
-								if(botLevel >= 85) {
+					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
+						aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Labyrinthine Mind - TSS AAs
+						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
+							aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs	
+							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
+								aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AAs	
+								if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
 									aaLevel += 5;  //UF AAs
 								}
 							}
@@ -2675,7 +2918,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaMasterofDisguise:
 			break;
 			case aaSlipperyAttacks:
-				if(IsWarriorClass() && botLevel > 65) {
+				if(IsWarriorClass() && botLevel > 65 && maxAAExpansion >= ExpansionOoW) {
 					aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;
 				}
 				break;
@@ -2686,7 +2929,7 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaFuryofMagic2:
 			break;
 			case aaDanceofBlades:
-				if(botClass == BARD && botLevel >= 68) {
+				if(botClass == BARD && botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
 					aaLevel = 3;
 				}
 				break;
@@ -2703,19 +2946,19 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaAdvancedPetDiscipline:
 			break;
 			case aaThrowingMastery:
-				if(botClass == BERSERKER && botLevel >= 59) {
+				if(botClass == BERSERKER && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
 					aaLevel = 3;
 				}
 				break;
 			case aaBlurofAxes:
-				if(botClass == BERSERKER && botLevel >= 61) {
+				if(botClass == BERSERKER && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = 3;
 				}
 				break;
 			case aaHastenedWarCry:
 			break;
 			case aaDeadAim:
-				if(botClass == BERSERKER && botLevel >= 61) {
+				if(botClass == BERSERKER && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
 					aaLevel = 3;
 				}
 				break;
@@ -2756,8 +2999,12 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaSanctuary:
 			break;
 			case aaDestructiveFury:
-				if(!(botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER) && botLevel >= 68) {
+				if(!(botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER) && botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
 					aaLevel = (botLevel - 67) > 3 ? 3 : botLevel - 67;
+					
+					if(botClass == WIZARD && botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
+						aaLevel += 3;   // mastery of fury - DoDH AA
+					}
 				}
 				break;
 			case aaDestructiveFury2:
@@ -2813,7 +3060,16 @@ int32 Bot::GetAA(int32 aa_id) const {
 			case aaSteadfastWill:
 			break;
 			case aaShieldBlock:
-			break;
+				if((botClass == WARRIOR || botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 67 && maxAAExpansion >= ExpansionOoW) {
+					aaLevel = (botLevel - 66) > 3 ? 3 : botLevel - 66;
+					if(botLevel >= 77 && maxAAExpansion >= ExpansionSoF) {
+						aaLevel += (botLevel - 76) > 3 ? 3 : botLevel - 76;   //SoF AAs
+						if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
+							aaLevel += 3;   // UF AAs
+						}
+					}
+				}
+				break;
 			case aaScoutsEfficiency:
 			break;
 			case aaGuardianoftheGlade:
@@ -4537,7 +4793,7 @@ void Bot::AI_Process() {
 									weapon->GetItem()->ItemType == ItemType2HPierce )
 								{
 									int extatk = GetAA(aaPunishingBlade)*5;
-                                                        		extatk += GetAA(aaSpeedoftheKnight)*5;
+										extatk += GetAA(aaSpeedoftheKnight)*5;
 
 									if(MakeRandomInt(0, 100) < extatk) {
 										Attack(GetTarget(), SLOT_PRIMARY, true);
@@ -4569,7 +4825,7 @@ void Bot::AI_Process() {
 							float DualWieldProbability = (GetSkill(DUAL_WIELD) + botLevel) / 400.0f;
 
 							if(GetAA(aaAmbidexterity))
-                                        			DualWieldProbability += 0.1f;
+								DualWieldProbability += 0.1f;
 
 							//discipline effects:
 							DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
@@ -4789,6 +5045,35 @@ void Bot::PetAIProcess() {
 								if(botPet->Attack(botPet->GetTarget(), 13)) 
 								{}
 							}
+						}
+
+						if (botPet->GetOwner()->IsBot()) {
+							int aa_chance = 0;
+							int aa_skill = 0;
+							// Magician AA
+							aa_skill += botPet->GetOwner()->GetAA(aaElementalAlacrity);
+							// Necromancer AA
+							aa_skill += botPet->GetOwner()->GetAA(aaQuickeningofDeath);
+							// Beastlord AA
+							aa_skill += botPet->GetOwner()->GetAA(aaWardersAlacrity);
+
+							if(aa_skill >= 1) {
+								aa_chance += (aa_skill > 5 ? 5 : aa_skill) * 4;
+							}
+							if(aa_skill >= 6) {
+								aa_chance += (aa_skill-5 > 3 ? 3 : aa_skill-5) * 7;
+							}
+							if(aa_skill >= 9) {
+								aa_chance += (aa_skill-8 > 3 ? 3 : aa_skill-8) * 3;
+							}
+							if(aa_skill >= 12) {
+								aa_chance += (aa_skill - 11) * 1;
+							}	
+
+							//aa_chance += botPet->GetOwner()->GetAA(aaCompanionsAlacrity) * 3;
+
+							if (MakeRandomInt(1, 100) < aa_chance)
+								Flurry();
 						}
 
 						// Ok now, let's check pet's offhand. 
@@ -7161,11 +7446,8 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough)
 		
 		int aaStrikethroughBonus = 0;
 		
-		if(GetAA(aaStrikethrough))
-			aaStrikethroughBonus = GetAA(aaStrikethrough) * 2;
-
-		if(GetAA(aaTacticalMastery))
-			aaStrikethroughBonus += GetAA(aaTacticalMastery) * 2;
+		aaStrikethroughBonus += GetAA(aaStrikethrough) * 2;
+		aaStrikethroughBonus += GetAA(aaTacticalMastery) * 2;
 
 		//strikethrough..
 		if (((damage < 0) || slippery_attack) && !FromRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
@@ -7932,7 +8214,7 @@ void Bot::DoRiposte(Mob* defender) {
 	}
 
 	if(DoubleRipChance >= MakeRandomInt(0, 100)) {
-		mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
+		mlog(COMBAT__ATTACKS, "Preforming a double riposte (%d percent chance)", DoubleRipChance);
 
 		defender->Attack(this, SLOT_PRIMARY, true);
 	}
@@ -8535,7 +8817,7 @@ void Bot::DoClassAttacks(Mob *target) {
 					DoAnim(animKick);
 					sint32 dmg = 0;
 
-					if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
+					if(GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_FEET)) <= 0){
 						dmg = -5;
 					}
 					else{
@@ -8554,24 +8836,32 @@ void Bot::DoClassAttacks(Mob *target) {
 				}
 				else
 				{
-					DoAnim(animTailRake);
-					sint32 dmg = 0;
+					if((GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN) // Racial Slam
+						|| (m_inv.GetItem(SLOT_SECONDARY) && m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType == ItemTypeShield)  //Using Shield
+						|| (m_inv.GetItem(SLOT_PRIMARY) && (m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HS 
+							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HB 
+							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HPierce) 
+							&& GetAA(aa2HandBash) >= 1)) {   //Using 2 hand weapon, but has AA 2 Hand Bash
+						DoAnim(animTailRake);
+						sint32 dmg = 0;
 
-					if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
-						dmg = -5;
-					}
-					else{
-						if(target->CheckHitChance(this, BASH, 0)) {
-							if(RuleB(Combat, UseIntervalAC))
-								dmg = GetBashDamage();
-							else
-								dmg = MakeRandomInt(1, GetBashDamage());
+						if(GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_SECONDARY)) <= 0 &&
+							GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_SHOULDER)) <= 0){
+							dmg = -5;
 						}
-					}
+						else{
+							if(target->CheckHitChance(this, BASH, 0)) {
+								if(RuleB(Combat, UseIntervalAC))
+									dmg = GetBashDamage();
+								else
+									dmg = MakeRandomInt(1, GetBashDamage());
+							}
+						}
 
-					DoSpecialAttackDamage(target, BASH, dmg);
-					reuse = BashReuseTime * 1000;
-					did_attack = true;
+						DoSpecialAttackDamage(target, BASH, dmg);
+						reuse = BashReuseTime * 1000;
+						did_attack = true;
+					}
 				}
 			}
 			break;
@@ -8628,7 +8918,7 @@ void Bot::DoClassAttacks(Mob *target) {
 				DoAnim(animKick);
 				sint32 dmg = 0;
 
-				if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
+				if(GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_FEET)) <= 0){
 					dmg = -5;
 				}
 				else{
@@ -8651,24 +8941,31 @@ void Bot::DoClassAttacks(Mob *target) {
 		case PALADIN: case PALADINGM:
 			{
 				if(level >= RuleI(Combat, NPCBashKickLevel)){
-					DoAnim(animTailRake);
-					sint32 dmg = 0;
+					if((GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN) // Racial Slam
+						|| (m_inv.GetItem(SLOT_SECONDARY) && m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType == ItemTypeShield)  //Using Shield
+						|| (m_inv.GetItem(SLOT_PRIMARY) && (m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HS 
+							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HB 
+							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HPierce) 
+							&& GetAA(aa2HandBash) >= 1)) {   //Using 2 hand weapon, but has AA 2 Hand Bash
+						DoAnim(animTailRake);
+						sint32 dmg = 0;
 
-					if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
-						dmg = -5;
-					}
-					else{
-						if(target->CheckHitChance(this, BASH, 0)) {
-							if(RuleB(Combat, UseIntervalAC))
-								dmg = GetBashDamage();
-							else
-								dmg = MakeRandomInt(1, GetBashDamage());
+						if(GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_SECONDARY)) <= 0){	
+							dmg = -5;
 						}
-					}
+						else{
+							if(target->CheckHitChance(this, BASH, 0)) {
+								if(RuleB(Combat, UseIntervalAC))
+									dmg = GetBashDamage();
+								else
+									dmg = MakeRandomInt(1, GetBashDamage());
+							}
+						}
 
-					DoSpecialAttackDamage(target, BASH, dmg);
-					reuse = BashReuseTime * 1000;
-					did_attack = true;
+						DoSpecialAttackDamage(target, BASH, dmg);
+						reuse = BashReuseTime * 1000;
+						did_attack = true;
+					}
 				}
 				break;
 			}
@@ -8683,10 +8980,8 @@ bool Bot::TryHeadShot(Mob* defender, SkillType skillInUse) {
 	if(defender && (defender->GetBodyType() == BT_Humanoid) && (skillInUse == ARCHERY) && (GetClass() == RANGER) && (GetLevel() >= 62)) {
 		int defenderLevel = defender->GetLevel();
 		int rangerLevel = GetLevel();
-		// Bot Ranger Headshot AA through level 80(Secrets of Faydwer)
-		if( ((defenderLevel<=48)&&(rangerLevel>=62)) || ((defenderLevel<=50)&&(rangerLevel>=66)) || ((defenderLevel<=52)&&(rangerLevel>=68)) || ((defenderLevel<=54)&&(rangerLevel>=70)) || ((defenderLevel<=56)&&(rangerLevel>=71)) ||
-			((defenderLevel<=58)&&(rangerLevel>=73)) || ((defenderLevel<=60)&&(rangerLevel>=75)) || ((defenderLevel<=62)&&(rangerLevel>=76)) || ((defenderLevel<=64)&&(rangerLevel>=78)) || ((defenderLevel<=66)&&(rangerLevel>=80)) )
-		{
+		// Bot Ranger Headshot AA through level 85(Underfoot)
+		if( GetAA(aaHeadshot) && ((defenderLevel - 46) <= GetAA(aaHeadshot) * 2) ) {
 			// WildcardX: These chance formula's below are arbitrary. If someone has a better formula that is more
 			// consistent with live, feel free to update these.
 			float AttackerChance = 0.20f + ((float)(rangerLevel - 51) * 0.005f);
@@ -8711,15 +9006,17 @@ bool Bot::TryHeadShot(Mob* defender, SkillType skillInUse) {
 //offensive spell aggro
 sint32 Bot::CheckAggroAmount(int16 spellid) {
 	sint32 AggroAmount = Mob::CheckAggroAmount(spellid);
-
-	if(GetLevel() >= 57) {
-		AggroAmount = AggroAmount * 95 / 100;
-	}
-	else if(GetLevel() >= 56) {
-		AggroAmount = AggroAmount * 90 / 100;
-	}
-	else if(GetLevel() >= 55) {
-		AggroAmount = AggroAmount * 80 / 100;
+	
+	switch (GetAA(aaSpellCastingSubtlety)) {
+		case 1:
+			AggroAmount = AggroAmount * 95 / 100;
+			break;
+		case 2:
+			AggroAmount = AggroAmount * 90 / 100;
+			break;
+		case 3:
+			AggroAmount = AggroAmount * 80 / 100;
+			break;
 	}
 
 	sint32 focusAggro = GetBotFocusEffect(BotfocusHateReduction, spellid);
@@ -9263,32 +9560,35 @@ sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
 		}
 
 		if((casterClass != WARRIOR) && (casterClass != ROGUE) && (casterClass != MONK) && (casterClass != BERSERKER)) {
-			if(casterLevel >= 66) { // Advanced Fury of Magic 2 AA
-				chance += 20;
-			}
-			else if(casterLevel >= 65) { // Fury of Magic 3 AA or Advanced Fury of Magic 1 AA
-				chance += 18;
-			}
-			else if(casterLevel >= 63) { // Fury of Magic 2 AA
-				chance += 16;
-			}
-			else if(casterLevel >= 61) { // Fury of Magic 1 AA or Spell Casting Fury Mastery 3 AA
-				chance += 14;
-			}
-			else if(casterLevel >= 60) { // Spell Casting Fury Mastery 2 AA
-				chance += 12;
-			}
-			else if(casterLevel >= 59) { // Spell Casting Fury Mastery 1 AA
-				chance += 10;
-			}
-			else if(casterLevel >= 57) { // Spell Casting Fury 3 AA
-				chance += 7;
-			}
-			else if(casterLevel >= 56) { // Spell Casting Fury 2 AA
-				chance += 4;
-			}
-			else if(casterLevel >= 55) { // Spell Casting Fury 1 AA
-				chance += 2;
+
+			switch (GetAA(aaFuryofMagic)) {
+				case 1:
+					chance += 2;
+					break;
+				case 2:
+					chance += 4;
+					break;
+				case 3:
+					chance += 7;
+					break;
+				case 4:    
+					chance += 10;
+					break;
+				case 5:
+				case 6:
+				case 7:
+				case 8:
+				case 9:
+					chance += 10 + (GetAA(aaFuryofMagic) - 4) * 2;
+					break;
+				case 10:
+				case 11:
+				case 12:
+				case 13:
+				case 14:
+				case 15:
+					chance += 20 + (GetAA(aaFuryofMagic) - 9);
+					break;
 			}
 		}
 
@@ -10538,7 +10838,7 @@ void Bot::CalcRestState() {
 	if(!rest_timer.Check(false))
 		return;
 
-uint32 buff_count = GetMaxTotalSlots();
+	uint32 buff_count = GetMaxTotalSlots();
 	for (unsigned int j = 0; j < buff_count; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
 			if(IsDetrimentalSpell(buffs[j].spellid) && (buffs[j].ticsremaining > 0))

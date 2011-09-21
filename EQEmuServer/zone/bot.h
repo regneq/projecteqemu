@@ -56,6 +56,27 @@ public:
 		BotRoleRaidHealer
 	};
 
+	typedef enum EqExpansions {
+		ExpansionNone,
+		ExpansionEQ,
+		ExpansionRoK,
+		ExpansionSoV,
+		ExpansionSoL,
+		ExpansionPoP,
+		ExpansionLoY,
+		ExpansionLDoN,
+		ExpansionGoD,
+		ExpansionOoW,
+		ExpansionDoN,
+		ExpansionDoDH,
+		ExpansionPoR,
+		ExpansionTSS,
+		ExpansionSoF,
+		ExpansionSoD,
+		ExpansionUF,
+		ExpansionHoT
+	};
+
 	// Class Constructors
 	Bot(NPCType npcTypeData, Client* botOwner);
 	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, int32 lastZoneId, NPCType npcTypeData);
