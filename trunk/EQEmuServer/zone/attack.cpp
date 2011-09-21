@@ -3388,7 +3388,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 
 		if(spell_id != SPELL_UNKNOWN && !iBuffTic) {
 			//see if root will break
-			if (IsRooted()) { // neotoyko: only spells cancel root
+			if (IsRooted() && !FromDamageShield) { // neotoyko: only spells cancel root
 				if(GetAA(aaEnhancedRoot))
 				{
 					if (MakeRandomInt(0, 99) < 10) {
