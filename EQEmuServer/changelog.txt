@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/21/2011==
+Leere: Damage shields should no longer break root spells.
+
 ==09/20/2011==
 Trevius: New rule added to allow a cap for GM skill training on specializations (default is 50).
 Trevius: #maxskills will now only set specializations to 50 each to prevent them from all resetting to 1.
