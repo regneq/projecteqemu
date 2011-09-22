@@ -316,6 +316,25 @@ union
 /*0384*/ uint8  lfg;            // 0=off, 1=lfg on
 /*0385*/
 
+	bool DestructibleObject;	// Only used to flag as a destrible object
+	char DestructibleModel[64];	// Model of the Destructible Object - Required - Seen "DEST_TNT_G"
+	char DestructibleName2[64];	// Secondary name - Not Required - Seen "a_tent"
+	char DestructibleString[64];	// Unknown - Not Required - Seen "ZoneActor_01186"
+	uint32 DestructibleAppearance;	// Damage Appearance
+	uint32 DestructibleUnk1;
+	uint32 DestructibleID1;
+	uint32 DestructibleID2;
+	uint32 DestructibleID3;
+	uint32 DestructibleID4;
+	uint32 DestructibleUnk2;
+	uint32 DestructibleUnk3;
+	uint32 DestructibleUnk4;
+	uint32 DestructibleUnk5;
+	uint32 DestructibleUnk6;
+	uint32 DestructibleUnk7;
+	uint8 DestructibleUnk8;
+	uint32 DestructibleUnk9;
+
 };
 
 /*
