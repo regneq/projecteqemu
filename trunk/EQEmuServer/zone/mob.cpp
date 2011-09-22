@@ -320,6 +320,7 @@ Mob::Mob(const char*   in_name,
 		SpecAttacks[i] = false;
 		SpecAttackTimers[i] = 0;
 	}
+	destructibleobject = false;
 	wandertype=0;
 	pausetype=0;
 	cur_wp = 0;
@@ -883,7 +884,56 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	}
 	
 	memset(ns->spawn.set_to_0xFF, 0xFF, sizeof(ns->spawn.set_to_0xFF));
+	if(IsNPC() && IsDestructibleObject())
+	{
+		ns->spawn.DestructibleObject = true;
 	
+		// Changing the first string made it vanish, so it has some significance.
+		if(lastname)
+		sprintf(ns->spawn.DestructibleModel, lastname);
+		// Changing the second string made no visible difference
+		sprintf(ns->spawn.DestructibleName2, "%s", ns->spawn.name);
+		// Putting a string in the final one that was previously empty had no visible effect.
+		sprintf(ns->spawn.DestructibleString, "");
+		// Sets damage appearance level of the object.
+		ns->spawn.DestructibleAppearance = luclinface; // Was 0x00000000
+		// #appearance 44 1 makes it jump but no visible damage
+		// #appearance 44 2 makes it look completely broken but still visible
+		// #appearnace 44 3 makes it jump but not visible difference to 3
+		// #appearance 44 4 makes it disappear altogether
+		// #appearance 44 5 makes the client crash.
+
+		ns->spawn.DestructibleUnk1 = 0x00000224;	// Was 0x000001f5;
+		// These next 4 are mostly always sequential
+		// Originally they were 633, 634, 635, 636
+		// Changing them all to 633  - no visible effect.
+		// Changing them all to 636 - no visible effect.
+		// Reversing the order of these four numbers and then using #appearance gain had no visible change.
+		// Setting these four ids to zero had no visible effect when the catapult spawned, nor when #appearance was used.
+		ns->spawn.DestructibleID1 = 1968;
+		ns->spawn.DestructibleID2 = 1969;
+		ns->spawn.DestructibleID3 = 1970;
+		ns->spawn.DestructibleID4 = 1971;
+		// Next one was originally 0x1ce45008, changing it to 0x00000000 made no visible difference
+		ns->spawn.DestructibleUnk2 = 0x13f79d00;
+		// Next one was originally 0x1a68fe30, changing it to 0x00000000 made no visible difference
+		ns->spawn.DestructibleUnk3 = 0x00000000;
+		// Next one was already 0x00000000
+		ns->spawn.DestructibleUnk4 = 0x13f79d58;
+		// Next one was originally 0x005a69ec, changing it to 0x00000000 made no visible difference.
+		ns->spawn.DestructibleUnk5 = 0x13c55b00;
+		// Next one was originally 0x1a68fe30, changing it to 0x00000000 made no visible difference.
+		ns->spawn.DestructibleUnk6 = 0x00128860;
+		// Next one was originally 0x0059de6d, changing it to 0x00000000 made no visible difference.
+		ns->spawn.DestructibleUnk7 = 0x005a8f66;
+		// Next one was originally 0x00000201, changing it to 0x00000000 made no visible difference.
+		// For the Minohten tents, 0x00000000 had them up in the air, while 0x201 put them on the ground.
+		// Changing it it 0x00000001 makes the tent sink into the ground.
+		ns->spawn.DestructibleUnk8 = 0x01;			// Needs to be 1 for tents?
+		ns->spawn.DestructibleUnk9 = 0x00000002;	// Needs to be 2 for tents?
+
+		ns->spawn.flymode = 0;
+	}
 }
 
 void Mob::CreateDespawnPacket(EQApplicationPacket* app, bool Decay)

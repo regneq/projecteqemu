@@ -104,47 +104,48 @@ typedef enum {	//focus types
 
 /*
 Used:
-b,d,f,g,j,m,n,p,r,t
+b,d,f,g,j,m,n,o,p,r,t
 A,B,C,D,E,F,G,H,I,J,L,M,N,O,Q,R,S,T,U,W,Y
 
 Unused:
-a,c,e,h,i,k,l,o,q,s,u,v,w,x,y,z
+a,c,e,h,i,k,l,q,s,u,v,w,x,y,z
 K,P,V,X,Z
 */
 
 enum {
 	SPECATK_NONE = 0,
-	SPECATK_SUMMON,				//S
-	SPECATK_ENRAGE,				//E
-	SPECATK_RAMPAGE,			//R
-	SPECATK_AREA_RAMPAGE,		//r
-	SPECATK_FLURRY,				//F
-	SPECATK_TRIPLE,				//T
-	SPECATK_QUAD,				//Q
-	SPECATK_INNATE_DW,			//L
-	SPECATK_BANE,				//b
-	SPECATK_MAGICAL,			//m
-	SPECATK_RANGED_ATK,			//Y
-	UNSLOWABLE,					//U
-	UNMEZABLE,					//M
-	UNCHARMABLE,				//C
-	UNSTUNABLE,					//N
-	UNSNAREABLE,				//I
-	UNFEARABLE,					//D
-	IMMUNE_MELEE,				//A
-	IMMUNE_MAGIC,				//B
-	IMMUNE_FLEEING,				//f
-	IMMUNE_MELEE_EXCEPT_BANE,	//O
-	IMMUNE_MELEE_NONMAGICAL,	//W
-	IMMUNE_AGGRO, 				//H, wont aggro, ever.
-	IMMUNE_TARGET,				//G, immune to target
-	IMMUNE_CASTING_FROM_RANGE,	//g
-	IMMUNE_FEIGN_DEATH,			//d
-    NPC_TUNNELVISION, 			//t
-    NPC_NO_BUFFHEAL_FRIENDS, 	//n
-	IMMUNE_PACIFY, 				//p
-	LEASH,						//J, dispell, wipe agro && return to spawn 
-	TETHER,						//j, return to spawn
+	SPECATK_SUMMON,				// S
+	SPECATK_ENRAGE,				// E
+	SPECATK_RAMPAGE,			// R
+	SPECATK_AREA_RAMPAGE,		// r
+	SPECATK_FLURRY,				// F
+	SPECATK_TRIPLE,				// T
+	SPECATK_QUAD,				// Q
+	SPECATK_INNATE_DW,			// L
+	SPECATK_BANE,				// b
+	SPECATK_MAGICAL,			// m
+	SPECATK_RANGED_ATK,			// Y
+	UNSLOWABLE,					// U
+	UNMEZABLE,					// M
+	UNCHARMABLE,				// C
+	UNSTUNABLE,					// N
+	UNSNAREABLE,				// I
+	UNFEARABLE,					// D
+	IMMUNE_MELEE,				// A
+	IMMUNE_MAGIC,				// B
+	IMMUNE_FLEEING,				// f
+	IMMUNE_MELEE_EXCEPT_BANE,	// O
+	IMMUNE_MELEE_NONMAGICAL,	// W
+	IMMUNE_AGGRO,				// H - Won't aggro, ever.
+	IMMUNE_TARGET,				// G - Immune to target
+	IMMUNE_CASTING_FROM_RANGE,	// g
+	IMMUNE_FEIGN_DEATH,			// d
+	NPC_TUNNELVISION,			// t
+	NPC_NO_BUFFHEAL_FRIENDS,	// n
+	IMMUNE_PACIFY,				// p
+	LEASH,						// J - Dispell, wipe agro && return to spawn
+	TETHER,						// j - Return to spawn
+	DESTRUCTIBLE_OBJECT,		// o - This is only for destructible objects
 	SPECATK_MAXNUM
 };
 
@@ -884,6 +885,8 @@ bool logpos;
 	inline EmuAppearance GetAppearance() const { return _appearance; }
 	inline const int8 GetRunAnimSpeed()	const { return pRunAnimSpeed; }
 	inline void	SetRunAnimSpeed(sint8 in) { if (pRunAnimSpeed != in) { pRunAnimSpeed = in; pLastChange = Timer::GetCurrentTime(); } }
+	bool IsDestructibleObject() { return destructibleobject; }
+	void SetDestructibleObject(bool in) { destructibleobject = in; }
 
 	Mob* GetPet();
 	void SetPet(Mob* newpet);
@@ -1232,6 +1235,7 @@ protected:
 
     bool bEnraged;
     Timer *SpecAttackTimers[SPECATK_MAXNUM];
+	bool destructibleobject;
 
 	sint32	delta_heading;
     float	delta_x;
