@@ -890,13 +890,15 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	
 		// Changing the first string made it vanish, so it has some significance.
 		if(lastname)
-		sprintf(ns->spawn.DestructibleModel, lastname);
+			sprintf(ns->spawn.DestructibleModel, lastname);
 		// Changing the second string made no visible difference
 		sprintf(ns->spawn.DestructibleName2, "%s", ns->spawn.name);
 		// Putting a string in the final one that was previously empty had no visible effect.
 		sprintf(ns->spawn.DestructibleString, "");
+
 		// Sets damage appearance level of the object.
 		ns->spawn.DestructibleAppearance = luclinface; // Was 0x00000000
+		//ns->spawn.DestructibleAppearance = static_cast<EmuAppearance>(_appearance);
 		// #appearance 44 1 makes it jump but no visible damage
 		// #appearance 44 2 makes it look completely broken but still visible
 		// #appearnace 44 3 makes it jump but not visible difference to 3
@@ -992,24 +994,24 @@ void Mob::SendHPUpdate()
 {
 	EQApplicationPacket hp_app;
 	Group *group;
-	
+
 	// destructor will free the pBuffer
- 	CreateHPPacket(&hp_app);
+	CreateHPPacket(&hp_app);
 
 #ifdef MANAGE_HP_UPDATES
 	entity_list.QueueManaged(this, &hp_app, true);
 #else
 	// send to people who have us targeted
- 	entity_list.QueueClientsByTarget(this, &hp_app, false, 0, false, true, BIT_AllClients);
+	entity_list.QueueClientsByTarget(this, &hp_app, false, 0, false, true, BIT_AllClients);
 	entity_list.QueueToGroupsForNPCHealthAA(this, &hp_app);
 
 	// send to group
 	if(IsGrouped())
 	{
 		group = entity_list.GetGroupByMob(this);
-		if(group)	//not sure why this might be null, but it happens
+		if(group)       //not sure why this might be null, but it happens
 			group->SendHPPacketsFrom(this);
-	}	
+	}
 
 	if(IsClient()){
 		Raid *r = entity_list.GetRaidByClient(CastToClient());
@@ -1029,19 +1031,61 @@ void Mob::SendHPUpdate()
 		if(r)
 			r->SendHPPacketsFrom(this);
 	}
-
+		
 	// send to pet
 	if(GetPet() && GetPet()->IsClient())
 	{
 		GetPet()->CastToClient()->QueuePacket(&hp_app, false);
 	}
-#endif	//MANAGE_HP_PACKETS
+#endif  //MANAGE_HP_PACKETS
+
+	// Update the damage state of destructible objects
+	if(IsNPC() && IsDestructibleObject())
+	{
+		if (GetHPRatio() > 74)
+		{
+			if (GetAppearance() != eaStanding)
+			{
+					SendAppearancePacket(AT_DamageState, eaStanding);
+					_appearance = eaStanding;
+			}
+		}
+		else if (GetHPRatio() > 49)
+		{
+			if (GetAppearance() != eaSitting)
+			{
+				SendAppearancePacket(AT_DamageState, eaSitting);
+				_appearance = eaSitting;
+			}
+		}
+		else if (GetHPRatio() > 24)
+		{
+			if (GetAppearance() != eaCrouching)
+			{
+				SendAppearancePacket(AT_DamageState, eaCrouching);
+				_appearance = eaCrouching;
+			}
+		}
+		else if (GetHPRatio() > 0)
+		{
+			if (GetAppearance() != eaDead)
+			{
+				SendAppearancePacket(AT_DamageState, eaDead);
+				_appearance = eaDead;
+			}
+		}
+		else if (GetAppearance() != eaLooting)
+		{
+			SendAppearancePacket(AT_DamageState, eaLooting);
+			_appearance = eaLooting;
+		}
+	}
 
 	// send to self - we need the actual hps here
 	if(IsClient())
 	{
 		EQApplicationPacket* hp_app2 = new EQApplicationPacket(OP_HPUpdate,sizeof(SpawnHPUpdate_Struct));
-		SpawnHPUpdate_Struct* ds = (SpawnHPUpdate_Struct*)hp_app2->pBuffer; 
+		SpawnHPUpdate_Struct* ds = (SpawnHPUpdate_Struct*)hp_app2->pBuffer;
 		ds->cur_hp = CastToClient()->GetHP() - itembonuses.HP;
 		ds->spawn_id = GetID();
 		ds->max_hp = CastToClient()->GetMaxHP() - itembonuses.HP;
@@ -1528,6 +1572,18 @@ void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm
 		specific_target->CastToClient()->QueuePacket(outapp, false);
 	}
 	safe_delete(outapp);
+}
+
+void Mob::SendUntargetable(Client *c, int in)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Untargetable,sizeof(Untargetable_Struct));
+	Untargetable_Struct* us = (Untargetable_Struct*)outapp->pBuffer;
+	us->id = GetID();
+	us->unk1 = in;
+	if (c)
+		c->QueuePacket(outapp);
+	safe_delete(outapp);
+	NPCSpecialAttacks("G", 0);	// IMMUNE_TARGET
 }
 
 void Mob::QuestReward(Client *c, int32 silver, int32 gold, int32 platinum) {

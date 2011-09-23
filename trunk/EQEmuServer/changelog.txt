@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/23/2011==
+Trevius: Destructible Objects now change damage states as they reach 75%, 50%, 25% and 0%.
+Trevius: Added Perl Mob quest object SendUntargetable(to_client, in) to toggle the ability to be targeted.
+
 ==09/22/2011==
 Trevius: Initial implementation of Destructible Objects (SoD only for now).  Most of the work was done by Derision.
 To Create a Destructible Object, use the 'lastname' field in npc_types to set the model (ie. DEST_DEV_TENT1), and add "o" in the 'npcspecialatks' field.
