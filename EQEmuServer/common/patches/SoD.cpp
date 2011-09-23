@@ -1180,18 +1180,6 @@ ENCODE(OP_ZoneSpawns) {
 			Position->x = emu->x;
 			Position->z = emu->z;
 			Position->deltaZ = emu->deltaZ;
-			/*
-			if(emu->DestructibleObject)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x00000000);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x00000000);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x0007e1c3);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x023a8327);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x000002f7);
-
-				Buffer = Buffer -20;
-			}
-			*/
 
 			Buffer += sizeof(structs::Spawn_Struct_Position);
 		

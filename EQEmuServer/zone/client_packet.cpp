@@ -8981,6 +8981,9 @@ void Client::CompleteConnect()
 	//sends the Nimbus particle effects (up to 3) for any mob using them
 	entity_list.SendNimbusEffects(this);
 
+	//sends untargetable packet for NPCs that are set as IMMUNE_TARGET
+	entity_list.SendImmuneTarget(this);
+
 	client_data_loaded = true;
 	int x;
 	for(x=0;x<8;x++)

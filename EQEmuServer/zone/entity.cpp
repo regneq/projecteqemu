@@ -4043,7 +4043,7 @@ void EntityList::SendZoneAppearance(Client *c)
 				iterator.Advance();
 				continue;
 			}
-			if(cur->GetAppearance() != ANIM_STAND)
+			if(cur->GetAppearance() != eaStanding)
 			{
 				cur->SendAppearancePacket(AT_Anim, cur->GetAppearanceValue(cur->GetAppearance()), false, true, c);
 			}
@@ -4084,6 +4084,32 @@ void EntityList::SendNimbusEffects(Client *c)
 			if(cur->GetNimbusEffect3() != 0)
 			{
 				cur->SendSpellEffect(cur->GetNimbusEffect3(), 3000, 0, 1, 3000, false, c);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::SendImmuneTarget(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Mob *cur = iterator.GetData();
+
+		if(cur)
+		{
+			if(cur == c)
+			{
+				iterator.Advance();
+				continue;
+			}
+			if(cur->IsNPC() && cur->HasNPCSpecialAtk("G"))	// IMMUNE_TARGET
+			{
+				cur->SendUntargetable(c);
 			}
 		}
 		iterator.Advance();

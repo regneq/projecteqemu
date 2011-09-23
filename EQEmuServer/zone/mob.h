@@ -488,6 +488,7 @@ bool logpos;
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
 	void SendLevelAppearance();
 	void SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
+	void SendUntargetable(Client *c, int in=0);
 	void QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
 	void CameraEffect(uint32 duration, uint32 intensity, Client *c=NULL, bool global = false);
 	void SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, bool perm_effect=false, Client *c=NULL);
