@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/24/2011==
+JJ: Added hacker entry for possible instant camp disconnects.
+
 ==09/23/2011==
 Trevius: Destructible Objects now change damage states as they reach 75%, 50%, 25% and 0%.
 Trevius: Added Perl Mob quest object SendUntargetable(to_client, in) to toggle the ability to be targeted.

@@ -698,6 +698,7 @@ bool Client::Process() {
 	if (client_state == DISCONNECTED) {
 		OnDisconnect(true);
 		cout << "Client disconnected (cs=d): " << GetName() << endl;
+		database.SetMQDetectionFlag(this->AccountName(), GetName(), "/MQInstantCamp: Possible instant camp disconnect.", zone->GetShortName());
 		return false;
 	}
 	
@@ -708,8 +709,8 @@ bool Client::Process() {
 	}
 	
 	if (client_state != CLIENT_LINKDEAD && !eqs->CheckState(ESTABLISHED)) {
-		cout << "Client linkdead: " << name << endl;
 		OnDisconnect(true);
+		cout << "Client linkdead: " << name << endl;
 
 		if (GetGM()) {
 			return false;

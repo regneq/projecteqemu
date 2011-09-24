@@ -1791,7 +1791,7 @@ bool Database::SetHackerFlag(const char* accountname, const char* charactername,
 	return true;
 }
 
-bool Database::SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone) { //Lieka:  Utilize the "hacker" table, but also give zone information.
+bool Database::SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone) { //Utilize the "hacker" table, but also give zone information.
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;

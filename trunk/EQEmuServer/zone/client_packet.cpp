@@ -3235,6 +3235,7 @@ void Client::Handle_OP_Camp(const EQApplicationPacket *app) {
 	if (GetGM()) 
 	{
 		OnDisconnect(true);
+		return;
 	}
 	camp_timer.Start(29000,true);
 	return;
