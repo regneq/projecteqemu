@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/25/2011==
+Derision: Implemented Tune Of Pursuance AA.
+
 ==09/24/2011==
 JJ: Added hacker entry for possible instant camp disconnects.
 

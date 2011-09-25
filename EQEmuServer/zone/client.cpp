@@ -2373,11 +2373,12 @@ int16 Client::GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSk
 
 		}
 	}
+	// This should possibly be handled by bonuses rather than here.
 	switch(skillid)
 	{
 		case TRACKING:
 		{
-			Result += (GetAA(aaAdvancedTracking) * 10);
+			Result += ((GetAA(aaAdvancedTracking) * 10) + (GetAA(aaTuneofPursuance) * 10));
 			break;
 		}
 
