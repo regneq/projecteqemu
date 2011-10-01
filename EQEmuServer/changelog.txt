@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/01/2011==
+Trevius: Added Destructible Objects for Underfoot.
+
 ==09/25/2011==
 Derision: Implemented Tune Of Pursuance AA.
 
