@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/09/2011==
+Akkadius: Fixed an optional argument in client 'NukeItem'
+Akkadius: Added two #npcedit commands; armortint_id and alt_currency_id
+Akkadius: Exported $client->GetAggroCount();, this will get how many NPC's are aggroed on the client. This can also be used to determine when in combat.
+Akkadius: Mysql ingame basic CLI to run select queries or execute queries from in-game, default account access 250, be careful when using this.
+Akkadius: (Lerxst) Added a crash fix for spells that do not find a valid item in the database SE_SummonItem
+
+Optional SQL:
+utils/sql/svn/2023_optional_mysqlcli.sql
+
 ==10/01/2011==
 Trevius: Added Destructible Objects for Underfoot.
 
