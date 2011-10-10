@@ -5186,6 +5186,34 @@ XS(XS_Client_UnFreeze)
 	XSRETURN_EMPTY;
 }
 
+
+XS(XS_Client_GetAggroCount); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetAggroCount)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetAggroCount(THIS)");
+	{
+		Client *	THIS;
+		int		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetAggroCount();
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5305,7 +5333,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "AutoSplitEnabled"), XS_Client_AutoSplitEnabled, file, "$");
 		newXSproto(strcpy(buf, "SetHorseId"), XS_Client_SetHorseId, file, "$$");
 		newXSproto(strcpy(buf, "GetHorseId"), XS_Client_GetHorseId, file, "$");
-		newXSproto(strcpy(buf, "NukeItem"), XS_Client_NukeItem, file, "$$$");
+		newXSproto(strcpy(buf, "NukeItem"), XS_Client_NukeItem, file, "$$;$");
 		newXSproto(strcpy(buf, "SetTint"), XS_Client_SetTint, file, "$$$");
 		newXSproto(strcpy(buf, "SetMaterial"), XS_Client_SetMaterial, file, "$$$");
 		newXSproto(strcpy(buf, "Undye"), XS_Client_Undye, file, "$");
@@ -5396,6 +5424,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "AssignToInstance"), XS_Client_AssignToInstance, file, "$$");
 		newXSproto(strcpy(buf, "Freeze"), XS_Client_Freeze, file, "$");
 		newXSproto(strcpy(buf, "UnFreeze"), XS_Client_UnFreeze, file, "$");
+		newXSproto(strcpy(buf, "GetAggroCount"), XS_Client_GetAggroCount, file, "$");
 		XSRETURN_YES;
 }
 

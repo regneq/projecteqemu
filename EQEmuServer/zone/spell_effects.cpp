@@ -1030,8 +1030,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				const char *itemname = item ? item->Name : "*Unknown Item*";
 				snprintf(effect_desc, _EDLEN, "Summon Item: %s (id %d)", itemname, spell.base[i]);
 #endif
-				if(IsClient()) 
+				if(!item)
 				{
+					Message(13, "Unable to summon item %d.  Item not found.", spell.base[i]);
+				}
+				else if(IsClient()){
 					Client *c=CastToClient();
 					if (c->CheckLoreConflict(item))  {
 						Message_StringID(0,PICK_LORE);

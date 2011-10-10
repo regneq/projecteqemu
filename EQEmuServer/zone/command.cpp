@@ -448,7 +448,8 @@ int command_init(void) {
 		command_add("camerashake", "Shakes the camera on everyone's screen globally.", 80, command_camerashake) ||
         command_add("disarmtrap", "Analog for ldon disarm trap for the newer clients since we still don't have it working.", 0, command_disarmtrap) ||
         command_add("sensetrap", "Analog for ldon sense trap for the newer clients since we still don't have it working.", 0, command_sensetrap) ||
-        command_add("picklock", "Analog for ldon pick lock for the newer clients since we still don't have it working.", 0, command_picklock)
+        command_add("picklock", "Analog for ldon pick lock for the newer clients since we still don't have it working.", 0, command_picklock) ||
+		command_add("mysql", "Mysql CLI, see 'help' for options.", 250, command_mysql) 
 		)
 	{
 		command_deinit();
@@ -6684,6 +6685,7 @@ void command_npcedit(Client *c, const Seperator *sep)
 		c->Message(0, "#npcedit Manaregen - Sets an NPCs mana regen rate per tick");
 		c->Message(0, "#npcedit Loottable - Sets the lootable ID for an NPC ");
 		c->Message(0, "#npcedit Merchantid - Sets the merchant ID for an NPC");
+		c->Message(0, "#npcedit alt_currency_id - Sets the Alternate Currency ID for an alterative currency Merchant");
 		c->Message(0, "#npcedit Spell - Sets the npc spells list ID for an NPC");
 		c->Message(0, "#npcedit Faction - Sets the NPCs faction id");
 		c->Message(0, "#npcedit Mindmg - Sets an NPCs minimum damage");
@@ -6710,6 +6712,7 @@ void command_npcedit(Client *c, const Seperator *sep)
 		c->Message(0, "#npcedit wep1 - Sets an NPC's primary weapon model");
 		c->Message(0, "#npcedit wep2 - Sets an NPC's secondary weapon model");
 		c->Message(0, "#npcedit featuresave - Saves all current facial features to the database");
+		c->Message(0, "#npcedit armortint_id - Set NPC Armor tint ID");
 	   
 	}
 	else if ( strcasecmp( sep->arg[1], "name" ) == 0 )
@@ -6836,6 +6839,15 @@ void command_npcedit(Client *c, const Seperator *sep)
 		char *query = 0;
 		c->Message(15,"NPCID %u now is merchant_id %i",c->GetTarget()->CastToNPC()->GetNPCTypeID(),atoi(sep->arg[2]));
 		database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set merchant_id=%i where id=%i",atoi(sep->argplus[2]),c->GetTarget()->CastToNPC()->GetNPCTypeID()), errbuf);
+		c->LogSQL(query);
+		safe_delete_array(query);
+	}
+	else if ( strcasecmp( sep->arg[1], "alt_currency_id" ) == 0 )
+	{
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		c->Message(15,"NPCID %u now has field 'alt_currency_id' set to %s",c->GetTarget()->CastToNPC()->GetNPCTypeID(), (sep->argplus[2]));
+		database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set alt_currency_id='%s' where id=%i",(sep->argplus[2]),c->GetTarget()->CastToNPC()->GetNPCTypeID()), errbuf);
 		c->LogSQL(query);
 		safe_delete_array(query);
 	}
@@ -7105,6 +7117,17 @@ void command_npcedit(Client *c, const Seperator *sep)
 		safe_delete_array(query);
 
 	}
+	
+	else if ( strcasecmp( sep->arg[1], "armortint_id" ) == 0 )
+	{
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		c->Message(15,"NPCID %u now has field 'armortint_id' set to %s",c->GetTarget()->CastToNPC()->GetNPCTypeID(), (sep->argplus[2]));
+		database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set armortint_id='%s' where id=%i",(sep->argplus[2]),c->GetTarget()->CastToNPC()->GetNPCTypeID()), errbuf);
+		c->LogSQL(query);
+		safe_delete_array(query);
+	}
+
 	else if((sep->arg[1][0] == 0 || strcasecmp(sep->arg[1],"*")==0) || ((c->GetTarget()==0) || (c->GetTarget()->IsClient())))
 	{   
 		c->Message(0, "Type #npcedit help for more info");
@@ -11151,3 +11174,65 @@ void command_picklock(Client *c, const Seperator *sep)
 	}
 }
 
+void command_mysql(Client *c, const Seperator *sep)
+{
+	if(sep->arg[1][0] == 0){
+		c->Message(0, "Usage: #mysql [query] 'Query here'");
+	}
+	if ( strcasecmp( sep->arg[1], "help" ) == 0 ) {
+		c->Message(0, "Help will go here:");
+	}
+	if ( strcasecmp( sep->arg[1], "query" ) == 0 ) {
+	{
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query;
+		MYSQL_RES *result;
+		MYSQL_ROW row;
+
+		query = new char[256];
+
+		// If id evaluates to 0, then search as if user entered a string.
+		if (sep->arg[2])
+		{
+			char *EscName = new char[strlen(sep->arg[2]) * 2 + 1];
+			database.DoEscapeString(EscName, sep->arg[2], strlen(sep->arg[2]));
+
+			MakeAnyLenString(&query, "%s", EscName);
+			safe_delete_array(EscName);
+		}
+		if (database.RunQuery(query, strlen(query), errbuf, &result))
+		{
+			
+			MYSQL_ROW row;
+			unsigned int num_fields;
+			unsigned int i;
+			
+			MYSQL_FIELD *fields;
+			num_fields = mysql_num_fields(result);
+			c->Message (0, "---Running query: '%s'", query); 
+			while ((row = mysql_fetch_row(result))){
+				string str;
+				unsigned long *lengths;
+				lengths = mysql_fetch_lengths(result);
+				fields = mysql_fetch_fields(result);
+
+				for(i = 0; i < num_fields; i++){ 
+					if((strcasecmp(sep->arg[1], "query") == 0)){
+						str.append(("Field %u is %s\n", i, fields[i].name));
+						str.append(":");
+					}
+					str.append("[");
+					str.append(("[%.*s]", (int) lengths[i], row[i] ? row[i] : "NULL")); 
+					str.append("] ");
+				}
+
+				c->Message(0, str.c_str());
+			}
+		}
+		else{
+			c->Message (0, "Invalid query: '%s', '%s'", query, errbuf); 
+		}
+		safe_delete_array(query);
+		}
+	}
+}
