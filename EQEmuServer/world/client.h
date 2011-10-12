@@ -103,6 +103,7 @@ private:
 };
 
 
-bool CheckCharCreateInfo(CharCreate_Struct *cc);
+bool CheckCharCreateInfoSoF(CharCreate_Struct *cc);
+bool CheckCharCreateInfoTitanium(CharCreate_Struct *cc);
 
 #endif

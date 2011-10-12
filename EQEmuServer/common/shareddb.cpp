@@ -632,7 +632,7 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 	
 	// Retrieve character inventory
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,"
-        "instnodrop,custom_data FROM inventory, custom_data INNER JOIN character_ ch ON ch.id=charid WHERE ch.name='%s' AND ch.account_id=%i ORDER BY slotid", 
+        "instnodrop,custom_data FROM inventory INNER JOIN character_ ch ON ch.id=charid WHERE ch.name='%s' AND ch.account_id=%i ORDER BY slotid", 
         name, account_id), errbuf, &result))
 	{
 		while ((row = mysql_fetch_row(result))) {
