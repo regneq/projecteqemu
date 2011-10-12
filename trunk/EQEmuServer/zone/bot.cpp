@@ -3688,7 +3688,18 @@ void Bot::SaveBuffs() {
 			else
 				IsPersistent = 0;
 
-			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botbuffs (BotId, SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, CorruptionCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);", GetBotID(), buffs[BuffCount].spellid, buffs[BuffCount].casterlevel, buffs[BuffCount].durationformula, buffs[BuffCount].ticsremaining, buffs[BuffCount].poisoncounters, buffs[BuffCount].diseasecounters, buffs[BuffCount].cursecounters, buffs[BuffCount].corruptioncounters, buffs[BuffCount].numhits, buffs[BuffCount].melee_rune, buffs[BuffCount].magic_rune, buffs[BuffCount].deathSaveSuccessChance, buffs[BuffCount].casterAARank, IsPersistent), TempErrorMessageBuffer)) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botbuffs (BotId, SpellId, CasterLevel, DurationFormula, "
+                "TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, CorruptionCounters, HitCount, MeleeRune, MagicRune, "
+                "DeathSaveSuccessChance, CasterAARank, Persistent) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);", 
+                GetBotID(), buffs[BuffCount].spellid, buffs[BuffCount].casterlevel, spells[buffs[BuffCount].spellid].buffdurationformula, 
+                buffs[BuffCount].ticsremaining, 
+                CalculatePoisonCounters(buffs[BuffCount].spellid) > 0 ? buffs[BuffCount].counters : 0, 
+                CalculateDiseaseCounters(buffs[BuffCount].spellid) > 0 ? buffs[BuffCount].counters : 0, 
+                CalculateCurseCounters(buffs[BuffCount].spellid) > 0 ? buffs[BuffCount].counters : 0, 
+                CalculateCorruptionCounters(buffs[BuffCount].spellid) > 0 ? buffs[BuffCount].counters : 0, 
+                buffs[BuffCount].numhits, buffs[BuffCount].melee_rune, buffs[BuffCount].magic_rune, 
+                buffs[BuffCount].deathSaveSuccessChance, 
+                buffs[BuffCount].deathsaveCasterAARank, IsPersistent), TempErrorMessageBuffer)) {
 				errorMessage = std::string(TempErrorMessageBuffer);
 				safe_delete(Query);
 				Query = 0;
@@ -3730,17 +3741,22 @@ void Bot::LoadBuffs() {
 
 			buffs[BuffCount].spellid = atoi(DataRow[0]);
 			buffs[BuffCount].casterlevel = atoi(DataRow[1]);
-			buffs[BuffCount].durationformula = atoi(DataRow[2]);
 			buffs[BuffCount].ticsremaining = atoi(DataRow[3]);
-			buffs[BuffCount].poisoncounters = atoi(DataRow[4]);
-			buffs[BuffCount].diseasecounters = atoi(DataRow[5]);
-			buffs[BuffCount].cursecounters = atoi(DataRow[6]);
-			buffs[BuffCount].corruptioncounters = atoi(DataRow[7]);
+
+            if(CalculatePoisonCounters(buffs[BuffCount].spellid) > 0) {
+                buffs[BuffCount].counters = atoi(DataRow[4]);
+            } else if(CalculateDiseaseCounters(buffs[BuffCount].spellid) > 0) {
+                buffs[BuffCount].counters = atoi(DataRow[5]);
+            } else if(CalculateCurseCounters(buffs[BuffCount].spellid) > 0) {
+                buffs[BuffCount].counters = atoi(DataRow[6]);
+            } else if(CalculateCorruptionCounters(buffs[BuffCount].spellid) > 0) {
+                buffs[BuffCount].counters = atoi(DataRow[7]);
+            } 
 			buffs[BuffCount].numhits = atoi(DataRow[8]);
 			buffs[BuffCount].melee_rune = atoi(DataRow[9]);
 			buffs[BuffCount].magic_rune = atoi(DataRow[10]);
 			buffs[BuffCount].deathSaveSuccessChance = atoi(DataRow[11]);
-			buffs[BuffCount].casterAARank = atoi(DataRow[12]);
+			buffs[BuffCount].deathsaveCasterAARank = atoi(DataRow[12]);
 			buffs[BuffCount].casterid = 0;
 
 			bool IsPersistent = false;
