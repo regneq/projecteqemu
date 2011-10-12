@@ -58,6 +58,9 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "SoFCharCreateData.h"
 
+std::vector<RaceClassAllocation> character_create_allocations;
+std::vector<RaceClassCombos> character_create_race_class_combos;
+
 extern ZSList zoneserver_list;
 extern LoginServerList loginserverlist;
 extern ClientList client_list;
@@ -475,9 +478,46 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		}
 		case OP_CharacterCreateRequest: {
 			// New OpCode in SoF
-			//
-			EQApplicationPacket *outapp = new EQApplicationPacket(OP_CharacterCreateRequest, sizeof(SoFCharCreateInfo));
-			memcpy(outapp->pBuffer, &SoFCharCreateInfo, sizeof(SoFCharCreateInfo));
+            uint32 allocs = character_create_allocations.size();
+            uint32 combos = character_create_race_class_combos.size();
+            uint32 len = sizeof(RaceClassAllocation) * allocs;
+            len += sizeof(RaceClassCombos) * combos;
+            len += sizeof(uint8);
+            len += sizeof(uint32);
+            len += sizeof(uint32);
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_CharacterCreateRequest, len);
+            unsigned char *ptr = outapp->pBuffer;
+            *((uint8*)ptr) = 0;
+            ptr += sizeof(uint8);
+
+            *((uint32*)ptr) = allocs;
+            ptr += sizeof(uint32);
+
+            for(int i = 0; i < allocs; ++i) {
+                RaceClassAllocation *alc = (RaceClassAllocation*)ptr;
+
+                alc->Index = character_create_allocations[i].Index;
+                for(int j = 0; j < 7; ++j) {
+                    alc->BaseStats[j] = character_create_allocations[i].BaseStats[j];
+                    alc->DefaultPointAllocation[j] = character_create_allocations[i].DefaultPointAllocation[j];
+                }
+                ptr += sizeof(RaceClassAllocation);
+            }
+
+            *((uint32*)ptr) = combos;
+            ptr += sizeof(uint32);
+            for(int i = 0; i < combos; ++i) {
+                RaceClassCombos *cmb = (RaceClassCombos*)ptr;
+                cmb->ExpansionRequired = character_create_race_class_combos[i].ExpansionRequired;
+                cmb->Race = character_create_race_class_combos[i].Race;
+                cmb->Class = character_create_race_class_combos[i].Class;
+                cmb->Deity = character_create_race_class_combos[i].Deity;
+                cmb->AllocationIndex = character_create_race_class_combos[i].AllocationIndex;
+                cmb->Zone = character_create_race_class_combos[i].Zone;
+                ptr += sizeof(RaceClassCombos);
+            }
+
 			QueuePacket(outapp);
 			safe_delete(outapp);
 			break;
@@ -1302,268 +1342,138 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 // returns true if the request is ok, false if there's an error
 bool CheckCharCreateInfo(CharCreate_Struct *cc)
 {
-	int32 bSTR, bSTA, bAGI, bDEX, bWIS, bINT, bCHA, bTOTAL, cTOTAL, stat_points;	//these are all int32 in CharCreate_Struct, so we'll make them int32 here to make the compiler shut up
-	int classtemp, racetemp;
-	int Charerrors = 0;
-
-
-// solar: if this is increased you'll have to add a column to the classrace
-// table below
-#define _TABLE_RACES	16
-
-	static const int BaseRace[_TABLE_RACES][7] =
-	{            /* STR  STA  AGI  DEX  WIS  INT  CHR */
-	{ /*Human*/      75,  75,  75,  75,  75,  75,  75},
-	{ /*Barbarian*/ 103,  95,  82,  70,  70,  60,  55},
-	{ /*Erudite*/    60,  70,  70,  70,  83, 107,  70},
-	{ /*Wood Elf*/   65,  65,  95,  80,  80,  75,  75},
-	{ /*High Elf*/   55,  65,  85,  70,  95,  92,  80},
-	{ /*Dark Elf*/   60,  65,  90,  75,  83,  99,  60},
-	{ /*Half Elf*/   70,  70,  90,  85,  60,  75,  75},
-	{ /*Dwarf*/      90,  90,  70,  90,  83,  60,  45},
-	{ /*Troll*/     108, 109,  83,  75,  60,  52,  40},
-	{ /*Ogre*/      130, 122,  70,  70,  67,  60,  37},
-	{ /*Halfling*/   70,  75,  95,  90,  80,  67,  50},
-	{ /*Gnome*/      60,  70,  85,  85,  67,  98,  60},
-	{ /*Iksar*/      70,  70,  90,  85,  80,  75,  55},
-	{ /*Vah Shir*/   90,  75,  90,  70,  70,  65,  65},
-	{ /*Froglok*/    70,  80, 100, 100,  75,  75,  50},
-	{ /*Drakkin*/    70,  80,  85,  75,  80,  85,  75}
-	};
-
-	static const int BaseClass[PLAYER_CLASS_COUNT][8] =
-	{              /* STR  STA  AGI  DEX  WIS  INT  CHR  ADD*/
-	{ /*Warrior*/      10,  10,   5,   0,   0,   0,   0,  25},
-	{ /*Cleric*/        5,   5,   0,   0,  10,   0,   0,  30},
-	{ /*Paladin*/      10,   5,   0,   0,   5,   0,  10,  20},
-	{ /*Ranger*/        5,  10,  10,   0,   5,   0,   0,  20},
-	{ /*ShadowKnight*/ 10,   5,   0,   0,   0,   10,  5,  20},
-	{ /*Druid*/         0,  10,   0,   0,  10,   0,   0,  30},
-	{ /*Monk*/          5,   5,  10,  10,   0,   0,   0,  20},
-	{ /*Bard*/          5,   0,   0,  10,   0,   0,  10,  25},
-	{ /*Rouge*/         0,   0,  10,  10,   0,   0,   0,  30},
-	{ /*Shaman*/        0,   5,   0,   0,  10,   0,   5,  30},
-	{ /*Necromancer*/   0,   0,   0,  10,   0,  10,   0,  30},
-	{ /*Wizard*/        0,  10,   0,   0,   0,  10,   0,  30},
-	{ /*Magician*/      0,  10,   0,   0,   0,  10,   0,  30},
-	{ /*Enchanter*/     0,   0,   0,   0,   0,  10,  10,  30},
-	{ /*Beastlord*/     0,  10,   5,   0,  10,   0,   5,  20},
-	{ /*Berserker*/    10,   5,   0,  10,   0,   0,   0,  25}
-	};
-
-	static const bool ClassRaceLookupTable[PLAYER_CLASS_COUNT][_TABLE_RACES]=
-	{                   /*Human  Barbarian Erudite Woodelf Highelf Darkelf Halfelf Dwarf  Troll  Ogre   Halfling Gnome  Iksar  Vahshir Froglok Drakkin*/
-	{ /*Warrior*/         true,  true,     false,  true,   false,  true,   true,   true,  true,  true,  true,    true,  true,  true,   true,   true},
-	{ /*Cleric*/          true,  false,    true,   false,  true,   true,   true,   true,  false, false, true,    true,  false, false,  true,   true},
-	{ /*Paladin*/         true,  false,    true,   false,  true,   false,  true,   true,  false, false, true,    true,  false, false,  true,   true},
-	{ /*Ranger*/          true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},
-	{ /*ShadowKnight*/    true,  false,    true,   false,  false,  true,   false,  false, true,  true,  false,   true,  true,  false,  true,   true},
-	{ /*Druid*/           true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},
-	{ /*Monk*/            true,  false,    false,  false,  false,  false,  false,  false, false, false, false,   false, true,  false,  false,  true},
-	{ /*Bard*/            true,  false,    false,  true,   false,  false,  true,   false, false, false, false,   false, false, true,   false,  true},
-	{ /*Rogue*/           true,  true,     false,  true,   false,  true,   true,   true,  false, false, true,    true,  false, true,   true,   true},
-	{ /*Shaman*/          false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   true,   false},
-	{ /*Necromancer*/     true,  false,    true,   false,  false,  true,   false,  false, false, false, false,   true,  true,  false,  true,   true},
-	{ /*Wizard*/          true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  true,   true},
-	{ /*Magician*/        true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},
-	{ /*Enchanter*/       true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},
-	{ /*Beastlord*/       false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   false,  false},
-	{ /*Berserker*/       false, true,     false,  false,  false,  false,  false,  true,  true,  true,  false,   false, false, true,   false,  false}
-	};//Initial table by kathgar, editted by Wiz for accuracy, solar too
-
 	if(!cc) return false;
 
-	_log(WORLD__CLIENT,"Validating char creation info...");
+	_log(WORLD__CLIENT, "Validating char creation info...");
 
-	classtemp = cc->class_ - 1;
-	racetemp = cc->race - 1;
-	// these have non sequential race numbers so they need to be mapped
-	if (cc->race == FROGLOK) racetemp = 14;
-	if (cc->race == VAHSHIR) racetemp = 13;
-	if (cc->race == IKSAR) racetemp = 12;
-	if (cc->race == DRAKKIN) racetemp = 15;
+    RaceClassCombos class_combo;
+    bool found = false;
+    int combos = character_create_race_class_combos.size();
+    for(int i = 0; i < combos; ++i) {
+        if(character_create_race_class_combos[i].Class == cc->class_ &&
+            character_create_race_class_combos[i].Race == cc->race &&
+            character_create_race_class_combos[i].Deity == cc->deity) { 
+                if(RuleB(World, EnableTutorialButton) && 
+                    (RuleI(World, TutorialZoneID) == cc->start_zone || 
+                    (character_create_race_class_combos[i].Zone == cc->start_zone))) {
+                    class_combo = character_create_race_class_combos[i];
+                    found = true;
+                    break;
+                } else if(character_create_race_class_combos[i].Zone == cc->start_zone) {
+                    class_combo = character_create_race_class_combos[i];
+                    found = true;
+                    break;
+                }
+        }
+    }
 
-	// if out of range looking it up in the table would crash stuff
-	// so we return from these
-	if(classtemp >= PLAYER_CLASS_COUNT)
-	{
-		_log(WORLD__CLIENT_ERR,"  class is out of range");
-		return false;
-	}
-	if(racetemp >= _TABLE_RACES)
-	{
-		_log(WORLD__CLIENT_ERR,"  race is out of range");
-		return false;
-	}
+    if(!found) {
+        _log(WORLD__CLIENT_ERR, "Could not find class/race/deity/start_zone combination");
+        return false;
+    }
 
-	if(!ClassRaceLookupTable[classtemp][racetemp]) //Lookup table better than a bunch of ifs?
-	{
-		_log(WORLD__CLIENT_ERR,"  invalid race/class combination");
-		// we return from this one, since if it's an invalid combination our table
-		// doesn't have meaningful values for the stats
-		return false;
-	}
+    uint32 max_stats = 0;
+    uint32 allocs = character_create_allocations.size();
+    RaceClassAllocation allocation;
+    found = false;
+    for(int i = 0; i < combos; ++i) {
+        if(character_create_allocations[i].Index == class_combo.AllocationIndex) {
+            allocation = character_create_allocations[i];
+            found = true;
+            break;
+        }
+    }
 
-	// solar: add up the base values for this class/race
-	// this is what they start with, and they have stat_points more
-	// that can distributed
-	bSTR = BaseClass[classtemp][0] + BaseRace[racetemp][0];
-	bSTA = BaseClass[classtemp][1] + BaseRace[racetemp][1];
-	bAGI = BaseClass[classtemp][2] + BaseRace[racetemp][2];
-	bDEX = BaseClass[classtemp][3] + BaseRace[racetemp][3];
-	bWIS = BaseClass[classtemp][4] + BaseRace[racetemp][4];
-	bINT = BaseClass[classtemp][5] + BaseRace[racetemp][5];
-	bCHA = BaseClass[classtemp][6] + BaseRace[racetemp][6];
-	stat_points = BaseClass[classtemp][7];
-	bTOTAL = bSTR + bSTA + bAGI + bDEX + bWIS + bINT + bCHA;
-	cTOTAL = cc->STR + cc->STA + cc->AGI + cc->DEX + cc->WIS + cc->INT + cc->CHA;
+    if(!found) {
+        _log(WORLD__CLIENT_ERR, "Could not find starting stats for selected character combo, cannot verify stats");
+        return false;
+    }
 
-	// solar: the first check makes sure the total is exactly what was expected.
-	// this will catch all the stat cheating, but there's still the issue
-	// of reducing CHA or INT or something, to use for STR, so we check
-	// that none are lower than the base or higher than base + stat_points
-	// NOTE: these could just be else if, but i want to see all the stats
-	// that are messed up not just the first hit
+    max_stats = allocation.DefaultPointAllocation[0] +
+        allocation.DefaultPointAllocation[1] + 
+        allocation.DefaultPointAllocation[2] + 
+        allocation.DefaultPointAllocation[3] + 
+        allocation.DefaultPointAllocation[4] + 
+        allocation.DefaultPointAllocation[5] + 
+        allocation.DefaultPointAllocation[6];
 
-	if(bTOTAL + stat_points != cTOTAL)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat points total doesn't match expected value: expecting %d got %d", bTOTAL + stat_points, cTOTAL);
-		Charerrors++;
-	}
+    if(cc->STR > allocation.BaseStats[0] + max_stats || cc->STR < allocation.BaseStats[0]) {
+        _log(WORLD__CLIENT_ERR, "Strength out of range");
+        return false;
+    }
 
-	if(cc->STR > bSTR + stat_points || cc->STR < bSTR)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat STR is out of range");
-		Charerrors++;
-	}
-	if(cc->STA > bSTA + stat_points || cc->STA < bSTA)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat STA is out of range");
-		Charerrors++;
-	}
-	if(cc->AGI > bAGI + stat_points || cc->AGI < bAGI)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat AGI is out of range");
-		Charerrors++;
-	}
-	if(cc->DEX > bDEX + stat_points || cc->DEX < bDEX)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat DEX is out of range");
-		Charerrors++;
-	}
-	if(cc->WIS > bWIS + stat_points || cc->WIS < bWIS)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat WIS is out of range");
-		Charerrors++;
-	}
-	if(cc->INT > bINT + stat_points || cc->INT < bINT)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat INT is out of range");
-		Charerrors++;
-	}
-	if(cc->CHA > bCHA + stat_points || cc->CHA < bCHA)
-	{
-		_log(WORLD__CLIENT_ERR,"  stat CHA is out of range");
-		Charerrors++;
-	}
+    if(cc->DEX > allocation.BaseStats[1] + max_stats || cc->DEX < allocation.BaseStats[1]) {
+        _log(WORLD__CLIENT_ERR, "Dexterity out of range");
+        return false;
+    }
 
-	/*TODO: Check for deity/class/race.. it'd be nice, but probably of any real use to hack(faction, deity based items are all I can think of)
-	I am NOT writing those tables - kathgar*/
+    if(cc->AGI > allocation.BaseStats[2] + max_stats || cc->AGI < allocation.BaseStats[2]) {
+        _log(WORLD__CLIENT_ERR, "Agility out of range");
+        return false;
+    }
 
-	_log(WORLD__CLIENT,"Found %d errors in character creation request", Charerrors);
+    if(cc->STA > allocation.BaseStats[3] + max_stats || cc->STA < allocation.BaseStats[3]) {
+        _log(WORLD__CLIENT_ERR, "Stamina out of range");
+        return false;
+    }
 
-	return Charerrors == 0;
+    if(cc->INT > allocation.BaseStats[4] + max_stats || cc->INT < allocation.BaseStats[4]) {
+        _log(WORLD__CLIENT_ERR, "Intelligence out of range");
+        return false;
+    }
+
+    if(cc->WIS > allocation.BaseStats[5] + max_stats || cc->WIS < allocation.BaseStats[5]) {
+        _log(WORLD__CLIENT_ERR, "Wisdom out of range");
+        return false;
+    }
+
+    if(cc->CHA > allocation.BaseStats[6] + max_stats || cc->CHA < allocation.BaseStats[6]) {
+        _log(WORLD__CLIENT_ERR, "Charisma out of range");
+        return false;
+    }
+
+    uint32 current_stats = 0;
+    current_stats += cc->STR - allocation.BaseStats[0];
+    current_stats += cc->DEX - allocation.BaseStats[1];
+    current_stats += cc->AGI - allocation.BaseStats[2];
+    current_stats += cc->STA - allocation.BaseStats[3];
+    current_stats += cc->INT - allocation.BaseStats[4];
+    current_stats += cc->WIS - allocation.BaseStats[5];
+    current_stats += cc->CHA - allocation.BaseStats[6];
+    if(current_stats > max_stats) {
+        _log(WORLD__CLIENT_ERR, "Current Stats > Maximum Stats");
+        return false;
+    }
+
+	return true;
 }
 
 void Client::SetClassStartingSkills( PlayerProfile_Struct *pp )
 {
-   switch( pp->class_ )
-   {
-   case BARD:
-      {
-         pp->skills[_1H_SLASHING] = 5;
-         pp->skills[SINGING] = 5;
-         break;
-      }
-   case BEASTLORD:
-      {
-         pp->skills[HAND_TO_HAND] = 5;
-         break;
-      }
-   case BERSERKER: // A Guess
-      {
-         pp->skills[_2H_SLASHING] = 5;
-         break;
-      }
-   case CLERIC:
-      {
-         pp->skills[_1H_BLUNT] = 5;
-         break;
-      }
-   case DRUID:
-      {
-         pp->skills[_1H_BLUNT] = 5;
-         break;
-      }
-   case ENCHANTER:
-      {
-         pp->skills[PIERCING] = 5;
-         break;
-      }
-   case MAGICIAN:
-      {
-         pp->skills[PIERCING] = 5;
-         break;
-      }
-   case MONK:
-      {
-         pp->skills[DODGE] = 5;
-         pp->skills[DUAL_WIELD] = 5;
-         pp->skills[HAND_TO_HAND] = 5;
-         break;
-      }
-   case NECROMANCER:
-      {
-         pp->skills[PIERCING] = 5;
-         break;
-      }
-   case PALADIN:
-      {
-         pp->skills[_1H_SLASHING] = 5;
-         break;
-      }
-   case RANGER:
-      {
-         pp->skills[_1H_SLASHING] = 5;
-         break;
-      }
-   case ROGUE:
-      {
-         pp->skills[PIERCING] = 5;
-         pp->languages[LANG_THIEVES_CANT] = 100; // Thieves Cant
-         break;
-      }
-   case SHADOWKNIGHT:
-      {
-         pp->skills[_1H_SLASHING] = 5;
-         break;
-      }
-   case SHAMAN:
-      {
-         pp->skills[_1H_BLUNT] = 5;
-         break;
-      }
-   case WARRIOR:
-      {
-         pp->skills[_1H_SLASHING] = 5;
-         break;
-      }
-   case WIZARD:
-      {
-         pp->skills[PIERCING] = 5;
-         break;
-      }
-   }
+    for(uint32 i = 0; i <= HIGHEST_SKILL; ++i) {
+        if(pp->skills[i] == 0) {
+            if(i >= SPECIALIZE_ABJURE && i <= SPECIALIZE_EVOCATION) {
+                continue;
+            }
+
+            if(i == MAKE_POISON ||
+                i == TINKERING ||
+                i == RESEARCH ||
+                i == ALCHEMY ||
+                i == BAKING ||
+                i == TAILORING || 
+                i == BLACKSMITHING ||
+                i == FLETCHING ||
+                i == BREWING || 
+                i == POTTERY || 
+                i == JEWELRY_MAKING ||
+                i == BEGGING) {
+                continue;
+            }
+
+            pp->skills[i] = database.GetSkillCap(pp->class_, (SkillType)i, 1);
+        }
+    }
 }
 
 void Client::SetRaceStartingSkills( PlayerProfile_Struct *pp )

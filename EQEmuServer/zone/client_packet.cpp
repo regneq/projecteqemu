@@ -377,6 +377,8 @@ void MapOpcodes() {
     ConnectedOpcodes[OP_AltCurrencyPurchase] = &Client::Handle_OP_AltCurrencyPurchase;
     ConnectedOpcodes[OP_AltCurrencyReclaim] = &Client::Handle_OP_AltCurrencyReclaim;
     ConnectedOpcodes[OP_AltCurrencySell] = &Client::Handle_OP_AltCurrencySell;
+    ConnectedOpcodes[OP_CrystalReclaim] = &Client::Handle_OP_CrystalReclaim;
+    ConnectedOpcodes[OP_CrystalCreate] = &Client::Handle_OP_CrystalCreate;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -2532,6 +2534,16 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 		}
 	}
 
+    if(con->faction == FACTION_APPREHENSIVE) {
+        con->faction = FACTION_SCOWLS;
+    } else if(con->faction == FACTION_DUBIOUS) {
+        con->faction = FACTION_THREATENLY;
+    } else if(con->faction == FACTION_SCOWLS) {
+        con->faction = FACTION_APPREHENSIVE;
+    } else if(con->faction == FACTION_THREATENLY) {
+        con->faction = FACTION_DUBIOUS;
+    }
+
 	QueuePacket(outapp);
 	safe_delete(outapp);
 	return;
@@ -4356,7 +4368,7 @@ void Client::Handle_OP_ManaChange(const EQApplicationPacket *app)
 {
 	if(app->size == 0) {
 		// i think thats the sign to stop the songs
-		if(IsBardSong(casting_spell_id))
+		if(IsBardSong(casting_spell_id) || bardsong != 0)
 			InterruptSpell(SONG_ENDS, 0x121);
 		else
 			InterruptSpell(INTERRUPT_SPELL, 0x121);
@@ -4706,7 +4718,11 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 	if (tradee && tradee->IsClient()) {
 		tradee->CastToClient()->QueuePacket(app);
 	}
-	else if (tradee) {
+#ifndef BOTS
+    else if (tradee && tradee->IsNPC()) {
+#else
+    else if (tradee && (tradee->IsNPC() || tradee->IsBot())) {
+#endif
 		//npcs always accept
 		trade->Start(msg->to_mob_id);
 		
@@ -5236,7 +5252,7 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 		action = 0;
 	}
 	int factionlvl = GetFactionLevel(CharacterID(), tmp->CastToNPC()->GetNPCTypeID(), GetRace(), GetClass(), GetDeity(), tmp->CastToNPC()->GetPrimaryFaction(), tmp);
-	if(factionlvl >= 6 && factionlvl != 9)
+	if(factionlvl >= 7)
 	{
 		Message(0,"I will not deal with one such as you!");
 		action = 0;
@@ -6000,27 +6016,12 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 #endif
 	}
 	else
-		Message_StringID(clientMessageWhite, GROUP_INVITEE_NOT_FOUND);
-
-	/*if(this->GetTarget() != 0 && this->GetTarget()->IsNPC() && this->GetTarget()->CastToNPC()->IsInteractive()) {
-		if(!this->GetTarget()->CastToNPC()->IsGrouped()) {
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupUpdate_Struct));
-			GroupUpdate_Struct* gu = (GroupUpdate_Struct*) outapp->pBuffer;
-			gu->action = 9;
-			strcpy(gu->membername,GetName());
-			strcpy(gu->yourname,GetTarget()->CastToNPC()->GetName());
-			FastQueuePacket(&outapp);
-			if (!isgrouped){
-				Group* ng = new Group(this);
-				entity_list.AddGroup(ng);
-			}
-			entity_list.GetGroupByClient(this->CastToClient())->AddMember(GetTarget());
-			this->GetTarget()->CastToNPC()->TakenAction(22,this->CastToMob());
-		}
-		else {
-			    LogFile->write(EQEMuLog::Debug, "IPC: %s already grouped.", this->GetTarget()->GetName());
-		}
-	}*/
+    {
+		ServerPacket* pack = new ServerPacket(ServerOP_GroupInvite, sizeof(GroupInvite_Struct));
+		memcpy(pack->pBuffer, gis, sizeof(GroupInvite_Struct));
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 	return;
 }
 
@@ -6040,8 +6041,18 @@ void Client::Handle_OP_GroupCancelInvite(const EQApplicationPacket *app)
 	GroupCancel_Struct* gf = (GroupCancel_Struct*) app->pBuffer;
 	Mob* inviter = entity_list.GetClientByName(gf->name1);
 
-	if(inviter != NULL && inviter->IsClient())
-		inviter->CastToClient()->QueuePacket(app);
+    if(inviter != NULL)
+	{
+		if(inviter->IsClient())
+			inviter->CastToClient()->QueuePacket(app);
+	}
+	else
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_GroupCancelInvite, sizeof(GroupCancel_Struct));
+		memcpy(pack->pBuffer, gf, sizeof(GroupCancel_Struct));
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 
 	database.SetGroupID(GetName(), 0, CharacterID());
 	return;
@@ -6206,7 +6217,16 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
-	return;
+	else if(inviter == NULL)
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_GroupFollow, sizeof(ServerGroupFollow_Struct));
+		ServerGroupFollow_Struct *sgfs = (ServerGroupFollow_Struct *)pack->pBuffer;
+		sgfs->CharacterID = CharacterID();
+		strn0cpy(sgfs->gf.name1, gf->name1, sizeof(sgfs->gf.name1));
+		strn0cpy(sgfs->gf.name2, gf->name2, sizeof(sgfs->gf.name2));
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 }
 
 void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
@@ -6297,10 +6317,14 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 		if(!memberToDisband)
 			memberToDisband = entity_list.GetMob(gd->name2);
 		if(memberToDisband ){
-			if(group->IsLeader(this)) // the group leader can kick other members out of the group...
+			if(group->IsLeader(this))
+			{ // the group leader can kick other members out of the group...
 				group->DelMember(memberToDisband,false);
-			else						// ...but other members can only remove themselves
+			}
+			else 
+			{   // ...but other members can only remove themselves
 				group->DelMember(this,false);
+            }
 		}
 		else
 			LogFile->write(EQEMuLog::Error, "Failed to remove player from group. Unable to find player named %s in player group", gd->name2);
@@ -8421,122 +8445,32 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				UnmemSpell(z, false);
 		}
 
-		uint32 buff_count = GetMaxBuffSlots();
-		for (i = 0; i < buff_count; i++) {
-			for(uint32 z = 0; z < buff_count; z++) {
-			// check for duplicates
-				if(buffs[z].spellid != SPELL_UNKNOWN && buffs[z].spellid == m_pp.buffs[i].spellid) {
-					buffs[z].spellid = SPELL_UNKNOWN;
-					m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-					m_pp.buffs[i].slotid = 0;
-				}
-			}
-
-			// bard spells will re-apply if the bard is around
-			if (IsValidSpell(m_pp.buffs[i].spellid) && m_pp.buffs[i].duration > 0 && !IsBardSong(m_pp.buffs[i].spellid)) {
-				if(m_pp.buffs[i].level == 0 || m_pp.buffs[i].level > 100)
-					m_pp.buffs[i].level = 1;
-				if(m_pp.buffs[i].duration < 3)	//make em last till they get in
-					m_pp.buffs[i].duration = 3;
-				buffs[i].spellid			= m_pp.buffs[i].spellid;
-				buffs[i].ticsremaining		= m_pp.buffs[i].duration;
-				buffs[i].casterlevel		= m_pp.buffs[i].level;
-				buffs[i].casterid			= 0;
-				buffs[i].durationformula	= spells[buffs[i].spellid].buffdurationformula;
-				buffs[i].poisoncounters		= CalculatePoisonCounters(m_pp.buffs[i].spellid);
-				buffs[i].diseasecounters	= CalculateDiseaseCounters(m_pp.buffs[i].spellid);
-				buffs[i].cursecounters		= CalculateCurseCounters(m_pp.buffs[i].spellid);
-				buffs[i].corruptioncounters	= CalculateCorruptionCounters(m_pp.buffs[i].spellid);
-				buffs[i].numhits			= spells[buffs[i].spellid].numhits;
-				buffs[i].persistant_buff	= m_pp.buffs[i].persistant_buff;
-				buffs[i].UpdateClient		= false;
-				if(IsRuneSpell(m_pp.buffs[i].spellid) || IsMagicRuneSpell(m_pp.buffs[i].spellid)) {
-					if(IsRuneSpell(m_pp.buffs[i].spellid)) {
-						 buffs[i].melee_rune = m_pp.buffs[i].dmg_shield_remaining;
-							 SetHasRune(true);
-						 LogFile->write(EQEMuLog::Debug, "%s has a melee rune spell buff with %i points remaining.", GetCleanName(), buffs[i].melee_rune);
-					}
-					else {
-						 buffs[i].magic_rune = m_pp.buffs[i].dmg_shield_remaining;
-							 SetHasSpellRune(true);
-						 LogFile->write(EQEMuLog::Debug, "%s has a spell rune buff with %i points remaining.", GetCleanName(), buffs[i].magic_rune);
-				}
-				}
-				if(IsDeathSaveSpell(m_pp.buffs[i].spellid)) {
-					buffs[i].deathSaveSuccessChance = m_pp.buffs[i].effect;
-					buffs[i].casterAARank = m_pp.buffs[i].reserved;
-					SetDeathSaveChance(true);
-					LogFile->write(EQEMuLog::Debug, "%s has a %i percent chance of successfully being saved from death. Caster UnfailingDivinityAA rank was %i.", GetCleanName(), buffs[i].deathSaveSuccessChance, buffs[i].casterAARank);
-				}
-			}
-			else {
-				buffs[i].spellid = SPELL_UNKNOWN;
-				m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-				m_pp.buffs[i].slotid = 0;
-				m_pp.buffs[i].level = 0;
-				m_pp.buffs[i].duration = 0;
-				m_pp.buffs[i].effect = 0;
-				m_pp.buffs[i].dmg_shield_remaining = 0;
-			}
-		}
-
-		//I believe these effects are stripped off because if they
-		//are not, they result in permanent effects on the player
-		buff_count = GetMaxBuffSlots();
-		for (uint32 j1=0; j1 < buff_count; j1++) {
-			if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
-				for (uint32 x1=0; x1 < EFFECT_COUNT; x1++) {
-					switch (spells[buffs[j1].spellid].effectid[x1]) {
-						case SE_Charm:
-						//case SE_Rune:
-							buffs[j1].spellid = SPELL_UNKNOWN;
-							m_pp.buffs[j1].spellid = SPELLBOOK_UNKNOWN;
-							m_pp.buffs[j1].slotid = 0;
-							m_pp.buffs[j1].level = 0;
-							m_pp.buffs[j1].duration = 0;
-							m_pp.buffs[j1].effect = 0;
-							x1 = EFFECT_COUNT;
-							break;
-						case SE_Illusion:
-							if(m_pp.buffs[j1].persistant_buff != 1){ //anything other than 1=non persistant
-								buffs[j1].spellid = SPELL_UNKNOWN;
-								m_pp.buffs[j1].spellid = SPELLBOOK_UNKNOWN;
-								m_pp.buffs[j1].slotid = 0;
-								m_pp.buffs[j1].level = 0;
-								m_pp.buffs[j1].duration = 0;
-								m_pp.buffs[j1].effect = 0;
-								x1 = EFFECT_COUNT;
-							}
-							break;
-						// We can't send appearance packets yet, put down at CompleteConnect
-					}
-				}
-			}
-		}
-
-		//Validity check for memorized
-		if(Admin() < minStatusToHaveInvalidSpells) {
-			for (uint32 mem = 0; mem < MAX_PP_MEMSPELL; mem++)
-			{
-				if (m_pp.mem_spells[mem] < 1 || m_pp.mem_spells[mem] >= (unsigned int)SPDAT_RECORDS || spells[m_pp.mem_spells[mem]].classes[GetClass()-1] < 1 || spells[m_pp.mem_spells[mem]].classes[GetClass()-1] > GetLevel())
-					m_pp.mem_spells[mem] = SPELLBOOK_UNKNOWN;
-			}
-			int maxlvl = RuleI(Character, MaxLevel);
-			for (uint32 bk = 0; bk < MAX_PP_SPELLBOOK; bk++)
-			{
-				if (m_pp.spell_book[bk] < 1
-					|| m_pp.spell_book[bk] >= (unsigned int)SPDAT_RECORDS
-					|| spells[m_pp.spell_book[bk]].classes[GetClass()-1] < 1
-					|| spells[m_pp.spell_book[bk]].classes[GetClass()-1] > maxlvl)
-					m_pp.spell_book[bk] = SPELLBOOK_UNKNOWN;
-			}
-		}
-	}
+        database.LoadBuffs(this);
+        uint32 max_slots = GetMaxBuffSlots();
+        for(int i = 0; i < max_slots; i++) {
+            if(buffs[i].spellid != SPELL_UNKNOWN) {
+                m_pp.buffs[i].spellid = buffs[i].spellid;
+                m_pp.buffs[i].bard_modifier = 10;
+                m_pp.buffs[i].slotid = 2;
+                m_pp.buffs[i].player_id = 0x2211;
+                m_pp.buffs[i].level = buffs[i].casterlevel;
+                m_pp.buffs[i].effect = 0;
+                m_pp.buffs[i].duration = buffs[i].ticsremaining;
+                m_pp.buffs[i].counters = buffs[i].counters;
+            } else {
+                m_pp.buffs[i].spellid = SPELL_UNKNOWN;
+                m_pp.buffs[i].bard_modifier = 10;
+                m_pp.buffs[i].slotid = 0;
+                m_pp.buffs[i].player_id = 0;
+                m_pp.buffs[i].level = 0;
+                m_pp.buffs[i].effect = 0;
+                m_pp.buffs[i].duration = 0;
+                m_pp.buffs[i].counters = 0;
+            }
+        }
+    }
 
 	KeyRingLoad();
-
-//currently lost
-//	m_pp.zone_change_count++;
 
 	int32 groupid = database.GetGroupID(GetName());
 	Group* group = NULL;
@@ -12245,9 +12179,50 @@ void Client::Handle_OP_AltCurrencySell(const EQApplicationPacket *app) {
         sell->cost = cost;
 
         FastQueuePacket(&outapp);
-        this->AddAlternateCurrencyValue(alt_cur_id, cost);
+        AddAlternateCurrencyValue(alt_cur_id, cost);
         Save(1);
     }
 }
 
+void Client::Handle_OP_CrystalReclaim(const EQApplicationPacket *app) {
+    uint32 ebon = NukeItem(RuleI(Zone, EbonCrystalItemID), invWhereWorn | invWherePersonal | invWhereCursor);
+    uint32 radiant = NukeItem(RuleI(Zone, RadiantCrystalItemID), invWhereWorn | invWherePersonal | invWhereCursor);
+    if((ebon + radiant) > 0) {
+        AddCrystals(radiant, ebon);
+    }
+}
 
+void Client::Handle_OP_CrystalCreate(const EQApplicationPacket *app) {
+    VERIFY_PACKET_LENGTH(OP_CrystalCreate, app, CrystalReclaim_Struct);
+    CrystalReclaim_Struct *cr = (CrystalReclaim_Struct*)app->pBuffer;
+
+    if(cr->type == 5) {
+        if(cr->amount > GetEbonCrystals()) {
+            SummonItem(RuleI(Zone, EbonCrystalItemID), GetEbonCrystals());
+            m_pp.currentEbonCrystals = 0;
+	        m_pp.careerEbonCrystals = 0;
+            Save();
+            SendCrystalCounts();
+        } else {
+            SummonItem(RuleI(Zone, EbonCrystalItemID), cr->amount);
+            m_pp.currentEbonCrystals -= cr->amount;
+            m_pp.careerEbonCrystals -= cr->amount;
+            Save();
+            SendCrystalCounts();
+        }
+    } else if(cr->type == 4) {
+        if(cr->amount > GetRadiantCrystals()) {
+            SummonItem(RuleI(Zone, RadiantCrystalItemID), GetRadiantCrystals());
+            m_pp.currentRadCrystals = 0;
+	        m_pp.careerRadCrystals = 0;
+            Save();
+            SendCrystalCounts();
+        } else {
+            SummonItem(RuleI(Zone, RadiantCrystalItemID), cr->amount);
+            m_pp.currentRadCrystals -= cr->amount;
+            m_pp.careerRadCrystals -= cr->amount;
+            Save();
+            SendCrystalCounts();
+        }
+    }
+}

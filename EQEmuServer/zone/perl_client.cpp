@@ -5214,6 +5214,89 @@ XS(XS_Client_GetAggroCount)
 }
 
 
+XS(XS_Client_GetItemInInventory); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetItemInInventory)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetItemInInventory(THIS, slot_id)");
+	{
+		Client *	THIS;
+        sint16      slot_id = (sint16)SvIV(ST(1));
+        ItemInst    *RETVAL = NULL;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        RETVAL = THIS->GetInv().GetItem(slot_id);
+        ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "QuestItem", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_SetCustomItemData); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_SetCustomItemData)
+{
+	dXSARGS;
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: Client::SetCustomItemData(THIS, slot_id, identifier, value)");
+	{
+		Client *	THIS;
+        sint16      slot_id = (sint16)SvIV(ST(1));
+        Const_char*	identifier = SvPV_nolen(ST(2));
+        Const_char*	value = SvPV_nolen(ST(3));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        THIS->GetInv().SetCustomItemData(THIS->CharacterID(), slot_id, std::string(identifier), std::string(value));
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_GetCustomItemData); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetCustomItemData)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::GetCustomItemData(THIS, slot_id, identifier)");
+	{
+		Client *	THIS;
+        sint16      slot_id = (sint16)SvIV(ST(1));
+        Const_char*	identifier = SvPV_nolen(ST(2));
+        Const_char *		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        std::string ret_val = THIS->GetInv().GetCustomItemData(slot_id, std::string(identifier));
+        RETVAL = ret_val.c_str();
+        sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	}
+	XSRETURN(1);
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5425,6 +5508,9 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "Freeze"), XS_Client_Freeze, file, "$");
 		newXSproto(strcpy(buf, "UnFreeze"), XS_Client_UnFreeze, file, "$");
 		newXSproto(strcpy(buf, "GetAggroCount"), XS_Client_GetAggroCount, file, "$");
+        newXSproto(strcpy(buf, "GetItemInInventory"), XS_Client_GetItemInInventory, file, "$$");
+        newXSproto(strcpy(buf, "SetCustomItemData"), XS_Client_SetCustomItemData, file, "$$$$");
+        newXSproto(strcpy(buf, "GetCustomItemData"), XS_Client_GetCustomItemData, file, "$$$");
 		XSRETURN_YES;
 }
 

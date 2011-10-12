@@ -528,50 +528,7 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
-	uint32 buff_count = GetMaxBuffSlots();
-	for (int i=0; i < buff_count; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			m_pp.buffs[i].spellid = buffs[i].spellid;
-			m_pp.buffs[i].slotid = 2;	//this is obviously not really 'slot id'
-			m_pp.buffs[i].duration = buffs[i].ticsremaining;
-			m_pp.buffs[i].level = buffs[i].casterlevel;
-			m_pp.buffs[i].bard_modifier = 10;
-			m_pp.buffs[i].effect = 0;
-			m_pp.buffs[i].persistant_buff = buffs[i].persistant_buff;
-			m_pp.buffs[i].reserved = 0;
-			//temp hack, just put some number in here to make the client think its a real player ID
-			m_pp.buffs[i].player_id = 0x2211;
-			if(IsRuneSpell(buffs[i].spellid) || IsMagicRuneSpell(buffs[i].spellid)) {
-				if(IsRuneSpell(buffs[i].spellid))
-					m_pp.buffs[i].dmg_shield_remaining = buffs[i].melee_rune;
-				else
-					m_pp.buffs[i].dmg_shield_remaining = buffs[i].magic_rune;
-			}
-			else
-				m_pp.buffs[i].dmg_shield_remaining = 0;
-
-			if(IsDeathSaveSpell(buffs[i].spellid)) {
-				m_pp.buffs[i].effect = buffs[i].deathSaveSuccessChance;
-				m_pp.buffs[i].reserved = buffs[i].casterAARank;
-			}
-			else {
-				m_pp.buffs[i].effect = 0;
-				m_pp.buffs[i].reserved = 0;
-			}
-		}
-		else {
-			m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-			m_pp.buffs[i].slotid = 0;
-			m_pp.buffs[i].duration = 0;
-			m_pp.buffs[i].level = 0;
-			m_pp.buffs[i].bard_modifier = 0;
-			m_pp.buffs[i].effect = 0;
-			m_pp.buffs[i].persistant_buff = 0;
-			m_pp.buffs[i].reserved = 0;
-			m_pp.buffs[i].player_id = 0;
-			m_pp.buffs[i].dmg_shield_remaining = 0;
-		}
-	}
+	database.SaveBuffs(this);
 
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
@@ -3027,7 +2984,7 @@ float Client::CalcPriceMod(Mob* other, bool reverse)
 	if (other)
 	{
 		int factionlvl = GetFactionLevel(CharacterID(), other->CastToNPC()->GetNPCTypeID(), GetRace(), GetClass(), GetDeity(), other->CastToNPC()->GetPrimaryFaction(), other);
-		if (factionlvl > 5) // Apprehensive or worse.
+		if (factionlvl >= FACTION_APPREHENSIVE) // Apprehensive or worse.
 		{
 			if (GetCHA() > 103) 
 			{
@@ -3042,7 +2999,7 @@ float Client::CalcPriceMod(Mob* other, bool reverse)
 					chaformula = 1*(RuleI(Merchant, PricePenaltyPct));
 			}
 		}
-		if (factionlvl <= 5) // Indifferent or better.
+		if (factionlvl <= FACTION_INDIFFERENT) // Indifferent or better.
 		{
 			if (GetCHA() > 75) 
 			{
@@ -6290,8 +6247,8 @@ void Client::SendStatsWindow(Client* client, bool use_window)
 		mod2_field += mod2b_name + mod2b_spacing + mod2b + " / " + mod2b_cap + "<br>";
 	}
 	
-	int16 rune_number = 0;
-	int16 magic_rune_number = 0;
+	uint32 rune_number = 0;
+	uint32 magic_rune_number = 0;
 	uint32 buff_count = GetMaxTotalSlots();
 	for (int i=0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {

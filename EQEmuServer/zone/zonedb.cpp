@@ -1912,4 +1912,129 @@ void ZoneDatabase::UpdateAltCurrencyValue(uint32 char_id, uint32 currency_id, ui
 	safe_delete_array(query);
 }
 
+void ZoneDatabase::SaveBuffs(Client *c) {
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+
+    database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_buffs` WHERE `character_id`='%u'", c->CharacterID()), 
+		errbuf);
+
+    uint32 buff_count = c->GetMaxBuffSlots();
+    Buffs_Struct *buffs = c->GetBuffs();
+    for (int i = 0; i < buff_count; i++) {
+        if(buffs[i].spellid != SPELL_UNKNOWN) {
+            if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `character_buffs` (character_id, slot_id, spell_id, "
+                "caster_level, caster_name, ticsremaining, counters, numhits, melee_rune, magic_rune, persistent, death_save_chance, "
+                "death_save_aa_chance) VALUES('%u', '%u', '%u', '%u', '%s', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
+                c->CharacterID(), i, buffs[i].spellid, buffs[i].casterlevel, buffs[i].caster_name, buffs[i].ticsremaining,
+                buffs[i].counters, buffs[i].numhits, buffs[i].melee_rune, buffs[i].magic_rune, buffs[i].persistant_buff,
+                buffs[i].deathSaveSuccessChance, buffs[i].deathsaveCasterAARank), 
+		        errbuf)) {
+                LogFile->write(EQEMuLog::Error, "Error in SaveBuffs query '%s': %s", query, errbuf);
+            }
+        }
+    }
+    safe_delete_array(query);
+}
+
+void ZoneDatabase::LoadBuffs(Client *c) {
+    Buffs_Struct *buffs = c->GetBuffs();
+    uint32 max_slots = c->GetMaxBuffSlots();
+    for(int i = 0; i < max_slots; ++i) {
+        buffs[i].spellid = SPELL_UNKNOWN;
+    }
+
+
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+    if (RunQuery(query, MakeAnyLenString(&query, "SELECT spell_id, slot_id, caster_level, caster_name, ticsremaining, counters, "
+        "numhits, melee_rune, magic_rune, persistent, death_save_chance, death_save_aa_chance FROM `character_buffs` WHERE "
+        "`character_id`='%u'", 
+        c->CharacterID()), errbuf, &result)) 
+    {
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result)))
+		{
+            uint32 slot_id = atoul(row[1]);
+            if(slot_id >= c->GetMaxBuffSlots()) {
+                continue;
+            }
+
+			uint32 spell_id = atoul(row[0]);
+            if(!IsValidSpell(spell_id)) {
+                continue;
+            }
+
+            Client *caster = entity_list.GetClientByName(row[3]);
+            uint32 caster_level = atoi(row[2]);
+            uint32 ticsremaining = atoul(row[4]);
+            uint32 counters = atoul(row[5]);
+            uint32 numhits = atoul(row[6]);
+            uint32 melee_rune = atoul(row[7]);
+            uint32 magic_rune = atoul(row[8]);
+            uint8 persistent = atoul(row[9]);
+            uint32 death_save_chance = atoul(row[10]);
+            uint32 death_save_aa_chance = atoul(row[11]);
+
+            buffs[slot_id].spellid = spell_id;
+            buffs[slot_id].casterlevel = caster_level;
+            if(caster) {
+                buffs[slot_id].casterid = caster->GetID();
+                strcpy(buffs[slot_id].caster_name, caster->GetName());
+                buffs[slot_id].client = true;
+            } else {
+                buffs[slot_id].casterid = 0;
+                strcpy(buffs[slot_id].caster_name, "");
+                buffs[slot_id].client = false;
+            }
+
+            buffs[slot_id].ticsremaining = ticsremaining;
+            buffs[slot_id].counters = counters;
+            buffs[slot_id].numhits = numhits;
+            buffs[slot_id].melee_rune = melee_rune;
+            buffs[slot_id].magic_rune = magic_rune;
+            buffs[slot_id].persistant_buff = persistent ? true : false;
+            buffs[slot_id].deathSaveSuccessChance = death_save_chance;
+            buffs[slot_id].deathsaveCasterAARank = death_save_aa_chance;
+            buffs[slot_id].UpdateClient = false;
+            if(IsRuneSpell(spell_id)) {
+                c->SetHasRune(true);
+            }
+            else if(IsMagicRuneSpell(spell_id)) {
+                c->SetHasSpellRune(true);
+            } 
+            
+            if(IsDeathSaveSpell(spell_id)) {
+                c->SetDeathSaveChance(true);
+            }
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadBuffs query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+        return;
+	}
+
+    max_slots = c->GetMaxBuffSlots();
+    for(int i = 0; i < max_slots; ++i) {
+        if(!IsValidSpell(buffs[i].spellid)) {
+            continue;
+        }
+        for(int j = 0; j < 12; ++j) {
+            switch(spells[buffs[i].spellid].effectid[j]) {
+            case SE_Charm:
+                buffs[i].spellid = SPELL_UNKNOWN;
+                break;
+            case SE_Illusion:
+                if(!buffs[i].persistant_buff)
+                    buffs[i].spellid = SPELL_UNKNOWN;
+                break;
+            }
+        }
+    }
+}
+
 

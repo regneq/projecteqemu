@@ -2997,7 +2997,7 @@ sint32 Mob::ReduceDamage(sint32 damage)
 	slot = GetBuffSlotFromType(SE_Rune);
 	while(slot >= 0)
 	{
-		int16 melee_rune_left = buffs[slot].melee_rune;
+		uint32 melee_rune_left = buffs[slot].melee_rune;
 		if(melee_rune_left >= damage)
 		{
 			melee_rune_left -= damage;
@@ -3093,7 +3093,7 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 		slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
 		while(slot >= 0)
 		{
-			int16 magic_rune_left = buffs[slot].magic_rune;
+            uint32 magic_rune_left = buffs[slot].magic_rune;
 			if(magic_rune_left >= damage)
 			{
 				magic_rune_left -= damage;

@@ -139,7 +139,9 @@ public:
 				PlayerProfile_Struct* pp = 0, Inventory* inv = 0, ExtendedProfile_Struct *ext = 0, uint32* pplen = 0, 
 				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_ = 0, uint8 *level = 0, bool *LFP = 0,
 				bool *LFG = 0);
-	
+	void SaveBuffs(Client *c);
+    void LoadBuffs(Client *c);
+
 	/*
 	 * Character Inventory
 	 */

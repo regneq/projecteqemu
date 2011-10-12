@@ -443,11 +443,8 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining;
-//these last four bytes are really the caster's global player ID for wearoff
-/*013*/ int8	persistant_buff;	//prolly not real
-/*014*/ int8	reserved;		//proll not real
-/*012*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
+/*012*/	int32	counters;
+/*016*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
 };
 
 struct SpellBuffFade_Struct {

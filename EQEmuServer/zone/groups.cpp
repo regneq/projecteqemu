@@ -192,76 +192,126 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
   }
 }
 
-bool Group::AddMember(Mob* newmember) {
-	uint32 i=0;
-	//see if they are allready in the group
-	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if(members[i] != NULL && !strcasecmp(members[i]->GetCleanName(), newmember->GetCleanName()))
-			return false;
-	}
-	//put them in the group
-	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if (members[i] == NULL) {
-			members[i] = newmember;
-			break;
-		}
-	}
+bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 CharacterID)
+{
+        bool InZone = true;
 
-	if (i == MAX_GROUP_MEMBERS)
-		return false;
+        // This method should either be passed a Mob*, if the new member is in this zone, or a NULL Mob*
+        // and the name and CharacterID of the new member, if they are out of zone.
+        //
+        if(!newmember && !NewMemberName)
+                return false;
 
-	strcpy(membername[i], newmember->GetCleanName());
-	int x=1;
-	
-	//build the template join packet	
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
-	GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-	strcpy(gj->membername, newmember->GetCleanName());
-	gj->action = groupActJoin;
+        if(!newmember)
+                InZone = false;
+        else
+        {
+                NewMemberName = newmember->GetCleanName();
 
-	gj->leader_aas = LeaderAbilities;
-	
-	for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
-		if (members[i] != NULL && members[i] != newmember) {
-			//fill in group join & send it
-			strcpy(gj->yourname, members[i]->GetCleanName());
+                if(newmember->IsClient())
+                        CharacterID = newmember->CastToClient()->CharacterID();
+        }
 
-			if(members[i]->IsClient())
-			{
-				members[i]->CastToClient()->QueuePacket(outapp);
+        uint32 i = 0;
 
-				//put new member into existing person's list
-				strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], newmember->GetCleanName());
-			}
+        // See if they are already in the group
+        //
+         for (i = 0; i < MAX_GROUP_MEMBERS; ++i)
+                if(!strcasecmp(membername[i], NewMemberName))
+                        return false;
 
-			//put this existing person into the new member's list
-			if(newmember->IsClient()) {
-				if(IsLeader(members[i]))
-					strcpy(newmember->CastToClient()->GetPP().groupMembers[0], members[i]->GetCleanName());
-				else {
-					strcpy(newmember->CastToClient()->GetPP().groupMembers[x], members[i]->GetCleanName());
-					x++;
-				}
-			}
-		}
-	}
-	
-	//put new member in his own list.
-	if(newmember->IsClient())
-		strcpy(newmember->CastToClient()->GetPP().groupMembers[x], newmember->GetCleanName());
+        // Put them in the group
+        for (i = 0; i < MAX_GROUP_MEMBERS; ++i)
+        {
+                if (membername[i][0] == '\0')
+                {
+                        if(InZone)
+                                members[i] = newmember;
 
-	newmember->SetGrouped(true);
-	
-	if(newmember->IsClient()) {
-		newmember->CastToClient()->Save();
-		database.SetGroupID(newmember->GetCleanName(), GetID(), newmember->CastToClient()->CharacterID());
-		SendMarkedNPCsToMember(newmember->CastToClient());
-	}
-	
-	safe_delete(outapp);
+                        break;
+                }
+        }
 
-	return true;
+        if (i == MAX_GROUP_MEMBERS)
+                return false;
+
+        strcpy(membername[i], NewMemberName);
+
+        int x=1;
+        
+        //build the template join packet        
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
+        GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;     
+        strcpy(gj->membername, NewMemberName);
+        gj->action = groupActJoin;
+
+        gj->leader_aas = LeaderAbilities;
+        
+        for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
+                if (members[i] != NULL && members[i] != newmember) {
+                        //fill in group join & send it
+                        strcpy(gj->yourname, members[i]->GetCleanName());
+
+                        if(members[i]->IsClient()) {
+                                members[i]->CastToClient()->QueuePacket(outapp);
+
+                                //put new member into existing person's list
+                                strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], NewMemberName);
+                        }
+
+                        //put this existing person into the new member's list
+                        if(InZone && newmember->IsClient()) {
+                                if(IsLeader(members[i]))
+                                        strcpy(newmember->CastToClient()->GetPP().groupMembers[0], members[i]->GetCleanName());
+                                else {
+                                        strcpy(newmember->CastToClient()->GetPP().groupMembers[x], members[i]->GetCleanName());
+                                        x++;
+                                }
+                        }
+                }
+        }
+
+        if(InZone)
+        {
+                //put new member in his own list.
+                newmember->SetGrouped(true);
+
+                if(newmember->IsClient())
+                {
+                        strcpy(newmember->CastToClient()->GetPP().groupMembers[x], NewMemberName);
+                        newmember->CastToClient()->Save();
+                        database.SetGroupID(NewMemberName, GetID(), newmember->CastToClient()->CharacterID());
+                        SendMarkedNPCsToMember(newmember->CastToClient());
+                }
+        }
+        else
+                database.SetGroupID(NewMemberName, GetID(), CharacterID);
+
+        safe_delete(outapp);
+
+        return true;
 }
+
+void Group::AddMember(const char *NewMemberName)
+{
+        // This method should be called when both the new member and the group leader are in a different zone to this one.
+        //
+         for (uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+                if(!strcasecmp(membername[i], NewMemberName))
+                {
+                        return;
+                }
+
+        for (uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+        {
+                if (membername[i][0] == '\0')
+                {
+                        strcpy(membername[i], NewMemberName);
+                        break;
+                }
+        }
+}
+
 
 void Group::QueuePacket(const EQApplicationPacket *app, bool ack_req)
 {

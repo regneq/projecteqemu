@@ -170,24 +170,20 @@ enum TradeState {
 
 //this is our internal representation of the BUFF struct, can put whatever we want in it
 struct Buffs_Struct {
-	int32	spellid;
-	int8		casterlevel;
-	int16	casterid;		// Maybe change this to a pointer sometime, but gotta make sure it's 0'd when it no longer points to anything
-	int8		durationformula;
-	sint32		ticsremaining;
-	sint32	poisoncounters;
-	sint32	diseasecounters;
-	sint32	cursecounters;
-	sint32	corruptioncounters;
-	bool	persistant_buff;
+	uint16	spellid;
+	uint8	casterlevel;
+	uint16	casterid;		// Maybe change this to a pointer sometime, but gotta make sure it's 0'd when it no longer points to anything
+	char    caster_name[64];
+    sint32	ticsremaining;
+	uint32  counters;
 	uint32	numhits; //the number of physical hits this buff can take before it fades away, lots of druid armor spells take advantage of this mixed with powerful effects
-	bool	client;  //True if the caster is a client
-	bool	UpdateClient;
-	int16	melee_rune;
-	int16	magic_rune;
+	uint32	melee_rune;
+	uint32	magic_rune;
 	int8	deathSaveSuccessChance;
-	int8	casterAARank;				// The idea here is if you need to know what the caster AA rank was for a buff long after is has been casted.
-	//todo: dot stacking?
+	int8	deathsaveCasterAARank;
+    bool	persistant_buff;
+    bool	client;  //True if the caster is a client
+	bool	UpdateClient;
 };
 
 struct StatBonuses {
@@ -837,7 +833,7 @@ bool logpos;
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	EQApplicationPacket *MakeBuffsPacket(bool for_target = true);
 	void SendBuffsToClient(Client *c);
-	inline Buffs_Struct* GetBuffs() const { return buffs; }
+	inline Buffs_Struct* GetBuffs() { return buffs; }
 	void DoGravityEffect();
 	Timer GravityTimer;
 
@@ -964,9 +960,9 @@ bool logpos;
 	virtual void		AI_Stop();
 	virtual void		AI_Process();
 
-	const char* GetEntityVariable(int32 id);
-	void SetEntityVariable(int32 id, const char *m_var);
-	bool EntityVariableExists(int32 id);
+	const char* GetEntityVariable(const char *id);
+	void SetEntityVariable(const char *id, const char *m_var);
+	bool EntityVariableExists(const char *id);
 
 	void				AI_Event_Engaged(Mob* attacker, bool iYellForHelp = true);
 	void				AI_Event_NoLongerEngaged();
@@ -1134,7 +1130,7 @@ protected:
 	bool	moved;
 
 	std::vector<std::string> RampageArray;
-	std::map<int32, std::string> m_EntityVariables;
+	std::map<std::string, std::string> m_EntityVariables;
 
 	bool	isgrouped; //These meant to be private?
 	bool	israidgrouped;

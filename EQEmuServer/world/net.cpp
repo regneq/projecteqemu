@@ -347,6 +347,10 @@ int main(int argc, char** argv) {
 	Timer PurgeInstanceTimer(450000);
 	PurgeInstanceTimer.Start(450000);
 
+    _log(WORLD__INIT, "Loading char create info...");
+    database.LoadCharacterCreateAllocations();
+    database.LoadCharacterCreateCombos();
+
 	char errbuf[TCPConnection_ErrorBufferSize];
 	if (tcps.Open(Config->WorldTCPPort, errbuf)) {
 		_log(WORLD__INIT,"Zone (TCP) listener started.");

@@ -965,7 +965,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(int slot = 0; slot < buff_count; slot++) {
 					if(	buffs[slot].spellid != SPELL_UNKNOWN &&
-						buffs[slot].durationformula != DF_Permanent &&
+						spells[buffs[slot].spellid].buffdurationformula != DF_Permanent &&
 						spells[buffs[slot].spellid].dispel_flag < 1 &&
 						!IsDiscipline(buffs[slot].spellid))
 				    {
@@ -984,7 +984,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(int slot = 0; slot < buff_count; slot++) {
 					if (buffs[slot].spellid != SPELL_UNKNOWN &&
-						buffs[slot].durationformula != DF_Permanent &&
+						spells[buffs[slot].spellid].buffdurationformula != DF_Permanent &&
 				    	IsDetrimentalSpell(buffs[slot].spellid) &&
 						spells[buffs[slot].spellid].dispel_flag < 1)
 				    {
@@ -1003,7 +1003,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(int slot = 0; slot < buff_count; slot++) {
 					if (buffs[slot].spellid != SPELL_UNKNOWN &&
-						buffs[slot].durationformula != DF_Permanent &&
+						spells[buffs[slot].spellid].buffdurationformula != DF_Permanent &&
 				    	IsBeneficialSpell(buffs[slot].spellid) &&
 						spells[buffs[slot].spellid].dispel_flag < 1)
 				    {
@@ -1660,25 +1660,23 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Poison Counter: %+i", effect_value);
 #endif
-				if (effect_value > 0)
-					buffs[buffslot].poisoncounters = effect_value;
-				else
+				if (effect_value < 0)
 				{
 					effect_value = 0 - effect_value;
 					uint32 buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
-						if (buffs[j].poisoncounters == 0)
+						if (CalculatePoisonCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= buffs[j].poisoncounters) {
+						if (effect_value >= buffs[j].counters) {
 							if (caster)
-								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
-							effect_value -= buffs[j].poisoncounters;
-							buffs[j].poisoncounters = 0;
+								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+							effect_value -= buffs[j].counters;
+							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
 						} else {
-							buffs[j].poisoncounters -= effect_value;
+							buffs[j].counters -= effect_value;
 							effect_value = 0;
 							break;
 						}
@@ -1692,28 +1690,26 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Disease Counter: %+i", effect_value);
 #endif
-				if (effect_value > 0)
-					buffs[buffslot].diseasecounters = effect_value;
-				else
+				if (effect_value < 0)
 				{
 					effect_value = 0 - effect_value;
 					uint32 buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
-						if (buffs[j].diseasecounters == 0)
+						if (CalculateDiseaseCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= buffs[j].diseasecounters)
+						if (effect_value >= buffs[j].counters)
 						{
 							if (caster)
-								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
-							effect_value -= buffs[j].diseasecounters;
-							buffs[j].diseasecounters = 0;
+								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+							effect_value -= buffs[j].counters;
+							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
 						}
 						else
 						{
-							buffs[j].diseasecounters -= effect_value;
+							buffs[j].counters -= effect_value;
 							effect_value = 0;
 							break;
 						}
@@ -1727,28 +1723,26 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Curse Counter: %+i", effect_value);
 #endif
-				if (effect_value > 0)
-					buffs[buffslot].cursecounters = effect_value;
-				else
+				if (effect_value < 0)
 				{
 					effect_value = 0 - effect_value;
 					uint32 buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
-						if (buffs[j].cursecounters == 0)
+						if (CalculateCurseCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= buffs[j].cursecounters)
+						if (effect_value >= buffs[j].counters)
 						{
 							if (caster)
-								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
-							effect_value -= buffs[j].cursecounters;
-							buffs[j].cursecounters = 0;
+								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+							effect_value -= buffs[j].counters;
+							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
 						}
 						else
 						{
-							buffs[j].cursecounters -= effect_value;
+							buffs[j].counters -= effect_value;
 							effect_value = 0;
 							break;
 						}
@@ -1762,25 +1756,23 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Corruption Counter: %+i", effect_value);
 #endif
-				if (effect_value > 0)
-					buffs[buffslot].corruptioncounters = effect_value;
-				else
+				if (effect_value < 0)
 				{
 					effect_value = -effect_value;
 					uint32 buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
-						if (buffs[j].corruptioncounters == 0)
+						if (CalculateCorruptionCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= buffs[j].corruptioncounters) {
+						if (effect_value >= buffs[j].counters) {
 							if (caster)
-								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
-							effect_value -= buffs[j].corruptioncounters;
-							buffs[j].corruptioncounters = 0;
+								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+							effect_value -= buffs[j].counters;
+							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
 						} else {
-							buffs[j].corruptioncounters -= effect_value;
+							buffs[j].counters -= effect_value;
 							effect_value = 0;
 							break;
 						}
@@ -2242,7 +2234,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					snprintf(effect_desc, _EDLEN, "Death Save Chance: %+i", SuccessChance);
 #endif
 					buffs[buffslot].deathSaveSuccessChance = SuccessChance;
-					buffs[buffslot].casterAARank = caster->GetAA(aaUnfailingDivinity);
+					buffs[buffslot].deathsaveCasterAARank = caster->GetAA(aaUnfailingDivinity);
 					SetDeathSaveChance(true);
 				}
 
@@ -2800,7 +2792,7 @@ void Mob::BuffProcess()
 			if(buffs[buffs_i].spellid == SPELL_UNKNOWN)
 				continue;
 
-			if(buffs[buffs_i].durationformula != DF_Permanent)
+			if(spells[buffs[buffs_i].spellid].buffdurationformula != DF_Permanent)
 			{
 				if(!zone->BuffTimersSuspended() || IsDetrimentalSpell(buffs[buffs_i].spellid))
 				{
@@ -4397,7 +4389,7 @@ bool Mob::TryDeathSave() {
 	if(buffSlot >= 0)
 	{
 		SuccessChance = buffs[buffSlot].deathSaveSuccessChance;
-		int8 CasterUnfailingDivinityAARank = buffs[buffSlot].casterAARank;
+		int8 CasterUnfailingDivinityAARank = buffs[buffSlot].deathsaveCasterAARank;
 		int16 BuffSpellID = buffs[buffSlot].spellid;
 		SaveRoll = MakeRandomInt(0, 100);
 

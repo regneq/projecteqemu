@@ -413,9 +413,7 @@ ENCODE(OP_PlayerProfile) {
 		OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		OUT(buffs[r].dmg_shield_remaining);
-		OUT(buffs[r].persistant_buff);
-		OUT(buffs[r].reserved);
+		OUT(buffs[r].counters);
 		OUT(buffs[r].player_id);
 	}
 	//NOTE: new client supports 100 disciplines, our internal rep 

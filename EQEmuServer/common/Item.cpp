@@ -172,7 +172,12 @@ ItemInst::ItemInst(const ItemInst& copy)
 			m_contents[it->first] = inst_new;
 		}
 	}
+    std::map<std::string, std::string>::const_iterator iter;
+    for (iter = copy.m_custom_data.begin(); iter != copy.m_custom_data.end(); iter++) {
+        m_custom_data[iter->first] = iter->second;
+    }
 	m_SerialNumber = copy.m_SerialNumber;
+    m_custom_data = copy.m_custom_data;
 }
 
 // Clean up container contents
@@ -571,6 +576,67 @@ ItemInst* Inventory::GetItem(sint16 slot_id) const
 	}
 	
 	return result;
+}
+
+std::string ItemInst::GetCustomDataString() const {
+    std::string ret_val;
+    map<std::string, std::string>::const_iterator iter = m_custom_data.begin();
+    while(iter != m_custom_data.end()) {
+        if(ret_val.length() > 0) {
+            ret_val += "^";
+        }
+        ret_val += iter->first;
+        ret_val += "^";
+        ret_val += iter->second;
+        iter++;
+
+        if(ret_val.length() > 0) {
+            ret_val += "^";
+        }
+    }
+    return ret_val;
+}
+
+void ItemInst::SetCustomData(std::string identifier, std::string value) {
+    DeleteCustomData(identifier);
+    m_custom_data[identifier] = value;
+}
+
+void ItemInst::SetCustomData(std::string identifier, int value) {
+    DeleteCustomData(identifier);
+    std::stringstream ss;
+    ss << value;
+    m_custom_data[identifier] = ss.str();
+}
+
+void ItemInst::SetCustomData(std::string identifier, float value) {
+    DeleteCustomData(identifier);
+    std::stringstream ss;
+    ss << value;
+    m_custom_data[identifier] = ss.str();
+}
+
+void ItemInst::SetCustomData(std::string identifier, bool value) {
+    DeleteCustomData(identifier);
+    std::stringstream ss;
+    ss << value;
+    m_custom_data[identifier] = ss.str();
+}
+
+void ItemInst::DeleteCustomData(std::string identifier) {
+    map<std::string, std::string>::const_iterator iter = m_custom_data.find(identifier);
+    if(iter != m_custom_data.end()) {
+        m_custom_data.erase(iter);
+    }
+}
+
+std::string ItemInst::GetCustomData(std::string identifier) {
+    map<std::string, std::string>::const_iterator iter = m_custom_data.find(identifier);
+    if(iter != m_custom_data.end()) {
+        return iter->second;
+    }
+
+    return "";
 }
 
 // Retrieve item at specified position within bag
@@ -1632,6 +1698,10 @@ EvoItemInst::EvoItemInst(const EvoItemInst &copy) {
 			m_contents[it->first] = inst_new;
 		}
 	}
+    std::map<std::string, std::string>::const_iterator iter;
+    for (iter = copy.m_custom_data.begin(); iter != copy.m_custom_data.end(); iter++) {
+        m_custom_data[iter->first] = iter->second;
+    }
 	m_SerialNumber = copy.m_SerialNumber;
 	m_exp = copy.m_exp;
 	m_evolveLvl = copy.m_evolveLvl;
@@ -1669,6 +1739,11 @@ EvoItemInst::EvoItemInst(const ItemInst &basecopy) {
 			m_contents[it->first] = inst_new;
 		}
 	}
+
+    std::map<std::string, std::string>::const_iterator iter;
+    for (iter = copy->m_custom_data.begin(); iter != copy->m_custom_data.end(); iter++) {
+        m_custom_data[iter->first] = iter->second;
+    }
 	m_SerialNumber = copy->m_SerialNumber;
 	m_exp = 0;
 	m_evolveLvl = 0;

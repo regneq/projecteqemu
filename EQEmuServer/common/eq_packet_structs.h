@@ -511,10 +511,7 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining;
-//these last four bytes are really the caster's global player ID for wearoff
-/*014*/ int8	persistant_buff;	//prolly not real, used for perm illusions
-/*015*/ int8	reserved;		//proll not real, reserved will use for something else later
+/*012*/	int32   counters;
 /*016*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
 /*020*/
 };
@@ -4682,6 +4679,11 @@ struct Untargetable_Struct {
 /*000*/	uint32 id;
 /*004*/	uint32 unk1;
 /*008*/
+};
+
+struct CrystalReclaim_Struct {
+/**/ uint32 type;
+/**/ uint32 amount;
 };
 
 //old structures live here:
