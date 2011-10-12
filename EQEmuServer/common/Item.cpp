@@ -624,7 +624,7 @@ void ItemInst::SetCustomData(std::string identifier, bool value) {
 }
 
 void ItemInst::DeleteCustomData(std::string identifier) {
-    map<std::string, std::string>::const_iterator iter = m_custom_data.find(identifier);
+    map<std::string, std::string>::iterator iter = m_custom_data.find(identifier);
     if(iter != m_custom_data.end()) {
         m_custom_data.erase(iter);
     }
