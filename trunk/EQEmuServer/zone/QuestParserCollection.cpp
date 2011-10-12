@@ -349,11 +349,12 @@ QuestInterface *QuestParserCollection::GetQIByNPCQuest(uint32 npcid) {
 }
 
 QuestInterface *QuestParserCollection::GetQIByPlayerQuest() {
-    //first look for /quests/zone/player.ext (precedence)
+    //first look for /quests/zone/player_v[instance_version].ext (precedence)
     std::string filename = "quests/";
     filename += zone->GetShortName();
     filename += "/";
-    filename += "player";
+    filename += "player_v";
+    filename += itoa(zone->GetInstanceVersion());
     std::string tmp;
     FILE *f = NULL;
 
@@ -372,7 +373,28 @@ QuestInterface *QuestParserCollection::GetQIByPlayerQuest() {
         iter++;
     }    
 
-    //second look for /quests/templates/player.ext (precedence)
+    //second look for /quests/zone/player.ext (precedence)
+    filename = "quests/";
+    filename += zone->GetShortName();
+    filename += "/";
+    filename += "player";
+
+    iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
+    //third look for /quests/templates/player.ext (precedence)
     filename = "quests/";
     filename += QUEST_TEMPLATES_DIRECTORY;
     filename += "/";

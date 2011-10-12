@@ -225,6 +225,8 @@ public:
     void LearnRecipe(uint32 recipe_id);
     void SendMail(const char *to, const char *from, const char *subject, const char *message);
 	int16 CreateDoor( const char* model, float x, float y, float z, float heading, int8 opentype, int16 size);
+    sint32 GetZoneID(const char *zone);
+    const char *GetZoneLongName(const char *zone);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

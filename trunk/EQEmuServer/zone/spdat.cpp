@@ -496,6 +496,15 @@ int GetMinLevel(int16 spell_id) {
 		return(min);
 }
 
+int GetSpellLevel(int16 spell_id, int classa) {
+    if(classa >= PLAYER_CLASS_COUNT) {
+        return 255;
+    }
+
+	const SPDat_Spell_Struct &spell = spells[spell_id];
+	return spell.classes[classa - 1];
+}
+
 // solar: this will find the first occurance of effect.  this is handy
 // for spells like mez and charm, but if the effect appears more than once
 // in a spell this will just give back the first one.
@@ -626,6 +635,26 @@ sint32 CalculateCorruptionCounters(int16 spell_id){
 		}
 	}
     return Counters;
+}
+
+sint32 CalculateCounters(int16 spell_id) {
+    sint32 counter = CalculatePoisonCounters(spell_id);
+    if(counter != 0) {
+        return counter;
+    }
+
+    counter = CalculateDiseaseCounters(spell_id);
+    if(counter != 0) {
+        return counter;
+    }
+
+    counter = CalculateCurseCounters(spell_id);
+    if(counter != 0) {
+        return counter;
+    }
+
+    counter = CalculateCorruptionCounters(spell_id);
+    return counter;
 }
 
 bool IsDisciplineBuff(int16 spell_id)

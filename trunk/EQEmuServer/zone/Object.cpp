@@ -917,21 +917,18 @@ void Object::SetHeading(float heading)
 	safe_delete(app2);
 }
 
-void Object::SetEntityVariable(int32 id, const char *m_var)
+void Object::SetEntityVariable(const char *id, const char *m_var)
 {
-	if(!id)
-		return;
-
 	std::string n_m_var = m_var;
 	o_EntityVariables[id] = n_m_var;
 }
 
-const char* Object::GetEntityVariable(int32 id)
+const char* Object::GetEntityVariable(const char *id)
 {
 	if(!id)
 		return NULL;
 
-	std::map<int32, std::string>::iterator iter = o_EntityVariables.find(id);
+	std::map<std::string, std::string>::iterator iter = o_EntityVariables.find(id);
 	if(iter != o_EntityVariables.end())
 	{
 		return iter->second.c_str();
@@ -939,12 +936,12 @@ const char* Object::GetEntityVariable(int32 id)
 	return NULL;
 }
 
-bool Object::EntityVariableExists(int32 id)
+bool Object::EntityVariableExists(const char * id)
 {
 	if(!id)
 		return false;
 
-	std::map<int32, std::string>::iterator iter = o_EntityVariables.find(id);
+	std::map<std::string, std::string>::iterator iter = o_EntityVariables.find(id);
 	if(iter != o_EntityVariables.end())
 	{
 		return true;

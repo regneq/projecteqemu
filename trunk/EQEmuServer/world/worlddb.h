@@ -37,16 +37,9 @@ public:
 	void GetLauncherList(std::vector<std::string> &result);
 	void SetMailKey(int CharID, int IPAddress, int MailKey);
 	bool GetCharacterLevel(const char *name, int &level);
-/*	bool	GetLauncherZone(const char *launcher_name, const char *zone_short, LauncherZone &result);
-	bool	AddLauncherZone(const char *launcher_name, const LauncherZone &it);
-	bool	UpdateLauncherZone(const char *launcher_name, const LauncherZone &it);
-	bool	DeleteLauncherZone(const char *launcher_name, const char *zone_short);
-*/
-	
-//	bool	GetLiveChar(int32 lsaccount_id, char* cname);
-//	bool	GetTempPacket(int32 lsaccount_id, char* packet);
-//	bool	UpdateTempPacket(char* packet,int32 lsaccount_id);
-//	bool	UpdateLiveChar(char* charname,int32 lsaccount_id);
+
+    bool LoadCharacterCreateAllocations();
+    bool LoadCharacterCreateCombos();
 protected:
 	
 };

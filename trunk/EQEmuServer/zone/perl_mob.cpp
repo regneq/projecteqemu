@@ -1149,7 +1149,7 @@ XS(XS_Mob_DoAnim)
 {
 	dXSARGS;
 	if (items < 2 || items > 3)
-		Perl_croak(aTHX_ "Usage: Mob::DoAnim(THIS, animnum, type=1)");
+		Perl_croak(aTHX_ "Usage: Mob::DoAnim(THIS, animnum, type=0)");
 	{
 		Mob *		THIS;
 		int		animnum = (int)SvIV(ST(1));
@@ -1165,7 +1165,7 @@ XS(XS_Mob_DoAnim)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items < 3)
-			type = 1;
+			type = 0;
 		else {
 			type = (int)SvIV(ST(2));
 		}
@@ -6342,7 +6342,7 @@ XS(XS_Mob_GetEntityVariable)
 		Perl_croak(aTHX_ "Usage: Mob::GetEntityVariable(THIS, id)");
 	{
 		Mob *		THIS;
-		int32		id = (int32)SvIV(ST(1));
+		Const_char *		id = SvPV_nolen(ST(1));
 		Const_char *		RETVAL;
 		dXSTARG;
 
@@ -6369,7 +6369,7 @@ XS(XS_Mob_EntityVariableExists)
 		Perl_croak(aTHX_ "Usage: Mob::EntityVariableExists(THIS, id)");
 	{
 		Mob *		THIS;
-		int32		id = (int32)SvIV(ST(1));
+		Const_char *		id = SvPV_nolen(ST(1));
 		bool		RETVAL;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -6396,7 +6396,7 @@ XS(XS_Mob_SetEntityVariable)
 		Perl_croak(aTHX_ "Usage: Mob::SetEntityVariable(THIS, id, var)");
 	{
 		Mob *		THIS;
-		int32		id = (int32)SvIV(ST(1));
+		Const_char *		id = SvPV_nolen(ST(1));
 		const char *	var = (const char *)SvPV_nolen(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {

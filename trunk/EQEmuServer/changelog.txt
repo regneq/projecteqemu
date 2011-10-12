@@ -1,5 +1,22 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/11/2011==
+KLS: Added Ebon/Radiant crystal reclaim for the clients I have.(Titanium/SoD/Underfoot)
+KLS: Seperated buffs from the player profile.
+KLS: Seperated buffs allowed me to fix the counters on buffs for the newer clients across zone lines, as well as melee and magic runes are no longer limited to 65k as they are no longer uint16s.
+KLS: Added ability to save variables to items. Via $client->SetCustomItemData(13, "SomeVariable", 1024); #give our mainhand some variable.
+KLS: Added ability to retrieve items from the inventory in perl with $client->GetItemInInventory(slot_id);
+KLS: Fixed Item::IsAugmentable() to return correctly if the first augment slot is not used.
+KLS: Updated for latest code and readded Derisions' cross-zone /inviting.  I've been testing it for a while now and can't find any real issues with it so I readded it.
+KLS: Added class and race combo's into the database so they can be potentially changed; only SoF+ clients will correctly display this.
+KLS: Fixed a bug in WorldDatabase::GetCharSelectInfo.
+KLS: Changed internal faction values to go in order this change will break some quests in the short term but should be more intuitive in the long run.
+KLS: Changed player.pl loading slightly: it will now look for player quests in the following order: .\quests\{zone}\player_v{instance_version}.pl, .\quests\{zone}\player.pl, .\quests\templates\player.pl
+KLS: CanClassX functions are no longer hardcoded, they will now check the skillcaps data instead.
+KLS: EntityVariables are now identified with a string instead of an int ex: $npc->SetEntityVariable("SomeId", 5), this shouldn't break any existing quests.
+KLS: Fixed an issue where bard songs could get stuck in the *on* position even if the bard had turned singing off.
+KLS: Fixed an issue where merchants would load and send items more than once in cases where npcs had merchants that shared merchant_ids in a zone.
+
 ==10/09/2011==
 Akkadius: Fixed an optional argument in client 'NukeItem'
 Akkadius: Added two #npcedit commands; armortint_id and alt_currency_id

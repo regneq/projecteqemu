@@ -569,9 +569,7 @@ ENCODE(OP_PlayerProfile) {
 		//OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		//OUT(buffs[r].dmg_shield_remaining);
-		//OUT(buffs[r].persistant_buff);
-		//OUT(buffs[r].reserved);
+		OUT(buffs[r].counters);
 		//OUT(buffs[r].player_id);
 	}
 	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {

@@ -1952,3 +1952,42 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 	return true;
 }
 
+void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, std::string value) {
+    ItemInst *inst = GetItem(slot_id);
+    if(inst) {
+        inst->SetCustomData(identifier, value);
+        database.SaveInventory(character_id, inst, slot_id);
+    }
+}
+
+void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, int value) {
+    ItemInst *inst = GetItem(slot_id);
+    if(inst) {
+        inst->SetCustomData(identifier, value);
+        database.SaveInventory(character_id, inst, slot_id);
+    }
+}
+
+void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, float value) {
+    ItemInst *inst = GetItem(slot_id);
+    if(inst) {
+        inst->SetCustomData(identifier, value);
+        database.SaveInventory(character_id, inst, slot_id);
+    }
+}
+
+void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, bool value) {
+    ItemInst *inst = GetItem(slot_id);
+    if(inst) {
+        inst->SetCustomData(identifier, value);
+        database.SaveInventory(character_id, inst, slot_id);
+    }
+}
+
+std::string Inventory::GetCustomItemData(sint16 slot_id, std::string identifier) {
+    ItemInst *inst = GetItem(slot_id);
+    if(inst) {
+        return inst->GetCustomData(identifier);
+    }
+    return "";
+}

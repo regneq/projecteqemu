@@ -32,6 +32,7 @@
 #include "../common/seperator.h"
 #include "../common/MiscFunctions.h"
 #include "QGlobals.h"
+#include "zone.h"
 
 #include <algorithm>
 
@@ -88,6 +89,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_FISH_FAILURE",
 	"EVENT_CLICK_OBJECT"
 };
+
+extern Zone* zone;
 
 PerlembParser::PerlembParser(void) : Parser()
 {
@@ -1074,7 +1077,7 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 	return(1);
 }
 
-int PerlembParser::LoadPlayerScript(const char *zone)
+int PerlembParser::LoadPlayerScript(const char *zone_name)
 {
 	if(!perl)
 		return(0);
@@ -1084,16 +1087,18 @@ int PerlembParser::LoadPlayerScript(const char *zone)
 		return 0;
 	}
 
-	if(playerQuestLoaded.count(zone) == 1) {
+	if(playerQuestLoaded.count(zone_name) == 1) {
 		return(1);
 	}
 
 	string filename= "quests/";
-	filename += zone;
-	filename += "/player.pl";
+	filename += zone_name;
+	filename += "/player_v";
+    filename += itoa(zone->GetInstanceVersion());
+    filename += ".pl";
 	string packagename = "player";
 	packagename += "_";
-	packagename += zone;
+	packagename += zone_name;
 
 	try {
 		perl->eval_file(packagename.c_str(), filename.c_str());
@@ -1102,7 +1107,27 @@ int PerlembParser::LoadPlayerScript(const char *zone)
 	{
 			LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s", filename.c_str(), err);
 	}
-	//todo: change this to just read eval_file's %cache - duh!
+
+    if(!isloaded(packagename.c_str()))
+	{
+		filename= "quests/";
+	    filename += zone_name;
+	    filename += "/player.pl";
+		try {
+			perl->eval_file(packagename.c_str(), filename.c_str());
+		}
+		catch(const char * err)
+		{
+				LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s", filename.c_str(), err);
+		}
+		if(!isloaded(packagename.c_str()))
+		{
+			playerQuestLoaded[zone_name] = pQuestUnloaded;
+			return 0;
+		}
+	}
+
+    //todo: change this to just read eval_file's %cache - duh!
 	if(!isloaded(packagename.c_str()))
 	{
 		filename = "quests/";
@@ -1117,15 +1142,15 @@ int PerlembParser::LoadPlayerScript(const char *zone)
 		}
 		if(!isloaded(packagename.c_str()))
 		{
-			playerQuestLoaded[zone] = pQuestUnloaded;
+			playerQuestLoaded[zone_name] = pQuestUnloaded;
 			return 0;
 		}
 	}
 
 	if(perl->SubExists(packagename.c_str(), "EVENT_CAST")) 
-		playerQuestLoaded[zone] = pQuestEventCast;
+		playerQuestLoaded[zone_name] = pQuestEventCast;
 	else 
-		playerQuestLoaded[zone] = pQuestLoaded;
+		playerQuestLoaded[zone_name] = pQuestLoaded;
 	return 1;
 }
 

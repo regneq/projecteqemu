@@ -560,6 +560,21 @@ void Zone::LoadMerchantData_result(MYSQL_RES* result) {
 			}
 			npcid = ml.id;
 		}
+
+        std::list<MerchantList>::iterator iter = cur->second.begin();
+        bool found = false;
+        while(iter != cur->second.end()) {
+            if((*iter).item == ml.id) {
+                found = true;
+                break;
+            }
+            iter++;
+        }
+
+        if(found) {
+            continue;
+        }
+
 		ml.slot = atoul(row[1]);
 		ml.item = atoul(row[2]);
         ml.faction_required = atoul(row[3]);
@@ -567,8 +582,6 @@ void Zone::LoadMerchantData_result(MYSQL_RES* result) {
         ml.alt_currency_cost = atoul(row[5]);        
 		cur->second.push_back(ml);
 	}
-	//mysql_free_result(result);
-//	LogFile->write(EQEMuLog::Status, "Finished Loading Merchant Lists...");
 }
 
 void Zone::GetMerchantDataForZoneLoad(){

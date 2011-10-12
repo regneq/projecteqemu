@@ -64,7 +64,7 @@ const int SpellType_Charm=4096;
 const int SpellType_Slow = 8192;
 const int SpellType_Debuff = 16384;
 
-const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm|SpellType_Debuff;
+const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm|SpellType_Debuff|SpellType_Slow;
 const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff;
 
 #define SpellType_Any		0xFFFF
@@ -760,11 +760,13 @@ bool GroupOnlySpell(int16 spell_id);
 int GetSpellEffectIndex(int16 spell_id, int effect);
 int CanUseSpell(int16 spellid, int classa, int level);
 int GetMinLevel(int16 spell_id);
+int GetSpellLevel(int16 spell_id, int classa);
 int CalcBuffDuration_formula(int level, int formula, int duration);
 sint32 CalculatePoisonCounters(int16 spell_id);
 sint32 CalculateDiseaseCounters(int16 spell_id);
 sint32 CalculateCurseCounters(int16 spell_id);
 sint32 CalculateCorruptionCounters(int16 spell_id);
+sint32 CalculateCounters(int16 spell_id);
 bool IsDisciplineBuff(int16 spell_id);
 bool IsDiscipline(int16 spell_id);
 bool IsResurrectionEffects(int16 spell_id);

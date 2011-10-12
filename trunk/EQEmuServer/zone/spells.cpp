@@ -251,8 +251,8 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		return(false);
 	}
 	
-    if (HasActiveSong()) {
-    	mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bardsong);
+    if (HasActiveSong() && IsBardSong(spell_id)) {
+    	mlog(SPELLS__BARDS, "Casting a new song while singing a song. Killing old song %d.", bardsong);
     	//Note: this does NOT tell the client
         _StopSong();
     }
@@ -717,9 +717,15 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 {
 	EQApplicationPacket *outapp;
 	int16 message_other;
-
-	if (spellid == SPELL_UNKNOWN)
-		spellid = casting_spell_id;
+    bool bard_song_mode = false; //has the bard song gone to auto repeat mode
+	if (spellid == SPELL_UNKNOWN) {
+		if(bardsong) {
+            spellid = bardsong;
+            bard_song_mode = true;
+        } else {
+            spellid = casting_spell_id;
+        }
+    }
 
 	if(casting_spell_id && IsNPC()) {
 		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
@@ -734,6 +740,10 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	
 	if (bardsong || IsBardSong(casting_spell_id))
 		_StopSong();
+
+    if(bard_song_mode) {
+        return;
+    }
 	
 	if(!message)
 		message = IsBardSong(spellid) ? SONG_ENDS_ABRUPTLY : INTERRUPT_SPELL;
@@ -1184,16 +1194,16 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 				c->CheckSpecializeIncrease(spell_id);	
 			}
 		}
+    }
 
-		// there should be no casting going on now
-		ZeroCastingVars();
+	// there should be no casting going on now
+	ZeroCastingVars();
 
-		// set the rapid recast timer for next time around
-		delaytimer = true;
-		spellend_timer.Start(400,true);
-		
-		mlog(SPELLS__CASTING, "Spell casting of %d is finished.", spell_id);
-	}
+	// set the rapid recast timer for next time around
+	delaytimer = true;
+	spellend_timer.Start(400,true);
+	
+	mlog(SPELLS__CASTING, "Spell casting of %d is finished.", spell_id);
 	
 }
 
@@ -2742,15 +2752,19 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	
 	buffs[emptyslot].spellid = spell_id;
 	buffs[emptyslot].casterlevel = caster_level;
+    if(caster && caster->IsClient()) {
+        strcpy(buffs[emptyslot].caster_name, caster->GetName());
+    } else {
+        memset(buffs[emptyslot].caster_name, 0, 64);
+    }
 	buffs[emptyslot].casterid = caster ? caster->GetID() : 0;
-	buffs[emptyslot].durationformula = spells[spell_id].buffdurationformula;
 	buffs[emptyslot].ticsremaining = duration;
-	buffs[emptyslot].diseasecounters = 0;
-	buffs[emptyslot].poisoncounters = 0;
-	buffs[emptyslot].cursecounters = 0;
-	buffs[emptyslot].corruptioncounters = 0;
+    buffs[emptyslot].counters = CalculateCounters(spell_id);
 	buffs[emptyslot].numhits = spells[spell_id].numhits;
 	buffs[emptyslot].client = caster ? caster->IsClient() : 0;
+    buffs[emptyslot].persistant_buff = 0;
+    buffs[emptyslot].deathsaveCasterAARank = 0;
+    buffs[emptyslot].deathSaveSuccessChance = 0;
 
 	if(level_override > 0)
 	{
@@ -4891,7 +4905,7 @@ bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
                 if (bOffensive) {
 				    if (spells[buffs[i].spellid].effectid[j] == type) {
                         sint16 value = 
-                                CalcSpellEffectValue_formula(buffs[i].durationformula,
+                                CalcSpellEffectValue_formula(spells[buffs[i].spellid].buffdurationformula,
                                                spells[buffs[i].spellid].base[j],
                                                spells[buffs[i].spellid].max[j],
                                                buffs[i].casterlevel, buffs[i].spellid);

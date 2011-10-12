@@ -3199,6 +3199,47 @@ XS(XS__SendMail)
     XSRETURN_EMPTY;
 }
 
+XS(XS__GetZoneID);
+XS(XS__GetZoneID)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: GetZoneID(zone)");
+
+    char *zone = (char *)SvPV_nolen(ST(0));
+    sint32 id = quest_manager.GetZoneID(zone);
+    
+    XSRETURN_IV(id);
+}
+
+XS(XS__GetZoneLongName);
+XS(XS__GetZoneLongName)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: GetZoneLongName(zone)");
+    dXSTARG;
+    char *zone = (char *)SvPV_nolen(ST(0));
+    Const_char* RETVAL = quest_manager.GetZoneLongName(zone);
+    
+    sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	XSRETURN(1);
+}
+
+XS(XS__GetTimeSeconds);
+XS(XS__GetTimeSeconds)
+{
+    dXSARGS;
+    if (items != 0)
+        Perl_croak(aTHX_ "Usage: GetTimeSeconds()");
+
+	uint32		seconds = 0;
+    dXSTARG;
+
+    seconds = Timer::GetTimeSeconds();
+	XSRETURN_UV(seconds);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -3405,6 +3446,9 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "voicetell"), XS__voicetell, file);
         newXS(strcpy(buf, "LearnRecipe"), XS__LearnRecipe, file);
         newXS(strcpy(buf, "SendMail"), XS__SendMail, file);
+        newXS(strcpy(buf, "GetZoneID"), XS__GetZoneID, file);
+        newXS(strcpy(buf, "GetZoneLongName"), XS__GetZoneLongName, file);
+        newXS(strcpy(buf, "GetTimeSeconds"), XS__GetTimeSeconds, file);
 	XSRETURN_YES;
 }
 

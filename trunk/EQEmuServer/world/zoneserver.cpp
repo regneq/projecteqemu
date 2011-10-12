@@ -227,17 +227,42 @@ bool ZoneServer::Process() {
 			}
 			break;
 		}
-		/*
-		case ServerOP_SendGroup: {
-			SendGroup_Struct* sgs=(SendGroup_Struct*)pack->pBuffer;
-			ZoneServer* zs=zoneserver_list.FindByZoneID(sgs->zoneid);
-			if(!zs)
-				zlog(WORLD__ZONE,"Could not find zone id: %i running to transfer group to!",sgs->zoneid);
-			else{
-				zs->SendPacket(pack);
-			}
+		case ServerOP_GroupInvite: {
+			if(pack->size != sizeof(GroupInvite_Struct))
+				break;
+
+			GroupInvite_Struct* gis = (GroupInvite_Struct*) pack->pBuffer;
+
+			client_list.SendPacket(gis->invitee_name, pack);
 			break;
-		}*/
+		}
+		case ServerOP_GroupFollow: {
+			if(pack->size != sizeof(ServerGroupFollow_Struct))
+				break;
+
+			ServerGroupFollow_Struct *sgfs = (ServerGroupFollow_Struct *) pack->pBuffer;
+
+			client_list.SendPacket(sgfs->gf.name1, pack);
+			break;
+		}
+		case ServerOP_GroupFollowAck: {
+			if(pack->size != sizeof(ServerGroupFollowAck_Struct))
+				break;
+
+			ServerGroupFollowAck_Struct *sgfas = (ServerGroupFollowAck_Struct *) pack->pBuffer;
+
+			client_list.SendPacket(sgfas->Name, pack);
+			break;
+		}
+		case ServerOP_GroupCancelInvite: {
+			if(pack->size != sizeof(GroupCancel_Struct))
+				break;
+
+			GroupCancel_Struct *gcs = (GroupCancel_Struct *) pack->pBuffer;
+
+			client_list.SendPacket(gcs->name1, pack);
+			break;
+		}
 		case ServerOP_GroupIDReq: {
 			SendGroupIDs();
 			break;

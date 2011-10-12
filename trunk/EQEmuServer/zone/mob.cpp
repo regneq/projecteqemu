@@ -1239,7 +1239,7 @@ void Mob::ShowBuffs(Client* client) {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (i=0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			if (buffs[i].durationformula == DF_Permanent)
+			if (spells[buffs[i].spellid].buffdurationformula == DF_Permanent)
 				client->Message(0, "  %i: %s: Permanent", i, spells[buffs[i].spellid].name);
 			else
 				client->Message(0, "  %i: %s: %i tics left", i, spells[buffs[i].spellid].name, buffs[i].ticsremaining);
@@ -1273,7 +1273,7 @@ void Mob::ShowBuffList(Client* client) {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (i=0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			if (buffs[i].durationformula == DF_Permanent)
+			if (spells[buffs[i].spellid].buffdurationformula == DF_Permanent)
 				client->Message(0, "  %i: %s: Permanent", i, spells[buffs[i].spellid].name);
 			else
 				client->Message(0, "  %i: %s: %i tics left", i, spells[buffs[i].spellid].name, buffs[i].ticsremaining);
@@ -1996,55 +1996,9 @@ void Mob::SetAttackTimer() {
 
 bool Mob::CanThisClassDualWield(void) const
 {
-	// All npcs over level 13 can dual wield
-	if (this->IsNPC() && (this->GetLevel() >= 13))
-		return true;
-	
-	// Kaiyodo - Check the classes that can DW, and make sure we're not using a 2 hander
-	bool dh2h = false;
-	switch(GetClass()) // Lets make sure they are the right level! -image
-	{
-	case WARRIOR:
-	case BERSERKER:
-	case ROGUE:
-	case WARRIORGM:
-	case BERSERKERGM:
-	case ROGUEGM:
-		{
-			if(GetLevel() < 13)
-				return false;
-			break;
-		}
-	case BARD:
-	case RANGER:
-	case BARDGM:
-	case RANGERGM:
-		{
-			if(GetLevel() < 17)
-				return false;
-			break;
-		}
-	case BEASTLORD:
-	case BEASTLORDGM:
-		{
-			if(GetLevel() < 17)
-				return false;
-			dh2h = true;
-			break;
-		}
-	case MONK:
-	case MONKGM:
-		{
-			dh2h = true;
-			break;
-		}
-	default:
-		{
-			return false;
-		}
-	}
-	
-	if (IsClient()) {
+	if (!IsClient()) {
+        return(GetSkill(DUAL_WIELD) > 0); 
+    } else {
 		const ItemInst* inst = CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
 		// 2HS, 2HB, or 2HP
 		if (inst && inst->IsType(ItemClassCommon)) {
@@ -2054,70 +2008,25 @@ bool Mob::CanThisClassDualWield(void) const
 		} else {
 			//No weapon in hand... using hand-to-hand...
 			//only monks and beastlords? can dual wield their fists.
-			return(dh2h);
+			if(class_ != MONK && class_ != MONKGM && class_ != BEASTLORD && class_ != BEASTLORDGM) {
+                return false;
+            }
 		}
 		
-		return (this->CastToClient()->HasSkill(DUAL_WIELD));	// No skill = no chance
+		return (CastToClient()->HasSkill(DUAL_WIELD));	// No skill = no chance
 	}
-	else
-		return true;	//if we get here, we are the right class
-						//and are at the right level, and are NPC
 }
 
 bool Mob::CanThisClassDoubleAttack(void) const
 {
-    // All npcs over level 26 can double attack
-    if (IsNPC() && GetLevel() >= 26)
-        return true;
-	
-	if(GetAA(aaBestialFrenzy) || GetAA(aaHarmoniousAttack) || 
-		GetAA(aaKnightsAdvantage) || GetAA(aaFerocity)){
+    if(!IsClient()) {
+        return(GetSkill(DOUBLE_ATTACK) > 0);
+    } else {
+        if(GetAA(aaBestialFrenzy) || GetAA(aaHarmoniousAttack) || GetAA(aaKnightsAdvantage) || GetAA(aaFerocity)) {
 			return true;
 		}
-
-	// Kaiyodo - Check the classes that can DA
-	switch(GetClass()) // Lets make sure they are the right level! -image
-	{
-	case BERSERKER:
-	case BERSERKERGM:	
-	case WARRIOR:
-	case WARRIORGM:
-	case MONK:
-	case MONKGM:
-		{
-			if(GetLevel() < 15)
-				return false;
-			break;
-		}
-	case ROGUE:
-	case ROGUEGM:
-		{
-			if(GetLevel() < 16)
-				return false;
-			break;
-		}
-	case RANGER:
-	case RANGERGM:
-	case PALADIN:
-	case PALADINGM:
-	case SHADOWKNIGHT:
-	case SHADOWKNIGHTGM:
-		{
-			if(GetLevel() < 20)
-				return false;
-			break;
-		}
-	default:
-		{
-			return false;
-		}
-	}
-
-	if (IsClient())
-		return(CastToClient()->HasSkill(DOUBLE_ATTACK));	// No skill = no chance
-	else
-		return true;	//if we get here, we are the right class
-						//and are at the right level, and are NPC
+        return(CastToClient()->HasSkill(DOUBLE_ATTACK));
+    }
 }
 
 bool Mob::IsWarriorClass(void) const
@@ -2155,230 +2064,38 @@ bool Mob::IsWarriorClass(void) const
 
 bool Mob::CanThisClassParry(void) const
 {
-	// Trumpcard
-	switch(GetClass()) // Lets make sure they are the right level! -image
-	{
-	case WARRIOR:
-	case WARRIORGM:
-		{
-		if(GetLevel() < 10)
-			return false;
-		break;
-		}
-	case ROGUE:
-	case BERSERKER:
-	case ROGUEGM:
-	case BERSERKERGM:
-		{
-		if(GetLevel() < 12)
-			return false;
-		break;
-		}
-	case BARD:
-	case BARDGM:
-		{
-		if(GetLevel() < 53)
-			return false;
-		break;
-		}
-	case RANGER:
-	case RANGERGM:
-		{
-		if(GetLevel() < 18)
-			return false;
-		break;
-		}
-	case SHADOWKNIGHT:
-	case PALADIN:
-	case SHADOWKNIGHTGM:
-	case PALADINGM:
-		{
-		if(GetLevel() < 17)
-			return false;
-		break;
-		}
-	default:
-		{
-			return false;
-		}
-	}
-
-	if (this->IsClient())
-		return(this->CastToClient()->HasSkill(PARRY));	// No skill = no chance
-	else
-		return true;
+    if(!IsClient()) {
+        return(GetSkill(PARRY) > 0);
+    } else {
+        return(CastToClient()->HasSkill(PARRY));
+    }
 }
 
 bool Mob::CanThisClassDodge(void) const
 {
-	// Trumpcard
-	switch(GetClass()) // Lets make sure they are the right level! -image
-	{
-	case WARRIOR:
-	case WARRIORGM:
-		{
-			if(GetLevel() < 6)
-				return false;
-			break;
-		}
-	case MONK:
-	case MONKGM:
-		{
-			break;
-		}
-	case ROGUE:
-	case ROGUEGM:
-		{
-			if(GetLevel() < 4)
-				return false;
-			break;
-		}
-	case RANGER:
-	case RANGERGM:
-		{
-			if(GetLevel() < 8)
-				return false;
-			break;
-		}
-	case BARD:
-	case BEASTLORD:
-	case SHADOWKNIGHT:
-	case BERSERKER:
-	case PALADIN:
-	case BARDGM:
-	case BEASTLORDGM:
-	case SHADOWKNIGHTGM:
-	case BERSERKERGM:
-	case PALADINGM:
-		{
-			if(GetLevel() < 10)
-				return false;
-			break;
-		}
-	case CLERIC:
-	case SHAMAN:
-	case DRUID:
-	case CLERICGM:
-	case SHAMANGM:
-	case DRUIDGM:
-		{
-			if( GetLevel() < 15 )
-				return false;
-			break;
-		}
-	case NECROMANCER:
-	case ENCHANTER:
-	case WIZARD:
-	case MAGICIAN:
-	case NECROMANCERGM:
-	case ENCHANTERGM:
-	case WIZARDGM:
-	case MAGICIANGM:
-		{
-			if( GetLevel() < 22 )
-				return false;
-			break;
-		}
-	default:
-		{
-			return false;
-		}
-	}
-	
-	if (this->IsClient())
-		return(this->CastToClient()->HasSkill(DODGE));	// No skill = no chance
-	else
-		return true;
+    if(!IsClient()) {
+        return(GetSkill(DODGE) > 0);
+    } else {
+        return(CastToClient()->HasSkill(DODGE));
+    }
 }
 
-bool Mob::CanThisClassRiposte(void) const //Could just check if they have the skill?
+bool Mob::CanThisClassRiposte(void) const
 {
-	// Trumpcard
-	switch(GetClass()) // Lets make sure they are the right level! -image
-	{
-	case WARRIOR:
-	case WARRIORGM:
-		{
-			if(GetLevel() < 25)
-				return false;
-			break;
-		}
-	case ROGUE:
-	case RANGER:
-	case SHADOWKNIGHT:
-	case PALADIN:
-	case BERSERKER:
-	case ROGUEGM:
-	case RANGERGM:
-	case SHADOWKNIGHTGM:
-	case PALADINGM:
-	case BERSERKERGM:
-		{
-			if(GetLevel() < 30)
-				return false;
-			break;
-		}
-	case MONK:
-	case MONKGM:
-		{
-			if(GetLevel() < 35)
-				return false;
-			break;
-		}
-	case BEASTLORD:
-	case BEASTLORDGM:
-		{
-			if(GetLevel() < 40)
-				return false;
-			break;
-		}
-	case BARD:
-	case BARDGM:
-		{
-			if(GetLevel() < 58)
-				return false;
-			break;
-		}
-	default:
-		{
-			return false;
-		}
-	}
-	
-	if (this->IsClient())
-		return(this->CastToClient()->HasSkill(RIPOSTE));	// No skill = no chance
-	else
-		return true;
+    if(!IsClient()) {
+        return(GetSkill(RIPOSTE) > 0);
+    } else {
+        return(CastToClient()->HasSkill(RIPOSTE));
+    }
 }
 
 bool Mob::CanThisClassBlock(void) const
 {
-	switch(GetClass())
-	{
-	case BEASTLORDGM:
-	case BEASTLORD:
-		{
-		if(GetLevel() < 25)
-			return false;
-		break;
-		}
-	case MONKGM:
-	case MONK:
-		{
-		if(GetLevel() < 12)
-			return false;
-		break;
-		}
-	default:
-		{
-			return false;
-		}
-	}
-
-	if (this->IsClient())
-		return(this->CastToClient()->HasSkill(BLOCKSKILL));	// No skill = no chance
-	else
-		return true;
+	if(!IsClient()) {
+        return(GetSkill(BLOCKSKILL) > 0);
+    } else {
+        return(CastToClient()->HasSkill(BLOCKSKILL));
+    }
 }
 
 float Mob::Dist(const Mob &other) const {
@@ -3102,13 +2819,13 @@ int Mob::CountDispellableBuffs()
 		if(!IsValidSpell(buffs[x].spellid))
 			continue;
 
-		if(buffs[x].diseasecounters || buffs[x].poisoncounters || buffs[x].cursecounters)
+		if(buffs[x].counters)
 			continue;
 		
 		if(spells[buffs[x].spellid].goodEffect == 0)
 			continue;
 
-		if(buffs[x].spellid != SPELL_UNKNOWN &&	buffs[x].durationformula != DF_Permanent)
+		if(buffs[x].spellid != SPELL_UNKNOWN &&	spells[buffs[x].spellid].buffdurationformula != DF_Permanent)
 			val++;
 	}
 	return val;
@@ -3165,21 +2882,15 @@ bool Mob::HasBuffIcon(Mob *caster, Mob *target, int16 spell_id)
 		return false;
 }
 
-void Mob::SetEntityVariable(int32 id, const char *m_var)
+void Mob::SetEntityVariable(const char *id, const char *m_var)
 {
-	if(!id)
-		return;
-
 	std::string n_m_var = m_var;
 	m_EntityVariables[id] = n_m_var;
 }
 
-const char* Mob::GetEntityVariable(int32 id)
+const char* Mob::GetEntityVariable(const char *id)
 {
-	if(!id)
-		return NULL;
-
-	std::map<int32, std::string>::iterator iter = m_EntityVariables.find(id);
+	std::map<std::string, std::string>::iterator iter = m_EntityVariables.find(id);
 	if(iter != m_EntityVariables.end())
 	{
 		return iter->second.c_str();
@@ -3187,12 +2898,9 @@ const char* Mob::GetEntityVariable(int32 id)
 	return NULL;
 }
 
-bool Mob::EntityVariableExists(int32 id)
+bool Mob::EntityVariableExists(const char *id)
 {
-	if(!id)
-		return false;
-
-	std::map<int32, std::string>::iterator iter = m_EntityVariables.find(id);
+	std::map<std::string, std::string>::iterator iter = m_EntityVariables.find(id);
 	if(iter != m_EntityVariables.end())
 	{
 		return true;

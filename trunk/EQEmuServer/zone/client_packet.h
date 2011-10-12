@@ -272,4 +272,5 @@
     void Handle_OP_AltCurrencyPurchase(const EQApplicationPacket *app);
     void Handle_OP_AltCurrencyReclaim(const EQApplicationPacket *app);
     void Handle_OP_AltCurrencySell(const EQApplicationPacket *app);
-    
+    void Handle_OP_CrystalReclaim(const EQApplicationPacket *app);
+    void Handle_OP_CrystalCreate(const EQApplicationPacket *app);

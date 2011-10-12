@@ -2577,9 +2577,24 @@ void QuestManager::SendMail(const char *to, const char *from, const char *subjec
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 }
+
 int16 QuestManager::CreateDoor(const char* model, float x, float y, float z, float heading, int8 opentype, int16 size)
 {
 	int16 entid = 0; //safety check
 	entid = entity_list.CreateDoor(model, x, y, z, heading, opentype, size);
 	return entid;
 }
+
+sint32 QuestManager::GetZoneID(const char *zone) {
+    return static_cast<sint32>(database.GetZoneID(zone));
+}
+
+const char* QuestManager::GetZoneLongName(const char *zone) {
+    char *long_name;
+    database.GetZoneLongName(zone, &long_name);
+    std::string ln = long_name;
+    safe_delete_array(long_name);
+
+    return ln.c_str();
+}
+

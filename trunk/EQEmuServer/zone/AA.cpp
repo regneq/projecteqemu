@@ -1412,7 +1412,7 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 				Inspector->Message(0, "%s", spells[buffs[i].spellid].name);
 			else
 			{
-				if (buffs[i].durationformula == DF_Permanent)
+				if (spells[buffs[i].spellid].buffdurationformula == DF_Permanent)
 					Inspector->Message(0, "%s (Permanent)", spells[buffs[i].spellid].name);
 				else {
 					char *TempString = NULL;

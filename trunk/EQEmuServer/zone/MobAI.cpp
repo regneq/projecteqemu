@@ -187,6 +187,8 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						}
 						break;
 					}
+                    case SpellType_Slow:
+                    case SpellType_Debuff:
 					case SpellType_Nuke: {
 						if (
 							manaR >= 10 && MakeRandomInt(0, 99) < 70
@@ -1853,7 +1855,7 @@ bool NPC::AI_EngagedCastCheck() {
 			// try casting a heal on nearby
 			if (!entity_list.AICheckCloseBeneficialSpells(this, 25, MobAISpellRange, SpellType_Heal)) {
 				//nobody to heal, try some detrimental spells.
-				if(!AICastSpell(GetTarget(), 20, SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez)) {
+				if(!AICastSpell(GetTarget(), 20, SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez | SpellType_Slow | SpellType_Debuff)) {
 					//no spell to cast, try again soon.
 					AIautocastspell_timer->Start(RandomTimer(500, 1000), false);
 				}
@@ -1871,7 +1873,7 @@ bool NPC::AI_PursueCastCheck() {
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 		
 		mlog(AI__SPELLS, "Engaged (pursuing) autocast check triggered. Trying to cast offensive spells.");
-		if(!AICastSpell(GetTarget(), 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel | SpellType_Mez)) {
+		if(!AICastSpell(GetTarget(), 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel | SpellType_Mez | SpellType_Slow | SpellType_Debuff)) {
 			//no spell cast, try again soon.
 			AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 		} //else, spell casting finishing will reset the timer.

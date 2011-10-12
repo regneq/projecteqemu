@@ -546,11 +546,10 @@ struct SpellBuff_Struct
 /*004*/	uint32 unknown004;			// Seen 1 for no buff
 /*008*/ int32 spellid;
 /*012*/	int32 duration;
-/*016*/ int16 dmg_shield_remaining;	//
-/*018*/ int8 persistant_buff;		// prolly not real
-/*019*/ int8 reserved;				// proll not real
+/*016*/ int32 unknown016;
 /*020*/	int32 player_id;			// 'global' ID of the caster, for wearoff messages
-/*024*/ uint8 unknown0028[64];
+/*024*/ int32 counters;
+/*028*/ uint8 unknown0028[60];
 /*088*/
 };
 

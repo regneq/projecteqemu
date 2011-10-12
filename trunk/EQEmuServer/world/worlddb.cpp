@@ -25,12 +25,13 @@
 #include "../common/rulesys.h"
 #include <iostream>
 #include <cstdlib>
+#include <vector>
+#include "SoFCharCreateData.h"
 
 using namespace std;
-
-
 WorldDatabase database;
-
+extern std::vector<RaceClassAllocation> character_create_allocations;
+extern std::vector<RaceClassCombos> character_create_race_class_combos;
 
 
 // solar: the current stuff is at the bottom of this function
@@ -144,7 +145,7 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 								float x = atof(row2[2]);
 								float y = atof(row2[3]);
 								float z = atof(row2[4]);
-								if(x == 0 & y == 0 & z == 0)
+								if(x == 0 && y == 0 && z == 0)
 									GetSafePoints(pp->binds[4].zoneId, 0, &x, &y, &z);
 
 								pp->binds[4].x = x;
@@ -576,144 +577,72 @@ bool WorldDatabase::GetCharacterLevel(const char *name, int &level)
 	return false;
 }
 
-/*
-void WorldDatabase::GetLauncherZones(const char *launcher_name, std::vector<LauncherZone> &rl) {
-}
+bool WorldDatabase::LoadCharacterCreateAllocations() {
+    character_create_allocations.clear();
 
-bool WorldDatabase::GetLauncherZone(const char *launcher_name, const char *zone_short, LauncherZone &r) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char* query = 0;
 	MYSQL_RES *result;
-	MYSQL_ROW row;
-	bool ret = false;
-    
-    char namebuf[128];
-	DoEscapeString(namebuf, launcher_name, strlen(launcher_name)&0x3F);	//limit len to 64
-	namebuf[127] = '\0';
-    char zonebuf[32];
-	DoEscapeString(zonebuf, zone_short, strlen(zone_short)&0xF);	//limit len to 16
-	zonebuf[31] = '\0';
-	
-	if (RunQuery(query, MakeAnyLenString(&query,
-			"SELECT port FROM launchers WHERE launcher='%s' AND zone='%s'",
-			namebuf)
-		, errbuf, &result))
-	{
-		if((row = mysql_fetch_row(result))) {
-			r.zone = zone_short;
-			r.port = atoi(row[0]);
-			ret = true;
-		}
-		mysql_free_result(result);
-	} else {
-		LogFile->write(EQEMuLog::Error, "WorldDatabase::GetLauncherList: %s", errbuf);
-	}
-	safe_delete_array(query);
-	return(ret);
+    MYSQL_ROW row;
+    if(RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM char_create_point_allocations order by id"), errbuf, &result)) {
+        safe_delete_array(query);
+        while(row = mysql_fetch_row(result)) {
+            RaceClassAllocation allocate;
+            int r = 0;
+            allocate.Index = atoi(row[r++]);
+            allocate.BaseStats[0] = atoi(row[r++]);
+            allocate.BaseStats[3] = atoi(row[r++]);
+            allocate.BaseStats[1] = atoi(row[r++]);
+            allocate.BaseStats[2] = atoi(row[r++]);
+            allocate.BaseStats[4] = atoi(row[r++]);
+            allocate.BaseStats[5] = atoi(row[r++]);
+            allocate.BaseStats[6] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[0] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[3] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[1] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[2] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[4] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[5] = atoi(row[r++]);
+            allocate.DefaultPointAllocation[6] = atoi(row[r++]);
+            character_create_allocations.push_back(allocate);
+        }
+        mysql_free_result(result);
+    } else {
+        safe_delete_array(query);
+        return false;
+    }
+
+    return true;
 }
 
-bool WorldDatabase::AddLauncherZone(const char *launcher_name, const LauncherZone &it) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    
-    char namebuf[128];
-	DoEscapeString(namebuf, launcher_name, strlen(launcher_name)&0x3F);	//limit len to 64
-	namebuf[127] = '\0';
-    char zonebuf[32];
-	DoEscapeString(zonebuf, it.zone.c_str(), it.zone.length()&0xF);	//limit len to 16
-	zonebuf[31] = '\0';
-	
-	if (!RunQuery(query, MakeAnyLenString(&query,
-		"INSERT INTO launchers (launcher,zone,port) VALUES('%s', '%s', %d)",
-		 namebuf, zonebuf, it.port), errbuf)) {
-		LogFile->write(EQEMuLog::Error, "Error in AddLauncherZone query: %s", errbuf);
-		safe_delete_array(query);
-		return false;
-	}
-	
-	safe_delete_array(query);
-	return true;
+bool WorldDatabase::LoadCharacterCreateCombos() {
+    character_create_race_class_combos.clear();
+
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char* query = 0;
+	MYSQL_RES *result;
+    MYSQL_ROW row;
+    if(RunQuery(query, MakeAnyLenString(&query, "select * from char_create_combinations order by race, class, deity, start_zone"), errbuf, &result)) {
+        safe_delete_array(query);
+        while(row = mysql_fetch_row(result)) {
+            RaceClassCombos combo;
+            int r = 0;
+            combo.AllocationIndex = atoi(row[r++]);
+            combo.Race = atoi(row[r++]);
+            combo.Class = atoi(row[r++]);
+            combo.Deity = atoi(row[r++]);
+            combo.Zone = atoi(row[r++]);
+            combo.ExpansionRequired = atoi(row[r++]);
+            character_create_race_class_combos.push_back(combo);
+        }
+        mysql_free_result(result);
+    } else {
+        safe_delete_array(query);
+        return false;
+    }
+
+    return true;
 }
-
-bool WorldDatabase::DeleteLauncherZone(const char *launcher_name, const char *zone_short) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    
-    char namebuf[128];
-	DoEscapeString(namebuf, launcher_name, strlen(launcher_name)&0x3F);	//limit len to 64
-	namebuf[127] = '\0';
-    char zonebuf[32];
-	DoEscapeString(zonebuf, zone_short, strlen(zone_short)&0xF);	//limit len to 16
-	zonebuf[31] = '\0';
-	
-	if (!RunQuery(query, MakeAnyLenString(&query, 
-		"DELETE FROM launchers WHERE launcher='%s' AND zone='%s'", 
-		namebuf, zonebuf), errbuf)) {
-		LogFile->write(EQEMuLog::Error, "Error in DeleteLauncherZone query: %s", errbuf);
-		safe_delete_array(query);
-		return false;
-	}
-	
-	safe_delete_array(query);
-	return true;
-}
-
-bool WorldDatabase::UpdateLauncherZone(const char *launcher_name, const LauncherZone &it) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    
-    char namebuf[128];
-	DoEscapeString(namebuf, launcher_name, strlen(launcher_name)&0x3F);	//limit len to 64
-	namebuf[127] = '\0';
-    char zonebuf[32];
-	DoEscapeString(zonebuf, it.zone.c_str(), it.zone.length()&0xF);	//limit len to 16
-	zonebuf[31] = '\0';
-	
-	if (!RunQuery(query, MakeAnyLenString(&query,
-		"UPDATE launchers SET port=%d WHERE launcher='%s' AND zone='%s'",
-		 it.port, namebuf, zonebuf), errbuf)) {
-		LogFile->write(EQEMuLog::Error, "Error in UpdateLauncherZone query: %s", errbuf);
-		safe_delete_array(query);
-		return false;
-	}
-	
-	safe_delete_array(query);
-	return true;
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

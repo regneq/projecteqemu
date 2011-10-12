@@ -4,6 +4,7 @@
 #include "../common/EMuShareMem.h"
 #include "../common/classes.h"
 #include "../common/rulesys.h"
+#include "../common/seperator.h"
 #include "MiscFunctions.h"
 #include "eq_packet_structs.h"
 #include "guilds.h"
@@ -250,11 +251,12 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 
 			uint32 len_query =  MakeAnyLenString(&query, 
 				"REPLACE INTO sharedbank "
-				"	(acctid,slotid,itemid,charges,"
+				"	(acctid,slotid,itemid,charges,custom_data,"
 				"	augslot1,augslot2,augslot3,augslot4,augslot5)"
-				" VALUES(%lu,%lu,%lu,%lu,"
+				" VALUES(%lu,%lu,%lu,%lu,'%s',"
 				"	%lu,%lu,%lu,%lu,%lu)",
-				(unsigned long)account_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges ,
+				(unsigned long)account_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges,
+                inst->GetCustomDataString().c_str(),
 				(unsigned long)augslot[0],(unsigned long)augslot[1],(unsigned long)augslot[2],(unsigned long)augslot[3],(unsigned long)augslot[4]);
 
 			
@@ -286,11 +288,12 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			// Update/Insert item
 			uint32 len_query = MakeAnyLenString(&query, 
 				"REPLACE INTO inventory "
-				"	(charid,slotid,itemid,charges,instnodrop,color,"
+				"	(charid,slotid,itemid,charges,instnodrop,custom_data,color,"
 				"	augslot1,augslot2,augslot3,augslot4,augslot5)"
-				" VALUES(%lu,%lu,%lu,%lu,%lu,%lu,"
+				" VALUES(%lu,%lu,%lu,%lu,%lu,'%s',%lu,"
 				"	%lu,%lu,%lu,%lu,%lu)",
-				(unsigned long)char_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges, (unsigned long)(inst->IsInstNoDrop() ? 1:0),(unsigned long)inst->GetColor(),
+				(unsigned long)char_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges, 
+                (unsigned long)(inst->IsInstNoDrop() ? 1:0),inst->GetCustomDataString().c_str(),(unsigned long)inst->GetColor(),
 				(unsigned long)augslot[0],(unsigned long)augslot[1],(unsigned long)augslot[2],(unsigned long)augslot[3],(unsigned long)augslot[4] );
 			
 			ret = RunQuery(query, len_query, errbuf);
@@ -418,13 +421,13 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 	
 	if (is_charid) {
 		len_query = MakeAnyLenString(&query,
-			"SELECT sb.slotid,sb.itemid,sb.charges,sb.augslot1,sb.augslot2,sb.augslot3,sb.augslot4,sb.augslot5 from sharedbank sb "
+			"SELECT sb.slotid,sb.itemid,sb.charges,sb.augslot1,sb.augslot2,sb.augslot3,sb.augslot4,sb.augslot5,sb.custom_data from sharedbank sb "
 			"INNER JOIN character_ ch ON ch.account_id=sb.acctid "
 			"WHERE ch.id=%i", id);
 	}
 	else {
 		len_query = MakeAnyLenString(&query,
-			"SELECT slotid,itemid,charges,augslot1,augslot2,augslot3,augslot4,augslot5 from sharedbank WHERE acctid=%i", id);
+			"SELECT slotid,itemid,charges,augslot1,augslot2,augslot3,augslot4,augslot5,custom_data from sharedbank WHERE acctid=%i", id);
 	}
 	
 	if (RunQuery(query, len_query, errbuf, &result)) {
@@ -451,7 +454,33 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 						}
 					}
 				}
-				put_slot_id = inv->PutItem(slot_id, *inst);
+                if(row[8]) {
+                    std::string data_str(row[8]);
+                    std::string id;
+                    std::string value;
+                    bool use_id = true;
+
+                    for(int i = 0; i < data_str.length(); ++i) {
+                        if(data_str[i] == '^') {
+                            if(!use_id) {
+                                inst->SetCustomData(id, value);
+                                id.clear();
+                                value.clear();
+                            }
+                            use_id = !use_id;
+                        }
+                        else {
+                            char v = data_str[i];
+                            if(use_id) {
+                                id.push_back(v);
+                            } else {
+                                value.push_back(v);
+                            }
+                        }
+                    }
+                }
+                
+                put_slot_id = inv->PutItem(slot_id, *inst);
 				safe_delete(inst);
 				
 				// Save ptr to item in inventory
@@ -493,7 +522,8 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 	bool ret = false;
 	
 	// Retrieve character inventory
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,instnodrop FROM inventory WHERE charid=%i ORDER BY slotid", char_id), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,"
+        "instnodrop,custom_data FROM inventory WHERE charid=%i ORDER BY slotid", char_id), errbuf, &result)) {
 
 		while ((row = mysql_fetch_row(result))) {	
 			sint16 slot_id	= atoi(row[0]);
@@ -515,6 +545,32 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 				
 				ItemInst* inst = CreateBaseItem(item, charges);
 				
+                if(row[10]) {
+                    std::string data_str(row[10]);
+                    std::string id;
+                    std::string value;
+                    bool use_id = true;
+
+                    for(int i = 0; i < data_str.length(); ++i) {
+                        if(data_str[i] == '^') {
+                            if(!use_id) {
+                                inst->SetCustomData(id, value);
+                                id.clear();
+                                value.clear();
+                            }
+                            use_id = !use_id;
+                        }
+                        else {
+                            char v = data_str[i];
+                            if(use_id) {
+                                id.push_back(v);
+                            } else {
+                                value.push_back(v);
+                            }
+                        }
+                    }
+                }
+
 				if (instnodrop || (slot_id >= 0 && slot_id <= 21 && inst->GetItem()->Attuneable))
 						inst->SetInstNoDrop(true);
 				if (color > 0)
@@ -575,7 +631,9 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 	bool ret = false;
 	
 	// Retrieve character inventory
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,instnodrop FROM inventory INNER JOIN character_ ch ON ch.id=charid WHERE ch.name='%s' AND ch.account_id=%i ORDER BY slotid", name, account_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,"
+        "instnodrop,custom_data FROM inventory, custom_data INNER JOIN character_ ch ON ch.id=charid WHERE ch.name='%s' AND ch.account_id=%i ORDER BY slotid", 
+        name, account_id), errbuf, &result))
 	{
 		while ((row = mysql_fetch_row(result))) {
 			sint16 slot_id	= atoi(row[0]);
@@ -596,6 +654,32 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 
 			ItemInst* inst = CreateBaseItem(item, charges);			
 			inst->SetInstNoDrop(instnodrop);
+
+            if(row[10]) {
+                std::string data_str(row[10]);
+                std::string id;
+                std::string value;
+                bool use_id = true;
+    
+                for(int i = 0; i < data_str.length(); ++i) {
+                    if(data_str[i] == '^') {
+                        if(!use_id) {
+                            inst->SetCustomData(id, value);
+                            id.clear();
+                            value.clear();
+                        }
+                        use_id = !use_id;
+                    }
+                    else {
+                        char v = data_str[i];
+                        if(use_id) {
+                            id.push_back(v);
+                        } else {
+                            value.push_back(v);
+                        }
+                    }
+                }
+            }
 
 			if (color > 0)
 				inst->SetColor(color);
