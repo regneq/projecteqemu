@@ -560,7 +560,7 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 	if (membercount == 0) 
 		return; 
 
-	for (unsigned int x = 0; x < MAX_GROUP_MEMBERS; x++)  {
+	for (unsigned int x = 0; x < MAX_RAID_MEMBERS; x++)  {
 		if (members[x].member != NULL) // If Group Member is Client
 		{
 			Client *cmember = members[x].member;
