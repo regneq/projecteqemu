@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/14/2011==
 Leere: More than 6 members of a raid can now receive raid experience.
+Sorvani: Added AE Rampage message and filter
 
 ==10/11/2011==
 KLS: Added Ebon/Radiant crystal reclaim for the clients I have.(Titanium/SoD/Underfoot)
