@@ -8458,7 +8458,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
                 m_pp.buffs[i].duration = buffs[i].ticsremaining;
                 m_pp.buffs[i].counters = buffs[i].counters;
             } else {
-                m_pp.buffs[i].spellid = SPELL_UNKNOWN;
+                m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
                 m_pp.buffs[i].bard_modifier = 10;
                 m_pp.buffs[i].slotid = 0;
                 m_pp.buffs[i].player_id = 0;
