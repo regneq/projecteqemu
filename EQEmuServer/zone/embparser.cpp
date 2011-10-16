@@ -1120,11 +1120,6 @@ int PerlembParser::LoadPlayerScript(const char *zone_name)
 		{
 				LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s", filename.c_str(), err);
 		}
-		if(!isloaded(packagename.c_str()))
-		{
-			playerQuestLoaded[zone_name] = pQuestUnloaded;
-			return 0;
-		}
 	}
 
     //todo: change this to just read eval_file's %cache - duh!
