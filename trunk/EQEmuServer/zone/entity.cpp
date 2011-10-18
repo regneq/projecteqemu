@@ -4090,7 +4090,7 @@ void EntityList::SendNimbusEffects(Client *c)
 	}
 }
 
-void EntityList::SendImmuneTarget(Client *c)
+void EntityList::SendUntargetable(Client *c)
 {
 	if(!c)
 		return;
@@ -4107,10 +4107,9 @@ void EntityList::SendImmuneTarget(Client *c)
 				iterator.Advance();
 				continue;
 			}
-			if(cur->IsNPC() && cur->HasNPCSpecialAtk("G"))	// IMMUNE_TARGET
-			{
-				cur->SendUntargetable(c);
-			}
+			if(!cur->IsTargetable()) {
+                cur->SendTargetable(false, c);
+            }
 		}
 		iterator.Advance();
 	}

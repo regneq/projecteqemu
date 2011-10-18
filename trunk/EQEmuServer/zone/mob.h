@@ -137,7 +137,7 @@ enum {
 	IMMUNE_MELEE_EXCEPT_BANE,	// O
 	IMMUNE_MELEE_NONMAGICAL,	// W
 	IMMUNE_AGGRO,				// H - Won't aggro, ever.
-	IMMUNE_TARGET,				// G - Immune to target
+	IMMUNE_AGGRO_ON,			// G - Immune to being aggroed
 	IMMUNE_CASTING_FROM_RANGE,	// g
 	IMMUNE_FEIGN_DEATH,			// d
 	NPC_TUNNELVISION,			// t
@@ -484,11 +484,13 @@ bool logpos;
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
 	void SendLevelAppearance();
 	void SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
-	void SendUntargetable(Client *c, int in=0);
+    void SendTargetable(bool on, Client *specific_target = NULL);
 	void QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
 	void CameraEffect(uint32 duration, uint32 intensity, Client *c=NULL, bool global = false);
 	void SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, bool perm_effect=false, Client *c=NULL);
 	void TempName(const char *newname = NULL);
+    void SetTargetable(bool on);
+    bool IsTargetable() const { return m_targetable; }
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)
@@ -1406,6 +1408,7 @@ protected:
 	bool m_hasDeathSaveChance;
 	uint32 m_spellHitsLeft[38]; // Used to track which spells will have their numhits incremented when spell finishes casting, 38 Buffslots
 	int	flymode;
+    bool m_targetable;
 	int QGVarDuration(const char *fmt);
 	void InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);
 

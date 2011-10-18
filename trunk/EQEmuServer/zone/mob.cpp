@@ -379,6 +379,7 @@ Mob::Mob(const char*   in_name,
 	nimbus_effect1 = 0;
 	nimbus_effect2 = 0;
 	nimbus_effect3 = 0;
+    m_targetable = true;
 
 	flymode = FlyMode3;
 	// Pathing
@@ -1574,16 +1575,19 @@ void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm
 	safe_delete(outapp);
 }
 
-void Mob::SendUntargetable(Client *c, int in)
-{
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Untargetable,sizeof(Untargetable_Struct));
-	Untargetable_Struct* us = (Untargetable_Struct*)outapp->pBuffer;
-	us->id = GetID();
-	us->unk1 = in;
-	if (c)
-		c->QueuePacket(outapp);
+void Mob::SendTargetable(bool on, Client *specific_target) {
+    EQApplicationPacket* outapp = new EQApplicationPacket(OP_Untargetable, sizeof(Untargetable_Struct));
+    Untargetable_Struct *ut = (Untargetable_Struct*)outapp->pBuffer;
+    ut->id = GetID();
+    ut->targetable_flag = on == true ? 1 : 0;
+
+    if(specific_target == NULL) {
+		entity_list.QueueClients(this, outapp);
+	}
+	else if (specific_target->IsClient()) {
+		specific_target->CastToClient()->QueuePacket(outapp, false);
+	}
 	safe_delete(outapp);
-	NPCSpecialAttacks("G", 0);	// IMMUNE_TARGET
 }
 
 void Mob::QuestReward(Client *c, int32 silver, int32 gold, int32 platinum) {
@@ -1698,6 +1702,13 @@ void Mob::TempName(const char *newname)
 	safe_delete(outapp);
 
 	SetName(temp_name);
+}
+
+void Mob::SetTargetable(bool on) {
+    if(m_targetable != on) {
+        m_targetable = on;
+        SendTargetable(on);
+    }
 }
 
 const sint32& Mob::SetMana(sint32 amount)

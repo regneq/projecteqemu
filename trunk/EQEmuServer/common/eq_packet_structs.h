@@ -4677,7 +4677,7 @@ struct AltCurrencySellItem_Struct {
 
 struct Untargetable_Struct {
 /*000*/	uint32 id;
-/*004*/	uint32 unk1;
+/*004*/	uint32 targetable_flag; //0 = not targetable, 1 or higher = targetable
 /*008*/
 };
 

@@ -2299,7 +2299,7 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	if (other == myowner)
 		return;
 
-	if(other->SpecAttacks[IMMUNE_TARGET])
+	if(other->SpecAttacks[IMMUNE_AGGRO_ON])
 		return;
 
     if(SpecAttacks[NPC_TUNNELVISION]) {
