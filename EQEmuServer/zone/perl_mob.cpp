@@ -7536,16 +7536,15 @@ XS(XS_Mob_SetTargetDestSteps)
 	XSRETURN_EMPTY;
 }
 
-XS(XS_Mob_SendUntargetable); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Mob_SendUntargetable)
+XS(XS_Mob_SetTargetable); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetTargetable)
 {
 	dXSARGS;
-	if (items != 2 && items != 3)
-		Perl_croak(aTHX_ "Usage: Mob::SendUntargetable(THIS, to_client, in)");
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetTargetable(THIS, on)");
 	{
 		Mob *		THIS;
-		Client*		to_client;
-		sint32		in = 0;
+		bool on = (bool)SvTRUE(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7556,24 +7555,10 @@ XS(XS_Mob_SendUntargetable)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if (sv_derived_from(ST(1), "Client")) {
-			IV tmp = SvIV((SV*)SvRV(ST(1)));
-			to_client = INT2PTR(Client *,tmp);
-		}
-		else
-			Perl_croak(aTHX_ "to_client is not of type Client");
-		if(to_client == NULL)
-			Perl_croak(aTHX_ "to_client is NULL, avoiding crash.");
-		
-		if (items == 3)
-		{
-			in = (sint32)SvIV(ST(2));
-		}
-		THIS->SendUntargetable(to_client, in);
+		THIS->SetTargetable(on);
 	}
 	XSRETURN_EMPTY;
 }
-
 
 #ifdef __cplusplus
 extern "C"
@@ -7857,7 +7842,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetDeltas"), XS_Mob_SetDeltas, file, "$$$$$");
 		newXSproto(strcpy(buf, "SetLD"), XS_Mob_SetLD, file, "$$");
 		newXSproto(strcpy(buf, "SetTargetDestSteps"), XS_Mob_SetTargetDestSteps, file, "$$");
-		newXSproto(strcpy(buf, "SendUntargetable"), XS_Mob_SendUntargetable, file, "$$;$");
+        newXSproto(strcpy(buf, "SetTargetable"), XS_Mob_SetTargetable, file, "$$");
 	XSRETURN_YES;
 }
 

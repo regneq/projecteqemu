@@ -1410,7 +1410,7 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
 				SpecAttacks[IMMUNE_AGGRO] = (remove ? false : true);
 				break;
 			case 'G':
-				SpecAttacks[IMMUNE_TARGET] = (remove ? false : true);
+				SpecAttacks[IMMUNE_AGGRO_ON] = (remove ? false : true);
 				break;
 			case 'g':
 				SpecAttacks[IMMUNE_CASTING_FROM_RANGE] = (remove ? false : true);
@@ -1552,7 +1552,7 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 					HasAllAttacks = false;
 				break;
 			case 'G':
-				if (!SpecAttacks[IMMUNE_TARGET])
+				if (!SpecAttacks[IMMUNE_AGGRO_ON])
 					HasAllAttacks = false;
 				break;
 			case 'g':

@@ -2023,14 +2023,23 @@ void ZoneDatabase::LoadBuffs(Client *c) {
         if(!IsValidSpell(buffs[i].spellid)) {
             continue;
         }
+
         for(int j = 0; j < 12; ++j) {
+            bool cont = false;
             switch(spells[buffs[i].spellid].effectid[j]) {
             case SE_Charm:
                 buffs[i].spellid = SPELL_UNKNOWN;
+                cont = true;
                 break;
             case SE_Illusion:
-                if(!buffs[i].persistant_buff)
+                if(!buffs[i].persistant_buff) {
                     buffs[i].spellid = SPELL_UNKNOWN;
+                    cont = true;
+                }
+                break;
+            }
+
+            if(cont) {
                 break;
             }
         }

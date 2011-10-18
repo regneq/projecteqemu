@@ -206,6 +206,8 @@ void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 	cur_wp_z = mtz;
 	cur_wp_pause = 0;
 	cur_wp_heading = mth;
+    pLastFightingDelayMoving = 0;
+    AIwalking_timer->Start(100);
 }
 
 void NPC::UpdateWaypoint(int wp_index)
