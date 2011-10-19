@@ -1105,9 +1105,6 @@ void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num,
 }
 
 void Client::Message(uint32 type, const char* message, ...) {
-	va_list argptr;
-	char *buffer = new char[4096];
-
 	if (GetFilter(FilterSpellDamage) == FilterHide && type == MT_NonMelee)
 		return;
 	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
@@ -1115,6 +1112,8 @@ void Client::Message(uint32 type, const char* message, ...) {
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
 		return;
 
+    va_list argptr;
+    char *buffer = new char[4096];
 	va_start(argptr, message);
 	vsnprintf(buffer, 4096, message, argptr);
 	va_end(argptr);
