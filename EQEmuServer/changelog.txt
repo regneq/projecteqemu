@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/19/2011==
+KLS: (lerxst2112) Client::Message memory leak
+Trevius: Potential crash fix for MoveTo() being used on an NPC that has a grid with wandertype 3.
+
 ==10/14/2011==
 Leere: More than 6 members of a raid can now receive raid experience.
 Sorvani: Added AE Rampage message and filter

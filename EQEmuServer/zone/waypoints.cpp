@@ -359,7 +359,11 @@ void NPC::CalculateNewWaypoint()
 
 	tar_ndx = 52;
 
-	// Check to see if we need to update the waypoint. - Wes
+	// Preserve waypoint setting for quest controlled NPCs
+	if (cur_wp < 0)
+		cur_wp = old_wp;
+
+	// Check to see if we need to update the waypoint.
 	if (cur_wp != old_wp)
 		UpdateWaypoint(cur_wp);
 }
