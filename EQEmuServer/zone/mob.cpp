@@ -2705,30 +2705,37 @@ sint32 Mob::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
 	}
 	return(casttime);
 }
+
 void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
-	// Trumpcard: Changed proc targets to look up based on the spells goodEffect flag.
+	// Changed proc targets to look up based on the spells goodEffect flag.
 	// This should work for the majority of weapons.
-	if(spell_id == SPELL_UNKNOWN)
+	if(!IsValidSpell(spell_id)){ // Check for a valid spell otherwise it will crash through the function
+		if(this->IsClient()){
+			this->Message(0, "Invalid spell proc %u", spell_id);
+			mlog(CLIENT__SPELLS, "Player %s, Weapon Procced invalid spell %u", this->GetName(), spell_id);
+		}
 		return;
-		
-	bool twinproc = false;
-	int twinproc_chance = itembonuses.TwinProc + spellbonuses.TwinProc;
-	if(IsClient())
-		twinproc_chance += aabonuses.TwinProc;
-						
-	if(MakeRandomInt(0,99) < twinproc_chance)
-		twinproc = true;
-		
-	if (IsBeneficialSpell(spell_id)) {
-		SpellFinished(spell_id, this, 10, 0, -1, spells[spell_id].ResistDiff);
-		if(twinproc)
-			SpellOnTarget(spell_id, this);
 	}
-	else if(!(on->IsClient() && on->CastToClient()->dead)) { //dont proc on dead clients
-		SpellFinished(spell_id, on, 10, 0, -1, spells[spell_id].ResistDiff);
-		if(twinproc)
-			SpellOnTarget(spell_id, on);
-	}
+
+		bool twinproc = false;
+		int twinproc_chance = itembonuses.TwinProc + spellbonuses.TwinProc;
+		if(IsClient())
+			twinproc_chance += aabonuses.TwinProc;
+							
+		if(MakeRandomInt(0,99) < twinproc_chance)
+			twinproc = true;
+			
+		if (IsBeneficialSpell(spell_id)) {
+			SpellFinished(spell_id, this, 10, 0, -1, spells[spell_id].ResistDiff);
+			if(twinproc)
+				SpellOnTarget(spell_id, this);
+		}
+		else if(!(on->IsClient() && on->CastToClient()->dead)) { //dont proc on dead clients
+			SpellFinished(spell_id, on, 10, 0, -1, spells[spell_id].ResistDiff);
+			if(twinproc)
+				SpellOnTarget(spell_id, on);
+		}
+	return;
 }
 
 int32 Mob::GetZoneID() const {
@@ -3271,7 +3278,7 @@ sint16 Mob::GetHealRate()
 
 bool Mob::TryFadeEffect(int slot)
 {
-	if(slot)
+	if(IsValidSpell(buffs[slot].spellid))
 	{
 		for(int i = 0; i < EFFECT_COUNT; i++)
 		{
@@ -3279,7 +3286,7 @@ bool Mob::TryFadeEffect(int slot)
 			{
 				int16 spell_id = spells[buffs[slot].spellid].base[i];
 				BuffFadeBySlot(slot);
-				if(spell_id)
+				if(IsValidSpell(spell_id))
 				{
 					ExecWeaponProc(spell_id, this);
 					return true;
