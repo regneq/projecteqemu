@@ -3480,8 +3480,8 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 	return true;
 }
 
-void Corpse::CastRezz(int16 spellid, Mob* Caster){
-
+void Corpse::CastRezz(int16 spellid, Mob* Caster)
+{
 	_log(SPELLS__REZ, "Corpse::CastRezz spellid %i, Rezzed() is %i, rezzexp is %i", spellid,Rezzed(),rezzexp);
 
 	if(Rezzed()){
@@ -3514,7 +3514,7 @@ void Corpse::CastRezz(int16 spellid, Mob* Caster){
 	rezz->unknown020 = 0x00000000;
 	rezz->unknown088 = 0x00000000;
 	// We send this to world, because it needs to go to the player who may not be in this zone.
-	worldserver.RezzPlayer(outapp, rezzexp, OP_RezzRequest);
+	worldserver.RezzPlayer(outapp, rezzexp, dbid, OP_RezzRequest);
 	_pkt(SPELLS__REZ, outapp);
 	safe_delete(outapp);
 }

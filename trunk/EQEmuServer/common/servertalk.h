@@ -375,6 +375,7 @@ struct ServerZonePlayer_Struct {
 };
 
 struct RezzPlayer_Struct {
+	int32	dbid;
 	int32	exp;
 	int16	rezzopcode;
 	//char	packet[160];

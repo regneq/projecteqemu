@@ -1006,7 +1006,7 @@ public:
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 	void HandleRespawnFromHover(uint32 Option);
 	bool IsHoveringForRespawn() { return RespawnFromHoverTimer.Enabled(); }
-	void SetPendingRezzData(int XP, int16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
+	void SetPendingRezzData(int XP, int32 DBID, int16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzDBID = DBID; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
 	bool IsRezzPending() { return PendingRezzSpellID > 0; }
 	void ClearHover();
 	inline bool IsBlockedBuff(sint16 SpellID) { return PlayerBlockedBuffs.find(SpellID) != PlayerBlockedBuffs.end(); }
@@ -1303,6 +1303,7 @@ private:
 	uint8 HideCorpseMode;
 	bool PendingGuildInvitation;
 	int PendingRezzXP;
+	int32 PendingRezzDBID;
 	int16 PendingRezzSpellID;		// Only used for resurrect while hovering.
 	std::string PendingRezzCorpseName;	// Only used for resurrect while hovering.
 

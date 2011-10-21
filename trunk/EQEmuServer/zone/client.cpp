@@ -245,6 +245,7 @@ Client::Client(EQStreamInterface* ieqs)
 	m_tradeskill_object = NULL;
 	delaytimer = false;
 	PendingRezzXP = -1;
+	PendingRezzDBID = 0;
 	PendingRezzSpellID = 0;
 	numclients++;
 	// emuerror;

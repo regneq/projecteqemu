@@ -4689,7 +4689,7 @@ void Client::Handle_OP_RezzAnswer(const EQApplicationPacket *app)
 		// Send the OP_RezzComplete to the world server. This finds it's way to the zone that
 		// the rezzed corpse is in to mark the corpse as rezzed.
 		outapp->SetOpcode(OP_RezzComplete);
-		worldserver.RezzPlayer(outapp, 0, OP_RezzComplete);
+		worldserver.RezzPlayer(outapp, 0, 0, OP_RezzComplete);
 	}
 	return;
 }

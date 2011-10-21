@@ -153,6 +153,7 @@ public:
 	bool	GetDecayTimes(npcDecayTimes_Struct* npcCorpseDecayTimes);
 	int32	CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading);
 	int32	UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed = false);
+	void	MarkCorpseAsRezzed(int32 dbid);
 	bool	BuryPlayerCorpse(int32 dbid);
 	bool	DeletePlayerCorpse(int32 dbid);
 	int32	GetPlayerBurriedCorpseCount(int32 char_id);
