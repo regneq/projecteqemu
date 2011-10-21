@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/20/2011==
+Trevius: Fix for Perl Doors GetID() command.
+
 ==10/19/2011==
 KLS: (lerxst2112) Client::Message memory leak
 Trevius: Potential crash fix for MoveTo() being used on an NPC that has a grid with wandertype 3.

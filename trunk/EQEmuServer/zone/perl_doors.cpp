@@ -82,7 +82,7 @@ XS(XS_Doors_GetID)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetID();
+		RETVAL = THIS->GetEntityID();
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
@@ -710,6 +710,7 @@ XS(boot_Doors)
 
 
 	XS_VERSION_BOOTCHECK ;
+		newXSproto(strcpy(buf, "GetID"),XS_Doors_GetID, file, "$");
 		newXSproto(strcpy(buf, "SetModelName"),XS_Doors_SetModelName, file, "$$");
 		newXSproto(strcpy(buf, "GetModelName"),XS_Doors_GetModelName, file, "$");
 		newXSproto(strcpy(buf, "GetX"),XS_Doors_GetX, file, "$");
