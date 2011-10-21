@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/21/2011==
+Derision: Fixed rez bug.
 Akkadius: Fixed a spell crash that has been reported on The Hidden Forest with TryFadeEffect
 Akkadius: Fixed a spell crash with ExecWeaponProc when a spell or weapon procs a spell that does not exist, you can catch the invalid spells in your spells log if you have them enabled
 
