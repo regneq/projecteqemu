@@ -1496,6 +1496,18 @@ int32 ZoneDatabase::UpdatePlayerCorpse(int32 dbid, int32 charid, const char* cha
 	return dbid;
 }
 
+void ZoneDatabase::MarkCorpseAsRezzed(int32 dbid)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+
+	if(!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE player_corpses SET rezzed = 1 WHERE id = %i", dbid), errbuf))
+	{
+		LogFile->write(EQEMuLog::Error, "MarkCorpseAsRezzed failed: %s, %s", query, errbuf);
+	}
+	safe_delete_array(query);
+}
+
 int32 ZoneDatabase::CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256+(datasize*2)];

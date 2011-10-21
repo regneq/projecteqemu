@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/21/2011==
+Derision: Fixed rez bug.
+
 ==10/20/2011==
 Trevius: Fix for Perl Doors GetID() command.
 Akkadius: Mysql #command CLI - Fixed an issue where the query string was being escaped

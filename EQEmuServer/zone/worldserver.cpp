@@ -676,7 +676,7 @@ void WorldServer::Process() {
 					}
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
-					client->SetPendingRezzData(srs->exp, srs->rez.spellid, srs->rez.corpse_name);
+					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
                    			_log(SPELLS__REZ, "OP_RezzRequest in zone %s for %s, spellid:%i", 
 					     zone->GetShortName(), client->GetName(), srs->rez.spellid);
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_RezzRequest, 
@@ -1871,13 +1871,15 @@ bool WorldServer::SendVoiceMacro(Client* From, int32 Type, char* Target, int32 M
 	return Ret;
 }
 
-bool WorldServer::RezzPlayer(EQApplicationPacket* rpack,int32 rezzexp, int16 opcode) {
+bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, int32 rezzexp, int32 dbid, int16 opcode)
+{
 	_log(SPELLS__REZ, "WorldServer::RezzPlayer rezzexp is %i (0 is normal for RezzComplete", rezzexp);
 	ServerPacket* pack = new ServerPacket(ServerOP_RezzPlayer, sizeof(RezzPlayer_Struct));
 	RezzPlayer_Struct* sem = (RezzPlayer_Struct*) pack->pBuffer;
 	sem->rezzopcode = opcode;
 	sem->rez = *(Resurrect_Struct*) rpack->pBuffer;
 	sem->exp = rezzexp;
+	sem->dbid = dbid;
 	bool ret = SendPacket(pack);
 	if (ret)
 		_log(SPELLS__REZ, "Sending player rezz packet to world spellid:%i", sem->rez.spellid);
