@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/20/2011==
 Trevius: Fix for Perl Doors GetID() command.
+Akkadius: Mysql #command CLI - Fixed an issue where the query string was being escaped
+Akkadius: Mysql #command CLI - Added switches -s and -h. Switch -s providing space between the select lines in a query, -h highlighting every other row to be more readable
 
 ==10/19/2011==
 KLS: (lerxst2112) Client::Message memory leak

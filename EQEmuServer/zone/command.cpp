@@ -11180,59 +11180,79 @@ void command_mysql(Client *c, const Seperator *sep)
 		c->Message(0, "Usage: #mysql [query] 'Query here'");
 	}
 	if ( strcasecmp( sep->arg[1], "help" ) == 0 ) {
-		c->Message(0, "Help will go here:");
+		c->Message(0, "MYSQL In-Game CLI Interface:");
+		c->Message(0, "Example: #mysql query \"Query goes here quoted\" -s -h");
+		c->Message(0, "-s - Spaces select entries apart");
+		c->Message(0, "-h - Colors every other select result");
 	}
 	if ( strcasecmp( sep->arg[1], "query" ) == 0 ) {
-	{
-		char errbuf[MYSQL_ERRMSG_SIZE];
-		char *query;
-		MYSQL_RES *result;
-		MYSQL_ROW row;
-
-		query = new char[256];
-
-		// If id evaluates to 0, then search as if user entered a string.
-		if (sep->arg[2])
-		{
-			char *EscName = new char[strlen(sep->arg[2]) * 2 + 1];
-			database.DoEscapeString(EscName, sep->arg[2], strlen(sep->arg[2]));
-
-			MakeAnyLenString(&query, "%s", EscName);
-			safe_delete_array(EscName);
+		///Parse switches here
+		int argnum = 3; bool Options = false, Optionh = false; bool Fail = false;
+		while(sep->arg[argnum] && strlen(sep->arg[argnum]) > 1){
+			 switch(sep->arg[argnum][1]){
+			  case 's': Options = true; break;
+			  case 'h': Optionh = true; break;
+			  default: c->Message(15, "%s, there is no option '%c'", c->GetName(), sep->arg[argnum][1]); Fail = true; 
+			 }
+		 ++argnum;
 		}
-		if (database.RunQuery(query, strlen(query), errbuf, &result))
-		{
-			
+		if(!Fail){
+			char errbuf[MYSQL_ERRMSG_SIZE];
+			char *query;
+			int HText = 0;
+			MYSQL_RES *result;
 			MYSQL_ROW row;
-			unsigned int num_fields;
-			unsigned int i;
-			
-			MYSQL_FIELD *fields;
-			num_fields = mysql_num_fields(result);
-			c->Message (0, "---Running query: '%s'", query); 
-			while ((row = mysql_fetch_row(result))){
-				string str;
-				unsigned long *lengths;
-				lengths = mysql_fetch_lengths(result);
-				fields = mysql_fetch_fields(result);
+			query = new char[256];
 
-				for(i = 0; i < num_fields; i++){ 
-					if((strcasecmp(sep->arg[1], "query") == 0)){
-						str.append(("Field %u is %s\n", i, fields[i].name));
-						str.append(":");
-					}
-					str.append("[");
-					str.append(("[%.*s]", (int) lengths[i], row[i] ? row[i] : "NULL")); 
-					str.append("] ");
-				}
-
-				c->Message(0, str.c_str());
+			if (sep->arg[2]){
+				MakeAnyLenString(&query, "%s", sep->arg[2]);
 			}
-		}
-		else{
-			c->Message (0, "Invalid query: '%s', '%s'", query, errbuf); 
-		}
-		safe_delete_array(query);
+			if (database.RunQuery(query, strlen(query), errbuf, &result)){		
+					MYSQL_ROW row;
+					unsigned int num_fields;
+					unsigned int i;
+					
+					MYSQL_FIELD *fields;
+					num_fields = mysql_num_fields(result);
+					c->Message (15, "---Running query: '%s'", query); 
+
+					while ((row = mysql_fetch_row(result))){
+						string str;
+						unsigned long *lengths;
+						lengths = mysql_fetch_lengths(result);
+						fields = mysql_fetch_fields(result);
+
+						for(i = 0; i < num_fields; i++){ 
+							if((strcasecmp(sep->arg[1], "query") == 0)){
+								str.append(fields[i].name);
+								str.append(":");
+							}
+							str.append("[");
+							str.append(("[%.*s]", (int) lengths[i], row[i] ? row[i] : "NULL")); 
+							str.append("] ");
+						}
+						if(Options){ //This provides spacing for the space switch
+							c->Message(0, " "); 
+						}
+						if(Optionh){ //This option will highlight every other row
+							if(HText == 0){
+								HText = 1;
+								c->Message(HText, str.c_str());
+							}
+							else{
+								HText = 0;
+								c->Message(HText, str.c_str());
+							}
+						}
+						else{
+							c->Message(0, str.c_str());
+						}
+					}
+				}
+				else{
+					c->Message(0, "Invalid query: '%s', '%s'", query, errbuf); 
+				}
+			safe_delete_array(query);
 		}
 	}
 }
