@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/22/2011==
+Derision: Extended Buffs should now last the correct time without needing to zone.
+
 ==10/21/2011==
 Derision: Fixed rez bug.
 Akkadius: Fixed a spell crash that has been reported on The Hidden Forest with TryFadeEffect

@@ -5083,10 +5083,6 @@ void Mob::_StopSong()
 //be used for other things as well
 void Client::SendBuffDurationPacket(int16 spell_id, int duration, int inlevel)
 {
-	// I think Underfoot+ only uses OP_Buff for fading buffs now ...
-	if(GetClientVersionBit() & BIT_UnderfootAndLater)
-		return;
-
 	EQApplicationPacket* outapp;
 	outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
 	SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
