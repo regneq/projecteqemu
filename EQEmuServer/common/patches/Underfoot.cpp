@@ -1722,7 +1722,8 @@ ENCODE(OP_Buff) {
 	OUT(spellid);
 	OUT(duration);
 	OUT(slotid);
-	OUT(bufffade);
+	OUT(bufffade);	// Live (October 2011) sends a 2 rather than 0 when a buff is created, but it doesn't seem to matter.
+	eq->unknown008 = 1.0f;
 	FINISH_ENCODE();
 }
 
