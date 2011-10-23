@@ -2745,6 +2745,12 @@ void Client::ServerFilter(SetServerFilter_Struct* filter){
 // this version is for messages with no parameters
 void Client::Message_StringID(int32 type, int32 string_id, int32 distance)
 {
+	if (GetFilter(FilterSpellDamage) == FilterHide && type == MT_NonMelee)
+		return;
+	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
+		return;
+	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
+		return;
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SimpleMessage,12);
 	SimpleMessage_Struct* sms = (SimpleMessage_Struct*)outapp->pBuffer;
 	sms->color=type;
@@ -2770,6 +2776,13 @@ void Client::Message_StringID(int32 type, int32 string_id,  const char* message1
 	const char* message5,const char* message6,const char* message7,
 	const char* message8,const char* message9, int32 distance)
 {
+	if (GetFilter(FilterSpellDamage) == FilterHide && type == MT_NonMelee)
+		return;
+	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
+		return;
+	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
+		return;
+
 	int i, argcount, length;
 	char *bufptr;
 	const char *message_arg[9] = {0};
