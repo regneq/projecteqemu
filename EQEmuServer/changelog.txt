@@ -2,6 +2,13 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/23/2011==
 Sorvani: Critical hit filter should work again.
+Secrets: Bow damage above 400k-ish should now work. 
+Secrets: Negative AC values should no longer exist, as all AC values are now sint32s instead of the improper sint16. In some cases they were uint32, this was corrected as well.
+Secrets: Backstab damage above 400k-ish should now work.
+Secrets: Critical Damage above 20 million or so should work.
+Secrets: The above are hackish fixes and should probably have their internal datatypes be turned into int64's throughout the code eventually. This is what SOE does on the client, but not over the wire.
+
+NOTE: If the Crit/Backstab/BowDmg/NegativeAC stuff cause issues, revert them!
 
 ==10/22/2011==
 Derision: Underfoot: Extended Buffs should now last the correct time without needing to zone.
