@@ -59,7 +59,7 @@ struct NPCType
 	int32	adventure_template;
 	int32	trap_template;
     int8    light;		//not loaded from DB
-	int16	AC;
+	int32	AC;
 	int32	Mana;	//not loaded from DB
 	int16	ATK;	//not loaded from DB
 	int16	STR;

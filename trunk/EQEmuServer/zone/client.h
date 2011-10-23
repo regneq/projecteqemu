@@ -327,7 +327,7 @@ public:
 
 	virtual void CalcBonuses();
 	//these are all precalculated now
-	inline virtual sint16	GetAC()		const { return AC; }
+	inline virtual sint32	GetAC()		const { return AC; }
 	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
 	inline virtual sint16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual int	GetHaste() const { return Haste; }
@@ -1077,7 +1077,7 @@ private:
 
 	void	HandleTraderPriceUpdate(const EQApplicationPacket *app);
 
-	sint16    CalcAC();
+	sint32    CalcAC();
 	sint16    GetACMit();
 	sint16    GetACAvoid();
 	sint16    CalcATK();

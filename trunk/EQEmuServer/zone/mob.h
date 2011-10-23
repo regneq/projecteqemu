@@ -187,7 +187,7 @@ struct Buffs_Struct {
 };
 
 struct StatBonuses {
-	sint16	AC;
+	int32	AC;
 	sint32	HP;
 	sint32	HPRegen;
 	sint32	MaxHP;
@@ -445,7 +445,7 @@ bool logpos;
 	    int8    in_light,
 		int8	in_texture,
 		int8	in_helmtexture,
-		int16	in_ac,
+		sint32	in_ac,
 		int16	in_atk,
 		int16	in_str,
 		int16	in_sta,
@@ -680,7 +680,7 @@ bool logpos;
 	uint8 GetArchetype() const;
  	virtual sint32 CalcMaxMana();
  
-	inline virtual sint16	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
+	inline virtual sint32	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
 	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual sint16	GetATKBonus()	const { return itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual sint16	GetSTR()	const { return STR + itembonuses.STR + spellbonuses.STR; }
@@ -1141,7 +1141,7 @@ protected:
 	int8	texture;
 	int8	helmtexture;
 
-	int	AC;
+	sint32	AC;
 	sint16 ATK;
 	sint16 STR;
 	sint16 STA;
