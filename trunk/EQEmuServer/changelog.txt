@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/23/2011==
+Sorvani: Critical hit filter should work again.
+
 ==10/22/2011==
 Derision: Underfoot: Extended Buffs should now last the correct time without needing to zone.
 
