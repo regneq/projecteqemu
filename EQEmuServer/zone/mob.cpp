@@ -2709,6 +2709,9 @@ sint32 Mob::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
 void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 	// Changed proc targets to look up based on the spells goodEffect flag.
 	// This should work for the majority of weapons.
+	if(spell_id == SPELL_UNKNOWN){ //This is so 65535 doesn't get passed to the client message and to logs because it is not relavant information for debugging.
+				return;
+	}
 	if(!IsValidSpell(spell_id)){ // Check for a valid spell otherwise it will crash through the function
 		if(this->IsClient()){
 			this->Message(0, "Invalid spell proc %u", spell_id);
@@ -3286,7 +3289,7 @@ bool Mob::TryFadeEffect(int slot)
 			{
 				int16 spell_id = spells[buffs[slot].spellid].base[i];
 				BuffFadeBySlot(slot);
-				if(IsValidSpell(spell_id))
+				if(spell_id)
 				{
 					ExecWeaponProc(spell_id, this);
 					return true;

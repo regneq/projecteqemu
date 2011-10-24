@@ -3644,12 +3644,9 @@ void Mob::TryDefensiveProc(Mob *on) {
 
 	// iterate through our defensive procs and try each of them
 	for (int i = 0; i < MAX_PROCS; i++) {
-		if (DefensiveProcs[i].spellID != SPELL_UNKNOWN &&
-			IsValidSpell(DefensiveProcs[i].spellID)) {
-				if (MakeRandomInt(0, 100) < MakeRandomInt(0, 20)) {
-					ExecWeaponProc(DefensiveProcs[i].spellID, on);
-				}
-		}
+			if (MakeRandomInt(0, 100) < MakeRandomInt(0, 20)) {
+				ExecWeaponProc(DefensiveProcs[i].spellID, on);
+			}
 	}
 
 	return;
@@ -3696,8 +3693,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
 		if(!aug)
 			continue;
 		
-		if (IsValidSpell(aug->Proc.Effect) 
-			&& (aug->Proc.Type == ET_CombatProc)) {
+		if (aug->Proc.Type == ET_CombatProc) {
 				ProcChance = ProcChance*(100+aug->ProcRate)/100;
 			if (MakeRandomFloat(0, 1) < ProcChance) {
 				if(aug->Proc.Level > ourlevel) {
@@ -3729,7 +3725,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 	
 	//give weapon a chance to proc first.
 	if(weapon != NULL) {
-		if (IsValidSpell(weapon->Proc.Effect) && (weapon->Proc.Type == ET_CombatProc)) {
+		if (weapon->Proc.Type == ET_CombatProc) {
 			float WPC = ProcChance*(100.0f+(float)weapon->ProcRate)/100.0f;
 			if (MakeRandomFloat(0, 1) <= WPC) {	// 255 dex = 0.084 chance of proc. No idea what this number should be really.
 				if(weapon->Proc.Level > ourlevel) {
@@ -3786,7 +3782,6 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 		}
 		if(!isRanged)
 		{
-			if (SpellProcs[i].spellID != SPELL_UNKNOWN) {
 				int chance = ProcChance * (SpellProcs[i].chance);
 				if(MakeRandomInt(0, 100) < chance) {
 					mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
@@ -3794,9 +3789,8 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				} else {
 					mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 				}
-			}
 		}
-		if (bRangedAttack && RangedProcs[i].spellID != SPELL_UNKNOWN) {
+		if (bRangedAttack) {
 			if(MakeRandomInt(0, 100) < MakeRandomInt(0, 25)) {
 				mlog(COMBAT__PROCS, "Ranged proc %d procing spell %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
 				ExecWeaponProc(RangedProcs[i].spellID, on);
