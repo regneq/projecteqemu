@@ -36,6 +36,8 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 
 #include <string.h>
 #include <stdlib.h>
+#include <sstream>
+#include <algorithm>
 
 #ifdef WIN32
 #define strcasecmp _stricmp
@@ -11176,12 +11178,14 @@ void command_picklock(Client *c, const Seperator *sep)
 
 void command_mysql(Client *c, const Seperator *sep)
 {
-	if(sep->arg[1][0] == 0){
-		c->Message(0, "Usage: #mysql [query] 'Query here'");
+	if(!sep->arg[1][0] || !sep->arg[2][0]) {
+		c->Message(0, "Usage: #mysql query \"Query here\"");
 	}
 	if ( strcasecmp( sep->arg[1], "help" ) == 0 ) {
 		c->Message(0, "MYSQL In-Game CLI Interface:");
 		c->Message(0, "Example: #mysql query \"Query goes here quoted\" -s -h");
+		c->Message(0, "To use 'like \"%%something%%\" replace the %% with #");
+		c->Message(0, "Example: #mysql query \"select * from table where name like \"#something#\"");
 		c->Message(0, "-s - Spaces select entries apart");
 		c->Message(0, "-h - Colors every other select result");
 	}
@@ -11189,70 +11193,74 @@ void command_mysql(Client *c, const Seperator *sep)
 		///Parse switches here
 		int argnum = 3; bool Options = false, Optionh = false; bool Fail = false;
 		while(sep->arg[argnum] && strlen(sep->arg[argnum]) > 1){
-			 switch(sep->arg[argnum][1]){
+			switch(sep->arg[argnum][1]){
 			  case 's': Options = true; break;
 			  case 'h': Optionh = true; break;
 			  default: c->Message(15, "%s, there is no option '%c'", c->GetName(), sep->arg[argnum][1]); Fail = true; 
-			 }
-		 ++argnum;
+			}
+			++argnum;
 		}
-		if(!Fail){
+
+		if(!Fail) {
 			char errbuf[MYSQL_ERRMSG_SIZE];
-			char *query;
 			int HText = 0;
 			MYSQL_RES *result;
-			MYSQL_ROW row;
-			query = new char[256];
+			std::stringstream MsgText;
+			std::string QueryText(sep->arg[2]);
+			//swap # for % so like queries can work
+			std::replace(QueryText.begin(), QueryText.end(), '#', '%');
 
-			if (sep->arg[2]){
-				MakeAnyLenString(&query, "%s", sep->arg[2]);
-			}
-			if (database.RunQuery(query, strlen(query), errbuf, &result)){		
-					MYSQL_ROW row;
-					unsigned int num_fields;
-					unsigned int i;
-					
-					MYSQL_FIELD *fields;
-					num_fields = mysql_num_fields(result);
-					c->Message (15, "---Running query: '%s'", query); 
+			if (database.RunQuery(QueryText.c_str(), QueryText.length(), errbuf, &result)) {		
+				//Using sep->arg[2] again, replace # with %% so it doesn't screw up when sent through vsnprintf in Message
+				QueryText = sep->arg[2];
+				int pos = QueryText.find('#');
+				while(pos != std::string::npos)
+				{
+					QueryText.erase(pos,1);
+					QueryText.insert(pos, "%%");
+					pos = QueryText.find('#');
+				}
 
-					while ((row = mysql_fetch_row(result))){
-						string str;
-						unsigned long *lengths;
-						lengths = mysql_fetch_lengths(result);
-						fields = mysql_fetch_fields(result);
+				MsgText << "---Running query: '" << QueryText << "'";
+				c->Message (15, MsgText.str().c_str());
+				MsgText.str("");
 
-						for(i = 0; i < num_fields; i++){ 
-							if((strcasecmp(sep->arg[1], "query") == 0)){
-								str.append(fields[i].name);
-								str.append(":");
-							}
-							str.append("[");
-							str.append(("[%.*s]", (int) lengths[i], row[i] ? row[i] : "NULL")); 
-							str.append("] ");
+				MYSQL_ROW row;
+				while ((row = mysql_fetch_row(result))) {
+
+					MYSQL_FIELD *fields = mysql_fetch_fields(result);
+					unsigned int num_fields = mysql_num_fields(result);
+					std::stringstream LineText;
+					std::vector<std::string> LineVec;
+					for(int i = 0; i < num_fields; i++) {
+						//split lines that could overflow the buffer in Client::Message and get cut off
+						//This will crash MQ2 @ 4000 since their internal buffer is only 2048.
+						//Reducing it to 2000 fixes that but splits more results from tables with a lot of columns.
+						if(LineText.str().length() > 4000) {
+							LineVec.push_back(LineText.str());
+							LineText.str("");
 						}
-						if(Options){ //This provides spacing for the space switch
-							c->Message(0, " "); 
-						}
-						if(Optionh){ //This option will highlight every other row
-							if(HText == 0){
-								HText = 1;
-								c->Message(HText, str.c_str());
-							}
-							else{
-								HText = 0;
-								c->Message(HText, str.c_str());
-							}
-						}
-						else{
-							c->Message(0, str.c_str());
-						}
+						LineText << fields[i].name << ":"  << "[" << (row[i] ? row[i] : "NULL") << "] ";
+					}
+					LineVec.push_back(LineText.str());
+
+					if(Options) { //This provides spacing for the space switch
+						c->Message(0, " "); 
+					}
+					if(Optionh) { //This option will highlight every other row
+						HText = 1 - HText;
+					}
+					for(int lineNum = 0; lineNum < LineVec.size(); ++lineNum)
+					{
+						c->Message(HText, LineVec[lineNum].c_str());
 					}
 				}
-				else{
-					c->Message(0, "Invalid query: '%s', '%s'", query, errbuf); 
-				}
-			safe_delete_array(query);
+			}
+			else {
+				MsgText << "Invalid query: ' " << sep->arg[2] << " ', ' " << errbuf << " '";
+				c->Message(0, MsgText.str().c_str()); 
+				MsgText.str("");
+			}
 		}
 	}
 }

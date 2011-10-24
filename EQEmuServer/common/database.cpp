@@ -3133,3 +3133,23 @@ bool Database::GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int3
 		return false;
 	}
 }
+
+int32 Database::GetGuildDBIDByCharID(int32 char_id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	int retVal = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT guild_id FROM guild_members WHERE char_id='%i'", char_id), errbuf, &result)) {
+		if (mysql_num_rows(result) == 1) {
+			MYSQL_ROW row = mysql_fetch_row(result);
+			retVal = atoi(row[0]);
+		}
+		mysql_free_result(result);
+	}
+	else {
+		   cerr << "Error in GetAccountIDByChar query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+	return retVal;
+}
