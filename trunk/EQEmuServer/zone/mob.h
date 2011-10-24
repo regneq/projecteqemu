@@ -847,6 +847,7 @@ bool logpos;
 	inline void Silence(bool newval) { silenced = newval; }
 	inline void Amnesia(bool newval) { amnesiad = newval; }
 	void TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
+	void TypesTemporaryPets(int32 typesid, Mob *target, const char *name_override = NULL, uint32 duration_override = 0, bool followme = false);
 	void WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void TryDotCritical(int16 spell_id, int &damage);
 	void Spin();

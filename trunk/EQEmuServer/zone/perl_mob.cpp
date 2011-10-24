@@ -1555,6 +1555,59 @@ XS(XS_Mob_MakeTempPet)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_TypesTempPet); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_TypesTempPet)
+{
+	dXSARGS;
+	if (items < 2 || items > 6)
+		Perl_croak(aTHX_ "Usage: Mob::TypesTempPet(THIS, typesid, name=NULL, duration=0, target=NULL, follow=0)");
+	{
+		Mob *		THIS;
+		int32		typesid = (int32)SvUV(ST(1));
+		char *		name;
+		int32		duration;
+		Mob *		target;
+		bool		follow;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items < 3)
+			name = NULL;
+		else
+			name = (char *)SvPV_nolen(ST(2));
+
+		if (items < 4)
+			duration = 0;
+		else
+			duration = (int32)SvUV(ST(3));
+
+		if (items < 5)
+			target = NULL;
+		else if (sv_derived_from(ST(4), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(4)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+
+		if (items < 6)
+			follow = false;
+		else {
+			follow = (bool)SvTRUE(ST(5));
+		}
+
+		THIS->TypesTemporaryPets(typesid, target, name, duration, follow);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Mob_GetBaseRace); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetBaseRace)
 {
@@ -7843,6 +7896,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetLD"), XS_Mob_SetLD, file, "$$");
 		newXSproto(strcpy(buf, "SetTargetDestSteps"), XS_Mob_SetTargetDestSteps, file, "$$");
         newXSproto(strcpy(buf, "SetTargetable"), XS_Mob_SetTargetable, file, "$$");
+		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$$");
 	XSRETURN_YES;
 }
 
