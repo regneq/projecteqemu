@@ -647,6 +647,92 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 		targ->AddToHateList(this, 1, 0);
 }
 
+void Mob::TypesTemporaryPets(int32 typesid, Mob *targ, const char *name_override, uint32 duration_override, bool followme) {
+			
+	AA_SwarmPet pet;
+	pet.count = 1;
+	pet.duration = 1;
+		
+	pet.npc_id = typesid;
+
+	NPCType *made_npc = NULL;
+	
+	const NPCType *npc_type = database.GetNPCType(typesid);
+	if(npc_type == NULL) {
+		//log write
+		LogFile->write(EQEMuLog::Error, "Unknown npc type for swarm pet type id: %d", typesid);
+		Message(0,"Unable to find pet!");
+		return;
+	}
+	
+	if(name_override != NULL) {
+		//we have to make a custom NPC type for this name change
+		made_npc = new NPCType; 
+		memcpy(made_npc, npc_type, sizeof(NPCType));
+		strcpy(made_npc->name, name_override);
+		npc_type = made_npc;
+	}
+	
+	int summon_count = 0;
+	summon_count = pet.count;
+	
+	if(summon_count > MAX_SWARM_PETS)
+		summon_count = MAX_SWARM_PETS;
+	
+	static const float swarm_pet_x[MAX_SWARM_PETS] = { 	5, -5, 5, -5, 
+														10, -10, 10, -10,
+														8, -8, 8, -8 };
+	static const float swarm_pet_y[MAX_SWARM_PETS] = { 	5, 5, -5, -5, 
+														10, 10, -10, -10,
+														8, 8, -8, -8 };
+	TempPets(true);
+
+	while(summon_count > 0) {
+		int pet_duration = pet.duration;
+		if(duration_override > 0)
+			pet_duration = duration_override;
+		
+		//this is a little messy, but the only way to do it right
+		//it would be possible to optimize out this copy for the last pet, but oh well
+		NPCType *npc_dup = NULL;
+		if(made_npc != NULL) {
+			npc_dup = new NPCType;
+			memcpy(npc_dup, made_npc, sizeof(NPCType));
+		}
+		
+		NPC* npca = new NPC(
+				(npc_dup!=NULL)?npc_dup:npc_type,	//make sure we give the NPC the correct data pointer
+				0, 
+				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
+				GetZ(), GetHeading(), FlyMode3);
+
+		if(!npca->GetSwarmInfo()){
+			AA_SwarmPetInfo* nSI = new AA_SwarmPetInfo;
+			npca->SetSwarmInfo(nSI);
+			npca->GetSwarmInfo()->duration = new Timer(pet_duration*1000);
+		}
+		else{
+			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
+		}
+
+		//removing this prevents the pet from attacking
+		npca->GetSwarmInfo()->owner_id = GetID();
+
+		//give the pets somebody to "love"
+		if(targ != NULL){
+			npca->AddToHateList(targ, 1000, 1000);
+			npca->GetSwarmInfo()->target = targ->GetID();
+		}
+		
+		//we allocated a new NPC type object, give the NPC ownership of that memory
+		if(npc_dup != NULL)
+			npca->GiveNPCTypeData(npc_dup);
+		
+		entity_list.AddNPC(npca, true, true);
+		summon_count--;
+	}
+}
+
 void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 {
 	Corpse *CorpseToUse = NULL;
