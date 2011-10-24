@@ -12,15 +12,7 @@ Akkadius: (Lerxst) Various quest object fixes, sanity checks and initiator adjus
 Akkadius: (Lerxst) Minor trading code adjustments
 Akkadius: (Lerxst) Logic fixes with bot code
 Sorvani: Critical hit filter should work again.
-Secrets: Bow damage above 400k-ish should now work. 
-Secrets: Negative AC values should no longer exist, as all AC values are now sint32s instead of the improper sint16. In some cases they were uint32, this was corrected as well.
-Secrets: Backstab damage above 400k-ish should now work.
-Secrets: Critical Damage above 20 million or so should work.
-Secrets: The above are hackish fixes and should probably have their internal datatypes be turned into int64's throughout the code eventually. This is what SOE does on the client, but not over the wire.
-Secrets: Added new Perl Mob quest object TypesTempPet(NPCTypeID, [name=NULL, duration=0, target=NULL, followowner = 0]) 
-Secrets: Fixed the negative AC fix. Fix?
-
-NOTE: If the Crit/Backstab/BowDmg/NegativeAC stuff cause issues, revert them!
+Secrets: Reverted my changes.
 
 ==10/22/2011==
 Derision: Underfoot: Extended Buffs should now last the correct time without needing to zone.
