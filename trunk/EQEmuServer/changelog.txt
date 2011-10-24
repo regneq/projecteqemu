@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/23/2011==
+Akkadius: Another memory leak in parser.cpp, NewEventList never deallocated
 Akkadius: Reduced code checking redundancy in several places regarding functions that reference ExecWeaponProc, only valid invalid spells are checked and logged.
 Akkadius: (Lerxst/Akkadius) Approximately 8 memory leak fixes based on findings from 'cppcheck', some found in loot, popup windows and a few other places.
 Akkadius: (Lerxst) Various quest object fixes, sanity checks and initiator adjustments
