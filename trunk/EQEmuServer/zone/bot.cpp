@@ -4014,7 +4014,7 @@ void Bot::SavePet() {
 		SavePetItems(petItems, botPetSaveId);
 
 		if(tempPetName)
-			safe_delete(tempPetName);
+			safe_delete_array(tempPetName);
 	}
 }
 
@@ -7306,9 +7306,10 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough)
 	{
 		if(this->GetOwnerID())
 			entity_list.MessageClose(this, 1, 200, 10, "%s says, '%s is not a legal target master.'", this->GetCleanName(), this->GetTarget()->GetCleanName());
-		if(other)
+		if(other) {
 			RemoveFromHateList(other);
-		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetCleanName());
+			mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetCleanName());
+		}
 		return false;
 	}
 
@@ -12087,6 +12088,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 		if(!TempErrorMessage.empty()) {
 			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			safe_delete(TempBot);
 			return;
 		}
 
@@ -12096,6 +12098,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			if(!TempErrorMessage.empty()) {
 				c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+				safe_delete(TempBot);
 				return;
 			}
 			
@@ -12151,18 +12154,21 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		else if(c->GetTarget()->IsMob() && !c->GetTarget()->IsPet())
 		{
 			Mob *b = c->GetTarget();
-
-			// Is our target "botable" ?
-			if(b && !b->IsBot()){
-				c->Message(15, "You must target a bot!");
-			}
-			else if(b && (b->CastToBot()->GetBotOwnerCharacterID() != c->CharacterID()))
+			if(b) 
 			{
-				b->Say("You can only summon your own bots.");
-			}
-			else {
-				b->SetTarget(c->CastToMob());
-				b->Warp(c->GetX(), c->GetY(), c->GetZ());
+				// Is our target "botable" ?
+				if(!b->IsBot()){
+					c->Message(15, "You must target a bot!");
+				}
+				else if((b->CastToBot()->GetBotOwnerCharacterID() != c->CharacterID()))
+				{
+					b->Say("You can only summon your own bots.");
+				}
+				else 
+				{
+					b->SetTarget(c->CastToMob());
+					b->Warp(c->GetX(), c->GetY(), c->GetZ());
+				}
 			}
 		}
 
@@ -13871,7 +13877,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							}
 							break;
 						case WIZARD:
-							if((InviserClass != ENCHANTER) || (InviserClass != MAGICIAN)){
+							if((InviserClass != ENCHANTER) && (InviserClass != MAGICIAN)){
 								Inviser = g->members[i];
 								InviserClass = WIZARD;
 							}
@@ -13883,7 +13889,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							}
 							break;
 						case DRUID:
-							if((InviserClass != ENCHANTER) || (InviserClass != WIZARD)
+							if((InviserClass != ENCHANTER) && (InviserClass != WIZARD)
 								|| (InviserClass != MAGICIAN)){
 									Inviser = g->members[i];
 									InviserClass = DRUID;
@@ -14722,6 +14728,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+					safe_delete(groupLeader);
 					return;
 				}
 
@@ -14729,6 +14736,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+					safe_delete(groupLeader);
 					return;
 				}
 
@@ -14743,6 +14751,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 						if(!TempErrorMessage.empty()) {
 							c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+							safe_delete(botGroupMember);
 							return;
 						}
 
@@ -14751,6 +14760,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 							if(!TempErrorMessage.empty()) {
 								c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+								safe_delete(botGroupMember);
 								return;
 							}
 

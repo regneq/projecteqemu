@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/23/2011==
+Akkadius: (Lerxst/Akkadius) Approximately 8 memory leak fixes based on findings from 'cppcheck', some found in loot, popup windows and a few other places.
+Akkadius: (Lerxst) Various quest object fixes, sanity checks and initiator adjustments
+Akkadius: (Lerxst) Minor trading code adjustments
+Akkadius: (Lerxst) Logic fixes with bot code
 Sorvani: Critical hit filter should work again.
 Secrets: Bow damage above 400k-ish should now work. 
 Secrets: Negative AC values should no longer exist, as all AC values are now sint32s instead of the improper sint16. In some cases they were uint32, this was corrected as well.

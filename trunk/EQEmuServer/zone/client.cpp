@@ -3061,9 +3061,9 @@ void Client::Insight(int32 t_id)
 	char hitpoints[64];
 	char resists[320];
 	char dmg[64];
-	memset(hitpoints,64,0);
-	memset(resists,320,0);
-	memset(dmg,64,0);
+	memset(hitpoints,0,sizeof(hitpoints));
+	memset(resists,0,sizeof(resists));
+	memset(dmg,0,sizeof(dmg));
 	//Start with HP blah
 	int avg_hp = GetLevelHP(who->GetLevel());
 	int cur_hp = who->GetHP();
@@ -3632,10 +3632,10 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 
 void Client::SendWindow(int32 PopupID, int32 NegativeID, int32 Buttons, const char *ButtonName0, const char *ButtonName1, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...) {
 	va_list argptr;
-	char *buffer = new char[4096];
+	char buffer[4096];
 
 	va_start(argptr, Text);
-	vsnprintf(buffer, 4096, Text, argptr);
+	vsnprintf(buffer, sizeof(buffer), Text, argptr);
 	va_end(argptr);
 
 	size_t len = strlen(buffer);
@@ -3695,8 +3695,6 @@ void Client::SendWindow(int32 PopupID, int32 NegativeID, int32 Buttons, const ch
 	olms->NegativeID = NegativeID;
 	
 	FastQueuePacket(&app);
-
-	safe_delete_array(buffer);
 }
 
 void Client::KeyRingLoad()
