@@ -134,6 +134,7 @@ public:
 	int32	GetAccountIDByChar(const char* charname, int32* oCharID = 0);
 	uint32	GetAccountIDByChar(uint32 char_id);
 	int32	GetAccountIDByName(const char* accname, sint16* status = 0, int32* lsid = 0);
+	uint32	GetGuildDBIDByCharID(int32 char_id);
 	void	GetAccountName(int32 accountid, char* name, int32* oLSAccountID = 0);
 	void	GetCharName(int32 char_id, char* name);
 	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, int32* oInstanceID = 0,float* oX = 0, float* oY = 0, float* oZ = 0);
