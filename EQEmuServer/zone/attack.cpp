@@ -3959,7 +3959,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 					critMod += AAdmgmod * 3; //AndMetal: guessing
 			}
 			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
-			damage = (float)((float)damage * (float)critMod) / (float)100;
+			damage = damage * critMod / 100;
 			
 			if(IsClient() && CastToClient()->berserk || crip_success)
 			{

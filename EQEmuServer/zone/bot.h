@@ -345,7 +345,7 @@ public:
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
 	int GetRawACNoShield(int &shield_ac);
 	int32 GetAA(int32 aa_id) const;
-	inline virtual sint32	GetAC()	const { return AC; }
+	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
 	inline virtual sint16	GetDEX()	const { return DEX; }

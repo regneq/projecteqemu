@@ -635,13 +635,11 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	
 	if(primaryweapondamage > 0){
 		if(level > 25){
-			float max_hit_damage = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355)  + ((level-25)/3) + 1;
-			max_hit = (sint32)max_hit_damage;
+			max_hit = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355)  + ((level-25)/3) + 1;
 			hate = 20 * backstab_dmg * GetSkill(BACKSTAB) / 355;
 		}
 		else{
-			float max_hit_damage = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355) + 1;
-			max_hit = (sint32)max_hit_damage;
+			max_hit = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355) + 1;;
 			hate = 20 * backstab_dmg * GetSkill(BACKSTAB) / 355;
 		}
 
@@ -828,19 +826,18 @@ void Client::RangedAttack(Mob* other) {
 					WDmg = 0;
 				if(ADmg < 0)
 					ADmg = 0;
-				float MaxDmg_Float = (RuleR(Combat, ArcheryBaseDamageBonus)*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
-				uint32 MaxDmg = MaxDmg_Float;
+				uint32 MaxDmg = (RuleR(Combat, ArcheryBaseDamageBonus)*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
 				sint32 hate = ((WDmg+ADmg));
 							
 				switch(GetAA(aaArcheryMastery)) {
 					case 1:
-						MaxDmg = (float(MaxDmg * 130/100));
+						MaxDmg = MaxDmg * 130/100;
 						break;
 					case 2:
-						MaxDmg = (float(MaxDmg * 160/100));
+						MaxDmg = MaxDmg * 160/100;
 						break;
 					case 3:
-						MaxDmg = (float(MaxDmg * 2));
+						MaxDmg = MaxDmg * 2;
 						break;
 				}
 				
@@ -882,9 +879,9 @@ void Client::RangedAttack(Mob* other) {
 				int minDmg = 1;
 				if(GetLevel() > 25){
 					//twice, for ammo and weapon
-					TotalDmg += (float)(2*((GetLevel()-25)/3));
-					minDmg += (float)(2*((GetLevel()-25)/3));
-					hate += (float)(2*((GetLevel()-25)/3));
+					TotalDmg += (2*((GetLevel()-25)/3));
+					minDmg += (2*((GetLevel()-25)/3));
+					hate += (2*((GetLevel()-25)/3));
 				}
 
 				GetTarget()->MeleeMitigation(this, TotalDmg, minDmg);
