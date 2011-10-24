@@ -599,16 +599,20 @@ void QuestManager::sfollow() {
 
 void QuestManager::changedeity(int diety_id) {
 	//Cofruben:-Changes the deity.
-	if (initiator && initiator->IsClient())
-	{
-		initiator->SetDeity(diety_id);
-		initiator->Message(15,"Your Deity has been changed/set to: %i", diety_id);
-		initiator->Save(1);
-		initiator->Kick();
+	if(initiator)
+	{	
+		if(initiator->IsClient())
+		{
+			initiator->SetDeity(diety_id);
+			initiator->Message(15,"Your Deity has been changed/set to: %i", diety_id);
+			initiator->Save(1);
+			initiator->Kick();
+		}
+		else
+		{
+			initiator->Message(15,"Error changing Deity");
+		}
 	}
-	else
-		initiator->Message(15,"Error changing Deity");
-
 }
 
 void QuestManager::exp(int amt) {
@@ -703,13 +707,18 @@ void QuestManager::snow(int weather) {
 
 void QuestManager::surname(const char *name) {
 	//Cofruben:-Changes the last name.
-	if (initiator && initiator->IsClient())
+	if(initiator)
 	{
+		if(initiator->IsClient())
+		{
 			initiator->ChangeLastName(name);
 			initiator->Message(15,"Your surname has been changed/set to: %s", name);
+		}
+		else
+		{
+			initiator->Message(15,"Error changing/setting surname");
+		}
 	}
-	else
-		initiator->Message(15,"Error changing/setting surname");
 }
 
 void QuestManager::permaclass(int class_id) {

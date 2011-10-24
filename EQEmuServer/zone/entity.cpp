@@ -2572,15 +2572,17 @@ void EntityList::Depop(bool StartSpawnTimer) {
 	for(; iterator.MoreElements(); iterator.Advance())
 	{
 		NPC *it = iterator.GetData();
-		Mob *own = it->GetOwner();
-		//do not depop player's pets...
-		if(it && own && own->IsClient())
-			continue;
+		if(it) {
+			Mob *own = it->GetOwner();
+			//do not depop player's pets...
+			if(own && own->IsClient())
+				continue;
 
-		if(it->IsFindable())
-			UpdateFindableNPCState(it, true);
+			if(it->IsFindable())
+				UpdateFindableNPCState(it, true);
 
-		it->Depop(StartSpawnTimer);
+			it->Depop(StartSpawnTimer);
+		}
 	}
 }
 

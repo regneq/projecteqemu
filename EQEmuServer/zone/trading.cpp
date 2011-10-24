@@ -888,8 +888,8 @@ void Client::FindAndNukeTraderItem(sint32 SerialNumber, int16 Quantity, Client* 
 			if(!Stackable) 
 				Quantity = (Charges > 0) ? Charges : 1;
 
+			_log(TRADING__CLIENT, "FindAndNuke %s, Charges %i, Quantity %i", item->GetItem()->Name, Charges, Quantity);
 		}
-		_log(TRADING__CLIENT, "FindAndNuke %s, Charges %i, Quantity %i", item->GetItem()->Name, Charges, Quantity);
 		if(item && (Charges <= Quantity || (Charges <= 0 && Quantity==1) || !Stackable)){
 			this->DeleteItemInInventory(SlotID, Quantity);
 

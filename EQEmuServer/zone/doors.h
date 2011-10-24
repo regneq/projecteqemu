@@ -44,7 +44,7 @@ public:
 	int16	GetLockpick() { return lockpick; } 
 	void	SetLockpick(int16 in) { lockpick = in; } 
 	int16	GetSize() { return size; }
-	void	SetGuildID(int32 guild_id) { guild_id = guild_id; }
+	void	SetGuildID(int32 guild_id) { this->guild_id = guild_id; }
 
 	int32	GetEntityID() { return entity_id; }
 	void	SetEntityID(int32 entity) { entity_id = entity; }

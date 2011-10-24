@@ -222,7 +222,7 @@ bool IsBeneficialSpell(int16 spell_id)
 
 	if(spells[spell_id].goodEffect == 1){
 		SpellTargetType tt = spells[spell_id].targettype;
-		if(tt != ST_Self || tt != ST_Pet){
+		if(tt != ST_Self && tt != ST_Pet){
 			if(IsEffectInSpell(spell_id, SE_CancelMagic))
 				return false;
 		}		

@@ -3101,7 +3101,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 	if (!item) {
 		if (ivrs->item_id > 500000)
 		{
-			char response[65];
+			char response[65] = {0};
 			int sayid = ivrs->item_id - 500000;
 			bool silentsaylink = false;
 
@@ -7530,8 +7530,10 @@ void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app)
 	if (!bindmob){
 	    LogFile->write(EQEMuLog::Error, "Bindwound on non-exsistant mob from %s", this->GetName());
 	}
-	LogFile->write(EQEMuLog::Debug, "BindWound in: to:\'%s\' from=\'%s\'", bindmob->GetName(), GetName());
-	BindWound(bindmob, true);
+	else {
+		LogFile->write(EQEMuLog::Debug, "BindWound in: to:\'%s\' from=\'%s\'", bindmob->GetName(), GetName());
+		BindWound(bindmob, true);
+	}
 	return;
 }
 

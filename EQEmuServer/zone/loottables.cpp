@@ -156,6 +156,7 @@ bool SharedDatabase::DBLoadLoot() {
 					if (i >= tmpLT->NumEntries) {
 						mysql_free_result(result);
 						mysql_free_result(result2);
+						safe_delete_array(tmpLT);
 						cerr << "Error in ZoneDatabase::DBLoadLoot, i >= NumEntries" << endl;
 						return false;
 					}
@@ -204,6 +205,7 @@ bool SharedDatabase::DBLoadLoot() {
 					if (i >= tmpLD->NumEntries) {
 						mysql_free_result(result);
 						mysql_free_result(result2);
+						safe_delete_array(tmpLD);
 						cerr << "Error in ZoneDatabase::DBLoadLoot, i >= NumEntries" << endl;
 						return false;
 					}
@@ -465,10 +467,7 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 	item->aug5 = 0;
 	if (equipit) {
 		uint8 eslot = 0xFF;
-		//const Item_Struct* item2 = database.GetItem(item->item_id);
 		char newid[20];
-		if(!item2)
-			return;
 		
 		// @merth: IDFile size has been increased, this needs to change
 		uint16 emat;
