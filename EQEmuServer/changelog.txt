@@ -13,6 +13,7 @@ Secrets: Backstab damage above 400k-ish should now work.
 Secrets: Critical Damage above 20 million or so should work.
 Secrets: The above are hackish fixes and should probably have their internal datatypes be turned into int64's throughout the code eventually. This is what SOE does on the client, but not over the wire.
 Secrets: Added new Perl Mob quest object TypesTempPet(NPCTypeID, [name=NULL, duration=0, target=NULL, followowner = 0]) 
+Secrets: Fixed the negative AC fix. Fix?
 
 NOTE: If the Crit/Backstab/BowDmg/NegativeAC stuff cause issues, revert them!
 

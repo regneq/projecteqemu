@@ -187,7 +187,7 @@ struct Buffs_Struct {
 };
 
 struct StatBonuses {
-	int32	AC;
+	sint32	AC;
 	sint32	HP;
 	sint32	HPRegen;
 	sint32	MaxHP;
