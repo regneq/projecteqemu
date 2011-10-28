@@ -462,7 +462,7 @@ XS(XS_Mob_Depop)
 {
 	dXSARGS;
 	if (items < 1 || items > 2)
-		Perl_croak(aTHX_ "Usage: Mob::Depop(THIS, StartSpawnTimer = false)");
+		Perl_croak(aTHX_ "Usage: Mob::Depop(THIS, StartSpawnTimer = true)");
 	{
 		Mob *		THIS;
 		bool		StartSpawnTimer;
@@ -477,7 +477,7 @@ XS(XS_Mob_Depop)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items < 2)
-			StartSpawnTimer = false;
+			StartSpawnTimer = true;
 		else {
 			StartSpawnTimer = (bool)SvTRUE(ST(1));
 		}

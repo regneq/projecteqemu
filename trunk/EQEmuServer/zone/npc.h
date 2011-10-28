@@ -188,7 +188,7 @@ public:
 	void SetSecSkill(int8 skill_type)	{ sec_melee_type = skill_type; }
 
 	uint32	MerchantType;
-	void	Depop(bool StartSpawnTimer = false);
+	void	Depop(bool StartSpawnTimer = true);
 	void	Stun(int duration);
 	void	UnStun();
 	int32	GetSwarmOwner();
