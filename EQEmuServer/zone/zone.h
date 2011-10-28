@@ -128,7 +128,7 @@ public:
 	void	DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index);
 	int32	DumpSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index, Spawn2* spawn2);
 
-	bool	Depop(bool StartSpawnTimer = false);
+	bool	Depop(bool StartSpawnTimer = true);
 	void	Repop(int32 delay = 0);
 	void	SpawnStatus(Mob* client);
 	void	ShowEnabledSpawnStatus(Mob* client);

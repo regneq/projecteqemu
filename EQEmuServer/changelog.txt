@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/28/2011==
 Trevius: Fix for MoveTo() so NPCs move and trigger events properly again after the Rev2032 change.
+Trevius: Partial revert of Rev1941 to set the default for Depop(StartSpawnTimer=false) back to true, as it was affecting all existing scripts that use depop.
 
 ==10/24/2011==
 Akkadius: Mysql CLI changes

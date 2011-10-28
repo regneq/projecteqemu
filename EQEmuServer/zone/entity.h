@@ -81,7 +81,7 @@ public:
 
 	virtual bool Process()  { return false; }
 	virtual bool Save() { return true; }
-	virtual void Depop(bool StartSpawnTimer = false) {}
+	virtual void Depop(bool StartSpawnTimer = true) {}
 
 	Client* CastToClient();
 	NPC*    CastToNPC();
@@ -384,7 +384,7 @@ public:
 	int16   GetFreeID();
 protected:
 	friend class Zone;
-	void	Depop(bool StartSpawnTimer = false);
+	void	Depop(bool StartSpawnTimer = true);
 
 private:
 	void	AddToSpawnQueue(int16 entityid, NewSpawn_Struct** app);
