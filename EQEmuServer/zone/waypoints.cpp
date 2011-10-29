@@ -184,6 +184,8 @@ void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 		save_wp=0;
 		cur_wp=-2;		// flag as quest controlled w/no grid
 		mlog(AI__WAYPOINTS, "MoveTo (%.3f, %.3f, %.3f) without a grid.", mtx, mty, mtz);
+        pLastFightingDelayMoving = 0;
+        AIwalking_timer->Start(100);
 	}
 	if (saveguardspot)
 	{
@@ -206,7 +208,6 @@ void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 	cur_wp_z = mtz;
 	cur_wp_pause = 0;
 	cur_wp_heading = mth;
-    pLastFightingDelayMoving = 0;
 }
 
 void NPC::UpdateWaypoint(int wp_index)
