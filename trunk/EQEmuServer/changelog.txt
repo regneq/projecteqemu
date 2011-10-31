@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/31/2011==
 Leere: Changed raid leadership ability costs to match client expectations.
+Leere: All stuns should now treat a max level of 0 as meaning level 55.
 
 ==10/24/2011==
 Akkadius: Mysql CLI changes
