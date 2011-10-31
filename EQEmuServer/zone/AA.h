@@ -115,18 +115,18 @@ static const int8 LeadershipAACosts[_maxLeaderAA][MAX_LEADERSHIP_TIERS] = {
 { 7, 0, 0, 0, 0, 0 },	//groupAAHealthOfTargetsTarget
 { 0, 0, 0, 0, 0, 0 },	//groupAA15
 	
-{ 5, 99, 99, 0, 0, 0 },	//raidAAMarkNPC	//0x10
+{ 5, 6, 7, 0, 0, 0 },	//raidAAMarkNPC	//0x10
 { 4, 0, 0, 0, 0, 0 },	//raidAANPCHealth
-{ 6, 99, 99, 0, 0, 0 },	//raidAADelegateMainAssist
-{ 6, 99, 99, 0, 0, 0 },	//raidAADelegateMarkNPC
-{ 0, 0, 0, 0, 0, 0 },	//raidAA4
+{ 6, 7, 8, 0, 0, 0 },	//raidAADelegateMainAssist
+{ 6, 6, 6, 0, 0, 0 },	//raidAADelegateMarkNPC
+{ 6, 6, 6, 0, 0, 0 },	//raidAADelegateMarkNPC (works for SoD and Titanium)
 { 0, 0, 0, 0, 0, 0 },	//raidAA5
 { 0, 0, 0, 0, 0, 0 },	//raidAA6
 { 8, 0, 0, 0, 0, 0 },	//raidAASpellAwareness
-{ 6, 99, 99, 99, 99, 0 },	//raidAAOffenseEnhancement
-{ 6, 99, 99, 0, 0, 0 },	//raidAAManaEnhancement
-{ 6, 99, 99, 0, 0, 0 },	//raidAAHealthEnhancement
-{ 6, 99, 99, 0, 0, 0 },	//raidAAHealthRegeneration
+{ 6, 7, 8, 9, 10, 0 },	//raidAAOffenseEnhancement
+{ 6, 8, 10, 0, 0, 0 },	//raidAAManaEnhancement
+{ 6, 8, 10, 0, 0, 0 },	//raidAAHealthEnhancement
+{ 6, 8, 10, 0, 0, 0 },	//raidAAHealthRegeneration
 { 5, 0, 0, 0, 0, 0 },	//raidAAFindPathToPC
 { 9, 0, 0, 0, 0, 0 },	//raidAAHealthOfTargetsTarget
 { 0, 0, 0, 0, 0, 0 },	//raidAA14
