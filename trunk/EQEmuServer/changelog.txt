@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/31/2011==
+Leere: Changed raid leadership ability costs to match client expectations.
+
 ==10/24/2011==
 Akkadius: Mysql CLI changes
 Akkadius: Preliminary work to some future additions, added int32 Database::GetGuildDBIDByCharID(int32 char_id)
