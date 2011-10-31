@@ -618,14 +618,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				//Typically we check for immunities else where but since stun immunities are different and only
 				//Block the stun part and not the whole spell, we do it here, also do the message here so we wont get the message on a resist
 				int max_level = spell.max[i];
-                if(SpecAttacks[UNSTUNABLE])
+				//max_level of 0 means we assume a default of 55.
+				if (max_level == 0)
+					max_level = 55;
+                if(SpecAttacks[UNSTUNABLE] || (GetLevel() > max_level))
 				{
 					caster->Message_StringID(MT_SpellFailure, IMMUNE_STUN);
 				}
-                else if(max_level && max_level < GetLevel())
-                {
-                    caster->Message_StringID(MT_SpellFailure, IMMUNE_STUN);
-                }
 				else
 				{
 					int stun_resist = itembonuses.StunResist+spellbonuses.StunResist; 
