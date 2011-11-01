@@ -52,6 +52,7 @@ typedef enum {
 	EVENT_FISH_SUCCESS,
 	EVENT_FISH_FAILURE,
 	EVENT_CLICK_OBJECT,
+	EVENT_DISCOVER_ITEM,
 	
 	_LargestEventID
 } QuestEventID;

@@ -573,6 +573,9 @@ public:
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
 
+	bool	IsDiscovered(int32 itemid);
+	void	DiscoverItem(int32 itemid);
+
 	bool	TGB() const { return tgb; }
 
 	void	OnDisconnect(bool hard_disconnect);
