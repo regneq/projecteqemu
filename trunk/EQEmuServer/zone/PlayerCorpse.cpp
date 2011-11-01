@@ -1127,6 +1127,11 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 		buf[87] = '\0';
         parse->EventPlayer(EVENT_LOOT, client, buf, 0);
 
+		if (client && !client->GetGM() && !client->IsDiscovered(inst->GetItem()->ID))
+		{
+			client->DiscoverItem(inst->GetItem()->ID);
+		}
+
 		if (zone->lootvar != 0)
 		{
 			int admin=client->Admin();

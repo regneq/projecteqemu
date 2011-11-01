@@ -87,7 +87,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_FISH_START",
 	"EVENT_FISH_SUCCESS",
 	"EVENT_FISH_FAILURE",
-	"EVENT_CLICK_OBJECT"
+	"EVENT_CLICK_OBJECT",
+	"EVENT_DISCOVER_ITEM"
 };
 
 extern Zone* zone;
@@ -742,6 +743,11 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 
 		case EVENT_CLICK_OBJECT: {
 			ExportVar(packagename.c_str(), "objectid", data);
+			break;
+		}
+
+		case EVENT_DISCOVER_ITEM: {
+			ExportVar(packagename.c_str(), "itemid", extradata);
 			break;
 		}
 

@@ -3771,6 +3771,46 @@ void Client::KeyRingList()
 	}
 }
 
+bool Client::IsDiscovered(int32 itemid) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	
+	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM discovered_items WHERE item_id = '%lu'", itemid), errbuf, &result))
+	{
+		row = mysql_fetch_row(result);
+		mysql_free_result(result);
+		if (atoi(row[0]))
+		{
+			safe_delete_array(query);
+			return true;
+		}
+	}
+	else
+	{
+		cerr << "Error in IsDiscovered query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
+	return false;
+}
+
+void Client::DiscoverItem(int32 itemid) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO discovered_items SET item_id=%lu, char_name='%s', discovered_date=UNIX_TIMESTAMP()", itemid, GetName()), errbuf, &result))
+	{
+		mysql_free_result(result);
+	}
+	safe_delete_array(query);
+
+	parse->EventPlayer(EVENT_DISCOVER_ITEM, this, "", itemid);
+}
+
 void Client::UpdateLFP() {
 
 	Group *g = GetGroup();
@@ -6492,4 +6532,3 @@ uint32 Client::GetAlternateCurrencyValue(uint32 currency_id) const
         return (*iter).second;
     }
 }
-
