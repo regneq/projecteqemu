@@ -3,9 +3,13 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==11/01/2011==
 Trevius: Added Discovered Items table to track who discovered an item for the first time and when.
 Trevius: Added new EVENT_DISCOVER_ITEM player event.  It exports the item id to the $itemid variable.
+Trevius: Added Rule Character:EnableDiscoveredItems to make item discovery tracking optional.
 
 Required SQL:
 utils/sql/svn/2057_required_discovered_items.sql
+
+Opetional SQL:
+utils/sql/svn/2058_optional_rule_discovered_items.sql
 
 ==10/31/2011==
 Leere: Changed raid leadership ability costs to match client expectations.

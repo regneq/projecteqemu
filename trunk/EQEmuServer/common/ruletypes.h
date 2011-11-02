@@ -92,6 +92,7 @@ RULE_INT ( Character, SkillCapMaxLevel, 75 )	// Sets the Max Level used for Skil
 RULE_INT ( Character, StatCap, 0 )
 RULE_BOOL ( Character, CheckCursorEmptyWhenLooting, true ) // If true, a player cannot loot a corpse (player or NPC) with an item on their cursor
 RULE_BOOL ( Character, MaintainIntoxicationAcrossZones, true ) // If true, alcohol effects are maintained across zoning and logging out/in.
+RULE_BOOL ( Character, EnableDiscoveredItems, true ) // If enabled, it enables EVENT_DISCOVER_ITEM and also saves character names and timestamps for the first time an item is discovered.
 
 RULE_CATEGORY_END()
 
