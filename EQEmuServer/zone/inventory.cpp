@@ -295,7 +295,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 			}
 			safe_delete(inst);
 
-			if (!GetGM() && !IsDiscovered(item_id))
+			if ((RuleB(Character, EnableDiscoveredItems)) && !GetGM() && !IsDiscovered(item_id))
 			{
 				DiscoverItem(item_id);
 			}
