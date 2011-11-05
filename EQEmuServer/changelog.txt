@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/05/2011==
+Trevius: Added extra checks for SoF+ item clicks.
+
 ==11/01/2011==
 Trevius: Added Discovered Items table to track who discovered an item for the first time and when.
 Trevius: Added new EVENT_DISCOVER_ITEM player event.  It exports the item id to the $itemid variable.
