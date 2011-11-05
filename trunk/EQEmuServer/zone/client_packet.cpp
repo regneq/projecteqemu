@@ -1974,7 +1974,6 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 
 	if (IsAIControlled()) {
 		this->Message_StringID(13,NOT_IN_CONTROL);
-		//Message(13, "You cant cast right now, you arent in control of yourself!");
 		return;
 	}
 
@@ -1998,6 +1997,26 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	}
 
 	spell_id = item->Click.Effect;
+
+	if
+	(
+		!IsValidSpell(spell_id) ||
+		casting_spell_id ||
+		delaytimer ||
+		spellend_timer.Enabled() ||
+		IsStunned() ||
+		IsFeared() ||
+		IsMezzed() ||
+		DivineAura() ||
+		(IsSilenced() && !IsDiscipline(spell_id)) ||
+		(IsAmnesiad() && IsDiscipline(spell_id)) ||
+		(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat())
+	)
+	{
+		Message(13, "Error: the item effect can not be used at this time");
+		return;
+	}
+
 	LogFile->write(EQEMuLog::Debug, "OP ItemVerifyRequest: spell=%i, target=%i, inv=%i", spell_id, target_id, slot_id);
 
 	if ((slot_id < 30) || (slot_id == 9999) || (slot_id > 250 && slot_id < 331 && ((item->ItemType == ItemTypePotion) || item->PotionBelt))) // sanity check
