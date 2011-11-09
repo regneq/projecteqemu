@@ -1957,7 +1957,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	ItemVerifyRequest_Struct* request = (ItemVerifyRequest_Struct*)app->pBuffer;
 	sint32 slot_id;
 	sint32 target_id;
-	int32 spell_id = 0;
+	sint32 spell_id = 0;
 	slot_id = request->slot;
 	target_id = request->target;
 
@@ -2000,20 +2000,24 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 
 	if
 	(
-		!IsValidSpell(spell_id) ||
-		casting_spell_id ||
-		delaytimer ||
-		spellend_timer.Enabled() ||
-		IsStunned() ||
-		IsFeared() ||
-		IsMezzed() ||
-		DivineAura() ||
-		(IsSilenced() && !IsDiscipline(spell_id)) ||
-		(IsAmnesiad() && IsDiscipline(spell_id)) ||
-		(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat())
+		spell_id > 0 &&
+		(
+			!IsValidSpell(spell_id) ||
+			casting_spell_id ||
+			delaytimer ||
+			spellend_timer.Enabled() ||
+			IsStunned() ||
+			IsFeared() ||
+			IsMezzed() ||
+			DivineAura() ||
+			(IsSilenced() && !IsDiscipline(spell_id)) ||
+			(IsAmnesiad() && IsDiscipline(spell_id)) ||
+			(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat())
+		)
 	)
 	{
-		Message(13, "Error: the item effect can not be used at this time");
+		//Message(13, "Error: the item effect can not be used at this time");
+		SendSpellBarEnable(spell_id);
 		return;
 	}
 
@@ -2034,7 +2038,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 			}
 		}
 
-		if((spell_id == 0 || spell_id == 4294967295) && (item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol && item->ItemType != ItemTypeSpell))
+		if((spell_id <= 0) && (item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol && item->ItemType != ItemTypeSpell))
 		{
 			LogFile->write(EQEMuLog::Debug, "Item with no effect right clicked by %s",GetName());
 		}
