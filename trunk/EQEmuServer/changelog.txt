@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/15/2011==
+Trevius: Potential zone crash fix for Discovered Items pointed out by Congdar.
+
 ==11/09/2011==
 Trevius: Fixes for issues caused by the extra SoF+ item click checks.
 

@@ -3781,9 +3781,9 @@ bool Client::IsDiscovered(int32 itemid) {
 	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM discovered_items WHERE item_id = '%lu'", itemid), errbuf, &result))
 	{
 		row = mysql_fetch_row(result);
-		mysql_free_result(result);
 		if (atoi(row[0]))
 		{
+			mysql_free_result(result);
 			safe_delete_array(query);
 			return true;
 		}
@@ -3792,7 +3792,7 @@ bool Client::IsDiscovered(int32 itemid) {
 	{
 		cerr << "Error in IsDiscovered query '" << query << "' " << errbuf << endl;
 	}
-	
+	mysql_free_result(result);
 	safe_delete_array(query);
 	return false;
 }
