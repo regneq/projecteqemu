@@ -188,7 +188,7 @@ bool Zone::LoadZoneObjects() {
 	uint32 len_query = MakeAnyLenString(&query, "SELECT "
 		"id,zoneid,xpos,ypos,zpos,heading,itemid,charges,objectname,type,icon,"
 		"unknown08,unknown10,unknown20,unknown24,unknown76"
-		" from object where zoneid=%i and version=%u", zoneid, instanceversion);
+		" from object where zoneid=%i and (version=%u or version=-1)", zoneid, instanceversion);
 	
 	if (database.RunQuery(query, len_query, errbuf, &result)) {
 		safe_delete_array(query);
@@ -733,7 +733,7 @@ void Zone::Shutdown(bool quite)
 	UpdateWindowTitle();
 }
 
-void Zone::LoadZoneDoors(const char* zone, int16 version)
+void Zone::LoadZoneDoors(const char* zone, sint16 version)
 {
 	LogFile->write(EQEMuLog::Status, "Loading doors for %s ...", zone);
 	

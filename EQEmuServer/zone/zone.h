@@ -110,7 +110,7 @@ public:
 	SendAA_Struct*	GetAABySequence(int32 seq) { return aas[seq]; }
 	SendAA_Struct*	FindAA(int32 id);
 	uint8	GetTotalAALevels(int32 skill_id);
-	void	LoadZoneDoors(const char* zone, int16 version);
+	void	LoadZoneDoors(const char* zone, sint16 version);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();
 	void	ReloadStaticData();

@@ -638,13 +638,13 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
 	safe_delete_array(object_name);
 	safe_delete_array(query);
 }
-Ground_Spawns* ZoneDatabase::LoadGroundSpawns(int32 zone_id, int16 version, Ground_Spawns* gs){
+Ground_Spawns* ZoneDatabase::LoadGroundSpawns(int32 zone_id, sint16 version, Ground_Spawns* gs){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT max_x,max_y,max_z,min_x,min_y,heading,name,item,max_allowed,respawn_timer from ground_spawns where zoneid=%i and version=%u limit 50", zone_id, version), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT max_x,max_y,max_z,min_x,min_y,heading,name,item,max_allowed,respawn_timer from ground_spawns where zoneid=%i and (version=%u OR version=-1) limit 50", zone_id, version), errbuf, &result))
 	{
 		safe_delete_array(query);
 		int i=0;

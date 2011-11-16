@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/16/2011==
+Akkadius: Added the ability to specify doors/objects/ground spawns to load for all versions of the same zone regardless by setting the value to -1. 
+This reduces serious redundancy of copying the same data over and over for instances.
+
+Required SQL:
+utils/sql/svn/2062_required_version_changes.sql
+
 ==11/15/2011==
 Trevius: Potential zone crash fix for Discovered Items pointed out by Congdar.
 
@@ -17,7 +24,7 @@ Trevius: Added Rule Character:EnableDiscoveredItems to make item discovery track
 Required SQL:
 utils/sql/svn/2057_required_discovered_items.sql
 
-Opetional SQL:
+Optional SQL:
 utils/sql/svn/2058_optional_rule_discovered_items.sql
 
 ==10/31/2011==

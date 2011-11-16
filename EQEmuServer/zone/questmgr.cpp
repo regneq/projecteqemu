@@ -2245,7 +2245,7 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 	return perltext;
 }
 
-int16 QuestManager::CreateInstance(const char *zone, int16 version, int32 duration)
+int16 QuestManager::CreateInstance(const char *zone, sint16 version, int32 duration)
 {
 	if(initiator)
 	{
@@ -2275,7 +2275,7 @@ void QuestManager::DestroyInstance(int16 instance_id)
 	database.DeleteInstance(instance_id);
 }
 
-int16 QuestManager::GetInstanceID(const char *zone, int16 version)
+int16 QuestManager::GetInstanceID(const char *zone, sint16 version)
 {
 	if(initiator)
 	{
@@ -2326,7 +2326,7 @@ void QuestManager::MovePCInstance(int zone_id, int instance_id, float x, float y
 	}
 }
 
-void QuestManager::FlagInstanceByGroupLeader(int32 zone, int16 version)
+void QuestManager::FlagInstanceByGroupLeader(int32 zone, sint16 version)
 {
 	if(initiator)
 	{
@@ -2337,7 +2337,7 @@ void QuestManager::FlagInstanceByGroupLeader(int32 zone, int16 version)
 	}
 }
 
-void QuestManager::FlagInstanceByRaidLeader(int32 zone, int16 version)
+void QuestManager::FlagInstanceByRaidLeader(int32 zone, sint16 version)
 {
 	if(initiator)
 	{
