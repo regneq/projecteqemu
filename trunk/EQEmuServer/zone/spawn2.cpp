@@ -283,7 +283,7 @@ void Spawn2::DeathReset()
 	}
 }
 
-bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int16 version, int32 repopdelay) {
+bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, sint16 version, int32 repopdelay) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;

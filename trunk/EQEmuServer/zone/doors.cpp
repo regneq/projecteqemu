@@ -514,14 +514,14 @@ void Doors::DumpDoor(){
         dest_zone, dest_x, dest_y, dest_z, dest_heading);
 }
 
-sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, int16 version) {
+sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, sint16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 
     MYSQL_RES *result;
     MYSQL_ROW row;
 	query = new char[256];
-	sprintf(query, "SELECT MAX(id), count(*) FROM doors WHERE zone='%s' AND version=%u", zone_name, version);
+	sprintf(query, "SELECT MAX(id), count(*) FROM doors WHERE zone='%s' AND (version=%u OR version=-1)", zone_name, version);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
@@ -547,7 +547,7 @@ sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, int16 v
 	return -1;
 }
 
-sint32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, int16 version) {
+sint32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, sint16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	int32 oMaxID = 0;
@@ -578,7 +578,7 @@ sint32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, int16 version) 
 	return -1;
 }
 
-sint32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, int16 version) {
+sint32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, sint16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	int32 oMaxID = 0;
@@ -641,7 +641,7 @@ bool ZoneDatabase::LoadDoors() {
 	return ret;
 }*/
 
-bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name, int16 version) {
+bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name, sint16 version) {
 	LogFile->write(EQEMuLog::Status, "Loading Doors from database...");
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -652,7 +652,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 	MakeAnyLenString(&query, "SELECT id,doorid,zone,name,pos_x,pos_y,pos_z,heading,"
 		"opentype,guild,lockpick,keyitem,nokeyring,triggerdoor,triggertype,dest_zone,dest_instance,dest_x,"
 		"dest_y,dest_z,dest_heading,door_param,invert_state,incline,size,is_ldon_door,client_version_mask "
-		"FROM doors WHERE zone='%s' AND version=%u ORDER BY doorid asc", zone_name, version);
+		"FROM doors WHERE zone='%s' AND (version=%u OR version=-1) ORDER BY doorid asc", zone_name, version);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		safe_delete_array(query);
 		sint32 r;

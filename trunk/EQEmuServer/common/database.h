@@ -165,12 +165,12 @@ public:
 	bool CheckInstanceExists(uint16 instance_id);
 	void BuryCorpsesInInstance(uint16 instance_id);
 	int16 GetInstanceVersion(uint16 instance_id);
-	int16 GetInstanceID(const char* zone, int32 charid, int16 version);
-	int16 GetInstanceID(int32 zone, int32 charid, int16 version);
+	int16 GetInstanceID(const char* zone, int32 charid, sint16 version);
+	int16 GetInstanceID(int32 zone, int32 charid, sint16 version);
 	void AssignGroupToInstance(int32 gid, int32 instance_id);
 	void AssignRaidToInstance(int32 rid, int32 instance_id);
-	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
-	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
+	void FlagInstanceByGroupLeader(int32 zone, sint16 version, int32 charid, int32 gid);
+	void FlagInstanceByRaidLeader(int32 zone, sint16 version, int32 charid, int32 rid);
 	void SetInstanceDuration(int16 instance_id, int32 new_duration);
 	bool GlobalInstance(uint16 instance_id);
 

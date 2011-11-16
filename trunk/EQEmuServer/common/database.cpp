@@ -2784,7 +2784,7 @@ int16 Database::GetInstanceVersion(uint16 instance_id)
 	return 0;
 }
 
-int16 Database::GetInstanceID(const char* zone, int32 charid, int16 version)
+int16 Database::GetInstanceID(const char* zone, int32 charid, sint16 version)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2818,7 +2818,7 @@ int16 Database::GetInstanceID(const char* zone, int32 charid, int16 version)
 	return 0;
 }
 
-int16 Database::GetInstanceID(int32 zone, int32 charid, int16 version)
+int16 Database::GetInstanceID(int32 zone, int32 charid, sint16 version)
 {
 	if(!zone)
 		return 0;
@@ -2913,7 +2913,7 @@ void Database::AssignRaidToInstance(int32 rid, int32 instance_id)
 	}
 }
 
-void Database::FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid)
+void Database::FlagInstanceByGroupLeader(int32 zone, sint16 version, int32 charid, int32 gid)
 {
 	int16 id = GetInstanceID(zone, charid, version);
 	if(id != 0)
@@ -2931,7 +2931,7 @@ void Database::FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid
 	AddClientToInstance(l_id, charid);
 }
 
-void Database::FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid)
+void Database::FlagInstanceByRaidLeader(int32 zone, sint16 version, int32 charid, int32 rid)
 {
 	int16 id = GetInstanceID(zone, charid, version);
 	if(id != 0)
