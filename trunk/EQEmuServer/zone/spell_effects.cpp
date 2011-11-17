@@ -3694,6 +3694,9 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 //assumes that spell_id is not a bard spell and that both ids are valid spell ids
 sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool best_focus) {
 
+	if(!IsValidSpell(focus_id) || !IsValidSpell(spell_id))
+		return 0;
+
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 
@@ -4052,6 +4055,7 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	
 	const Item_Struct* TempItem = 0;
 	const Item_Struct* UsedItem = 0;
+	int16 UsedFocusID = 0;
 	sint16 Total = 0;
 	sint16 realTotal = 0;
 	sint16 focus_max = 0;
@@ -4080,9 +4084,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
 					focus_max_real = focus_max;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				} else if (focus_max < 0 && focus_max < focus_max_real) {
 					focus_max_real = focus_max;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				}
 			}
 			else {
@@ -4090,9 +4096,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				if (Total > 0 && realTotal >= 0 && Total > realTotal) {
 					realTotal = Total;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				} else if (Total < 0 && Total < realTotal) {
 					realTotal = Total;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				}
 			}
 		}
@@ -4110,9 +4118,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 						if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
 							focus_max_real = focus_max;
 							UsedItem = TempItem;
+							UsedFocusID = TempItemAug->Focus.Effect;
 						} else if (focus_max < 0 && focus_max < focus_max_real) {
 							focus_max_real = focus_max;
 							UsedItem = TempItem;
+							UsedFocusID = TempItemAug->Focus.Effect;
 						}
 					}
 					else {
@@ -4120,9 +4130,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 						if (Total > 0 && realTotal >= 0 && Total > realTotal) {
 							realTotal = Total;
 							UsedItem = TempItem;
+							UsedFocusID = TempItemAug->Focus.Effect;
 						} else if (Total < 0 && Total < realTotal) {
 							realTotal = Total;
 							UsedItem = TempItem;
+							UsedFocusID = TempItemAug->Focus.Effect;
 						}
 					}
 				}
@@ -4144,9 +4156,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
 					focus_max_real = focus_max;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				} else if (focus_max < 0 && focus_max < focus_max_real) {
 					focus_max_real = focus_max;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				}
 			}
 			else {
@@ -4154,17 +4168,19 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				if (Total > 0 && realTotal >= 0 && Total > realTotal) {
 					realTotal = Total;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				}
 				else if (Total < 0 && Total < realTotal) {
 					realTotal = Total;
 					UsedItem = TempItem;
+					UsedFocusID = TempItem->Focus.Effect;
 				}
 			}
 		}
 	}
 	
 	if(UsedItem && rand_effectiveness && focus_max_real != 0)
-		realTotal = CalcFocusEffect(type, UsedItem->Focus.Effect, spell_id);
+		realTotal = CalcFocusEffect(type, UsedFocusID, spell_id);
 	
 	if (realTotal != 0 && UsedItem) 
 		Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
