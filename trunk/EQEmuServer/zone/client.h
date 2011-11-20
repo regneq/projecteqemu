@@ -572,6 +572,8 @@ public:
 	void	AddMoneyToPP(uint64 copper,bool updateclient);
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
+	int64	GetCarriedMoney();
+	int64	GetAllMoney();
 
 	bool	IsDiscovered(int32 itemid);
 	void	DiscoverItem(int32 itemid);

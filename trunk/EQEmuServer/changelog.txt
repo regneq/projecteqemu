@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==11/17/2011==
+Congdar: Fix charms Platinum Disc and Gold Pin. You'll need updated items\CHRMGold.pl and \items\CHRMPlatinum.pl once pushed to the quest repository.
+
+==11/17/2011==
 Lerxst: Fixed crash when calculating random focus effect from an augment when the base item had no focus effect.
 Also added some bulletproofing in case that isn't the only place an invalid spell id might be passed.
 
