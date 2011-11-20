@@ -2171,6 +2171,32 @@ bool Client::HasMoney(uint64 Copper) {
 	return false;
 }
 
+int64 Client::GetCarriedMoney() {
+
+	return ((static_cast<int64>(m_pp.copper) +
+	   (static_cast<int64>(m_pp.silver) * 10) +
+	   (static_cast<int64>(m_pp.gold) * 100) +
+	   (static_cast<int64>(m_pp.platinum) * 1000)));
+}
+
+int64 Client::GetAllMoney() {
+
+	return (
+	   (static_cast<int64>(m_pp.copper) +
+	   (static_cast<int64>(m_pp.silver) * 10) +
+	   (static_cast<int64>(m_pp.gold) * 100) +
+	   (static_cast<int64>(m_pp.platinum) * 1000) +
+	   (static_cast<int64>(m_pp.copper_bank) +
+	   (static_cast<int64>(m_pp.silver_bank) * 10) +
+	   (static_cast<int64>(m_pp.gold_bank) * 100) +
+	   (static_cast<int64>(m_pp.platinum_bank) * 1000) +
+	   (static_cast<int64>(m_pp.copper_cursor) +
+	   (static_cast<int64>(m_pp.silver_cursor) * 10) +
+	   (static_cast<int64>(m_pp.gold_cursor) * 100) +
+	   (static_cast<int64>(m_pp.platinum_cursor) * 1000) +
+	   (static_cast<int64>(m_pp.platinum_shared) * 1000)))));
+}
+
 bool Client::CheckIncreaseSkill(SkillType skillid, Mob *against_who, int chancemodi) {
 	if (IsAIControlled()) // no skillups while chamred =p
 		return false;
