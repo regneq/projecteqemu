@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/21/2011==
+Akkadius: Implemented NPC Special Attack 'Z'. This will keep clients from being able to attack an NPC altogether similar to live.
+
 ==11/17/2011==
 Congdar: Fix charms Platinum Disc and Gold Pin. You'll need updated items\CHRMGold.pl and \items\CHRMPlatinum.pl once pushed to the quest repository.
 
