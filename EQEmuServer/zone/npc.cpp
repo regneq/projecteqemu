@@ -1443,6 +1443,9 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
 				SpecAttacks[DESTRUCTIBLE_OBJECT] = (remove ? false : true);
 				SetDestructibleObject(true);
 				break;
+			case 'Z':
+				SpecAttacks[NO_HARM_FROM_CLIENT] = (remove ? false : true);
+				break;
 
 			default:
 				break;
@@ -1596,6 +1599,11 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 				{
 					HasAllAttacks = false;
 					SetDestructibleObject(false);
+				}
+				break;
+			case 'Z':
+				if(!SpecAttacks[NO_HARM_FROM_CLIENT]){
+					HasAllAttacks = false;
 				}
 				break;
 

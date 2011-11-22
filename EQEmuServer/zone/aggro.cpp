@@ -500,6 +500,7 @@ faster, but I'm doing it this way to make it readable and easy to modify
 
 bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 {
+
 	Mob *mob1, *mob2, *tempmob;
 	Client *c1, *c2, *becomenpc;
 //	NPC *npc1, *npc2;
@@ -514,6 +515,10 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 
 	if(this == target)	// you can attack yourself
 		return true;
+
+	if(target->SpecAttacks[NO_HARM_FROM_CLIENT]){
+		return false;
+	}
 
 	// can't damage own pet (applies to everthing)
 	Mob *target_owner = target->GetOwner();
