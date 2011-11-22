@@ -1129,9 +1129,6 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 //stop the attack calculations
 bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 {
-	if(other->IsMob() && other->SpecAttacks[NO_HARM_FROM_CLIENT]){
-		return false;
-	}
 
 	_ZP(Client_Attack);
 
