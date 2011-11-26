@@ -368,7 +368,8 @@ typedef enum {
 	petAnimation,		//does not listen to any commands
 	petOther,
 	petCharmed,
-	petNPCFollow
+	petNPCFollow,
+	petHatelist			//remain active as long something is on the hatelist. Don't listen to any commands
 } PetType;
 
 class AA_SwarmPetInfo {
@@ -604,6 +605,7 @@ bool logpos;
 	void 	SpreadVirus(int16 spell_id, int16 casterID);
 
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
+	virtual void MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, const char *petname = NULL);
 //	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
 //	void	MakePet(int16 spell_id, int8 in_level, int8 in_class, int16 in_race, int8 in_texture = 0, int8 in_pettype = 0, float in_size = 0, int8 type = 0, int32 min_dmg = 0, int32 max_dmg = 0, const char *petname = NULL);
 
@@ -898,6 +900,8 @@ bool logpos;
 	inline int16 GetPetID()	const { return petid; }
 	inline PetType GetPetType() const { return typeofpet; }
 	void SetPetType(PetType p) { typeofpet = p; } 
+	inline int16 GetPetPower() const { return petpower; }
+	void SetPetPower(int16 p) { petpower = p; }
 	bool IsFamiliar() const { return(typeofpet == petFamiliar); }
 	bool IsAnimation() const { return(typeofpet == petAnimation); }
 	bool IsCharmed() const { return(typeofpet == petCharmed); }
@@ -1182,6 +1186,7 @@ protected:
 	int16 petid;
 	int16 ownerid;
 	PetType typeofpet;
+	int16 petpower;		// Should be part of class Pet, like PetType
 	int32 follow;
 	int32 follow_dist;
 

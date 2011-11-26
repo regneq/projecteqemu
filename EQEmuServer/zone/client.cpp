@@ -542,14 +542,15 @@ bool Client::Save(int8 iCommitNow) {
 
 	if (GetPet() && !GetPet()->IsFamiliar() && GetPet()->CastToNPC()->GetPetSpellID() && !dead) {
 		NPC *pet = GetPet()->CastToNPC();
-		m_epp.pet_id = pet->CastToNPC()->GetPetSpellID();
-		m_epp.pet_hp = pet->GetHP();
-		m_epp.pet_mana = pet->GetMana();
-		pet->GetPetState(m_epp.pet_buffs, m_epp.pet_items, m_epp.pet_name);
+		m_petinfo.SpellID = pet->CastToNPC()->GetPetSpellID();
+		m_petinfo.HP = pet->GetHP();
+		m_petinfo.Mana = pet->GetMana();
+		pet->GetPetState(m_petinfo.Buffs, m_petinfo.Items, m_petinfo.Name);
+		m_petinfo.petpower = pet->GetPetPower();
 	} else {
-		m_epp.pet_id = 0;
-		m_epp.pet_hp = 0;
+		memset(&m_petinfo, 0, sizeof(struct PetInfo));
 	}
+	database.SavePetInfo(this);
 
 	if(tribute_timer.Enabled()) {
 		m_pp.tribute_time_remaining = tribute_timer.GetRemainingTime();
@@ -5241,9 +5242,10 @@ void Client::SuspendMinion()
 	
 	if(!CurrentPet)
 	{
-		if(m_pp.SuspendedMinion.SpellID > 0)
+		if(m_suspendedminion.SpellID > 0)
 		{
-			MakePet(m_pp.SuspendedMinion.SpellID, spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
+			MakePoweredPet(m_suspendedminion.SpellID, spells[m_suspendedminion.SpellID].teleport_zone,
+				m_suspendedminion.petpower, m_suspendedminion.Name);
 
 			CurrentPet = GetPet()->CastToNPC();
 
@@ -5255,19 +5257,19 @@ void Client::SuspendMinion()
 
 			if(AALevel >= 2)
 			{
-				CurrentPet->SetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items);
+				CurrentPet->SetPetState(m_suspendedminion.Buffs, m_suspendedminion.Items);
 
 				CurrentPet->SendPetBuffsToClient();
 			}
 			CurrentPet->CalcBonuses();
 
-			CurrentPet->SetHP(m_pp.SuspendedMinion.HP);
+			CurrentPet->SetHP(m_suspendedminion.HP);
 
-			CurrentPet->SetMana(m_pp.SuspendedMinion.Mana);
+			CurrentPet->SetMana(m_suspendedminion.Mana);
 
 			Message_StringID(clientMessageTell, SUSPEND_MINION_UNSUSPEND, CurrentPet->GetCleanName());
 			
-			memset(&m_pp.SuspendedMinion, 0, sizeof(SuspendedMinion_Struct));
+			memset(&m_suspendedminion, 0, sizeof(struct PetInfo));
 		}
 		else
 			return;
@@ -5279,7 +5281,7 @@ void Client::SuspendMinion()
 
 		if(SpellID)
 		{
-			if(m_pp.SuspendedMinion.SpellID > 0)
+			if(m_suspendedminion.SpellID > 0)
 			{
 				Message_StringID(clientMessageError,ONLY_ONE_PET);
 
@@ -5297,14 +5299,17 @@ void Client::SuspendMinion()
 			}
 			else
 			{
-				m_pp.SuspendedMinion.SpellID = SpellID;
+				m_suspendedminion.SpellID = SpellID;
 
-				m_pp.SuspendedMinion.HP = CurrentPet->GetHP();;
+				m_suspendedminion.HP = CurrentPet->GetHP();;
 
-				m_pp.SuspendedMinion.Mana = CurrentPet->GetMana();
+				m_suspendedminion.Mana = CurrentPet->GetMana();
+				m_suspendedminion.petpower = CurrentPet->GetPetPower();
 
 				if(AALevel >= 2)
-					CurrentPet->GetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items, m_pp.SuspendedMinion.Name);
+					CurrentPet->GetPetState(m_suspendedminion.Buffs, m_suspendedminion.Items, m_suspendedminion.Name);
+				else
+					strn0cpy(m_suspendedminion.Name, CurrentPet->GetName(), 64); // Name stays even at rank 1
 
 				Message_StringID(clientMessageTell, SUSPEND_MINION_SUSPEND, CurrentPet->GetCleanName());
 

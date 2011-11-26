@@ -8464,8 +8464,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			aa_points[id] = aa[a]->value;
 	}
 
-	if(!GetAA(aaPersistentMinion))
-		memset(&m_pp.SuspendedMinion, 0, sizeof(SuspendedMinion_Struct));
 
 	if (spells_loaded)
 	{
@@ -8640,21 +8638,25 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	if(m_pp.RestTimer)
 		rest_timer.Start(m_pp.RestTimer * 1000);
 
+	database.LoadPetInfo(this);
 	//this was moved before the spawn packets are sent
 	//in hopes that it adds more consistency...
 	//Remake pet
-	if (m_epp.pet_id > 1 && !GetPet() && m_epp.pet_id <= SPDAT_RECORDS)
+	if (m_petinfo.SpellID > 1 && !GetPet() && m_petinfo.SpellID <= SPDAT_RECORDS)
 	{
-		MakePet(m_epp.pet_id, spells[m_epp.pet_id].teleport_zone, m_epp.pet_name);
+		MakePoweredPet(m_petinfo.SpellID, spells[m_petinfo.SpellID].teleport_zone, m_petinfo.petpower, m_petinfo.Name);
 		if (GetPet() && GetPet()->IsNPC()) {
 			NPC *pet = GetPet()->CastToNPC();
-			pet->SetPetState(m_epp.pet_buffs, m_epp.pet_items);
+			pet->SetPetState(m_petinfo.Buffs, m_petinfo.Items);
 			pet->CalcBonuses();
-			pet->SetHP(m_epp.pet_hp);
-			pet->SetMana(m_epp.pet_mana);
+			pet->SetHP(m_petinfo.HP);
+			pet->SetMana(m_petinfo.Mana);
 		}
-		m_epp.pet_id = 0;
+		m_petinfo.SpellID = 0;
 	}
+	// Moved here so it's after where we load the pet data.
+	if(!GetAA(aaPersistentMinion))
+		memset(&m_suspendedminion, 0, sizeof(PetInfo));
 
 	////////////////////////////////////////////////////////////
 	// Server Zone Entry Packet

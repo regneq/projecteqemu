@@ -54,8 +54,24 @@ struct DBTradeskillRecipe_Struct {
 };
 
 struct PetRecord {
-	uint32 npc_type;
+	uint32 npc_type;	// npc_type id for the pet data to use
 	bool temporary;
+	int16 petpower;
+	int8 petcontrol;	// What kind of control over the pet is possible (Animation, familiar, ...)
+	int8 petnaming;		// How to name the pet (Warder, pet, random name, familiar, ...)
+	bool monsterflag;	// flag for if a random monster appearance should get picked
+	int32 equipmentset;	// default equipment for the pet
+};
+
+// Actual pet info for a client.
+struct PetInfo {
+	uint16	SpellID;
+	int16	petpower;
+	uint32	HP;
+	uint32	Mana;
+	SpellBuff_Struct	Buffs[BUFF_COUNT];
+	uint32	Items[MAX_WORN_INVENTORY];
+	char	Name[64];
 };
 
 struct ZoneSpellsBlocked {
@@ -141,6 +157,8 @@ public:
 				bool *LFG = 0);
 	void SaveBuffs(Client *c);
     void LoadBuffs(Client *c);
+	void LoadPetInfo(Client *c);
+	void SavePetInfo(Client *c);
 
 	/*
 	 * Character Inventory
@@ -255,6 +273,8 @@ public:
 	int32	NPCSpawnDB(int8 command, const char* zone, uint32 zone_version, Client *c, NPC* spawn = 0, int32 extra = 0); // 0 = Create 1 = Add; 2 = Update; 3 = Remove; 4 = Delete
 	bool	SetSpecialAttkFlag(int8 id, const char* flag);
 	bool	GetPetEntry(const char *pet_type, PetRecord *into);
+	bool	GetPoweredPetEntry(const char *pet_type, int16 petpower, PetRecord *into);
+	bool	GetBasePetItems(sint32 equipmentset, int32 *items);
 	void	AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* itemlist, int32* copper, int32* silver, int32* gold, int32* plat);
 	void	AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemlist);
 	int32	GetMaxNPCSpellsID();

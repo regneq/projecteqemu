@@ -2046,4 +2046,216 @@ void ZoneDatabase::LoadBuffs(Client *c) {
     }
 }
 
+void ZoneDatabase::SavePetInfo(Client *c) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	int i = 0;
+	PetInfo *petinfo = c->GetPetInfo(0);
+	PetInfo *suspended = c->GetPetInfo(1);
 
+	if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_buffs` WHERE `char_id`='%u'", c->CharacterID()), 
+		errbuf)) {
+		safe_delete_array(query);
+		return;
+	}
+	safe_delete_array(query);
+	if (!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_inventory` WHERE `char_id`='%u'", c->CharacterID()), 
+		errbuf)) {
+		safe_delete_array(query);
+		// error report
+		return;
+	}
+	safe_delete_array(query);
+
+	if(!database.RunQuery(query, MakeAnyLenString(&query,
+		"INSERT INTO `character_pet_info` (`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`) "
+		"values (%u, 0, '%s', %u, %u, %u, %u) "
+		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%u, `spell_id`=%u, `hp`=%u, `mana`=%u ",
+		c->CharacterID(), petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana,
+		petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana),
+		errbuf)) 
+	{
+		safe_delete_array(query);
+		return;
+	}
+	safe_delete_array(query);
+
+	for(i=0; i<BUFF_COUNT; i++) {
+		if (petinfo->Buffs[i].spellid != SPELL_UNKNOWN && petinfo->Buffs[i].spellid != 0) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
+				"`ticsremaining`, `counters`) values "
+				"(%u, 0, %u, %u, %u, %u, %d)",
+				c->CharacterID(), i, petinfo->Buffs[i].spellid, petinfo->Buffs[i].level, petinfo->Buffs[i].duration, 
+				petinfo->Buffs[i].counters),
+				errbuf);
+			safe_delete_array(query);
+		}
+		if (suspended->Buffs[i].spellid != SPELL_UNKNOWN && suspended->Buffs[i].spellid != 0) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
+				"`ticsremaining`, `counters`) values "
+				"(%u, 0, %u, %u, %u, %u, %d)",
+				c->CharacterID(), i, suspended->Buffs[i].spellid, suspended->Buffs[i].level, suspended->Buffs[i].duration, 
+				suspended->Buffs[i].counters),
+				errbuf);
+			safe_delete_array(query);
+		}
+	}
+
+	for(i=0; i<MAX_WORN_INVENTORY; i++) {
+		if(petinfo->Items[i]) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_inventory` (`char_id`, `pet`, `slot`, `item_id`) values (%u, 0, %u, %u)",
+				c->CharacterID(), i, petinfo->Items[i]), errbuf);
+			// should check for errors
+			safe_delete_array(query);
+		}
+	}
+
+	
+	if(!database.RunQuery(query, MakeAnyLenString(&query,
+		"INSERT INTO `character_pet_info` (`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`) "
+		"values (%u, 1, '%s', %u, %u, %u, %u) "
+		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%u, `spell_id`=%u, `hp`=%u, `mana`=%u ",
+		c->CharacterID(), suspended->Name, suspended->petpower, suspended->SpellID, suspended->HP, suspended->Mana,
+		suspended->Name, suspended->petpower, suspended->SpellID, suspended->HP, suspended->Mana),
+		errbuf)) 
+	{
+		safe_delete_array(query);
+		return;
+	}
+
+	for(i=0; i<MAX_WORN_INVENTORY; i++) {
+		if(suspended->Items[i]) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_inventory` (`char_id`, `pet`, `slot`, `item_id`) values (%u, 1, %u, %u)",
+				c->CharacterID(), i, suspended->Items[i]), errbuf);
+			// should check for errors
+			safe_delete_array(query);
+		}
+	}
+
+}
+
+void ZoneDatabase::LoadPetInfo(Client *c) {
+	// Load current pet and suspended pet
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+	PetInfo *petinfo = c->GetPetInfo(0);
+	PetInfo *suspended = c->GetPetInfo(1);
+	PetInfo *pi;
+	int16 pet;
+
+	memset(petinfo, 0, sizeof(PetInfo));
+	memset(suspended, 0, sizeof(PetInfo));
+
+	if(database.RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana` from `character_pet_info` where `char_id`=%d",
+		c->CharacterID()), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result))) {
+			pet = atoi(row[0]);
+			if (pet == 0)
+				pi = petinfo;
+			else if (pet == 1)
+				pi = suspended;
+			else
+				continue;
+
+			strncpy(pi->Name,row[1],64);
+			pi->petpower = atoi(row[2]);
+			pi->SpellID = atoi(row[3]);
+			pi->HP = atoul(row[4]);
+			pi->Mana = atoul(row[5]);
+		}
+		mysql_free_result(result);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+
+
+    if (RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT `pet`, `slot`, `spell_id`, `caster_level`, `castername`, "
+		"`ticsremaining`, `counters` FROM `character_pet_buffs` "
+		"WHERE `char_id`='%u'", 
+        c->CharacterID()), errbuf, &result)) 
+    {
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result)))
+		{
+			pet = atoi(row[0]);
+			if (pet == 0)
+				pi = petinfo;
+			else if (pet == 1)
+				pi = suspended;
+			else
+				continue;
+
+			uint32 slot_id = atoul(row[1]);
+			if(slot_id >= BUFF_COUNT) {
+				continue;
+			}
+
+			uint32 spell_id = atoul(row[2]);
+			if(!IsValidSpell(spell_id)) {
+				continue;
+			}
+
+			Client *caster = entity_list.GetClientByName(row[4]);
+			uint32 caster_level = atoi(row[3]);
+			uint32 ticsremaining = atoul(row[5]);
+			uint32 counters = atoul(row[6]);
+
+			pi->Buffs[slot_id].spellid = spell_id;
+			pi->Buffs[slot_id].level = caster_level;
+			pi->Buffs[slot_id].player_id = 0;
+			pi->Buffs[slot_id].slotid = 2; // Assume it's a real buff
+
+			pi->Buffs[slot_id].duration = ticsremaining;
+			pi->Buffs[slot_id].counters = counters;
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+        return;
+	}
+
+	if (database.RunQuery(query, MakeAnyLenString(&query,
+		"SELECT `pet`, `slot`, `item_id` FROM `character_pet_inventory` WHERE `char_id`=%u",
+		c->CharacterID()), errbuf, &result))
+	{
+		while((row = mysql_fetch_row(result))) {
+			pet = atoi(row[0]);
+			if (pet == 0)
+				pi = petinfo;
+			else if (pet == 1)
+				pi = suspended;
+			else
+				continue;
+
+			int slot = atoi(row[1]);
+			if (slot < 0 || slot > MAX_WORN_INVENTORY)
+				continue;
+
+			pi->Items[slot] = atoul(row[2]);
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+        return;
+	}
+
+}

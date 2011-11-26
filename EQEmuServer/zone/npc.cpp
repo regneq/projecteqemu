@@ -1115,7 +1115,13 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 
 sint32 NPC::GetEquipmentMaterial(int8 material_slot) const
 {
-	if(equipment[material_slot] == 0) {
+	if (material_slot >= MAX_MATERIALS)
+		return 0;
+
+	int inv_slot = Inventory::CalcSlotFromMaterial(material_slot);
+	if (inv_slot == -1)
+		return 0;
+	if(equipment[inv_slot] == 0) {
 		switch(material_slot) {
 		case MATERIAL_HEAD:
 			return helmtexture;

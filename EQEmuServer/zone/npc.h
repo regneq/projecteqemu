@@ -377,7 +377,7 @@ protected:
 	int32 roambox_delay;
 	
 	int16   skills[HIGHEST_SKILL+1];
-	int32   equipment[MAX_MATERIALS];	//this is an array of item IDs
+	int32   equipment[MAX_WORN_INVENTORY];	//this is an array of item IDs
 	int16	d_meele_texture1;			//this is an item Material value
 	int16	d_meele_texture2;			//this is an item Material value (offhand)
 	int8	prim_melee_type;			//Sets the Primary Weapon attack message and animation

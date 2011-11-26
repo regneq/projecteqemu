@@ -1773,10 +1773,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 
 	//figure out what weapon they are using, if any
 	const Item_Struct* weapon = NULL;
-	if (Hand == 13 && equipment[7] > 0)
-	    weapon = database.GetItem(equipment[7]);
-	else if (equipment[8])
-	    weapon = database.GetItem(equipment[8]);
+	if (Hand == 13 && equipment[SLOT_PRIMARY] > 0)
+	    weapon = database.GetItem(equipment[SLOT_PRIMARY]);
+	else if (equipment[SLOT_SECONDARY])
+	    weapon = database.GetItem(equipment[SLOT_SECONDARY]);
 	
 	//We dont factor much from the weapon into the attack.
 	//Just the skill type so it doesn't look silly using punching animations and stuff while wielding weapons
