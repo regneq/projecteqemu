@@ -447,9 +447,6 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker) {
 		float r = mob->GetAssistRange();
 		r = r * r;
 
-		if(sender == NULL)
-			return;
-
 		if (
 			mob != sender
 			&& mob != attacker
@@ -458,6 +455,8 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker) {
 			&& mob->GetPrimaryFaction() != 0
 			&& mob->DistNoRoot(*sender) <= r
 			&& !mob->IsEngaged()
+			&& ((!mob->IsPet()) || (mob->IsPet() && mob->GetOwner() && !mob->GetOwner()->IsClient()))
+				// If we're a pet we don't react to any calls for help if our owner is a client
 			)
 		{
 			//if they are in range, make sure we are not green...

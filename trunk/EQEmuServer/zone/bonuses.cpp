@@ -48,8 +48,6 @@ void Mob::CalcBonuses()
 
 void NPC::CalcBonuses()
 {
-	Mob::CalcBonuses();
-
 	if(RuleB(NPC, UseItemBonusesForNonPets)){
 		memset(&itembonuses, 0, sizeof(StatBonuses));
 		CalcItemBonuses(&itembonuses);
@@ -60,6 +58,9 @@ void NPC::CalcBonuses()
 			CalcItemBonuses(&itembonuses);
 		}
 	}
+
+	// This has to happen last, so we actually take the item bonuses into account.
+	Mob::CalcBonuses();
 }
 
 void Client::CalcBonuses()
@@ -1665,7 +1666,7 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 {
 	if(newbon){
 
-		for(int i = 0; i < 8; i++){
+		for(int i = 0; i < MAX_WORN_INVENTORY; i++){
 			const Item_Struct *cur = database.GetItem(equipment[i]);
 			if(cur){
 				//basic stats
@@ -1724,6 +1725,8 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 				if (cur->Worn.Effect>0 && (cur->Worn.Type == ET_WornEffect)) { // latent effects
 					ApplySpellsBonuses(cur->Worn.Effect, cur->Worn.Level, newbon);
 				}
+				if (cur->Haste > newbon->haste)
+					newbon->haste = cur->Haste;
 			}
 		}
 	

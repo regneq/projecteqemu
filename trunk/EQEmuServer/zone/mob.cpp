@@ -302,6 +302,7 @@ Mob::Mob(const char*   in_name,
 	SetPetID(0);
 	SetOwnerID(0);
 	typeofpet = petCharmed;		//default to charmed...
+	petpower = 0;
 	held = false;
 	
 	attacked_count = 0;
@@ -2375,8 +2376,10 @@ int32 NPC::GetEquipment(int8 material_slot) const
 {
 	if(material_slot > 8)
 		return 0;
-
-	return equipment[material_slot];
+	int invslot = Inventory::CalcSlotFromMaterial(material_slot);
+	if (invslot == -1)
+		return 0;
+	return equipment[invslot];
 }
 
 void Mob::SendWearChange(int8 material_slot)

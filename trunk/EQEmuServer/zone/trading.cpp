@@ -382,8 +382,6 @@ void Client::FinishTrade(Mob* tradingWith) {
 		int8 charges[4]={0};
 		bool attuned[4]={0};
 
-		int xy = tradingWith->CastToNPC()->CountLoot();
-
 		for (sint16 i=3000; i<=3003; i++) {
 			const ItemInst* inst = m_inv[i];
 			if (inst) {
@@ -395,10 +393,20 @@ void Client::FinishTrade(Mob* tradingWith) {
 				if (item2 && quest_npc == false) {
 					// if it was not a NO DROP or Attuned item (or if a GM is trading), let the NPC have it
 					if(GetGM() || (item2->NoDrop != 0 && inst->IsInstNoDrop() == false)) {
-						xy++;
-						if (xy <= 20) { // 20 items max in an NPC loot table
-							tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
+						// pets need to look inside bags and try to equip items found there
+						if (item2->ItemClass == ItemClassContainer && item2->BagSlots > 0) {
+							for(sint16 bslot=0; bslot < item2->BagSlots; bslot++) {
+								const ItemInst* baginst = inst->GetItem(bslot);
+								if (baginst) {
+									const Item_Struct* bagitem = database.GetItem(baginst->GetItem()->ID);
+									if (bagitem) {
+										tradingWith->CastToNPC()->AddLootDrop(bagitem, &tradingWith->CastToNPC()->itemlist, baginst->GetCharges(), true, true);
+									}
+								}
+							}
 						}
+
+						tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
 					}
 					// Return NO DROP and Attuned items being handed into a non-quest NPC if the rule is true
 					else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {

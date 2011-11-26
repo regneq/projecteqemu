@@ -468,7 +468,58 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 	if (equipit) {
 		uint8 eslot = 0xFF;
 		char newid[20];
+		const Item_Struct* compitem = NULL;
+		bool found = false; // track if we found an empty slot we fit into
+		sint32 foundslot = -1; // for multi-slot items
 		
+		// Equip rules are as follows:
+		// If the item has the NoPet flag set it will not be equipped.
+		// An empty slot takes priority. The first empty one that an item can
+		//  fit into will be the one picked for the item.
+		// AC is the primary choice for which item gets picked for a slot.
+		// If AC is identical HP is considered next.
+		// If an item can fit into multiple slots we'll pick the last one where
+		//  it is an improvement.
+
+		if (!item2->NoPet) {
+			for (int i=0; !found && i<MAX_WORN_INVENTORY; i++) {
+				uint32 slots = (1 << i);
+				if (item2->Slots & slots) {
+					if(equipment[i])
+					{
+						compitem = database.GetItem(equipment[i]);
+						if (item2->AC > compitem->AC || 
+							(item2->AC == compitem->AC && item2->HP > compitem->HP))
+						{
+							// item would be an upgrade
+							// check if we're multi-slot, if yes then we have to keep
+							// looking in case any of the other slots we can fit into are empty.
+							if (item2->Slots != slots) {
+								foundslot = i;
+							}
+							else {
+								equipment[i] = item2->ID;
+								foundslot = i;
+								found = true;
+							}
+						} // end if ac
+					} 
+					else
+					{
+						equipment[i] = item2->ID;
+						foundslot = i;
+						found = true;
+					}
+				} // end if (slots)
+			} // end for
+		} // end if NoPet
+
+		// Possible slot was found but not selected. Pick it now.
+		if (!found && foundslot >= 0) {
+			equipment[foundslot] = item2->ID;
+			found = true;
+		}
+
 		// @merth: IDFile size has been increased, this needs to change
 		uint16 emat;
 		if(item2->Material <= 0
@@ -486,13 +537,13 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 			emat = item2->Material;
 		}
 
-		if ((item2->Slots & (1 << SLOT_PRIMARY)) && (equipment[MATERIAL_PRIMARY]==0)) {
+		if (foundslot == SLOT_PRIMARY) {
 			if (item2->Proc.Effect != 0)
 				CastToMob()->AddProcToWeapon(item2->Proc.Effect, true);
 			
 			eslot = MATERIAL_PRIMARY;
 		}
-		else if (item2->Slots & (1 << SLOT_SECONDARY) && (equipment[MATERIAL_SECONDARY]==0) 
+		else if (foundslot == SLOT_SECONDARY 
 			&& (GetOwner() != NULL || (GetLevel() >= 13 && MakeRandomInt(0,99) < NPC_DW_CHANCE) || (item2->Damage==0)) &&
 			(item2->ItemType == ItemType1HS || item2->ItemType == ItemType1HB || item2->ItemType == ItemTypeShield ||
 			item2->ItemType == ItemTypePierce))
@@ -502,25 +553,25 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 			
 			eslot = MATERIAL_SECONDARY;
 		}
-		else if ((item2->Slots & (1 << SLOT_HEAD)) && (equipment[MATERIAL_HEAD]==0)) {
+		else if (foundslot == SLOT_HEAD) {
 			eslot = MATERIAL_HEAD;
 		}
-		else if ((item2->Slots & (1 << SLOT_CHEST)) && (equipment[MATERIAL_CHEST]==0)) {
+		else if (foundslot ==  SLOT_CHEST) {
 			eslot = MATERIAL_CHEST;
 		}
-		else if ((item2->Slots & (1 << SLOT_ARMS)) && (equipment[MATERIAL_ARMS]==0)) {
+		else if (foundslot == SLOT_ARMS) {
 			eslot = MATERIAL_ARMS;
 		}
-		else if (item2->Slots & ((1 << SLOT_BRACER01)|(1 << SLOT_BRACER02)) && (equipment[MATERIAL_BRACER]==0)) {
+		else if (foundslot == SLOT_BRACER01 || foundslot == SLOT_BRACER02) {
 			eslot = MATERIAL_BRACER;
 		}
-		else if ((item2->Slots & (1 << SLOT_HANDS)) && (equipment[MATERIAL_HANDS]==0)) {
+		else if (foundslot == SLOT_HANDS) {
 			eslot = MATERIAL_HANDS;
 		}
-		else if ((item2->Slots & (1 << SLOT_LEGS)) && (equipment[MATERIAL_LEGS]==0)) {
+		else if (foundslot == SLOT_LEGS) {
 			eslot = MATERIAL_LEGS;
 		}
-		else if ((item2->Slots & (1 << SLOT_FEET)) && (equipment[MATERIAL_FEET]==0)) {
+		else if (foundslot == SLOT_FEET) {
 			eslot = MATERIAL_FEET;
 		}
 		
@@ -542,15 +593,14 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 		
 		//if we found an open slot it goes in...
 		if(eslot != 0xFF) {
-			//equip it...
-			equipment[eslot] = item2->ID;
-			
 			if(wearchange) {
 				wc->wear_slot_id = eslot;
 				wc->material = emat;
 			}
 			
-			CalcBonuses();
+		}
+		if (found) {
+			CalcBonuses(); // This is less than ideal for bulk adding of items
 		}
 		item->equipSlot = item2->Slots;
 	}

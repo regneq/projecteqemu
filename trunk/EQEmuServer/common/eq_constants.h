@@ -602,7 +602,9 @@ static const uint8 SkillDamageTypes[HIGHEST_SKILL+1] = {
 #define MATERIAL_SECONDARY	8
 #define MAX_MATERIALS		9	//number of equipables
 
-
+// Used for worn NPC inventory tracking. NPCs don't use
+// augments, so only the basic slots need to be kept track of.
+#define MAX_WORN_INVENTORY	22
 
 
 /*

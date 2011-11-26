@@ -6341,7 +6341,7 @@ void Bot::BotAddEquipItem(int slot, uint32 id) {
 		int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slot);
 
 		if(materialFromSlot != 0xFF) {
-			equipment[materialFromSlot] = id;
+			equipment[slot] = id; // npc has more than just material slots. Valid material should mean valid inventory index
 			SendWearChange(materialFromSlot);
 		}
 	}
@@ -6353,7 +6353,7 @@ void Bot::BotRemoveEquipItem(int slot) {
 		int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slot);
 
 		if(materialFromSlot != 0xFF) {
-			equipment[materialFromSlot] = 0;
+			equipment[slot] = 0; // npc has more than just material slots. Valid material should mean valid inventory index
 			SendWearChange(materialFromSlot);
 			if(materialFromSlot == MATERIAL_CHEST)
 				SendWearChange(MATERIAL_ARMS);
