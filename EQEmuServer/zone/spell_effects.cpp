@@ -620,8 +620,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				int max_level = spell.max[i];
 				//max_level of 0 means we assume a default of 55.
 				if (max_level == 0)
-					max_level = 55;
-                if(SpecAttacks[UNSTUNABLE] || (GetLevel() > max_level))
+					max_level = RuleI(Spells, BaseImmunityLevel);
+				// NPCs get to ignore max_level for their spells.
+                if(SpecAttacks[UNSTUNABLE] || 
+					((GetLevel() > max_level) 
+					&& caster && (!caster->IsNPC() || (caster->IsNPC() && !RuleB(Spells, NPCIgnoreBaseImmunity)))))
 				{
 					caster->Message_StringID(MT_SpellFailure, IMMUNE_STUN);
 				}
@@ -1330,9 +1333,12 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				// solar: the spinning is handled by the client
 				int max_level = spells[spell_id].max[i];
 				if(max_level == 0)
-					max_level = 55; // Default max is 55 level limit
+					max_level = RuleI(Spells, BaseImmunityLevel); // Default max is 55 level limit
 					
-				if(SpecAttacks[UNSTUNABLE] || (GetLevel() > max_level)) 
+				// NPCs ignore level limits in their spells
+                if(SpecAttacks[UNSTUNABLE] || 
+					((GetLevel() > max_level) 
+					&& caster && (!caster->IsNPC() || (caster->IsNPC() && !RuleB(Spells, NPCIgnoreBaseImmunity)))))
 				{
 					caster->Message_StringID(MT_Shout, IMMUNE_STUN);
 				}
