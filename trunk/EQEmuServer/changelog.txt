@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==11/26/2011==
+Leere: NPCs now have the ability to ignore level limits for stuns. This ability can be turned off via rule. Also added a rule for what the base stun immunity level is for spells with a max level of 0.
 Leere: NPCs (and thus pets) are now able to equip items in non-visble slots. They will also look inside of bags that are traded to them for those items.
 The pets table was expanded. It can now map to several npc IDs for the same pet type string, based on pet power. (This has replaced the old approach of letting pet power be a direct boost to NPC stats. The intention is to now have distinct npc_type table entries for the various pet power levels that a pet supports.) Pet naming and pet control was likewise moved out of code logic and to the pets table. (The default pet control is now petFamiliar rather than petOther.) Pets can now have items already equipped when summoned. The equipment sets used for that can be shared between pets and also be nested up to a depth of 5.
 Pets are no longer stored as part of the profile blobs.

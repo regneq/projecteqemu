@@ -3658,7 +3658,9 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		// check max level for spell
 		effect_index = GetSpellEffectIndex(spell_id, SE_Mez);
 		assert(effect_index >= 0);
-		if(GetLevel() > spells[spell_id].max[effect_index])
+		// NPCs get to ignore the max level
+		if((GetLevel() > spells[spell_id].max[effect_index]) &&
+			(!caster->IsNPC() || (caster->IsNPC() && !RuleB(Spells, NPCIgnoreBaseImmunity))))
 		{
 			mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Mez spell (%d)", GetLevel(), spells[spell_id].max[effect_index]);
 			caster->Message_StringID(MT_Shout, CANNOT_MEZ_WITH_SPELL);
