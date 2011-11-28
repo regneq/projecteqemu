@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/28/2011==
+Leere: Fixed a problem with no drop items inside of bags when trading with NPCs. Pets retain buff based procs through zoning now.
+
 ==11/26/2011==
 Leere: NPCs now have the ability to ignore level limits for stuns. This ability can be turned off via rule. Also added a rule for what the base stun immunity level is for spells with a max level of 0.
 Leere: NPCs (and thus pets) are now able to equip items in non-visble slots. They will also look inside of bags that are traded to them for those items.

@@ -579,6 +579,15 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 		if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
 			for (int x1=0; x1 < EFFECT_COUNT; x1++) {
 				switch (spells[buffs[j1].spellid].effectid[x1]) {
+					case SE_WeaponProc:
+						// We need to reapply buff based procs
+						// We need to do this here so suspended pets also regain their procs.
+						if (spells[buffs[j1].spellid].base2[x1] == 0) {
+							AddProcToWeapon(GetProcID(buffs[j1].spellid,x1), false, 100);
+						} else {
+							AddProcToWeapon(GetProcID(buffs[j1].spellid,x1), false, 100+spells[buffs[j1].spellid].base2[x1]);
+						}
+						break;
 					case SE_Charm:
 					case SE_Rune:
 					case SE_NegateAttacks:

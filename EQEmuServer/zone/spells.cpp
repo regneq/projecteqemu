@@ -5200,7 +5200,7 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 }
 void Mob::UpdateRuneFlags()
 {
-	bool Has_SE_Rune = false, Has_SE_AbsorbMagicAtt = false, Has_SE_MitigateMeleeDamage = true, Has_SE_MitigateSpellDamage = true;
+	bool Has_SE_Rune = false, Has_SE_AbsorbMagicAtt = false, Has_SE_MitigateMeleeDamage = false, Has_SE_MitigateSpellDamage = false;
 	uint32 buff_count = GetMaxTotalSlots();
 	for (unsigned int i = 0; i < buff_count; ++i)
 	{
