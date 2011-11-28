@@ -399,8 +399,11 @@ void Client::FinishTrade(Mob* tradingWith) {
 								const ItemInst* baginst = inst->GetItem(bslot);
 								if (baginst) {
 									const Item_Struct* bagitem = database.GetItem(baginst->GetItem()->ID);
-									if (bagitem) {
+									if (bagitem && (GetGM() || (bagitem->NoDrop != 0 && baginst->IsInstNoDrop() == false))) {
 										tradingWith->CastToNPC()->AddLootDrop(bagitem, &tradingWith->CastToNPC()->itemlist, baginst->GetCharges(), true, true);
+									}
+									else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {
+										PushItemOnCursor(*baginst, true);
 									}
 								}
 							}
