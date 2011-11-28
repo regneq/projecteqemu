@@ -1,5 +1,5 @@
 ALTER TABLE `pets` DROP PRIMARY KEY;
-ALTER TABLE `pets` ADD COLUMN `petpower` int NOT NULL default '0' AFTER `type`, ADD COLUMN `petcontrol` tinyint NOT NULL default '0', ADD COLUMN `petnaming` tinyint NOT NULL default '0' ADD COLUMN `monsterflag` tinyint NOT NULL default '0', ADD COLUMN `equipmentset` int NOT NULL default -1, ADD PRIMARY KEY (`type`, `petpower`);
+ALTER TABLE `pets` ADD COLUMN `petpower` int NOT NULL default '0' AFTER `type`, ADD COLUMN `petcontrol` tinyint NOT NULL default '0', ADD COLUMN `petnaming` tinyint NOT NULL default '0', ADD COLUMN `monsterflag` tinyint NOT NULL default '0', ADD COLUMN `equipmentset` int NOT NULL default -1, ADD PRIMARY KEY (`type`, `petpower`);
 
 UPDATE `pets` SET `monsterflag` = 1 where `type` like 'MonsterSum%';
 UPDATE `pets` SET `petcontrol` = 2 where `type` like 'SumAir%' or `type` like 'SumEarth%' or `type` like 'SumFire%' or `type` like 'SumWater%' or `type` = 'SumMageMultiElement' or `type` like 'BLPet%' or `type` like 'skel_%' or `type` like 'MonsterSum%' or `type` = 'DruidPet' or `type` like 'SpiritWolf%' ;

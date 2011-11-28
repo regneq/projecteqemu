@@ -3835,7 +3835,7 @@ void Bot::LoadPet() {
 		if(GetPet() && GetPet()->IsNPC()) {
 			NPC *pet = GetPet()->CastToNPC();
 			SpellBuff_Struct petBuffs[BUFF_COUNT];
-			int32 petItems[MAX_MATERIALS];
+			int32 petItems[MAX_WORN_INVENTORY];
 
 			LoadPetBuffs(petBuffs, PetSaveId);
 			LoadPetItems(petItems, PetSaveId);
@@ -3949,15 +3949,15 @@ void Bot::LoadPetItems(int32* petItems, uint32 botPetSaveId) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
-			int BuffCount = 0;
+			int ItemCount = 0;
 
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
-				if(BuffCount == BUFF_COUNT)
+				if(ItemCount == MAX_WORN_INVENTORY)
 					break;
 
-				petItems[BuffCount] = atoi(DataRow[0]);
+				petItems[ItemCount] = atoi(DataRow[0]);
 
-				BuffCount++;
+				ItemCount++;
 			}
 
 			mysql_free_result(DatasetResult);
@@ -3990,7 +3990,7 @@ void Bot::SavePet() {
 		uint32 botPetId = pet->CastToNPC()->GetPetSpellID();
 		char* tempPetName = new char[64];
 		SpellBuff_Struct petBuffs[BUFF_COUNT];
-		int32 petItems[MAX_MATERIALS];
+		int32 petItems[MAX_WORN_INVENTORY];
 
 		pet->GetPetState(petBuffs, petItems, tempPetName);
 		
@@ -4072,7 +4072,7 @@ void Bot::SavePetItems(int32* petItems, uint32 botPetSaveId) {
 		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
 		int ItemCount = 0;
 
-		while(ItemCount < MAX_MATERIALS) {
+		while(ItemCount < MAX_WORN_INVENTORY) {
 			if(petItems[ItemCount] > 0) {
 				if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botpetinventory (BotPetsId, ItemId) VALUES(%u, %u);", botPetSaveId, petItems[ItemCount]), TempErrorMessageBuffer)) {
 					errorMessage = std::string(TempErrorMessageBuffer);
