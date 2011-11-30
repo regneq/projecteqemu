@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT"
+				PreprocessorDefinitions="_WINDOWS;WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT"
+				PreprocessorDefinitions="_WINDOWS;WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
