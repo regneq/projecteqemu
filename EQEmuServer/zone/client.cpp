@@ -27,7 +27,7 @@ using namespace std;
 #include <math.h>
 
 // Disgrace: for windows compile
-#ifdef WIN32
+#ifdef _WINDOWS
 #define abs64 _abs64
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)

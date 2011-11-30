@@ -27,7 +27,7 @@ Child of the Mob class.
 #include <iostream>
 #include <sstream>
 using namespace std;
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf

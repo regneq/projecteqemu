@@ -94,7 +94,7 @@ bool load_log_settings(const char *filename) {
 	while(!feof(f)) {
 		if(fgets(linebuf, 512, f) == NULL)
 			continue;
-#ifdef WIN32
+#ifdef _WINDOWS
 		if (sscanf(linebuf, "%[^=]=%[^\n]\n", type_name, value) != 2)
 			continue;
 #else	

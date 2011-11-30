@@ -33,7 +33,7 @@ using namespace std;
 		#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 	#endif
 using namespace std;
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <conio.h>
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
@@ -143,7 +143,7 @@ bool zoneprocess;
 
 #endif
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <process.h>
 #else
 #include <pthread.h>
@@ -591,7 +591,7 @@ int main(int argc, char** argv) {
 	}
 	catch(...){}
 	if (error){
-#ifdef WIN32		
+#ifdef _WINDOWS		
 		ExitProcess(error);
 #else	
 		entity_list.Clear();
@@ -624,7 +624,7 @@ int main(int argc, char** argv) {
 }
 
 void CatchSignal(int sig_num) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	_log(ZONE__INIT, "Recieved signal: %i", sig_num);
 #else
 	_log(ZONE__INIT, "Recieved signal: %i in thread %d", sig_num, pthread_self());
@@ -1297,7 +1297,7 @@ This is hanging on freebsd for me, not sure why...
 #endif	//from just above GetMaxSpellID(): #if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 
 void UpdateWindowTitle(char* iNewTitle) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	char tmp[500];
 	if (iNewTitle) {
 		snprintf(tmp, sizeof(tmp), "%i: %s", ZoneConfig::get()->ZonePort, iNewTitle);

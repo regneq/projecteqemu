@@ -7,7 +7,7 @@
   stuff that's normally cached in memory, thus allowing all processes on the server to share
   one copy of the data, greatly reducing the amount of RAM used.
 */
-#ifdef WIN32
+#ifdef _WINDOWS
 
 #include <windows.h>
 void CloseMemShare();

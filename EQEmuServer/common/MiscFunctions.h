@@ -134,7 +134,7 @@ char *RemoveApostrophes(const char *s);
 
 #define _ITOA_BUFLEN	25
 const char *itoa(int num);	//not thread safe
-#ifndef WIN32
+#ifndef _WINDOWS
 const char *itoa(int num, char* a,int b);
 #endif
 

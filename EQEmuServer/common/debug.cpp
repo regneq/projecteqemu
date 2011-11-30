@@ -4,7 +4,7 @@
 using namespace std;
 #include <time.h>
 #include <string.h>
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 
 	#define snprintf	_snprintf

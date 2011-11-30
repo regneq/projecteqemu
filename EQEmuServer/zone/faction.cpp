@@ -33,7 +33,7 @@ using namespace std;
 extern Zone* zone;
 
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 #endif
 

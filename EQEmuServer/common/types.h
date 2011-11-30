@@ -32,7 +32,7 @@ typedef  signed  short		sint16;
 typedef unsigned int		uint32;
 typedef  signed  int		sint32;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#if defined(_INTEGRAL_MAX_BITS) && _INTEGRAL_MAX_BITS >= 64
 		typedef unsigned __int64	int64;
 		typedef unsigned __int64	uint64;
@@ -59,7 +59,7 @@ typedef unsigned char		uchar;
 
 typedef const char Const_char;	//for perl XS
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -99,7 +99,7 @@ typedef const char Const_char;	//for perl XS
 #endif
 
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define DLLFUNC extern "C" __declspec(dllexport)
 #else
 #define DLLFUNC extern "C"

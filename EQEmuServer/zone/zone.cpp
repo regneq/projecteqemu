@@ -25,7 +25,7 @@ using namespace std;
 #include <time.h>
 #include <math.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <process.h>
 #define	 snprintf	_snprintf
 #define  vsnprintf	_vsnprintf
@@ -62,7 +62,7 @@ using namespace std;
 #include "guild_mgr.h"
 #include "QuestParserCollection.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #define strncasecmp	_strnicmp
 #define strcasecmp  _stricmp

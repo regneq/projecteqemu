@@ -21,7 +21,7 @@ using namespace std;
 #include <stdlib.h>
 #include <math.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 
@@ -36,7 +36,7 @@ using namespace std;
 #include "../common/rulesys.h"
 
 #include "zonedb.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 

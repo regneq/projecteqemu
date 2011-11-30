@@ -9,7 +9,7 @@
 #include "../common/Mutex.h"
 #include "../common/EmuTCPConnection.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	void AutoInitLoginServer(void *tmp);
 #else
 	void *AutoInitLoginServer(void *tmp);

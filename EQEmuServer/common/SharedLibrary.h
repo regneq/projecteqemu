@@ -18,7 +18,7 @@
 #ifndef _SHAREDLIBRARY_H
 #define _SHAREDLIBRARY_H
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 
@@ -39,7 +39,7 @@ public:
 	inline bool	Loaded() { return (hDLL != 0); }
 	
 protected:
-#ifdef WIN32
+#ifdef _WINDOWS
 	HINSTANCE hDLL;
 #else
 	void* hDLL;

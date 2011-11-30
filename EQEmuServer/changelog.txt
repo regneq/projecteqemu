@@ -1,5 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/30/2011==
+Secrets: Implemented Visual Studio 11 and Visual Studio 10 project/sln files.
+Secrets: Added x64 configuration settings to VS11 and VS10 project files/SLN files. 
+Secrets: Changed WIN32 define to _WINDOWS across the board. In the case where WIN32 is needed over WIN64 (ie; assembly references) there is still WIN32 defines and a new WIN64 define.
+Secrets: Upgraded ActiveState Perl lib define to 5.14 -- others still work but it is strongly reccomended to use 5.14 as it contains less memory leaks.
+Secrets: Added Zlib 1.2.3 x64 to the SVN for use with the windows solution files.
+
+NOTE: Since VS11 is in beta, I only set up the debug options. You should use Vs2010 Ultimate to compile in x64 mode.
+NOTE2: Perl 5.14 is stable, but if you absolutely need to use 5.10, ctrl f search for "perl514.lib" and replace it with "perl510.lib"
+NOTE3: A forum post will be made for help with compiling Windows x64 on EQEmulator.org, it is an experimental feature but has less issues than x64 linux, imo.
+
 ==11/28/2011==
 Leere: Fixed a problem with no drop items inside of bags when trading with NPCs. Pets retain buff based procs through zoning now.
 

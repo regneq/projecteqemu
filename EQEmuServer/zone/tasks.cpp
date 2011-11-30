@@ -23,7 +23,7 @@ Copyright (C) 2001-2008 EQEMu Development Team (http://eqemulator.net)
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define strcasecmp _stricmp
 #endif
 

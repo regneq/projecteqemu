@@ -22,7 +22,7 @@
 #include <vector>
 #include <time.h>
 #include <sys/types.h>
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <time.h>
 #else
 	#include <sys/socket.h>
@@ -791,7 +791,7 @@ EQProtocolPacket *p=NULL;
 char temp[15];
 
 	socklen=sizeof(sockaddr);
-#ifdef WIN32
+#ifdef _WINDOWS
 	length=recvfrom(eq_fd, (char *)_tempBuffer, 2048, 0, (struct sockaddr*)from, (int *)&socklen);
 #else
 	length=recvfrom(eq_fd, _tempBuffer, 2048, 0, (struct sockaddr*)from, (socklen_t *)&socklen);

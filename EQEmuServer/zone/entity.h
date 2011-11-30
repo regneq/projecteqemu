@@ -32,7 +32,7 @@
 #define SPAWNS_PER_POINT_DATARATE 10
 #define MAX_SPAWNS_PER_PACKET	100
 
-//#ifdef WIN32
+//#ifdef _WINDOWS
 	class	EQApplicationPacket;
 //#else
 //	struct	EQApplicationPacket;

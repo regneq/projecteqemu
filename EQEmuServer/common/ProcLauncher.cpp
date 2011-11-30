@@ -17,7 +17,7 @@
 */
 #include "debug.h"
 #include "ProcLauncher.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include <sys/types.h>
@@ -36,7 +36,7 @@ using namespace std;
 
 ProcLauncher ProcLauncher::s_launcher;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 const ProcLauncher::ProcRef ProcLauncher::ProcError = 0xFFFFFFFF;
 #else
 const ProcLauncher::ProcRef ProcLauncher::ProcError = -1;
@@ -53,7 +53,7 @@ ProcLauncher::ProcLauncher()
 
 
 void ProcLauncher::Process() {
-#ifdef WIN32
+#ifdef _WINDOWS
 	map<ProcRef, Spec *>::iterator cur, end, tmp;
 	cur = m_running.begin();
 	end = m_running.end();
@@ -110,7 +110,7 @@ void ProcLauncher::ProcessTerminated(std::map<ProcRef, Spec *>::iterator &it) {
 	if(it->second->handler != NULL)
 		it->second->handler->OnTerminate(it->first, it->second);
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 	CloseHandle(it->second->proc_info.hProcess);
 #else	//!WIN32
 #endif	//!WIN32
@@ -123,7 +123,7 @@ ProcLauncher::ProcRef ProcLauncher::Launch(Spec *&to_launch) {
 	Spec *it = to_launch;
 	to_launch = NULL;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	STARTUPINFO siStartInfo;
 	BOOL bFuncRetn = FALSE; 
 	
@@ -281,7 +281,7 @@ bool ProcLauncher::Terminate(const ProcRef &proc, bool graceful) {
 	//we do not remove it from the list until we have been notified
 	//that they have been terminated.
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 	if(!TerminateProcess(res->second->proc_info.hProcess, 0)) {
 		return(false);
 	}

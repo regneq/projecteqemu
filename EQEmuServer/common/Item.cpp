@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	// VS6 doesn't like the length of STL generated names: disabling
 	#pragma warning(disable:4786)
 	// Quagmire: Dont know why the one in debug.h doesnt work, but it doesnt.

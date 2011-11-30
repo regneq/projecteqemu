@@ -263,7 +263,7 @@ void EQW::CreateLauncher(Const_char *launcher_name, int dynamic_count) {
 }
 
 void EQW::LSReconnect() {
-	#ifdef WIN32
+	#ifdef _WINDOWS
 		_beginthread(AutoInitLoginServer, 0, NULL);
 	#else
 		pthread_t thread;

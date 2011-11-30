@@ -34,7 +34,7 @@ using namespace std;
 #include <map>
 
 // Disgrace: for windows compile
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #define snprintf	_snprintf
 #define strncasecmp	_strnicmp

@@ -13,7 +13,7 @@
 #include "client.h"
 #include "zone.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf        _snprintf
 #endif
 

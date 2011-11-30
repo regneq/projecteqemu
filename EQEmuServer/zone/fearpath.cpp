@@ -29,7 +29,7 @@
 #include "map.h"
 #include "zone.h"
 #include "pathing.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 

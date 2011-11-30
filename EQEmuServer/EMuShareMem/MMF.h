@@ -1,7 +1,7 @@
 #ifndef MMF_H
 #define MMF_H
 #include "../common/types.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 #else
 	//#include "MMFMutex.h"
@@ -35,7 +35,7 @@ public:
 private:
 	bool		pCanWrite;
 	MMF_Struct* SharedMemory;
-#ifdef WIN32
+#ifdef _WINDOWS
 	HANDLE		hMapObject;
 	LPVOID		lpvMem;
 #else

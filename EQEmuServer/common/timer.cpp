@@ -58,7 +58,7 @@ Timer::Timer(int32 start, int32 timer, bool iUseAcurateTiming = false) {
 }
 
 /* Reimplemented for MSVC - Bounce */
-#ifdef WIN32
+#ifdef _WINDOWS
 int gettimeofday (timeval *tp, ...)
 {
 	timeb tb;

@@ -16,7 +16,7 @@ using namespace std;
 //#define IPBASED_AUTH_HACK
 
 // Disgrace: for windows compile
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 	#include <winsock.h>
 	#define snprintf	_snprintf

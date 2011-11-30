@@ -25,7 +25,7 @@ using namespace std;
 #include <stdlib.h>
 #include <stdarg.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 
 	#define snprintf	_snprintf
@@ -722,7 +722,7 @@ void WorldServer::Process() {
 		//	printf("%i\n",zb->zoneid);
 			struct in_addr	in;
 			in.s_addr = GetIP();
-#ifdef WIN32
+#ifdef _WINDOWS
 			char buffer[200];
 			snprintf(buffer,200,". %s %i %s",zb->ip2, zb->port, inet_ntoa(in));
 			if(zb->zoneid != 0) {

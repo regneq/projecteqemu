@@ -17,7 +17,7 @@
 */
 #ifndef EMuShareMem_H
 #define EMuShareMem_H
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"
@@ -177,7 +177,7 @@ private:
 	
 	bool loaded;
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 #else
 	static int32  refCount;
 	static int32  refCountU() { return ++refCount; };
