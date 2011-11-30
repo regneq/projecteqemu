@@ -18,7 +18,7 @@
 #include "SharedLibrary.h"
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -48,7 +48,7 @@ SharedLibrary::~SharedLibrary() {
 
 bool SharedLibrary::Load(const char *name)
 {
-#ifdef WIN32
+#ifdef _WINDOWS
 	SetLastError(0);
 #endif
 	
@@ -59,7 +59,7 @@ bool SharedLibrary::Load(const char *name)
 		fprintf(stderr, "[Error] Load Shared Library '%s' failed.  Error=%s\n", name, load_error?load_error:"Null Return, no error");
 		return false;
 	}
-#ifdef WIN32
+#ifdef _WINDOWS
     else { SetLastError(0); } // Clear the win9x error
 #endif
 	
@@ -103,7 +103,7 @@ bool SharedLibrary::GetSym(const char *name, void **sym)
 
 const char *SharedLibrary::GetError()
 {
-#ifdef WIN32
+#ifdef _WINDOWS
 	//not thread safe, dont care.
 	static char ErrBuf[128];
 	unsigned long err = GetLastError();

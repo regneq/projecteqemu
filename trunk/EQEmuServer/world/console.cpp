@@ -46,7 +46,7 @@ using namespace std;
 #include "LauncherList.h"
 #include "ucs.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -736,7 +736,7 @@ void Console::ProcessCommand(const char* command) {
 			}
 			else if (strcasecmp(sep.arg[0], "serverinfo") == 0 && admin >= 200) {
 				if (strcasecmp(sep.arg[1], "os") == 0)	{
-				#ifdef WIN32
+				#ifdef _WINDOWS
 					GetOS();
 					char intbuffer [sizeof(unsigned long)];
 					SendMessage(1, "Operating system information.");
@@ -760,7 +760,7 @@ void Console::ProcessCommand(const char* command) {
 				client_list.SendCLEList(admin, 0, this, sep.argplus[1]);
 			}
 			else if (strcasecmp(sep.arg[0], "LSReconnect") == 0 && admin >= 100) {
-				#ifdef WIN32
+				#ifdef _WINDOWS
 					_beginthread(AutoInitLoginServer, 0, NULL);
 				#else
 					pthread_t thread;

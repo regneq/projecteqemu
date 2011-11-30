@@ -1,4 +1,4 @@
-#ifdef WIN32
+#ifdef _WINDOWS
 	// VS6 doesn't like the length of STL generated names: disabling
 	#pragma warning(disable:4786)
 #endif

@@ -64,7 +64,7 @@
 	#endif
 #endif
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	// VS6 doesn't like the length of STL generated names: disabling
 	#pragma warning(disable:4786)
 	#pragma warning(disable:4996)
@@ -73,7 +73,7 @@
 #ifndef EQDEBUG_H
 #define EQDEBUG_H
 
-#ifndef WIN32
+#ifndef _WINDOWS
 	#define DebugBreak()			if(0) {}
 #endif
 
@@ -84,7 +84,7 @@
 	#include <winsock.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 	#include <winsock2.h>
 #endif

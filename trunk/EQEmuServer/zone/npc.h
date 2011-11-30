@@ -33,7 +33,7 @@ using namespace std;
 #include "QGlobals.h"
 #include "../common/rulesys.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define  M_PI	3.141592
 #endif
 

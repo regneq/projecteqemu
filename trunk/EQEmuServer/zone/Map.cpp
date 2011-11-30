@@ -31,7 +31,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "zone_profile.h"
 #include "map.h"
 #include "zone.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 

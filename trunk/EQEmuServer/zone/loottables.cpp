@@ -24,7 +24,7 @@ using namespace std;
 #include "masterentity.h"
 #include "zonedb.h"
 #include "../common/MiscFunctions.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 

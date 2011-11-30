@@ -25,7 +25,7 @@ using namespace std;
 #include <stdlib.h>
 #include "../common/version.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 	#include <windows.h>
 	#include <winsock.h>

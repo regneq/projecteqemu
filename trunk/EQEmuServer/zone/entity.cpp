@@ -24,7 +24,7 @@
 #include <iostream>
 using namespace std;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <process.h>
 #else
 #include <pthread.h>
@@ -48,7 +48,7 @@ using namespace std;
 #include "raids.h"
 #include "QuestParserCollection.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -495,7 +495,7 @@ void EntityList::MobProcess() {
 			}
 #endif
 			else{
-#ifdef WIN32
+#ifdef _WINDOWS
 					struct in_addr	in;
 					in.s_addr = mob->CastToClient()->GetIP();
 					cout << "Dropping client: Process=false, ip=" << inet_ntoa(in) << ", port=" << mob->CastToClient()->GetPort() << endl;
@@ -2707,7 +2707,7 @@ char* EntityList::MakeNameUnique(char* name) {
 	}
 	for (int i=0; i < 300; i++) {
 		if (!used[i]) {
-			#ifdef WIN32
+			#ifdef _WINDOWS
 			snprintf(name, 64, "%s%03d", name, i);
 			#else
 			//glibc clears destination of snprintf

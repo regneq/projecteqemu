@@ -28,7 +28,7 @@
 #include <zlib.h>
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 	#include <winsock.h>
 	#define snprintf	_snprintf

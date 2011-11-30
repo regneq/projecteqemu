@@ -1,7 +1,7 @@
 #include "../common/debug.h"
 #include "../common/files.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <winsock2.h>
 #endif
 
@@ -15,7 +15,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include <cstdlib>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 	#define strncasecmp	_strnicmp
 	#define strcasecmp	_stricmp
@@ -79,7 +79,7 @@ bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, int
 	{
 		if(fgets(linebuf, 512, f) == NULL)
 			continue;
-#ifdef WIN32
+#ifdef _WINDOWS
 		if (sscanf(linebuf, "%[^=]=%[^\n]\n", type, buf) != 2)
 			continue;
 #else	

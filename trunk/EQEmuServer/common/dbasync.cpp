@@ -1,5 +1,5 @@
 #include "debug.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 	#include <process.h>
 	#include <winsock2.h>
@@ -74,7 +74,7 @@ DBAsync::DBAsync(DBcore* iDBC)
 	pDBC = iDBC;
 	pRunLoop = true;
 	pNextID = 1;
-#ifdef WIN32
+#ifdef _WINDOWS
 	_beginthread(DBAsyncLoop, 0, this);
 #else
 	pthread_t thread;

@@ -43,7 +43,7 @@ using namespace std;
 #include "../common/EQStreamIdent.h"
 //#include "../common/patches/Client62.h"
 #include "../common/rulesys.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 	#define snprintf	_snprintf
 #if (_MSC_VER < 1500)
@@ -461,7 +461,7 @@ int main(int argc, char** argv) {
 			if (ReconnectCounter >= 12) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
 				ReconnectCounter = 0;
 				if (loginserverlist.AllConnected() == false) {
-#ifdef WIN32
+#ifdef _WINDOWS
 					_beginthread(AutoInitLoginServer, 0, NULL);
 #else
 					pthread_t thread;
@@ -544,7 +544,7 @@ void CatchSignal(int sig_num) {
 }
 
 void UpdateWindowTitle(char* iNewTitle) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	char tmp[500];
 	if (iNewTitle) {
 		snprintf(tmp, sizeof(tmp), "World: %s", iNewTitle);

@@ -312,7 +312,7 @@ bool EQWHTTPServer::Start(uint16 port, const char *mime_file) {
 	
 	/*
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 	_beginthread(ThreadProc, 0, this);
 #else
 	pthread_create(&m_thread, NULL, ThreadProc, this);

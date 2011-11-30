@@ -39,7 +39,7 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 #include <sstream>
 #include <algorithm>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define strcasecmp _stricmp
 #endif
 
@@ -1079,7 +1079,7 @@ void command_connectworldserver(Client *c, const Seperator *sep)
 
 void command_serverinfo(Client *c, const Seperator *sep)
 {
-#ifdef WIN32
+#ifdef _WINDOWS
 	char intbuffer [sizeof(unsigned long)];
 	c->Message(0, "Operating system information.");
 	c->Message(0, "	%s", Ver_name);

@@ -1,6 +1,6 @@
 #include "../common/debug.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"
@@ -17,7 +17,7 @@ MMF NPCFactionListsMMF;
 const MMFNPCFactionLists_Struct* MMFNPCFactionListsData = 0;
 MMFNPCFactionLists_Struct* MMFNPCFactionListsData_Writable = 0;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 extern "C" __declspec(dllexport) const NPCFactionList* GetNPCFactionList(uint32 id) {
 	return pGetNPCFactionList(id);
 };

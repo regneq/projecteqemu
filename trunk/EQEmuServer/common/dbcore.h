@@ -1,7 +1,7 @@
 #ifndef DBCORE_H
 #define DBCORE_H
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <winsock.h>
 	#include <windows.h>
 	//#include <winsock.h>
