@@ -27,8 +27,11 @@
 #include "../common/logsys.h"
 #include "worlddb.h"
 
-
 using namespace std;
+
+#ifndef GvCV_set
+#  define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
+#endif
 
 //link against your Perl Lib
 #ifdef _WINDOWS
