@@ -18,6 +18,10 @@ Eglin
 #include "embxs.h"
 #include "features.h"
 
+#ifndef GvCV_set
+#  define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
+#endif
+
 //#pragma message("You may want to ensure that you add perl\\lib\\CORE to your include path")
 //#pragma message("You may want to ensure that your build settings look like `perl -MExtUtils::Embed -e ccopts -e ldopts`")
 //link against your Perl Lib

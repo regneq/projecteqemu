@@ -7,6 +7,7 @@ Secrets: Changed WIN32 define to _WINDOWS across the board. In the case where WI
 Secrets: Upgraded ActiveState Perl lib define to 5.14 -- others still work but it is strongly reccomended to use 5.14 as it contains less memory leaks.
 Secrets: Added Zlib 1.2.3 x64 to the SVN for use with the windows solution files.
 Secrets: Fixed vs2008 project files to reflect the new _WINDOWS define
+Secrets: Perl 5.14 Compile Fix
 
 NOTE: Since VS11 is in beta, I only set up the debug options. You should use Vs2010 Ultimate to compile in x64 mode.
 NOTE2: Perl 5.14 is stable, but if you absolutely need to use 5.10, ctrl f search for "perl514.lib" and replace it with "perl510.lib"
