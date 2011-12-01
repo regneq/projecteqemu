@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\mysql\include,c:\eqemu\include"
-				PreprocessorDefinitions="_WIDOWS;_DEBUG;WIN32;_CONSOLE;EQDEBUG=5"
+				PreprocessorDefinitions="_WINDOWS;_DEBUG;WIN32;_CONSOLE;EQDEBUG=5"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
