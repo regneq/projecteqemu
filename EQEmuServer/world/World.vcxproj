@@ -671,7 +671,7 @@
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <PreprocessorDefinitions>NDEBUG;WORLD;SHAREMEM;i386;INVERSEXY;_WIN32;_WIN32_WINNT=0x0400;WIN32;_CONSOLE;FIELD_ITEMS;IRC;EMBPERL;EMBPERL_PLUGIN;EQDEBUG=5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;WORLD;SHAREMEM;i386;INVERSEXY;WIN64;_CONSOLE;FIELD_ITEMS;IRC;EMBPERL;EMBPERL_PLUGIN;EQDEBUG=5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>

@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/1/2011==
+Secrets: v90 toolset bugs reported on forums. In order to use Perl 5.14, you MUST upgrade to VS2010 (preferrably ultimate), if you do not have vs2010, it will default to Perl 5.10 and you will be unable to use the much more stable Perl 5.14, an upgrade is reccomended.
+Secrets: Fixed Windows x64 rulesys bug where it would store them as an x64 version of an int (long long) and mess up the ordering of pointers, resulting in certain rules not loading properly.
+NOTE: For those having issues compiling vs2010, there will be a guide up shortly to help you set up your dev environment. In the meantime, make sure your "Additional Include" and "Additional Library" paths
+are correct and pointing at the right location. Failure to do so will result in mysql header/lib and perl header/lib issues. If you are looking for zlib x64, it's in SVN. 
+
 ==11/30/2011==
 Secrets: Implemented Visual Studio 11 and Visual Studio 10 project/sln files.
 Secrets: Added x64 configuration settings to VS11 and VS10 project files/SLN files. 
