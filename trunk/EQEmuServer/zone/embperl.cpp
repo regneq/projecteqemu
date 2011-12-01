@@ -17,17 +17,21 @@ Eglin
 #include "embperl.h"
 #include "embxs.h"
 #include "features.h"
-
+#if _MSC_VER >= 1600
 #ifndef GvCV_set
-#  define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
+#define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
 #endif
-
+#endif
 //#pragma message("You may want to ensure that you add perl\\lib\\CORE to your include path")
 //#pragma message("You may want to ensure that your build settings look like `perl -MExtUtils::Embed -e ccopts -e ldopts`")
 //link against your Perl Lib
 //#pragma comment(lib, "perl56.lib")
 #ifdef _WINDOWS
+#if _MSC_VER >= 1600 // for V100+ toolset
 #pragma comment(lib, "perl514.lib")
+#else
+#pragma comment(lib, "perl510.lib")
+#endif
 #endif
 
 #ifdef EMBPERL_XS
@@ -151,10 +155,18 @@ void Embperl::DoInit() {
 	eval_pv("sub my_sleep {}",TRUE);
 	if(gv_stashpv("CORE::GLOBAL", FALSE)) {
 		GV *exitgp = gv_fetchpv("CORE::GLOBAL::exit", TRUE, SVt_PVCV);
+		#if _MSC_VER >= 1600
 		GvCV_set(exitgp, perl_get_cv("my_exit", TRUE));	//dies on error
+		#else
+		GvCV(exitgp) = perl_get_cv("my_exit", TRUE);	//dies on error
+		#endif
 		GvIMPORTED_CV_on(exitgp);
 		GV *sleepgp = gv_fetchpv("CORE::GLOBAL::sleep", TRUE, SVt_PVCV);
+		#if _MSC_VER >= 1600
 		GvCV_set(sleepgp, perl_get_cv("my_sleep", TRUE));	//dies on error
+		#else
+		GvCV(sleepgp) = perl_get_cv("my_sleep", TRUE);	//dies on error
+		#endif
 		GvIMPORTED_CV_on(sleepgp);
 	}
 

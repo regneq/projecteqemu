@@ -677,7 +677,7 @@
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;CATCH_CRASH;_WIN32_WINNT=0x0400;NDEBUG;ZONESERVER;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;CATCH_CRASH;_WIN32_WINNT=0x0400;NDEBUG;ZONESERVER;ZONE;INVERSEXY;WIN64;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
