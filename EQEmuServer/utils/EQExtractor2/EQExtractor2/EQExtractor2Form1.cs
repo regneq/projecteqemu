@@ -18,7 +18,7 @@ namespace EQExtractor2
 {
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.2.20 SVN";
+        string Version = "EQExtractor2 Version 2.2.21 SVN";
 
         static int PacketsSeen = 0;
         static long BytesRead = 0;
@@ -355,7 +355,7 @@ namespace EQExtractor2
 
             Log("Starting to generate SQL for Spawns and/or Grids.");
 
-            StreamProcessor.GenerateSpawnSQL(SQLForm.SpawnCheckBox.Checked, SQLForm.GridCheckBox.Checked, SQLForm.MerchantCheckBox.Checked, ZoneName, ZoneID, SpawnVersion, SQLForm.UpdateExistingNPCTypesCheckbox.Checked, SQLForm.NPCTypesTintCheckBox.Checked, SpawnNameFilter, CoalesceWaypoints, this.WriteSQL);
+            StreamProcessor.GenerateSpawnSQL(SQLForm.SpawnCheckBox.Checked, SQLForm.GridCheckBox.Checked, SQLForm.MerchantCheckBox.Checked, ZoneName, ZoneID, SpawnVersion, SQLForm.UpdateExistingNPCTypesCheckbox.Checked, SQLForm.NPCTypesTintCheckBox.Checked, SpawnNameFilter, CoalesceWaypoints, SQLForm.InvisibleMenCheckBox.Checked, this.WriteSQL);
 
             Log("Finished generating SQL for Spawns and/or Grids.");
 

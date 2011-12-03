@@ -71,6 +71,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.CoalesceWaypoints = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.InvisibleMenCheckBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VersionSelector)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -335,6 +336,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.InvisibleMenCheckBox);
             this.groupBox2.Controls.Add(this.NPCTypesTintCheckBox);
             this.groupBox2.Controls.Add(this.UpdateExistingNPCTypesCheckbox);
             this.groupBox2.Controls.Add(this.ZonePointCheckBox);
@@ -361,7 +363,7 @@
             this.NPCTypesTintCheckBox.TabIndex = 42;
             this.NPCTypesTintCheckBox.Text = "Use npc_types_tint";
             this.toolTip1.SetToolTip(this.NPCTypesTintCheckBox, "Uses the npc_types_tint table instead of the tint columns in the npc_types table." +
-                    "");
+        "");
             this.NPCTypesTintCheckBox.UseVisualStyleBackColor = true;
             // 
             // UpdateExistingNPCTypesCheckbox
@@ -539,6 +541,17 @@
             this.toolTip1.SetToolTip(this.CoalesceWaypoints, "Remove redundant waypoints from generated SQL");
             this.CoalesceWaypoints.UseVisualStyleBackColor = true;
             // 
+            // InvisibleMenCheckBox
+            // 
+            this.InvisibleMenCheckBox.AutoSize = true;
+            this.InvisibleMenCheckBox.Location = new System.Drawing.Point(24, 256);
+            this.InvisibleMenCheckBox.Name = "InvisibleMenCheckBox";
+            this.InvisibleMenCheckBox.Size = new System.Drawing.Size(126, 17);
+            this.InvisibleMenCheckBox.TabIndex = 43;
+            this.InvisibleMenCheckBox.Text = "Include Invisible Men";
+            this.toolTip1.SetToolTip(this.InvisibleMenCheckBox, "Includes Race 127 NPCs");
+            this.InvisibleMenCheckBox.UseVisualStyleBackColor = true;
+            // 
             // GenerateSQLForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -607,5 +620,6 @@
         public System.Windows.Forms.TextBox SpawnNameFilter;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolTip toolTip1;
+        public System.Windows.Forms.CheckBox InvisibleMenCheckBox;
     }
 }

@@ -25,7 +25,7 @@ namespace EQExtractor2.Patches
         {
             PositionUpdate PosUpdate = new PositionUpdate();
 
-            BitStream bs = new BitStream(UpdatePacket, 13);
+            BitStream bs = new BitStream(UpdatePacket, (uint)UpdatePacket.Length);
 
             PosUpdate.SpawnID = bs.readUInt(16);
 
@@ -42,7 +42,7 @@ namespace EQExtractor2.Patches
             PosUpdate.p.heading = (float)bs.readInt(12) / (float)(1 << 3);
 
             PosUpdate.HighRes = true;
-
+                    
             return PosUpdate;
         }
 
@@ -250,7 +250,7 @@ namespace EQExtractor2.Patches
 
         public void ExploreSpawnDoor(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
         {            
-            int DoorCount = Buffer.Length() / 96;
+            uint DoorCount = Buffer.Length() / 96;
 
             OutputStream.WriteLine("Door Count: {0}", DoorCount);
             
