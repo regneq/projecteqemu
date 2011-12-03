@@ -83,6 +83,8 @@ namespace EQApplicationLayer
 
             PatchList.Add(new PatchAug042011Decoder());
 
+            PatchList.Add(new PatchNov172011Decoder());
+
             PatchList.Add(new PatchSoD());
 
         }        
@@ -257,7 +259,7 @@ namespace EQApplicationLayer
         public void GenerateSpawnSQL(bool GenerateSpawns, bool GenerateGrids, bool GenerateMerchants,
                                             string ZoneName, UInt32 ZoneID, UInt32 SpawnVersion,
                                             bool UpdateExistingNPCTypes, bool UseNPCTypesTint, string SpawnNameFilter,
-                                            bool CoalesceWaypoints, SQLDestination SQLOut)
+                                            bool CoalesceWaypoints, bool IncludeInvisibleMen, SQLDestination SQLOut)
         {
             UInt32 NPCTypeDBID = 0;
             UInt32 SpawnGroupID = 0;
@@ -303,6 +305,9 @@ namespace EQApplicationLayer
             foreach(ZoneEntryStruct Spawn in ZoneSpawns)
             {                
                 if (NPCType.IsMount(Spawn.SpawnName))
+                    continue;
+
+                if (!IncludeInvisibleMen && (Spawn.Race == 127))
                     continue;
                                 
                 Spawn.Findable = (FindableEntities.IndexOf(Spawn.SpawnID) >= 0);

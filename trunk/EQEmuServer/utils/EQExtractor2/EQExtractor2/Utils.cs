@@ -30,9 +30,9 @@ namespace MyUtils
             BufferPointer = 0;
         }
 
-        public int Length()
+        public uint Length()
         {
-            return Buffer.Length;
+            return (uint)Buffer.Length;
         }
 
         public UInt32 ReadUInt32()
@@ -145,7 +145,7 @@ namespace MyUtils
             return BufferPointer;
         }
 
-        byte[] Buffer;
+        public byte[] Buffer;
 
         int BufferPointer;
     }

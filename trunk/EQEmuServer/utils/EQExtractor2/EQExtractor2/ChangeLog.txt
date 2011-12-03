@@ -1,5 +1,9 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==12/03/2011==
+Derision: Support for November 17 2011 client.
+Derision: Added checkbox on SQL generation form to include invisible NPCs (race 127), default is false.
+
 ==08/06/2011==
 Derision: Support for August 04 2011 client (currently on test).
 
