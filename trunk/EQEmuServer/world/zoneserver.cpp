@@ -35,6 +35,7 @@
 #include "lfplist.h"
 #include "AdventureManager.h"
 #include "ucs.h"
+#include "queryserv.h"
 
 extern ClientList client_list;
 extern GroupLFPList LFPGroupList;
@@ -44,6 +45,7 @@ extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
 extern AdventureManager adventure_manager;
 extern UCSConnection UCSLink;
+extern QueryServConnection QSLink;
 
 ZoneServer::ZoneServer(EmuTCPConnection* itcpc) 
 : WorldTCPConnection(), tcpc(itcpc), ls_zboot(5000) {
@@ -1260,6 +1262,12 @@ bool ZoneServer::Process() {
         case ServerOP_UCSMailMessage: 
         {
             UCSLink.SendPacket(pack);
+            break;
+        }
+
+		case ServerOP_Speech: 
+        {
+            QSLink.SendPacket(pack);
             break;
         }
 

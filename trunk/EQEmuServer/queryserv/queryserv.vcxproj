@@ -38,8 +38,8 @@
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}</ProjectGuid>
-    <RootNamespace>ucs</RootNamespace>
+    <ProjectGuid>{1B1B0EF2-E087-4FC2-AE58-31967EF9DF7E}</ProjectGuid>
+    <RootNamespace>queryserv</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -148,7 +148,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\..\Build\</OutDir>
-    <IntDir>.\../Build/ucs/Release\</IntDir>
+    <IntDir>.\../Build/queryserv/Release\</IntDir>
     <TargetName>Chatserver</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
@@ -158,7 +158,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">
     <OutDir>.\..\Build\</OutDir>
-    <IntDir>.\../Build/ucs/Release\</IntDir>
+    <IntDir>.\../Build/queryserv/Release\</IntDir>
     <TargetName>Chatserver</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
@@ -175,7 +175,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release x64|x64'">
-    <TargetName>Chatserver</TargetName>
+    <TargetName>QueryServer</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -185,7 +185,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -205,7 +205,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -225,7 +225,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN64;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN64;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -245,7 +245,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN64;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN64;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -267,7 +267,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
@@ -289,7 +289,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -311,7 +311,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -333,7 +333,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WINDOWS;WIN64;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;CHAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN64;NDEBUG;_CONSOLE;DEBUG=5;EQDEBUG=5;SHAREMEM;CATCH_CRASH;i386;QSERV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -353,11 +353,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="chatchannel.cpp" />
-    <ClCompile Include="clientlist.cpp" />
     <ClCompile Include="database.cpp" />
-    <ClCompile Include="ucs.cpp" />
-    <ClCompile Include="ucsconfig.cpp" />
+    <ClCompile Include="queryserv.cpp" />
+    <ClCompile Include="queryservconfig.cpp" />
     <ClCompile Include="worldserver.cpp" />
     <ClCompile Include="..\common\BasePacket.cpp" />
     <ClCompile Include="..\common\Condition.cpp" />
@@ -403,10 +401,8 @@
     <ClCompile Include="..\common\XMLParser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="chatchannel.h" />
-    <ClInclude Include="clientlist.h" />
     <ClInclude Include="database.h" />
-    <ClInclude Include="ucsconfig.h" />
+    <ClInclude Include="queryservconfig.h" />
     <ClInclude Include="worldserver.h" />
     <ClInclude Include="..\common\CRC16.h" />
     <ClInclude Include="..\common\crc32.h" />

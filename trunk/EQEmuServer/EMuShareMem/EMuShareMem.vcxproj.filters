@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{39a61d4e-7c1f-428f-bbdc-2c0303c800cf}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{ead4cd40-d792-4ba1-8197-a122f410208f}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Common Source Files">
+      <UniqueIdentifier>{ad5344aa-6dd8-47f9-ba5e-96ebd1d32b0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Header Files">
+      <UniqueIdentifier>{bd961ca2-0902-41e4-9e3e-f03a92f58512}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DLLMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Doors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Items.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Loot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MMF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MMFMutex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCFactionLists.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Opcodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkillCaps.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Spells.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\debug.cpp">
+      <Filter>Common Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\EMuShareMem.cpp">
+      <Filter>Common Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\Mutex.cpp">
+      <Filter>Common Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\SharedLibrary.cpp">
+      <Filter>Common Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\timer.cpp">
+      <Filter>Common Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Doors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Items.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Loot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MMF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MMFMutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NPCFactionLists.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NPCTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Opcodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Spells.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\debug.h">
+      <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\EMuShareMem.h">
+      <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\eq_packet_structs.h">
+      <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\Mutex.h">
+      <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\SharedLibrary.h">
+      <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\timer.h">
+      <Filter>Common Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

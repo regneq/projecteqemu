@@ -514,6 +514,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1046,6 +1047,7 @@
     <ClCompile Include="perl_EQLConfig.cpp" />
     <ClCompile Include="perl_EQW.cpp" />
     <ClCompile Include="perl_HTTPRequest.cpp" />
+    <ClCompile Include="queryserv.cpp" />
     <ClCompile Include="wguild_mgr.cpp" />
     <ClCompile Include="world_logsys.cpp" />
     <ClCompile Include="WorldConfig.cpp" />
@@ -1141,6 +1143,7 @@
     <ClInclude Include="LoginServer.h" />
     <ClInclude Include="LoginServerList.h" />
     <ClInclude Include="net.h" />
+    <ClInclude Include="queryserv.h" />
     <ClInclude Include="SoFCharCreateData.h" />
     <ClInclude Include="WorldTCPConnection.h" />
     <ClInclude Include="zoneserver.h" />

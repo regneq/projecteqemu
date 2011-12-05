@@ -174,6 +174,8 @@
 #define ServerOP_ReloadRulesWorld	0x4003
 #define ServerOP_CameraShake	0x4004
 
+#define ServerOP_Speech			0x4513
+
 /************ PACKET RELATED STRUCT ************/
 class ServerPacket
 {
@@ -1029,6 +1031,15 @@ struct ServerMailMessageHeader_Struct {
     char to[64];
     char subject[128];
     char message[0];
+};
+
+struct Server_Speech_Struct {
+	char	to[64];
+	char	from[64];
+	int32	guilddbid;
+	sint16	minstatus;
+	int32	type;
+	char	message[0];
 };
 
 #pragma pack()
