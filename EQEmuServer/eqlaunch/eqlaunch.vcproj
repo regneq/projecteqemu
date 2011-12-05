@@ -43,6 +43,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\mysql\include,c:\eqemu\include"
 				PreprocessorDefinitions="_WINDOWS;_DEBUG;WIN32;_CONSOLE;EQDEBUG=5"
