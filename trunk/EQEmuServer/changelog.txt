@@ -9,8 +9,8 @@ Akkadius: Added #advnpcspawn setversion (version#) - This will change the instan
 Akkadius: Added #npcedit setanimation (stand, sit, crouch, dead, loot (0-4)) so that setting animations are much easier. This also makes animations much more reliable setting them with the spawn packet rather than through Perl.
 Akkadius: Added /MP switch to VS2008 so that it will compile with multiple processors
 Akkadius: Fixed compiles for VS2008 from the Queryserv commit
-
 Secrets: Added #qtest <string>, which will populate the remote database through QueryServ with information as a test only. Requires 255 status by default.
+Trevius: LDoN points are now capped at 2,000,000,000 instead of ~16,000, and no longer roll back to 0 if they exceed the cap limit.
 
 Reccomended SQL: (ON QueryServ's database, NOT the main db) utils/sql/queryserver/2079_queryserver.sql
 
