@@ -25,7 +25,7 @@ SF= ../common/timer.o ../common/packet_dump.o ../common/races.o ../common/unix.o
    ../common/SocketLib/HttpdForm.o ../common/SocketLib/HttpdSocket.o \
    ../common/SocketLib/MemFile.o ../common/SocketLib/Mime.o \
    ../common/SocketLib/Parse.o ../common/SocketLib/Utility.o \
-   ../common/guild_base.o wguild_mgr.o .obj/rulesys.o
+   ../common/guild_base.o wguild_mgr.o .obj/rulesys.o queryserv.o
 
 all: $(APP)
 
