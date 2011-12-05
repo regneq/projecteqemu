@@ -8420,13 +8420,31 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	}
 	*/
 
-	//validate adventure points, this cap is arbitrary
-	if(m_pp.ldon_points_guk < 0 || m_pp.ldon_points_guk > 0xFFFF) m_pp.ldon_points_guk = 0;
-	if(m_pp.ldon_points_mir < 0 || m_pp.ldon_points_mir > 0xFFFF) m_pp.ldon_points_mir = 0;
-	if(m_pp.ldon_points_mmc < 0 || m_pp.ldon_points_mmc > 0xFFFF) m_pp.ldon_points_mmc = 0;
-	if(m_pp.ldon_points_ruj < 0 || m_pp.ldon_points_ruj > 0xFFFF) m_pp.ldon_points_ruj = 0;
-	if(m_pp.ldon_points_tak < 0 || m_pp.ldon_points_tak > 0xFFFF) m_pp.ldon_points_tak = 0;
-	if(m_pp.ldon_points_available < 0 || m_pp.ldon_points_available > 0xFFFF) m_pp.ldon_points_available = 0;
+	//validate adventure points, this cap is arbitrary at 2,000,000,000
+	if(m_pp.ldon_points_guk < 0)
+		m_pp.ldon_points_guk = 0;
+	if(m_pp.ldon_points_guk > 0x77359400)
+		m_pp.ldon_points_guk = 0x77359400;
+	if(m_pp.ldon_points_mir < 0)
+		m_pp.ldon_points_mir = 0;
+	if(m_pp.ldon_points_mir > 0x77359400)
+		m_pp.ldon_points_mir = 0x77359400;
+	if(m_pp.ldon_points_mmc < 0)
+		m_pp.ldon_points_mmc = 0;
+	if(m_pp.ldon_points_mmc > 0x77359400)
+		m_pp.ldon_points_mmc = 0x77359400;
+	if(m_pp.ldon_points_ruj < 0)
+		m_pp.ldon_points_ruj = 0;
+	if(m_pp.ldon_points_ruj > 0x77359400)
+		m_pp.ldon_points_ruj = 0x77359400;
+	if(m_pp.ldon_points_tak < 0)
+		m_pp.ldon_points_tak = 0;
+	if(m_pp.ldon_points_tak > 0x77359400)
+		m_pp.ldon_points_tak = 0x77359400;
+	if(m_pp.ldon_points_available < 0)
+		m_pp.ldon_points_available = 0;
+	if(m_pp.ldon_points_available > 0x77359400)
+		m_pp.ldon_points_available = 0x77359400;
 
 	if(GetSkill(SWIMMING) < 100)
 		SetSkill(SWIMMING,100);
