@@ -450,7 +450,7 @@ void QuestManager::settimer(const char *timer_name, int seconds) {
 			cur->mob = owner;
 			cur->Timer_.Enable();
 			cur->Timer_.Start(seconds * 1000, false);
-			printf("Reseting: %s for %d seconds\n", cur->name.c_str(), seconds);
+			printf("Resetting: %s for %d seconds\n", cur->name.c_str(), seconds);
 			return;
 		}
 		cur++;
@@ -469,7 +469,7 @@ void QuestManager::settimerMS(const char *timer_name, int milliseconds) {
 			cur->mob = owner;
 			cur->Timer_.Enable();
 			cur->Timer_.Start(milliseconds, false);
-			printf("Reseting: %s for %d seconds\n", cur->name.c_str(), milliseconds);
+			printf("Resetting: %s for %d seconds\n", cur->name.c_str(), milliseconds);
 			return;
 		}
 		cur++;

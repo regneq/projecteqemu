@@ -6716,6 +6716,7 @@ void command_npcedit(Client *c, const Seperator *sep)
 		c->Message(0, "#npcedit wep2 - Sets an NPC's secondary weapon model");
 		c->Message(0, "#npcedit featuresave - Saves all current facial features to the database");
 		c->Message(0, "#npcedit armortint_id - Set NPC Armor tint ID");
+		c->Message(0, "#npcedit setanimation - Set NPC's animation on spawn (Stored in spawn2 table)");
 	   
 	}
 	else if ( strcasecmp( sep->arg[1], "name" ) == 0 )
@@ -7127,6 +7128,40 @@ void command_npcedit(Client *c, const Seperator *sep)
 		char *query = 0;
 		c->Message(15,"NPCID %u now has field 'armortint_id' set to %s",c->GetTarget()->CastToNPC()->GetNPCTypeID(), (sep->argplus[2]));
 		database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set armortint_id='%s' where id=%i",(sep->argplus[2]),c->GetTarget()->CastToNPC()->GetNPCTypeID()), errbuf);
+		c->LogSQL(query);
+		safe_delete_array(query);
+	}
+	else if ( strcasecmp( sep->arg[1], "setanimation" ) == 0 )
+	{
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		int Animation = 0;
+		if(sep->arg[2] && atoi(sep->arg[2]) <= 4){
+			if((strcasecmp( sep->arg[2], "stand" ) == 0) || atoi(sep->arg[2]) == 0){
+				Animation = 0; //Stand
+			}
+			if((strcasecmp( sep->arg[2], "sit" ) == 0) || atoi(sep->arg[2]) == 1){
+				Animation = 1; //Sit
+			}
+			if((strcasecmp( sep->arg[2], "crouch" ) == 0) || atoi(sep->arg[2]) == 2){
+				Animation = 2; //Crouch
+			}
+			if((strcasecmp( sep->arg[2], "dead" ) == 0) || atoi(sep->arg[2]) == 3){
+				Animation = 3; //Dead
+			}
+			if((strcasecmp( sep->arg[2], "loot" ) == 0) || atoi(sep->arg[2]) == 4){
+				Animation = 4; //Looting Animation
+			}
+		}
+		else{
+			c->Message(0, "You must specifiy an animation stand, sit, crouch, dead, loot (0-4)");
+			c->Message(0, "Example: #npcedit setanimation sit");
+			c->Message(0, "Example: #npcedit setanimation 0");
+			return;
+		}
+		c->Message(15,"NPCID %u now has the animation set to %i on spawn with spawngroup %i", c->GetTarget()->CastToNPC()->GetNPCTypeID(), Animation, c->GetTarget()->CastToNPC()->GetSp2() );
+		database.RunQuery(query, MakeAnyLenString(&query, "update spawn2 set animation = %i where spawngroupID=%i", Animation, c->GetTarget()->CastToNPC()->GetSp2()), errbuf);
+		c->GetTarget()->SetAppearance(EmuAppearance(Animation));
 		c->LogSQL(query);
 		safe_delete_array(query);
 	}
@@ -9169,13 +9204,37 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  				}
  			} 
  		}
+		else if (strcasecmp(sep->arg[1], "setversion") == 0) {
+			sint16 Version = 0;
+ 			if (!target || !target->IsNPC())
+ 				c->Message(0, "Error: Need an NPC target.");
+ 			else {
+				if(sep->IsNumber(2)){
+					Version = atoi(sep->arg[2]);
+ 					if(database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET version=%i WHERE spawngroupID='%i'", Version, c->GetTarget()->CastToNPC()->GetSp2()), errbuf)){
+ 						c->LogSQL(query);
+ 						c->Message(0, "Version change to %i was successful from SpawnGroupID %i", Version, c->GetTarget()->CastToNPC()->GetSp2());
+						c->GetTarget()->Depop(false);
+ 					}
+ 					else{
+ 						c->Message(13, "Update failed! MySQL gave the following error:");
+ 						c->Message(13, errbuf);
+ 	  				}
+ 					safe_delete_array(query);
+				}
+				else{
+					c->Message(0, "setversion FAILED -- You must set a version number");
+					return;
+				}
+			}
+ 		}
  		else if (strcasecmp(sep->arg[1], "testload") == 0 && atoi(sep->arg[2])!=0) {
  			database.LoadSpawnGroupsByID(atoi(sep->arg[2]),&zone->spawn_group_list);
  			c->Message(0, "Group %i loaded successfully!", atoi(sep->arg[2]));
  		}
  		else {
  			c->Message(0, "Error: #advnpcspawn: Invalid command.");
- 			c->Message(0, "Usage: #advnpcspawn [maketype|makegroup|addgroupentry|addgroupspawn]");
+ 			c->Message(0, "Usage: #advnpcspawn [maketype|makegroup|addgroupentry|addgroupspawn|setversion]");
  			c->Message(0, "Usage: #advnpcspawn [removegroupspawn|movespawn|editrespawn|editgroupbox|cleargroupbox]");
  		}
  }
