@@ -99,6 +99,7 @@ CommonProfiler _cp;
 #include "lfplist.h"
 #include "AdventureManager.h"
 #include "ucs.h"
+#include "queryserv.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
@@ -109,6 +110,7 @@ ZSList zoneserver_list;
 LoginServerList loginserverlist;
 EQWHTTPServer http_server;
 UCSConnection UCSLink;
+QueryServConnection QSLink;
 LauncherList launcher_list;
 AdventureManager adventure_manager;
 DBAsync *dbasync = NULL;
@@ -448,6 +450,8 @@ int main(int argc, char** argv) {
 		launcher_list.Process();
 
 		UCSLink.Process();
+	
+		QSLink.Process();
 
 		LFPGroupList.Process();
 

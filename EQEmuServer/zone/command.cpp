@@ -152,6 +152,7 @@ int command_init(void) {
 	if
 	(
 		command_add("resetaa","- Resets a Player's AA in their profile.",200,command_resetaa) ||
+		command_add("qtest","- QueryServ testing command.",255,command_qtest) ||
 		command_add("bind","- Sets your targets bind spot to their current location",200,command_bind) ||
 		command_add("sendop","[opcode] - LE's Private test command, leave it alone",200,command_sendop) ||
 		command_add("optest","- solar's private test command",255,command_optest) ||
@@ -11173,6 +11174,28 @@ void command_picklock(Client *c, const Seperator *sep)
 		}
 		else
 			c->Message(13, "You do not have the pick locks skill.");
+	}
+}
+
+void command_qtest(Client *c, const Seperator *sep) 
+{
+  
+
+	if(c && sep->arg[1][0])
+	{
+		if(c->GetTarget())
+		{
+	ServerPacket* pack = new ServerPacket(ServerOP_Speech, sizeof(Server_Speech_Struct)+strlen(sep->arg[1])+1);
+	Server_Speech_Struct* sem = (Server_Speech_Struct*) pack->pBuffer;
+	strcpy(sem->message, sep->arg[1]);
+	sem->minstatus = c->Admin();
+	sem->type = 1;
+	strncpy(sem->to,c->GetTarget()->GetCleanName(), 64);
+	strncpy(sem->to,c->GetCleanName(), 64);
+	sem->guilddbid = c->GuildID();
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+		}
 	}
 }
 
