@@ -1,7 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
-==12/4/2011==
+==12/05/2011==
+Trevius: Crash fix for trying to zone into a flagged zone without having the flag.
+
+==12/04/2011==
 Secrets: Added QueryServ for VS2010 x86/x64. QueryServ allows queries to be sent to it for use on an external database, through the means of packets.
 Currently, the only thing it logs is a #command input, but that will be expanded onto soon. A suggestion for our developers would be to move any statistic logging stuff (hackers table, eventlog, etc) over to it eventually
 to save processing power on the main executable's machine. This will allow for things like discovered items to work a bit more better resource-wise.
@@ -15,7 +18,7 @@ Trevius: LDoN points are now capped at 2,000,000,000 instead of ~16,000, and no 
 Reccomended SQL: (ON QueryServ's database, NOT the main db) utils/sql/queryserver/2079_queryserver.sql
 
 
-==12/1/2011==
+==12/01/2011==
 Secrets: v90 toolset bugs reported on forums. In order to use Perl 5.14, you MUST upgrade to VS2010 (preferrably ultimate), if you do not have vs2010, it will default to Perl 5.10 and you will be unable to use the much more stable Perl 5.14, an upgrade is reccomended.
 Secrets: Fixed Windows x64 rulesys bug where it would store them as an x64 version of an int (long long) and mess up the ordering of pointers, resulting in certain rules not loading properly.
 NOTE: For those having issues compiling vs2010, there will be a guide up shortly to help you set up your dev environment. In the meantime, make sure your "Additional Include" and "Additional Library" paths

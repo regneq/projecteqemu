@@ -265,7 +265,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		//the flag needed string is not empty, meaning a flag is required.
 		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) 
 		{
-			Message(13, "You must have the flag %s to enter this zone.");
+			Message(13, "You do not have the flag to enter %s.", target_zone_name);
 			myerror = ZONE_ERROR_NOEXPERIENCE;
 		}
 	}
