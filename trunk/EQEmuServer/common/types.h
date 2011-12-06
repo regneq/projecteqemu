@@ -33,6 +33,10 @@ typedef unsigned int		uint32;
 typedef  signed  int		sint32;
 
 #ifdef _WINDOWS
+  #pragma warning( disable : 4200 )
+#endif
+
+#ifdef _WINDOWS
 	#if defined(_INTEGRAL_MAX_BITS) && _INTEGRAL_MAX_BITS >= 64
 		typedef unsigned __int64	int64;
 		typedef unsigned __int64	uint64;
