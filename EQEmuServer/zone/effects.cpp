@@ -845,7 +845,7 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affe
 
 //Dook- Rampage and stuff for clients.
 //NPCs handle it differently in Mob::Rampage
-void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count) {
+void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count, bool IsFromSpell) {
 //Dook- Will need tweaking, currently no pets or players or horses 
 	LinkedListIterator<Mob*> iterator(mob_list); 
 	Mob *curmob; 
@@ -862,7 +862,7 @@ void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count) {
 			&& curmob->GetRace() != 216 && curmob->GetRace() != 472 /* dont attack horses */
 			&& (curmob->DistNoRoot(*attacker) <= dist2)
 		) {
-			attacker->Attack(curmob, Hand); 
+			attacker->Attack(curmob, Hand, false, false, IsFromSpell); 
 			hit++;
 			if(count != 0 && hit >= count)
 				return;
