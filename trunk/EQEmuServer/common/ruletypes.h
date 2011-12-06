@@ -321,6 +321,7 @@ RULE_REAL ( Combat, ACthac0Factor, 0.55)
 RULE_REAL ( Combat, ACthac20Factor, 0.55)
 RULE_INT ( Combat, HitCapPre20, 40) // live has it capped at 40 for whatever dumb reason... this is mainly for custom servers
 RULE_INT ( Combat, HitCapPre10, 20) // live has it capped at 20, see above :p
+RULE_INT ( Combat, MinHastedDelay, 400) // how fast we can get with haste.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

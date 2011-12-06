@@ -1978,7 +1978,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Rampage");
 #endif
 				if(caster) 
-					entity_list.AEAttack(caster, 30); // on live wars dont get a duration ramp, its a one shot deal
+					entity_list.AEAttack(caster, 30, 13, 0, true); // on live wars dont get a duration ramp, its a one shot deal
 
 				break;
 			}

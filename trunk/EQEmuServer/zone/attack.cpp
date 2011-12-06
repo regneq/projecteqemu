@@ -1127,7 +1127,8 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 
 //note: throughout this method, setting `damage` to a negative is a way to
 //stop the attack calculations
-bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
+// IsFromSpell added to allow spell effects to use Attack. (Mainly for the Rampage AA right now.)
+bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool IsFromSpell)
 {
 
 	_ZP(Client_Attack);
@@ -1145,7 +1146,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 	
 	//SetAttackTimer();
 	if (
-		   (IsCasting() && GetClass() != BARD)
+		   (IsCasting() && GetClass() != BARD && !IsFromSpell)
 		|| other == NULL
 		|| ((IsClient() && CastToClient()->dead) || (other->IsClient() && other->CastToClient()->dead))
 		|| (GetHP() < 0)
@@ -1733,7 +1734,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	}
 }
 
-bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // Kaiyodo - base function has changed prototype, need to update overloaded version
+bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool IsFromSpell)	 // Kaiyodo - base function has changed prototype, need to update overloaded version
 {
 	_ZP(NPC_Attack);
 	int damage = 0;
