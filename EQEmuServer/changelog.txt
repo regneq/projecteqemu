@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==12/06/2011==
 Leere: Added IsFromSpell to Attack() to allow its use from spell effects. This allows the Rampage AA to actually hit mobs again.
 Leere: Added a rule for the minium hasted delay that can be reached for weapons. Default set to 400 based on best guesses from the Moss-Covered Twig tests posted on the net.
+Congdar: (ptarp)compile warnings in windows
 
 ==12/05/2011==
 Trevius: Crash fix for trying to zone into a flagged zone without having the flag.
