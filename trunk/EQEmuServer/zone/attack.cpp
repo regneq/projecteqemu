@@ -3627,15 +3627,16 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	else
 		PermaHaste = 1.0f;
 		
-	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste) / 100);
-	if(weapon_speed < 10) // fast as a client can swing, so should be the floor of the proc chance
-		weapon_speed = 10;
+	//calculate the weapon speed in ms, so we can use the rule to compare against.
+	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste));
+	if(weapon_speed < RuleI(Combat, MinHastedDelay)) // fast as a client can swing, so should be the floor of the proc chance
+		weapon_speed = RuleI(Combat, MinHastedDelay);
 
 	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
 
 	if(RuleB(Combat, AdjustProcPerMinute) == true)
 	{
-		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 600.0f);
+		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 60000.0f); // compensate for weapon_speed being in ms
 		ProcBonus += float(mydex) * RuleR(Combat, ProcPerMinDexContrib) / 100.0f;
 		ProcChance = ProcChance + (ProcChance * ProcBonus);
 	}
