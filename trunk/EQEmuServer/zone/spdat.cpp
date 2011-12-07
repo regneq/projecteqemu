@@ -358,7 +358,7 @@ bool IsPureNukeSpell(int16 spell_id)
 	return
 	(
 		effect_count == 1 && IsEffectInSpell(spell_id, SE_CurrentHP) && 
-		spells[spell_id].buffduration == 0
+		spells[spell_id].buffduration == 0 && IsDamageSpell(spell_id)
 	);
 }
 
@@ -946,11 +946,21 @@ bool IsGroupHealOverTimeSpell(int16 spell_id) {
 bool IsDebuffSpell(int16 spell_id) {
 
         if(IsBeneficialSpell(spell_id) || IsEffectHitpointsSpell(spell_id) || IsStunSpell(spell_id) || IsMezSpell(spell_id) 
-			|| IsCharmSpell(spell_id) || IsSlowSpell(spell_id) || IsEffectInSpell(spell_id, SE_Root) 
-			|| IsEffectInSpell(spell_id, SE_MovementSpeed) || IsFearSpell(spell_id))
+			|| IsCharmSpell(spell_id) || IsSlowSpell(spell_id) || IsEffectInSpell(spell_id, SE_Root) || IsEffectInSpell(spell_id, SE_CancelMagic)
+			|| IsEffectInSpell(spell_id, SE_MovementSpeed) || IsFearSpell(spell_id) || IsEffectInSpell(spell_id, SE_Calm))
                 return false;
         else
                 return true;
+}
+
+bool IsResistDebuffSpell(int16 spell_id) {
+
+        if((IsEffectInSpell(spell_id, SE_ResistFire) || IsEffectInSpell(spell_id, SE_ResistCold) || IsEffectInSpell(spell_id, SE_ResistPoison)
+			 || IsEffectInSpell(spell_id, SE_ResistDisease) || IsEffectInSpell(spell_id, SE_ResistMagic) || IsEffectInSpell(spell_id, SE_ResistAll)
+			 || IsEffectInSpell(spell_id, SE_ResistCorruption)) && !IsBeneficialSpell(spell_id))
+                return true;
+        else
+                return false;
 }
 
 uint32 GetMorphTrigger(uint32 spell_id) 

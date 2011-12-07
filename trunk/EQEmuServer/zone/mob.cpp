@@ -552,13 +552,13 @@ float Mob::_GetMovementSpeed(int mod) const {
 				has_horse = true;
 			}
 		}
-
-		aa_mod += ((CastToClient()->GetAA(aaInnateRunSpeed) * 0.10)
-			+ (CastToClient()->GetAA(aaFleetofFoot) * 0.10)
-			+ (CastToClient()->GetAA(aaSwiftJourney) * 0.10)
+	}
+	
+	aa_mod += ((GetAA(aaInnateRunSpeed) * 0.10)
+			+ (GetAA(aaFleetofFoot) * 0.10)
+			+ (GetAA(aaSwiftJourney) * 0.10)
 			);
 		//Selo's Enduring Cadence should be +7% per level
-	}
 
 	int spell_mod = spellbonuses.movementspeed + itembonuses.movementspeed;
 	int movemod = 0;
@@ -2291,14 +2291,25 @@ bool Mob::HateSummon() {
     {
 		if (target->IsClient())
 			target->CastToClient()->Message(15,"You have been summoned!");
-		entity_list.MessageClose(this, true, 500, 10, "%s says,'You will not evade me, %s!' ", GetCleanName(), GetHateTop()->GetCleanName() );
+		entity_list.MessageClose(this, true, 500, 10, "%s says,'You will not evade me, %s!' ", GetCleanName(), target->GetCleanName() );
 
 		// RangerDown - GMMove doesn't seem to be working well with players, so use MovePC for them, GMMove for NPC's
 		if (target->IsClient()) {
 			target->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
-		else
-			GetHateTop()->GMMove(x_pos, y_pos, z_pos, target->GetHeading());
+		else {
+#ifdef BOTS
+			if(target && target->IsBot()) {
+				// set pre summoning info to return to (to get out of melee range for caster)
+				target->CastToBot()->SetHasBeenSummoned(true);
+				target->CastToBot()->SetPreSummonX(target->GetX());
+				target->CastToBot()->SetPreSummonY(target->GetY());
+				target->CastToBot()->SetPreSummonZ(target->GetZ());
+
+			}
+#endif //BOTS
+			target->GMMove(x_pos, y_pos, z_pos, target->GetHeading());
+		}
 
         return true;
 	}
@@ -4009,8 +4020,7 @@ bool Mob::TrySpellOnDeath()
 		}
 	}
 	int death_hp = 0;
-	if(IsClient())
-		death_hp = CastToClient()->GetDelayDeath();
+	death_hp = GetDelayDeath();
 		
 	if(GetHP() > death_hp)
 		return true;

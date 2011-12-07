@@ -188,14 +188,14 @@ void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool i
 	tHateEntry *p = Find(ent);
 	if (p)
 	{
-		p->damage+=in_dam;
+		p->damage+=(in_dam>=0)?in_dam:0;
 		p->hate+=in_hate;
 		p->bFrenzy = bFrenzy;
 	}
 	else if (iAddIfNotExist) {
         p = new tHateEntry;
         p->ent = ent;
-        p->damage = in_dam;
+        p->damage = (in_dam>=0)?in_dam:0;
         p->hate = in_hate;
         p->bFrenzy = bFrenzy;
         list.Append(p);
@@ -351,8 +351,20 @@ Mob *HateList::GetTop(Mob *center)
 			iterator.Advance();
 		}
 
-		if(topClientInRange != NULL && top != NULL && !top->IsClient()) {
-			return topClientInRange;
+		if(topClientInRange != NULL && top != NULL) {
+			bool isTopClientType = top->IsClient();
+#ifdef BOTS
+			if(!isTopClientType) {
+				if(top->IsBot()) {
+					isTopClientType = true;
+					topClientInRange = top;
+				}
+			}
+#endif //BOTS
+			if(isTopClientType)
+				return topClientInRange;
+
+			return top;
         }
 		else {
 			if(top == NULL && skipped_count > 0) {

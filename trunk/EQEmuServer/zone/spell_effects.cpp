@@ -1576,7 +1576,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Melee Negate Attack Rune: %+i", effect_value);
 #endif
-				buffs[buffslot].numhits = effect_value;
+				if(buffslot >= 0)
+					buffs[buffslot].numhits = effect_value;
 				break;				  
 			}
 			case SE_AppraiseLDonChest:

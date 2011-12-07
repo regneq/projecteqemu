@@ -907,7 +907,17 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 				channelchance -= attacked_count * 2;			
 				channelchance += channelchance * (GetAA(aaChanellingFocus)*5) / 100; 
 				channelchance += channelchance * (GetAA(aaInternalMetronome)*5) / 100;
-			} else {
+			} 
+#ifdef BOTS
+			else if(IsBot()) {
+				// max 93% chance at 252 skill
+				channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
+				channelchance -= attacked_count * 2;			
+				channelchance += channelchance * (GetAA(aaChanellingFocus)*5) / 100; 
+				channelchance += channelchance * (GetAA(aaInternalMetronome)*5) / 100;
+			}
+#endif //BOTS
+			else {
 				// NPCs are just hard to interrupt, otherwise they get pwned
 				channelchance = 85;
 				channelchance -= attacked_count;
@@ -2295,11 +2305,7 @@ int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caste
 	
 	mlog(SPELLS__CASTING, "Spell %d: Casting level %d, formula %d, base_duration %d: result %d",
 		spell_id, castlevel, formula, duration, res);
-
-	// enchanter mesmerization mastery aa
-	if (caster->IsClient() && caster->CastToClient()->GetAA(aaMesmerizationMastery) > 0)
-		res *= 1.35;
-
+		
 	return(res);
 }
 

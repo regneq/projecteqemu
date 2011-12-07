@@ -377,6 +377,10 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 			break;
 		}
 	}
+
+	if(IsMezSpell(spell_id)) {
+		tic_inc += GetAA(aaMesmerizationMastery);
+	}
 	
 	return (((duration * increase) / 100) + tic_inc);
 }

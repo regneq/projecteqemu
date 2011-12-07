@@ -1453,6 +1453,12 @@ void command_zone(Client *c, const Seperator *sep)
 			return;
 		}
 	}
+	
+#ifdef BOTS
+	// This block is necessary to clean up any bot objects owned by a Client
+	if(zoneid != c->GetZoneID())
+		Bot::ProcessClientZoneChange(c);
+#endif
 		
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
 		//zone to specific coords

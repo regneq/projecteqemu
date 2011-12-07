@@ -42,7 +42,16 @@ public:
 		BotfocusImprovedUndeadDamage,
 		BotfocusPetPower,
 		BotfocusResistRate,
-		BotfocusHateReduction
+		BotfocusHateReduction,
+		BotfocusTriggerOnCast,
+		BotfocusSpellVulnerability,
+		BotfocusTwincast,
+		BotfocusSympatheticProc,
+		BotfocusSpellDamage,
+		BotfocusSpellDurByTic,
+		BotfocusSwarmPetDuration,
+		BotfocusReduceRecastTime,
+		BotfocusBlockNextSpell,
 	};
 
 	typedef enum BotTradeType {	// types of trades a bot can do
@@ -164,6 +173,8 @@ public:
 	bool IsBotCasterCombatRange(Mob *target);
 	bool CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true) ;
 	int8 GetNumberNeedingHealedInGroup(int8 hpr, bool includePets);
+	bool GetNeedsCured(Mob *tar);
+	bool HasOrMayGetAggro();
 	inline virtual sint16  GetMaxStat();
 	inline virtual sint16  GetMaxResist();
 	inline virtual sint16  GetMaxSTR();
@@ -204,6 +215,16 @@ public:
 	int	GroupLeadershipAAHealthRegeneration();
 	int 	GroupLeadershipAAOffenseEnhancement();
 	void CalcRestState();
+	sint32	CalcMaxEndurance();	//This calculates the maximum endurance we can have
+	sint32	CalcBaseEndurance();	//Calculates Base End
+	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
+	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
+	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	sint32	CalcEnduranceRegenCap();	
+	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
+	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
+	void DoEnduranceRegen();	//This Regenerates endurance
+	void DoEnduranceUpkeep();	//does the endurance upkeep
 
 	// AI Methods
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
@@ -311,6 +332,8 @@ public:
 	static BotSpell GetBestBotSpellForStunByTargetType(Bot* botCaster, SpellTargetType targetType);
 	static BotSpell GetBestBotWizardNukeSpellByTargetResists(Bot* botCaster, Mob* target);
 	static BotSpell GetDebuffBotSpell(Bot* botCaster, Mob* target);
+	static BotSpell GetBestBotSpellForCure(Bot* botCaster, Mob* target);
+	static BotSpell GetBestBotSpellForResistDebuff(Bot* botCaster, Mob* target);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
 
 	// Static Bot Group Methods
@@ -340,11 +363,17 @@ public:
 	virtual bool IsBot() const { return true; }
 	bool GetRangerAutoWeaponSelect() { return _rangerAutoWeaponSelect; }
 	BotRoleType GetBotRole() { return _botRole; }
+	bool IsGroupPrimaryHealer();
+	bool IsGroupPrimarySlower();
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
 	int GetRawACNoShield(int &shield_ac);
 	int32 GetAA(int32 aa_id) const;
+	bool GetHasBeenSummoned() { return _hasBeenSummoned; }
+	float GetPreSummonX() { return _preSummonX; }
+	float GetPreSummonY() { return _preSummonY; }
+	float GetPreSummonZ() { return _preSummonZ; }
 	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -394,6 +423,8 @@ public:
 	inline virtual sint16	GetPercMod()		const { return itembonuses.percussionMod; }
 	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
 	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
+	
+	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath; }
 
 	// "SET" Class Methods
 	void SetBotSpellID(uint32 newSpellID);
@@ -407,13 +438,17 @@ public:
 	void SetRangerAutoWeaponSelect(bool enable) { GetClass() == RANGER ? _rangerAutoWeaponSelect = enable : _rangerAutoWeaponSelect = false; }
 	void SetBotRole(BotRoleType botRole) { _botRole = botRole; }
 	void SetSpellRecastTimer(int timer_index, sint32 recast_delay);
+	void SetHasBeenSummoned(bool s);
+	void SetPreSummonX(float x) { _preSummonX = x; }
+	void SetPreSummonY(float y) { _preSummonY = y; }
+	void SetPreSummonZ(float z) { _preSummonZ = z; }
 
 	// Class Destructors
 	virtual ~Bot();
 
 protected:
 	virtual void PetAIProcess();
-	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 corrup, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
+	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint32 hp, sint32 mana, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 corrup, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
@@ -449,8 +484,17 @@ private:
 	BotRoleType _botRole;
 	unsigned int RestRegenHP;
 	unsigned int RestRegenMana;
+	unsigned int RestRegenEndurance;
 	Timer rest_timer;
+	sint32	base_end;
+	sint32	cur_end;
+	sint32	max_end;
+	sint16	end_regen;
 	int32 spellRecastTimers[MaxSpellTimer];
+	bool _hasBeenSummoned;
+	float _preSummonX;
+	float _preSummonY;
+	float _preSummonZ;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
