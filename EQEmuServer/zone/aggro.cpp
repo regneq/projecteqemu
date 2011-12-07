@@ -1289,7 +1289,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 
 	if (IsBardSong(spell_id))
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
-	if (GetOwner())
+	if (GetOwner() && IsPet())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 	
 	if(AggroAmount > 0)
@@ -1358,7 +1358,7 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 	}
 	if (IsBardSong(spell_id))
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
-	if (GetOwner())
+	if (GetOwner() && IsPet())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 
 	if(AggroAmount > 0)
@@ -1446,8 +1446,7 @@ bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
 		int32 TotalDominationRank = 0.00f;
 		float TotalDominationBonus = 0.00f;
 
-		if(caster->IsClient())
-			TotalDominationRank = caster->CastToClient()->GetAA(aaTotalDomination);
+		TotalDominationRank = GetAA(aaTotalDomination);
 
 		// WildcardX: If someone ever finds for certain what value the TotalDomination ranks provide, please change the values
 		// I implemented below.

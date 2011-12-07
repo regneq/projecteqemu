@@ -327,9 +327,9 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		mlog(COMBAT__TOHIT, "Applied item melee accuracy chance %.2f, yeilding %.2f", hitBonus, chancetohit);
 	}
 
-	if (attacker->IsClient()) {
+	if (attacker->GetAA(aaPrecisionofthePathfinder)) {
 		int modAA = 100;
-		switch (attacker->CastToClient()->GetAA(aaPrecisionofthePathfinder)) {
+		switch (attacker->GetAA(aaPrecisionofthePathfinder)) {
 			case 1:
 				modAA += 2;
 				break;
@@ -605,6 +605,22 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	aa_mit += GetAA(aaPhysicalEnhancement) * 0.02;
 	aa_mit += GetAA(aaInnateDefense) * 0.03;
 	aa_mit += GetAA(aaDefensiveInstincts)*0.02;
+
+	if (IsPet() && GetOwner()) {
+		if(GetOwner()->GetAA(aaElementalAgility)) {
+			switch(GetOwner()->GetAA(aaElementalAgility)){
+				case 1:
+					aa_mit += 0.02;
+					break;
+				case 2:
+					aa_mit += 0.05;
+					break;
+				case 3:
+					aa_mit += 0.10;
+					break;
+			}
+		}
+	}
 
 	if(RuleB(Combat, UseIntervalAC))
 	{
@@ -913,7 +929,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 	int dmg = 0;
 	int banedmg = 0;
 
-	if(against->GetInvul() || against->SpecAttacks[IMMUNE_MELEE]){
+	if(!against || against->GetInvul() || against->SpecAttacks[IMMUNE_MELEE]){
 		return 0;
 	}
 
@@ -2411,9 +2427,9 @@ void Mob::DamageShield(Mob* attacker, bool spell_ds) {
 	//invert DS... spells yield negative values for a true damage shield
 	if(DS < 0) {
 		if(!spell_ds)	{
-			if(IsClient()) {
+			if(GetAA(aaCoatofThistles)) {
 				int dsMod = 100;
-				switch (CastToClient()->GetAA(aaCoatofThistles))
+				switch (GetAA(aaCoatofThistles))
 				{
 				case 1:
 					dsMod = 110;
@@ -3809,17 +3825,17 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	if(damage < 1)
 		return;
 		
-	Client *owner = NULL;
+	Mob *owner = NULL;
 	int critChance = RuleI(Combat, MeleeBaseCritChance);
 	uint16 critMod = 200;
 
 	if (damage < 1) //We can't critical hit if we don't hit.
 		return;
 
-	if (!this->IsPet() || !this->GetOwner()->IsClient())
+	if (!this->IsPet())
 		return;
 
-	owner = this->GetOwner()->CastToClient();
+	owner = this->GetOwner();
 
 	sint16 aaClass = -1;
 	switch (owner->GetClass()) {
@@ -3834,23 +3850,8 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 			break;
 	}
 
-	switch (owner->GetAA(aaClass)) {
-	case 1:
-		critChance += 4;
-		break;
-	case 2:
-		critChance += 8;
-		break;
-	case 3:
-		critChance += 12;
-		break;
-	case 4:
-		critChance += 16;
-		break;
-	case 5:
-		critChance += 20;
-		break;
-	}
+	critChance += owner->GetAA(aaClass);
+	//critChance += owner->GetAA(aaCompanionsFury);
 
 	int CritBonus = GetCriticalChanceBonus(skill);
 	if(CritBonus > 0) {
@@ -3881,6 +3882,13 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		this->TryPetCriticalHit(defender,skill,damage);
 		return;
 	}
+
+#ifdef BOTS
+	if (this->IsPet() && this->GetOwner()->IsBot()) {
+		this->TryPetCriticalHit(defender,skill,damage);
+		return;
+	}
+#endif //BOTS
 
 	int critChance = RuleI(Combat, MeleeBaseCritChance);
 	if(IsClient())
@@ -4135,8 +4143,7 @@ bool Mob::HasDied() {
 	bool Result = false;
 	sint16 hp_below = 0;
 
-	if(IsClient())
-		hp_below = (CastToClient()->GetDelayDeath() * -1);
+	hp_below = (GetDelayDeath() * -1);
 
 	if((GetHP()) <= (hp_below))
 		Result = true;

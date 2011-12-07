@@ -434,6 +434,7 @@ void Mob::AI_Init() {
 	pDontDotMeBefore = 0;
 	pDontRootMeBefore = 0;
 	pDontSnareMeBefore = 0;
+	pDontCureMeBefore = 0;
 }
 
 void NPC::AI_Init() {

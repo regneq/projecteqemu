@@ -716,6 +716,8 @@ bool logpos;
 	inline virtual sint16  GetMaxCR() const { return 255; }
 	inline virtual sint16  GetMaxFR() const { return 255; }
 
+	inline virtual sint16	GetDelayDeath()		const { return 0; }
+
 	bool IsNimbusEffectActive(uint32 nimbus_effect);
 	void SetNimbusEffect(uint32 nimbus_effect);
 	inline virtual uint32  GetNimbusEffect1() const { return nimbus_effect1; }
@@ -1036,11 +1038,13 @@ bool logpos;
 	inline int32		DontDotMeBefore() const { return pDontDotMeBefore; }
 	inline int32		DontRootMeBefore() const { return pDontRootMeBefore; }
 	inline int32		DontSnareMeBefore() const { return pDontSnareMeBefore; }
+	inline int32		DontCureMeBefore() const { return pDontCureMeBefore; }
 	void				SetDontRootMeBefore(int32 time) { pDontRootMeBefore = time; }
 	void				SetDontHealMeBefore(int32 time) { pDontHealMeBefore = time; }
 	void				SetDontBuffMeBefore(int32 time) { pDontBuffMeBefore = time; }
 	void				SetDontDotMeBefore(int32 time) { pDontDotMeBefore = time; }
 	void				SetDontSnareMeBefore(int32 time) { pDontSnareMeBefore = time; }
+	void				SetDontCureMeBefore(int32 time) { pDontCureMeBefore = time; }
 
 	// calculate interruption of spell via movement of mob
 	void SaveSpellLoc() {spell_x = x_pos; spell_y = y_pos; spell_z = z_pos; }
@@ -1395,6 +1399,7 @@ protected:
 	int32 pDontDotMeBefore;
 	int32 pDontRootMeBefore;
 	int32 pDontSnareMeBefore;
+	int32 pDontCureMeBefore;
 
 	// Bind wound
 	Timer bindwound_timer;

@@ -5,6 +5,12 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Leere: Added IsFromSpell to Attack() to allow its use from spell effects. This allows the Rampage AA to actually hit mobs again.
 Leere: Added a rule for the minium hasted delay that can be reached for weapons. Default set to 400 based on best guesses from the Moss-Covered Twig tests posted on the net.
 Congdar: (ptarp)compile warnings in windows
+Bad_Captain: Fixed Enchanter's Mezmerization AA - it was extending buffs 35%, now extends mez spells by 1 tick / rank.
+Bad_Captain: Fixed NPC aabonuses issue(s) - NPCs were trying to access nonexistent aabonuses within combat code (hatemod as an example)
+Bad_Captain: Temporary Fix on crash due to non-player spell proc from Monster Summoning Pets until I can figure out the cause.
+Bad_Captain: Bot changes / fixes including maintaining HP & Mana after camp/zone/death, ability to maintain aggro over clients, taunting toggle command (#bot taunting [on|off]), delay death AA, and others. Please see http://www.eqemulator.org/forums/showthread.php?p=205139#post205139 for all Bot changes.
+
+Required SQL: 2087_required_bots_hp_and_mana_and_spell_updates.sql
 
 ==12/05/2011==
 Trevius: Crash fix for trying to zone into a flagged zone without having the flag.

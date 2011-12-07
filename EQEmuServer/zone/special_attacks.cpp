@@ -383,9 +383,9 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, FlyingKickBonus) / 100) + 35;
 		min_dmg = ((level*8)/10);
 
-		if (IsClient() && CastToClient()->GetAA(aaKickMastery))
+		if (GetAA(aaKickMastery))
 		{
-			switch (CastToClient()->GetAA(aaKickMastery))
+			switch (GetAA(aaKickMastery))
 			{
 			case 1:
 				min_dmg += MakeRandomFloat(10,50);
@@ -504,8 +504,8 @@ void Mob::TryBackstab(Mob *other) {
 	
 	bool tripleBackstab = false;
 	int tripleChance = 0;
-	if (IsClient() && CastToClient()->GetAA(aaTripleBackstab) > 0) {
-		switch (CastToClient()->GetAA(aaTripleBackstab)) {
+	if (GetAA(aaTripleBackstab) > 0) {
+		switch (GetAA(aaTripleBackstab)) {
 		case 1:
 			tripleChance = 10;
 			break;
@@ -523,8 +523,8 @@ void Mob::TryBackstab(Mob *other) {
 
 	bool seizedOpportunity = false;
 	int seizedChance = 0;
-	if (IsClient() && CastToClient()->GetAA(aaSeizedOpportunity) > 0) {
-		switch (CastToClient()->GetAA(aaSeizedOpportunity)) {
+	if (GetAA(aaSeizedOpportunity) > 0) {
+		switch (GetAA(aaSeizedOpportunity)) {
 			case 1:
 				seizedChance = 10;
 				break;
@@ -1900,8 +1900,8 @@ void Mob::InstillDoubt(Mob *who) {
 bool Mob::TryHeadShot(Mob* defender, SkillType skillInUse) {
 	bool Result = false;
 
-	if(defender && skillInUse == ARCHERY && IsClient()) {
-		if(CastToClient()->GetAA(aaHeadshot) && defender->GetBodyType() == BT_Humanoid) {
+	if(defender && skillInUse == ARCHERY) {
+		if(GetAA(aaHeadshot) && defender->GetBodyType() == BT_Humanoid) {
 			if((GetLevelCon(GetLevel(), defender->GetLevel()) == CON_LIGHTBLUE || GetLevelCon(GetLevel(), defender->GetLevel()) == CON_GREEN) && defender->GetLevel() <= 60 && !defender->IsClient()) {
 				// WildcardX: These chance formula's below are arbitrary. If someone has a better formula that is more
 				// consistent with live, feel free to update these.
