@@ -361,7 +361,7 @@ Mob *HateList::GetTop(Mob *center)
 				}
 			}
 #endif //BOTS
-			if(isTopClientType)
+			if(!isTopClientType)
 				return topClientInRange;
 
 			return top;
