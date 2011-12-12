@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==12/11/2011==
+Bad_Captain: Fixed hatelist/aggro bug I introduced in rev 2087 causing NPCs to attack the closest client instead of the top of their hatelist.
+Bad_Captain: Updated some live opcodes for EQExtractor.
+
 ==12/06/2011==
 Leere: Added IsFromSpell to Attack() to allow its use from spell effects. This allows the Rampage AA to actually hit mobs again.
 Leere: Added a rule for the minium hasted delay that can be reached for weapons. Default set to 400 based on best guesses from the Moss-Covered Twig tests posted on the net.
