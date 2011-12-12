@@ -261,7 +261,23 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 	//we copy the npc_type data because we need to edit it a bit
 	NPCType *npc_type = new NPCType;
 	memcpy(npc_type, base, sizeof(NPCType));
-	
+
+	// If pet power is set to -1 in the DB, use stat scaling
+	if (this->IsClient() && record.petpower == -1)
+	{
+		float scale_power = (float)act_power / 100.0f;
+		if(scale_power > 0)
+		{
+			npc_type->max_hp *= (1 + scale_power);
+			npc_type->cur_hp = npc_type->max_hp;
+			npc_type->AC *= (1 + scale_power);
+			npc_type->level += ((int)act_power / 25); // gains an additional level for every 25 pet power
+			npc_type->min_dmg = (npc_type->min_dmg * (1 + (scale_power / 2)));
+			npc_type->max_dmg = (npc_type->max_dmg * (1 + (scale_power / 2)));
+			npc_type->size *= (1 + (scale_power / 2));
+		}
+	}
+
 	switch (GetAA(aaElementalDurability))
 	{
 	case 1:
@@ -414,7 +430,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 	SetPetID(npc->GetID());
 	// We need to handle PetType 5 (petHatelist), add the current target to the hatelist of the pet
 }
-/* Angelox: This is why the pets ghost - pets were being spawned too far away from its npc owner and some
+/* This is why the pets ghost - pets were being spawned too far away from its npc owner and some
 into walls or objects (+10), this sometimes creates the "ghost" effect. I changed to +2 (as close as I 
 could get while it still looked good). I also noticed this can happen if an NPC is spawned on the same spot of another or in a related bad spot.*/
 Pet::Pet(NPCType *type_data, Mob *owner, PetType type, int16 spell_id, sint16 power)
@@ -438,11 +454,11 @@ bool ZoneDatabase::GetPoweredPetEntry(const char *pet_type, int16 petpower, PetR
 	int32 querylen = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	
+
 	if (petpower <= 0) {
 		querylen = MakeAnyLenString(&query,
 			"SELECT npcID, temp, petpower, petcontrol, petnaming, monsterflag, equipmentset FROM pets "
-			"WHERE type='%s' AND petpower=0", pet_type);
+			"WHERE type='%s' AND petpower<=0", pet_type);
 	}
 	else {
 		querylen = MakeAnyLenString(&query,
