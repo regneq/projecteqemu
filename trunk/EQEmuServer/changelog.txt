@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/12/2011==
+Trevius: Pets set to a petpower of -1 in the pets table will scale stats to the petpower like they used to.
 
 ==12/11/2011==
 Bad_Captain: Fixed hatelist/aggro bug I introduced in rev 2087 causing NPCs to attack the closest client instead of the top of their hatelist.
