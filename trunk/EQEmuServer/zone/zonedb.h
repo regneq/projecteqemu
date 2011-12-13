@@ -56,7 +56,7 @@ struct DBTradeskillRecipe_Struct {
 struct PetRecord {
 	uint32 npc_type;	// npc_type id for the pet data to use
 	bool temporary;
-	int16 petpower;
+	sint16 petpower;
 	int8 petcontrol;	// What kind of control over the pet is possible (Animation, familiar, ...)
 	int8 petnaming;		// How to name the pet (Warder, pet, random name, familiar, ...)
 	bool monsterflag;	// flag for if a random monster appearance should get picked

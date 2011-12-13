@@ -271,7 +271,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 			npc_type->max_hp *= (1 + scale_power);
 			npc_type->cur_hp = npc_type->max_hp;
 			npc_type->AC *= (1 + scale_power);
-			npc_type->level += ((int)act_power / 25); // gains an additional level for every 25 pet power
+			npc_type->level += 1 + ((int)act_power / 25); // gains an additional level for every 25 pet power
 			npc_type->min_dmg = (npc_type->min_dmg * (1 + (scale_power / 2)));
 			npc_type->max_dmg = (npc_type->max_dmg * (1 + (scale_power / 2)));
 			npc_type->size *= (1 + (scale_power / 2));
