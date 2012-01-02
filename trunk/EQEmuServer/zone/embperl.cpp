@@ -17,7 +17,8 @@ Eglin
 #include "embperl.h"
 #include "embxs.h"
 #include "features.h"
-#if _MSC_VER >= 1600
+// This has to do with your version of VS, not your version of perl.  Modified to include VS2008
+#if _MSC_VER >= 1500
 #ifndef GvCV_set
 #define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
 #endif
@@ -27,7 +28,7 @@ Eglin
 //link against your Perl Lib
 //#pragma comment(lib, "perl56.lib")
 #ifdef _WINDOWS
-#if _MSC_VER >= 1600 // for V100+ toolset
+#if _MSC_VER >= 1500 // for V100+ toolset
 #pragma comment(lib, "perl514.lib")
 #else
 #pragma comment(lib, "perl510.lib")
@@ -155,14 +156,14 @@ void Embperl::DoInit() {
 	eval_pv("sub my_sleep {}",TRUE);
 	if(gv_stashpv("CORE::GLOBAL", FALSE)) {
 		GV *exitgp = gv_fetchpv("CORE::GLOBAL::exit", TRUE, SVt_PVCV);
-		#if _MSC_VER >= 1600
+		#if _MSC_VER >= 1500
 		GvCV_set(exitgp, perl_get_cv("my_exit", TRUE));	//dies on error
 		#else
 		GvCV(exitgp) = perl_get_cv("my_exit", TRUE);	//dies on error
 		#endif
 		GvIMPORTED_CV_on(exitgp);
 		GV *sleepgp = gv_fetchpv("CORE::GLOBAL::sleep", TRUE, SVt_PVCV);
-		#if _MSC_VER >= 1600
+		#if _MSC_VER >= 1500
 		GvCV_set(sleepgp, perl_get_cv("my_sleep", TRUE));	//dies on error
 		#else
 		GvCV(sleepgp) = perl_get_cv("my_sleep", TRUE);	//dies on error
