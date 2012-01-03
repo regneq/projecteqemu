@@ -17,8 +17,7 @@ Eglin
 #include "embperl.h"
 #include "embxs.h"
 #include "features.h"
-// This has to do with your version of VS, not your version of perl.  Modified to include VS2008
-#if _MSC_VER >= 1500
+#if _MSC_VER >= 1600
 #ifndef GvCV_set
 #define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
 #endif
@@ -28,7 +27,7 @@ Eglin
 //link against your Perl Lib
 //#pragma comment(lib, "perl56.lib")
 #ifdef _WINDOWS
-#if _MSC_VER >= 1500 // for V100+ toolset
+#if _MSC_VER >= 1600 // for V100+ toolset
 #pragma comment(lib, "perl514.lib")
 #else
 #pragma comment(lib, "perl510.lib")
