@@ -66,7 +66,7 @@ struct PetRecord {
 // Actual pet info for a client.
 struct PetInfo {
 	uint16	SpellID;
-	int16	petpower;
+	sint16	petpower;
 	uint32	HP;
 	uint32	Mana;
 	SpellBuff_Struct	Buffs[BUFF_COUNT];
@@ -273,7 +273,7 @@ public:
 	int32	NPCSpawnDB(int8 command, const char* zone, uint32 zone_version, Client *c, NPC* spawn = 0, int32 extra = 0); // 0 = Create 1 = Add; 2 = Update; 3 = Remove; 4 = Delete
 	bool	SetSpecialAttkFlag(int8 id, const char* flag);
 	bool	GetPetEntry(const char *pet_type, PetRecord *into);
-	bool	GetPoweredPetEntry(const char *pet_type, int16 petpower, PetRecord *into);
+	bool	GetPoweredPetEntry(const char *pet_type, sint16 petpower, PetRecord *into);
 	bool	GetBasePetItems(sint32 equipmentset, int32 *items);
 	void	AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* itemlist, int32* copper, int32* silver, int32* gold, int32* plat);
 	void	AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemlist);

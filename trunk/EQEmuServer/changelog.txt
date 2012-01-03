@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/02/2012==
+Trevius: Fix for loading buffs on suspended pets.
+
 ==12/12/2011==
 Trevius: Pets set to a petpower of -1 in the pets table will scale stats to the petpower like they used to.
 

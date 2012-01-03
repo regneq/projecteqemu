@@ -902,8 +902,8 @@ bool logpos;
 	inline int16 GetPetID()	const { return petid; }
 	inline PetType GetPetType() const { return typeofpet; }
 	void SetPetType(PetType p) { typeofpet = p; } 
-	inline int16 GetPetPower() const { return petpower; }
-	void SetPetPower(int16 p) { petpower = p; }
+	inline sint16 GetPetPower() const { return (petpower < 0) ? 0 : petpower; }
+	void SetPetPower(sint16 p) { if (p < 0) petpower = 0; else petpower = p; }
 	bool IsFamiliar() const { return(typeofpet == petFamiliar); }
 	bool IsAnimation() const { return(typeofpet == petAnimation); }
 	bool IsCharmed() const { return(typeofpet == petCharmed); }
@@ -1190,7 +1190,7 @@ protected:
 	int16 petid;
 	int16 ownerid;
 	PetType typeofpet;
-	int16 petpower;		// Should be part of class Pet, like PetType
+	sint16 petpower;		// Should be part of class Pet, like PetType
 	int32 follow;
 	int32 follow_dist;
 

@@ -2053,13 +2053,13 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 	PetInfo *petinfo = c->GetPetInfo(0);
 	PetInfo *suspended = c->GetPetInfo(1);
 
-	if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_buffs` WHERE `char_id`='%u'", c->CharacterID()), 
+	if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_buffs` WHERE `char_id`=%u", c->CharacterID()), 
 		errbuf)) {
 		safe_delete_array(query);
 		return;
 	}
 	safe_delete_array(query);
-	if (!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_inventory` WHERE `char_id`='%u'", c->CharacterID()), 
+	if (!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_inventory` WHERE `char_id`=%u", c->CharacterID()), 
 		errbuf)) {
 		safe_delete_array(query);
 		// error report
@@ -2069,8 +2069,8 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 
 	if(!database.RunQuery(query, MakeAnyLenString(&query,
 		"INSERT INTO `character_pet_info` (`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`) "
-		"values (%u, 0, '%s', %u, %u, %u, %u) "
-		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%u, `spell_id`=%u, `hp`=%u, `mana`=%u ",
+		"values (%u, 0, '%s', %i, %u, %u, %u) "
+		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%i, `spell_id`=%u, `hp`=%u, `mana`=%u",
 		c->CharacterID(), petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana,
 		petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana),
 		errbuf)) 
@@ -2095,7 +2095,7 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 			database.RunQuery(query, MakeAnyLenString(&query,
 				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
 				"`ticsremaining`, `counters`) values "
-				"(%u, 0, %u, %u, %u, %u, %d)",
+				"(%u, 1, %u, %u, %u, %u, %d)",
 				c->CharacterID(), i, suspended->Buffs[i].spellid, suspended->Buffs[i].level, suspended->Buffs[i].duration, 
 				suspended->Buffs[i].counters),
 				errbuf);
@@ -2117,7 +2117,7 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 	if(!database.RunQuery(query, MakeAnyLenString(&query,
 		"INSERT INTO `character_pet_info` (`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`) "
 		"values (%u, 1, '%s', %u, %u, %u, %u) "
-		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%u, `spell_id`=%u, `hp`=%u, `mana`=%u ",
+		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%i, `spell_id`=%u, `hp`=%u, `mana`=%u",
 		c->CharacterID(), suspended->Name, suspended->petpower, suspended->SpellID, suspended->HP, suspended->Mana,
 		suspended->Name, suspended->petpower, suspended->SpellID, suspended->HP, suspended->Mana),
 		errbuf)) 
@@ -2154,7 +2154,7 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
 	memset(suspended, 0, sizeof(PetInfo));
 
 	if(database.RunQuery(query, MakeAnyLenString(&query, 
-		"SELECT `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana` from `character_pet_info` where `char_id`=%d",
+		"SELECT `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana` from `character_pet_info` where `char_id`=%u",
 		c->CharacterID()), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -2186,7 +2186,7 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
     if (RunQuery(query, MakeAnyLenString(&query, 
 		"SELECT `pet`, `slot`, `spell_id`, `caster_level`, `castername`, "
 		"`ticsremaining`, `counters` FROM `character_pet_buffs` "
-		"WHERE `char_id`='%u'", 
+		"WHERE `char_id`=%u", 
         c->CharacterID()), errbuf, &result)) 
     {
 		safe_delete_array(query);
@@ -2209,16 +2209,18 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
 			if(!IsValidSpell(spell_id)) {
 				continue;
 			}
-
-			Client *caster = entity_list.GetClientByName(row[4]);
 			uint32 caster_level = atoi(row[3]);
+			int caster_id = 0;
+			// The castername field is currently unused
+			//Client *caster = entity_list.GetClientByName(row[4]);
+			//if (caster) { caster_id = caster->GetID(); }
 			uint32 ticsremaining = atoul(row[5]);
 			uint32 counters = atoul(row[6]);
 
 			pi->Buffs[slot_id].spellid = spell_id;
 			pi->Buffs[slot_id].level = caster_level;
-			pi->Buffs[slot_id].player_id = 0;
-			pi->Buffs[slot_id].slotid = 2; // Assume it's a real buff
+			pi->Buffs[slot_id].player_id = caster_id;
+			pi->Buffs[slot_id].slotid = 2;	// Always 2 in buffs struct for real buffs
 
 			pi->Buffs[slot_id].duration = ticsremaining;
 			pi->Buffs[slot_id].counters = counters;

@@ -276,6 +276,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 			npc_type->max_dmg = (npc_type->max_dmg * (1 + (scale_power / 2)));
 			npc_type->size *= (1 + (scale_power / 2));
 		}
+		record.petpower = act_power;
 	}
 
 	switch (GetAA(aaElementalDurability))
@@ -448,7 +449,7 @@ bool ZoneDatabase::GetPetEntry(const char *pet_type, PetRecord *into) {
 	return GetPoweredPetEntry(pet_type, 0, into);
 }
 
-bool ZoneDatabase::GetPoweredPetEntry(const char *pet_type, int16 petpower, PetRecord *into) {
+bool ZoneDatabase::GetPoweredPetEntry(const char *pet_type, sint16 petpower, PetRecord *into) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	int32 querylen = 0;
@@ -542,8 +543,7 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 	for (int i=0; i < BUFF_COUNT; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			pet_buffs[i].spellid = buffs[i].spellid;
-// solar: fix this if buffs struct is fixed
-			pet_buffs[i].slotid = i+1/*2*/;
+			pet_buffs[i].slotid = i+1;
 			pet_buffs[i].duration = buffs[i].ticsremaining;
 			pet_buffs[i].level = buffs[i].casterlevel;
 			pet_buffs[i].effect = 10;
