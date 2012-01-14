@@ -1853,14 +1853,13 @@ void command_npcstats(Client *c, const Seperator *sep)
 		c->Message(0, "ERROR: Target is not a NPC!");
 	else {
 		c->Message(0, "NPC Stats:");
-		c->Message(0, "  Name: %s   NpcID: %u",c->GetTarget()->GetName(), c->GetTarget()->GetNPCTypeID());
-		c->Message(0, "  Race: %i  Level: %i  Class: %i",c->GetTarget()->GetRace(), c->GetTarget()->GetLevel(), c->GetTarget()->GetClass());
-		c->Message(0, "  Material: %i",c->GetTarget()->GetTexture());
-		c->Message(0, "  Current HP: %i  Max HP: %i", c->GetTarget()->GetHP(), c->GetTarget()->GetMaxHP());
+		c->Message(0, "Name: %s   NpcID: %u", c->GetTarget()->GetName(), c->GetTarget()->GetNPCTypeID());
+		c->Message(0, "Race: %i  Level: %i  Class: %i  Material: %i", c->GetTarget()->GetRace(), c->GetTarget()->GetLevel(), c->GetTarget()->GetClass(), c->GetTarget()->GetTexture());
+		c->Message(0, "Current HP: %i  Max HP: %i", c->GetTarget()->GetHP(), c->GetTarget()->GetMaxHP());
 		//c->Message(0, "Weapon Item Number: %s",c->GetTarget()->GetWeapNo());
-		c->Message(0, "  Gender: %i  Size: %f  Bodytype: %d",c->GetTarget()->GetGender(),c->GetTarget()->GetSize(), c->GetTarget()->GetBodyType());
-		c->Message(0, "  Runspeed: %f  Walkspeed: %f", c->GetTarget()->GetRunspeed(), c->GetTarget()->GetWalkspeed());
-		c->Message(0,"Spawn Group: %i",c->GetTarget()->CastToNPC()->GetSp2());
+		c->Message(0, "Gender: %i  Size: %f  Bodytype: %d", c->GetTarget()->GetGender(), c->GetTarget()->GetSize(), c->GetTarget()->GetBodyType());
+		c->Message(0, "Runspeed: %f  Walkspeed: %f", c->GetTarget()->GetRunspeed(), c->GetTarget()->GetWalkspeed());
+		c->Message(0, "Spawn Group: %i  Grid: %i", c->GetTarget()->CastToNPC()->GetSp2(), c->GetTarget()->CastToNPC()->GetGrid());
 		c->GetTarget()->CastToNPC()->QueryLoot(c);
 	}
 }
