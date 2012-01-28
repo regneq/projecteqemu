@@ -5776,7 +5776,7 @@ void Client::LocateCorpse()
 		Message_StringID(clientMessageError, SENSE_CORPSE_NOT_NAME);
 }
 
-void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntime)
+void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 extra)
 {
 	if (!target_npc || !identifier)
 		return;
@@ -5788,10 +5788,12 @@ void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntim
 	}
 
 	if (id == "create") {
-		database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
+		// extra tries to create the npc_type ID within the range for the current zone (zone_id * 1000)
+		database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), extra);
 	}
 	else if (id == "add") {
-		database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), respawntime);
+		// extra sets the respawn timer for add
+		database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), extra);
 	}
 	else if (id == "update") {
 		database.NPCSpawnDB(2, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());

@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/28/2012==
+Trevius: The version field in the zone_points table can now be set to -1 if you want all versions of the zone to inherit the same zone points.
+Trevius: Added extra option to the "#npcspawn create" command that will try to create the npc_type ID within the standard range for the current zone (zone_id * 1000). Usage: "#npcspawn create 1"
+
+Required SQL:
+utils/sql/sv/2098_required_zonepoint_version_changes.sql
+
 ==01/14/2012==
 Trevius: Added Grid ID to the #npstats command output.
 
