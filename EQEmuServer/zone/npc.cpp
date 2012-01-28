@@ -925,14 +925,52 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 	int32 tmp2 = 0;
     int32 last_insert_id = 0;
 	switch (command) {
-		case 0: { // add spawn with new npc_type - khuong
-			int32 npc_type_id, spawngroupid;
+		case 0: { // Create a new NPC and add all spawn related data
+			int32 npc_type_id = 0;
+			int32 spawngroupid;
+			if (extra && c && c->GetZoneID())
+			{
+				// Set an npc_type ID within the standard range for the current zone if possible (zone_id * 1000)
+				int starting_npc_id = c->GetZoneID() * 1000;				
+				if (RunQuery(query, MakeAnyLenString(&query, "SELECT MAX(id) FROM npc_types WHERE id >= %i AND id < %i", starting_npc_id, (starting_npc_id + 1000)), errbuf, &result)) {
+					row = mysql_fetch_row(result);
+					if(row)
+					{
+						if (row[0])
+						{
+							npc_type_id = atoi(row[0]) + 1;
+							// Prevent the npc_type id from exceeding the range for this zone
+							if (npc_type_id >= (starting_npc_id + 1000))
+							{
+								npc_type_id = 0;
+							}
+						}
+						else
+						{
+							// row[0] is NULL - No npc_type IDs set in this range yet
+							npc_type_id = starting_npc_id;
+						}
+					}
+					
+					safe_delete_array(query);
+					mysql_free_result(result);
+				}
+			}
 			char tmpstr[64];
-			//char tmpstr2[64];
 			EntityList::RemoveNumbers(strn0cpy(tmpstr, spawn->GetName(), sizeof(tmpstr)));
-			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
-				safe_delete(query);
-				return false;
+			if (npc_type_id)
+			{
+				if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (id, name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(%i,\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", npc_type_id, tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
+					safe_delete(query);
+					return false;
+				}
+			}
+			else
+			{
+				if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
+					safe_delete(query);
+					return false;
+				}
 			}
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
@@ -958,10 +996,9 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			return true;
 			break;
 		}
-		case 1:{
+		case 1:{ // Add new spawn group and spawn point for an existing NPC Type ID
 			tmp2 = spawn->GetNPCTypeID();
 			char tmpstr[64];
-			//char tmpstr2[64];
 			snprintf(tmpstr, sizeof(tmpstr), "%s%s%i", zone, spawn->GetName(),Timer::GetCurrentTime());
 			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawngroup (name) values('%s')", tmpstr), errbuf, 0, 0, &last_insert_id)) {
 				printf("ReturnFalse: spawngroup query in NPCSpawnDB() (query: %s)\n",query);
@@ -970,7 +1007,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			}
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
-			
+
 			int32 respawntime = 0;
 			int32 spawnid = 0;
 			if (extra)
@@ -986,7 +1023,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			}
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
-			
+
 			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawnentry (spawngroupID, npcID, chance) values(%i, %i, %i)", last_insert_id, tmp2, 100), errbuf, 0)) {
 				safe_delete(query);
 				printf("ReturnFalse: spawnentry query in NPCSpawnDB()\n");
@@ -997,7 +1034,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			return spawnid;
 			break;
 		}
-		case 2: { // update npc_type from target spawn - khuong
+		case 2: { // Update npc_type appearance and other data on targeted spawn
 			if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE npc_types SET name=\"%s\", level=%i, race=%i, class=%i, hp=%i, gender=%i, texture=%i, helmtexture=%i, size=%i, loottable_id=%i, merchant_id=%i, face=%i, WHERE id=%i", spawn->GetName(), spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, spawn->GetNPCTypeID()), errbuf, 0)) {
 				if(c) c->LogSQL(query);
 				safe_delete_array(query);
@@ -1009,18 +1046,18 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			}
 			break;
 		}
-		case 3: { // delete spawn from spawning - khuong
+		case 3: { // delete spawn from spawning, but leave in npc_types table
 			if (!RunQuery(query, MakeAnyLenString(&query, "SELECT id,spawngroupID from spawn2 where zone='%s' AND spawngroupID=%i", zone, spawn->GetSp2()), errbuf, &result)) {
 				safe_delete_array(query);
 				return 0;
 			}
 			safe_delete_array(query);
-			
+
 			row = mysql_fetch_row(result);
 			if (row == NULL) return false;
 			if (row[0]) tmp = atoi(row[0]);
 			if (row[1]) tmp2 = atoi(row[1]);
-			
+
 			if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM spawn2 WHERE id='%i'", tmp), errbuf,0)) {
 				safe_delete(query);
 				return false;
@@ -1044,19 +1081,19 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 
 			break;
 		}
-		case 4: { //delete spawn from DB (including npc_type) - khuong
+		case 4: { //delete spawn from DB (including npc_type)
 			if (!RunQuery(query, MakeAnyLenString(&query, "SELECT id,spawngroupID from spawn2 where zone='%s' AND version=%u AND spawngroupID=%i", zone, zone_version, spawn->GetSp2()), errbuf, &result)) {
 				safe_delete_array(query);
 				return(0);
 			}
 			safe_delete_array(query);
-			
+
 			row = mysql_fetch_row(result);
 			if (row == NULL) return false;
 			if (row[0]) tmp = atoi(row[0]);
 			if (row[1]) tmp2 = atoi(row[1]);
 			mysql_free_result(result);
-			
+
 			if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM spawn2 WHERE id='%i'", tmp), errbuf,0)) {
 				safe_delete(query);
 				return false;
@@ -1084,7 +1121,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			return true;
 			break;
 		}
-		case 5: { // add a spawn from spawngroup - Ailia
+		case 5: { // add a spawn from spawngroup
 			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, version, x, y, z, respawntime, heading, spawngroupID) values('%s', %u, %f, %f, %f, %i, %f, %i)", zone, zone_version, c->GetX(), c->GetY(), c->GetZ(), 120, c->GetHeading(), extra), errbuf, 0, 0, &tmp)) {
 				safe_delete(query);
 				return false;
@@ -1095,10 +1132,9 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			return true;
 			break;
 			}
-		case 6: { // add npc_type - Ailia
+		case 6: { // add npc_type
 			int32 npc_type_id;
 			char tmpstr[64];
-			//char tmpstr2[64];
 			EntityList::RemoveNumbers(strn0cpy(tmpstr, spawn->GetName(), sizeof(tmpstr)));
 			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
 				safe_delete(query);

@@ -4587,14 +4587,29 @@ void command_zonespawn(Client *c, const Seperator *sep)
 void command_npcspawn(Client *c, const Seperator *sep)
 {
 	Mob *target=c->GetTarget();
+	uint32 extra = 0;
 
 	if (target && target->IsNPC()) {
 		if (strcasecmp(sep->arg[1], "create") == 0) {
-			database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC());
+			if (atoi(sep->arg[2]))
+			{
+				// Option to try to create the npc_type ID within the range for the current zone (zone_id * 1000)
+				extra = 1;
+			}
+			database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC(), extra);
 			c->Message(0, "%s created successfully!", target->GetName());
 		}
 		else if (strcasecmp(sep->arg[1], "add") == 0) {
-			database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC(), atoi(sep->arg[2]));
+			if (atoi(sep->arg[2]))
+			{
+				extra = atoi(sep->arg[2]);
+			}
+			else
+			{
+				// Respawn Timer default if not set
+				extra = 1200;
+			}
+			database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC(), extra);
 			c->Message(0, "%s added successfully!", target->GetName());
 		}
 		else if (strcasecmp(sep->arg[1], "update") == 0) {
