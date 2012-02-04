@@ -3829,7 +3829,7 @@ void Client::DiscoverItem(int32 itemid) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
-	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO discovered_items SET item_id=%lu, char_name='%s', discovered_date=UNIX_TIMESTAMP()", itemid, GetName()), errbuf, &result))
+	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO discovered_items SET item_id=%lu, char_name='%s', discovered_date=UNIX_TIMESTAMP(), account_status=%i", itemid, GetName(), Admin()), errbuf, &result))
 	{
 		mysql_free_result(result);
 	}
