@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/03/2012==
+Trevius: Added accout_status field to the discovered_items table to make it easier to remove accidental GM item discovery from the table.
+
+Required SQL:
+utils/sql/sv/2099_required_discovered_items_account_status.sql
+
 ==01/28/2012==
 Trevius: The version field in the zone_points table can now be set to -1 if you want all versions of the zone to inherit the same zone points.
 Trevius: Added extra option to the "#npcspawn create" command that will try to create the npc_type ID within the standard range for the current zone (zone_id * 1000). Usage: "#npcspawn create 1"
