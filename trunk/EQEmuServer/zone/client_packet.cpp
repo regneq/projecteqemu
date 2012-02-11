@@ -5527,8 +5527,9 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	if (RuleB(EventLog, RecordBuyFromMerchant))
 		LogMerchant(this, tmp, mpo->quantity, mpo->price, item, true);
 
-	if ((RuleB(Character, EnableDiscoveredItems)) && !GetGM() && !IsDiscovered(item_id))
+	if ((RuleB(Character, EnableDiscoveredItems)))
 	{
+		if(!GetGM() && !IsDiscovered(item_id))
 		DiscoverItem(item_id);
 	}
 

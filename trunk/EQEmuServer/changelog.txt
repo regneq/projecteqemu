@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/11/2012==
+Secrets: Fixed two more hanging issues introduced regardless of the item discovery feature was on or off.
 Secrets: Fixed a hanging issue introduced regardless of the item discovery feature was on or off. Keep in mind the item discovery feature still takes a reasonable amount of time to work, and this will be fixed in a future update.
 Secrets: Added OP_IncreaseStats for use with the #incstats command (and other things, in due time!)
 Secrets: Added QueryServ to the VS2008 project in preparation of moving eventlog, hackers, discovered items, and other non-essential database tasks over to it.
