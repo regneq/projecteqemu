@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ucs"
-	ProjectGUID="{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}"
+	Name="queryserv"
+	ProjectGUID="{73D5088D-7371-4551-B242-354963FF4731}"
 	RootNamespace="ucs"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
