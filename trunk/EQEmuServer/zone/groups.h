@@ -90,18 +90,28 @@ public:
 	void	UpdateGroupAAs();
 	void	SaveGroupLeaderAA();
 	void	MarkNPC(Mob* Target, int Number);
-	void	DelegateMainAssist(const char *NewMainAssistName);
-	void	UnDelegateMainAssist(const char *OldMainAssistName);
-	bool	IsMainAssist(Client *c);
+	void	DelegateMainTank(const char *NewMainAssistName, uint8 toggle = 0);
+	void	DelegateMainAssist(const char *NewMainAssistName, uint8 toggle = 0);
+	void	DelegatePuller(const char *NewMainAssistName, uint8 toggle = 0);
+	void	UnDelegateMainTank(const char *OldMainAssistName, uint8 toggle = 0);
+	void	UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle = 0);
+	void	UnDelegatePuller(const char *OldMainAssistName, uint8 toggle = 0);
+	bool	IsMainTank(Mob *m);
+	bool	IsMainAssist(Mob *m);
+	bool	IsPuller(Mob *m);
 	bool	IsNPCMarker(Client *c);
 	void	SetGroupTarget(int EntityID);
 	void	NotifyTarget(Client *c);
 	void	DelegateMarkNPC(const char *NewNPCMarkerName);
 	void	UnDelegateMarkNPC(const char *OldNPCMarkerName);
-	void	NotifyMainAssist(Client *c);
+	void	NotifyMainTank(Client *c, uint8 toggle = 0);
+	void	NotifyMainAssist(Client *c, uint8 toggle = 0);
+	void	NotifyPuller(Client *c, uint8 toggle = 0);
 	void	NotifyMarkNPC(Client *c);
 	inline	uint32 GetNPCMarkerID() { return NPCMarkerID; }
+	inline	void SetMainTank(char *NewMainTankName) { MainTankName = NewMainTankName; }
 	inline	void SetMainAssist(char *NewMainAssistName) { MainAssistName = NewMainAssistName; }
+	inline	void SetPuller(char *NewPullerName) { PullerName = NewPullerName; }
 	void	SetNPCMarker(const char *NewNPCMarkerName);
 	void	UnMarkNPC(int16 ID);
 	void	SendMarkedNPCsToMember(Client *c, bool Clear = false);
@@ -119,7 +129,9 @@ public:
 private:
 	Mob*	leader;
 	GroupLeadershipAA_Struct LeaderAbilities;
+	string	MainTankName;
 	string	MainAssistName;
+	string	PullerName;
 	string	NPCMarkerName;
 	int16	NPCMarkerID;
 	int16	TargetID;

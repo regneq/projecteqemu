@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/28/2012==
+Bad_Captain: Implemented Group Roles via UI (SoD+)- Set group roles, maintains across zones, save/load grouprole sets (load doesn't appear to work on UF- may be a client bug as client doesn't send request to the server for saved group roles as SoD client does)
+Bad_Captain: Fixed FindType to allow for spell effects > 127. Observed by bots trying to cure corruption (effectid 369) when client has a mount (summonhorse effectid 113: 369-128-128=113).
+Bad_Captain: Bots- fixed bot summoning of client corpses, fixed ability to spawn more bots than allowed via server rule (#bot botgroup load was not checking for SpawnBotCount rule), fixed bot issue with receiving buff with Group with Pets target type.
+
+Required SQL:
+utils/sql/svn/2104_required_group_roles.sql
+
 ==02/11/2012==
 Secrets: Fixed two more hanging issues introduced regardless of the item discovery feature was on or off.
 Secrets: Fixed a hanging issue introduced regardless of the item discovery feature was on or off. Keep in mind the item discovery feature still takes a reasonable amount of time to work, and this will be fixed in a future update.

@@ -207,7 +207,7 @@ public:
 	char*	GetGroupLeaderForLogin(const char* name,char* leaderbuf);
 	
 	void	SetGroupLeaderName(int32 gid, const char* name);
-	char*	GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist = NULL, char *marknpc = NULL,
+	char*	GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* maintank = NULL, char* assist = NULL, char* puller = NULL, char *marknpc = NULL,
 				       GroupLeadershipAA_Struct* GLAA = NULL);
 	void	ClearGroupLeader(int32 gid = 0);
 

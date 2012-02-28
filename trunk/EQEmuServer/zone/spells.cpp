@@ -1516,6 +1516,20 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 							group_id_caster = (owner->GetRaid()->GetGroup(CastToClient()) == 0xFFFF) ? 0 : (owner->GetRaid()->GetGroup(CastToClient()) + 1);
 						}
 					}
+#ifdef BOTS
+					else if(IsBot())
+					{
+						if(IsGrouped())
+						{
+							group_id_caster = GetGroup()->GetID();
+						}
+						else if(IsRaidGrouped())
+						{
+							if(GetOwner())
+								group_id_caster = (GetRaid()->GetGroup(GetOwner()->CastToClient()) == 0xFFFF) ? 0 : (GetRaid()->GetGroup(GetOwner()->CastToClient()) + 1);
+						}
+					}
+#endif //BOTS
 
 					if(spell_target->IsClient())
 					{
@@ -1540,6 +1554,20 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 							group_id_target = (owner->GetRaid()->GetGroup(CastToClient()) == 0xFFFF) ? 0 : (owner->GetRaid()->GetGroup(CastToClient()) + 1);
 						}
 					}
+#ifdef BOTS
+					else if(spell_target->IsBot())
+					{
+						if(spell_target->IsGrouped())
+						{
+							group_id_caster = spell_target->GetGroup()->GetID();
+						}
+						else if(spell_target->IsRaidGrouped())
+						{
+							if(spell_target->GetOwner())
+								group_id_caster = (spell_target->GetRaid()->GetGroup(spell_target->GetOwner()->CastToClient()) == 0xFFFF) ? 0 : (spell_target->GetRaid()->GetGroup(spell_target->GetOwner()->CastToClient()) + 1);
+						}
+					}
+#endif //BOTS
 
 					if(group_id_caster == 0 || group_id_target == 0)
 					{
@@ -4903,7 +4931,7 @@ int16 Mob::GetSpellIDFromSlot(int8 slot)
 }
 
 
-bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
+bool Mob::FindType(int16 type, bool bOffensive, int16 threshold) {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (int i = 0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
