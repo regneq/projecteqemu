@@ -282,6 +282,10 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
                         newmember->CastToClient()->Save();
                         database.SetGroupID(NewMemberName, GetID(), newmember->CastToClient()->CharacterID());
                         SendMarkedNPCsToMember(newmember->CastToClient());
+
+						NotifyMainTank(newmember->CastToClient(), 1);
+						NotifyMainAssist(newmember->CastToClient(), 1);
+						NotifyPuller(newmember->CastToClient(), 1);
                 }
         }
         else
@@ -459,8 +463,11 @@ bool Group::DelMemberOOZ(const char *Name) {
 				memset(membername[i], 0, 64);
 				if(GroupCount() < 3)
 				{
-					DelegateMarkNPC(NULL);
-					DelegateMainAssist(NULL);
+					UnDelegateMarkNPC(NPCMarkerName.c_str());
+					if(GetLeader()->IsClient()) {
+						if(GetLeader()->CastToClient()->GetClientVersion() < EQClientSoD)
+							UnDelegateMainAssist(MainAssistName.c_str());
+					}
 					ClearAllNPCMarks();
 				}
 				return true;
@@ -541,20 +548,28 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender)
 
 	safe_delete(outapp);
 
-	 if(oldmember->IsClient())
-	 {
-	 	if(IsMainAssist(oldmember->CastToClient()))
-		{
-	 		SetGroupTarget(0);
-			UnDelegateMainAssist(oldmember->GetName());
-		}
-		SendMarkedNPCsToMember(oldmember->CastToClient(), true);
+	if(IsMainTank(oldmember))
+		UnDelegateMainTank(oldmember->GetName());
+	
+	if(IsMainAssist(oldmember))
+	{
+	 	SetGroupTarget(0);
+		UnDelegateMainAssist(oldmember->GetName());
 	}
+	
+	if(IsPuller(oldmember))
+		UnDelegatePuller(oldmember->GetName());
+		
+	if(oldmember->IsClient())
+		SendMarkedNPCsToMember(oldmember->CastToClient(), true);
 
 	if(GroupCount() < 3)
 	{
-		DelegateMarkNPC(NULL);
-		DelegateMainAssist(NULL);
+		UnDelegateMarkNPC(NPCMarkerName.c_str());
+		if(GetLeader()->IsClient()) {
+			if(GetLeader()->CastToClient()->GetClientVersion() < EQClientSoD)
+				UnDelegateMainAssist(MainAssistName.c_str());
+		}
 		ClearAllNPCMarks();
 	}
 
@@ -1084,48 +1099,178 @@ void Group::MarkNPC(Mob* Target, int Number)
 	safe_delete(outapp);
 }
 
-void Group::DelegateMainAssist(const char *NewMainAssistName)
+void Group::DelegateMainTank(const char *NewMainTankName, uint8 toggle)
+{
+	// This method is called when the group leader Delegates the Main Tank role to a member of the group
+	// (or himself). All group members in the zone are notified of the new Main Tank and it is recorded
+	// in the group_leaders table so as to persist across zones.
+	//
+	
+	bool updateDB = false;
+
+	if(!NewMainTankName)
+		return;
+
+	Mob *m = entity_list.GetMob(NewMainTankName);
+
+	if(!m)
+		return;
+
+	if(MainTankName != NewMainTankName || !toggle)
+		updateDB = true;
+	
+	MainTankName = NewMainTankName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if(members[i] && members[i]->IsClient())
+			NotifyMainTank(members[i]->CastToClient(), toggle);
+	}
+
+	if(updateDB) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = NULL;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET maintank='%s' WHERE gid=%i LIMIT 1",
+								   MainTankName.c_str(), GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to set group main tank: %s\n", errbuff);
+
+		safe_delete_array(Query);
+	}
+}
+
+void Group::DelegateMainAssist(const char *NewMainAssistName, uint8 toggle)
 {
 	// This method is called when the group leader Delegates the Main Assist role to a member of the group
 	// (or himself). All group members in the zone are notified of the new Main Assist and it is recorded
 	// in the group_leaders table so as to persist across zones.
 	//
-
-	if(MainAssistName.size() > 0)
-		UnDelegateMainAssist(MainAssistName.c_str());
+	
+	bool updateDB = false;
 
 	if(!NewMainAssistName)
 		return;
 
-	Client *c = entity_list.GetClientByName(NewMainAssistName);
+	Mob *m = entity_list.GetMob(NewMainAssistName);
 
-	if(!c)
+	if(!m)
 		return;
+		
+	if(MainAssistName != NewMainAssistName || !toggle)
+		updateDB = true;
 
-	if(c->GetTarget())
-		TargetID = c->GetTarget()->GetID();
+	if(m->GetTarget())
+		TargetID = m->GetTarget()->GetID();
 	else
 		TargetID = 0;
 
 	MainAssistName = NewMainAssistName;
 
-	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
 		if(members[i] && members[i]->IsClient())
-			NotifyMainAssist(members[i]->CastToClient());
+			NotifyMainAssist(members[i]->CastToClient(), toggle);
+	}
 
-	char errbuff[MYSQL_ERRMSG_SIZE];
+	if(updateDB) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
 
-	char *Query = NULL;
+		char *Query = NULL;
 
-	if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='%s' WHERE gid=%i LIMIT 1",
-						       NewMainAssistName, GetID()), errbuff))
-		LogFile->write(EQEMuLog::Error, "Unable to set group main assist: %s\n", errbuff);
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='%s' WHERE gid=%i LIMIT 1",
+								   MainAssistName.c_str(), GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to set group main assist: %s\n", errbuff);
 
-	safe_delete_array(Query);
+		safe_delete_array(Query);
+	}
+}
+
+void Group::DelegatePuller(const char *NewPullerName, uint8 toggle)
+{
+	// This method is called when the group leader Delegates the Puller role to a member of the group
+	// (or himself). All group members in the zone are notified of the new Puller and it is recorded
+	// in the group_leaders table so as to persist across zones.
+	//
+	
+	bool updateDB = false;
+
+	if(!NewPullerName)
+		return;
+
+	Mob *m = entity_list.GetMob(NewPullerName);
+
+	if(!m)
+		return;
+		
+	if(PullerName != NewPullerName || !toggle)
+		updateDB = true;
+
+	if(m->GetTarget())
+		TargetID = m->GetTarget()->GetID();
+	else
+		TargetID = 0;
+
+	PullerName = NewPullerName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if(members[i] && members[i]->IsClient())
+			NotifyPuller(members[i]->CastToClient(), toggle);
+	}
+
+	if(updateDB) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = NULL;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET puller='%s' WHERE gid=%i LIMIT 1",
+								   PullerName.c_str(), GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to set group main puller: %s\n", errbuff);
+
+		safe_delete_array(Query);
+	}
 
 }
 
-void Group::NotifyMainAssist(Client *c)
+void Group::NotifyMainTank(Client *c, uint8 toggle)
+{
+	// Send a packet to the specified Client notifying them who the new Main Tank is. This causes the client to display
+	// a message with the name of the Main Tank.
+	//
+
+	if(!c)
+		return;
+
+	if(!MainTankName.size())
+		return;
+
+	if(c->GetClientVersion() < EQClientSoD)
+	{
+		if(toggle)
+			c->Message(0, "%s is now Main Tank.", MainTankName.c_str());
+		else
+			c->Message(0, "%s is no longer Main Tank.", MainTankName.c_str());
+	}
+	else
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupRoles, sizeof(GroupRole_Struct));
+
+		GroupRole_Struct *grs = (GroupRole_Struct*)outapp->pBuffer;
+
+		strn0cpy(grs->Name1, MainTankName.c_str(), sizeof(grs->Name1));
+
+		strn0cpy(grs->Name2, GetLeaderName(), sizeof(grs->Name2));
+
+		grs->RoleNumber = 1; 
+
+		grs->Toggle = toggle;
+
+		c->QueuePacket(outapp);
+
+		safe_delete(outapp);
+	}
+	
+}
+
+void Group::NotifyMainAssist(Client *c, uint8 toggle)
 {
 	// Send a packet to the specified Client notifying them who the new Main Assist is. This causes the client to display
 	// a message with the name of the Main Assist.
@@ -1169,7 +1314,7 @@ void Group::NotifyMainAssist(Client *c)
 
 		grs->RoleNumber = 2;
 
-		grs->Toggle = 1;
+		grs->Toggle = toggle;
 
 		c->QueuePacket(outapp);
 
@@ -1180,53 +1325,184 @@ void Group::NotifyMainAssist(Client *c)
 
 }
 
-void Group::UnDelegateMainAssist(const char *OldMainAssistName)
+void Group::NotifyPuller(Client *c, uint8 toggle)
+{
+	// Send a packet to the specified Client notifying them who the new Puller is. This causes the client to display
+	// a message with the name of the Puller.
+	//
+
+	if(!c)
+		return;
+
+	if(!PullerName.size())
+		return;
+
+	if(c->GetClientVersion() < EQClientSoD)
+	{
+		if(toggle)
+			c->Message(0, "%s is now Puller.", PullerName.c_str());
+		else
+			c->Message(0, "%s is no longer Puller.", PullerName.c_str());
+	}
+	else
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupRoles, sizeof(GroupRole_Struct));
+
+		GroupRole_Struct *grs = (GroupRole_Struct*)outapp->pBuffer;
+
+		strn0cpy(grs->Name1, PullerName.c_str(), sizeof(grs->Name1));
+
+		strn0cpy(grs->Name2, GetLeaderName(), sizeof(grs->Name2));
+
+		grs->RoleNumber = 3;
+
+		grs->Toggle = toggle;
+
+		c->QueuePacket(outapp);
+
+		safe_delete(outapp);
+	}
+
+}
+
+void Group::UnDelegateMainTank(const char *OldMainTankName, uint8 toggle)
+{
+	// Called when the group Leader removes the Main Tank delegation. Sends a packet to each group member in the zone
+	// informing them of the change and update the group_leaders table.
+	//
+	if(OldMainTankName == MainTankName) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = 0;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET maintank='' WHERE gid=%i LIMIT 1",
+								   GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to clear group main tank: %s\n", errbuff);
+
+		safe_delete_array(Query);
+		
+		if(!toggle) {
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+				if(members[i] && members[i]->IsClient())
+					NotifyMainTank(members[i]->CastToClient(), toggle);
+			}
+		}
+
+		MainTankName.clear();
+	}
+}
+
+void Group::UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle)
 {
 	// Called when the group Leader removes the Main Assist delegation. Sends a packet to each group member in the zone
 	// informing them of the change and update the group_leaders table.
 	//
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
+	if(OldMainAssistName == MainAssistName) {
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
-	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
+		DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
 
-	das->DelegateAbility = 0;
+		das->DelegateAbility = 0;
 
-	das->MemberNumber = 0;
+		das->MemberNumber = 0;
 
-	das->Action = 1;
+		das->Action = 1;
 
-	das->EntityID = 0;
+		das->EntityID = 0;
 
-	strn0cpy(das->Name, OldMainAssistName, sizeof(das->Name));
+		strn0cpy(das->Name, OldMainAssistName, sizeof(das->Name));
 
-	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
-		if(members[i] && members[i]->IsClient())
-			members[i]->CastToClient()->QueuePacket(outapp);
+		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+			if(members[i] && members[i]->IsClient())
+				members[i]->CastToClient()->QueuePacket(outapp);
 
-	safe_delete(outapp);
+		safe_delete(outapp);
 
-	char errbuff[MYSQL_ERRMSG_SIZE];
+		char errbuff[MYSQL_ERRMSG_SIZE];
 
-	char *Query = 0;
+		char *Query = 0;
 
-	if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='' WHERE gid=%i LIMIT 1",
-						       GetID()), errbuff))
-		LogFile->write(EQEMuLog::Error, "Unable to clear group main assist: %s\n", errbuff);
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='' WHERE gid=%i LIMIT 1",
+								   GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to clear group main assist: %s\n", errbuff);
 
-	safe_delete_array(Query);
+		safe_delete_array(Query);
+		
+		if(!toggle) {
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+				if(members[i] && members[i]->IsClient())
+					NotifyMainAssist(members[i]->CastToClient(), toggle);
+			}
+		}
 
-	MainAssistName.clear();
+		MainAssistName.clear();
+	}
 }
 
-bool Group::IsMainAssist(Client *c)
+void Group::UnDelegatePuller(const char *OldPullerName, uint8 toggle)
 {
-	// Returns true if the specified client has been delegated the Main Assist role.
+	// Called when the group Leader removes the Puller delegation. Sends a packet to each group member in the zone
+	// informing them of the change and update the group_leaders table.
 	//
-	if(!c)
+	if(OldPullerName == PullerName) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = 0;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET puller='' WHERE gid=%i LIMIT 1",
+								   GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to clear group main puller: %s\n", errbuff);
+
+		safe_delete_array(Query);
+		
+		if(!toggle) {
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+				if(members[i] && members[i]->IsClient())
+					NotifyPuller(members[i]->CastToClient(), toggle);
+			}
+		}
+
+		PullerName.clear();
+	}
+}
+
+bool Group::IsMainTank(Mob *m)
+{
+	// Returns true if the specified group member has been delegated the Main Tank role.
+	//
+	if(!m)
+		return false;
+
+	if(MainTankName.size())
+		return(m->GetName() == MainTankName);
+
+	return false;
+
+}
+
+bool Group::IsMainAssist(Mob *m)
+{
+	// Returns true if the specified group member has been delegated the Main Assist role.
+	//
+	if(!m)
 		return false;
 
 	if(MainAssistName.size())
-		return(c->GetName() == MainAssistName);
+		return(m->GetName() == MainAssistName);
+
+	return false;
+
+}
+
+bool Group::IsPuller(Mob *m)
+{
+	// Returns true if the specified group member has been delegated the Puller role.
+	//
+	if(!m)
+		return false;
+
+	if(PullerName.size())
+		return(m->GetName() == PullerName);
 
 	return false;
 
@@ -1315,6 +1591,9 @@ void Group::NotifyMarkNPC(Client *c)
 	if(!c)
 		return;
 
+	if(!NPCMarkerName.size())
+		return;
+
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
 	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
@@ -1354,6 +1633,9 @@ void Group::UnDelegateMarkNPC(const char *OldNPCMarkerName)
 	if(!OldNPCMarkerName)
 		return;
 
+	if(!NPCMarkerName.size())
+		return;
+		
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
 	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;

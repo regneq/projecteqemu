@@ -1624,7 +1624,7 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 	MYSQL_ROW row;
 
 	strcpy(gu->yourname, c->GetName());
-	GetGroupLeadershipInfo(g->GetID(), gu->leadersname, NULL, NULL, &gu->leader_aas);
+	GetGroupLeadershipInfo(g->GetID(), gu->leadersname, NULL, NULL, NULL, NULL, &gu->leader_aas);
 	gu->NPCMarkerID = g->GetNPCMarkerID();
 
 	int index = 0;
@@ -1647,8 +1647,15 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 
 	c->QueuePacket(outapp);
 	safe_delete(outapp);
-	//g->NotifyMainAssist(c);
-	//g->NotifyMarkNPC(c);
+	
+	if(c->GetClientVersion() >= EQClientSoD) {
+		g->NotifyMainTank(c, 1);
+		g->NotifyPuller(c, 1);
+	}
+
+	g->NotifyMainAssist(c, 1);
+
+	g->NotifyMarkNPC(c);
 	g->NotifyTarget(c);
 	g->SendMarkedNPCsToMember(c);
 

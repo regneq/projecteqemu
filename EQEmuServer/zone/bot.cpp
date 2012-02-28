@@ -13308,23 +13308,27 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						g->members[i]->Say("You have to target a player with a corpse in the zone");
 						return;
 					}
-					else if(summonerlevel < 12) {
-						g->members[i]->Say("I don't have that spell yet.");
-					}
-					else if((summonerlevel > 11) && (summonerlevel < 35)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(2213, t->GetID(), 1, -1, -1);
-						return;
-					}
-					else if((summonerlevel > 34) && (summonerlevel < 71)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
-						return;
-					}
-					else if(summonerlevel > 70) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
-						return;
+					else {
+						g->members[i]->SetTarget(t);
+
+						if(summonerlevel < 12) {
+							g->members[i]->Say("I don't have that spell yet.");
+						}
+						else if((summonerlevel > 11) && (summonerlevel < 35)) {
+							g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+							g->members[i]->CastSpell(2213, t->GetID(), 1, -1, -1);
+							return;
+						}
+						else if((summonerlevel > 34) && (summonerlevel < 71)) {
+							g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+							g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
+							return;
+						}
+						else if(summonerlevel > 70) {
+							g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+							g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
+							return;
+						}
 					}
 				}
 			}
@@ -15042,6 +15046,13 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "load")) {
 		std::string botGroupName = std::string(sep->arg[3]);
+
+		int spawnedBotCount = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
+
+		if(spawnedBotCount >= RuleI(Bots, SpawnBotCount) && !c->GetGM()) {
+			c->Message(0, "You cannot spawn more than %i bots.", spawnedBotCount);
+			return;
+		}
 
 		if(!botGroupName.empty()) {
 			uint32 botGroupId = CanLoadBotGroup(c->CharacterID(), botGroupName, &TempErrorMessage);

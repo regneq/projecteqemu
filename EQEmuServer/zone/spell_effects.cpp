@@ -1510,7 +1510,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Summon Corpse: %d", effect_value);
 #endif
 				// can only summon corpses of clients
-				if(IsClient()) {
+				if(!IsNPC()) {			
 					Client* TargetClient = 0;
 					if(this->GetTarget())
 						TargetClient = this->GetTarget()->CastToClient();

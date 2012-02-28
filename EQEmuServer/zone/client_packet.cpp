@@ -8550,18 +8550,27 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		// If the group leader is not set, pull the group leader infomrmation from the database.
 		if(!group->GetLeader()){
 			char ln[64];
+			char MainTankName[64];
 			char AssistName[64];
+			char PullerName[64];
 			char NPCMarkerName[64];
 			GroupLeadershipAA_Struct GLAA;
 			memset(ln, 0, 64);
-			strcpy(ln, database.GetGroupLeadershipInfo(group->GetID(), ln, AssistName, NPCMarkerName, &GLAA));
+			strcpy(ln, database.GetGroupLeadershipInfo(group->GetID(), ln, MainTankName, AssistName, PullerName, NPCMarkerName, &GLAA));
 			Client *c = entity_list.GetClientByName(ln);
 			if(c)
 				group->SetLeader(c);
 
+			group->SetMainTank(MainTankName);
 			group->SetMainAssist(AssistName);
+			group->SetPuller(PullerName);
 			group->SetNPCMarker(NPCMarkerName);
 			group->SetGroupAAs(&GLAA);
+
+			//group->NotifyMainTank(this, 1);
+			//group->NotifyMainAssist(this, 1);
+			//group->NotifyPuller(this, 1);
+
 			// If we are the leader, force an update of our group AAs to other members in the zone, in case
 			// we purchased a new one while out-of-zone.
 			if(group->IsLeader(this))
@@ -8761,6 +8770,15 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	QueuePacket(outapp);
 	safe_delete(outapp);
 
+	//////////////////////////////////////
+	// Group Roles
+	//
+	//////////////////////////////////////
+	/*if(group){
+			group->NotifyMainTank(this, 1);
+			group->NotifyMainAssist(this, 1);
+			group->NotifyPuller(this, 1);
+	}*/
 
 	SetAttackTimer();
 
@@ -10434,6 +10452,16 @@ void Client::Handle_OP_DelegateAbility(const EQApplicationPacket *app) {
 			g->DelegateMarkNPC(das->Name);
 			break;
 		}
+		case 2:
+		{
+			g->DelegateMainTank(das->Name);
+			break;
+		}
+		case 3:
+		{
+			g->DelegatePuller(das->Name);
+			break;
+		}
 		default:
 			break;
 	}
@@ -11396,18 +11424,40 @@ void Client::Handle_OP_GroupRoles(const EQApplicationPacket *app)
 {
 	GroupRole_Struct *grs = (GroupRole_Struct*)app->pBuffer;
 
-	if(grs->RoleNumber != 2)	// Main Assist
-		return;
-
 	Group *g = GetGroup();
 
 	if(!g)
 		return;
-
-	if(grs->Toggle)
-		g->DelegateMainAssist(grs->Name1);
-	else
-		g->DelegateMainAssist(GetName());
+		
+	switch(grs->RoleNumber)
+	{
+		case 1:   //Main Tank
+		{
+			if(grs->Toggle)
+				g->DelegateMainTank(grs->Name1, grs->Toggle);
+			else
+				g->UnDelegateMainTank(grs->Name1, grs->Toggle);
+			break;
+		}
+		case 2:   //Main Assist
+		{
+			if(grs->Toggle)
+				g->DelegateMainAssist(grs->Name1, grs->Toggle);
+			else
+				g->UnDelegateMainAssist(grs->Name1, grs->Toggle);
+			break;
+		}
+		case 3:   //Puller
+		{
+			if(grs->Toggle)
+				g->DelegatePuller(grs->Name1, grs->Toggle);
+			else
+				g->UnDelegatePuller(grs->Name1, grs->Toggle);
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 void Client::Handle_OP_HideCorpse(const EQApplicationPacket *app)

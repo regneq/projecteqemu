@@ -2084,13 +2084,13 @@ void Database::SetGroupLeaderName(int32 gid, const char* name) {
 	safe_delete_array(query);
 }
 
-char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist, char *marknpc, GroupLeadershipAA_Struct* GLAA){
+char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* maintank, char* assist, char* puller, char *marknpc, GroupLeadershipAA_Struct* GLAA){
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES* result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, assist, marknpc, leadershipaa FROM group_leaders WHERE gid=%lu",(unsigned long)gid),
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, maintank, assist, puller, marknpc, leadershipaa FROM group_leaders WHERE gid=%lu",(unsigned long)gid),
 		     errbuf, &result)) {
 
 		safe_delete_array(query);
@@ -2103,14 +2103,20 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 			if(leaderbuf)
 				strcpy(leaderbuf, row[0]);
 
+			if(maintank)
+				strcpy(maintank, row[1]);
+
 			if(assist)
-				strcpy(assist, row[1]);
+				strcpy(assist, row[2]);
+
+			if(puller)
+				strcpy(puller, row[3]);
 
 			if(marknpc)
-				strcpy(marknpc, row[2]);
+				strcpy(marknpc, row[4]);
 
-			if(GLAA && (Lengths[3] == sizeof(GroupLeadershipAA_Struct)))
-				memcpy(GLAA, row[3], sizeof(GroupLeadershipAA_Struct));
+			if(GLAA && (Lengths[5] == sizeof(GroupLeadershipAA_Struct)))
+				memcpy(GLAA, row[5], sizeof(GroupLeadershipAA_Struct));
 
 			mysql_free_result(result);
 			return leaderbuf;
@@ -2122,8 +2128,14 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 	if(leaderbuf)
 		strcpy(leaderbuf, "UNKNOWN");
 
+	if(maintank)
+		maintank[0] = 0;
+
 	if(assist)
 		assist[0] = 0;
+
+	if(puller)
+		puller[0] = 0;
 
 	if(marknpc)
 		marknpc[0] = 0;

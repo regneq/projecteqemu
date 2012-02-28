@@ -596,7 +596,7 @@ bool logpos;
 
 	void	DamageShield(Mob* other, bool spell_ds=false);
 	bool	FindBuff(int16 spellid);
-	bool	FindType(int8 type, bool bOffensive = false, int16 threshold = 100);
+	bool	FindType(int16 type, bool bOffensive = false, int16 threshold = 100);
 	sint16	GetBuffSlotFromType(int16 type);
 	int16	GetSpellIDFromSlot(int8 slot);
 	int		CountDispellableBuffs();
