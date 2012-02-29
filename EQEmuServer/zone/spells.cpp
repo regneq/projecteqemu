@@ -3130,8 +3130,13 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 					)
 				)
 				{
-					mlog(SPELLS__CASTING_ERR, "Beneficial spell %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
-					Message_StringID(MT_Shout, SPELL_NO_HOLD);
+					if(spells[spell_id].targettype == ST_AEBard) {
+						//if it was a beneficial AE bard song don't spam the window that it would not hold
+						mlog(SPELLS__CASTING_ERR, "Beneficial ae bard song %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
+					} else {
+						mlog(SPELLS__CASTING_ERR, "Beneficial spell %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
+						Message_StringID(MT_Shout, SPELL_NO_HOLD);
+					}
 					safe_delete(action_packet);
 					return false;
 				}
