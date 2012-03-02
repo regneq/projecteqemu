@@ -566,9 +566,8 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender)
 	if(GroupCount() < 3)
 	{
 		UnDelegateMarkNPC(NPCMarkerName.c_str());
-		if(GetLeader()->IsClient()) {
-			if(GetLeader()->CastToClient()->GetClientVersion() < EQClientSoD)
-				UnDelegateMainAssist(MainAssistName.c_str());
+		if(GetLeader() && GetLeader()->IsClient() && GetLeader()->CastToClient()->GetClientVersion() < EQClientSoD) {
+			UnDelegateMainAssist(MainAssistName.c_str());
 		}
 		ClearAllNPCMarks();
 	}

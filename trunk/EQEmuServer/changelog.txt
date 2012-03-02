@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/2/2012==
+Bad_Captain: Fixed potential crash in group roles code when a group member is removed.
+
 ==02/28/2012==
 Sorvani: Added check for ST_AEBard song before sending spell SPELL_NO_HOLD
 Bad_Captain: Implemented Group Roles via UI (SoD+)- Set group roles, maintains across zones, save/load grouprole sets (load doesn't appear to work on UF- may be a client bug as client doesn't send request to the server for saved group roles as SoD client does)
