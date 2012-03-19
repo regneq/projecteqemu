@@ -53,6 +53,8 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	SetRangerAutoWeaponSelect(false);
 	SetHasBeenSummoned(false);
 	SetTaunting(GetClass() == WARRIOR);
+	SetDefaultBotStance();
+	CalcChanceToCast();
 	rest_timer.Disable();
 
 	SetFollowDistance(184);
@@ -127,7 +129,9 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	SetPetChooser(false);
 	SetRangerAutoWeaponSelect(false);
 	SetHasBeenSummoned(false);
-	SetTaunting(GetClass() == WARRIOR);
+	LoadStance();
+	SetTaunting((GetClass() == WARRIOR || GetClass() == PALADIN || GetClass() == SHADOWKNIGHT) && (GetBotStance() == BotStanceAggressive));
+	CalcChanceToCast();
 	rest_timer.Disable();
 
 	SetFollowDistance(184);
@@ -3685,6 +3689,7 @@ bool Bot::Save() {
 	else {
 		SaveBuffs();
 		SavePet();
+		SaveStance();
 	}
 
 	return Result;
@@ -4187,6 +4192,63 @@ void Bot::DeletePetStats(uint32 botPetSaveId) {
 	}
 }
 
+void Bot::LoadStance() {
+	int Result = 0;
+	bool loaded = false;
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select StanceID from botstances where BotID = %u;", GetBotID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			Result = atoi(DataRow[0]);
+			loaded = true;
+			break;
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		// TODO: Record this error message to zone error log
+	}
+
+	if(loaded)
+		SetBotStance((BotStanceType)Result);
+	else 
+		SetDefaultBotStance();
+}
+
+void Bot::SaveStance() {
+	if(_baseBotStance != _botStance) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "REPLACE INTO botstances (BotID, StanceId) VALUES(%u, %u);", GetBotID(), GetBotStance()), TempErrorMessageBuffer)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+			safe_delete(Query);
+			Query = 0;
+		}
+		else {
+			safe_delete(Query);
+			Query = 0;
+		}
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
 bool Bot::Process()
 {
 	_ZP(Bot_Process);
@@ -4658,7 +4720,8 @@ void Bot::AI_Process() {
 		if(HasPet())
 			GetPet()->SetTarget(GetTarget());
 
-		FaceTarget(GetTarget());
+		if(!IsSitting())
+			FaceTarget(GetTarget());
 
 		if(DivineAura())
 			return;
@@ -4764,7 +4827,7 @@ void Bot::AI_Process() {
 					float newY = 0;
 					float newZ = 0;
 
-					if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
+					if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false) && GetArchetype() != ARCHETYPE_CASTER) {
 						CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 						return;
 					}
@@ -4968,8 +5031,11 @@ void Bot::AI_Process() {
 		} // end not in combat range
 
 		if(!IsMoving() && !spellend_timer.Enabled()) {
-			AI_EngagedCastCheck();
-			BotMeditate(false);
+			if(AI_EngagedCastCheck()) {
+				BotMeditate(false);
+			}
+			else if(GetArchetype() == ARCHETYPE_CASTER)
+				BotMeditate(true);
 		}
 	} // end IsEngaged()
 	else {
@@ -5317,6 +5383,12 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 		}
 		else
 			TempCounter++;
+			
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botstances WHERE BotID = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
+			*errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else
+			TempCounter++;
 
 		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM bots WHERE BotID = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
@@ -5324,7 +5396,7 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 		else
 			TempCounter++;
 
-		if(TempCounter == 3)
+		if(TempCounter == 4)
 			Result = true;
 	}
 
@@ -12011,6 +12083,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face|eyes|heritage|tattoo|details <value>] - Change your BOTs appearance.");
 		c->Message(0, "#bot armorcolor <slot> <red> <green> <blue> - #bot help armorcolor for info");
 		c->Message(0, "#bot taunt [on|off] - Turns taunt on/off for targeted bot");
+		c->Message(0, "#bot stance [name] [stance (id)|list] - Sets/lists stance for named bot (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
@@ -15286,7 +15359,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if (c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c))	
 				targetedBot = c->GetTarget()->CastToBot();
 			else
-				c->Message(0, "You must target a bot that you own.");
+				c->Message(13, "You must target a bot that you own.");
 
 			if(targetedBot) {
 				if(targetedBot->GetSkill(TAUNT) > 0) {
@@ -15312,6 +15385,80 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 		}
 			
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "stance")) {
+		Bot* tempBot;
+		std::string botName = std::string(sep->arg[2]);
+		
+		if(!botName.empty())
+			tempBot = entity_list.GetBotByBotName(botName);
+		else
+			c->Message(13, "You must name a valid bot.");
+
+		if(tempBot) {
+			std::string stanceName;
+
+			switch(tempBot->GetBotStance()) {
+				case BotStancePassive: {
+					stanceName = "Passive";
+					break;
+				}
+				case BotStanceBalanced: {
+					stanceName = "Balanced";
+					break;
+				}
+				case BotStanceEfficient: {
+					stanceName = "Efficient";
+					break;
+				}
+				case BotStanceReactive: {
+					stanceName = "Reactive";
+					break;
+				}
+				case BotStanceAggressive: {
+					stanceName = "Aggressive";
+					break;
+				}
+				case BotStanceBurn: {
+					stanceName = "Burn";
+					break;
+				}
+				case BotStanceBurnAE: {
+					stanceName = "BurnAE";
+					break;
+				}
+				default: {
+					stanceName = "None";
+					break;
+				}
+			}
+
+			if(!strcasecmp(sep->arg[3], "list")) {
+				c->Message(0, "Stance for %s: %s.", tempBot->GetCleanName(), stanceName.c_str());
+			}
+			else if(sep->arg[3]) {
+				int stance = atoi(sep->arg[3]);
+
+				if(stance >= MaxStances || stance < 0)
+					c->Message(0, "Usage #bot stance [name] [stance (id)]  (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
+				else {
+					if((BotStanceType)stance != tempBot->GetBotStance()) {
+						tempBot->SetBotStance((BotStanceType)stance);
+						tempBot->CalcChanceToCast();
+						tempBot->Save();
+						c->Message(0, "Stance for %s is now %s.", tempBot->GetCleanName(), stanceName.c_str());
+					}
+				}
+					
+			}
+			else
+				c->Message(13, "You must enter a stance.");
+		}
+		else {
+			c->Message(13, "You must name a valid bot.");
+		}
 		return;
 	}
 
@@ -15363,9 +15510,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
 									return true;
 							}
-							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) &&
-								g->members[i]->GetHPRatio() < 95) 
-							{
+							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) && g->members[i]->GetHPRatio() < 95) {
 								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
@@ -15401,30 +15546,49 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 			if(caster->HasGroup()) {
 				Group *g = caster->GetGroup();
 				
+				float hpRatioToHeal = 25.0f;
+						
+				switch(caster->GetBotStance())
+				{
+					case BotStanceAggressive:
+					case BotStanceEfficient:
+						hpRatioToHeal = 25.0f;
+						break;
+					case BotStanceReactive:
+					case BotStanceBalanced:
+						hpRatioToHeal = 50.0f;
+						break;
+					case BotStanceBurn:
+					case BotStanceBurnAE:
+						hpRatioToHeal = 20.0f;
+						break;
+					default:
+						hpRatioToHeal = 25.0f;
+						break;
+				}
+				
 				if(g) {
 					for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 						if(g->members[i] && !g->members[i]->qglobal) {
-							if(g->members[i]->IsClient() && g->members[i]->GetHPRatio() < 20) {
-								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
-									return true;
-							}
-							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) &&
-								g->members[i]->GetHPRatio() < 20) 
-							{
+							if(g->members[i]->IsClient() && g->members[i]->GetHPRatio() < hpRatioToHeal) {
 								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
-							else if(g->members[i]->GetClass() ==  ENCHANTER && g->members[i]->GetHPRatio() < 20) {
+							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) && g->members[i]->GetHPRatio() < hpRatioToHeal) {
 								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
-							else if(g->members[i]->GetHPRatio() < 20) {
+							else if(g->members[i]->GetClass() ==  ENCHANTER && g->members[i]->GetHPRatio() < hpRatioToHeal) {
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
+									return true;
+							}
+							else if(g->members[i]->GetHPRatio() < hpRatioToHeal/2) {
 								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
 						}
 
-						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->HasPet() && g->members[i]->GetPet()->GetHPRatio() < 20) {
+						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->HasPet() && g->members[i]->GetPet()->GetHPRatio() < 25) {
 							if(g->members[i]->GetPet()->GetOwner() != caster && caster->IsEngaged() && g->members[i]->IsCasting() && g->members[i]->GetClass() != ENCHANTER )
 								continue;
 
@@ -15443,7 +15607,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 	if( iSpellTypes == SpellType_Buff) {
 		// Let's try to make Bard working...
 		if(botCasterClass == BARD) {
-			if(caster->AICastSpell(caster, 100, SpellType_Buff))
+			if(caster->AICastSpell(caster, caster->GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff))
 				return true;
 			else
 				return false;
@@ -15455,10 +15619,10 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 			if(g) {
 				for( int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(g->members[i]) {
-						if(caster->AICastSpell(g->members[i], 100, SpellType_Buff))
+						if(caster->AICastSpell(g->members[i], caster->GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff))
 							return true;
 
-						if(caster->AICastSpell(g->members[i]->GetPet(), 100, SpellType_Buff))
+						if(caster->AICastSpell(g->members[i]->GetPet(), caster->GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff))
 							return true;
 					}
 				}
@@ -15475,25 +15639,14 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 			if(g) {
 				for( int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(g->members[i] && caster->GetNeedsCured(g->members[i])) {
-						if(botCasterClass == BARD) {
-							if(caster->AICastSpell(g->members[i], 100, SpellType_Cure))
-								return true;
-							else
-								return false;
-						}
-
-						if( botCasterClass == CLERIC || botCasterClass == DRUID || botCasterClass == SHAMAN) {
-							if(caster->AICastSpell(g->members[i], 100, SpellType_Cure))
-								return true;
-						}
-						else if( botCasterClass == PALADIN || botCasterClass == RANGER || botCasterClass == SHADOWKNIGHT) {
-							if(caster->AICastSpell(g->members[i], 25, SpellType_Cure))
-								return true;
-						}						
+						if(caster->AICastSpell(g->members[i], caster->GetChanceToCastBySpellType(SpellType_Cure), SpellType_Cure))
+							return true;
+						else if(botCasterClass == BARD)
+							return false;		
 					}
 
 					if(g->members[i] && g->members[i]->GetPet() && caster->GetNeedsCured(g->members[i]->GetPet())) {
-						if(caster->AICastSpell(g->members[i]->GetPet(), 25, SpellType_Cure))
+						if(caster->AICastSpell(g->members[i]->GetPet(), (int)caster->GetChanceToCastBySpellType(SpellType_Cure)/4, SpellType_Cure))
 							return true;
 					}
 				}
@@ -15848,7 +16001,7 @@ uint32 Bot::GetEquipmentColor(int8 material_slot) const
 		if(mysql_num_rows(DatasetResult) == 1) {
 			DataRow = mysql_fetch_row(DatasetResult);
 			if(DataRow)
-				returncolor = atoi(DataRow[0]);
+				returncolor = atol(DataRow[0]);
 		}
 		mysql_free_result(DatasetResult);
 		safe_delete_array(Query);
@@ -16053,6 +16206,39 @@ void Bot::SetHasBeenSummoned(bool wasSummoned) {
 		_preSummonY = 0;
 		_preSummonZ = 0;
 	}
+}
+
+void Bot::SetDefaultBotStance() {
+	BotStanceType defaultStance;
+
+	switch(GetClass())
+	{
+		case DRUID:
+		case CLERIC:
+		case SHAMAN:
+		case ENCHANTER:
+		case NECROMANCER:
+		case MAGICIAN:
+		case WIZARD:
+		case BEASTLORD:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+		case BARD:
+		case SHADOWKNIGHT:
+		case PALADIN:
+		case RANGER:
+			defaultStance = BotStanceBalanced;
+			break;
+		case WARRIOR:
+			defaultStance = BotStanceAggressive;
+			break;
+		default:
+			defaultStance = BotStanceBalanced;
+			break;
+	}
+	_baseBotStance = BotStancePassive;
+	_botStance = defaultStance;
 }
 
 #endif

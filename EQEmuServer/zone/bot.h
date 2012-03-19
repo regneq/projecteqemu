@@ -25,6 +25,37 @@ extern WorldServer worldserver;
 
 const int BotAISpellRange = 100; // TODO: Write a method that calcs what the bot's spell range is based on spell, equipment, AA, whatever and replace this
 const int MaxSpellTimer = 15;
+const int MaxStances = 7;
+const int MaxSpellTypes = 16;
+
+typedef enum BotStanceType {
+	BotStancePassive,
+	BotStanceBalanced,
+	BotStanceEfficient,
+	BotStanceReactive,
+	BotStanceAggressive,
+	BotStanceBurn,
+	BotStanceBurnAE
+};
+
+typedef enum SpellTypeIndex {
+	SpellType_NukeIndex,
+	SpellType_HealIndex,
+	SpellType_RootIndex,
+	SpellType_BuffIndex,
+	SpellType_EscapeIndex,
+	SpellType_PetIndex,
+	SpellType_LifetapIndex,
+	SpellType_SnareIndex,
+	SpellType_DOTIndex,
+	SpellType_DispelIndex,
+	SpellType_InCombatBuffIndex,
+	SpellType_MezIndex,
+	SpellType_CharmIndex,
+	SpellType_SlowIndex,
+	SpellType_DebuffIndex,
+	SpellType_CureIndex
+};
 
 class Bot : public NPC {
 public:
@@ -175,6 +206,8 @@ public:
 	int8 GetNumberNeedingHealedInGroup(int8 hpr, bool includePets);
 	bool GetNeedsCured(Mob *tar);
 	bool HasOrMayGetAggro();
+	void SetDefaultBotStance();
+	void CalcChanceToCast();
 	inline virtual sint16  GetMaxStat();
 	inline virtual sint16  GetMaxResist();
 	inline virtual sint16  GetMaxSTR();
@@ -363,6 +396,8 @@ public:
 	virtual bool IsBot() const { return true; }
 	bool GetRangerAutoWeaponSelect() { return _rangerAutoWeaponSelect; }
 	BotRoleType GetBotRole() { return _botRole; }
+	BotStanceType GetBotStance() { return _botStance; }
+	int8 GetChanceToCastBySpellType(int16 spellType);
 	bool IsGroupPrimaryHealer();
 	bool IsGroupPrimarySlower();
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
@@ -437,6 +472,7 @@ public:
 	// void SetBotOwnerCharacterID(uint32 botOwnerCharacterID) { _botOwnerCharacterID = botOwnerCharacterID; }
 	void SetRangerAutoWeaponSelect(bool enable) { GetClass() == RANGER ? _rangerAutoWeaponSelect = enable : _rangerAutoWeaponSelect = false; }
 	void SetBotRole(BotRoleType botRole) { _botRole = botRole; }
+	void SetBotStance(BotStanceType botStance) { _botStance = botStance; }
 	void SetSpellRecastTimer(int timer_index, sint32 recast_delay);
 	void SetHasBeenSummoned(bool s);
 	void SetPreSummonX(float x) { _preSummonX = x; }
@@ -482,6 +518,8 @@ private:
 	int32 _lastZoneId;
 	bool _rangerAutoWeaponSelect;
 	BotRoleType _botRole;
+	BotStanceType _botStance;
+	BotStanceType _baseBotStance;
 	unsigned int RestRegenHP;
 	unsigned int RestRegenMana;
 	unsigned int RestRegenEndurance;
@@ -495,6 +533,7 @@ private:
 	float _preSummonX;
 	float _preSummonY;
 	float _preSummonZ;
+	int8 _spellCastingChances[MaxStances][MaxSpellTypes];
 
 	// Private "base stats" Members
 	sint16 _baseMR;
@@ -550,6 +589,8 @@ private:
 	void DeletePetItems(uint32 botPetSaveId);
 	void DeletePetStats(uint32 botPetSaveId);
 	void LoadGuildMembership(int32* guildId, int8* guildRank, std::string* guildName);
+	void LoadStance();
+	void SaveStance();
 };
 
 #endif // BOTS
