@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/19/2012==
+Bad_Captain: Bots: Implemented bot stances. See forum post. 
+
+Required SQL:
+utils/sql/svn/2107_required_bot_stances.sql
+
 ==03/2/2012==
 Bad_Captain: Fixed potential crash in group roles code when a group member is removed.
 

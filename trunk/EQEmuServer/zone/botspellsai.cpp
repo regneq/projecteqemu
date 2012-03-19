@@ -308,10 +308,32 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							break;
 					}
 
-					if(botClass == ENCHANTER && this->GetManaRatio() <= 75.0f && IsEffectInSpell(selectedBotSpell.SpellId, SE_Rune))
+					if(botClass == ENCHANTER && IsEffectInSpell(selectedBotSpell.SpellId, SE_Rune))
 					{
-						//If we're at 75% mana or below, don't rune as enchanter
-						break;
+						float manaRatioToCast = 75.0f;
+						
+						switch(this->GetBotStance())
+						{
+							case BotStanceEfficient:
+								manaRatioToCast = 90.0f;
+								break;
+							case BotStanceBalanced:
+							case BotStanceAggressive:
+								manaRatioToCast = 75.0f;
+								break;
+							case BotStanceReactive:
+							case BotStanceBurn:
+							case BotStanceBurnAE:
+								manaRatioToCast = 50.0f;
+								break;
+							default:
+								manaRatioToCast = 75.0f;
+								break;
+						}
+						
+						//If we're at specified mana % or below, don't rune as enchanter
+						if(this->GetManaRatio() <= manaRatioToCast)
+							break;
 					}
 
 					if(CheckSpellRecastTimers(this, itr->SpellIndex))
@@ -366,15 +388,34 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					checked_los = true;
 				}
 
-				if(botClass == CLERIC && this->GetManaRatio() <= 75.0f)
+				if(botClass == CLERIC || botClass == ENCHANTER)
 				{
-					//If we're at 75% mana or below, don't nuke as a cleric or 50% as enchanter
-					break;
-				}
-				if(botClass == ENCHANTER && this->GetManaRatio() <= 50.0f)
-				{
-					//If we're at 75% mana or below, don't nuke as a cleric or 50% as enchanter
-					break;
+					float manaRatioToCast = 75.0f;
+						
+					switch(this->GetBotStance())
+					{
+						case BotStanceEfficient:
+							manaRatioToCast = 90.0f;
+							break;
+						case BotStanceBalanced:
+							manaRatioToCast = 75.0f;
+							break;
+						case BotStanceReactive:
+						case BotStanceAggressive:
+							manaRatioToCast = 50.0f;
+							break;
+						case BotStanceBurn:
+						case BotStanceBurnAE:
+							manaRatioToCast = 25.0f;
+							break;
+						default:
+							manaRatioToCast = 50.0f;
+							break;
+					}
+						
+					//If we're at specified mana % or below, don't nuke as cleric or enchanter
+					if(this->GetManaRatio() <= manaRatioToCast)
+						break;
 				}
 
 				if(botClass == MAGICIAN || botClass == SHADOWKNIGHT || botClass == NECROMANCER || botClass == PALADIN || botClass == RANGER || botClass == DRUID || botClass == CLERIC) {
@@ -648,6 +689,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			break;
 		}
 	}
+
 	return castedSpell;
 }
 
@@ -818,6 +860,7 @@ bool Bot::AI_IdleCastCheck() {
 
 bool Bot::AI_EngagedCastCheck() {
 	bool result = false;
+	bool failedToCast = false;
 
 	if (GetTarget() && AIautocastspell_timer->Check(false)) {
 		_ZP(Bot_AI_Process_engaged_cast);
@@ -825,69 +868,53 @@ bool Bot::AI_EngagedCastCheck() {
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 
 		int8 botClass = GetClass();
-		uint8 botLevel = GetLevel();
-		bool isPrimaryHealer = false;
-		bool isPrimarySlower = false;
+		BotStanceType botStance = GetBotStance();
 		bool mayGetAggro = HasOrMayGetAggro();
 
 		mlog(AI__SPELLS, "Engaged autocast check triggered (BOTS). Trying to cast healing spells then maybe offensive spells.");
 
-		if(HasGroup()) {
-			isPrimaryHealer = IsGroupPrimaryHealer();
-			isPrimarySlower = IsGroupPrimarySlower();
-		}
-
 		if(botClass == CLERIC) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if(!AICastSpell(this, 100, SpellType_Heal)) {
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Heal)) {
-						if(!AICastSpell(GetTarget(), mayGetAggro?0:isPrimaryHealer?25:50, SpellType_Nuke)) {
-							if (!AICastSpell(GetTarget(), 50, SpellType_InCombatBuff)) {
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if(!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, GetChanceToCastBySpellType(SpellType_Heal), BotAISpellRange, SpellType_Heal)) {
+						if(!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+							if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_InCombatBuff), SpellType_InCombatBuff)) {
 								//AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
+								failedToCast = true;
 							}
 						}
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == DRUID) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if(!AICastSpell(this, isPrimaryHealer?100:0, SpellType_Heal)) {
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?100:0, BotAISpellRange, SpellType_Heal)) {
-						if (!AICastSpell(GetTarget(), 25, SpellType_Debuff)) {
-							if(!AICastSpell(this, isPrimaryHealer?0:100, SpellType_Heal)) {
-								if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?0:50, BotAISpellRange, SpellType_Heal)) {
-									if (!AICastSpell(GetTarget(), isPrimaryHealer?25:50, SpellType_DOT)) {
-										if(!AICastSpell(GetTarget(), mayGetAggro?0:isPrimaryHealer?10:25, SpellType_Nuke)) {
-											//AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
-										}
-									}
-								}	
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if(!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, GetChanceToCastBySpellType(SpellType_Heal), BotAISpellRange, SpellType_Heal)) {
+						if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+							if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+								if(!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+									//AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
+									failedToCast = true;
+								}
 							}
 						}
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == SHAMAN) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if (!AICastSpell(GetTarget(), isPrimarySlower?100:50, SpellType_Slow)) {
-					if(!AICastSpell(this, isPrimaryHealer?100:0, SpellType_Heal)) {
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?100:0, BotAISpellRange, SpellType_Heal)) {
-							if (!AICastSpell(GetTarget(), 25, SpellType_Debuff)) {
-								if(!AICastSpell(this, isPrimaryHealer?0:100, SpellType_Heal)) {
-									if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?0:50, BotAISpellRange, SpellType_Heal)) {
-										if (!AICastSpell(GetPet(), isPrimaryHealer?50:100, SpellType_Heal)) {
-											if (!AICastSpell(this, isPrimaryHealer?0:100, SpellType_Pet)) {
-												if (!AICastSpell(GetTarget(), 25, SpellType_DOT)) {
-													if(!AICastSpell(GetTarget(), mayGetAggro?0:isPrimaryHealer?5:25, SpellType_Nuke)) {
-														//AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
-													}
-												}
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Slow), SpellType_Slow)) {
+					if(!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, GetChanceToCastBySpellType(SpellType_Heal), BotAISpellRange, SpellType_Heal)) {
+							if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+								if (!AICastSpell(GetPet(), GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+									if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Pet), SpellType_Pet)) {
+										if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+											if(!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+												//AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
+												failedToCast = true;
 											}
 										}
 									}
@@ -897,44 +924,32 @@ bool Bot::AI_EngagedCastCheck() {
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == RANGER) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if (!AICastSpell(this, isPrimaryHealer?100:0, SpellType_Heal)) {
-					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?100:0, BotAISpellRange, SpellType_Heal)) {
-						if (!AICastSpell(GetTarget(), 25, SpellType_DOT)) {
-							if (!AICastSpell(this, isPrimaryHealer?0:50, SpellType_Heal)) {
-								if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?0:10, BotAISpellRange, SpellType_Heal)) {
-									if (!AICastSpell(GetTarget(), mayGetAggro?0:15, SpellType_Nuke)) {
-										//
-									}
-								}
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, GetChanceToCastBySpellType(SpellType_Heal), BotAISpellRange, SpellType_Heal)) {
+						if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+							if (!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+								//
+								failedToCast = true;
 							}
 						}
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == BEASTLORD) {
-			if (!AICastSpell(GetTarget(), isPrimarySlower?100:50, SpellType_Slow)) {
-				if (!AICastSpell(this, isPrimaryHealer?100:0, SpellType_Heal)) {
-					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?100:0, BotAISpellRange, SpellType_Heal)) {
-						if (!AICastSpell(GetPet(), isPrimaryHealer?0:100, SpellType_Heal)) {
-							if (!AICastSpell(this, 100, SpellType_Pet)) {
-								if (!AICastSpell(GetTarget(), 25, SpellType_DOT)) {
-									if (!AICastSpell(this, isPrimaryHealer?0:50, SpellType_Heal)) {
-										if (!AICastSpell(GetPet(), isPrimaryHealer?100:0, SpellType_Heal)) {
-											if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?0:10, BotAISpellRange, SpellType_Heal)) {
-												if (!AICastSpell(GetTarget(), 15, SpellType_Debuff)) {
-													if(!AICastSpell(GetTarget(), mayGetAggro?0:isPrimaryHealer?5:15, SpellType_Nuke)) {
-														//
-													}
-												}
-											}
+			if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Slow), SpellType_Slow)) {
+				if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, GetChanceToCastBySpellType(SpellType_Heal), BotAISpellRange, SpellType_Heal)) {
+						if (!AICastSpell(GetPet(), GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+							if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Pet), SpellType_Pet)) {
+								if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+									if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+										if(!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+											//
+											failedToCast = true;
 										}
 									}
 								}
@@ -943,42 +958,39 @@ bool Bot::AI_EngagedCastCheck() {
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == WIZARD) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if (!AICastSpell(GetTarget(), mayGetAggro?0:100, SpellType_Nuke)) {
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if (!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
 					//
+					failedToCast = true;
 				}
 			}
-			
-			result = true;
 		}
 		else if(botClass == PALADIN) {
-			if(!AICastSpell(GetTarget(), 25, SpellType_Escape)) {
-				if (!AICastSpell(this, 100, SpellType_Heal)) {
-					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, isPrimaryHealer?100:15, BotAISpellRange, SpellType_Heal)) {
-						if (!AICastSpell(GetTarget(), isPrimaryHealer?5:15, SpellType_Nuke)) {
-							if (!AICastSpell(GetTarget(), 50, SpellType_InCombatBuff)) {
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, GetChanceToCastBySpellType(SpellType_Heal), BotAISpellRange, SpellType_Heal)) {
+						if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+							if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_InCombatBuff), SpellType_InCombatBuff)) {
 								//
+								failedToCast = true;
 							}
 						}
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == SHADOWKNIGHT) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if (!AICastSpell(this, 100, SpellType_Pet)) {
-					if (!AICastSpell(GetTarget(), 100, SpellType_Lifetap)) {
-						if (!AICastSpell(GetPet(), 100, SpellType_Heal)) {
-							if (!AICastSpell(GetTarget(), 25, SpellType_DOT)) {
-								if (!AICastSpell(GetTarget(), 25, SpellType_Debuff)) {
-									if (!AICastSpell(GetTarget(), 25, SpellType_Nuke)) {
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Pet), SpellType_Pet)) {
+					if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Lifetap), SpellType_Lifetap)) {
+						if (!AICastSpell(GetPet(), GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+							if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+								if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+									if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
 										//
+										failedToCast = true;
 									}
 								}
 							}
@@ -986,31 +998,29 @@ bool Bot::AI_EngagedCastCheck() {
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == MAGICIAN) {
-			if (!AICastSpell(this, 100, SpellType_Pet)) {
-				if (!AICastSpell(GetPet(), 100, SpellType_Heal)) {
-					if (!AICastSpell(GetTarget(), 25, SpellType_Debuff)) {
-						if (!AICastSpell(GetTarget(), mayGetAggro?0:100, SpellType_Nuke)) {
+			if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Pet), SpellType_Pet)) {
+				if (!AICastSpell(GetPet(), GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+						if (!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
 							//
+							failedToCast = true;
 						}
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == NECROMANCER) {
-			if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-				if (!AICastSpell(this, 100, SpellType_Pet)) {
-					if (!AICastSpell(GetTarget(), 100, SpellType_Lifetap)) {
-						if (!AICastSpell(GetTarget(), 50, SpellType_DOT)) {
-							if (!AICastSpell(GetPet(), 100, SpellType_Heal)) {
-								if (!AICastSpell(GetTarget(), 50, SpellType_Debuff)) {
-									if (!AICastSpell(GetTarget(), mayGetAggro?0:25, SpellType_Nuke)) {
+			if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+				if (!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Pet), SpellType_Pet)) {
+					if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Lifetap), SpellType_Lifetap)) {
+						if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+							if (!AICastSpell(GetPet(), GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+								if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+									if (!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
 										//
+										failedToCast = true;
 									}
 								}
 							}
@@ -1018,47 +1028,44 @@ bool Bot::AI_EngagedCastCheck() {
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == ENCHANTER) {
-			if (!AICastSpell(GetTarget(), 100, SpellType_Mez)) {
-				if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {
-					if (!AICastSpell(GetTarget(), isPrimarySlower?100:50, SpellType_Slow)) {
-						if (!AICastSpell(GetTarget(), 25, SpellType_Debuff)) {
-							if (!AICastSpell(GetTarget(), mayGetAggro?0:25, SpellType_DOT)) {
-								if (!AICastSpell(GetTarget(), mayGetAggro?0:25, SpellType_Nuke)) {
-									if (!AICastSpell(this, 100, SpellType_Pet)) {
-										//
-									}
+			if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Mez), SpellType_Mez)) {
+				if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {
+					if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Slow), SpellType_Slow)) {
+						if (!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Debuff), SpellType_Debuff)) {
+							if (!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_DOT), SpellType_DOT)) {
+								if (!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {
+									//
+									failedToCast = true;
 								}
 							}
 						}
 					}
 				}
 			}
-
-			result = true;
 		}
 		else if(botClass == BARD) {
-			if(!AICastSpell(this, 100, SpellType_Buff)) {
-				if(!AICastSpell(this, 50, SpellType_Heal)) {
-					if(!AICastSpell(GetTarget(), 50, SpellType_Dispel)) {// Bards will use their debuff songs
-						if(!AICastSpell(GetTarget(), mayGetAggro?0:50, SpellType_Nuke)) {// Bards will use their debuff songs
-							if(!AICastSpell(GetTarget(), 100, SpellType_Escape)) {// Bards will use their debuff songs
+			if(!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff)) {
+				if(!AICastSpell(this, GetChanceToCastBySpellType(SpellType_Heal), SpellType_Heal)) {
+					if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Dispel), SpellType_Dispel)) {// Bards will use their debuff songs
+						if(!AICastSpell(GetTarget(), mayGetAggro?0:GetChanceToCastBySpellType(SpellType_Nuke), SpellType_Nuke)) {// Bards will use their debuff songs
+							if(!AICastSpell(GetTarget(), GetChanceToCastBySpellType(SpellType_Escape), SpellType_Escape)) {// Bards will use their debuff songs
 								//
+								failedToCast = true;
 							}
 						}
 					}	
 				}
 			}
-
-			result = true;
 		}
 
 		if(!AIautocastspell_timer->Enabled()) {
 			AIautocastspell_timer->Start(RandomTimer(100, 250), false);
 		}
+
+		if(!failedToCast)
+			result = true;
 	}
 
 	return result;
@@ -1953,6 +1960,945 @@ bool Bot::CheckSpellRecastTimers(Bot *caster, int SpellIndex) {
 		}
 	}
 	return false;
+}
+
+void Bot::CalcChanceToCast() {
+	int8 castChance = 0;
+
+	for(int i=0; i < MaxStances; i++) {
+		for(int j=0; j < MaxSpellTypes; j++) {
+			_spellCastingChances[i][j] = 0;
+		}
+	}
+	
+	BotStanceType botStance = GetBotStance();
+	int8 botClass = GetClass();
+	bool isPrimaryHealer = false;
+	bool isPrimarySlower = false;
+	
+	if(HasGroup()) {
+		isPrimaryHealer = IsGroupPrimaryHealer();
+		isPrimarySlower = IsGroupPrimarySlower();
+	}
+	
+	//Nuke
+	switch(botClass)
+	{
+		case WIZARD:
+		case MAGICIAN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+				case BotStanceAggressive:
+					castChance = 75;
+					break;
+				case BotStanceEfficient:
+					castChance = 50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 100;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case DRUID:
+		case CLERIC:
+		case PALADIN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimaryHealer?15:25;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimaryHealer?0:15;
+					break;
+				case BotStanceAggressive:
+					castChance = isPrimaryHealer?15:50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimaryHealer?25:50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case ENCHANTER:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?15:25;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?0:15;
+					break;
+				case BotStanceAggressive:
+					castChance = isPrimarySlower?15:50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?25:50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BEASTLORD:
+		case SHAMAN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?isPrimaryHealer?0:5:isPrimaryHealer?10:15;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?isPrimaryHealer?0:0:isPrimaryHealer?5:10;
+					break;
+				case BotStanceAggressive:
+					castChance = isPrimarySlower?isPrimaryHealer?5:15:isPrimaryHealer?15:25;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?isPrimaryHealer?15:25:isPrimaryHealer?25:50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case NECROMANCER:
+		case BARD:
+		case RANGER:
+		case SHADOWKNIGHT:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+				case BotStanceAggressive:
+					castChance = 15;
+					break;
+				case BotStanceEfficient:
+					castChance = 5;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_NukeIndex] = castChance;
+
+	//Heal
+	switch(botClass)
+	{
+		case CLERIC:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceEfficient:
+				case BotStanceReactive:
+					castChance = 100;
+					break;
+				case BotStanceAggressive:
+					castChance = 75;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 50;
+					break;
+				default:
+					castChance = 100;
+					break;
+			}
+			break;
+		case DRUID:
+		case SHAMAN:
+			switch(botStance)
+			{
+				case BotStanceEfficient:
+					castChance = isPrimaryHealer?100:15;
+					break;
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimaryHealer?100:25;
+					break;
+				case BotStanceAggressive:
+					castChance = isPrimaryHealer?75:15;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimaryHealer?50:10;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case NECROMANCER:
+		case MAGICIAN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 100;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = 50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 25;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BARD:
+		case SHADOWKNIGHT:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 50;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = 25;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 15;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BEASTLORD:
+		case PALADIN:
+		case RANGER:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimaryHealer?100:25;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = isPrimaryHealer?75:15;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimaryHealer?50:0;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case ENCHANTER:
+		case WIZARD:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_HealIndex] = castChance;
+
+	//Root
+	castChance = 0;
+	_spellCastingChances[botStance][SpellType_RootIndex] = castChance;
+
+	//Buff
+	castChance = 0;
+	_spellCastingChances[botStance][SpellType_BuffIndex] = castChance;
+
+	//Escape
+	switch(botClass)
+	{
+		case ENCHANTER:
+		case WIZARD:
+		case RANGER:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+				case BotStanceEfficient:
+					castChance = 100;
+					break;
+				case BotStanceAggressive:
+					castChance = 50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 25;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case CLERIC:
+		case DRUID:
+		case SHAMAN:
+		case NECROMANCER:
+		case MAGICIAN:
+		case BARD:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+				case BotStanceEfficient:
+					castChance = 50;
+					break;
+				case BotStanceAggressive:
+					castChance = 25;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 15;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case SHADOWKNIGHT:
+		case PALADIN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 25;
+					break;
+				case BotStanceEfficient:
+					castChance = 15;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 0;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BEASTLORD:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_EscapeIndex] = castChance;
+
+	//Pet
+	switch(botClass)
+	{
+		case MAGICIAN:
+		case NECROMANCER:
+		case BEASTLORD:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 100;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = 50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 25;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case DRUID:
+		case SHAMAN:
+		case ENCHANTER:
+		case SHADOWKNIGHT:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 25;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 10;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BARD:
+		case WIZARD:
+		case CLERIC:
+		case RANGER:
+		case PALADIN:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_PetIndex] = castChance;
+
+	//Lifetap
+	switch(botClass)
+	{
+		case NECROMANCER:
+		case SHADOWKNIGHT:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = 50;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 100;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case MAGICIAN:
+		case BEASTLORD:
+		case DRUID:
+		case SHAMAN:
+		case ENCHANTER:
+		case BARD:
+		case WIZARD:
+		case CLERIC:
+		case RANGER:
+		case PALADIN:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_LifetapIndex] = castChance;
+
+	//Snare
+	castChance = 0;
+	_spellCastingChances[botStance][SpellType_SnareIndex] = castChance;
+
+	//DOT
+	switch(botClass)
+	{
+		case NECROMANCER:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+				case BotStanceAggressive:
+					castChance = 50;
+					break;
+				case BotStanceEfficient:
+					castChance = 25;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 75;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case DRUID:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimaryHealer?15:50;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimaryHealer?10:25;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimaryHealer?25:50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case ENCHANTER:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?15:50;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?10:25;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?25:15;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case SHAMAN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?isPrimaryHealer?0:15:isPrimaryHealer?15:25;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?isPrimaryHealer?0:10:isPrimaryHealer?10:15;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?isPrimaryHealer?15:50:isPrimaryHealer?25:50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BARD:
+		case BEASTLORD:
+		case RANGER:
+		case SHADOWKNIGHT:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?10:15;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?0:10;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?25:50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case MAGICIAN:
+		case PALADIN:
+		case CLERIC:
+		case WIZARD:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_DOTIndex] = castChance;
+
+	//Dispel
+	switch(botClass)
+	{
+		case BARD:
+		case ENCHANTER:
+		case WIZARD:
+		case MAGICIAN:
+		case CLERIC:
+		case DRUID:
+		case SHAMAN:
+		case NECROMANCER:
+		case RANGER:
+		case SHADOWKNIGHT:
+		case PALADIN:
+		case BEASTLORD:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_DispelIndex] = castChance;
+
+	//InCombatBuff
+	switch(botClass)
+	{
+		case CLERIC:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 15;
+					break;
+				case BotStanceEfficient:
+					castChance = 0;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 25;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case PALADIN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 25;
+					break;
+				case BotStanceEfficient:
+					castChance = 0;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 50;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BEASTLORD:
+		case MAGICIAN:
+		case DRUID:
+		case SHAMAN:
+		case ENCHANTER:
+		case BARD:
+		case WIZARD:
+		case NECROMANCER:
+		case SHADOWKNIGHT:
+		case RANGER:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_InCombatBuffIndex] = castChance;
+
+	//Mez
+	switch(botClass)
+	{
+		case ENCHANTER:
+		case BARD:
+			castChance = 100;
+			break;
+		case WIZARD:
+		case CLERIC:
+		case DRUID:
+		case SHAMAN:
+		case NECROMANCER:
+		case MAGICIAN:
+		case RANGER:
+		case SHADOWKNIGHT:
+		case PALADIN:
+		case BEASTLORD:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_MezIndex] = castChance;
+
+	//Charm
+	castChance = 0;
+	_spellCastingChances[botStance][SpellType_CharmIndex] = castChance;
+
+	//Slow
+	switch(botClass)
+	{
+		case ENCHANTER:
+		case SHAMAN:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?100:50;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?100:25;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?50:15;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BARD:
+		case BEASTLORD:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = isPrimarySlower?100:25;
+					break;
+				case BotStanceEfficient:
+					castChance = isPrimarySlower?100:15;
+					break;
+				case BotStanceAggressive:
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = isPrimarySlower?50:0;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case MAGICIAN:
+		case DRUID:
+		case PALADIN:
+		case CLERIC:
+		case WIZARD:
+		case NECROMANCER:
+		case SHADOWKNIGHT:
+		case RANGER:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_SlowIndex] = castChance;
+
+	//Debuff
+	switch(botClass)
+	{
+		case ENCHANTER:
+		case SHAMAN:
+		case MAGICIAN:
+		case DRUID:
+		case NECROMANCER:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 25;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = 15;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 0;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case BARD:
+		case BEASTLORD:
+		case RANGER:
+		case SHADOWKNIGHT:
+			switch(botStance)
+			{
+				case BotStanceBalanced:
+				case BotStanceReactive:
+					castChance = 15;
+					break;
+				case BotStanceEfficient:
+				case BotStanceAggressive:
+					castChance = 10;
+					break;
+				case BotStanceBurn:
+				case BotStanceBurnAE:
+					castChance = 0;
+					break;
+				default:
+					castChance = 0;
+					break;
+			}
+			break;
+		case CLERIC:
+		case PALADIN:
+		case WIZARD:
+		case WARRIOR:
+		case BERSERKER:
+		case MONK:
+		case ROGUE:
+			castChance = 0;
+			break;
+		default:
+			castChance = 0;
+			break;
+	}
+	_spellCastingChances[botStance][SpellType_DebuffIndex] = castChance;
+
+	//Cure
+	castChance = 0;
+	_spellCastingChances[botStance][SpellType_CureIndex] = castChance;
+}
+
+int8 Bot::GetChanceToCastBySpellType(int16 spellType) {
+	int index = 0;
+	int botStance = (int)GetBotStance();
+	int8 chance = 0;
+
+	if(GetBotStance() >= MaxStances)
+		return 0;
+	
+	switch (spellType) {
+		case SpellType_Nuke: {
+			index = SpellType_NukeIndex;
+			break;
+		}
+		case SpellType_Heal: {
+			index = SpellType_HealIndex;
+			break;
+		}
+		case SpellType_Root: {
+			index = SpellType_RootIndex;
+			break;
+		}
+		case SpellType_Buff: {
+			index = SpellType_BuffIndex;
+			break;
+		}
+		case SpellType_Escape: {
+			index = SpellType_EscapeIndex;
+			break;
+		}
+		case SpellType_Pet: {
+			index = SpellType_PetIndex;
+			break;
+		}
+		case SpellType_Lifetap: {
+			index = SpellType_LifetapIndex;
+			break;
+		}
+		case SpellType_Snare: { 
+			index = SpellType_SnareIndex;
+			break;
+		}
+		case SpellType_DOT: {
+			index = SpellType_DOTIndex;
+			break;
+		}
+		case SpellType_Dispel: {
+			index = SpellType_DispelIndex;
+			break;
+		}
+		case SpellType_InCombatBuff: {
+			index = SpellType_InCombatBuffIndex;
+			break;
+		}
+		case SpellType_Mez: {
+			index = SpellType_MezIndex;
+			break;
+		}
+		case SpellType_Charm: {
+			index = SpellType_CharmIndex;
+			break;
+		}
+		case SpellType_Slow: {
+			index = SpellType_SlowIndex;
+			break;
+		}
+		case SpellType_Debuff: {
+			index = SpellType_DebuffIndex;
+			break;
+		}
+		case SpellType_Cure: {
+			index = SpellType_CureIndex;
+			break;
+		}
+	}
+
+	if(index >= MaxSpellTypes)
+		return 0;
+	
+	chance = _spellCastingChances[botStance][index];
+
+	return chance;
 }
 
 #endif
