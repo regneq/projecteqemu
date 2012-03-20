@@ -15346,118 +15346,131 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		bool taunt = false; 
 		bool toggle = false;
 		
-		if(!strcasecmp(sep->arg[2], "on"))
-			taunt = true;
-		else if (!strcasecmp(sep->arg[2], "off"))
-			taunt = false;
-		else
-			toggle = true;
-			
-		Bot* targetedBot;
-		
-		if(c->GetTarget() != NULL) {
-			if (c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c))	
-				targetedBot = c->GetTarget()->CastToBot();
-			else
-				c->Message(13, "You must target a bot that you own.");
-
-			if(targetedBot) {
-				if(targetedBot->GetSkill(TAUNT) > 0) {
-					if(toggle)
-						taunt = !targetedBot->taunting;
-						
-					if(taunt) {
-						if(!targetedBot->taunting)
-							targetedBot->Say("I am now taunting.");
-					}
-					else {
-						if(targetedBot->taunting)
-							targetedBot->Say("I am no longer taunting.");
-					}
-						
-					targetedBot->SetTaunting(taunt);
-				}
-				else
-					c->Message(13, "You must select a bot with the taunt skill.");
-			}
+		if(sep->arg[2]){
+			if(!strcasecmp(sep->arg[2], "on"))
+				taunt = true;
+			else if (!strcasecmp(sep->arg[2], "off"))
+				taunt = false;
 			else {
-				c->Message(13, "You must target a spawned bot.");
+				c->Message(0, "Usage #bot taunt [on|off]");
+				return;
 			}
+				
+			Bot* targetedBot;
+			
+			if(c->GetTarget() != NULL) {
+				if (c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c))	
+					targetedBot = c->GetTarget()->CastToBot();
+				else
+					c->Message(13, "You must target a bot that you own.");
+
+				if(targetedBot) {
+					if(targetedBot->GetSkill(TAUNT) > 0) {
+						if(toggle)
+							taunt = !targetedBot->taunting;
+							
+						if(taunt) {
+							if(!targetedBot->taunting)
+								targetedBot->Say("I am now taunting.");
+						}
+						else {
+							if(targetedBot->taunting)
+								targetedBot->Say("I am no longer taunting.");
+						}
+							
+						targetedBot->SetTaunting(taunt);
+					}
+					else
+						c->Message(13, "You must select a bot with the taunt skill.");
+				}
+				else {
+					c->Message(13, "You must target a spawned bot.");
+				}
+			}
+		}
+		else {
+			c->Message(0, "Usage #bot taunt [on|off]");
 		}
 			
 		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "stance")) {
-		Bot* tempBot;
-		std::string botName = std::string(sep->arg[2]);
-		
-		if(!botName.empty())
-			tempBot = entity_list.GetBotByBotName(botName);
-		else
-			c->Message(13, "You must name a valid bot.");
+		if(sep->argnum == 3){
+			Bot* tempBot;
+			std::string botName = std::string(sep->arg[2]);
+			
+			if(!botName.empty())
+				tempBot = entity_list.GetBotByBotName(botName);
+			else
+				c->Message(13, "You must name a valid bot.");
 
-		if(tempBot) {
-			std::string stanceName;
+			if(tempBot) {
+				std::string stanceName;
+				BotStanceType botStance;
 
-			switch(tempBot->GetBotStance()) {
-				case BotStancePassive: {
-					stanceName = "Passive";
-					break;
+				if(!strcasecmp(sep->arg[3], "list")) {
+					botStance = tempBot->GetBotStance();
 				}
-				case BotStanceBalanced: {
-					stanceName = "Balanced";
-					break;
-				}
-				case BotStanceEfficient: {
-					stanceName = "Efficient";
-					break;
-				}
-				case BotStanceReactive: {
-					stanceName = "Reactive";
-					break;
-				}
-				case BotStanceAggressive: {
-					stanceName = "Aggressive";
-					break;
-				}
-				case BotStanceBurn: {
-					stanceName = "Burn";
-					break;
-				}
-				case BotStanceBurnAE: {
-					stanceName = "BurnAE";
-					break;
-				}
-				default: {
-					stanceName = "None";
-					break;
-				}
-			}
-
-			if(!strcasecmp(sep->arg[3], "list")) {
-				c->Message(0, "Stance for %s: %s.", tempBot->GetCleanName(), stanceName.c_str());
-			}
-			else if(sep->arg[3]) {
-				int stance = atoi(sep->arg[3]);
-
-				if(stance >= MaxStances || stance < 0)
-					c->Message(0, "Usage #bot stance [name] [stance (id)]  (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
 				else {
-					if((BotStanceType)stance != tempBot->GetBotStance()) {
-						tempBot->SetBotStance((BotStanceType)stance);
-						tempBot->CalcChanceToCast();
-						tempBot->Save();
-						c->Message(0, "Stance for %s is now %s.", tempBot->GetCleanName(), stanceName.c_str());
+					int stance = atoi(sep->arg[3]);
+
+					if(stance >= MaxStances || stance < 0){
+						c->Message(0, "Usage #bot stance [name] [stance (id)]  (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
+						return;
+					}
+					else {
+						botStance = (BotStanceType)stance;
+						if(botStance != tempBot->GetBotStance()) {
+							tempBot->SetBotStance(botStance);
+							tempBot->CalcChanceToCast();
+							tempBot->Save();
+						}
 					}
 				}
-					
+
+				switch(botStance) {
+					case BotStancePassive: {
+						stanceName = "Passive";
+						break;
+					}
+					case BotStanceBalanced: {
+						stanceName = "Balanced";
+						break;
+					}
+					case BotStanceEfficient: {
+						stanceName = "Efficient";
+						break;
+					}
+					case BotStanceReactive: {
+						stanceName = "Reactive";
+						break;
+					}
+					case BotStanceAggressive: {
+						stanceName = "Aggressive";
+						break;
+					}
+					case BotStanceBurn: {
+						stanceName = "Burn";
+						break;
+					}
+					case BotStanceBurnAE: {
+						stanceName = "BurnAE";
+						break;
+					}
+					default: {
+						stanceName = "None";
+						break;
+					}
+				}
+				c->Message(0, "Stance for %s: %s.", tempBot->GetCleanName(), stanceName.c_str());
 			}
-			else
-				c->Message(13, "You must enter a stance.");
+			else {
+				c->Message(13, "You must name a valid bot.");
+			}
 		}
 		else {
-			c->Message(13, "You must name a valid bot.");
+			c->Message(0, "Usage #bot stance [name] [stance (id)]  (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
 		}
 		return;
 	}
