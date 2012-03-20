@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==03/19/2012==
+Bad_Captain: Bots: A few fixed for #bot stance command 
+
+==03/19/2012==
 Bad_Captain: Bots: Implemented bot stances. See forum post. 
 
 Required SQL:
