@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==03/24/2012==
+Derision: Corrected spawn packet parsing per post by Razzle on ShowEQ forums.
+
 ==03/19/2012==
 Derision: Support for March 15 2012 client. Credit to fransick and Newby on the ShowEQ forums for the PP and most of the opcode changes.
 
