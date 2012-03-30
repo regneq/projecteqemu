@@ -2913,7 +2913,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 	if(spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
 		return false;
 
-    if(IsDetrimentalSpell(spell_id) && !IsAttackAllowed(spelltar)) {
+    if(IsDetrimentalSpell(spell_id) && !IsAttackAllowed(spelltar) && !IsResurrectionEffects(spell_id)) {
         if(!IsClient() || !CastToClient()->GetGM()) {
             Message_StringID(MT_Shout, SPELL_NO_HOLD);
             return false;
