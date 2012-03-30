@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/29/2012==
+Sorvani: Resurrections effects will again be applied to characters who are in a zone where combat is not allowed (GL, PoK etc) when they receive a rez.
+
 ==03/19/2012==
 Bad_Captain: Bots: A few fixed for #bot stance command 
 
