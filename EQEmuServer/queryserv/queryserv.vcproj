@@ -91,7 +91,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\../Build"
-			IntermediateDirectory=".\../Build/ucs/Release"
+			IntermediateDirectory=".\../Build/queryserv/Release"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib zlib.lib mysqlclient.lib advapi32.lib shell32.lib"
-				OutputFile=".\../Build/Chatserver.exe"
+				OutputFile=".\../Build/queryserv.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -174,23 +174,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\chatchannel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\clientlist.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\database.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ucs.cpp"
+				RelativePath=".\queryserv.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ucsconfig.cpp"
+				RelativePath=".\queryservconfig.cpp"
 				>
 			</File>
 			<File
@@ -204,19 +196,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\chatchannel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\clientlist.h"
-				>
-			</File>
-			<File
 				RelativePath=".\database.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ucsconfig.h"
+				RelativePath=".\queryservconfig.h"
 				>
 			</File>
 			<File
