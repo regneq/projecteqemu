@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/02/2012==
+JJ: Removed additional library and include directories from windows projects as they were not standard locations for all.
+
 ==03/29/2012==
 Sorvani: Resurrections effects will again be applied to characters who are in a zone where combat is not allowed (GL, PoK etc) when they receive a rez.
 
