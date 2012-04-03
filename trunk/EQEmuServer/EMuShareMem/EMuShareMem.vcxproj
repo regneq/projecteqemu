@@ -228,7 +228,7 @@
       <ProgramDataBaseFileName>.\../Build/EMuShareMem/Debug/</ProgramDataBaseFileName>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -243,7 +243,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <ImportLibrary>.\../Build/EMuShareMem.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../perl/CORE;../zlib/lib;../mysql 5.6/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|Win32'">
@@ -282,7 +282,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>.\../Build/EMuShareMem.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../perl/CORE;../zlib/lib;../mysql 5.6/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -306,7 +306,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -322,7 +322,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>.\../Build/EMuShareMem.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../mysql 5.6/lib;../perl/CORE;../zlib/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug x64|x64'">
@@ -346,7 +346,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
@@ -363,7 +363,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>.\../Build/EMuShareMem.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../perl/CORE;../zlib/lib;../mysql 5.6/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -388,7 +388,7 @@
       <ProgramDataBaseFileName>.\../Build/EMuShareMem/Release/</ProgramDataBaseFileName>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat />
-      <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -405,7 +405,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <ImportLibrary>.\../Build/EMuShareMem/EMuShareMem.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../perl/CORE;../zlib/lib;../mysql 5.6/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <OutputFile>.\../Build/EMuShareMem/EMuShareMem.bsc</OutputFile>
@@ -480,7 +480,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>
       </DebugInformationFormat>
-      <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -526,7 +526,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>
       </DebugInformationFormat>
-      <AdditionalIncludeDirectories>../perl/CORE;../zlib/include;../mysql 5.6/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -544,7 +544,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>.\../Build/EMuShareMem/EMuShareMem.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>../perl/CORE;../zlib/lib;../mysql 5.6/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <OutputFile>.\../Build/EMuShareMem/EMuShareMem.bsc</OutputFile>
