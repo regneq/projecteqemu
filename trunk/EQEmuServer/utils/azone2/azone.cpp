@@ -1121,9 +1121,13 @@ void QTBuilder::AddPlaceable(FileLoader *fileloader, char *ZoneFileName, bool Li
 			IniBuffer[StrIndex] = '\0';
 			if(State == ReadingModelNumbers) {
 				ModelNumber = atoi(IniBuffer);
-				if((ModelNumber >= 0) && (ModelNumber <= fileloader->model_data.model_count))
+				if((ModelNumber >= 0) && (ModelNumber < fileloader->model_data.model_count))
+				{
 					fileloader->model_data.models[ModelNumber]->IncludeInMap = true;
 					INIModelCount++;
+				}
+				else
+					printf("ERROR: Specified model %s invalid, must be in range 0 to %i\n", IniBuffer, fileloader->model_data.model_count - 1);
 			}
 			break;
 		}
@@ -1145,9 +1149,13 @@ void QTBuilder::AddPlaceable(FileLoader *fileloader, char *ZoneFileName, bool Li
 			}
 			else  {
 				ModelNumber = atoi(IniBuffer);
-				if((ModelNumber >= 0) && (ModelNumber <= fileloader->model_data.model_count))
+				if((ModelNumber >= 0) && (ModelNumber < fileloader->model_data.model_count))
+				{
 					fileloader->model_data.models[ModelNumber]->IncludeInMap = true;
 					INIModelCount++;
+				}
+				else
+					printf("ERROR: Specified model %s invalid, must be in range 0 to %i\n", IniBuffer, fileloader->model_data.model_count - 1);
 			}
 			continue;
 		}
@@ -1320,8 +1328,10 @@ void QTBuilder::AddPlaceableV4(FileLoader *fileloader, char *ZoneFileName, bool 
 					ModelNumber = atoi(IniBuffer);
 					if(!Group)
 					{
-						if((ModelNumber >= 0) && (ModelNumber <= fileloader->model_data.model_count))
+						if((ModelNumber >= 0) && (ModelNumber < fileloader->model_data.model_count))
 							fileloader->model_data.models[ModelNumber]->IncludeInMap = Exclude ? false : true;
+						else
+							printf("ERROR: Specified model %s invalid, must be in range 0 to %i\n", IniBuffer, fileloader->model_data.model_count - 1);
 					}
 					else
 					{
@@ -1364,8 +1374,10 @@ void QTBuilder::AddPlaceableV4(FileLoader *fileloader, char *ZoneFileName, bool 
 					ModelNumber = atoi(IniBuffer);
 					if(!Group)
 					{
-						if((ModelNumber >= 0) && (ModelNumber <= fileloader->model_data.model_count))
+						if((ModelNumber >= 0) && (ModelNumber < fileloader->model_data.model_count))
 							fileloader->model_data.models[ModelNumber]->IncludeInMap = Exclude ? false : true;
+						else
+							printf("ERROR: Specified model %s invalid, must be in range 0 to %i\n", IniBuffer, fileloader->model_data.model_count - 1);
 					}
 					else
 					{
