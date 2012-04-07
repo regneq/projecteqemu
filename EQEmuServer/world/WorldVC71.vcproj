@@ -316,6 +316,9 @@
 				RelativePath="..\common\patches\HoT.cpp">
 			</File>
 			<File
+				RelativePath="..\common\patches\VoA.cpp">
+			</File>
+			<File
 				RelativePath="..\common\patches\Patches.cpp">
 			</File>
 			<File

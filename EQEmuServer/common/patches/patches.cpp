@@ -9,6 +9,7 @@
 #include "SoF.h"
 #include "SoD.h"
 #include "HoT.h"
+#include "VoA.h"
 
 void RegisterAllPatches(EQStreamIdentifier &into) {
 	Client62::Register(into);
@@ -17,6 +18,7 @@ void RegisterAllPatches(EQStreamIdentifier &into) {
 	SoD::Register(into);
 	Underfoot::Register(into);
 	//HoT::Register(into);
+	//VoA::Register(into);
 }
 
 void ReloadAllPatches() {
@@ -26,23 +28,5 @@ void ReloadAllPatches() {
 	SoD::Reload();
 	Underfoot::Reload();
 	//HoT::Reload();
+	//VoA::Reload();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

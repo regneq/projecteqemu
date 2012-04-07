@@ -603,6 +603,10 @@
 				RelativePath="..\common\patches\Underfoot.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\common\patches\VoA.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Common Source Files"

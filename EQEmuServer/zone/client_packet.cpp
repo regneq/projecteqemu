@@ -532,6 +532,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientHoT;
 		ClientVersionBit = BIT_HoT;
 	}
+	else if(StreamDescription == "Patch VoA")
+	{
+		ClientVersion = EQClientVoA;
+		ClientVersionBit = BIT_VoA;
+	}
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
 	Client* client = entity_list.GetClientByName(cze->char_name);
@@ -8751,6 +8756,13 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	////////////////////////////////////////////////////////////
 	// Task Packets
 	LoadClientTaskState();
+	
+	//if (GetClientVersion() >= EQClientVoA)
+	//{
+	//	outapp = new EQApplicationPacket(OP_ReqNewZone, 0);
+	//	Handle_Connect_OP_ReqNewZone(outapp);
+	//	safe_delete(outapp);
+	//}
 
 	//////////////////////////////////////
 	// Weather Packet

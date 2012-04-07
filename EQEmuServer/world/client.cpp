@@ -116,6 +116,10 @@ Client::Client(EQStreamInterface* ieqs)
 	{
 		ClientVersionBit = BIT_HoT;
 	}
+	else if(StreamDescription == "Patch VoA")
+	{
+		ClientVersionBit = BIT_VoA;
+	}
 }
 
 Client::~Client() {
