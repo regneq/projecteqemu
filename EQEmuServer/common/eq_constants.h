@@ -29,6 +29,7 @@
 #define BIT_SoFAndLater 		0xFFFFFFFC
 #define BIT_SoDAndLater			0xFFFFFFF8
 #define BIT_UnderfootAndLater	0xFFFFFFF0
+#define BIT_HoTAndLater			0xFFFFFFE0
 #define BIT_VoAAndLater			0xFFFFFFC0
 #define BIT_AllClients			0xFFFFFFFF
 
