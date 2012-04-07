@@ -119,6 +119,9 @@
     </ClCompile>
     <ClCompile Include="..\common\patches\HoT.cpp">
       <Filter>Patches</Filter>
+	</ClCompile>
+    <ClCompile Include="..\common\patches\VoA.cpp">
+      <Filter>Patches</Filter>
     </ClCompile>
     <ClCompile Include="..\common\patches\Patches.cpp">
       <Filter>Patches</Filter>
