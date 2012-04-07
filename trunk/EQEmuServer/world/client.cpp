@@ -809,7 +809,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 		case OP_ZoneChange:
 			// HoT sends this to world while zoning and wants it echoed back.
-			if(!eqs->Describe().compare("Patch HoT"))
+			if(ClientVersionBit & BIT_HoTAndLater)
 			{
 				QueuePacket(app);
 			}

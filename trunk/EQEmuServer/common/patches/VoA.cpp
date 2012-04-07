@@ -1078,7 +1078,7 @@ ENCODE(OP_ZoneSpawns) {
 
 		//_log(NET__STRUCTS, "Spawn packet size is %i, entries = %i", in->size, entrycount);
 
-		char *Buffer = (char *) in->pBuffer;
+		char *Buffer = (char *) in->pBuffer, *BufferStart;
 
 		
 		int r;
@@ -1111,7 +1111,7 @@ ENCODE(OP_ZoneSpawns) {
 			float SpawnSize = emu->size;
 			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
 			{
-				PacketSize -= (sizeof(structs::EquipStruct) * 9);
+				PacketSize -= 132;
 
 				if(emu->size == 0)
 				{
@@ -1127,7 +1127,7 @@ ENCODE(OP_ZoneSpawns) {
 
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_ZoneEntry, PacketSize);
 			Buffer = (char *) outapp->pBuffer;
-
+			BufferStart = Buffer;
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
@@ -1258,9 +1258,21 @@ ENCODE(OP_ZoneSpawns) {
 						VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
 					}
 				}
+
+				structs::EquipStruct *Equipment = (structs::EquipStruct *)Buffer;
+
+				for(k = 0; k < 9; k++) {
+					Equipment[k].equip0 = emu->equipment[k];
+					Equipment[k].equip1 = 0;
+					Equipment[k].equip2 = 0;
+					Equipment[k].itemId = 0;
+				}
+
+				Buffer += (sizeof(structs::EquipStruct) * 9);
 			}
 			else
 			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
@@ -1268,25 +1280,14 @@ ENCODE(OP_ZoneSpawns) {
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_PRIMARY]);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_SECONDARY]);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			}
 
-
-			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
-			{
-				structs::EquipStruct *Equipment = (structs::EquipStruct *)Buffer;
-
-				for(k = 0; k < 9; k++) {
-					Equipment[k].equip0 = emu->equipment[k];
-					Equipment[k].equip1 = 0;
-					Equipment[k].itemId = 0;
-				}
-
-				Buffer += (sizeof(structs::EquipStruct) * 9);
-			}
 			if(strlen(emu->title))
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->title);
@@ -1302,21 +1303,18 @@ ENCODE(OP_ZoneSpawns) {
 			//_log(NET__ERROR, "Buffer Now %8X", Buffer);
 
 
-			Buffer += 28; // New for Live Mar 21 2012 client 
-			for(k = 0; k <= 7; k++) {
-					VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
-			}
-			
-			Buffer += 9; // Unknown 8 bytes followed by Merc flag
+			Buffer += 8; 
+			// Buffer should be pointing at Merc flag
+			++Buffer;
 			VARSTRUCT_ENCODE_STRING(Buffer, "0000000000000000");
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
-
-			//Buffer += 29; // New for Live Mar 21 2012 client
-			for(k = 0; k <= 29; k++) {
-					VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			// 29 zero bytes follow
+			Buffer += 29;
+			if(Buffer != (BufferStart + PacketSize))
+			{
+				_log(NET__ERROR, "SPAWN ENCODE LOGIC PROBLEM: Buffer pointer is now %i from end", Buffer - (BufferStart + PacketSize));
 			}
-
 			_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
 			_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);

@@ -177,9 +177,9 @@ struct CharacterSelect_Struct {
 struct EquipStruct {
 /*00*/ uint32 equip0;
 /*04*/ uint32 equip1;
-/*08*/ uint32 itemId;
-/*12*/ // uint32 unknown1;
-/*12*/
+/*08*/ uint32 equip2;
+/*12*/ uint32 itemId;
+/*16*/
 };
 
 
@@ -340,9 +340,7 @@ struct Spawn_Struct
 /*0000*/ //char suffix[0]; // only read if(hasTitleOrSuffix & 8)
 	 char unknown20[8];
 	 uint8 IsMercenary;	// If NPC == 1 and this == 1, then the NPC name is Orange.
-/*0000*/ char unknown21[28]; 
-/*0000*/ char unknown22[26]; 	// Extra 25 bytes for VoA ?
-/*0000*/ char unknownVoA2[37];	// Test for VoA
+/*0000*/ char unknown21[55]; 
 };
 
 
@@ -863,7 +861,6 @@ struct PlayerProfile_Struct
 		} equip;
 		/*00236*/ EquipStruct equipment[9]; //Live Shows [108] for this part
 	 };
-/*00344*/ uint8 unknown00344[36];		// EquipStruct is now 16 bytes instead of 12
 /*00380*/ uint8 unknown00380[220];		// Live Shows [160]
 /*00600*/ Color_Struct item_tint[9];	// RR GG BB 00
 /*00636*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];	// [3600] AAs 12 bytes each
@@ -1161,13 +1158,15 @@ struct ZoneChange_Struct {
 /*000*/	char	char_name[64];     // Character Name
 /*064*/	uint16	zoneID;
 /*066*/	uint16	instanceID;
-/*068*/	float	y;
-/*072*/	float	x;
-/*076*/	float	z;
-/*080*/	int32	zone_reason;	//0x0A == death, I think
-/*084*/	sint32	success;		// =0 client->server, =1 server->client, -X=specific error
-/*088*/ uint32	Unknown088;	// Not sure the extra 4 bytes goes here or earlier in the struct.
-/*092*/
+/*068*/	uint32  Unknown068;
+/*072*/	uint32  Unknown072;
+/*076*/	float	y;
+/*080*/	float	x;
+/*084*/	float	z;
+/*088*/	int32	zone_reason;	//0x0A == death, I think
+/*092*/	sint32	success;		// =0 client->server, =1 server->client, -X=specific error
+/*096*/ uint32	Unknown096;	// Not sure the extra 4 bytes goes here or earlier in the struct.
+/*100*/
 };
 
 struct RequestClientZoneChange_Struct {
