@@ -31,6 +31,16 @@ struct EnterWorld_Struct {
 struct WorldObjectsSent_Struct {
 };
 
+// New for VoA
+struct ItemSlotStruct {
+	sint32	SlotType;	// Worn and Normal inventory = 0, Bank = 1, Shared Bank = 2, Delete Item = -1
+	sint16	MainSlot;	
+	sint16	SubSlot;
+	sint16	AugSlot;	// Guessing - Seen 0xffff
+	sint16	Unknown01;	// Normally 0 - Seen 13262 when deleting an item, but didn't match item ID
+};
+
+
 /* Name Approval Struct */
 /* Len: */
 /* Opcode: 0x8B20*/
@@ -522,7 +532,8 @@ struct CastSpell_Struct
 {
 	int32	slot;
 	int32	spell_id;
-	int32	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
+	//int32	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
+	ItemSlotStruct inventoryslot;
 	int32	target_id;
 	int32    cs_unknown[5];
 };
@@ -1517,7 +1528,8 @@ struct BulkItemPacket_Struct
 
 struct Consume_Struct
 {
-/*0000*/ int32 slot;
+/*0000*/ //int32 slot;
+		 ItemSlotStruct slot;
 /*0004*/ int32 auto_consumed; // 0xffffffff when auto eating e7030000 when right click
 /*0008*/ int8  c_unknown1[4];
 /*0012*/ int8  type; // 0x01=Food 0x02=Water
@@ -1551,23 +1563,13 @@ struct ItemProperties_Struct {
 };
 
 struct DeleteItem_Struct {
-/*0000*/ uint32 from_slot;
-/*0004*/ uint32 to_slot;
+/*0000*/ ItemSlotStruct from_slot;
+/*0004*/ ItemSlotStruct to_slot;
 /*0008*/ uint32 number_in_stack;
 /*0012*/
 };
 
-struct ItemSlotStruct
-{
-	int32	Unknown01;	// Seen 0
-	uint16	MainSlot;	
-	uint16	SubSlot;
-	uint16	Bank;
-	uint16	Unknown02;	// Seen 0
-};
-
-struct MoveItem_Struct
-{
+struct MoveItem_Struct {
 /*0000*/ ItemSlotStruct from_slot;
 /*0004*/ ItemSlotStruct to_slot;
 /*0008*/ uint32 number_in_stack;
@@ -1886,7 +1888,8 @@ struct Merchant_Sell_Struct {
 
 struct Merchant_Purchase_Struct {
 /*000*/	int32	npcid;			// Merchant NPC's entity id
-/*004*/	int32	itemslot;		// Player's entity id
+/*004*/	//int32	itemslot;		// Player's entity id
+		ItemSlotStruct itemslot;
 /*008*/	int32	quantity;
 /*012*/	int32	price;
 };
@@ -1905,7 +1908,8 @@ struct Adventure_Purchase_Struct {
 struct Adventure_Sell_Struct {
 /*000*/	int32	unknown000;	//0x01 - Stack Size/Charges?
 /*004*/	int32	npcid;
-/*008*/	int32	slot;
+/*008*/	//int32	slot;
+		ItemSlotStruct slot;
 /*012*/	int32	charges;
 /*016*/	int32	sell_price;
 };
@@ -2274,7 +2278,7 @@ struct SetDataRate_Struct {
 
 //OP_SetServerFilter
 struct SetServerFilter_Struct {
-	uint32 filters[40];		//see enum eqFilterType [31]
+	uint32 filters[35];		//see enum eqFilterType [31]
 };
 
 //Op_SetServerFilterAck
@@ -2355,7 +2359,8 @@ struct BookText_Struct {
 // or in our case, the 'name' column in our books table.
 struct BookRequest_Struct {
 /*0000*/	uint32 window;		// where to display the text (0xFFFFFFFF means new window).
-/*0004*/	uint32 invslot;		// The inventory slot the book is in. Not used, but echoed in the response packet.
+/*0004*/	//uint32 invslot;		// The inventory slot the book is in. Not used, but echoed in the response packet.
+			ItemSlotStruct invslot;
 /*0008*/	uint32 type;		// 0 = Scroll, 1 = Book, 2 = Item Info. Possibly others
 /*0012*/	uint32 unknown0012;	
 /*0016*/	uint16 unknown0016;
@@ -3156,7 +3161,8 @@ struct TributeInfo_Struct {
 };
 
 struct TributeItem_Struct {
-	int32   slot;
+	//int32   slot;
+	ItemSlotStruct slot;
 	int32   quantity;
 	int32   tribute_master_id;
 	sint32  tribute_points;
@@ -3917,18 +3923,21 @@ struct ExpansionInfo_Struct {
 };
 
 struct ApplyPoison_Struct {
-	uint32 inventorySlot;
+	//uint32 inventorySlot;
+	ItemSlotStruct inventorySlot;
 	uint32 success;
 };
 
 struct ItemVerifyRequest_Struct {
-/*000*/	sint32	slot;		// Slot being Right Clicked
+/*000*/	//sint32	slot;		// Slot being Right Clicked
+		ItemSlotStruct slot;
 /*004*/	uint32	target;		// Target Entity ID
 /*008*/
 };
 
 struct ItemVerifyReply_Struct {
-/*000*/	sint32	slot;		// Slot being Right Clicked
+/*000*/	//sint32	slot;		// Slot being Right Clicked
+		ItemSlotStruct slot;
 /*004*/	uint32	spell;		// Spell ID to cast if different than item effect
 /*008*/	uint32	target;		// Target Entity ID
 /*012*/
