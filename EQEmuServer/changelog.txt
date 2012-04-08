@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/07/2012==
+Trevius: VoA - Identified/corrected some more opcodes.
+Trevius: VoA - Items can now be moved around through all slots.
+Trevius: VoA - Updated structs that use inventory slots to use the new format.  Still need to verify some of the struct changes.
+
+==04/07/2012==
 Trevius: Initial addition of the VoA (March 21 2012) client. To enable, you must uncomment the VoA lines in /common/patches.
 Trevius: Many of the core systems are basically functional, but this client is still in an early development phase and not recommended for normal players yet.
 Trevius: Non-Player Race spawns will cause the client to crash, so it is recommended to test it in an empty zone.

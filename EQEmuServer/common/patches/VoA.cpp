@@ -105,7 +105,7 @@ std::string Strategy::Describe() const {
 
 
 // Converts Titanium Slot IDs to VoA Slot IDs for use in Encodes
-static inline structs::VoASlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
+static inline structs::VoASlotStruct TitaniumToVoASlot2(int32 TitaniumSlot)
 {
 	structs::VoASlotStruct VoASlot;
 
@@ -244,8 +244,121 @@ static inline structs::VoASlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
 	return VoASlot;
 }
 
+// Converts Titanium Slot IDs to VoA Slot IDs for use in Encodes
+static inline structs::ItemSlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
+{
+	structs::ItemSlotStruct VoASlot;
+	VoASlot.SlotType = 0;
+	VoASlot.MainSlot = 0;
+	VoASlot.SubSlot = 0xffff;
+	VoASlot.AugSlot = 0xffff;
+	VoASlot.Unknown01 = 0;
+	int32 TempSlot = 0;
+
+	if (TitaniumSlot < 52)
+	{
+		VoASlot.MainSlot = TitaniumSlot;
+		if (TitaniumSlot == 9999)
+		{
+			VoASlot.MainSlot = 21;
+		}
+		else if (TitaniumSlot > 20)
+		{
+			VoASlot.MainSlot += 1;
+		}
+	}
+	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
+	{
+		TempSlot = TitaniumSlot - 1;
+		VoASlot.MainSlot = int(TempSlot / 10) - 2;
+		VoASlot.SubSlot = TempSlot - ((VoASlot.MainSlot + 2) * 10);
+	}
+	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
+	{
+		VoASlot.SlotType = 1;
+		TempSlot = TitaniumSlot - 2000;
+		VoASlot.MainSlot = TempSlot;
+		if (TempSlot > 30)
+		{
+			VoASlot.MainSlot = int(TempSlot / 10) - 3;
+			VoASlot.SubSlot = TempSlot - ((VoASlot.MainSlot + 3) * 10);
+		}
+	}
+	else if (TitaniumSlot > 2499 && TitaniumSlot < 2551)
+	{
+		VoASlot.SlotType = 2;
+		TempSlot = TitaniumSlot - 2500;
+		VoASlot.MainSlot = TempSlot;
+		if (TempSlot > 30)
+		{
+			VoASlot.MainSlot = int(TempSlot / 10) - 3;
+			VoASlot.SubSlot = TempSlot - ((VoASlot.MainSlot + 3) * 10);
+		}
+	}
+
+	return VoASlot;
+}
+
+static inline int32 VoAToTitaniumSlot(structs::ItemSlotStruct VoASlot)
+{
+	int32 TitaniumSlot = 0;
+	int32 TempSlot = 0;
+
+	if (VoASlot.SlotType == 0 && VoASlot.MainSlot < 33)	// Worn and Personal Inventory
+	{
+		if (VoASlot.MainSlot == 21)
+		{
+			TempSlot = 9999;
+		}
+		else if (VoASlot.MainSlot >= 22)
+		{
+			TempSlot = VoASlot.MainSlot - 1;
+		}
+		else
+		{
+			TempSlot = VoASlot.MainSlot;
+		}
+
+		if (VoASlot.SubSlot >= 0)
+		{
+			TempSlot = ((TempSlot + 3) * 10) + VoASlot.SubSlot + 1;
+		}
+
+		TitaniumSlot = TempSlot;
+	}
+	else if (VoASlot.MainSlot == 33)	// Cursor
+	{
+		TempSlot = 30;
+		if (VoASlot.SubSlot >= 0)
+		{
+			TempSlot = ((TempSlot + 3) * 10) + VoASlot.SubSlot + 1;
+		}
+		TitaniumSlot = TempSlot;
+	}
+	else if (VoASlot.SlotType == 1)		// Bank Slots
+	{
+		TempSlot = VoASlot.MainSlot + 2000;
+		if (VoASlot.SubSlot >= 0)
+		{
+			TempSlot = TempSlot + 30 + VoASlot.SubSlot + 1;
+		}
+		TitaniumSlot = TempSlot;
+	}
+	else if (VoASlot.SlotType == 2)		// Shared Bank Slots
+	{
+		TempSlot = VoASlot.MainSlot + 2500;
+		if (VoASlot.SubSlot >= 0)
+		{
+			TempSlot = TempSlot + 30 + VoASlot.SubSlot + 1;
+		}
+		TitaniumSlot = TempSlot;
+	}
+
+	return TitaniumSlot;
+}
+
 // Converts VoA Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 VoAToTitaniumSlot(int32 VoASlot) {
+static inline int32 VoAToTitaniumSlot2(int32 VoASlot) {
 	int32 TitaniumSlot = 0;
 	
 	if(VoASlot >= 22 && VoASlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
@@ -1818,7 +1931,7 @@ ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	//eq->itemslot = TitaniumToVoASlot(emu->itemslot);	FIXME
+	eq->itemslot = TitaniumToVoASlot(emu->itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -1827,7 +1940,7 @@ ENCODE(OP_ShopPlayerSell) {
 ENCODE(OP_ApplyPoison) {
 	ENCODE_LENGTH_EXACT(ApplyPoison_Struct);
 	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
-	//eq->inventorySlot = TitaniumToVoASlot(emu->inventorySlot);	FIXME
+	eq->inventorySlot = TitaniumToVoASlot(emu->inventorySlot);
 	OUT(success);
 	FINISH_ENCODE();
 }
@@ -1836,8 +1949,8 @@ ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
 
-	//eq->from_slot = TitaniumToVoASlot(emu->from_slot);	FIXME
-	//eq->to_slot = TitaniumToVoASlot(emu->to_slot);	FIXME
+	eq->from_slot = TitaniumToVoASlot(emu->from_slot);
+	eq->to_slot = TitaniumToVoASlot(emu->to_slot);
 	OUT(number_in_stack);
 
 	FINISH_ENCODE();
@@ -1848,8 +1961,8 @@ ENCODE(OP_MoveItem) {
 	ENCODE_LENGTH_EXACT(MoveItem_Struct);
 	SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
 
-	//eq->from_slot = TitaniumToVoASlot(emu->from_slot);	FIXME
-	//eq->to_slot = TitaniumToVoASlot(emu->to_slot);	FIXME
+	eq->from_slot = TitaniumToVoASlot(emu->from_slot);
+	eq->to_slot = TitaniumToVoASlot(emu->to_slot);
 	OUT(number_in_stack);
 	FINISH_ENCODE();
 }
@@ -1858,7 +1971,7 @@ ENCODE(OP_ItemVerifyReply) {
 	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
 	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
 
-	//eq->slot = TitaniumToVoASlot(emu->slot);	FIXME
+	eq->slot = TitaniumToVoASlot(emu->slot);
 	OUT(spell);
 	OUT(target);
 
@@ -1908,7 +2021,7 @@ ENCODE(OP_TributeItem) {
 	ENCODE_LENGTH_EXACT(TributeItem_Struct);
 	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	//eq->slot = TitaniumToVoASlot(emu->slot);	FIXME
+	eq->slot = TitaniumToVoASlot(emu->slot);
 	OUT(quantity);
 	OUT(tribute_master_id);
 	OUT(tribute_points);
@@ -1955,7 +2068,7 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	//eq->invslot = TitaniumToVoASlot(emu->invslot);	FIXME
+	eq->invslot = TitaniumToVoASlot(emu->invslot);
 	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
@@ -2017,7 +2130,7 @@ ENCODE(OP_AdventureMerchantSell) {
 
 	eq->unknown000 = 1;
 	OUT(npcid);
-	//eq->slot = TitaniumToVoASlot(emu->slot);	FIXME
+	eq->slot = TitaniumToVoASlot(emu->slot);
 	OUT(charges);
 	OUT(sell_price);
 
@@ -2883,10 +2996,10 @@ DECODE(OP_MoveItem)
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);
 	SETUP_DIRECT_DECODE(MoveItem_Struct, structs::MoveItem_Struct);
 
-	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot.MainSlot, eq->to_slot.MainSlot);
-
-	emu->from_slot = VoAToTitaniumSlot(eq->from_slot.MainSlot);
-	emu->to_slot = VoAToTitaniumSlot(eq->to_slot.MainSlot);
+	//_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot.MainSlot, eq->to_slot.MainSlot);
+	_log(NET__ERROR, "MoveItem SlotType from %u to %u, MainSlot from %u to %u, SubSlot from %u to %u, AugSlot from %u to %u, Unknown01 from %u to %u, Number %u", eq->from_slot.SlotType, eq->to_slot.SlotType, eq->from_slot.MainSlot, eq->to_slot.MainSlot, eq->from_slot.SubSlot, eq->to_slot.SubSlot, eq->from_slot.AugSlot, eq->to_slot.AugSlot, eq->from_slot.Unknown01, eq->to_slot.Unknown01, eq->number_in_stack);
+	emu->from_slot = VoAToTitaniumSlot(eq->from_slot);
+	emu->to_slot = VoAToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
 	_hex(NET__ERROR, eq, sizeof(structs::MoveItem_Struct));
@@ -3176,7 +3289,7 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = VoAToTitaniumSlot(eq->container_slot);
+	emu->container_slot = VoAToTitaniumSlot2(eq->container_slot);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3185,7 +3298,7 @@ DECODE(OP_AugmentItem) {
 	DECODE_LENGTH_EXACT(structs::AugmentItem_Struct);
 	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
 
-	emu->container_slot = VoAToTitaniumSlot(eq->container_slot);
+	emu->container_slot = VoAToTitaniumSlot2(eq->container_slot);
 	emu->augment_slot = eq->augment_slot;
 
 	FINISH_DIRECT_DECODE();
@@ -3344,13 +3457,14 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	structs::VoASlotStruct slot_id = TitaniumToVoASlot(slot_id_in);
+	structs::ItemSlotStruct slot_id = TitaniumToVoASlot(slot_id_in);
 
 	//hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
-	hdr.unknown008 = slot_id.Bank;
+	hdr.unknown008 = slot_id.SlotType;
 	hdr.main_slot = slot_id.MainSlot;
 	hdr.sub_slot = slot_id.SubSlot;
-	hdr.unknown013 = 0xffff;
+	hdr.unknown013 = slot_id.AugSlot;
+	//hdr.unknown013 = 0xffff;
 	hdr.price = inst->GetPrice();
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
 	hdr.unknown020 = 0;
