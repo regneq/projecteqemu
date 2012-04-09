@@ -75,6 +75,7 @@ E(OP_RequestClientZoneChange)
 E(OP_ZoneChange)
 E(OP_SpawnAppearance)
 E(OP_WearChange)
+E(OP_ShopRequest)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -118,5 +119,6 @@ D(OP_DeleteItem)
 D(OP_ZoneChange)
 D(OP_AugmentItem)
 D(OP_ZoneEntry)
+D(OP_ShopRequest)
 #undef E
 #undef D

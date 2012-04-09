@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==04/07/2012==
+==04/08/2012==
+Trevius: VoA - Identified/corrected some more opcodes and packet structures.
+Trevius: VoA - Merchants now display items for sale, but purchasing is not yet functional.
+
+==04/08/2012==
 Trevius: VoA - Identified/corrected some more opcodes.
 Trevius: VoA - Items can now be moved around through all slots.
 Trevius: VoA - Updated structs that use inventory slots to use the new format.  Still need to verify some of the struct changes.

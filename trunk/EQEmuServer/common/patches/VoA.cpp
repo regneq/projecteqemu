@@ -2856,6 +2856,29 @@ ENCODE(OP_SpawnAppearance)
 	delete in;
 }
 
+ENCODE(OP_ShopRequest)
+{
+	ENCODE_LENGTH_EXACT(Merchant_Click_Struct);
+	SETUP_DIRECT_ENCODE(Merchant_Click_Struct, structs::Merchant_Click_Struct);
+	OUT(npcid);
+	OUT(playerid);
+	OUT(command);
+	OUT(rate);
+	eq->unknown01 = 3;	// Not sure what these values do yet, but list won't display without them
+	eq->unknown02 = 2592000;
+	FINISH_ENCODE();
+}
+
+DECODE(OP_ShopRequest) {
+	DECODE_LENGTH_EXACT(structs::Merchant_Click_Struct);
+	SETUP_DIRECT_DECODE(Merchant_Click_Struct, structs::Merchant_Click_Struct);
+	IN(npcid);
+	IN(playerid);
+	IN(command);
+	IN(rate);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -3460,15 +3483,17 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	structs::ItemSlotStruct slot_id = TitaniumToVoASlot(slot_id_in);
 
 	//hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
-	hdr.unknown008 = slot_id.SlotType;
-	hdr.main_slot = slot_id.MainSlot;
-	hdr.sub_slot = slot_id.SubSlot;
-	hdr.unknown013 = slot_id.AugSlot;
+	hdr.slot_type = (merchant_slot == 0) ? slot_id.SlotType : 9; // 9 is merchant 20 is reclaim items?
+	hdr.main_slot = (merchant_slot == 0) ? slot_id.MainSlot : merchant_slot;
+	hdr.sub_slot = (merchant_slot == 0) ? slot_id.SubSlot : 0xffff;
+	hdr.unknown013 = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
 	//hdr.unknown013 = 0xffff;
 	hdr.price = inst->GetPrice();
-	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
+	//hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
+	hdr.merchant_slot = (merchant_slot == 0) ? 1 : 0xffffffff;
 	hdr.unknown020 = 0;
-	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
+	//hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
+	hdr.instance_id = inst->GetSerialNumber();
 	hdr.unknown028 = 0;
 	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0);
 	hdr.charges = (stackable ? (item->MaxCharges ? 1 : 0) : charges);

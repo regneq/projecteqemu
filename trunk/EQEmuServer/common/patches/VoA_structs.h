@@ -33,11 +33,12 @@ struct WorldObjectsSent_Struct {
 
 // New for VoA
 struct ItemSlotStruct {
-	sint32	SlotType;	// Worn and Normal inventory = 0, Bank = 1, Shared Bank = 2, Delete Item = -1
-	sint16	MainSlot;	
-	sint16	SubSlot;
-	sint16	AugSlot;	// Guessing - Seen 0xffff
-	sint16	Unknown01;	// Normally 0 - Seen 13262 when deleting an item, but didn't match item ID
+/*000*/	sint32	SlotType;	// Worn and Normal inventory = 0, Bank = 1, Shared Bank = 2, Delete Item = -1
+/*004*/	sint16	MainSlot;	
+/*006*/	sint16	SubSlot;
+/*008*/	sint16	AugSlot;	// Guessing - Seen 0xffff
+/*010*/	sint16	Unknown01;	// Normally 0 - Seen 13262 when deleting an item, but didn't match item ID
+/*012*/	
 };
 
 
@@ -1847,8 +1848,11 @@ struct TimeOfDay_Struct {
 struct Merchant_Click_Struct {
 /*000*/ int32	npcid;			// Merchant NPC's entity id
 /*004*/ int32	playerid;
-/*008*/ int32	command;		//1=open, 0=cancel/close
-/*012*/ float	rate;			//cost multiplier, dosent work anymore
+/*008*/ int32	command;		// 1=open, 0=cancel/close
+/*012*/ float	rate;			// cost multiplier, dosent work anymore
+/*016*/ sint32	unknown01;		// Seen 3 from Server or -1 from Client
+/*020*/ sint32	unknown02;		// Seen 2592000 from Server or -1 from Client
+/*024*/ 
 };
 /*
 Unknowns:
@@ -3577,14 +3581,15 @@ struct TaskHistoryReplyData2_Struct {
 };
 
 struct BankerChange_Struct {
-	uint32	platinum;
-	uint32	gold;
-	uint32	silver;
-	uint32	copper;
-	uint32	platinum_bank;
-	uint32	gold_bank;
-	uint32	silver_bank;
-	uint32	copper_bank;
+/*00*/	uint32	platinum;
+/*04*/	uint32	gold;
+/*08*/	uint32	silver;
+/*12*/	uint32	copper;
+/*16*/	uint32	platinum_bank;
+/*20*/	uint32	gold_bank;
+/*24*/	uint32	silver_bank;
+/*28*/	uint32	copper_bank;
+/*32*/
 };
 
 struct LeadershipExpUpdate_Struct {
@@ -3906,8 +3911,7 @@ struct BlockedBuffs_Struct {
 };
 
 //Size 24 Bytes
-struct WorldObfuscator_Struct
-{
+struct WorldObfuscator_Struct {
 /*000*/ uint32 var1;
 /*004*/ uint32 Unknown1;
 /*008*/ uint32 Unknown2;
@@ -3956,7 +3960,7 @@ struct ItemSerializationHeader
 /*000*/	char unknown000[17];	// New for HoT. Looks like a string.
 /*017*/	uint32 stacksize;
 /*021*/	uint32 unknown004;
-/*025*/	uint8  unknown008;
+/*025*/	uint8  slot_type;	// 0 = normal, 1 = bank, 2 = shared bank, 9 = merchant, 20 = ?
 /*026*/	uint16 main_slot;
 /*028*/ uint16 sub_slot;
 /*030*/ uint16 unknown013;	// 0xffff
