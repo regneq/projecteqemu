@@ -4686,6 +4686,13 @@ struct CrystalReclaim_Struct {
 /**/ uint32 amount;
 };
 
+struct MaxCharacters_Struct
+{
+/*000*/ uint32 max_chars;	// Seen 4 on Silver Account (4 characters max)
+/*004*/ uint32 unknown004;	// Seen 0
+/*008*/ uint32 unknown008;	// Seen 0
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

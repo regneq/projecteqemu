@@ -323,6 +323,7 @@ OUTv(OP_SendTitleList, TitleList_Struct);
 //OUTv(OP_ItemLinkText, strlen(itemlink)+14+strlen(charname));
 //OUTv(OP_ItemLinkText, strlen(name2)+68);
 
+OUT(OP_SendMaxCharacters, MaxCharacters_Struct);
 OUT(OP_AAExpUpdate, AAExpUpdate_Struct);
 OUT(OP_Action, Action_Struct);
 OUT(OP_AdventureData, AdventureRequestResponse_Struct);
@@ -633,7 +634,3 @@ void MapOpcodes() {
 #undef OUTz
 
 */
-
-
-
-

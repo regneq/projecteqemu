@@ -1,8 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==04/08/2012==
+==04/09/2012==
 Trevius: VoA - Identified/corrected some more opcodes and packet structures.
 Trevius: VoA - Merchants now display items for sale, but purchasing is not yet functional.
+Trevius: VoA - Added new packet for setting the max number of characters allowed to be created on an account (10 for now).
 
 ==04/08/2012==
 Trevius: VoA - Identified/corrected some more opcodes.
