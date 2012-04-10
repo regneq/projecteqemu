@@ -189,6 +189,12 @@ void Client::SendCharInfo() {
 		cle->SetOnline(CLE_Status_CharSelect);
 	}
 
+	if (ClientVersionBit & BIT_VoAAndLater)
+	{
+		// Can make max char per account into a rule - New to VoA
+		SendMaxCharCreate(10);
+	}
+
 	seencharsel = true;
 
 
@@ -197,6 +203,16 @@ void Client::SendCharInfo() {
 	CharacterSelect_Struct* cs = (CharacterSelect_Struct*)outapp->pBuffer;
 
 	database.GetCharSelectInfo(GetAccountID(), cs);
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
+void Client::SendMaxCharCreate(int max_chars) {
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SendMaxCharacters, sizeof(MaxCharacters_Struct));
+	MaxCharacters_Struct* mc = (MaxCharacters_Struct*)outapp->pBuffer;
+	
+	mc->max_chars = max_chars;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);

@@ -4308,6 +4308,13 @@ struct ExpeditionCompass_Struct
 /*008*/ ExpeditionCompassEntry_Struct entries[0];
 };
 
+struct MaxCharacters_Struct
+{
+/*000*/ uint32 max_chars;	// Seen 4 on Silver Account (4 chars max)
+/*004*/ uint32 unknown004;	// Seen 0
+/*008*/ uint32 unknown008;	// Seen 0
+};
+
 	};	//end namespace structs
 };	//end namespace VoA
 
