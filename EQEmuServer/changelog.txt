@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/11/2012==
+Trevius: VoA - Corrected the Player Profile which should now be perfectly aligned.
+Trevius: VoA - More Opcode and Struct corrections/adjustments.
+
 ==04/09/2012==
 Trevius: VoA - Identified/corrected some more opcodes and packet structures.
 Trevius: VoA - Merchants now display items for sale, but purchasing is not yet functional.

@@ -523,20 +523,20 @@ struct SwapSpell_Struct
 
 struct BeginCast_Struct
 {
-	// len = 8
-/*004*/	int16	caster_id;
-/*006*/	int16	spell_id;
-/*016*/	int32	cast_time;		// in miliseconds
+/*000*/	int16	caster_id;
+/*002*/	int16	spell_id;
+/*004*/	int32	cast_time;		// in miliseconds
+/*008*/	
 };
 
 struct CastSpell_Struct
 {
 	int32	slot;
 	int32	spell_id;
-	//int32	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
-	ItemSlotStruct inventoryslot;
+	int32	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
+	//ItemSlotStruct inventoryslot;
 	int32	target_id;
-	int32    cs_unknown[5];
+	int32	cs_unknown[4];
 };
 
 /*
@@ -984,8 +984,8 @@ struct PlayerProfile_Struct
 /*23540*/ uint32  tribute_points;		// Current tribute points
 /*23544*/ uint32  unknown22340;			// *** Placeholder
 /*23548*/ uint32  tribute_active;		// 0 = off, 1=on
-/*23552*/ Tribute_Struct tributes[MAX_PLAYER_TRIBUTES]; // [60] Current tribute loadout
-/*23612*/ uint8 unknown22348[64];		// was 64
+/*23552*/ Tribute_Struct tributes[MAX_PLAYER_TRIBUTES]; // [40] Current tribute loadout
+/*23592*/ uint8 unknown22348[84];		// was 64
 /*23676*/ double group_leadership_exp;	// Current group lead exp points
 /*23684*/ double raid_leadership_exp;	// Current raid lead AA exp points
 /*23692*/ uint32  group_leadership_points; // Unspent group lead AA points
@@ -1018,7 +1018,7 @@ struct PlayerProfile_Struct
 /*28636*/ uint32 showhelm;				// 0=no, 1=yes
 /*28640*/ uint32 RestTimer;
 /*28644*/ uint8  unknown27452[1036];	// ***Placeholder (2/13/2007) was[1028]or[940]or[1380] - END of Struct 
-/*29680*/ uint8  unknown29680[28];		// was 8
+/*29680*/ uint8  unknown29680[8];		// was 28
 /*29688*/
 };
 /**
@@ -1211,20 +1211,18 @@ struct Action_Struct
 /*02*/	int16 source;			// id of caster
 /*04*/	uint16 level;			// level of caster - Seen 0
 /*06*/  uint32 unknown06;
-/*10*/	uint16 instrument_focus;
-/*12*/	uint16 unknown12;		// seems to always be set to something and it doesn't change between casts except in special cases like changing instrument mods
-/*14*/  uint32 unknown14;       // seen 0
+/*10*/	float instrument_mod;
+/*14*/  uint32 bard_focus_id;      // seen 0
 /*18*/  float knockback_angle;  //seems to go from 0-512 then it rolls over again
 /*22*/  uint32 unknown22;
 /*26*/  uint8 type;
 /*27*/  uint32 damage;
 /*31*/  uint16 unknown31;
-/*33*/	int16 spell;			// spell id being cast
-/*35*/	int8 level2;			// level of caster again? Or maybe the castee
-/*36*/	int8 effect_flag;		// if this is 4, the effect is valid: or if two are sent at the same time?
+/*33*/	int32 spell;			// spell id being cast
+/*37*/	int8 level2;			// level of caster again? Or maybe the castee
+/*38*/	int8 effect_flag;		// if this is 4, the effect is valid: or if two are sent at the same time?
+/*39*/
 };
-
-
 
 // Starting with 2/21/2006, OP_Actions seem to come in pairs, duplicating
 // themselves, with the second one with slightly more information. Maybe this
@@ -1235,27 +1233,24 @@ struct ActionAlt_Struct
 /*02*/	int16 source;			// id of caster
 /*04*/	uint16 level;			// level of caster - Seen 0
 /*06*/  uint32 unknown06;
-/*10*/	uint16 instrument_focus;
-/*12*/	uint16 unknown12;		// seems to always be set to something and it doesn't change between casts except in special cases like changing instrument mods
-/*14*/  uint32 unknown14;       // seen 0
+/*10*/	float instrument_mod;
+/*14*/  uint32 bard_focus_id;      // seen 0
 /*18*/  float knockback_angle;  //seems to go from 0-512 then it rolls over again
 /*22*/  uint32 unknown22;
 /*26*/  uint8 type;
 /*27*/  uint32 damage;
 /*31*/  uint16 unknown31;
-/*33*/	int16 spell;			// spell id being cast
-/*35*/	int8 level2;			// level of caster again? Or maybe the castee
-/*36*/	int8 effect_flag;		// if this is 4, the effect is valid: or if two are sent at the same time?
-/*37*/	int32 unknown37;		// New field to Underfoot - Seen 14
-/*41*/	int8 unknown41;			// New field to Underfoot - Seen 0
-/*42*/	int8 unknown42;			// New field to Underfoot - Seen 0
+/*33*/	int32 spell;			// spell id being cast
+/*37*/	int8 level2;			// level of caster again? Or maybe the castee
+/*38*/	int8 effect_flag;		// if this is 4, the effect is valid: or if two are sent at the same time?
+/*39*/	int32 unknown39;		// New field to Underfoot - Seen 14
 /*43*/	int8 unknown43;			// New field to Underfoot - Seen 0
-/*44*/	int32 unknown44;		// New field to Underfoot - Seen 23
-/*48*/	int32 unknown48;		// New field to Underfoot - Seen -1
-/*52*/	int32 unknown52;		// New field to Underfoot - Seen -1
-/*56*/	int32 unknown56;		// New field to Underfoot - Seen 0
-/*60*/	int32 unknown60;		// New field to Underfoot - Seen 0
-/*64*/
+/*44*/	int8 unknown44;			// New field to Underfoot - Seen 17
+/*45*/	int8 unknown45;			// New field to Underfoot - Seen 0
+/*46*/	sint32 unknown46;		// New field to Underfoot - Seen -1
+/*50*/	int32 unknown50;		// New field to Underfoot - Seen 0
+/*54*/	int16 unknown54;		// New field to Underfoot - Seen 0
+/*56*/
 };
 
 // solar: this is what prints the You have been struck. and the regular
@@ -1664,9 +1659,10 @@ struct moneyOnCorpseStruct {
 struct LootingItem_Struct {
 /*000*/	int32	lootee;
 /*004*/	int32	looter;
-/*008*/	int32	slot_id;
+/*008*/	int16	slot_id;
+/*010*/	int16	unknown10;
 /*012*/	int32	auto_loot;
-/*016*/	int32	unknown16;
+/*016*/	//int32	unknown16;
 /*020*/
 };
 
