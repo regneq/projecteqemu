@@ -248,8 +248,8 @@ static inline structs::VoASlotStruct TitaniumToVoASlot2(int32 TitaniumSlot)
 static inline structs::ItemSlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
 {
 	structs::ItemSlotStruct VoASlot;
-	VoASlot.SlotType = 0;
-	VoASlot.MainSlot = 0;
+	VoASlot.SlotType = 0xffff;
+	VoASlot.MainSlot = 0xffff;
 	VoASlot.SubSlot = 0xffff;
 	VoASlot.AugSlot = 0xffff;
 	VoASlot.Unknown01 = 0;
@@ -257,6 +257,7 @@ static inline structs::ItemSlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
 
 	if (TitaniumSlot < 52)
 	{
+		VoASlot.SlotType = 0;
 		VoASlot.MainSlot = TitaniumSlot;
 		if (TitaniumSlot == 9999)
 		{
@@ -269,6 +270,7 @@ static inline structs::ItemSlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
 	}
 	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
 	{
+		VoASlot.SlotType = 0;
 		TempSlot = TitaniumSlot - 1;
 		VoASlot.MainSlot = int(TempSlot / 10) - 2;
 		VoASlot.SubSlot = TempSlot - ((VoASlot.MainSlot + 2) * 10);
@@ -301,7 +303,7 @@ static inline structs::ItemSlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
 
 static inline int32 VoAToTitaniumSlot(structs::ItemSlotStruct VoASlot)
 {
-	int32 TitaniumSlot = 0;
+	int32 TitaniumSlot = 0xffffffff;
 	int32 TempSlot = 0;
 
 	if (VoASlot.SlotType == 0 && VoASlot.MainSlot < 33)	// Worn and Personal Inventory
@@ -2863,8 +2865,8 @@ ENCODE(OP_CastSpell)
 		OUT(slot);
 	}
 	OUT(spell_id);
-	//eq->inventoryslot = VoAToTitaniumSlot(emu->inventoryslot);
-	OUT(inventoryslot);
+	eq->inventoryslot = TitaniumToVoASlot(emu->inventoryslot);
+	//OUT(inventoryslot);
 	OUT(target_id);
 	FINISH_ENCODE();
 }
@@ -3009,8 +3011,8 @@ DECODE(OP_CastSpell) {
 		IN(slot);
 	}
 	IN(spell_id);
-	//emu->inventoryslot = VoAToTitaniumSlot(eq->inventoryslot);
-	IN(inventoryslot);
+	emu->inventoryslot = VoAToTitaniumSlot(eq->inventoryslot);
+	//IN(inventoryslot);
 	IN(target_id);
 
 	FINISH_DIRECT_DECODE();
@@ -3326,7 +3328,7 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = VoAToTitaniumSlot2(eq->container_slot);
+	emu->container_slot = VoAToTitaniumSlot(eq->container_slot);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3335,7 +3337,7 @@ DECODE(OP_AugmentItem) {
 	DECODE_LENGTH_EXACT(structs::AugmentItem_Struct);
 	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
 
-	emu->container_slot = VoAToTitaniumSlot2(eq->container_slot);
+	emu->container_slot = VoAToTitaniumSlot(eq->container_slot);
 	emu->augment_slot = eq->augment_slot;
 
 	FINISH_DIRECT_DECODE();

@@ -473,7 +473,7 @@ struct MemorizeSpell_Struct {
 int32 slot;     // Spot in the spell book/memorized slot
 int32 spell_id; // Spell id (200 or c8 is minor healing, etc)
 int32 scribing; // 1 if memorizing a spell, set to 0 if scribing to book, 2 if un-memming
-//int32 unknown12;
+int32 unknown12;
 };
 
 /*
@@ -517,8 +517,6 @@ struct SwapSpell_Struct
 {
 	int32 from_slot;
 	int32 to_slot;
-
-
 };
 
 struct BeginCast_Struct
@@ -531,12 +529,12 @@ struct BeginCast_Struct
 
 struct CastSpell_Struct
 {
-	int32	slot;
-	int32	spell_id;
-	int32	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
-	//ItemSlotStruct inventoryslot;
-	int32	target_id;
-	int32	cs_unknown[4];
+/*00*/	int32	slot;
+/*04*/	int32	spell_id;
+/*08*/	ItemSlotStruct inventoryslot;  // slot for clicky item, Seen unknown of 131 = normal cast
+/*20*/	int32	target_id;
+/*24*/	int32	cs_unknown[5];
+/*44*/
 };
 
 /*
@@ -1524,13 +1522,11 @@ struct BulkItemPacket_Struct
 
 struct Consume_Struct
 {
-/*0000*/ //int32 slot;
-		 ItemSlotStruct slot;
-/*0004*/ int32 auto_consumed; // 0xffffffff when auto eating e7030000 when right click
-/*0008*/ int8  c_unknown1[4];
-/*0012*/ int8  type; // 0x01=Food 0x02=Water
-/*0013*/ int8  unknown13[3];
-/*0016*/
+/*0000*/ ItemSlotStruct slot;
+/*0012*/ int32	auto_consumed; // 0xffffffff when auto eating e7030000 when right click
+/*0016*/ int32	c_unknown1;	// Seen 2
+/*0020*/ int32	type; // 0x01=Food 0x02=Water
+/*0024*/
 };
 
 struct ItemNamePacket_Struct {
@@ -1898,6 +1894,115 @@ struct Merchant_DelItem_Struct{
 /*004*/	int32	playerid;		// Player's entity id
 /*008*/	int32	itemslot;
 };
+
+struct AltCurrencyDefinition_Struct {
+    uint32 id;
+    uint32 item_id;
+};
+
+//One packet i didn't include here is the alt currency merchant window.
+//it works much like the adventure merchant window
+//it is formated like: dbstringid|1|dbstringid|count
+//ex for a blank crowns window you would send:
+//999999|1|999999|0
+//any items come after in much the same way adventure merchant items do except there is no theme included
+
+//Server -> Client
+//Populates the initial Alternate Currency Window
+struct AltCurrencyPopulateEntry_Struct
+{
+/*000*/ uint32 currency_number; //corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
+/*004*/ uint32 unknown00; //always 1
+/*008*/ uint32 currency_number2; //always same as currency number
+/*012*/ uint32 item_id; //appears to be the item id
+/*016*/ uint32 item_icon; //actual icon
+/*020*/ uint32 stack_size; //most are set to 1000, the stack size for the item; should match db i think or there will be problems.
+};
+
+struct AltCurrencyPopulate_Struct {
+/*000*/ uint32 opcode; //8 for populate
+/*004*/ uint32 count; //number of entries
+/*008*/ AltCurrencyPopulateEntry_Struct entries[0];
+};
+
+//Server -> Client
+//Updates the value of a specific Alternate Currency
+struct AltCurrencyUpdate_Struct {
+/*000*/ uint32 opcode; //7 for update
+/*004*/ char name[64]; //name of client (who knows why just do it)
+/*068*/ uint32 currency_number; //matches currency_number from populate entry
+/*072*/ uint32 unknown072; //always 1
+/*076*/ uint32 amount; //new amount
+/*080*/ uint32 unknown080; //seen 0
+/*084*/ uint32 unknown084; //seen 0
+};
+
+//Client -> Server 
+//When an item is selected while the alt currency merchant window is open
+struct AltCurrencySelectItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*008*/ uint32 unknown008;
+/*012*/ uint32 unknown012;
+/*016*/ uint32 unknown016;
+/*020*/ uint32 unknown020;
+/*024*/ uint32 unknown024;
+/*028*/ uint32 unknown028;
+/*032*/ uint32 unknown032;
+/*036*/ uint32 unknown036;
+/*040*/ uint32 unknown040;
+/*044*/ uint32 unknown044;
+/*048*/ uint32 unknown048;
+/*052*/ uint32 unknown052;
+/*056*/ uint32 unknown056;
+/*060*/ uint32 unknown060;
+/*064*/ uint32 unknown064;
+/*068*/ uint32 unknown068;
+/*072*/ uint32 unknown072;
+/*076*/ uint32 unknown076;
+};
+
+//Server -> Client
+//As setup it makes it so that item can't be sold to the merchant.
+//eg: "I will give you no doubloons for a cloth cap."
+//Probably also sends amounts somewhere
+struct AltCurrencySelectItemReply_Struct {
+/*000*/ uint32 unknown000; 
+/*004*/ uint8  unknown004; //0xff
+/*005*/ uint8  unknown005; //0xff
+/*006*/ uint8  unknown006; //0xff
+/*007*/ uint8  unknown007; //0xff
+/*008*/ char   item_name[64];
+/*072*/ uint32 unknown074;
+/*076*/ uint32 cost;
+/*080*/ uint32 unknown080;
+/*084*/ uint32 unknown084;
+};
+
+//Client -> Server
+//Requests purchase of a specific item from the vendor
+struct AltCurrencyPurchaseItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 item_id;
+/*008*/ uint32 unknown008; //1
+};
+
+//Client -> Server
+//Reclaims / Create currency button pushed.
+struct AltCurrencyReclaim_Struct {
+/*000*/ uint32 currency_id;
+/*004*/ uint32 unknown004;
+/*008*/ uint32 count;
+/*012*/ uint32 reclaim_flag; //1 = this is reclaim
+};
+
+struct AltCurrencySellItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*008*/ uint32 charges;
+/*012*/ uint32 cost;
+};
+
 struct Adventure_Purchase_Struct {
 /*000*/	int32	some_flag;	//set to 1 generally...
 /*004*/	int32	npcid;
@@ -2240,8 +2345,9 @@ struct Stun_Struct { // 8 bytes total
 };
 
 struct AugmentItem_Struct {
-/*00*/	sint16	container_slot;
-/*02*/	char	unknown02[2];
+/*00*/	//sint16	container_slot;
+/*02*/	//char	unknown02[2];
+		ItemSlotStruct container_slot;
 /*04*/	sint32	augment_slot;
 /*08*/
 };
@@ -3200,8 +3306,9 @@ struct Split_Struct
 **
 */
 struct NewCombine_Struct {
-/*00*/	sint16	container_slot;
-/*02*/	char	unknown02[2];
+/*00*/	//sint16	container_slot;
+/*08*/	ItemSlotStruct container_slot;
+/*02*/	//char	unknown02[2];
 /*04*/
 };
 
@@ -3359,13 +3466,16 @@ struct TaskDescription_Struct {
 /*017*/	char	name[1];	//variable length, 0 terminated
 /*018*/	uint32	unknown18;
 /*022*/	uint32	unknown22;
-/*026*/	char	desc[1];	//variable length, 0 terminated
-/*027*/	uint32	reward_count;   //not sure
-/*031*/	uint32	unknown31;
-/*035*/	uint32	unknown35;
-/*039*/	uint16	unknown39;
-/*041*/	char	reward_link[1];	//variable length, 0 terminated
-/*042*/	uint32	unknown43;  //maybe crystal count?
+/*026*/	uint32	unknown26;
+/*030*/	char	desc[1];	//variable length, 0 terminated
+/*031*/	uint32	reward_count;   //not sure
+/*035*/	int8	unknown31;
+/*036*/	uint32	unknown31;
+/*040*/	uint32	unknown35;
+/*044*/	uint16	unknown39;
+/*046*/	char	reward_link[1];	//variable length, 0 terminated
+/*047*/	uint32	unknown43;  //maybe crystal count?
+/*051*/	
 };
 #endif
 
@@ -3394,14 +3504,16 @@ struct TaskActivity_Struct {
 /*032*/	char mob_name[1];	//variable length, 0 terminated
 /*033*/	char item_name[1];	//variable length, 0 terminated
 /*034*/	uint32	goal_count;
-/*038*/	uint32	unknown38;	//0xFFFFFFFF
-/*042*/	uint32	unknown42;	//0xFFFFFFFF
-/*046*/	uint32	unknown46;  //saw 0x151,0x156
-/*050*/	uint32	unknown50;  //saw 0x404,0
-/*054*/	char activity_name[1];  //variable length, 0 terminated... commonly empty
-/*055*/	uint32	done_count;
-/*059*/	uint32	unknown59;	//=1 except on unknown and terminal activities?
-/*063*/
+/*038*/	uint32	unknown38;	//0xFFFFFFFF or id3 again? Seen 2
+/*042*/	char num_string2[2];  //Numeric String - Seen "-1"
+/*044*/	uint32	unknown42;	//0xFFFFFFFF or id3 again? Seen 2
+/*048*/	char num_string2[1];  //Numeric String, 0 terminated - Seen "-1396" ((Zone ID + 1000) * -1)
+/*049*/	uint32	unknown50;  //saw 0x404,0
+/*053*/	char activity_name[1];  //variable length, 0 terminated... commonly empty
+/*054*/	uint32	done_count;
+/*058*/	uint8	unknown59;	//=1 except on unknown and terminal activities?
+/*059*/	char zone_num_string[1];  //Numeric String for Zone ID, 0 terminated - Seen "396"
+/*060*/
 };
 
 struct TaskHistoryEntry_Struct {
