@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/12/2012==
+Trevius: VoA - Casting Spells and Click Effects on items is now functional.
+
 ==04/11/2012==
 Trevius: VoA - Corrected the Player Profile which should now be perfectly aligned.
 Trevius: VoA - More Opcode and Struct corrections/adjustments.
