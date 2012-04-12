@@ -1869,30 +1869,24 @@ ENCODE(OP_Action) {
 	OUT(target);
 	OUT(source);
 	OUT(level);
-	eq->instrument_focus = emu->bard_focus_id;
+	eq->unknown06 = 0;
+	eq->instrument_mod = emu->instrument_mod;
+	eq->bard_focus_id = emu->bard_focus_id;
 	eq->knockback_angle = emu->sequence;
+	eq->unknown22 = 0;
 	OUT(type);
+	eq->damage = 0;
+	eq->unknown31 = 0;
 	OUT(spell);
 	eq->level2 = eq->level;
 	eq->effect_flag = emu->buff_unknown;
-	eq->unknown37 = 0x01;
-	eq->unknown44 = 0xFFFFFFFF;
-	eq->unknown48 = 0xFFFFFFFF;
-	eq->unknown52 = 0xFFFFFFFF;
-
-	/*OUT(target);
-	OUT(source);
-	OUT(level);
-	OUT(instrument_mod);
-	eq->sequence = emu->sequence;
-	OUT(type);
-	//OUT(damage);
-	OUT(spell);
-	eq->level2 = emu->level;
-	OUT(buff_unknown); // if this is 4, a buff icon is made
-	//eq->unknown0036 = -1;
-	//eq->unknown0040 = -1;
-	//eq->unknown0044 = -1;*/
+	eq->unknown39 = 14;
+	eq->unknown43 = 0;
+	eq->unknown44 = 17;
+	eq->unknown45 = 0;
+	eq->unknown46 = -1;
+	eq->unknown50 = 0;
+	eq->unknown54 = 0;
 	FINISH_ENCODE();
 }
 
@@ -2856,6 +2850,25 @@ ENCODE(OP_SpawnAppearance)
 	delete in;
 }
 
+ENCODE(OP_CastSpell)
+{
+	ENCODE_LENGTH_EXACT(CastSpell_Struct);
+	SETUP_DIRECT_ENCODE(CastSpell_Struct, structs::CastSpell_Struct);
+	if(emu->slot == 10)
+	{
+		eq->slot = 13;
+	}
+	else
+	{
+		OUT(slot);
+	}
+	OUT(spell_id);
+	//eq->inventoryslot = VoAToTitaniumSlot(emu->inventoryslot);
+	OUT(inventoryslot);
+	OUT(target_id);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_ShopRequest)
 {
 	ENCODE_LENGTH_EXACT(Merchant_Click_Struct);
@@ -2996,7 +3009,8 @@ DECODE(OP_CastSpell) {
 		IN(slot);
 	}
 	IN(spell_id);
-	emu->inventoryslot = VoAToTitaniumSlot(eq->inventoryslot);
+	//emu->inventoryslot = VoAToTitaniumSlot(eq->inventoryslot);
+	IN(inventoryslot);
 	IN(target_id);
 
 	FINISH_DIRECT_DECODE();
