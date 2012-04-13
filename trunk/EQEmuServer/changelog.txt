@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==04/13/2012==
 Secrets: VoA - Character Creation is now functional. Fixed creation request struct (opcodes were right), and membership is now sent (characters can now be created!)
 Secrets: VoA - Membership levels are now sent to the client via the SendMembership opcode. Hardcoded to be like older clients for now. Might need bag slots looked into; upon applying this, bag slots & items went missing.
+Secrets: Updated #race command to support races up to 714 (as per the 4/12/2012 client)
 
 ==04/12/2012==
 Trevius: VoA - Casting Spells and Click Effects on items is now functional.
