@@ -4883,6 +4883,10 @@ void Client::Handle_OP_TradeBusy(const EQApplicationPacket *app)
 
 void Client::Handle_OP_BoardBoat(const EQApplicationPacket *app)
 {
+
+	if(app->size <= 5)
+		return;
+
 	char *boatname;
 	boatname = new char[app->size-3];
 	memset(boatname, 0, app->size-3);

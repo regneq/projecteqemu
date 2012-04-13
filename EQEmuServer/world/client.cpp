@@ -193,6 +193,7 @@ void Client::SendCharInfo() {
 	{
 		// Can make max char per account into a rule - New to VoA
 		SendMaxCharCreate(10);
+		SendMembership();
 	}
 
 	seencharsel = true;
@@ -217,6 +218,42 @@ void Client::SendMaxCharCreate(int max_chars) {
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
+
+void Client::SendMembership() {
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SendMembership, sizeof(Membership_Struct));
+	Membership_Struct* mc = (Membership_Struct*)outapp->pBuffer;
+	
+	mc->membership = 2; //Hardcode to gold for now. We don't use anything else.
+	mc->unknown004 = 0x0001ffff;
+	mc->unknown008 = 0x0001ffff;
+	mc->entrysize = 0x15;
+	mc->entries[0] = 1;
+	mc->entries[1] = 1;
+	mc->entries[2] = 1;
+	mc->entries[3] = 1;
+	mc->entries[4] = 1;
+	mc->entries[5] = 1;
+	mc->entries[6] = 1;
+	mc->entries[7] = 1;
+	mc->entries[8] = 1;
+	mc->entries[9] = 1;
+	mc->entries[10] = 1;
+	mc->entries[11] = 1;
+	mc->entries[12] = 1;
+	mc->entries[13] = 1;
+	mc->entries[14] = 1;
+	mc->entries[15] = 1;
+	mc->entries[16] = 1;
+	mc->entries[17] = 1;
+	mc->entries[18] = 1;
+	mc->entries[19] = 1;
+	mc->entries[20] = 1;
+	mc->unknown104 = 0;
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
 
 void Client::SendPostEnterWorld() {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PostEnterWorld, 1);

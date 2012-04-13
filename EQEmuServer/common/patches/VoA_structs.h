@@ -678,7 +678,8 @@ struct CharCreate_Struct
 /*0080*/	int32	drakkin_heritage;
 /*0084*/	int32	drakkin_tattoo;
 /*0088*/	int32	drakkin_details;
-/*0092*/
+/*0092*/	int32	unknown0092;
+/*0096*/
 };
 
 /*
@@ -4157,12 +4158,12 @@ struct ItemBodyStruct
 	uint32 Color;
 	uint32 ItemType;		// New size in March 21 2012 client VoA was int8
 	uint32 Material;
-	uint32 unknown7;
-	uint32 EliteMaterial;
-	uint32 unknown_voa1;	// New to March 21 2012 client
-	uint8 unknown_voa2;		// New to March 21 2012 client
-	float SellRate;
-	sint32 CombatEffects;
+	uint32 unknown7; // Skill type?
+	uint32 EliteMaterial; //324
+	uint32 unknown_voa1; //328	// New to March 21 2012 client
+	uint8 unknown_voa2;	 //0x332	// New to March 21 2012 client
+	float SellRate; // 0x336
+	sint32 CombatEffects; //0x340
 	sint32 Shielding;
 	sint32 StunResist;
 	sint32 StrikeThrough;

@@ -4693,6 +4693,17 @@ struct MaxCharacters_Struct
 /*008*/ uint32 unknown008;	// Seen 0
 };
 
+struct Membership_Struct
+{
+/*000*/ uint32 membership;	// Seen 2 on Gold Account
+/*004*/ uint32 unknown004;	// Seen ff ff 01 00
+/*008*/ uint32 unknown008;	// Seen ff ff 01 01
+/*012*/ uint32 entrysize; // Seen 15 00 00 00
+/*016*/ uint32 entries[21]; //Varies. Seen ff ff ff ff, and 01 00 00 00
+/*104*/ uint32 unknown104;
+};
+
+
 //old structures live here:
 #include "eq_old_structs.h"
 
