@@ -4,6 +4,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Secrets: VoA - Character Creation is now functional. Fixed creation request struct (opcodes were right), and membership is now sent (characters can now be created!)
 Secrets: VoA - Membership levels are now sent to the client via the SendMembership opcode. Hardcoded to be like older clients for now. Might need bag slots looked into; upon applying this, bag slots & items went missing.
 Secrets: Updated #race command to support races up to 714 (as per the 4/12/2012 client)
+Trevius: VoA - Items now display food/drink correctly and consuming them is now functional.
+Trevius: VoA - Items no longer display UKNOWN SKILL for skill mods on some items that don't have skill mods set.
+Trevius: VoA - Items no longer display Prestige on them.
+Trevius: VoA - Buying from merchants is now functional, though selling to merchants is not yet.
+Trevius: VoA - Disabled the Guild Member List temporarily to prevent guilded characters from crashing.
 
 ==04/12/2012==
 Trevius: VoA - Casting Spells and Click Effects on items is now functional.
@@ -29,7 +34,6 @@ Trevius: Non-Player Race spawns will cause the client to crash, so it is recomme
 Trevius: Also, items in the bank will cause it to crash, but normal inventory seems to work fine so far.
 Trevius: You cannot create a character on this client yet, so you must use an existing character.
 Derision: VOA: Fixed zoning. Adjusted spawn encoding.
-
 
 ==04/02/2012==
 JJ: Removed additional library and include directories from windows projects as they were not standard locations for all.
