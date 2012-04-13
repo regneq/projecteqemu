@@ -3050,25 +3050,31 @@ struct SimpleMessage_Struct{
 };
 
 struct GuildMemberEntry_Struct {
-	char	name[1];					//variable length
-	int32	level;						//network byte order
-	int32	banker;						//1=yes, 0=no, network byte order
-	int32	class_;						//network byte order
-	int32	rank;						//network byte order
-	int32	time_last_on;				//network byte order
-	int32	tribute_enable;				//network byte order
-	int32	total_tribute;				//total guild tribute donated, network byte order
-	int32	last_tribute;				//unix timestamp
-	int32	unknown_one;		//unknown, set to one. (network byte order)
-	char	public_note[1];				//variable length.
-	int16	zoneinstance;				//network byte order
-	int16	zone_id;					//network byte order
-/* 42 + strings */
+	char	name[1];			//variable length
+	int8	unknown03[3];		// Seen 0s
+	int32	level;				//network byte order
+	int32	banker;				//1=yes, 0=no, network byte order
+	int32	class_;				//network byte order
+	int8	rank;				//network byte order
+	int32	time_last_on;		//network byte order
+	int32	tribute_enable;		//network byte order
+	int32	total_tribute;		//total guild tribute donated, network byte order
+	int32	last_tribute;		//unix timestamp
+	int8	unknown04[3];		// Seen 0s
+	int8	unknown_one;		//unknown, set to one. (network byte order)
+	char	public_note[1];		//variable length.
+	int16	zoneinstance;		//network byte order - Seen 0s in VoA
+	int16	zone_id;			//network byte order - Seen 0s in VoA
+	int8	unknown05[3];		// Seen 0s
+	int8	unknown_one2;		//unknown, set to one. (network byte order)
+/* 48 + strings */
 };
 
 struct GuildMembers_Struct {	//just for display purposes, this is not actually used in the message encoding.
 	char	player_name[1];		//variable length.
-	int32	count;				//network byte order
+	int8	unknown01[3];		// Seen 00 00 08
+	int32	unknown02;			// Seen 163
+	int8	count;				//network byte order
 	GuildMemberEntry_Struct member[0];
 };
 
@@ -4098,8 +4104,7 @@ struct ItemSerializationHeader
 struct ItemBodyStruct
 {
 	uint32 id;
-	uint8 weight;
-	uint8 unknownVoA1[3];	// Maybe weight is now a uint32
+	sint32 weight;	// Seen an item on Live with -0.1 weight
 	uint8 norent;
 	uint8 nodrop;
 	uint8 attune;
@@ -4135,12 +4140,13 @@ struct ItemBodyStruct
 	uint32 Races;
 	uint32 Deity;
 	sint32 SkillModValue;
-	uint32 unknown5;
-	uint32 SkillModType;
+	sint32 unknown5;		// SkillModType related? seen 0xffffffff for non-skill mod items
+	sint32 SkillModType;
 	uint32 BaneDmgRace;
 	uint32 BaneDmgBody;
 	uint32 BaneDmgRaceAmt;
 	sint32 BaneDmgAmt;
+	uint32 unknown_voa1;	// Position somewhere between SkillModType and Magic
 	uint8 Magic;
 	sint32 CastTime_;
 	uint32 ReqLevel;
@@ -4148,7 +4154,6 @@ struct ItemBodyStruct
 	uint32 RecSkill;
 	uint32 BardType;
 	sint32 BardValue;
-	uint32 UnknownVoA2;	// Not sure of position, but know there is an extra 4 bytes before Delay.
 	uint8 Light;
 	uint8 Delay;
 	uint8 ElemDmgType;
@@ -4156,14 +4161,14 @@ struct ItemBodyStruct
 	uint8 Range;
 	uint32 Damage;
 	uint32 Color;
-	uint32 ItemType;		// New size in March 21 2012 client VoA was int8
+	uint32 unknown_voa2;	// New to March 21 2012 client
+	uint8 ItemType;
 	uint32 Material;
-	uint32 unknown7; // Skill type?
-	uint32 EliteMaterial; //324
-	uint32 unknown_voa1; //328	// New to March 21 2012 client
-	uint8 unknown_voa2;	 //0x332	// New to March 21 2012 client
-	float SellRate; // 0x336
-	sint32 CombatEffects; //0x340
+	uint32 unknown7;
+	uint32 EliteMaterial;
+	uint32 unknown_voa3;	// New to March 21 2012 client
+	float SellRate;
+	sint32 CombatEffects;
 	sint32 Shielding;
 	sint32 StunResist;
 	sint32 StrikeThrough;
@@ -4172,15 +4177,15 @@ struct ItemBodyStruct
 	sint32 SpellShield;
 	sint32 Avoidance;
 	sint32 Accuracy;
-	uint32 CharmFileID; //not sure the point of this; disables all stats on item if > 0
-	uint32	FactionMod1;
-	sint32	FactionAmt1;
-	uint32	FactionMod2;
-	sint32	FactionAmt2;
-	uint32  FactionMod3;
-	sint32	FactionAmt3;
-	uint32  FactionMod4;
-	sint32	FactionAmt4;
+	uint32 CharmFileID;
+	uint32 FactionMod1;
+	sint32 FactionAmt1;
+	uint32 FactionMod2;
+	sint32 FactionAmt2;
+	uint32 FactionMod3;
+	sint32 FactionAmt3;
+	uint32 FactionMod4;
+	sint32 FactionAmt4;
 };
 
 struct AugSlotStruct
@@ -4190,7 +4195,8 @@ struct AugSlotStruct
 	uint8 unknown;
 };
 
-struct ItemSecondaryBodyStruct{
+struct ItemSecondaryBodyStruct
+{
 	uint32 augtype;
 	uint32 augrestrict;
 	AugSlotStruct augslots[5];
@@ -4210,7 +4216,6 @@ struct ItemSecondaryBodyStruct{
 	uint8 booktype;
 	//sint32 filename; filename is either 0xffffffff/0x00000000 or the null term string ex: CREWizardNote\0
 };
-
 
 struct ItemTertiaryBodyStruct
 {
@@ -4257,7 +4262,7 @@ struct ClickEffectStruct
 	uint32 recast;
 	sint32 recast_type;
 	uint32 clickunk5;
-	//uint8 effect_string; //unused
+	//uint8 effect_string;
 	//sint32 clickunk7;
 };
 
@@ -4293,7 +4298,6 @@ struct WornEffectStruct //worn, focus and scroll effect
 
 struct ItemQuaternaryBodyStruct
 {
-
 	uint32 scriptfileid;
 	uint8 quest_item;
 	uint32 unknown15; //0xffffffff - Power Source Capacity? - Now 0x00000000
@@ -4323,7 +4327,6 @@ struct ItemQuaternaryBodyStruct
 	uint32 unknown20;	// Bard Stuff?
 	uint32 unknown21;
 	uint32 unknown22;
-	// VoA 58 bytes
 	uint32 unknown23;
 	uint32 unknown24;
 	uint32 unknown25;

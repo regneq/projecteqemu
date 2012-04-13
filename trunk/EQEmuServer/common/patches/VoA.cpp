@@ -3498,18 +3498,16 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	structs::ItemSlotStruct slot_id = TitaniumToVoASlot(slot_id_in);
 
-	//hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.slot_type = (merchant_slot == 0) ? slot_id.SlotType : 9; // 9 is merchant 20 is reclaim items?
 	hdr.main_slot = (merchant_slot == 0) ? slot_id.MainSlot : merchant_slot;
 	hdr.sub_slot = (merchant_slot == 0) ? slot_id.SubSlot : 0xffff;
 	hdr.unknown013 = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
 	//hdr.unknown013 = 0xffff;
 	hdr.price = inst->GetPrice();
-	//hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
-	hdr.merchant_slot = (merchant_slot == 0) ? 1 : 0xffffffff;
+	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
+	//hdr.merchant_slot = (merchant_slot == 0) ? 1 : 0xffffffff;
 	hdr.unknown020 = 0;
-	//hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
-	hdr.instance_id = inst->GetSerialNumber();
+	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.unknown028 = 0;
 	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0);
 	hdr.charges = (stackable ? (item->MaxCharges ? 1 : 0) : charges);
@@ -3588,7 +3586,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ibs.id = item->ID;
 	ibs.weight = item->Weight;
-	memset(&ibs.unknownVoA1, 0, sizeof(ibs.unknownVoA1));
+	//memset(&ibs.unknownVoA1, 0, sizeof(ibs.unknownVoA1));
 	ibs.norent = item->NoRent;
 	ibs.nodrop = item->NoDrop;
 	ibs.attune = item->Attuneable;
@@ -3625,12 +3623,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Races = item->Races;
 	ibs.Deity = item->Deity;
 	ibs.SkillModValue = item->SkillModValue;
-	ibs.unknown5 = 0;
-	ibs.SkillModType = item->SkillModType;
+	ibs.unknown5 = ((item->SkillModType> 0) ? 0 : 0xffffffff);
+	ibs.SkillModType = (sint8)(item->SkillModType);
 	ibs.BaneDmgRace = item->BaneDmgRace;
 	ibs.BaneDmgBody = item->BaneDmgBody;
 	ibs.BaneDmgRaceAmt = item->BaneDmgRaceAmt;
 	ibs.BaneDmgAmt = item->BaneDmgAmt;
+	ibs.unknown_voa1 = 0;
 	ibs.Magic = item->Magic;
 	ibs.CastTime_ = item->CastTime_;
 	ibs.ReqLevel = item->ReqLevel;
@@ -3638,7 +3637,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.RecSkill = item->RecSkill;
 	ibs.BardType = item->BardType;
 	ibs.BardValue = item->BardValue;
-	ibs.UnknownVoA2 = 0;
 	ibs.Light = item->Light;
 	ibs.Delay = item->Delay;
 	ibs.ElemDmgType = item->ElemDmgType;
@@ -3646,10 +3644,12 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Range = item->Range;
 	ibs.Damage = item->Damage;
 	ibs.Color = item->Color;
+	ibs.unknown_voa2 = 0;
 	ibs.ItemType = item->ItemType;
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
 	ibs.EliteMaterial = item->EliteMaterial;
+	ibs.unknown_voa3 = 0;
 	ibs.SellRate = item->SellRate;
 
 	ibs.CombatEffects = item->CombatEffects;
@@ -3738,6 +3738,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.damage_shield = item->DamageShield;
 	itbs.guildfavor = item->GuildFavor;
 	itbs.augdistil = item->AugDistiller;
+	itbs.unknown3 = 0xffffffff;
 	itbs.no_pet = item->NoPet;
 
 	itbs.potion_belt_enabled = item->PotionBelt;
@@ -3900,7 +3901,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	iqbs.scriptfileid = item->ScriptFileID;
 	iqbs.quest_item = item->QuestItemFlag;
 	iqbs.unknown15 = 0;
-
 	iqbs.Purity = item->Purity;
 	iqbs.BackstabDmg = item->BackstabDmg;
 	iqbs.DSMitigation = item->DSMitigation;
@@ -3920,6 +3920,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	iqbs.HealAmt = item->HealAmt;
 	iqbs.SpellDmg = item->SpellDmg;
 	iqbs.clairvoyance = item->Clairvoyance;
+	iqbs.unknown28 = 0xffffffff;
+	iqbs.unknown30 = 0xffffffff;
+	iqbs.unknown39 = 1;
 
 	iqbs.subitem_count = 0;
 
