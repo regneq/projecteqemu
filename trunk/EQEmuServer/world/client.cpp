@@ -222,33 +222,57 @@ void Client::SendMaxCharCreate(int max_chars) {
 void Client::SendMembership() {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SendMembership, sizeof(Membership_Struct));
 	Membership_Struct* mc = (Membership_Struct*)outapp->pBuffer;
+
+	/*
+		The remaining entry fields probably hold more membership restriction data that needs to be identified.
+		Here is a possible list based on the EQ Website membership comparison list:
+		1. Spell Ranks Allowed
+		2. Prestige Items Usable
+		3. In-Game Mail Service (send/recieve)
+		4. Parcel Delivery (send/recieve)
+		5. Loyalty Rewards Per-Week (30, 60, Max)
+		6. Mercenary Tiers (Apprentice 1-2, Apprentice All Tiers, All Tiers)
+		7. Neighborhood House
+		8. Shared Bank Slots
+		9. Active Journal Quests (Tasks?) (10, 15, Max)
+		10. Guild Function (join, join and create)
+		11. Broker System (restricted, unlimited)
+		12. Voice Chat
+		13. Chat Ability
+		14. Progression Server
+		15. Customer Support
+		16. In-Game Popup Advertising
+
+		That is 16 possible fields, and there are 16 unknowns in the struct...Coincidence?
+	*/
 	
-	mc->membership = 2; //Hardcode to gold for now. We don't use anything else.
-	mc->unknown004 = 0x0001ffff;
-	mc->unknown008 = 0x0001ffff;
-	mc->entrysize = 0x15;
-	mc->entries[0] = 1;
-	mc->entries[1] = 1;
-	mc->entries[2] = 1;
-	mc->entries[3] = 1;
-	mc->entries[4] = 1;
-	mc->entries[5] = 1;
-	mc->entries[6] = 1;
-	mc->entries[7] = 1;
-	mc->entries[8] = 1;
-	mc->entries[9] = 1;
-	mc->entries[10] = 1;
-	mc->entries[11] = 1;
-	mc->entries[12] = 1;
-	mc->entries[13] = 1;
-	mc->entries[14] = 1;
-	mc->entries[15] = 1;
-	mc->entries[16] = 1;
-	mc->entries[17] = 1;
-	mc->entries[18] = 1;
-	mc->entries[19] = 1;
-	mc->entries[20] = 1;
-	mc->unknown104 = 0;
+	mc->membership = 2;				//Hardcode to gold for now. We don't use anything else.
+	mc->races = 0x1ffff;			// Available Races (4110 for silver)
+	mc->classes = 0x101ffff;		// Available Classes (4614 for silver)
+	mc->entrysize = 21;				// Number of membership setting entries below
+	mc->entries[0] = 0xffffffff;	// Max AA Restriction
+	mc->entries[1] = 0xffffffff;	// Max Level Restriction
+	mc->entries[2] = 10;			// Max Char Slots per Account (not used by client?)
+	mc->entries[3] = 1;				// 1 for Silver
+	mc->entries[4] = 8;				// Main Inventory Size (number of Bag Slots)
+	mc->entries[5] = 0xffffffff;	// Max Platinum per level
+	mc->entries[6] = 1;				// 0 for Silver
+	mc->entries[7] = 1;				// 0 for Silver
+	mc->entries[8] = 1;				// 1 for Silver
+	mc->entries[9] = 5;				// Unknown - Maybe Loyalty Points every 12 hours? 60 per week for Silver
+	mc->entries[10] = 1;			// 1 for Silver
+	mc->entries[11] = 2;			// Shared Bank Slots
+	mc->entries[12] = 14;			// Unknown - Maybe Max Active Tasks? 
+	mc->entries[13] = 1;			// 1 for Silver
+	mc->entries[14] = 1;			// 0 for Silver
+	mc->entries[15] = 1;			// 0 for Silver
+	mc->entries[16] = 1;			// 1 for Silver
+	mc->entries[17] = 1;			// 0 for Silver
+	mc->entries[18] = 1;			// 0 for Silver
+	mc->entries[19] = 1;			// 0 for Silver
+	mc->entries[20] = 1;			// 0 for Silver
+	mc->exit_url_length = 0;
+	//mc->exit_url = 0; // Used on Live: "http://www.everquest.com/free-to-play/exit-silver"
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
