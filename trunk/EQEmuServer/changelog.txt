@@ -5,6 +5,7 @@ Trevius: VoA - Corrected a few alignment issues with the item struct and it shou
 Trevius: VoA - Identified a few new item fields including: Prestige, SkillModMax, SkillModExtra, and Power
 Trevius: VoA - #summonitem and functions that summon items such as quests are now fixed.
 Trevius: VoA - Identified multiple Membership fields, which corrects multiple issues such as limited inventory slots, assigned AA limit, level limit, shared bank, and more.
+Trevius: Added packet length verification to all packet handling that was missing it.
 
 ==04/13/2012==
 Secrets: VoA - Character Creation is now functional. Fixed creation request struct (opcodes were right), and membership is now sent (characters can now be created!)
