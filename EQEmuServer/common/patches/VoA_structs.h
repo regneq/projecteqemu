@@ -4140,13 +4140,13 @@ struct ItemBodyStruct
 	uint32 Races;
 	uint32 Deity;
 	sint32 SkillModValue;
-	sint32 unknown5;		// SkillModType related? seen 0xffffffff for non-skill mod items
+	sint32 SkillModMax;		// Max skill point modification
 	sint32 SkillModType;
+	uint32 SkillModExtra;	// Adds a "+value" after the mod percentage
 	uint32 BaneDmgRace;
 	uint32 BaneDmgBody;
 	uint32 BaneDmgRaceAmt;
 	sint32 BaneDmgAmt;
-	uint32 unknown_voa1;	// Position somewhere between SkillModType and Magic
 	uint8 Magic;
 	sint32 CastTime_;
 	uint32 ReqLevel;
@@ -4161,7 +4161,7 @@ struct ItemBodyStruct
 	uint8 Range;
 	uint32 Damage;
 	uint32 Color;
-	uint32 unknown_voa2;	// New to March 21 2012 client
+	uint32 Prestige;	// New to March 21 2012 client
 	uint8 ItemType;
 	uint32 Material;
 	uint32 unknown7;
@@ -4300,9 +4300,9 @@ struct ItemQuaternaryBodyStruct
 {
 	uint32 scriptfileid;
 	uint8 quest_item;
-	uint32 unknown15; //0xffffffff - Power Source Capacity? - Now 0x00000000
+	uint32 Power; // Enables "Power" percentage field used by Power Sources
 	uint32 Purity;
-	uint8  Unknown16;	// VoA
+	uint8  unknown16;	// VoA
 	uint32 BackstabDmg;
 	uint32 DSMitigation;
 	sint32 HeroicStr;
