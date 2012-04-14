@@ -263,9 +263,13 @@ static inline structs::ItemSlotStruct TitaniumToVoASlot(int32 TitaniumSlot)
 		{
 			VoASlot.MainSlot = 21;
 		}
-		else if (TitaniumSlot > 20)
+		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
 		{
 			VoASlot.MainSlot += 1;
+		}
+		else if (TitaniumSlot > 29)	// Cursor
+		{
+			VoASlot.MainSlot += 3;
 		}
 	}
 	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
@@ -3586,7 +3590,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ibs.id = item->ID;
 	ibs.weight = item->Weight;
-	//memset(&ibs.unknownVoA1, 0, sizeof(ibs.unknownVoA1));
 	ibs.norent = item->NoRent;
 	ibs.nodrop = item->NoDrop;
 	ibs.attune = item->Attuneable;
@@ -3623,13 +3626,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Races = item->Races;
 	ibs.Deity = item->Deity;
 	ibs.SkillModValue = item->SkillModValue;
-	ibs.unknown5 = ((item->SkillModType> 0) ? 0 : 0xffffffff);
+	ibs.SkillModMax = 0xffffffff;
 	ibs.SkillModType = (sint8)(item->SkillModType);
+	ibs.SkillModExtra = 0;
 	ibs.BaneDmgRace = item->BaneDmgRace;
 	ibs.BaneDmgBody = item->BaneDmgBody;
 	ibs.BaneDmgRaceAmt = item->BaneDmgRaceAmt;
 	ibs.BaneDmgAmt = item->BaneDmgAmt;
-	ibs.unknown_voa1 = 0;
 	ibs.Magic = item->Magic;
 	ibs.CastTime_ = item->CastTime_;
 	ibs.ReqLevel = item->ReqLevel;
@@ -3644,7 +3647,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Range = item->Range;
 	ibs.Damage = item->Damage;
 	ibs.Color = item->Color;
-	ibs.unknown_voa2 = 0;
+	ibs.Prestige = 0;
 	ibs.ItemType = item->ItemType;
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
@@ -3739,13 +3742,23 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.guildfavor = item->GuildFavor;
 	itbs.augdistil = item->AugDistiller;
 	itbs.unknown3 = 0xffffffff;
+	itbs.unknown4 = 0;
 	itbs.no_pet = item->NoPet;
+	itbs.unknown5 = 0;
 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
 	itbs.stacksize = stackable ? item->StackSize : 0;
 	itbs.no_transfer = item->NoTransfer;
 	itbs.expendablearrow = item->ExpendableArrow;
+
+	itbs.unknown8 = 0;
+	itbs.unknown9 = 0;
+	itbs.unknown10 = 0;
+	itbs.unknown11 = 0;
+	itbs.unknown12 = 0;
+	itbs.unknown13 = 0;
+	itbs.unknown14 = 0;
 
 	ss.write((const char*)&itbs, sizeof(VoA::structs::ItemTertiaryBodyStruct));
 
@@ -3900,8 +3913,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	iqbs.scriptfileid = item->ScriptFileID;
 	iqbs.quest_item = item->QuestItemFlag;
-	iqbs.unknown15 = 0;
+	iqbs.Power = 0;
 	iqbs.Purity = item->Purity;
+	iqbs.unknown16 = 0;
 	iqbs.BackstabDmg = item->BackstabDmg;
 	iqbs.DSMitigation = item->DSMitigation;
 	iqbs.HeroicStr = item->HeroicStr;
@@ -3920,8 +3934,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	iqbs.HealAmt = item->HealAmt;
 	iqbs.SpellDmg = item->SpellDmg;
 	iqbs.clairvoyance = item->Clairvoyance;
-	iqbs.unknown28 = 0xffffffff;
-	iqbs.unknown30 = 0xffffffff;
+	iqbs.unknown28 = 0;
+	iqbs.unknown30 = 0;
 	iqbs.unknown39 = 1;
 
 	iqbs.subitem_count = 0;

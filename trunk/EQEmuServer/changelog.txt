@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/14/2012==
+Trevius: VoA - Corrected a few alignment issues with the item struct and it should be fully aligned now.
+Trevius: VoA - Identified a few new item fields including: Prestige, SkillModMax, SkillModExtra, and Power
+Trevius: VoA - #summonitem and functions that summon items such as quests are now fixed.
+
 ==04/13/2012==
 Secrets: VoA - Character Creation is now functional. Fixed creation request struct (opcodes were right), and membership is now sent (characters can now be created!)
 Secrets: VoA - Membership levels are now sent to the client via the SendMembership opcode. Hardcoded to be like older clients for now. Might need bag slots looked into; upon applying this, bag slots & items went missing.
