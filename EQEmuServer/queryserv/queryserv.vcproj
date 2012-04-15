@@ -189,6 +189,10 @@
 				RelativePath=".\worldserver.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\lfguild.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -205,6 +209,10 @@
 			</File>
 			<File
 				RelativePath=".\worldserver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lfguild.h"
 				>
 			</File>
 		</Filter>

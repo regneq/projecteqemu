@@ -372,13 +372,14 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_CorpseDrop] = &Client::Handle_OP_CorpseDrop;
 	ConnectedOpcodes[OP_GroupMakeLeader] = &Client::Handle_OP_GroupMakeLeader;
 	ConnectedOpcodes[OP_GuildCreate] = &Client::Handle_OP_GuildCreate;
-    ConnectedOpcodes[OP_AltCurrencyMerchantRequest] = &Client::Handle_OP_AltCurrencyMerchantRequest;
-    ConnectedOpcodes[OP_AltCurrencySellSelection] = &Client::Handle_OP_AltCurrencySellSelection;
-    ConnectedOpcodes[OP_AltCurrencyPurchase] = &Client::Handle_OP_AltCurrencyPurchase;
-    ConnectedOpcodes[OP_AltCurrencyReclaim] = &Client::Handle_OP_AltCurrencyReclaim;
-    ConnectedOpcodes[OP_AltCurrencySell] = &Client::Handle_OP_AltCurrencySell;
-    ConnectedOpcodes[OP_CrystalReclaim] = &Client::Handle_OP_CrystalReclaim;
-    ConnectedOpcodes[OP_CrystalCreate] = &Client::Handle_OP_CrystalCreate;
+	ConnectedOpcodes[OP_AltCurrencyMerchantRequest] = &Client::Handle_OP_AltCurrencyMerchantRequest;
+	ConnectedOpcodes[OP_AltCurrencySellSelection] = &Client::Handle_OP_AltCurrencySellSelection;
+	ConnectedOpcodes[OP_AltCurrencyPurchase] = &Client::Handle_OP_AltCurrencyPurchase;
+	ConnectedOpcodes[OP_AltCurrencyReclaim] = &Client::Handle_OP_AltCurrencyReclaim;
+	ConnectedOpcodes[OP_AltCurrencySell] = &Client::Handle_OP_AltCurrencySell;
+	ConnectedOpcodes[OP_CrystalReclaim] = &Client::Handle_OP_CrystalReclaim;
+	ConnectedOpcodes[OP_CrystalCreate] = &Client::Handle_OP_CrystalCreate;
+	ConnectedOpcodes[OP_LFGuild] = &Client::Handle_OP_LFGuild;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -760,7 +761,9 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 		SendGuildMembers();
 		SendGuildURL();
 		SendGuildChannel();
+		SendGuildLFGuildStatus();
 	}
+	SendLFGuildStatus();
 
 	//No idea why live sends this if even were not in a guild
 	SendGuildMOTD();
@@ -831,7 +834,9 @@ void Client::Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app)
 		SendGuildMembers();
 		SendGuildURL();
 		SendGuildChannel();
+		SendGuildLFGuildStatus();
 	}
+	SendLFGuildStatus();
 
 	//No idea why live sends this if even were not in a guild
 	SendGuildMOTD();
@@ -12495,3 +12500,122 @@ void Client::Handle_OP_CrystalCreate(const EQApplicationPacket *app) {
         }
     }
 }
+
+void Client::Handle_OP_LFGuild(const EQApplicationPacket *app)
+{
+	if(app->size < 4)
+		return;
+
+	uint32 Command = *((uint32 *) app->pBuffer);
+
+	switch(Command)
+	{
+		case 0:
+		{
+    			VERIFY_PACKET_LENGTH(OP_LFGuild, app, LFGuild_PlayerToggle_Struct);
+			LFGuild_PlayerToggle_Struct *pts = (LFGuild_PlayerToggle_Struct *)app->pBuffer;
+			
+			if(strnlen(pts->Comment, 256) > 256)
+				return;
+
+			ServerPacket* pack = new ServerPacket(ServerOP_QueryServGeneric, strlen(GetName()) + strlen(pts->Comment) + 38);
+
+			pack->WriteUInt32(zone->GetZoneID());
+			pack->WriteUInt32(zone->GetInstanceID());
+			pack->WriteString(GetName());
+			pack->WriteUInt32(QSG_LFGuild);
+			pack->WriteUInt32(QSG_LFGuild_UpdatePlayerInfo);
+			pack->WriteUInt32(GetBaseClass());
+			pack->WriteUInt32(GetLevel());
+			pack->WriteUInt32(GetAAPointsSpent());
+			pack->WriteString(pts->Comment);
+			pack->WriteUInt32(pts->Toggle);
+			pack->WriteUInt32(pts->TimeZone);			
+			
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+		
+			break;
+		}
+		case 1:
+		{
+    			VERIFY_PACKET_LENGTH(OP_LFGuild, app, LFGuild_GuildToggle_Struct);
+			LFGuild_GuildToggle_Struct *gts = (LFGuild_GuildToggle_Struct *)app->pBuffer;
+
+			if(strnlen(gts->Comment, 256) > 256)
+				return;
+
+			ServerPacket* pack = new ServerPacket(ServerOP_QueryServGeneric, strlen(GetName()) + strlen(gts->Comment) + strlen(guild_mgr.GetGuildName(GuildID())) + 43);
+
+			pack->WriteUInt32(zone->GetZoneID());
+			pack->WriteUInt32(zone->GetInstanceID());
+			pack->WriteString(GetName());
+			pack->WriteUInt32(QSG_LFGuild);
+			pack->WriteUInt32(QSG_LFGuild_UpdateGuildInfo);
+			pack->WriteString(guild_mgr.GetGuildName(GuildID()));
+			pack->WriteString(gts->Comment);
+			pack->WriteUInt32(gts->FromLevel);
+			pack->WriteUInt32(gts->ToLevel);
+			pack->WriteUInt32(gts->Classes);
+			pack->WriteUInt32(gts->AACount);
+			pack->WriteUInt32(gts->Toggle);
+			pack->WriteUInt32(gts->TimeZone);
+	
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+			break;
+		}
+		case 3:
+		{
+    			VERIFY_PACKET_LENGTH(OP_LFGuild, app, LFGuild_SearchPlayer_Struct);
+
+			ServerPacket* pack = new ServerPacket(ServerOP_QueryServGeneric, strlen(GetName()) + 37);
+		
+			pack->WriteUInt32(zone->GetZoneID());
+			pack->WriteUInt32(zone->GetInstanceID());
+			pack->WriteString(GetName());
+			pack->WriteUInt32(QSG_LFGuild);
+			pack->WriteUInt32(QSG_LFGuild_PlayerMatches);
+			
+			LFGuild_SearchPlayer_Struct *sps = (LFGuild_SearchPlayer_Struct *)app->pBuffer;
+			pack->WriteUInt32(sps->FromLevel);
+			pack->WriteUInt32(sps->ToLevel);
+			pack->WriteUInt32(sps->MinAA);
+			pack->WriteUInt32(sps->TimeZone);
+			pack->WriteUInt32(sps->Classes);
+			
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+			break;
+		}
+		case 4:
+		{
+    			VERIFY_PACKET_LENGTH(OP_LFGuild, app, LFGuild_SearchGuild_Struct);
+
+			ServerPacket* pack = new ServerPacket(ServerOP_QueryServGeneric, strlen(GetName()) + 33);
+		
+			pack->WriteUInt32(zone->GetZoneID());
+			pack->WriteUInt32(zone->GetInstanceID());
+			pack->WriteString(GetName());
+			pack->WriteUInt32(QSG_LFGuild);
+			pack->WriteUInt32(QSG_LFGuild_GuildMatches);
+			
+			LFGuild_SearchGuild_Struct *sgs = (LFGuild_SearchGuild_Struct *)app->pBuffer;
+
+			pack->WriteUInt32(sgs->Level);
+			pack->WriteUInt32(sgs->AAPoints);
+			pack->WriteUInt32(sgs->TimeZone);
+			pack->WriteUInt32(sgs->Class);
+			
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+			break;
+		}
+		default:
+			break;
+	}
+}
+

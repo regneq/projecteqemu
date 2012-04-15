@@ -36,6 +36,7 @@
 #define ServerOP_GuildMemberUpdate	0x0014
 #define ServerOP_RequestOnlineGuildMembers	0x0015
 #define ServerOP_OnlineGuildMembersResponse	0x0016
+#define ServerOP_LFGuildUpdate		0x0017
 
 #define ServerOP_FlagUpdate			0x0018	// GM Flag updated for character, refresh the memory cache
 #define ServerOP_GMGoto				0x0019
@@ -173,6 +174,11 @@
 #define ServerOP_ReloadRules	0x4002
 #define ServerOP_ReloadRulesWorld	0x4003
 #define ServerOP_CameraShake	0x4004
+#define ServerOP_QueryServGeneric	0x4005
+
+enum { QSG_LFGuild = 0 };
+enum {	QSG_LFGuild_PlayerMatches = 0, QSG_LFGuild_UpdatePlayerInfo, QSG_LFGuild_RequestPlayerInfo, QSG_LFGuild_UpdateGuildInfo, QSG_LFGuild_GuildMatches,
+	QSG_LFGuild_RequestGuildInfo };
 
 #define ServerOP_Speech			0x4513
 
@@ -192,6 +198,8 @@ public:
 			pBuffer = new uchar[size];
 			memset(pBuffer, 0, size);
 		}
+		_wpos = 0;
+		_rpos = 0;
 	}
 	ServerPacket* Copy() {
 		if (this == 0) {
@@ -241,9 +249,27 @@ public:
 		safe_delete_array(tmpdel);
 		return true;
 	}
+
+	void WriteUInt8(uint8 value) { *(uint8 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint8); }
+	void WriteUInt32(uint32 value) { *(uint32 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint32); }
+	void WriteString(const char * str) { uint32 len = strlen(str) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
+
+	uint8 ReadUInt8() { uint8 value = *(uint8 *)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }
+	uint32 ReadUInt32() { uint32 value = *(uint32 *)(pBuffer + _rpos); _rpos += sizeof(uint32); return value; }
+	void ReadString(char *str) { uint32 len = strlen((char *)(pBuffer + _rpos)) + 1; memcpy(str, pBuffer + _rpos, len); _rpos += len; }
+	
+	uint32 GetWritePosition() { return _wpos; }
+	uint32 GetReadPosition() { return _rpos; }
+	void SetWritePosition(uint32 Newwpos) { _wpos = Newwpos; }
+	void WriteSkipBytes(uint32 count) { _wpos += count; }
+	void ReadSkipBytes(uint32 count) { _rpos += count; }
+	void SetReadPosition(uint32 Newrpos) { _rpos = Newrpos; }
+
 	int32	size;
 	int16	opcode;
 	uchar*	pBuffer;
+	uint32	_wpos;
+	uint32	_rpos;
 	bool	compressed;
 	int32	InflatedSize;
 	int32	destination;

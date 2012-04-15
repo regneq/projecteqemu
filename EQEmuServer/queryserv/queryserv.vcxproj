@@ -357,6 +357,7 @@
     <ClCompile Include="queryserv.cpp" />
     <ClCompile Include="queryservconfig.cpp" />
     <ClCompile Include="worldserver.cpp" />
+    <ClCompile Include="lfguild.cpp" />
     <ClCompile Include="..\common\BasePacket.cpp" />
     <ClCompile Include="..\common\Condition.cpp" />
     <ClCompile Include="..\common\CRC16.cpp" />
@@ -404,6 +405,7 @@
     <ClInclude Include="database.h" />
     <ClInclude Include="queryservconfig.h" />
     <ClInclude Include="worldserver.h" />
+    <ClInclude Include="lfguild.h" />
     <ClInclude Include="..\common\CRC16.h" />
     <ClInclude Include="..\common\crc32.h" />
     <ClInclude Include="..\common\dbcore.h" />

@@ -1,5 +1,25 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/15/2012==
+Derision: Added support for the 'Looking For Guild' window.
+
+Required SQL: utils/sql/svn/2129_required_lfguild.sql
+
+IMPORTANT NOTE:
+
+To use this feature, you must be running the querserv process. If you are not running queryserv, LFGuild will not work, but your server will
+run normally in all other respects.
+
+Underfoot users can bring up the LFGuild Window by pressing the EQ buton and selecting Players/Looking For Guild.
+
+I think all other clients can only access the feature by clicking on the notice boards in the Guild Lobby. To allow them to do this, you must
+add the following to the SUB EVENT_CLICKDOOR of your guildlobby/player.pl
+
+if(($doorid >= 5) && ($doorid <= 38))
+{
+	$client->OpenLFGuildWindow();
+}
+
 ==04/14/2012==
 Trevius: VoA - Corrected a few alignment issues with the item struct and it should be fully aligned now.
 Trevius: VoA - Identified a few new item fields including: Prestige, SkillModMax, SkillModExtra, and Power

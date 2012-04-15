@@ -1,5 +1,5 @@
 APP=queryserv
-SF= queryserv.o  ../common/timer.o ../common/packet_dump.o ../common/unix.o worldserver.o\
+SF= queryserv.o  ../common/timer.o ../common/packet_dump.o ../common/unix.o worldserver.o lfguild.o\
    ../common/Mutex.o ../common/MiscFunctions.o \
    ../common/TCPConnection.o ../common/eqtime.o ../common/crc32.o \
    ../common/md5.o \

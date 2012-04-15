@@ -1259,17 +1259,18 @@ bool ZoneServer::Process() {
 			break;
 		}
 
-        case ServerOP_UCSMailMessage: 
-        {
-            UCSLink.SendPacket(pack);
-            break;
-        }
+		case ServerOP_UCSMailMessage: 
+		{
+			UCSLink.SendPacket(pack);
+			break;
+		}
 
+		case ServerOP_QueryServGeneric:
 		case ServerOP_Speech: 
-        {
-            QSLink.SendPacket(pack);
-            break;
-        }
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
 
 		case ServerOP_DepopAllPlayersCorpses:
 		case ServerOP_ReloadTitles:

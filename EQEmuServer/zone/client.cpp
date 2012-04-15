@@ -6565,3 +6565,13 @@ uint32 Client::GetAlternateCurrencyValue(uint32 currency_id) const
         return (*iter).second;
     }
 }
+
+void Client::OpenLFGuildWindow()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, 8);
+	
+	outapp->WriteUInt32(6);
+
+	FastQueuePacket(&outapp);
+}
+
