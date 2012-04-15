@@ -488,11 +488,49 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 			safe_delete(outapp);
 
 		}
-		else
-		{
-			_log(GUILDS__ERROR,"Zone not yet loaded, aborting ServerOP_RequestOnlineGuildMembers");
-		}
 		break;
+	
+	case ServerOP_LFGuildUpdate:
+	{
+		if(ZoneLoaded)
+		{
+			char GuildName[33];
+			char Comments[257];
+			uint32 FromLevel, ToLevel, Classes, AACount, TimeZone, TimePosted, Toggle;
+
+			pack->ReadString(GuildName);
+			pack->ReadString(Comments);
+			FromLevel = pack->ReadUInt32();
+			ToLevel = pack->ReadUInt32();
+			Classes = pack->ReadUInt32();
+			AACount = pack->ReadUInt32();
+			TimeZone = pack->ReadUInt32();
+			TimePosted = pack->ReadUInt32();
+			Toggle = pack->ReadUInt32();
+				
+			uint32 GuildID = GetGuildIDByName(GuildName);
+
+			if(GuildID == GUILD_NONE)
+				break;
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, sizeof(LFGuild_GuildToggle_Struct));
+
+			LFGuild_GuildToggle_Struct *gts = (LFGuild_GuildToggle_Struct *)outapp->pBuffer;
+			gts->Command = 1;
+			strcpy(gts->Comment, Comments);	
+			gts->FromLevel = FromLevel;
+			gts->ToLevel = ToLevel;
+			gts->Classes = Classes;
+			gts->AACount = AACount;
+			gts->TimeZone = TimeZone;
+			gts->Toggle = Toggle;
+			gts->TimePosted = TimePosted;
+			gts->Name[0] = 0;
+			entity_list.QueueClientsGuild(NULL, outapp, false, GuildID);
+			safe_delete(outapp);
+			break;
+		}
+	}
 	}
 }
 

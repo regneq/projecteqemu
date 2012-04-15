@@ -27,6 +27,7 @@
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
+#include "lfguild.h"
 #include <list>
 #include <signal.h>
 
@@ -38,7 +39,7 @@ uint32 ChatMessagesSent = 0;
 TimeoutManager          timeout_manager;
 
 Database database;
-
+LFGuildManager lfguildmanager;
 string WorldShortName;
 
 RuleManager *rules = new RuleManager();
@@ -58,9 +59,11 @@ void CatchSignal(int sig_num) {
 
 int main() {
 
+	Timer LFGuildExpireTimer(60000);
+
 	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
 
-	_log(QUERYSERV__INIT, "Starting EQEmu Universal Chat Server.");
+	_log(QUERYSERV__INIT, "Starting EQEmu QueryServ.");
 
 	if (!queryservconfig::LoadConfig()) {
 
@@ -118,9 +121,14 @@ int main() {
 
 	worldserver->Connect();
 
+	lfguildmanager.LoadDatabase();
+
 	while(RunLoops) {
 
 		Timer::SetCurrentTime();
+
+		if(LFGuildExpireTimer.Check())
+			lfguildmanager.ExpireEntries();
 
 		if (InterserverTimer.Check()) {
 			if (worldserver->TryReconnect() && (!worldserver->Connected()))

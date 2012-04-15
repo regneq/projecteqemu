@@ -1022,12 +1022,16 @@ public:
 	inline bool IsDraggingCorpse() { return (DraggedCorpses.size() > 0); }
 	void DragCorpses();
 	inline void ClearDraggedCorpses() { DraggedCorpses.clear(); }
-    void SendAltCurrencies();
-    void SetAlternateCurrencyValue(uint32 currency_id, uint32 new_amount);
-    void AddAlternateCurrencyValue(uint32 currency_id, sint32 amount);
-    void SendAlternateCurrencyValues();
-    void SendAlternateCurrencyValue(uint32 currency_id, bool send_if_null = true);
-    uint32 GetAlternateCurrencyValue(uint32 currency_id) const;    
+	void SendAltCurrencies();
+	void SetAlternateCurrencyValue(uint32 currency_id, uint32 new_amount);
+	void AddAlternateCurrencyValue(uint32 currency_id, sint32 amount);
+	void SendAlternateCurrencyValues();
+	void SendAlternateCurrencyValue(uint32 currency_id, bool send_if_null = true);
+	uint32 GetAlternateCurrencyValue(uint32 currency_id) const;
+	void OpenLFGuildWindow();
+	void HandleLFGuildResponse(ServerPacket *pack);
+	void SendLFGuildStatus();
+	void SendGuildLFGuildStatus();
 
 protected:
 	friend class Mob;

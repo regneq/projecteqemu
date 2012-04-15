@@ -29,13 +29,16 @@ using namespace std;
 #include "worldserver.h"
 #include "queryservconfig.h"
 #include "database.h"
+#include "lfguild.h"
 #include "../common/packet_functions.h"
 #include "../common/md5.h"
 #include "../common/files.h"
+#include "../common/packet_dump.h"
 
 extern WorldServer worldserver;
 extern const queryservconfig *Config;
 extern Database database;
+extern LFGuildManager lfguildmanager;
 
 WorldServer::WorldServer()
 : WorldConnection(EmuTCPConnection::packetModeQueryServ, Config->SharedKey.c_str())
@@ -64,7 +67,7 @@ void WorldServer::Process()
 
 	while((pack = tcpc.PopPacket()))
 	{
-		_log(UCS__TRACE, "Received Opcode: %4X", pack->opcode);
+		_log(QUERYSERV__TRACE, "Received Opcode: %4X", pack->opcode);
 
 		switch(pack->opcode)
 		{
@@ -77,14 +80,53 @@ void WorldServer::Process()
 			}
 			case ServerOP_Speech:
 			{
-			Server_Speech_Struct *SSS = (Server_Speech_Struct*)pack->pBuffer;
+				Server_Speech_Struct *SSS = (Server_Speech_Struct*)pack->pBuffer;
 
-			string tmp1 = SSS->from;
-			string tmp2 = SSS->to;
+				string tmp1 = SSS->from;
+				string tmp2 = SSS->to;
 
-			database.AddSpeech(tmp1.c_str(), tmp2.c_str(), SSS->message, SSS->minstatus, SSS->guilddbid, SSS->type);
-			break;
+				database.AddSpeech(tmp1.c_str(), tmp2.c_str(), SSS->message, SSS->minstatus, SSS->guilddbid, SSS->type);
+				break;
 			}
+			case ServerOP_QueryServGeneric:
+			{
+				// The purpose of ServerOP_QueryServerGeneric is so that we don't have to add code to world just to relay packets
+				// each time we add functionality to queryserv.
+				//
+				// A ServerOP_QueryServGeneric packet has the following format:
+				//
+				// uint32 SourceZoneID
+				// uint32 SourceInstanceID
+				// char OriginatingCharacterName[0] // Null terminated name of the character this packet came from. This could be just
+				//				    // an empty string if it has no meaning in the context of a particular packet.
+				// uint32 Type
+				//
+				// The 'Type' field is a 'sub-opcode'. A value of 0 is used for the LFGuild packets. The next feature to be added
+				// to queryserv would use 1, etc.
+				//
+				// Obviously, any fields in the packet following the 'Type' will be unique to the particular type of packet. The 
+				// 'Generic' in the name of this ServerOP code relates to the four header fields.
+				char From[64];
+				pack->SetReadPosition(8);
+				pack->ReadString(From);
+				uint32 Type = pack->ReadUInt32();
+				
+				switch(Type)
+				{
+					case QSG_LFGuild:
+					{
+						lfguildmanager.HandlePacket(pack);
+						break;
+					}
+
+					default:
+						_log(QUERYSERV__ERROR, "Received unhandled ServerOP_QueryServGeneric", Type);
+						break;
+				}	
+
+				break;
+			}
+
 
 		}
 	}

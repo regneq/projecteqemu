@@ -574,6 +574,7 @@ void WorldServer::Process() {
 		case ServerOP_GuildCharRefresh:
 		case ServerOP_GuildMemberUpdate:
 		case ServerOP_GuildRankUpdate:
+		case ServerOP_LFGuildUpdate:
 //		case ServerOP_GuildGMSet:
 //		case ServerOP_GuildGMSetRank:
 //		case ServerOP_GuildJoin:
@@ -1740,6 +1741,33 @@ void WorldServer::Process() {
 					ServerCameraShake_Struct *scss = (ServerCameraShake_Struct*)pack->pBuffer;
 					entity_list.CameraEffect(scss->duration, scss->intensity);
 			}
+			break;
+		}
+		case ServerOP_QueryServGeneric:
+		{
+			pack->SetReadPosition(8);
+			char From[64];
+			pack->ReadString(From);
+
+			Client *c = entity_list.GetClientByName(From);
+
+			if(!c)
+				return;
+
+			uint32 Type = pack->ReadUInt32();;
+
+			switch(Type)
+			{
+				case QSG_LFGuild:
+				{
+					c->HandleLFGuildResponse(pack);
+					break;
+				}
+
+				default:
+					break;
+			}
+			
 			break;
 		}
 		default: {

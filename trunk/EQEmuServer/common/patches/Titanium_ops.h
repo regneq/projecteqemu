@@ -34,6 +34,7 @@ E(OP_Action)
 E(OP_BecomeTrader)
 E(OP_PetBuffWindow)
 E(OP_OnLevelMessage)
+E(OP_LFGuild)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -43,5 +44,6 @@ D(OP_WhoAllRequest)
 D(OP_ReadBook)
 D(OP_FaceChange)
 D(OP_WearChange)
+D(OP_LFGuild)
 #undef E
 #undef D

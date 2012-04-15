@@ -8,6 +8,7 @@ all:
 	$(MAKE) -C mailserver
 	$(MAKE) -C chatserver
 	$(MAKE) -C ucs
+	$(MAKE) -C queryserv 
 	$(MAKE) -C utils
 
 clean:
@@ -18,5 +19,6 @@ clean:
 	$(MAKE) -C mailserver clean
 	$(MAKE) -C chatserver clean
 	$(MAKE) -C ucs clean
+	$(MAKE) -C queryserv clean
 	$(MAKE) -C utils clean
 

@@ -1,11 +1,16 @@
 #include "../common/debug.h"
 #include "queryserv.h"
 #include "WorldConfig.h"
+#include "clientlist.h"
+#include "zonelist.h"
 #include "../common/logsys.h"
 #include "../common/logtypes.h"
 #include "../common/md5.h"
 #include "../common/EmuTCPConnection.h"
 #include "../common/packet_dump.h"
+
+extern ClientList client_list;
+extern ZSList zoneserver_list;
 
 QueryServConnection::QueryServConnection()
 {
@@ -92,6 +97,18 @@ bool QueryServConnection::Process()
 			case ServerOP_ZAAuth:
 			{
 				_log(QUERYSERV__ERROR, "Got authentication from QueryServ when they are already authenticated.");
+				break;
+			}
+			case ServerOP_QueryServGeneric:
+			{
+				uint32 ZoneID = pack->ReadUInt32();
+				uint16 InstanceID = pack->ReadUInt32();
+				zoneserver_list.SendPacket(ZoneID, InstanceID, pack);
+				break;
+			}
+			case ServerOP_LFGuildUpdate:
+			{
+				zoneserver_list.SendPacket(pack);
 				break;
 			}
 			default:

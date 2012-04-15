@@ -1131,6 +1131,28 @@ ENCODE(OP_OnLevelMessage)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_LFGuild)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	uint32 Command = in->ReadUInt32();
+
+	if(Command != 0)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+		return;
+	}
+	
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, sizeof(structs::LFGuild_PlayerToggle_Struct));
+
+	memcpy(outapp->pBuffer, in->pBuffer, sizeof(structs::LFGuild_PlayerToggle_Struct));
+
+	dest->FastQueuePacket(&outapp, ack_req);
+	
+	delete in;
+}
+
 DECODE(OP_WearChange) {
 	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
 	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
@@ -1244,6 +1266,20 @@ DECODE(OP_FaceChange) {
 	IN(hairstyle);
 	IN(beard);
 	IN(face);
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_LFGuild)
+{
+	uint32 Command = __packet->ReadUInt32();
+
+	if(Command != 0)
+		return;
+
+	SETUP_DIRECT_DECODE(LFGuild_PlayerToggle_Struct, structs::LFGuild_PlayerToggle_Struct);
+	memcpy(emu, eq, sizeof(structs::LFGuild_PlayerToggle_Struct));
+	memset(emu->Unknown612, 0, sizeof(emu->Unknown612));
 
 	FINISH_DIRECT_DECODE();
 }
