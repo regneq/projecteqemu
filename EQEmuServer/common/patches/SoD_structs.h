@@ -2187,8 +2187,8 @@ struct Emote_Struct {
 
 // Inspect
 struct Inspect_Struct {
-	int16 TargetID;
-	int16 PlayerID;
+	int32 TargetID;
+	int32 PlayerID;
 };
 
 //OP_InspectAnswer - Size: 1860

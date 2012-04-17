@@ -2697,6 +2697,22 @@ ENCODE(OP_AltCurrency)
     delete in;
 }
 
+ENCODE(OP_InspectRequest) {
+	ENCODE_LENGTH_EXACT(Inspect_Struct);
+	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
+	OUT(TargetID);
+	OUT(PlayerID);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_InspectRequest) {
+	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
+	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
+	IN(TargetID);
+	IN(PlayerID);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
