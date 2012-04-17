@@ -1931,7 +1931,8 @@ ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	eq->itemslot = TitaniumToVoASlot(emu->itemslot);
+	//eq->itemslot = TitaniumToVoASlot(emu->itemslot);
+	OUT(itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -2294,6 +2295,13 @@ ENCODE(OP_WhoAllResponse)
 	delete in;
 }
 
+ENCODE(OP_InspectRequest) {
+	ENCODE_LENGTH_EXACT(Inspect_Struct);
+	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
+	OUT(TargetID);
+	OUT(PlayerID);
+	FINISH_ENCODE();
+}
 
 ENCODE(OP_InspectAnswer) {
 	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
@@ -2888,6 +2896,164 @@ ENCODE(OP_ShopRequest)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DisciplineUpdate)
+{
+	ENCODE_LENGTH_EXACT(Disciplines_Struct);
+	SETUP_DIRECT_ENCODE(Disciplines_Struct, structs::Disciplines_Struct);
+
+	memcpy(&eq->values, &emu->values, sizeof(Disciplines_Struct));
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RespondAA) {
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
+
+	eq->aa_spent = emu->aa_spent;
+	eq->aa_assigned = emu->aa_spent;
+	eq->aa_spent3 = emu->aa_spent;
+	eq->unknown012 = 0;
+	eq->unknown016 = 0;
+	eq->unknown020 = 0;
+
+	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
+	{
+		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
+		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
+		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
+	}
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_AltCurrencySell) 
+{
+    ENCODE_LENGTH_EXACT(AltCurrencySellItem_Struct);
+	SETUP_DIRECT_ENCODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+
+    OUT(merchant_entity_id);
+    eq->slot_id = TitaniumToVoASlot(emu->slot_id);
+    OUT(charges);
+    OUT(cost);
+    FINISH_ENCODE();
+}
+
+ENCODE(OP_AltCurrency)
+{
+    EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *emu_buffer = in->pBuffer;
+    uint32 opcode = *((uint32*)emu_buffer);
+
+    if(opcode == 8) {
+        AltCurrencyPopulate_Struct *populate = (AltCurrencyPopulate_Struct*)emu_buffer;
+
+        EQApplicationPacket *outapp = new EQApplicationPacket(OP_AltCurrency, sizeof(structs::AltCurrencyPopulate_Struct) 
+            + sizeof(structs::AltCurrencyPopulateEntry_Struct) * populate->count);
+        structs::AltCurrencyPopulate_Struct *out_populate = (structs::AltCurrencyPopulate_Struct*)outapp->pBuffer;
+
+        out_populate->opcode = populate->opcode;
+        out_populate->count = populate->count;
+        for(int i = 0; i < populate->count; ++i) {
+            out_populate->entries[i].currency_number = populate->entries[i].currency_number;
+            out_populate->entries[i].currency_number2 = populate->entries[i].currency_number2;
+            out_populate->entries[i].item_id = populate->entries[i].item_id;
+            out_populate->entries[i].item_icon = populate->entries[i].item_icon;
+            out_populate->entries[i].stack_size = populate->entries[i].stack_size;
+            out_populate->entries[i].unknown00 = populate->entries[i].unknown00;
+        }
+
+        dest->FastQueuePacket(&outapp, ack_req);
+    } else {
+        EQApplicationPacket *outapp = new EQApplicationPacket(OP_AltCurrency, sizeof(AltCurrencyUpdate_Struct));
+        memcpy(outapp->pBuffer, emu_buffer, sizeof(AltCurrencyUpdate_Struct));
+        dest->FastQueuePacket(&outapp, ack_req);
+    }
+
+    //dest->FastQueuePacket(&outapp, ack_req);
+    delete in;
+}
+
+DECODE(OP_BuffRemoveRequest)
+{
+	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
+	//
+	DECODE_LENGTH_EXACT(structs::BuffRemoveRequest_Struct);
+	SETUP_DIRECT_DECODE(BuffRemoveRequest_Struct, structs::BuffRemoveRequest_Struct);
+
+	emu->SlotID = (eq->SlotID < 30 ) ? eq->SlotID : (eq->SlotID - 5);
+
+	IN(EntityID);
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_PetCommands)
+{
+	DECODE_LENGTH_EXACT(structs::PetCommand_Struct);
+	SETUP_DIRECT_DECODE(PetCommand_Struct, structs::PetCommand_Struct);
+
+	switch(eq->command)
+	{
+		case 0x00:
+			emu->command = 0x04;	// Health
+			break;
+		case 0x01:
+			emu->command = 0x10;	// Leader
+			break;
+		case 0x02:
+			emu->command = 0x07;	// Attack
+			break;
+		case 0x04:
+			emu->command = 0x08;	// Follow
+			break;
+		case 0x05:
+			emu->command = 0x05;	// Guard
+			break;
+		case 0x06:
+			emu->command = 0x09;	// Sit. Needs work. This appears to be a toggle between Sit/Stand now.
+			break;
+		case 0x0c:
+			emu->command = 0x0b;	// Taunt
+			break;
+		case 0x0f:
+			emu->command = 0x0c;	// Hold
+			break;
+		case 0x1c:
+			emu->command = 0x01;	// Back
+			break;
+		case 0x1d:
+			emu->command = 0x02;	// Leave/Go Away
+			break;
+		default:
+			emu->command = eq->command;
+	}
+	OUT(unknown);
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySellSelection) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySelectItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySelectItem_Struct, structs::AltCurrencySelectItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = VoAToTitaniumSlot(eq->slot_id);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySell) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySellItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = VoAToTitaniumSlot(eq->slot_id);
+    IN(charges);
+    IN(cost);
+    FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_ShopRequest) {
 	DECODE_LENGTH_EXACT(structs::Merchant_Click_Struct);
 	SETUP_DIRECT_DECODE(Merchant_Click_Struct, structs::Merchant_Click_Struct);
@@ -2913,6 +3079,14 @@ DECODE(OP_BazaarSearch)
 	memcpy(emu->Name, eq->Name, sizeof(emu->Name));
 	IN(SerialNumber);
 
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_InspectRequest) {
+	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
+	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
+	IN(TargetID);
+	IN(PlayerID);
 	FINISH_DIRECT_DECODE();
 }
 
@@ -3253,7 +3427,8 @@ DECODE(OP_ShopPlayerSell) {
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 
 	IN(npcid);
-	emu->itemslot = VoAToTitaniumSlot(eq->itemslot);
+	//emu->itemslot = VoAToTitaniumSlot(eq->itemslot);
+	IN(itemslot);
 	IN(quantity);
 	IN(price);
 

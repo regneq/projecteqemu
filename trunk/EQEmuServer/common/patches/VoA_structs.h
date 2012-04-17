@@ -604,6 +604,13 @@ struct SpellBuffFade_Struct {
 /*036*/
 };
 
+struct BuffRemoveRequest_Struct
+{
+/*00*/ uint32 SlotID;
+/*04*/ uint32 EntityID;
+/*08*/
+};
+
 struct GMTrainee_Struct
 {
 	/*000*/ uint32 npcid;
@@ -1868,16 +1875,14 @@ Unknowns:
 00 3F
 */
 
-
-
 struct Merchant_Sell_Struct {
 /*000*/	int32	npcid;			// Merchant NPC's entity id
 /*004*/	int32	playerid;		// Player's entity id
 /*008*/	int32	itemslot;
 /*012*/	int32	unknown12;
 /*016*/	int8	quantity;		// Already sold
-/*017*/ int8	Unknown017[3];
-/*020*/	uint32	Unknown020;
+/*017*/ int8	unknown17[3];
+/*020*/	uint32	unknown20;
 /*024*/	uint32	price;
 /*028*/	uint32	pricehighorderbits;	// It appears the price is 64 bits in Live+
 /*032*/
@@ -1885,10 +1890,12 @@ struct Merchant_Sell_Struct {
 
 struct Merchant_Purchase_Struct {
 /*000*/	int32	npcid;			// Merchant NPC's entity id
-/*004*/	//int32	itemslot;		// Player's entity id
-		ItemSlotStruct itemslot;
-/*008*/	int32	quantity;
-/*012*/	int32	price;
+/*004*/	int32	itemslot;		// Player's entity id
+		//ItemSlotStruct itemslot;
+/*008*/	int32	unknown08;
+/*012*/	int32	quantity;
+/*016*/	int32	price;
+/*020*/
 };
 struct Merchant_DelItem_Struct{
 /*000*/	int32	npcid;			// Merchant NPC's entity id
@@ -1942,7 +1949,8 @@ struct AltCurrencyUpdate_Struct {
 //When an item is selected while the alt currency merchant window is open
 struct AltCurrencySelectItem_Struct {
 /*000*/ uint32 merchant_entity_id;
-/*004*/ uint32 slot_id;
+/*004*/ //uint32 slot_id;
+		ItemSlotStruct slot_id;
 /*008*/ uint32 unknown008;
 /*012*/ uint32 unknown012;
 /*016*/ uint32 unknown016;
@@ -1999,7 +2007,8 @@ struct AltCurrencyReclaim_Struct {
 
 struct AltCurrencySellItem_Struct {
 /*000*/ uint32 merchant_entity_id;
-/*004*/ uint32 slot_id;
+/*004*/ //uint32 slot_id;
+		ItemSlotStruct slot_id;
 /*008*/ uint32 charges;
 /*012*/ uint32 cost;
 };
@@ -2362,8 +2371,8 @@ struct Emote_Struct {
 
 // Inspect
 struct Inspect_Struct {
-	int16 TargetID;
-	int16 PlayerID;
+	int32 TargetID;
+	int32 PlayerID;
 };
 
 //OP_InspectAnswer - Size: 1860
@@ -3981,8 +3990,13 @@ struct PlayerAA_Struct {						// Is this still used?
 };
 
 struct AATable_Struct {
-/*00*/ sint32	aa_spent;						// Total AAs Spent
-/*04*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
+/*00*/ sint32	aa_spent;	// Total AAs Spent
+/*04*/ sint32	aa_assigned;	// Assigned: field in the AA window.
+/*08*/ sint32	aa_spent3;	// Unknown. Same as aa_spent in observed packets.
+/*12*/ sint32	unknown012;
+/*16*/ sint32	unknown016;
+/*20*/ sint32	unknown020;
+/*24*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {

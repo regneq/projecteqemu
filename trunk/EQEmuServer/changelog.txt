@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/14/2012==
+Trevius: Fixed inspect for SoF+ clients, which was broken by Rev2128.
+
 ==04/15/2012==
 Derision: Added support for the 'Looking For Guild' window.
 

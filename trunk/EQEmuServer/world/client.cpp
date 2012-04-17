@@ -233,17 +233,15 @@ void Client::SendMembership() {
 		5. Loyalty Rewards Per-Week (30, 60, Max)
 		6. Mercenary Tiers (Apprentice 1-2, Apprentice All Tiers, All Tiers)
 		7. Neighborhood House
-		8. Shared Bank Slots
-		9. Active Journal Quests (Tasks?) (10, 15, Max)
-		10. Guild Function (join, join and create)
-		11. Broker System (restricted, unlimited)
-		12. Voice Chat
-		13. Chat Ability
-		14. Progression Server
-		15. Customer Support
-		16. In-Game Popup Advertising
-
-		That is 16 possible fields, and there are 16 unknowns in the struct...Coincidence?
+		8. Active Journal Quests (Tasks?) (10, 15, Max)
+		9. Guild Function (join, join and create)
+		10. Broker System (restricted, unlimited)
+		11. Voice Chat
+		12. Chat Ability
+		13. Progression Server
+		14. Customer Support
+		15. In-Game Popup Advertising
+		That is 15 possible fields, and there are 15 unknowns in the struct...Coincidence?
 	*/
 	
 	mc->membership = 2;				//Hardcode to gold for now. We don't use anything else.
@@ -252,25 +250,25 @@ void Client::SendMembership() {
 	mc->entrysize = 21;				// Number of membership setting entries below
 	mc->entries[0] = 0xffffffff;	// Max AA Restriction
 	mc->entries[1] = 0xffffffff;	// Max Level Restriction
-	mc->entries[2] = 10;			// Max Char Slots per Account (not used by client?)
-	mc->entries[3] = 1;				// 1 for Silver
-	mc->entries[4] = 8;				// Main Inventory Size (number of Bag Slots)
+	mc->entries[2] = 0xffffffff;	// Max Char Slots per Account (not used by client?)
+	mc->entries[3] = 0xffffffff;	// 1 for Silver
+	mc->entries[4] = 8;				// Main Inventory Size (0xffffffff on Live for Gold, but limitting to 8 until 10 is supported)
 	mc->entries[5] = 0xffffffff;	// Max Platinum per level
 	mc->entries[6] = 1;				// 0 for Silver
 	mc->entries[7] = 1;				// 0 for Silver
 	mc->entries[8] = 1;				// 1 for Silver
-	mc->entries[9] = 5;				// Unknown - Maybe Loyalty Points every 12 hours? 60 per week for Silver
+	mc->entries[9] = 0xffffffff;	// Unknown - Maybe Loyalty Points every 12 hours? 60 per week for Silver
 	mc->entries[10] = 1;			// 1 for Silver
-	mc->entries[11] = 2;			// Shared Bank Slots
-	mc->entries[12] = 14;			// Unknown - Maybe Max Active Tasks? 
+	mc->entries[11] = 0xffffffff;	// Shared Bank Slots
+	mc->entries[12] = 0xffffffff;	// Unknown - Maybe Max Active Tasks? 
 	mc->entries[13] = 1;			// 1 for Silver
 	mc->entries[14] = 1;			// 0 for Silver
 	mc->entries[15] = 1;			// 0 for Silver
 	mc->entries[16] = 1;			// 1 for Silver
 	mc->entries[17] = 1;			// 0 for Silver
 	mc->entries[18] = 1;			// 0 for Silver
-	mc->entries[19] = 1;			// 0 for Silver
-	mc->entries[20] = 1;			// 0 for Silver
+	mc->entries[19] = 0xffffffff;	// 0 for Silver
+	mc->entries[20] = 0xffffffff;	// 0 for Silver
 	mc->exit_url_length = 0;
 	//mc->exit_url = 0; // Used on Live: "http://www.everquest.com/free-to-play/exit-silver"
 
