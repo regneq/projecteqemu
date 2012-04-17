@@ -318,6 +318,7 @@ public:
 	static void ProcessBotCommands(Client *c, const Seperator *sep);
 	static std::list<SpawnedBotsList> ListSpawnedBots(uint32 characterID, std::string* errorMessage);
 	static uint32 SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessage);
+	static uint32 CreatedBotCount(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
 	//static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
@@ -380,6 +381,7 @@ public:
 	static bool GroupHasShamanClass(Group* group) { return GroupHasClass(group, SHAMAN); }
 	static bool GroupHasEnchanterClass(Group* group) { return GroupHasClass(group, ENCHANTER); }
 	static bool GroupHasPriestClass(Group* group) { return GroupHasClass(group, CLERIC | DRUID | SHAMAN); }
+	static void BotGroupSay(Mob *speaker, const char *msg, ...);
 
 	// "GET" Class Methods
 	uint32 GetBotID() const { return _botID; }
@@ -409,6 +411,7 @@ public:
 	float GetPreSummonX() { return _preSummonX; }
 	float GetPreSummonY() { return _preSummonY; }
 	float GetPreSummonZ() { return _preSummonZ; }
+	bool GetGroupMessagesOn() { return _groupMessagesOn; }
 	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -478,6 +481,7 @@ public:
 	void SetPreSummonX(float x) { _preSummonX = x; }
 	void SetPreSummonY(float y) { _preSummonY = y; }
 	void SetPreSummonZ(float z) { _preSummonZ = z; }
+	void SetGroupMessagesOn(bool groupMessagesOn) { _groupMessagesOn = groupMessagesOn; }
 
 	// Class Destructors
 	virtual ~Bot();
@@ -534,6 +538,7 @@ private:
 	float _preSummonY;
 	float _preSummonZ;
 	int8 _spellCastingChances[MaxStances][MaxSpellTypes];
+	bool _groupMessagesOn;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
