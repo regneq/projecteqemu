@@ -131,6 +131,7 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	SetHasBeenSummoned(false);
 	LoadStance();
 	SetTaunting((GetClass() == WARRIOR || GetClass() == PALADIN || GetClass() == SHADOWKNIGHT) && (GetBotStance() == BotStanceAggressive));
+	SetGroupMessagesOn(GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == ENCHANTER);
 	CalcChanceToCast();
 	rest_timer.Disable();
 
@@ -4849,6 +4850,9 @@ void Bot::AI_Process() {
 				if(IsEngaged() && !BehindMob(GetTarget(), GetX(), GetY()) && GetTarget()->IsEnraged())
 					return;
 
+				if(GetBotStance() == BotStancePassive)
+					return;
+
 				// First, special attack per class (kick, backstab etc..)
 				DoClassAttacks(GetTarget());
 
@@ -5013,7 +5017,8 @@ void Bot::AI_Process() {
 		else {
 			if(GetTarget()->IsFeared() && !spellend_timer.Enabled()){
 				// This is a mob that is fleeing either because it has been feared or is low on hitpoints
-				AI_PursueCastCheck();
+				if(GetBotStance() != BotStancePassive)
+					AI_PursueCastCheck();
 			}
 
 			if (AImovement_timer->Check()) {
@@ -5031,6 +5036,9 @@ void Bot::AI_Process() {
 		} // end not in combat range
 
 		if(!IsMoving() && !spellend_timer.Enabled()) {
+			if(GetBotStance() == BotStancePassive)
+				return;
+
 			if(AI_EngagedCastCheck()) {
 				BotMeditate(false);
 			}
@@ -5043,8 +5051,14 @@ void Bot::AI_Process() {
 		SetTarget(0);
 
 		if(!IsMoving() && AIthink_timer->Check() && !spellend_timer.Enabled()) {
-			if(!AI_IdleCastCheck() && !IsCasting())
+			if(GetBotStance() != BotStancePassive) {
+				if(!AI_IdleCastCheck() && !IsCasting())
+					BotMeditate(true);
+			}
+			else {
 				BotMeditate(true);
+			}
+
 		}
 
 		if(AImovement_timer->Check()) {
@@ -6333,6 +6347,33 @@ uint32 Bot::SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessag
 	return Result;
 }
 
+uint32 Bot::CreatedBotCount(uint32 botOwnerCharacterID, std::string* errorMessage) {
+	uint32 Result = 0;
+
+	if(botOwnerCharacterID > 0) {
+		char ErrBuf[MYSQL_ERRMSG_SIZE];
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(BotID) FROM bots WHERE BotOwnerCharacterID=%i", botOwnerCharacterID), ErrBuf, &DatasetResult)) {
+			if(mysql_num_rows(DatasetResult) == 1) {
+				DataRow = mysql_fetch_row(DatasetResult);
+				if(DataRow)
+					Result = atoi(DataRow[0]);
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+		else
+			*errorMessage = std::string(ErrBuf);
+
+		safe_delete_array(Query);
+	}
+
+	return Result;
+}
+
 uint32 Bot::GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage) {
 	uint32 Result = 0;
 
@@ -7334,10 +7375,7 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 					}
 
 					// delete from group data
-					g->membername[i][0] = '\0';
-					memset(g->membername[i], 0, 64);
-					g->members[i]->SetOwnerID(0);
-					g->members[i] = NULL;
+					RemoveBotFromGroup(this, g);
 
 					// if group members exist below this one, move
 					// them all up one slot in the group list
@@ -12084,6 +12122,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot armorcolor <slot> <red> <green> <blue> - #bot help armorcolor for info");
 		c->Message(0, "#bot taunt [on|off] - Turns taunt on/off for targeted bot");
 		c->Message(0, "#bot stance [name] [stance (id)|list] - Sets/lists stance for named bot (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
+		c->Message(0, "#bot groupmessages [on|off] [bot name|all] - Turns group messages on/off for named bot/all bots.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
@@ -12247,7 +12286,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 
 		int32 MaxBotCreate = RuleI(Bots, CreateBotCount);
-		if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) >= MaxBotCreate) {
+		if(CreatedBotCount(c->CharacterID(), &TempErrorMessage) >= MaxBotCreate) {
 			c->Message(0, "You cannot create more than %i bots.", MaxBotCreate);
 			return;
 		}
@@ -15168,6 +15207,13 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						if(botGroupItr->BotID == groupLeader->GetBotID())
 							continue;
 
+						spawnedBotCount = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
+
+						if(spawnedBotCount >= RuleI(Bots, SpawnBotCount) && !c->GetGM()) {
+							c->Message(0, "You cannot spawn more than %i bots.", spawnedBotCount);
+							return;
+						}
+
 						Bot* botGroupMember = LoadBot(botGroupItr->BotID, &TempErrorMessage);
 
 						if(!TempErrorMessage.empty()) {
@@ -15409,6 +15455,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				std::string stanceName;
 				BotStanceType botStance;
 
+				if (tempBot->GetBotOwner() != c) {	
+					c->Message(13, "You must target a bot that you own.");
+					return;
+				}
+
 				if(!strcasecmp(sep->arg[3], "list")) {
 					botStance = tempBot->GetBotStance();
 				}
@@ -15471,6 +15522,68 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 		else {
 			c->Message(0, "Usage #bot stance [name] [stance (id)]  (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "groupmessages")) {
+		bool groupMessages = false;
+
+		if(sep->arg[2] && sep->arg[3]){
+			if(!strcasecmp(sep->arg[2], "on"))
+				groupMessages = true;
+			else if (!strcasecmp(sep->arg[2], "off"))
+				groupMessages = false;
+			else {
+				c->Message(0, "Usage #bot groupmessages [on|off] [bot name|all]");
+				return;
+			}
+				
+			Bot* tempBot;
+
+			if(!strcasecmp(sep->arg[3], "all")) {
+				std::list<Bot*> spawnedBots = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+				if(!spawnedBots.empty()) {
+					for(std::list<Bot*>::iterator botsListItr = spawnedBots.begin(); botsListItr != spawnedBots.end(); botsListItr++) {
+						Bot* tempBot = *botsListItr;
+						if(tempBot) {
+							tempBot->SetGroupMessagesOn(groupMessages);
+						}
+					}
+				}
+				else {
+					c->Message(0, "You have no spawned bots in this zone.");
+				}
+
+				c->Message(0, "Group messages now %s for all bots.", groupMessages?"on":"off");
+			}
+			else {
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					tempBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+
+				if(tempBot) {
+					if (tempBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					tempBot->SetGroupMessagesOn(groupMessages);
+					c->Message(0, "Group messages now %s.", groupMessages?"on":"off");
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+				}
+			}
+		}
+		else {
+			c->Message(0, "Usage #bot groupmessages [on|off] [bot name|all]");
 		}
 		return;
 	}
@@ -15618,9 +15731,10 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 	
 	//Ok for the buffs..
 	if( iSpellTypes == SpellType_Buff) {
+		int8 chanceToCast = caster->IsEngaged()?caster->GetChanceToCastBySpellType(SpellType_Buff):100;
 		// Let's try to make Bard working...
 		if(botCasterClass == BARD) {
-			if(caster->AICastSpell(caster, caster->GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff))
+			if(caster->AICastSpell(caster, chanceToCast, SpellType_Buff))
 				return true;
 			else
 				return false;
@@ -15632,10 +15746,10 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 			if(g) {
 				for( int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(g->members[i]) {
-						if(caster->AICastSpell(g->members[i], caster->GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff))
+						if(caster->AICastSpell(g->members[i], chanceToCast, SpellType_Buff))
 							return true;
 
-						if(caster->AICastSpell(g->members[i]->GetPet(), caster->GetChanceToCastBySpellType(SpellType_Buff), SpellType_Buff))
+						if(caster->AICastSpell(g->members[i]->GetPet(), chanceToCast, SpellType_Buff))
 							return true;
 					}
 				}
@@ -16252,6 +16366,24 @@ void Bot::SetDefaultBotStance() {
 	}
 	_baseBotStance = BotStancePassive;
 	_botStance = defaultStance;
+}
+
+void Bot::BotGroupSay(Mob *speaker, const char *msg, ...)
+{
+	
+	char buf[1000];
+	va_list ap;
+	
+	va_start(ap, msg);
+	vsnprintf(buf, 1000, msg, ap);
+	va_end(ap);
+
+	if(speaker->HasGroup()) {
+		Group *g = speaker->GetGroup();
+
+		if(g)
+			g->GroupMessage(speaker->CastToMob(), 0, 100, buf);
+	}
 }
 
 #endif

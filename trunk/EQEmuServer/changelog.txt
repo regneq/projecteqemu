@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/17/2012==
+Bad_Captain: Bots: Added Bot Group Messages and #bot groupmessages command to turn them on or off per bot or for all bots.
+Bad_Captain: Bots: Fixed bugs that allowed more bots to be spawned than specified in the Bots:SpawnBotCount rule, fixed bug that allowed more bots to be created than specified in the Bots:CreateBotCount rule, and fixed slow buffing bug.
+Bad_Captain: Bots: Various spell ai tweaks (including HoT spells should no longer block other heals from being cast in certain situations and hybrids should use less mana by healing less often).
+Bad_Captain: Bots: Removed client xp gain from bots outside the player's group.
+
+
 ==04/14/2012==
 Trevius: Fixed inspect for SoF+ clients, which was broken by Rev2128.
 
