@@ -127,6 +127,7 @@ public:
 	bool	Process();
 	void	DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index);
 	int32	DumpSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index, Spawn2* spawn2);
+	void	Despawn(uint32 spawngroupID);
 
 	bool	Depop(bool StartSpawnTimer = false);
 	void	Repop(int32 delay = 0);

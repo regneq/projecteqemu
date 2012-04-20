@@ -145,6 +145,8 @@ struct ZSDump_NPC_Loot {
 	int16	itemid;
 	sint8	charges;
 	sint16	equipSlot;
+	int8	minlevel;
+	int8	maxlevel;
 };
 
 /*
@@ -166,7 +168,24 @@ struct ServerLootItem_Struct {
 	uint32 aug3;
 	uint32 aug4;
 	uint32 aug5;
+	int8 minlevel;
+	int8 maxlevel;
 };
+
+namespace player_lootitem
+{
+	struct ServerLootItem_Struct {
+	uint32	item_id;
+	sint16	equipSlot;
+	int8	charges;
+	int16	lootslot;
+	uint32 aug1;
+	uint32 aug2;
+	uint32 aug3;
+	uint32 aug4;
+	uint32 aug5;
+	};
+}
 
 struct DBPlayerCorpse_Struct {
 	int32	crc;
@@ -196,7 +215,7 @@ struct DBPlayerCorpse_Struct {
 	int32 drakkin_heritage;
 	int32 drakkin_tattoo;
 	int32 drakkin_details;
-	ServerLootItem_Struct	items[0];
+	player_lootitem::ServerLootItem_Struct	items[0];
 };
 
 namespace classic_db
@@ -226,7 +245,7 @@ namespace classic_db
 		int8 hairstyle;
 		int8 face;
 		int8 beard;
-		ServerLootItem_Struct	items[0];
+		player_lootitem::ServerLootItem_Struct	items[0];
 	};
 }
 

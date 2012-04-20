@@ -110,7 +110,7 @@ public:
 	void attacknpc(int npc_entity_id);
 	void attacknpctype(int npc_type_id);
 	void save();
-	void faction(int faction_id, int faction_value);
+	void faction(int faction_id, int faction_value, int temp);
 	void setsky(uint8 new_sky);
 	void setguild(int32 new_guild_id, int8 new_rank);
 	void CreateGuild(const char *guild_name, const char *leader);
@@ -146,6 +146,7 @@ public:
 	void clear_zone_flag(int zone_id);
 	void sethp(int hpperc);
 	bool summonburriedplayercorpse(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading);
+	bool summonallplayercorpses(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading);
 	int32 getplayerburriedcorpsecount(int32 char_id);
 	bool buryplayercorpse(int32 char_id);
 	void forcedooropen(int32 doorid);

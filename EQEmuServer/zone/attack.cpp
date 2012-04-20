@@ -2189,10 +2189,20 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	//do faction hits even if we are a merchant, so long as a player killed us
 	if(give_exp_client)
 		hate_list.DoFactionHits(GetNPCFactionID());
-	
+
 	if (!HasOwner() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
 		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetUltimateOwner()->IsClient()) ||
 		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->GetOwner() && killer->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))) {
+		
+		if(killer != 0)
+		{
+			if(killer->GetOwner() != 0 && killer->GetOwner()->IsClient())
+				killer = killer->GetOwner();
+
+			if(!killer->CastToClient()->GetGM() && killer->IsClient())
+				this->CheckMinMaxLevel(killer);
+		}
+
 		Corpse* corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,level>54?RuleI(NPC,MajorNPCCorpseDecayTimeMS):RuleI(NPC,MinorNPCCorpseDecayTimeMS));
 		entity_list.LimitRemoveNPC(this);
 		entity_list.AddCorpse(corpse, this->GetID());
@@ -2200,10 +2210,9 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		entity_list.UnMarkNPC(GetID());
 		entity_list.RemoveNPC(GetID());
 		this->SetID(0);
-		if(killer->GetOwner() != 0 && killer->GetOwner()->IsClient())
-			killer = killer->GetOwner();
 		if(killer != 0 && killer->IsClient()) {
 			corpse->AllowMobLoot(killer, 0);
+	
 			if(killer->IsGrouped()) {
 				Group* group = entity_list.GetGroupByClient(killer->CastToClient());
 				if(group != 0) {

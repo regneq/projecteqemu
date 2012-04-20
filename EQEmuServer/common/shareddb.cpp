@@ -1195,7 +1195,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 				safe_delete_array(query);
 				return false;
 			}
-			if (RunQuery(query, MakeAnyLenString(&query, "SELECT npc_faction_id, faction_id, value, npc_value FROM npc_faction_entries order by npc_faction_id"), errbuf, &result)) {
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT npc_faction_id, faction_id, value, npc_value, temp FROM npc_faction_entries order by npc_faction_id"), errbuf, &result)) {
 				safe_delete_array(query);
 				sint8 i = 0;
 				int32 curflid = 0;
@@ -1203,15 +1203,17 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 				uint32 tmpfactionid[MAX_NPC_FACTIONS];
 				sint32 tmpfactionvalue[MAX_NPC_FACTIONS];
 				sint8 tmpfactionnpcvalue[MAX_NPC_FACTIONS];
+				int8 tmpfactiontemp[MAX_NPC_FACTIONS];
 
 				memset(tmpfactionid, 0, sizeof(tmpfactionid));
 				memset(tmpfactionvalue, 0, sizeof(tmpfactionvalue));
 				memset(tmpfactionnpcvalue, 0, sizeof(tmpfactionnpcvalue));
+				memset(tmpfactiontemp, 0, sizeof(tmpfactiontemp));
 				
 				while((row = mysql_fetch_row(result))) {
 					tmpflid = atoi(row[0]);
 					if (curflid != tmpflid && curflid != 0) {
-						if (!EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue)) {
+						if (!EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue, tmpfactiontemp)) {
 							mysql_free_result(result);
 							cout << "Error: SharedDatabase::DBLoadNPCFactionLists: !EMuShareMemDLL.NPCFactionList.cbSetFaction" << endl;
 							return false;
@@ -1219,12 +1221,14 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 						memset(tmpfactionid, 0, sizeof(tmpfactionid));
 						memset(tmpfactionvalue, 0, sizeof(tmpfactionvalue));
 						memset(tmpfactionnpcvalue, 0, sizeof(tmpfactionnpcvalue));
+						memset(tmpfactiontemp, 0, sizeof(tmpfactiontemp));
 						i = 0;
 					}
 					curflid = tmpflid;
 					tmpfactionid[i] = atoi(row[1]);
 					tmpfactionvalue[i] = atoi(row[2]);
 					tmpfactionnpcvalue[i] = atoi(row[3]);
+					tmpfactiontemp[i] = atoi(row[4]);
 					i++;
 					if (i >= MAX_NPC_FACTIONS) {
 						cerr << "Error in DBLoadNPCFactionLists: More than MAX_NPC_FACTIONS factions returned, flid=" << tmpflid << endl;
@@ -1233,7 +1237,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 					Sleep(0);
 				}
 				if (tmpflid) {
-					EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue);
+					EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue, tmpfactiontemp);
 				}
 
 				mysql_free_result(result);
@@ -1510,17 +1514,6 @@ bool SharedDatabase::GetCommandSettings(map<string,uint8> &commands) {
 	
 	return false;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 bool SharedDatabase::extDBLoadSkillCaps() {
 	return s_usedb->DBLoadSkillCaps();

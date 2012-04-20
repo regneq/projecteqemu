@@ -84,6 +84,7 @@
 #define ServerOP_ReloadTitles		0x0062
 #define ServerOP_QGlobalUpdate		0x0063
 #define ServerOP_QGlobalDelete		0x0064
+#define ServerOP_DepopPlayerCorpse	0x0065
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use
@@ -806,6 +807,13 @@ struct ReloadTasks_Struct {
 struct ServerDepopAllPlayersCorpses_Struct
 {
 	uint32 CharacterID;
+	int32 ZoneID;
+	int16 InstanceID;
+};
+
+struct ServerDepopPlayerCorpse_Struct
+{
+	uint32 DBID;
 	int32 ZoneID;
 	int16 InstanceID;
 };

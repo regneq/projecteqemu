@@ -137,6 +137,7 @@ RULE_INT ( World, AddMaxClientsPerIP, -1 ) // Maximum number of clients allowed 
 RULE_INT ( World, AddMaxClientsStatus, -1 ) // Accounts with status >= this rule will be allowed to use the amount of accounts defined in the AddMaxClientsPerIP.  Default value: -1 (feature disabled)
 RULE_BOOL ( World, MaxClientsSetByStatus, false) // If True, IP Limiting will be set to the status on the account as long as the status is > MaxClientsPerIP
 RULE_BOOL ( World, ClearTempMerchantlist, true) // Clears temp merchant items when world boots.
+RULE_BOOL ( World, DeleteStaleCorpeBackups, true) // Deletes stale corpse backups older than 2 weeks.
 RULE_INT ( World, AccountSessionLimit, -1 )  //Max number of characters allowed on at once from a single account (-1 is disabled)
 RULE_INT ( World, ExemptAccountLimitStatus, -1 )  //Min status required to be exempt from multi-session per account limiting (-1 is disabled)
 RULE_BOOL ( World, GMAccountIPList, false) // Check ip list against GM Accounts, AntiHack GM Accounts.
@@ -153,6 +154,7 @@ RULE_INT ( Zone,  NPCPositonUpdateTicCount, 32 ) //ms between intervals of sendi
 RULE_INT ( Zone,  ClientLinkdeadMS, 180000) //the time a client remains link dead on the server after a sudden disconnection
 RULE_INT ( Zone,  GraveyardTimeMS, 1200000) //ms time until a player corpse is moved to a zone's graveyard, if one is specified for the zone
 RULE_BOOL ( Zone, EnableShadowrest, 1 ) // enables or disables the shadowrest zone feature for player corpses. Default is turned on.
+RULE_BOOL ( Zone, UsePlayerCorpseBackups, true) // Keeps backups of player corpses.
 RULE_INT ( Zone, MQWarpExemptStatus, -1 ) // Required status level to exempt the MQWarpDetector.  Set to -1 to disable this feature.
 RULE_INT ( Zone, MQZoneExemptStatus, -1 ) // Required status level to exempt the MQZoneDetector.  Set to -1 to disable this feature.
 RULE_INT ( Zone, MQGateExemptStatus, -1 ) // Required status level to exempt the MQGateDetector.  Set to -1 to disable this feature.

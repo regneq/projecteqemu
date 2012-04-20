@@ -422,7 +422,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 		for (int i=0; i<MAX_WORN_INVENTORY; i++)
 			if (petinv[i]) {
 				item = database.GetItem(petinv[i]);
-				npc->AddLootDrop(item, &npc->itemlist, 0, true, true);
+				npc->AddLootDrop(item, &npc->itemlist, 0, 1, 127, true, true);
 			}
 	}
 
@@ -632,7 +632,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 		if (item2 && item2->NoDrop != 0) {
 			//dont bother saving item charges for now, NPCs never use them
 			//and nobody should be able to get them off the corpse..?
-			AddLootDrop(item2, &itemlist, 0, true, true);
+			AddLootDrop(item2, &itemlist, 0, 1, 127, true, true);
 		}
 	}
 }

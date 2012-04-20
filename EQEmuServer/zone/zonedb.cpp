@@ -2145,6 +2145,16 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 
 }
 
+void ZoneDatabase::RemoveTempFactions(Client *c){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+
+	if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM faction_values WHERE temp = 1 AND char_id=%u", c->CharacterID()), errbuf)) {
+		cerr << "Error in RemoveTempFactions query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+}
+
 void ZoneDatabase::LoadPetInfo(Client *c) {
 	// Load current pet and suspended pet
 	char errbuf[MYSQL_ERRMSG_SIZE];

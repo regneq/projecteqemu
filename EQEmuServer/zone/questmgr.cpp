@@ -1011,7 +1011,7 @@ void QuestManager::save() {
 		initiator->Save();
 }
 
-void QuestManager::faction(int faction_id, int faction_value) {
+void QuestManager::faction(int faction_id, int faction_value, int temp) {
 	if (initiator && initiator->IsClient()) {
 		if(faction_id != 0 && faction_value != 0) {
 	// SCORPIOUS2K - fixed faction command
@@ -1022,7 +1022,8 @@ void QuestManager::faction(int faction_id, int faction_value) {
 				initiator->GetBaseClass(),
 				initiator->GetBaseRace(),
 				initiator->GetDeity(),
-				faction_value);
+				faction_value,
+				temp);
 
 		}
 	}
@@ -1558,13 +1559,21 @@ bool QuestManager::summonburriedplayercorpse(int32 char_id, float dest_x, float 
 
 	if(char_id > 0) {
 		Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(char_id, zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
-
 		if(PlayerCorpse) {
-			PlayerCorpse->Spawn();
 			Result = true;
 		}
 	}
+	return Result;
+}
 
+bool QuestManager::summonallplayercorpses(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading) {
+	bool Result = false;
+
+	if(char_id > 0) {
+		Client* c = entity_list.GetClientByCharID(char_id);
+		c->SummonAllCorpses(dest_x, dest_y, dest_z, dest_heading);
+		Result = true;
+	}
 	return Result;
 }
 
@@ -1574,25 +1583,31 @@ int32 QuestManager::getplayerburriedcorpsecount(int32 char_id) {
 	if(char_id > 0) {
 		Result = database.GetPlayerBurriedCorpseCount(char_id);
 	}
-
 	return Result;
 }
 
-bool QuestManager::buryplayercorpse(int32 char_id) {
+bool QuestManager::buryplayercorpse(int32 char_id) 
+{
 	bool Result = false;
 
-	if(char_id > 0) {
+	if(char_id > 0) 
+	{
 		int32 PlayerCorpse = database.GetFirstCorpseID(char_id);
-
-		if(PlayerCorpse > 0){
+		if(PlayerCorpse > 0)
+		{
 			database.BuryPlayerCorpse(PlayerCorpse);
-			Corpse* CorpseEntity = entity_list.GetCorpseByDBID(PlayerCorpse);
-
-				if(CorpseEntity > 0){
-					CorpseEntity->Save();
-					CorpseEntity->DepopCorpse();
-					Result = true;
-		}
+			Corpse* corpse = entity_list.GetCorpseByDBID(PlayerCorpse);
+			if(corpse)
+			{
+				corpse->Save();
+				corpse->DepopCorpse();
+			}
+			else
+			{
+				Client *c = entity_list.GetClientByCharID(char_id);
+				c->DepopPlayerCorpse(PlayerCorpse);
+			}
+			Result = true;
 		}
 	}
 	return Result;

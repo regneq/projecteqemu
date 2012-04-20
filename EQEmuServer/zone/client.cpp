@@ -4495,6 +4495,75 @@ void Client::SummonAndRezzAllCorpses()
 	Message(clientMessageYellow, "All your corpses have been summoned to your feet and have received a 100% resurrection.");
 }
 
+void Client::SummonAllCorpses(float dest_x, float dest_y, float dest_z, float dest_heading)
+{
+
+	if(dest_x == 0 && dest_y == 0 && dest_z == 0 && dest_heading == 0)
+	{
+		dest_x = GetX(); dest_y = GetY(); dest_z = GetZ(); dest_heading = GetHeading();
+	}
+
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
+
+	ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct*)Pack->pBuffer;
+
+	sdapcs->CharacterID = CharacterID();
+	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveAllCorpsesByCharID(CharacterID());
+
+	int CorpseCount = database.SummonAllPlayerCorpses(CharacterID(), zone->GetZoneID(), zone->GetInstanceID(),
+								  dest_x, dest_y, dest_z, dest_heading);
+	if(CorpseCount <= 0)
+	{
+		return;
+	}
+}
+
+void Client::DepopAllCorpses()
+{
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
+
+	ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct*)Pack->pBuffer;
+
+	sdapcs->CharacterID = CharacterID();
+	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveAllCorpsesByCharID(CharacterID());
+}
+
+void Client::DepopPlayerCorpse(int32 dbid)
+{
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopPlayerCorpse, sizeof(ServerDepopPlayerCorpse_Struct));
+
+	ServerDepopPlayerCorpse_Struct *sdpcs = (ServerDepopPlayerCorpse_Struct*)Pack->pBuffer;
+
+	sdpcs->DBID = dbid;
+	sdpcs->ZoneID = zone->GetZoneID();
+	sdpcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveCorpseByDBID(dbid);
+}
+
+void Client::BuryPlayerCorpses()
+{
+	database.BuryAllPlayerCorpses(CharacterID());
+}
+
 void Client::NotifyNewTitlesAvailable()
 {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_NewTitlesAvailable, 0);

@@ -136,6 +136,7 @@ public:
 
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
 	void    RemoveItem(uint32 item_id, int16 quantity = 0, int16 slot = 0);
+	void	CheckMinMaxLevel(Mob *them);
 	void	ClearItemList();
 	ServerLootItem_Struct*	GetItem(int slot_id);
 	void	AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum);
@@ -215,7 +216,7 @@ public:
 	void    SetTaunting(bool tog) {taunting = tog;}
 	void	PickPocket(Client* thief);
 	void	StartSwarmTimer(int32 duration) { swarm_timer.Start(duration); }
-	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint16 charges, bool equipit, bool wearchange = false);
+	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint16 charges, int8 minlevel, int8 maxlevel, bool equipit, bool wearchange = false);
 	virtual void DoClassAttacks(Mob *target);
 	void	CheckSignal();
 	
@@ -252,7 +253,7 @@ public:
 	inline const int32 GetNPCSpellsID()	const { return npc_spells_id; }
 	
 	ItemList	itemlist; //kathgar - why is this public?  Doing other things or I would check the code
-	
+
 	NPCProximity* proximity;
 	Spawn2*	respawn2;
 	QGlobalCache *GetQGlobals() { return qGlobals; }

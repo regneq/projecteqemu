@@ -1,5 +1,33 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/19/2012==
+cavedude: quest::buryplayercorpse will now despawn corpses in zones other than the client's current location, preventing dupes. 
+cavedude: Added quest::summonallplayercorpses (same syntax as quest::summonburriedplayercorpse) which will depop and summon all of the player's corpses, buried or not.
+cavedude: Fixed a bug that caused some summoned corpses to use a static 5 minute decay timer.
+cavedude: Changed player_corpses_backup schema to match player_corpses. If the rule is enabled, corpse backups will now be created for players that are high enough level to drop items to their corpses.
+cavedude: Added a rule to determine whether or not to remove player corpse backups older than 2 weeks.
+cavedude: #corpse now has options to depop a single player corpse, or every corpse belonging to a single player. 
+cavedude: You can now specify if a faction hit is temporary (is removed when player camps/zones) or whether or not to display the faction hit to the player in-game.
+If temp in npc_faction_entries is set to:
+0 (Default): Faction is permanent, player recieves a message. (Same functionality as we had previously.)
+1: Faction is temporary, player does not recieve a message.
+2: Faction is temporary, player recieves a message.
+3: Faction is permanent, but player does not recieve a message.
+cavedude: Added an optional argument to quest::faction to utilize the functionality and values listed above.
+cavedude: Added minlevel and maxlevel to lootdrop_entries. The player credited with the kill (most hate) has their level checked against both columns, and if they are lower than the specified minlevel, or higer than the max, that item entry if it exists is removed from the NPC before it becomes a corpse. 
+cavedude: You can now specify if a NPC automatically repops (rerolls against their spawngroup) or depops after the reverse spawn timer is up.
+If despawn in spawngroup is set to:
+0 (Default): Do not depop or repop, no depop timer is set. (Same functionality as we had previously.)
+1: Despawn the current NPC and repop the spawngroup after the associated spawn2 timer is up (including variance.)
+2. Repop, after the value specified in despawn_timer is up (also uses spawn2 variance.)
+3: Depop the NPC after the spawn2 timer is up + variance.
+4. Depop the NPC after despawn_timer is up + variance.
+Example: Setting despawn to 1 will despawn the NPC and immediately respawn the spawngroup after it has been up for the length of its spawn2 timer + variance.
+Example: Setting despawn to 4 and despawn_timer to 3600 will depop the NPC after it has been up for an hour + variance. It then will respawn after its normal respawn timer is up.
+cavedude: Fixed a crash in groups.cpp.
+
+Required SQL: utils/sql/svn/2133_required_faction_loot_despawn.sql (Backup your data first!)
+
 ==04/17/2012==
 Bad_Captain: Bots: Added Bot Group Messages and #bot groupmessages command to turn them on or off per bot or for all bots.
 Bad_Captain: Bots: Fixed bugs that allowed more bots to be spawned than specified in the Bots:SpawnBotCount rule, fixed bug that allowed more bots to be created than specified in the Bots:CreateBotCount rule, and fixed slow buffing bug.

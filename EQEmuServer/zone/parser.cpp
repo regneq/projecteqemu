@@ -940,7 +940,7 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 		quest_manager.flagcheck(atoi(arglist[0]), atoi(arglist[1]));
 	}*/
 	else if (!strcmp(command,"faction")) {
-		quest_manager.faction(atoi(arglist[0]), atoi(arglist[1]));
+		quest_manager.faction(atoi(arglist[0]), atoi(arglist[1]), atoi(arglist[2]));
 	}
 	else if (!strcmp(command,"setsky")) {
 		quest_manager.setsky(atoi(arglist[0]));

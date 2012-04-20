@@ -43,6 +43,7 @@ struct NPCFactionList {
 	uint32	factionid[MAX_NPC_FACTIONS];
 	sint32	factionvalue[MAX_NPC_FACTIONS];
 	sint8	factionnpcvalue[MAX_NPC_FACTIONS];
+	int8	factiontemp[MAX_NPC_FACTIONS];
 };
 
 struct FactionMods
@@ -68,10 +69,11 @@ struct NPCFaction
 uint32 factionID;
 sint32 value_mod;
 sint8 npc_value;
+int8 temp;
 //bool primary;    
 }; 
 
 const char *FactionValueToString(FACTION_VALUE fv);
-char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue);
+char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue, int8 temp);
 FACTION_VALUE CalculateFaction(FactionMods* fm, sint32 tmpCharacter_value);
 #endif

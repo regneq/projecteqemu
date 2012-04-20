@@ -80,6 +80,7 @@ public:
 	void	QueryLoot(Client* to);
 	int32	CountItems();
 	void	Delete();
+	void	Bury();
 	virtual void	Depop();
 	virtual void    DepopCorpse();
 

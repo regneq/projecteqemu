@@ -61,6 +61,8 @@ struct LootDropEntries_Struct {
 	sint8	item_charges;
 	uint8	equip_item;
 	uint8	chance;
+	uint8	minlevel;
+	uint8	maxlevel;
 };
 
 struct LootDrop_Struct {

@@ -162,6 +162,7 @@ public:
 	Doors*	GetDoorsByID(int16 id);
 	Doors*	GetDoorsByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);
+	void RemoveCorpseByDBID(int32 dbid);
 	int RezzAllCorpsesByCharID(int32 charid);
 	bool IsMobInZone(Mob *who);
 	void ClearClientPetitionQueue();

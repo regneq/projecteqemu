@@ -1768,7 +1768,7 @@ Corpse* EntityList::GetCorpseByID(int16 id){
 	return 0;
 }
 
-	Corpse* EntityList::GetCorpseByDBID(int32 dbid){
+Corpse* EntityList::GetCorpseByDBID(int32 dbid){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -1801,6 +1801,19 @@ void EntityList::RemoveAllCorpsesByCharID(int32 charid)
 	while(iterator.MoreElements())
 	{
 		if (iterator.GetData()->GetCharID() == charid)
+			iterator.RemoveCurrent();
+		else
+			iterator.Advance();
+	}
+}
+
+void EntityList::RemoveCorpseByDBID(int32 dbid)
+{
+	LinkedListIterator<Corpse*> iterator(corpse_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetDBID() == dbid)
 			iterator.RemoveCurrent();
 		else
 			iterator.Advance();
