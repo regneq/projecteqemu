@@ -30,8 +30,8 @@ extern "C" __declspec(dllexport) bool DLLLoadNPCFactionLists(CALLBACK_DBLoadNPCF
 	return pDLLLoadNPCFactionLists(cbDBLoadNPCFactionLists, iNPCFactionListStructSize, iNPCFactionListsCount, iMaxNPCFactionListID, iMaxNPCFactions);
 };
 
-extern "C" __declspec(dllexport) bool SetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue) {
-	return pSetNPCFaction(id, factionid, factionvalue, factionnpcvalue);
+extern "C" __declspec(dllexport) bool SetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp) {
+	return pSetNPCFaction(id, factionid, factionvalue, factionnpcvalue, factiontemp);
 }
 #else
 extern "C" const NPCFactionList* GetNPCFactionList(uint32 id) {
@@ -46,8 +46,8 @@ extern "C" bool DLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNP
 	return pDLLLoadNPCFactionLists(cbDBLoadNPCFactionLists, iNPCFactionListStructSize, iNPCFactionListsCount, iMaxNPCFactionListID, iMaxNPCFactions);
 };
 
-extern "C" bool SetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue) {
-	return pSetNPCFaction(id, factionid, factionvalue, factionnpcvalue);
+extern "C" bool SetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp) {
+	return pSetNPCFaction(id, factionid, factionvalue, factionnpcvalue, factiontemp);
 }
 #endif
 
@@ -71,7 +71,7 @@ bool pAddNPCFactionList(uint32 id, const NPCFactionList* nfl) {
 	return true;
 }
 
-bool pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue) {
+bool pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp) {
 	if (!MMFNPCFactionListsData_Writable) {
 	    if(EQDEBUG>=1) cout<<"[Debug] !MMFNPCFactionListsData_Writable"<<endl;
 		return false;
@@ -89,6 +89,7 @@ bool pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *fa
 		MMFNPCFactionListsData_Writable->NPCFactionLists[MMFNPCFactionListsData_Writable->NPCFactionListIndex[id]].factionid[i] = factionid[i];
 		MMFNPCFactionListsData_Writable->NPCFactionLists[MMFNPCFactionListsData_Writable->NPCFactionListIndex[id]].factionvalue[i] = factionvalue[i];
 		MMFNPCFactionListsData_Writable->NPCFactionLists[MMFNPCFactionListsData_Writable->NPCFactionListIndex[id]].factionnpcvalue[i] = factionnpcvalue[i];
+		MMFNPCFactionListsData_Writable->NPCFactionLists[MMFNPCFactionListsData_Writable->NPCFactionListIndex[id]].factiontemp[i] = factiontemp[i];
 	}
 	return true;
 }

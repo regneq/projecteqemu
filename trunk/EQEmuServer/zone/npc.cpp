@@ -442,7 +442,35 @@ void NPC::RemoveItem(uint32 item_id, int16 quantity, int16 slot) {
 		}
 	}
 }
-	  
+
+void NPC::CheckMinMaxLevel(Mob *them)
+{
+	if(them == NULL || !them->IsClient())
+		return;
+
+	int16 themlevel = them->GetLevel();
+	int8 material;
+
+	list<ServerLootItem_Struct*>::iterator cur = itemlist.begin();
+	while(cur != itemlist.end())
+	{
+		if(!(*cur))
+			return;
+
+		if(themlevel < (*cur)->minlevel || themlevel > (*cur)->maxlevel)
+		{
+			material = Inventory::CalcMaterialFromSlot((*cur)->equipSlot);
+			if(material != 0xFF)
+				SendWearChange(material);
+
+			cur = itemlist.erase(cur);
+			continue;
+		}
+		cur++;
+	}
+	
+}
+
 void NPC::ClearItemList() {
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
@@ -466,11 +494,11 @@ void NPC::QueryLoot(Client* to) {
 		if (item)
 			if (to->GetClientVersion() >= EQClientSoF)
 			{
-				to->Message(0, "  %i: %c%06X00000000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
+				to->Message(0, "minlvl: %i maxlvl: %i %i: %c%06X00000000000000000000000000000000000000000000%s%c",(*cur)->minlevel, (*cur)->maxlevel, (int) item->ID,0x12, item->ID, item->Name, 0x12);
 			}
 			else
 			{
-				to->Message(0, "  %i: %c%06X000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
+				to->Message(0, "minlvl: %i maxlvl: %i %i: %c%06X000000000000000000000000000000000000000%s%c",(*cur)->minlevel, (*cur)->maxlevel, (int) item->ID,0x12, item->ID, item->Name, 0x12);
 			}
 		else
 		    LogFile->write(EQEMuLog::Error, "Database error, invalid item");
@@ -668,6 +696,8 @@ void NPC::DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPC
 		npclootdump[*NPCLootindex].itemid = item->item_id;
 		npclootdump[*NPCLootindex].charges = item->charges;
 		npclootdump[*NPCLootindex].equipSlot = item->equipSlot;
+		npclootdump[*NPCLootindex].minlevel = item->minlevel;
+		npclootdump[*NPCLootindex].maxlevel = item->maxlevel;
 		(*NPCLootindex)++;
 	}
 	ClearItemList();

@@ -1489,6 +1489,18 @@ void WorldServer::Process() {
 			break;
 
 		}
+
+		case ServerOP_DepopPlayerCorpse:
+		{
+			ServerDepopPlayerCorpse_Struct *sdpcs = (ServerDepopPlayerCorpse_Struct *)pack->pBuffer;
+
+			if(zone && !((zone->GetZoneID() == sdpcs->ZoneID) && (zone->GetInstanceID() == sdpcs->InstanceID)))
+				entity_list.RemoveCorpseByDBID(sdpcs->DBID);
+
+			break;
+
+		}
+
 		case ServerOP_ReloadTitles:
 		{
 			title_manager.LoadTitles();

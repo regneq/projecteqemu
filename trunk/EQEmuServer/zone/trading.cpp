@@ -400,7 +400,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 								if (baginst) {
 									const Item_Struct* bagitem = database.GetItem(baginst->GetItem()->ID);
 									if (bagitem && (GetGM() || (bagitem->NoDrop != 0 && baginst->IsInstNoDrop() == false))) {
-										tradingWith->CastToNPC()->AddLootDrop(bagitem, &tradingWith->CastToNPC()->itemlist, baginst->GetCharges(), true, true);
+										tradingWith->CastToNPC()->AddLootDrop(bagitem, &tradingWith->CastToNPC()->itemlist, baginst->GetCharges(), 1, 127, true, true);
 									}
 									else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {
 										PushItemOnCursor(*baginst, true);
@@ -409,7 +409,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 							}
 						}
 
-						tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
+						tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], 1, 127, true, true);
 					}
 					// Return NO DROP and Attuned items being handed into a non-quest NPC if the rule is true
 					else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {

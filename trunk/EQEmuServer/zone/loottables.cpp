@@ -195,7 +195,7 @@ bool SharedDatabase::DBLoadLoot() {
 		LootDrop_Struct* tmpLD = 0;
 		while ((row = mysql_fetch_row(result))) {
 			tmpid = atoi(row[0]);
-			if (RunQuery(query, MakeAnyLenString(&query, "SELECT lootdrop_id, item_id, item_charges, equip_item, chance FROM lootdrop_entries WHERE lootdrop_id=%i order by chance desc", tmpid), errbuf, &result2)) {
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT lootdrop_id, item_id, item_charges, equip_item, chance, minlevel, maxlevel FROM lootdrop_entries WHERE lootdrop_id=%i order by chance desc", tmpid), errbuf, &result2)) {
 				safe_delete_array(query);
 				tmpLD = (LootDrop_Struct*) new uchar[sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * mysql_num_rows(result2))];
 				memset(tmpLD, 0, sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * mysql_num_rows(result2)));
@@ -213,6 +213,8 @@ bool SharedDatabase::DBLoadLoot() {
 					tmpLD->Entries[i].item_charges = atoi(row[2]);
 					tmpLD->Entries[i].equip_item = atoi(row[3]);
 					tmpLD->Entries[i].chance = atoi(row[4]);
+					tmpLD->Entries[i].minlevel = atoi(row[5]);
+					tmpLD->Entries[i].maxlevel = atoi(row[6]);
 					i++;
 				}
 				if (!EMuShareMemDLL.Loot.cbAddLootDrop(tmpid, tmpLD)) {
@@ -388,7 +390,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 			i++;
 	}
 	const Item_Struct* dbitem = GetItem(items[i]);
-	npc->AddLootDrop(dbitem, itemlist, lds->Entries[k].item_charges, lds->Entries[k].equip_item, false);
+	npc->AddLootDrop(dbitem, itemlist, lds->Entries[k].item_charges, lds->Entries[k].minlevel, lds->Entries[k].maxlevel, lds->Entries[k].equip_item, false);
 	
 #else
 	//non-pool based looting
@@ -424,7 +426,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 			int32 itemid = lds->Entries[k].item_id;
 			
 			const Item_Struct* dbitem = GetItem(itemid);
-			npc->AddLootDrop(dbitem, itemlist, lds->Entries[k].item_charges, lds->Entries[k].equip_item, false);
+			npc->AddLootDrop(dbitem, itemlist, lds->Entries[k].item_charges, lds->Entries[k].minlevel, lds->Entries[k].maxlevel, lds->Entries[k].equip_item, false);
 			
 			break;
 			//continue;
@@ -436,7 +438,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 }
 
 //if itemlist is null, just send wear changes
-void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charges, bool equipit, bool wearchange) {
+void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charges, int8 minlevel, int8 maxlevel, bool equipit, bool wearchange) {
 	if(item2 == NULL)
 		return;
 	
@@ -465,6 +467,8 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 	item->aug3 = 0;
 	item->aug4 = 0;
 	item->aug5 = 0;
+	item->minlevel = minlevel;
+	item->maxlevel = maxlevel;
 	if (equipit) {
 		uint8 eslot = 0xFF;
 		char newid[20];
@@ -618,7 +622,7 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 	  
 void NPC::AddItem(const Item_Struct* item, int16 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
-	AddLootDrop(item, &itemlist, charges, equipitem, equipitem);
+	AddLootDrop(item, &itemlist, charges, 1, 127, equipitem, equipitem);
 }
 
 void NPC::AddItem(int32 itemid, int16 charges, bool equipitem) {
@@ -626,7 +630,7 @@ void NPC::AddItem(int32 itemid, int16 charges, bool equipitem) {
 	const Item_Struct * i = database.GetItem(itemid);
 	if(i == NULL)
 		return;
-	AddLootDrop(i, &itemlist, charges, equipitem, equipitem);
+	AddLootDrop(i, &itemlist, charges, 1, 127, equipitem, equipitem);
 }
 	  
 void NPC::AddLootTable() {

@@ -119,13 +119,35 @@ int32 Spawn2::resetTimer()
 	
 }
 
+int32 Spawn2::despawnTimer(int32 despawn_timer)
+{
+	int32 dspawn = despawn_timer * 1000;
+	
+	if (variance_ != 0) {
+		int var_over_2 = (variance_ * 1000) / 2;
+		dspawn = MakeRandomInt(dspawn - var_over_2, dspawn + var_over_2);
+		
+		//put a lower bound on it, not a lot of difference below 100, so set that as the bound.
+		if(dspawn < 100)
+			dspawn = 100;
+	}
+	
+	return (dspawn);
+	
+}
+
 bool Spawn2::Process() {
 	_ZP(Spawn2_Process);
+
+	IsDespawned = false;
 
 	if(!Enabled())
 		return true;
 
-	if(NPCPointerValid())
+	//grab our spawn group
+	SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
+
+	if(NPCPointerValid() && (sg->despawn == 0 || condition_id != 0))
 		return true;
 
 	if (timer.Check())	{
@@ -142,8 +164,6 @@ bool Spawn2::Process() {
 			return(true);
 		}
 		
-		//grab our spawn group
-		SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
 		if (sg == NULL) {
 			database.LoadSpawnGroupsByID(spawngroup_id_,&zone->spawn_group_list);
 			sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
@@ -187,6 +207,12 @@ bool Spawn2::Process() {
 				return(true);
 			}
 		}
+
+		if(sg->despawn != 0 && condition_id == 0)
+			zone->Despawn(spawn2_id);
+
+		if(IsDespawned)
+			return true;
 
 		if(spawn2_id)
 			database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), 0);
@@ -261,6 +287,44 @@ void Spawn2::Repop(int32 delay) {
 		timer.Start(delay);
 	}
 	npcthis = NULL;
+}
+
+void Spawn2::ForceDespawn()
+{
+	SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
+
+	if(npcthis != NULL)
+	{
+		if(!npcthis->IsEngaged())
+		{
+			if(sg->despawn == 3 || sg->despawn == 4)
+			{
+				npcthis->Depop(true);
+				IsDespawned = true;
+				return;
+			}
+			else
+			{
+				npcthis->Depop(false);
+			}
+		}
+	}
+
+	int32 cur = 100000;
+	int32 dtimer = sg->despawn_timer;
+
+	if(sg->despawn == 1 || sg->despawn == 3)
+	{
+		cur = resetTimer();
+	}
+
+	if(sg->despawn == 2 || sg->despawn == 4)
+	{
+		cur = despawnTimer(dtimer);
+	}
+
+	_log(SPAWNS__MAIN, "Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
+	timer.Start(cur);
 }
 
 //resets our spawn as if we just died
@@ -421,6 +485,18 @@ void Zone::DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index) {
 		(*spawn2index)++;
 		iterator.RemoveCurrent();
 
+	}
+}
+
+void Zone::Despawn(uint32 spawn2ID) {
+	LinkedListIterator<Spawn2*> iterator(spawn2_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Spawn2 *cur = iterator.GetData();
+		if(spawn2ID == cur->spawn2_id)
+			cur->ForceDespawn();
+		iterator.Advance();
 	}
 }
 
@@ -689,12 +765,12 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name, uint32 in
 	
 	//load spawn conditions	
 	SpawnCondition cond;
-	len = MakeAnyLenString(&query, "SELECT id, onchange FROM spawn_conditions WHERE zone='%s'", zone_name);
+	len = MakeAnyLenString(&query, "SELECT id, onchange, value FROM spawn_conditions WHERE zone='%s'", zone_name);
 	if (database.RunQuery(query, len, errbuf, &result)) {
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {
 			cond.condition_id = atoi(row[0]);
-			cond.value = 0;
+			cond.value = atoi(row[2]);
 			cond.on_change = (SpawnCondition::OnChange) atoi(row[1]);
 			spawn_conditions[cond.condition_id] = cond;
 			

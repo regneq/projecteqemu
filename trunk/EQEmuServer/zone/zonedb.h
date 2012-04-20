@@ -159,6 +159,7 @@ public:
     void LoadBuffs(Client *c);
 	void LoadPetInfo(Client *c);
 	void SavePetInfo(Client *c);
+	void RemoveTempFactions(Client *c);
 
 	/*
 	 * Character Inventory
@@ -170,9 +171,11 @@ public:
 	 */
 	bool	GetDecayTimes(npcDecayTimes_Struct* npcCorpseDecayTimes);
 	int32	CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading);
+	bool	CreatePlayerCorpseBackup(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading);
 	int32	UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed = false);
 	void	MarkCorpseAsRezzed(int32 dbid);
 	bool	BuryPlayerCorpse(int32 dbid);
+	bool	BuryAllPlayerCorpses(int32 charid);
 	bool	DeletePlayerCorpse(int32 dbid);
 	int32	GetPlayerBurriedCorpseCount(int32 char_id);
 	Corpse* SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading);
@@ -192,11 +195,11 @@ public:
 	/*
 	 * Faction
 	 */
-	bool	GetNPCFactionList(int32 npcfaction_id, sint32* faction_id, sint32* value, sint32* primary_faction = 0);
+	bool	GetNPCFactionList(int32 npcfaction_id, sint32* faction_id, sint32* value, int8* temp, sint32* primary_faction = 0);
 	bool	GetFactionData(FactionMods* fd, uint32 class_mod, uint32 race_mod, uint32 deity_mod, sint32 faction_id); //rembrant, needed for factions Dec, 16 2001
 	bool	GetFactionName(sint32 faction_id, char* name, int32 buflen); // rembrant, needed for factions Dec, 16 2001
 	bool	GetFactionIdsForNPC(uint32 nfl_id, list<struct NPCFaction*> *faction_list, sint32* primary_faction = 0); // neotokyo: improve faction handling
-	bool	SetCharacterFactionLevel(int32 char_id, sint32 faction_id, sint32 value, faction_map &val_list); // rembrant, needed for factions Dec, 16 2001
+	bool	SetCharacterFactionLevel(int32 char_id, sint32 faction_id, sint32 value, int8 temp, faction_map &val_list); // rembrant, needed for factions Dec, 16 2001
 	bool	LoadFactionData();
 	bool	LoadFactionValues(int32 char_id, faction_map & val_list);
 	bool	LoadFactionValues_result(MYSQL_RES* result, faction_map & val_list);

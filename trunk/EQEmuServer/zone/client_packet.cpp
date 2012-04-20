@@ -579,7 +579,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		" FROM character_  LEFT JOIN guild_members ON id=char_id WHERE id=%i",
 		character_id));
 	dbaw->AddQuery(3, &query, MakeAnyLenString(&query,
-		"SELECT faction_id,current_value FROM faction_values WHERE char_id = %i",
+		"SELECT faction_id,current_value FROM faction_values WHERE temp = 0 AND char_id = %i",
 		character_id));
 	if (!(pDBAsyncWorkID = dbasync->AddWork(&dbaw))) {
 		safe_delete(dbaw);
@@ -8350,6 +8350,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG);
 		}
 		else if (dbaq->QPT() == 3) {
+			database.RemoveTempFactions(this);
 			database.LoadFactionValues_result(result, factionvalues);
 		}
 		else {

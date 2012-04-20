@@ -1212,13 +1212,19 @@ XS(XS__faction);
 XS(XS__faction)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: faction(faction_id, faction_value)");
+	if (items < 2 || items > 3)
+		Perl_croak(aTHX_ "Usage: faction(faction_id, faction_value, temp)");
 
 	int	faction_id = (int)SvIV(ST(0));
 	int	faction_value = (int)SvIV(ST(1));
+	int temp;
 
-	quest_manager.faction(faction_id, faction_value);
+	if(items == 2)
+		temp = 0;
+	else
+		temp = (int)SvIV(ST(2));
+
+	quest_manager.faction(faction_id, faction_value, temp);
 
 	XSRETURN_EMPTY;
 }
@@ -1818,6 +1824,27 @@ XS(XS__summonburriedplayercorpse)
     float    dest_heading = (float)SvIV(ST(4));
 
     RETVAL = quest_manager.summonburriedplayercorpse(char_id, dest_x, dest_y, dest_z, dest_heading);
+
+    ST(0) = boolSV(RETVAL);
+    sv_2mortal(ST(0));
+    XSRETURN(1);
+}
+
+XS(XS__summonallplayercorpses);
+XS(XS__summonallplayercorpses)
+{
+    dXSARGS;
+    if (items != 5)
+        Perl_croak(aTHX_ "Usage: summonallplayercorpses(char_id,dest_x,dest_y,dest_z,dest_heading)");
+
+    bool RETVAL;
+    int32    char_id = (int)SvIV(ST(0));
+    float    dest_x = (float)SvIV(ST(1));
+    float    dest_y = (float)SvIV(ST(2));
+    float    dest_z = (float)SvIV(ST(3));
+    float    dest_heading = (float)SvIV(ST(4));
+
+    RETVAL = quest_manager.summonallplayercorpses(char_id, dest_x, dest_y, dest_z, dest_heading);
 
     ST(0) = boolSV(RETVAL);
     sv_2mortal(ST(0));
@@ -3357,6 +3384,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "set_zone_flag"), XS__set_zone_flag, file);
 		newXS(strcpy(buf, "clear_zone_flag"), XS__clear_zone_flag, file);
 		newXS(strcpy(buf, "summonburriedplayercorpse"), XS__summonburriedplayercorpse, file);
+		newXS(strcpy(buf, "summonallplayercorpses"), XS__summonallplayercorpses, file);
 		newXS(strcpy(buf, "getplayerburriedcorpsecount"), XS__getplayerburriedcorpsecount, file);
 		newXS(strcpy(buf, "buryplayercorpse"), XS__buryplayercorpse, file);
 		newXS(strcpy(buf, "forcedooropen"), XS__forcedooropen, file);

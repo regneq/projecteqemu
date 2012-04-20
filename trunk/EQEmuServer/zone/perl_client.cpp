@@ -1221,8 +1221,8 @@ XS(XS_Client_SetFactionLevel2); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_SetFactionLevel2)
 {
 	dXSARGS;
-	if (items != 7)
-		Perl_croak(aTHX_ "Usage: Client::SetFactionLevel2(THIS, char_id, faction_id, char_class, char_race, char_deity, value)");
+	if (items < 7 || items > 8)
+		Perl_croak(aTHX_ "Usage: Client::SetFactionLevel2(THIS, char_id, faction_id, char_class, char_race, char_deity, value, temp)");
 	{
 		Client *		THIS;
 		int32		char_id = (int32)SvUV(ST(1));
@@ -1231,6 +1231,7 @@ XS(XS_Client_SetFactionLevel2)
 		int8		char_race = (int8)SvUV(ST(4));
 		int8		char_deity = (int8)SvUV(ST(5));
 		sint32		value = (sint32)SvIV(ST(6));
+		int8		temp;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1241,7 +1242,13 @@ XS(XS_Client_SetFactionLevel2)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->SetFactionLevel2(char_id, faction_id, char_class, char_race, char_deity, value);
+		if (items == 7)
+			temp = 0;
+		else {
+			temp = (int8)SvUV(ST(7));
+		}
+
+		THIS->SetFactionLevel2(char_id, faction_id, char_class, char_race, char_deity, value, temp);
 	}
 	XSRETURN_EMPTY;
 }

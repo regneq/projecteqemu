@@ -3719,11 +3719,9 @@ void command_corpse(Client *c, const Seperator *sep)
 			c->Message(0, "Removing Cash from %s.", target->GetName());
 			target->CastToCorpse()->RemoveCash();
 		}
-
 		else
 			c->Message(0, "Insufficient status to modify player corpse.");
 	}
-
 	else if (strcasecmp(sep->arg[1], "lock") == 0) {
 		if (target == 0 || !target->IsCorpse())
 			c->Message(0, "Error: Target must be a corpse.");
@@ -3740,6 +3738,31 @@ void command_corpse(Client *c, const Seperator *sep)
 			c->Message(0, "Unlocking %s...", target->GetName());
 		}
 	}
+	else if (strcasecmp(sep->arg[1], "depop") == 0) {
+		if (target == 0 || !target->IsPlayerCorpse())
+			c->Message(0, "Error: Target must be a player corpse.");
+		else if (c->Admin() >= commandEditPlayerCorpses && target->IsPlayerCorpse()) {
+			c->Message(0, "Depoping %s.", target->GetName());
+			target->CastToCorpse()->DepopCorpse();
+			if(!sep->arg[2][0] || atoi(sep->arg[2]) != 0)
+				target->CastToCorpse()->Bury();
+		}
+		else
+			c->Message(0, "Insufficient status to depop player corpse.");
+	}
+	else if (strcasecmp(sep->arg[1], "depopall") == 0) {
+		if (target == 0 || !target->IsClient())
+			c->Message(0, "Error: Target must be a player.");
+		else if (c->Admin() >= commandEditPlayerCorpses && target->IsClient()) {
+			c->Message(0, "Depoping %s's corpses.", target->GetName());
+			target->CastToClient()->DepopAllCorpses();
+			if(!sep->arg[2][0] || atoi(sep->arg[2]) != 0)
+				target->CastToClient()->BuryPlayerCorpses();
+		}
+		else
+			c->Message(0, "Insufficient status to depop player corpse.");
+
+	}
 	else if (sep->arg[1][0] == 0 || strcasecmp(sep->arg[1], "help") == 0) {
 		c->Message(0, "#Corpse Sub-Commands:");
 		c->Message(0, "  DeleteNPCCorpses");
@@ -3753,6 +3776,9 @@ void command_corpse(Client *c, const Seperator *sep)
 		c->Message(0, "Lead-GM status required to delete/modify player corpses");
 		c->Message(0, "  DeletePlayerCorpses");
 		c->Message(0, "  CharID [charid] - change player corpse's owner");
+		c->Message(0, "  Depop [bury] - Depops single target corpse.");
+		c->Message(0, "  Depopall [bury] - Depops all target player's corpses.");
+		c->Message(0, "Set bury to 0 to skip burying the corpses.");
 	}
 	else
 		c->Message(0, "Error, #corpse sub-command not found");
@@ -8984,9 +9010,7 @@ void command_summonburriedplayercorpse(Client *c, const Seperator *sep)
 	
 	Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(t->CharacterID(), t->GetZoneID(), zone->GetInstanceID(), t->GetX(), t->GetY(), t->GetZ(), t->GetHeading());
 
-	if(PlayerCorpse)
-		PlayerCorpse->Spawn();
-	else
+	if(!PlayerCorpse)
 		c->Message(0, "Your target doesn't have any burried corpses.");
 
 	return;

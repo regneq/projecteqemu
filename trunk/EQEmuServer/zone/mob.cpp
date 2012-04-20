@@ -4319,4 +4319,3 @@ void Mob::SetBodyType(bodyType new_body, bool overwrite_orig) {
 	    safe_delete(app);
     }
 }
-

@@ -528,7 +528,7 @@ public:
 	sint32  GetModCharacterFactionLevel(sint32 faction_id);
 
 	void	SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8 char_race, int8 char_deity);
-	void    SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value);
+	void    SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value, int8 temp);
 	sint16	GetRawItemAC();
 	int16	GetCombinedAC_TEST();
 
@@ -986,6 +986,10 @@ public:
 	void CalcItemScale(bool login = false);
 	bool CalcItemScale(int32 slot_x, int32 slot_y, bool login = false);
 	void SummonAndRezzAllCorpses();
+	void SummonAllCorpses(float dest_x, float dest_y, float dest_z, float dest_heading);
+	void DepopAllCorpses();
+	void DepopPlayerCorpse(int32 dbid);
+	void BuryPlayerCorpses();
 	void SuspendMinion();
 	void Doppelganger(int16 spell_id, Mob *target, const char *name_override, int pet_count, int pet_duration);
 	void NotifyNewTitlesAvailable();

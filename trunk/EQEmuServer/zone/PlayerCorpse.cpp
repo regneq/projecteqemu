@@ -67,14 +67,18 @@ void Corpse::SendLootReqErrorPacket(Client* client, int8 response) {
 
 Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname, uchar* in_data, int32 in_datasize, float in_x, float in_y, float in_z, float in_heading, char* timeofdeath, bool rezzed, bool wasAtGraveyard) {
 	if (in_datasize < sizeof(classic_db::DBPlayerCorpse_Struct)) {
-		cout << "Corpse::LoadFromDBData: Corrupt data: in_datasize < sizeof(DBPlayerCorpse_Struct)" << endl;
+		LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: in_datasize < sizeof(DBPlayerCorpse_Struct)");
 		return 0;
 	}
 	classic_db::DBPlayerCorpse_Struct* dbpc = (classic_db::DBPlayerCorpse_Struct*) in_data;
 	bool isSoF = true;
-	if (in_datasize != (sizeof(DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(ServerLootItem_Struct)))) {
-		if (in_datasize != (sizeof(classic_db::DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(ServerLootItem_Struct)))) {
-			cout << "Corpse::LoadFromDBData: Corrupt data: in_datasize != expected size" << endl;
+
+	int32 esize1 = (sizeof(DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(player_lootitem::ServerLootItem_Struct)));
+	int32 esize2 = (sizeof(classic_db::DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(player_lootitem::ServerLootItem_Struct)));
+	if (in_datasize != esize1) {
+		LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: in_datasize (%i) != expected size (%i) Continuing on...", in_datasize, esize1);
+		if (in_datasize != esize2) {
+			LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: in_datasize (%i) != expected size (%i) Your corpse is done broke, sir.", in_datasize, esize2);
 			return 0;
 		}
 		else
@@ -82,19 +86,19 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 			isSoF = false;
 		}
 	}
-
+	
 	if(isSoF)
 	{
 		DBPlayerCorpse_Struct* dbpcs = (DBPlayerCorpse_Struct*) in_data;
 		if (dbpcs->crc != CRC32::Generate(&((uchar*) dbpcs)[4], in_datasize - 4)) {
-			cout << "Corpse::LoadFromDBData: Corrupt data: crc failure" << endl;
+			LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: crc failure");
 			return 0;
 		}
 		ItemList itemlist;
 		ServerLootItem_Struct* tmp = 0;
 		for (unsigned int i=0; i < dbpcs->itemcount; i++) {
 			tmp = new ServerLootItem_Struct;
-			memcpy(tmp, &dbpcs->items[i], sizeof(ServerLootItem_Struct));
+			memcpy(tmp, &dbpcs->items[i], sizeof(player_lootitem::ServerLootItem_Struct));
 			itemlist.push_back(tmp);
 		}
 
@@ -137,14 +141,14 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 	else
 	{
 		if (dbpc->crc != CRC32::Generate(&((uchar*) dbpc)[4], in_datasize - 4)) {
-			cout << "Corpse::LoadFromDBData: Corrupt data: crc failure" << endl;
+			LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: crc failure");
 			return 0;
 		}
 		ItemList itemlist;
 		ServerLootItem_Struct* tmp = 0;
 		for (unsigned int i=0; i < dbpc->itemcount; i++) {
 			tmp = new ServerLootItem_Struct;
-			memcpy(tmp, &dbpc->items[i], sizeof(ServerLootItem_Struct));
+			memcpy(tmp, &dbpc->items[i], sizeof(player_lootitem::ServerLootItem_Struct));
 			itemlist.push_back(tmp);
 		}
 
@@ -420,7 +424,7 @@ void Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
 	sint16 interior_slot;
 	ItemInst *interior_item;
 
-	AddItem(item->GetItem()->ID, item->GetCharges(),  equipslot, item->GetAugmentItemID(0), item->GetAugmentItemID(1), item->GetAugmentItemID(2), item->GetAugmentItemID(3), item->GetAugmentItemID(4));
+	AddItem(item->GetItem()->ID, item->GetCharges(), equipslot, item->GetAugmentItemID(0), item->GetAugmentItemID(1), item->GetAugmentItemID(2), item->GetAugmentItemID(3), item->GetAugmentItemID(4));
 	if(item->IsType(ItemClassContainer))
 	{
 		for(bagindex = 0; bagindex <= 10; bagindex++)
@@ -484,7 +488,6 @@ Corpse::~Corpse() {
 	if (p_PlayerCorpse && !(p_depop && dbid == 0)) {
 			Save();
 	}
-	
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
@@ -514,7 +517,7 @@ bool Corpse::Save() {
 		return true;
 	
 	int32 tmp = this->CountItems();
-	int32 tmpsize = sizeof(DBPlayerCorpse_Struct) + (tmp * sizeof(ServerLootItem_Struct));
+	int32 tmpsize = sizeof(DBPlayerCorpse_Struct) + (tmp * sizeof(player_lootitem::ServerLootItem_Struct));
 	DBPlayerCorpse_Struct* dbpc = (DBPlayerCorpse_Struct*) new uchar[tmpsize];
 	memset(dbpc, 0, tmpsize);
 	dbpc->itemcount = tmp;
@@ -566,13 +569,17 @@ bool Corpse::Save() {
 	end = itemlist.end();
 	for(; cur != end; cur++) {
 		ServerLootItem_Struct* item = *cur;
-		memcpy((char*) &dbpc->items[x++], (char*) item, sizeof(ServerLootItem_Struct));
+		memcpy((char*) &dbpc->items[x++], (char*) item, sizeof(player_lootitem::ServerLootItem_Struct));
 	}
 
 	dbpc->crc = CRC32::Generate(&((uchar*) dbpc)[4], tmpsize - 4);
 
 	if (dbid == 0)
+	{
 		dbid = database.CreatePlayerCorpse(charid, orgname, zone->GetZoneID(), zone->GetInstanceID(), (uchar*) dbpc, tmpsize, x_pos, y_pos, z_pos, heading);
+		if(RuleB(Zone, UsePlayerCorpseBackups) == true)
+			database.CreatePlayerCorpseBackup(dbid, charid, orgname, zone->GetZoneID(), zone->GetInstanceID(), (uchar*) dbpc, tmpsize, x_pos, y_pos, z_pos, heading);
+	}
 	else
 		dbid = database.UpdatePlayerCorpse(dbid, charid, orgname, zone->GetZoneID(), zone->GetInstanceID(), (uchar*) dbpc, tmpsize, x_pos, y_pos, z_pos, heading,Rezzed());
 	safe_delete_array(dbpc);
@@ -586,6 +593,14 @@ bool Corpse::Save() {
 void Corpse::Delete() {
 	if (IsPlayerCorpse() && dbid != 0)
 		database.DeletePlayerCorpse(dbid);
+	dbid = 0;
+
+	p_depop = true;
+}
+
+void Corpse::Bury() {
+	if (IsPlayerCorpse() && dbid != 0)
+		database.BuryPlayerCorpse(dbid);
 	dbid = 0;
 
 	p_depop = true;
@@ -675,7 +690,7 @@ void Corpse::RemoveItem(int16 lootslot)
 
 	if (lootslot == 0xFFFF)
 		return;
-	
+
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
@@ -1092,6 +1107,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 
 	if (client && inst)
 	{
+
 		if (client->CheckLoreConflict(item))
 		{
 			client->Message_StringID(0,LOOT_LORE_ERROR);
@@ -1545,8 +1561,42 @@ int32 ZoneDatabase::CreatePlayerCorpse(int32 charid, const char* charname, int32
         cerr << "Error3 in CreatePlayerCorpse query: last_insert_id = 0" << endl;
 		return 0;
 	}
-	
+
 	return last_insert_id;
+}
+
+bool ZoneDatabase::CreatePlayerCorpseBackup(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char* query = new char[256+(datasize*2)];
+	char* end = query;
+	int32 affected_rows = 0;
+	int32 last_insert_id = 0;
+	bool result = false;
+	DBPlayerCorpse_Struct* dbpcs = (DBPlayerCorpse_Struct*) data;
+	
+	if (dbid != 0) {
+		if(RuleB(Character, LeaveCorpses) == true && dbpcs->level >= RuleI(Character, DeathItemLossLevel)){
+			end += sprintf(end, "Insert into player_corpses_backup SET data=");
+			*end++ = '\'';
+			end += DoEscapeString(end, (char*)data, datasize);
+			*end++ = '\'';
+			end += sprintf(end,", charname='%s', zoneid=%u, instanceid=%u, charid=%d, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f, timeofdeath=Now(), IsBurried=0, id=%u", charname, zoneid, instanceid, charid, x, y, z, heading, dbid);
+	
+			if (RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+				if (affected_rows == 1)
+					result = true;
+				else
+					cerr << "Error in CreatePlayerCorpseBackup query: affected_rows != 1" << endl;
+			}
+			else
+				cerr << "Error in CreatePlayerCorpseBackup query " << errbuf << endl;
+		}
+		safe_delete_array(query);
+	}
+	else {
+		cerr << "Error in CreatePlayerCorpseBackup: dbid = 0" << endl;
+	}
+	return result;
 }
 
 int32 ZoneDatabase::GetPlayerBurriedCorpseCount(int32 char_id) {
@@ -1640,6 +1690,8 @@ Corpse* ZoneDatabase::SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid
 			NewCorpse = Corpse::LoadFromDBData(atoi(row[0]), char_id, row[1], (uchar*) row[2], lengths[2], dest_x, dest_y, dest_z, dest_heading, row[3],atoi(row[4])==1, false);
 			if(NewCorpse) {
 				entity_list.AddCorpse(NewCorpse);
+				NewCorpse->SetDecayTimer(RuleI(Character, CorpseDecayTimeMS));
+				NewCorpse->Spawn();
 				if(!UnburyPlayerCorpse(NewCorpse->GetDBID(), dest_zoneid, dest_instanceid, dest_x, dest_y, dest_z, dest_heading))
 					LogFile->write(EQEMuLog::Error, "Unable to unbury a summoned player corpse for character id %u.", char_id);
 			}
@@ -1823,6 +1875,20 @@ bool ZoneDatabase::BuryPlayerCorpse(int32 dbid) {
 	return true;
 }
 
+bool ZoneDatabase::BuryAllPlayerCorpses(int32 charid) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried = 1 WHERE charid=%d", charid), errbuf)) {
+		cerr << "Error in BuryPlayerCorpse query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return false;
+	}
+	
+	safe_delete_array(query);
+	return true;
+}
+
 bool ZoneDatabase::DeletePlayerCorpse(int32 dbid) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -1940,4 +2006,3 @@ void Corpse::CastRezz(int16 spellid, Mob* Caster){
 	safe_delete(outapp);
 }
 */
-
