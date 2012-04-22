@@ -2909,18 +2909,14 @@ ENCODE(OP_DisciplineUpdate)
 ENCODE(OP_RespondAA) {
 	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
 
-	eq->aa_spent = emu->aa_spent;
-	eq->aa_assigned = emu->aa_spent;
-	eq->aa_spent3 = emu->aa_spent;
-	eq->unknown012 = 0;
-	eq->unknown016 = 0;
-	eq->unknown020 = 0;
+	eq->aa_count = MAX_PP_AA_ARRAY;
 
 	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
 	{
 		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
 		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
 		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
+		eq->aa_list[i].unknown12 = 0;
 	}
 
 	FINISH_ENCODE();
