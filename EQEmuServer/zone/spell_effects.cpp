@@ -2946,7 +2946,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 			case SE_BardAEDot:
 			{
-				effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster);
 
 				if (invulnerable || /*effect_value > 0 ||*/ DivineAura())
 					break;
