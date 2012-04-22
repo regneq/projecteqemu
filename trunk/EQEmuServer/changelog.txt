@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/21/2012==
+sorvani: Bard AE DoTs should now be affected by mods correctly.
+
 ==04/19/2012==
 cavedude: quest::buryplayercorpse will now despawn corpses in zones other than the client's current location, preventing dupes. 
 cavedude: Added quest::summonallplayercorpses (same syntax as quest::summonburriedplayercorpse) which will depop and summon all of the player's corpses, buried or not.
