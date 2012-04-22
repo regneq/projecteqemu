@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/22/2012==
+Trevius: VoA - The AA Window now populated AAs.  AA hotkeys can be created, but purchasing still needs work.
+
 ==04/21/2012==
 sorvani: Bard AE DoTs should now be affected by mods correctly.
 

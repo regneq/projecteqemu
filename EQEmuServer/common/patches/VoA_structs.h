@@ -3967,6 +3967,14 @@ struct AA_Skills {		//this should be removed and changed to AA_Array
 /*12*/
 };
 
+struct AA_Values {
+/*00*/	int32	aa_skill;
+/*04*/  int32	aa_value;
+/*08*/  int32	unknown08;
+/*12*/  int32	unknown12;
+/*16*/
+};
+
 struct AAExpUpdate_Struct {
 /*00*/	int32 unknown00;	//seems to be a value from AA_Action.ability
 /*04*/	int32 aapoints_unspent;
@@ -3990,13 +3998,8 @@ struct PlayerAA_Struct {						// Is this still used?
 };
 
 struct AATable_Struct {
-/*00*/ sint32	aa_spent;	// Total AAs Spent
-/*04*/ sint32	aa_assigned;	// Assigned: field in the AA window.
-/*08*/ sint32	aa_spent3;	// Unknown. Same as aa_spent in observed packets.
-/*12*/ sint32	unknown012;
-/*16*/ sint32	unknown016;
-/*20*/ sint32	unknown020;
-/*24*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
+/*00*/ int32	aa_count;	// Total AAs being sent
+/*04*/ AA_Values aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {
