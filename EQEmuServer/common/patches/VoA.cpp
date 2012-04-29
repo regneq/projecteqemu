@@ -850,7 +850,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(platinum_shared);
 //	OUT(unknown13156[84]);
 	//OUT(expansions);
-	eq->expansions = 16383;
+	eq->expansions = 0xffff;
 //	OUT(unknown13244[12]);
 	OUT(autosplit);
 //	OUT(unknown13260[16]);

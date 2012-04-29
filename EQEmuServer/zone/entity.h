@@ -102,7 +102,7 @@ public:
 	const Trap*	CastToTrap() const;
 	const Beacon*	CastToBeacon() const;
 
-	inline const int16& GetID()	{ return id; }
+	inline const int16& GetID() const{ return id; }
 	virtual const char* GetName() { return ""; }
 	virtual void DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) { pDBAsyncWorkID = 0; }
 	bool CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk=1);
@@ -266,7 +266,8 @@ public:
 	void	GroupMessage(int32 gid, const char *from, const char *message);
 	void	ExpeditionWarning(uint32 minutes_left);
 
-	void    RemoveFromTargets(Mob* mob);
+	void    RemoveFromTargets(Mob* mob, bool RemoveFromXTargets = false);
+	void    RemoveFromXTargets(Mob* mob);
     void    ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget);
 	void	QueueCloseClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, float dist=200, Mob* SkipThisMob = 0, bool ackreq = true,eqFilterType filter=FilterNone);
 	void    QueueClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
@@ -276,6 +277,7 @@ public:
 	void	QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true, Mob* SkipThisMob = 0, bool ackreq = true,
 				     bool HoTT = true, uint32 ClientVersionBits = 0xFFFFFFFF);
 
+	void	QueueClientsByXTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true);
 	void	QueueToGroupsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void    QueueManaged(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
 
@@ -383,6 +385,9 @@ public:
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 
 	int16   GetFreeID();
+	void RefreshAutoXTargets(Client *c);
+	void RefreshClientXTargets(Client *c);
+
 protected:
 	friend class Zone;
 	void	Depop(bool StartSpawnTimer = false);

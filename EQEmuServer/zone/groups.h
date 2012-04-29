@@ -29,6 +29,8 @@
 
 #define MAX_MARKED_NPCS 3
 
+enum { RoleAssist = 1, RoleTank = 2, RolePuller = 4 };
+
 class GroupIDConsumer {
 public:
 	GroupIDConsumer() { id = 0; }
@@ -96,12 +98,14 @@ public:
 	void	UnDelegateMainTank(const char *OldMainAssistName, uint8 toggle = 0);
 	void	UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle = 0);
 	void	UnDelegatePuller(const char *OldMainAssistName, uint8 toggle = 0);
-	bool	IsMainTank(Mob *m);
-	bool	IsMainAssist(Mob *m);
-	bool	IsPuller(Mob *m);
 	bool	IsNPCMarker(Client *c);
-	void	SetGroupTarget(int EntityID);
-	void	NotifyTarget(Client *c);
+	void	SetGroupAssistTarget(Mob *m);
+	void	SetGroupTankTarget(Mob *m);
+	void	SetGroupPullerTarget(Mob *m);
+	bool	HasRole(Mob *m, uint8 Role);
+	void	NotifyAssistTarget(Client *c);
+	void	NotifyTankTarget(Client *c);
+	void	NotifyPullerTarget(Client *c);
 	void	DelegateMarkNPC(const char *NewNPCMarkerName);
 	void	UnDelegateMarkNPC(const char *OldNPCMarkerName);
 	void	NotifyMainTank(Client *c, uint8 toggle = 0);
@@ -109,9 +113,12 @@ public:
 	void	NotifyPuller(Client *c, uint8 toggle = 0);
 	void	NotifyMarkNPC(Client *c);
 	inline	uint32 GetNPCMarkerID() { return NPCMarkerID; }
-	inline	void SetMainTank(char *NewMainTankName) { MainTankName = NewMainTankName; }
-	inline	void SetMainAssist(char *NewMainAssistName) { MainAssistName = NewMainAssistName; }
-	inline	void SetPuller(char *NewPullerName) { PullerName = NewPullerName; }
+	void	SetMainTank(const char *NewMainTankName);
+	void	SetMainAssist(const char *NewMainAssistName);
+	void	SetPuller(const char *NewPullerName);
+	const char *GetMainTankName() { return MainTankName.c_str(); }
+	const char *GetMainAssistName() { return MainAssistName.c_str(); }
+	const char *GetPullerName() { return PullerName.c_str(); }
 	void	SetNPCMarker(const char *NewNPCMarkerName);
 	void	UnMarkNPC(int16 ID);
 	void	SendMarkedNPCsToMember(Client *c, bool Clear = false);
@@ -120,9 +127,11 @@ public:
 	void	QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void	ChangeLeader(Mob* newleader);
 	const char *GetClientNameByIndex(uint8 index);
+	void UpdateXTargetMarkedNPC(uint32 Number, Mob *m);
 	
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];
+	uint8	MemberRoles[MAX_GROUP_MEMBERS];
 	bool	disbandcheck;
 	bool	castspell;
 
@@ -134,7 +143,9 @@ private:
 	string	PullerName;
 	string	NPCMarkerName;
 	int16	NPCMarkerID;
-	int16	TargetID;
+	int16	AssistTargetID;
+	int16	TankTargetID;
+	int16	PullerTargetID;
 	int16	MarkedNPCs[MAX_MARKED_NPCS];
 
 };

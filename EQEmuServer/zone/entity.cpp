@@ -1369,14 +1369,93 @@ void EntityList::ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget)
 	}
 }
 
-void EntityList::RemoveFromTargets(Mob* mob)
+void EntityList::RemoveFromTargets(Mob* mob, bool RemoveFromXTargets)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	
 	iterator.Reset();
-	while(iterator.MoreElements()) {
-		iterator.GetData()->RemoveFromHateList(mob);
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
 		iterator.Advance();
+
+		if(!m)
+			continue;
+
+		m->RemoveFromHateList(mob);
+
+		if(RemoveFromXTargets && m->IsClient())
+			m->CastToClient()->RemoveXTarget(mob);
+
+	}	
+}
+
+void EntityList::RemoveFromXTargets(Mob* mob)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
+		iterator.Advance();
+
+		if(!m)
+			continue;
+
+		if(m->IsClient())
+			m->CastToClient()->RemoveXTarget(mob);
+
+	}	
+}
+
+void EntityList::RefreshAutoXTargets(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
+		iterator.Advance();
+
+		if(!m || m->GetHP() <= 0)
+			continue;
+
+		if(m->CheckAggro(c) && !c->IsXTarget(m))
+		{
+			c->AddAutoXTarget(m);
+			break;
+		}
+
+	}	
+}
+
+void EntityList::RefreshClientXTargets(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Client*> iterator(client_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Client *c2 = iterator.GetData();
+		iterator.Advance();
+
+		if(!c2)
+			continue;
+
+		if(c2->IsClientXTarget(c))
+		{
+			c2->UpdateClientXTarget(c);
+			break;
+		}
+
 	}	
 }
 
@@ -1427,6 +1506,28 @@ void EntityList::QueueClientsByTarget(Mob* sender, const EQApplicationPacket* ap
 		
 		if(Send && (c->GetClientVersionBit() & ClientVersionBits))
 			c->QueuePacket(app, ackreq);
+	}	
+}
+
+void EntityList::QueueClientsByXTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender)
+{
+	LinkedListIterator<Client*> iterator(client_list);
+	
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Client *c = iterator.GetData();
+
+		iterator.Advance();
+
+		if(!c || ((c == sender) && !iSendToSender))
+			continue;	
+
+		if(!c->IsXTarget(sender))
+			continue;
+
+		c->QueuePacket(app);
 	}	
 }
 
@@ -3743,6 +3844,8 @@ void EntityList::UpdateHoTT(Mob* target) {
 		if (c->GetTarget() == target) {
 			if (target->GetTarget()) c->SetHoTT(target->GetTarget()->GetID());
 			else c->SetHoTT(0);
+
+			c->UpdateXTargetType(TargetsTarget, target->GetTarget());
 		}
 		iterator.Advance();
 	}

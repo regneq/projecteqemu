@@ -121,6 +121,8 @@ void MapOpcodes() {
 	ConnectingOpcodes[OP_ClientReady] = &Client::Handle_Connect_OP_ClientReady;
 	ConnectingOpcodes[OP_UpdateAA] = &Client::Handle_Connect_OP_UpdateAA;
 	ConnectingOpcodes[OP_BlockedBuffs] = &Client::Handle_OP_BlockedBuffs;
+	ConnectingOpcodes[OP_XTargetRequest] = &Client::Handle_OP_XTargetRequest;
+	ConnectingOpcodes[OP_XTargetAutoAddHaters] = &Client::Handle_OP_XTargetAutoAddHaters;
 //temporary hack:
 	ConnectingOpcodes[OP_GetGuildsList] = &Client::Handle_OP_GetGuildsList;
 
@@ -380,6 +382,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_CrystalReclaim] = &Client::Handle_OP_CrystalReclaim;
 	ConnectedOpcodes[OP_CrystalCreate] = &Client::Handle_OP_CrystalCreate;
 	ConnectedOpcodes[OP_LFGuild] = &Client::Handle_OP_LFGuild;
+	ConnectedOpcodes[OP_XTargetRequest] = &Client::Handle_OP_XTargetRequest;
+	ConnectedOpcodes[OP_XTargetAutoAddHaters] = &Client::Handle_OP_XTargetAutoAddHaters;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -575,7 +579,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		account_id));
 	//DO NOT FORGET TO EDIT ZoneDatabase::GetCharacterInfoForLogin if you change this
 	dbaw->AddQuery(2, &query, MakeAnyLenString(&query,
-		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
+		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets "
 		" FROM character_  LEFT JOIN guild_members ON id=char_id WHERE id=%i",
 		character_id));
 	dbaw->AddQuery(3, &query, MakeAnyLenString(&query,
@@ -1448,11 +1452,18 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		{
 			SetTarget(NULL);
 			SetHoTT(0);
+			UpdateXTargetType(TargetsTarget, NULL);
 
 			Group *g = GetGroup();
 
-			if(g && g->IsMainAssist(this))
-				g->SetGroupTarget(0);
+			if(g && g->HasRole(this, RoleAssist))
+				g->SetGroupAssistTarget(0);
+
+			if(g && g->HasRole(this, RoleTank))
+				g->SetGroupTankTarget(0);
+
+			if(g && g->HasRole(this, RolePuller))
+				g->SetGroupPullerTarget(0);
 
 			return;
 		}
@@ -1461,19 +1472,32 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 	{
 		SetTarget(NULL);
 		SetHoTT(0);
+		UpdateXTargetType(TargetsTarget, NULL);
 		return;
 	}
 
 	// HoTT
 	if (GetTarget() && GetTarget()->GetTarget()) 
+	{
 		SetHoTT(GetTarget()->GetTarget()->GetID());
+		UpdateXTargetType(TargetsTarget, GetTarget()->GetTarget());
+	}
 	else 
+	{
 		SetHoTT(0);
+		UpdateXTargetType(TargetsTarget, NULL);
+	}
 
 	Group *g = GetGroup();
 
-	if(g && g->IsMainAssist(this))
-		g->SetGroupTarget(ct->new_target);
+	if(g && g->HasRole(this, RoleAssist))
+		g->SetGroupAssistTarget(GetTarget());
+
+	if(g && g->HasRole(this, RoleTank))
+		g->SetGroupTankTarget(GetTarget());
+
+	if(g && g->HasRole(this, RolePuller))
+		g->SetGroupPullerTarget(GetTarget());
 
 	// For /target, send reject or success packet
 	if (app->GetOpcode() == OP_TargetCommand) {
@@ -6785,6 +6809,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_CALMING);
 			mypet->WipeHateList();
+			mypet->SetTarget(NULL);
 		}
 		break;
 	}
@@ -8347,7 +8372,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			}
 		}
 		else if (dbaq->QPT() == 2) {
-			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG);
+			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG, &MaxXTargets);
 		}
 		else if (dbaq->QPT() == 3) {
 			database.RemoveTempFactions(this);
@@ -8887,6 +8912,14 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	//	safe_delete(outapp);
 	//}
 
+	if(ClientVersionBit & BIT_UnderfootAndLater)
+	{
+		outapp = new EQApplicationPacket(OP_XTargetResponse, 8);
+		outapp->WriteUInt32(GetMaxXTargets());
+		outapp->WriteUInt32(0);
+		FastQueuePacket(&outapp);
+	}
+
 	//////////////////////////////////////
 	// Weather Packet
 	// This shouldent be moved, this seems to be what the client
@@ -9120,7 +9153,7 @@ void Client::CompleteConnect()
 	//sends the Nimbus particle effects (up to 3) for any mob using them
 	entity_list.SendNimbusEffects(this);
 
-    entity_list.SendUntargetable(this);
+	entity_list.SendUntargetable(this);
 
 	client_data_loaded = true;
 	int x;
@@ -9164,7 +9197,7 @@ void Client::CompleteConnect()
 	
 	SendDisciplineTimers();
 
-    parse->EventPlayer(EVENT_ENTERZONE, this, "", 0);
+	parse->EventPlayer(EVENT_ENTERZONE, this, "", 0);
 
 	if(zone)
 	{
@@ -9199,9 +9232,9 @@ void Client::CompleteConnect()
 	}
 
 	SendRewards();
-    SendAltCurrencies();
-    database.LoadAltCurrencyValues(CharacterID(), alternate_currency);
-    SendAlternateCurrencyValues();
+	SendAltCurrencies();
+	database.LoadAltCurrencyValues(CharacterID(), alternate_currency);
+	SendAlternateCurrencyValues();
 	CalcItemScale(true);
 
 	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
@@ -9227,6 +9260,8 @@ void Client::CompleteConnect()
 		EQApplicationPacket *outapp = MakeBuffsPacket(false);
 		CastToClient()->FastQueuePacket(&outapp);
 	}
+
+	entity_list.RefreshClientXTargets(this);
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) 
@@ -12620,3 +12655,190 @@ void Client::Handle_OP_LFGuild(const EQApplicationPacket *app)
 	}
 }
 
+void Client::Handle_OP_XTargetRequest(const EQApplicationPacket *app)
+{
+	if(app->size < 12)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_XTargetRequest, expected at least 12,  got %i", app->size); 
+		DumpPacket(app);
+		return;
+	}
+
+	uint32 Unknown000 = app->ReadUInt32(0);
+
+	if(Unknown000 != 1)
+		return;
+
+	uint32 Slot = app->ReadUInt32(4);
+
+	if(Slot >= XTARGET_HARDCAP)
+		return;
+
+	XTargetType Type = (XTargetType)app->ReadUInt32(8);
+
+	XTargets[Slot].Type = Type;
+	XTargets[Slot].ID = 0;
+	XTargets[Slot].Name[0] = 0;
+
+	switch(Type)
+	{
+		case Empty:
+		case Auto:
+		{
+			break;
+		}
+
+		case CurrentTargetPC:
+		{
+			char Name[65];
+
+			app->ReadString(Name, 12, 64);
+			Client *c = entity_list.GetClientByName(Name);
+			if(c)
+			{
+				XTargets[Slot].ID = c->GetID();
+				strncpy(XTargets[Slot].Name, c->GetName(), 64);
+			}
+			else
+			{
+				strncpy(XTargets[Slot].Name, Name, 64);
+			}
+			SendXTargetPacket(Slot, c);
+			
+			break;
+		}
+
+		case CurrentTargetNPC:
+		{
+			char Name[65];
+			app->ReadString(Name, 12, 64);
+			Mob *m = entity_list.GetMob(Name);
+			if(m)
+			{
+				XTargets[Slot].ID = m->GetID();
+				SendXTargetPacket(Slot, m);
+				break;
+			}
+		}
+
+		case TargetsTarget:
+		{
+			if(GetTarget())
+				UpdateXTargetType(TargetsTarget, GetTarget()->GetTarget());
+			else
+				UpdateXTargetType(TargetsTarget, NULL);
+
+			break;
+		}
+
+		case GroupTank:
+		{
+			Group *g = GetGroup();
+
+			if(g)
+			{
+				Client *c = entity_list.GetClientByName(g->GetMainTankName());
+
+				if(c)
+				{
+					XTargets[Slot].ID = c->GetID();
+					strncpy(XTargets[Slot].Name, c->GetName(), 64);
+				}
+				else
+				{
+					strncpy(XTargets[Slot].Name, g->GetMainTankName(), 64);
+				}
+				SendXTargetPacket(Slot, c);
+			}
+			break;
+		}
+
+		case GroupAssist:
+		{
+			Group *g = GetGroup();
+
+			if(g)
+			{
+				Client *c = entity_list.GetClientByName(g->GetMainAssistName());
+
+				if(c)
+				{
+					XTargets[Slot].ID = c->GetID();
+					strncpy(XTargets[Slot].Name, c->GetName(), 64);
+				}
+				else
+				{
+					strncpy(XTargets[Slot].Name, g->GetMainAssistName(), 64);
+				}
+				SendXTargetPacket(Slot, c);
+			}
+			break;
+		}
+
+		case Puller:
+		{
+			Group *g = GetGroup();
+
+			if(g)
+			{
+				Client *c = entity_list.GetClientByName(g->GetPullerName());
+
+				if(c)
+				{
+					XTargets[Slot].ID = c->GetID();
+					strncpy(XTargets[Slot].Name, c->GetName(), 64);
+				}
+				else
+				{
+					strncpy(XTargets[Slot].Name, g->GetPullerName(), 64);
+				}
+				SendXTargetPacket(Slot, c);
+			}
+			break;
+		}
+
+		case MyPet:
+		{
+			Mob *m = GetPet();
+			if(m)
+			{
+				XTargets[Slot].ID = m->GetID();
+				SendXTargetPacket(Slot, m);
+
+			}
+			break;
+		}
+		case MyPetTarget:
+		{
+			Mob *m = GetPet();
+	
+			if(m)
+				m = m->GetTarget();
+
+			if(m)
+			{
+				XTargets[Slot].ID = m->GetID();
+				SendXTargetPacket(Slot, m);
+
+			}
+			break;
+		}
+
+		default:
+			LogFile->write(EQEMuLog::Debug, "Unhandled XTarget Type %i", Type);
+			break;
+	}
+
+}
+
+void Client::Handle_OP_XTargetAutoAddHaters(const EQApplicationPacket *app)
+{
+	if(app->size != 1)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_XTargetAutoAddHaters, expected 1,  got %i", app->size); 
+		DumpPacket(app);
+		return;
+	}
+
+	XTargetAutoAddHaters = app->ReadUInt8(0);
+}

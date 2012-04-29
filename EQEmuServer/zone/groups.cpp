@@ -47,11 +47,17 @@ Group::Group(int32 gid)
 {
 	leader = NULL;
 	memset(members,0,sizeof(Mob*) * MAX_GROUP_MEMBERS);
-	TargetID = 0;
+	AssistTargetID = 0;
+	TankTargetID = 0;
+	PullerTargetID = 0;
+
 	memset(&LeaderAbilities, 0, sizeof(GroupLeadershipAA_Struct));
 	uint32 i;
 	for(i=0;i<MAX_GROUP_MEMBERS;i++)
+	{
 		memset(membername[i],0,64);	
+		MemberRoles[i] = 0;
+	}
 
 	if(gid != 0) {
 		if(!LearnMembers())
@@ -71,11 +77,16 @@ Group::Group(Mob* leader)
 	members[0] = leader;
 	leader->SetGrouped(true);
 	SetLeader(leader);
-	TargetID = 0;
+	AssistTargetID = 0;
+	TankTargetID = 0;
+	PullerTargetID = 0;
 	memset(&LeaderAbilities, 0, sizeof(GroupLeadershipAA_Struct));
 	uint32 i;
 	for(i=0;i<MAX_GROUP_MEMBERS;i++)
+	{
 		memset(membername[i],0,64);
+		MemberRoles[i] = 0;
+	}
 	strcpy(membername[0],leader->GetName());
 
 	if(leader->IsClient())
@@ -236,6 +247,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
                 return false;
 
         strcpy(membername[i], NewMemberName);
+	MemberRoles[i] = 0;
 
         int x=1;
         
@@ -318,6 +330,7 @@ void Group::AddMember(const char *NewMemberName)
                 if (membername[i][0] == '\0')
                 {
                         strcpy(membername[i], NewMemberName);
+			MemberRoles[i] = 0;
                         break;
                 }
         }
@@ -452,8 +465,14 @@ void Group::MemberZoned(Mob* removemob) {
 		}
 #endif //BOTS
 	 }
-	 if(removemob->IsClient() && IsMainAssist(removemob->CastToClient()))
-	 	SetGroupTarget(0);
+	 if(removemob->IsClient() && HasRole(removemob, RoleAssist))
+	 	SetGroupAssistTarget(0);
+
+	 if(removemob->IsClient() && HasRole(removemob, RoleTank))
+	 	SetGroupTankTarget(0);
+
+	 if(removemob->IsClient() && HasRole(removemob, RolePuller))
+	 	SetGroupPullerTarget(0);
 }
 
 bool Group::DelMemberOOZ(const char *Name) {
@@ -473,6 +492,7 @@ bool Group::DelMemberOOZ(const char *Name) {
 				}
 
 				memset(membername[i], 0, 64);
+				MemberRoles[i] = 0;
 				if(GroupCount() < 3)
 				{
 					UnDelegateMarkNPC(NPCMarkerName.c_str());
@@ -499,6 +519,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender)
 			members[i] = NULL;
 			membername[i][0] = '\0';
 			memset(membername[i],0,64);
+			MemberRoles[i] = 0;
 			break;
 		  }
 	}
@@ -564,17 +585,23 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender)
 
 	safe_delete(outapp);
 
-	if(IsMainTank(oldmember))
-		UnDelegateMainTank(oldmember->GetName());
-	
-	if(IsMainAssist(oldmember))
+	if(HasRole(oldmember, RoleTank))
 	{
-	 	SetGroupTarget(0);
+		SetGroupTankTarget(0);
+		UnDelegateMainTank(oldmember->GetName());
+	}
+	
+	if(HasRole(oldmember, RoleAssist))
+	{
+	 	SetGroupAssistTarget(0);
 		UnDelegateMainAssist(oldmember->GetName());
 	}
 	
-	if(IsPuller(oldmember))
+	if(HasRole(oldmember, RolePuller))
+	{
+		SetGroupPullerTarget(0);
 		UnDelegatePuller(oldmember->GetName());
+	}
 		
 	if(oldmember->IsClient())
 		SendMarkedNPCsToMember(oldmember->CastToClient(), true);
@@ -1070,6 +1097,7 @@ void Group::MarkNPC(Mob* Target, int Number)
 			if(i == (Number - 1))
 				return;
 
+			UpdateXTargetMarkedNPC(i+1, NULL);
 			MarkedNPCs[i] = 0;
 
 			AlreadyMarked = true;
@@ -1084,6 +1112,8 @@ void Group::MarkNPC(Mob* Target, int Number)
 			Mob* m = entity_list.GetMob(MarkedNPCs[Number-1]);
 			if(m)
 				m->IsTargeted(-1);
+
+			UpdateXTargetMarkedNPC(Number, NULL);
 		}
 
 		if(EntityID)
@@ -1112,6 +1142,8 @@ void Group::MarkNPC(Mob* Target, int Number)
 	QueuePacket(outapp);
 
 	safe_delete(outapp);
+
+	UpdateXTargetMarkedNPC(Number, m);	
 }
 
 void Group::DelegateMainTank(const char *NewMainTankName, uint8 toggle)
@@ -1134,11 +1166,23 @@ void Group::DelegateMainTank(const char *NewMainTankName, uint8 toggle)
 	if(MainTankName != NewMainTankName || !toggle)
 		updateDB = true;
 	
-	MainTankName = NewMainTankName;
+	if(m->GetTarget())
+		TankTargetID = m->GetTarget()->GetID();
+	else
+		TankTargetID = 0;
 
-	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+	Mob *mtt = TankTargetID ? entity_list.GetMob(TankTargetID) : 0;
+
+	SetMainTank(NewMainTankName);
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
 		if(members[i] && members[i]->IsClient())
+		{
 			NotifyMainTank(members[i]->CastToClient(), toggle);
+			members[i]->CastToClient()->UpdateXTargetType(GroupTank, m, NewMainTankName);
+			members[i]->CastToClient()->UpdateXTargetType(GroupTankTarget, mtt);
+		}
 	}
 
 	if(updateDB) {
@@ -1175,15 +1219,19 @@ void Group::DelegateMainAssist(const char *NewMainAssistName, uint8 toggle)
 		updateDB = true;
 
 	if(m->GetTarget())
-		TargetID = m->GetTarget()->GetID();
+		AssistTargetID = m->GetTarget()->GetID();
 	else
-		TargetID = 0;
+		AssistTargetID = 0;
 
-	MainAssistName = NewMainAssistName;
+	SetMainAssist(NewMainAssistName);
 
 	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
 		if(members[i] && members[i]->IsClient())
+		{
 			NotifyMainAssist(members[i]->CastToClient(), toggle);
+			members[i]->CastToClient()->UpdateXTargetType(GroupAssist, m, NewMainAssistName);
+			members[i]->CastToClient()->UpdateXTargetType(GroupAssistTarget, m->GetTarget());
+		}
 	}
 
 	if(updateDB) {
@@ -1220,15 +1268,19 @@ void Group::DelegatePuller(const char *NewPullerName, uint8 toggle)
 		updateDB = true;
 
 	if(m->GetTarget())
-		TargetID = m->GetTarget()->GetID();
+		PullerTargetID = m->GetTarget()->GetID();
 	else
-		TargetID = 0;
+		PullerTargetID = 0;
 
-	PullerName = NewPullerName;
+	SetPuller(NewPullerName);
 
 	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
 		if(members[i] && members[i]->IsClient())
+		{
 			NotifyPuller(members[i]->CastToClient(), toggle);
+			members[i]->CastToClient()->UpdateXTargetType(Puller, m, NewPullerName);
+			members[i]->CastToClient()->UpdateXTargetType(PullerTarget, m->GetTarget());
+		}
 	}
 
 	if(updateDB) {
@@ -1336,7 +1388,7 @@ void Group::NotifyMainAssist(Client *c, uint8 toggle)
 		safe_delete(outapp);
 	}
 
-	NotifyTarget(c);
+	NotifyAssistTarget(c);
 
 }
 
@@ -1399,11 +1451,15 @@ void Group::UnDelegateMainTank(const char *OldMainTankName, uint8 toggle)
 		if(!toggle) {
 			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
 				if(members[i] && members[i]->IsClient())
+				{
 					NotifyMainTank(members[i]->CastToClient(), toggle);
+					members[i]->CastToClient()->UpdateXTargetType(GroupTank, NULL, "");
+					members[i]->CastToClient()->UpdateXTargetType(GroupTankTarget, NULL);
+				}
 			}
 		}
 
-		MainTankName.clear();
+		SetMainTank("");
 	}
 }
 
@@ -1429,7 +1485,10 @@ void Group::UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle)
 
 		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
 			if(members[i] && members[i]->IsClient())
+			{
 				members[i]->CastToClient()->QueuePacket(outapp);
+				members[i]->CastToClient()->UpdateXTargetType(GroupAssist, NULL, "");
+			}
 
 		safe_delete(outapp);
 
@@ -1443,14 +1502,19 @@ void Group::UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle)
 
 		safe_delete_array(Query);
 		
-		if(!toggle) {
-			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if(!toggle)
+		{
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+			{
 				if(members[i] && members[i]->IsClient())
+				{
 					NotifyMainAssist(members[i]->CastToClient(), toggle);
+					members[i]->CastToClient()->UpdateXTargetType(GroupAssistTarget, NULL);
+				}
 			}
 		}
 
-		MainAssistName.clear();
+		SetMainAssist("");
 	}
 }
 
@@ -1473,54 +1537,16 @@ void Group::UnDelegatePuller(const char *OldPullerName, uint8 toggle)
 		if(!toggle) {
 			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
 				if(members[i] && members[i]->IsClient())
+				{
 					NotifyPuller(members[i]->CastToClient(), toggle);
+					members[i]->CastToClient()->UpdateXTargetType(Puller, NULL, "");
+					members[i]->CastToClient()->UpdateXTargetType(PullerTarget, NULL);
+				}
 			}
 		}
 
-		PullerName.clear();
+		SetPuller("");
 	}
-}
-
-bool Group::IsMainTank(Mob *m)
-{
-	// Returns true if the specified group member has been delegated the Main Tank role.
-	//
-	if(!m)
-		return false;
-
-	if(MainTankName.size())
-		return(m->GetName() == MainTankName);
-
-	return false;
-
-}
-
-bool Group::IsMainAssist(Mob *m)
-{
-	// Returns true if the specified group member has been delegated the Main Assist role.
-	//
-	if(!m)
-		return false;
-
-	if(MainAssistName.size())
-		return(m->GetName() == MainAssistName);
-
-	return false;
-
-}
-
-bool Group::IsPuller(Mob *m)
-{
-	// Returns true if the specified group member has been delegated the Puller role.
-	//
-	if(!m)
-		return false;
-
-	if(PullerName.size())
-		return(m->GetName() == PullerName);
-
-	return false;
-
 }
 
 bool Group::IsNPCMarker(Client *c)
@@ -1537,18 +1563,49 @@ bool Group::IsNPCMarker(Client *c)
 
 }
 
-void Group::SetGroupTarget(int EntityID)
+void Group::SetGroupAssistTarget(Mob *m)
 {
 	// Notify all group members in the zone of the new target the Main Assist has selected.
 	//
-	TargetID = EntityID;
+	AssistTargetID = m ? m->GetID() : 0;
 
 	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
 		if(members[i] && members[i]->IsClient())
-			NotifyTarget(members[i]->CastToClient());
+		{
+			NotifyAssistTarget(members[i]->CastToClient());
+			members[i]->CastToClient()->UpdateXTargetType(GroupAssistTarget, m);
+		}
+	}
 }
 
-void Group::NotifyTarget(Client *c)
+void Group::SetGroupTankTarget(Mob *m)
+{
+	TankTargetID = m ? m->GetID() : 0;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			members[i]->CastToClient()->UpdateXTargetType(GroupTankTarget, m);
+		}
+	}
+}
+
+void Group::SetGroupPullerTarget(Mob *m)
+{
+	PullerTargetID = m ? m->GetID() : 0;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			members[i]->CastToClient()->UpdateXTargetType(PullerTarget, m);
+		}
+	}
+}
+
+void Group::NotifyAssistTarget(Client *c)
 {
 	// Send a packet to the specified client notifying them of the group target selected by the Main Assist.
 
@@ -1559,7 +1616,7 @@ void Group::NotifyTarget(Client *c)
 
 	MarkNPC_Struct* mnpcs = (MarkNPC_Struct *)outapp->pBuffer;
 
-	mnpcs->TargetID = TargetID;
+	mnpcs->TargetID = AssistTargetID;
 
 	mnpcs->Number = 0;
 
@@ -1567,6 +1624,26 @@ void Group::NotifyTarget(Client *c)
 
 	safe_delete(outapp);
 	
+}
+
+void Group::NotifyTankTarget(Client *c)
+{
+	if(!c)
+		return;
+
+	Mob *m = entity_list.GetMob(TankTargetID);
+
+	c->UpdateXTargetType(GroupTankTarget, m);
+}
+
+void Group::NotifyPullerTarget(Client *c)
+{
+	if(!c)
+		return;
+
+	Mob *m = entity_list.GetMob(PullerTargetID);
+
+	c->UpdateXTargetType(PullerTarget, m);
 }
 
 void Group::DelegateMarkNPC(const char *NewNPCMarkerName)
@@ -1714,13 +1791,24 @@ void Group::UnMarkNPC(int16 ID)
 	// The primary reason for doing this is so that when a new group member joins or zones in, we
 	// send them correct details of which NPCs are currently marked.
 
-	if(TargetID == ID)
-		TargetID = 0;
+	if(AssistTargetID == ID)
+		AssistTargetID = 0;
+
+	
+	if(TankTargetID == ID)
+		TankTargetID = 0;
+	
+	if(PullerTargetID == ID)
+		PullerTargetID = 0;
 
 	for(int i = 0; i < MAX_MARKED_NPCS; ++i)
+	{
 		if(MarkedNPCs[i] == ID)
+		{
 			MarkedNPCs[i] = 0;
-
+			UpdateXTargetMarkedNPC(i + 1, NULL);
+		}
+	}
 }
 
 void Group::SendMarkedNPCsToMember(Client *c, bool Clear)
@@ -1753,6 +1841,7 @@ void Group::SendMarkedNPCsToMember(Client *c, bool Clear)
 				mnpcs->Number = 0;
 
 			c->QueuePacket(outapp);
+			c->UpdateXTargetType((mnpcs->Number == 1) ? GroupMarkTarget1 : ((mnpcs->Number == 2) ? GroupMarkTarget2 : GroupMarkTarget3), m);
 		}
 	}
 
@@ -1807,7 +1896,7 @@ void Group::QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket*
 
 	int16 SenderID = sender->GetID();
 
-	if(SenderID != TargetID)
+	if(SenderID != AssistTargetID)
 	{
 		bool Marked = false;
 
@@ -1871,4 +1960,68 @@ void Group::ChangeLeader(Mob* newleader)
 const char *Group::GetClientNameByIndex(uint8 index)
 {
 	return membername[index];
+}
+
+void Group::UpdateXTargetMarkedNPC(uint32 Number, Mob *m)
+{
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			members[i]->CastToClient()->UpdateXTargetType((Number == 1) ? GroupMarkTarget1 : ((Number == 2) ? GroupMarkTarget2 : GroupMarkTarget3), m);
+		}
+	}
+
+}
+
+void Group::SetMainTank(const char *NewMainTankName)
+{
+	MainTankName = NewMainTankName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(!strncasecmp(membername[i], NewMainTankName, 64))
+			MemberRoles[i] |= RoleTank;
+		else
+			MemberRoles[i] &= ~RoleTank;
+	}
+}
+
+void Group::SetMainAssist(const char *NewMainAssistName)
+{
+	MainAssistName = NewMainAssistName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(!strncasecmp(membername[i], NewMainAssistName, 64))
+			MemberRoles[i] |= RoleAssist;
+		else
+			MemberRoles[i] &= ~RoleAssist;
+	}
+}
+
+void Group::SetPuller(const char *NewPullerName)
+{
+	PullerName = NewPullerName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(!strncasecmp(membername[i], NewPullerName, 64))
+			MemberRoles[i] |= RolePuller;
+		else
+			MemberRoles[i] &= ~RolePuller;
+	}
+}
+
+bool Group::HasRole(Mob *m, uint8 Role)
+{
+	if(!m)
+		return false;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if((m == members[i]) && (MemberRoles[i] & Role))
+			return true;
+	}
+	return false;
 }

@@ -2067,7 +2067,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	SetPet(0);
 	Mob* killer = GetHateDamageTop(this);
 	
-	entity_list.RemoveFromTargets(this);
+	entity_list.RemoveFromTargets(this, p_depop);
 
 	if(p_depop == true)
 		return;
@@ -2287,6 +2287,8 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			}
 		}
 	}
+	else
+		entity_list.RemoveFromXTargets(this);
 	
 	// Parse quests even if we're killed by an NPC
 	if(killerMob) {
@@ -2369,6 +2371,9 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 
+	if(other->IsClient())
+		other->CastToClient()->AddAutoXTarget(this);
+
 #ifdef BOTS
 	// if other is a bot, add the bots client to the hate list
 	if(other->IsBot()) {
@@ -2392,7 +2397,11 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 			// cb:2007-08-17
 			// owner must get on list, but he's not actually gained any hate yet
 			if(!owner->SpecAttacks[IMMUNE_AGGRO])
+			{
 				hate_list.Add(owner, 0, 0, false, !iBuffTic);
+				if(owner->IsClient())
+					owner->CastToClient()->AddAutoXTarget(this);
+			}
 		}
 	}	
 	

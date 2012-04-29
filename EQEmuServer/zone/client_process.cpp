@@ -1195,6 +1195,7 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 		//Was sending the packet back to initiate client zone... 
 		//but that could be abusable, so lets go through proper channels
 		MovePC(ZoneID, InstanceID, x, y, z, GetHeading(), 0, ZoneSolicited);
+		entity_list.RefreshClientXTargets(this);
 	}
 	PendingRezzXP = -1;
 	PendingRezzSpellID = 0;
@@ -2148,7 +2149,7 @@ void Client::HandleRespawnFromHover(uint32 Option)
 		z_pos = m_pp.binds[0].z;
 
 		ClearHover();
-
+		entity_list.RefreshClientXTargets(this);
 		SendHPUpdate();
 
 	}

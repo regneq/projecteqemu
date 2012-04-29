@@ -452,7 +452,8 @@ int command_init(void) {
         command_add("disarmtrap", "Analog for ldon disarm trap for the newer clients since we still don't have it working.", 0, command_disarmtrap) ||
         command_add("sensetrap", "Analog for ldon sense trap for the newer clients since we still don't have it working.", 0, command_sensetrap) ||
         command_add("picklock", "Analog for ldon pick lock for the newer clients since we still don't have it working.", 0, command_picklock) ||
-		command_add("mysql", "Mysql CLI, see 'help' for options.", 250, command_mysql) 
+		command_add("mysql", "Mysql CLI, see 'help' for options.", 250, command_mysql) ||
+		command_add("xtargets", "Show your targets Extended Targets and optionally set how many xtargets they can have.", 250, command_xtargets) 
 		)
 	{
 		command_deinit();
@@ -7993,9 +7994,16 @@ void command_ginfo(Client *c, const Seperator *sep)
 		if(g->members[r] == NULL) {
 			if(g->membername[r][0] == '\0')
 				continue;
-			c->Message(0, "...Zoned Member: %s", g->membername[r]);
+			c->Message(0, "...Zoned Member: %s, Roles: %s %s %s", g->membername[r],
+				(g->MemberRoles[r] & RoleAssist) ? "Assist" : "",
+				(g->MemberRoles[r] & RoleTank) ? "Tank" : "",
+				(g->MemberRoles[r] & RolePuller) ? "Puller" : "");
 		} else {
-			c->Message(0, "...In-Zone Member: %s (0x%x)", g->membername[r], g->members[r]);
+			c->Message(0, "...In-Zone Member: %s (0x%x) Roles: %s %s %s", g->membername[r], g->members[r],
+				(g->MemberRoles[r] & RoleAssist) ? "Assist" : "",
+				(g->MemberRoles[r] & RoleTank) ? "Tank" : "",
+				(g->MemberRoles[r] & RolePuller) ? "Puller" : "");
+
 		}
 	}
 }
@@ -11389,4 +11397,29 @@ void command_mysql(Client *c, const Seperator *sep)
 			}
 		}
 	}
+}
+
+void command_xtargets(Client *c, const Seperator *sep)
+{
+	Client *t;
+
+	if(c->GetTarget() && c->GetTarget()->IsClient())
+		t = c->GetTarget()->CastToClient();
+	else
+		t = c;
+
+	if(sep->arg[1][0])
+	{
+		uint8 NewMax = atoi(sep->arg[1]);
+
+		if((NewMax < 5) || (NewMax > XTARGET_HARDCAP))
+		{
+			c->Message(13, "Number of XTargets must be between 5 and %i", XTARGET_HARDCAP);
+			return;
+		}
+		t->SetMaxXTargets(NewMax);
+		c->Message(0, "Max number of XTargets set to %i", NewMax);
+	}
+	else
+		t->ShowXTargets(c);
 }

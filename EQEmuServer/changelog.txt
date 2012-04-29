@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/29/2012==
+Derision: UF+: Support for the Extended Target window (aside from the Raid target types).
+
+REQUIRED SQL: utils/sql/svn/2136_extended_targets.sql
+
+Note: Default number of Extended Targets is 5. This is stored as a column in character_
+GMs can increase a players slots by targetting them and typing #xtargets <n> where n is between 5 and 20.
+
 ==04/22/2012==
 Trevius: VoA - The AA Window now populated AAs.  AA hotkeys can be created, but purchasing still needs work.
 
