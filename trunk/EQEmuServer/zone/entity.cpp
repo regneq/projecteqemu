@@ -1451,11 +1451,7 @@ void EntityList::RefreshClientXTargets(Client *c)
 			continue;
 
 		if(c2->IsClientXTarget(c))
-		{
 			c2->UpdateClientXTarget(c);
-			break;
-		}
-
 	}	
 }
 
