@@ -6826,8 +6826,7 @@ void Client::RemoveGroupXTargets()
 
 	for(int i = 0; i < GetMaxXTargets(); ++i)
 	{
-		if((XTargets[i].Type == CurrentTargetPC) ||
-		  (XTargets[i].Type == GroupTank) ||
+		if((XTargets[i].Type == GroupTank) ||
 		  (XTargets[i].Type == GroupAssist) ||
 		  (XTargets[i].Type == Puller) ||
 		  (XTargets[i].Type == RaidAssist1) ||

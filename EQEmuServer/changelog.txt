@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/29/2012==
 Derision: UF+: Support for the Extended Target window (aside from the Raid target types).
+Derision: Fixed Extended Target bugs where CurrentTargetPC targets were incorrectly cleared when leaving a group, and a CurrentTargetPC wasn't updating when they zoned in.
 
 REQUIRED SQL: utils/sql/svn/2136_extended_targets.sql
 
