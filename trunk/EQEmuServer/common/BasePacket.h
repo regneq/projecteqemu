@@ -61,8 +61,11 @@ public:
 	void WriteString(const char * str) { uint32 len = strlen(str) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
 
 	uint8 ReadUInt8() { uint8 value = *(uint8 *)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }
+	uint8 ReadUInt8(uint32 Offset) const { uint8 value = *(uint8 *)(pBuffer + Offset); return value; }
 	uint32 ReadUInt32() { uint32 value = *(uint32 *)(pBuffer + _rpos); _rpos += sizeof(uint32); return value; }
+	uint32 ReadUInt32(uint32 Offset) const { uint32 value = *(uint32 *)(pBuffer + Offset); return value; }
 	void ReadString(char *str) { uint32 len = strlen((char *)(pBuffer + _rpos)) + 1; memcpy(str, pBuffer + _rpos, len); _rpos += len; }
+	void ReadString(char *str, uint32 Offset, uint32 MaxLength) const;
 	
 	uint32 GetWritePosition() { return _wpos; }
 	uint32 GetReadPosition() { return _rpos; }

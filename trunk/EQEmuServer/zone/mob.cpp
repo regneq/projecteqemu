@@ -403,6 +403,7 @@ Mob::~Mob()
 	//
 	if(GetID() > 0)
 		entity_list.RemoveMob(GetID());
+
 	else
 		entity_list.RemoveMob(this);
 
@@ -422,7 +423,7 @@ Mob::~Mob()
 	if(!corpse || (corpse && !corpse->IsPlayerCorpse()))
 		entity_list.QueueClients(this, &app, true);
 	
-	entity_list.RemoveFromTargets(this);
+	entity_list.RemoveFromTargets(this, true);
 	
     if(trade) {
         Mob *with = trade->With();
@@ -1005,6 +1006,7 @@ void Mob::SendHPUpdate()
 #else
 	// send to people who have us targeted
 	entity_list.QueueClientsByTarget(this, &hp_app, false, 0, false, true, BIT_AllClients);
+	entity_list.QueueClientsByXTarget(this, &hp_app, false);
 	entity_list.QueueToGroupsForNPCHealthAA(this, &hp_app);
 
 	// send to group
@@ -2793,6 +2795,8 @@ void Mob::SetTarget(Mob* mob) {
 	else if (IsClient())
         parse->EventPlayer(EVENT_TARGET_CHANGE, CastToClient(), "", 0); //parse->Event(EVENT_TARGET_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
 
+	if(IsPet() && GetOwner() && GetOwner()->IsClient())
+		GetOwner()->CastToClient()->UpdateXTargetType(MyPetTarget, mob);	
 }
 
 float Mob::FindGroundZ(float new_x, float new_y, float z_offset)
@@ -4055,7 +4059,10 @@ void Mob::SetGrouped(bool v)
 
 	if(IsClient())
 	{
-        parse->EventPlayer(EVENT_GROUP_CHANGE, CastToClient(), "", 0);
+        	parse->EventPlayer(EVENT_GROUP_CHANGE, CastToClient(), "", 0);
+
+		if(!v)
+			CastToClient()->RemoveGroupXTargets();
 	}
 }
 

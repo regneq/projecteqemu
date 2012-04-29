@@ -316,6 +316,15 @@ Client::Client(EQStreamInterface* ieqs)
 	adv_requested_theme = 0;
 	adv_requested_id = 0;
 	adv_requested_member_count = 0;
+
+	for(int i = 0; i < XTARGET_HARDCAP; ++i)
+	{
+		XTargets[i].Type = Auto;
+		XTargets[i].ID = 0;
+		XTargets[i].Name[0] = 0;
+	}
+	MaxXTargets = 5;	
+	XTargetAutoAddHaters = true;
 }
 
 Client::~Client() {
@@ -572,7 +581,7 @@ bool Client::Save(int8 iCommitNow) {
 		workpt.w2_3() = GetID();
 		workpt.b1() = DBA_b1_Entity_Client_Save;
 		DBAsyncWork* dbaw = new DBAsyncWork(&database, &MTdbafq, workpt, DBAsync::Write, 0xFFFFFFFF);
-		dbaw->AddQuery(iCommitNow == 0 ? true : false, &query, database.SetPlayerProfile_MQ(&query, account_id, character_id, &m_pp, &m_inv, &m_epp), false);
+		dbaw->AddQuery(iCommitNow == 0 ? true : false, &query, database.SetPlayerProfile_MQ(&query, account_id, character_id, &m_pp, &m_inv, &m_epp, 0, 0, MaxXTargets), false);
 		if (iCommitNow == 0){
 			pQueuedSaveWorkID = dbasync->AddWork(&dbaw, 2500);
 		}
@@ -583,7 +592,7 @@ bool Client::Save(int8 iCommitNow) {
 		safe_delete_array(query);
 		return true;
 	}
-	else if (database.SetPlayerProfile(account_id, character_id, &m_pp, &m_inv, &m_epp)) {
+	else if (database.SetPlayerProfile(account_id, character_id, &m_pp, &m_inv, &m_epp, 0, 0, MaxXTargets)) {
 		SaveBackup();
 	}
 	else {
@@ -1739,6 +1748,7 @@ void Client::SendManaUpdate()
 	mus->max_mana = GetMaxMana();
 	mus->spawn_id = GetID();
 	QueuePacket(mana_app);
+	entity_list.QueueClientsByXTarget(this, mana_app, false);
 	safe_delete(mana_app);
 }
 
@@ -1751,6 +1761,7 @@ void Client::SendEnduranceUpdate()
 	eus->max_end = GetMaxEndurance();
 	eus->spawn_id = GetID();
 	QueuePacket(end_app);
+	entity_list.QueueClientsByXTarget(this, end_app, false);
 	safe_delete(end_app);
 }
 
@@ -6644,3 +6655,225 @@ void Client::OpenLFGuildWindow()
 	FastQueuePacket(&outapp);
 }
 
+bool Client::IsXTarget(const Mob *m) const
+{
+	if(!XTargettingAvailable() || !m || (m->GetID() == 0))
+		return false;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(XTargets[i].ID == m->GetID())
+			return true;
+	}
+	return false;
+}
+
+bool Client::IsClientXTarget(const Client *c) const
+{
+	if(!XTargettingAvailable() || !c)
+		return false;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(!strcasecmp(XTargets[i].Name, c->GetName()))
+			return true;
+	}
+	return false;
+}
+
+
+void Client::UpdateClientXTarget(Client *c)
+{
+	if(!XTargettingAvailable() || !c)
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(!strcasecmp(XTargets[i].Name, c->GetName()))
+		{
+			XTargets[i].ID = c->GetID();
+			SendXTargetPacket(i, c);
+		}
+	}
+}
+
+void Client::AddAutoXTarget(Mob *m)
+{
+	if(!XTargettingAvailable() || !XTargetAutoAddHaters)
+		return;
+
+	if(IsXTarget(m))
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if((XTargets[i].Type == Auto) && (XTargets[i].ID == 0))
+		{
+			XTargets[i].ID = m->GetID();
+			SendXTargetPacket(i, m);
+			break;
+		}
+	}
+}
+
+void Client::RemoveXTarget(Mob *m)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	bool HadFreeAutoSlotsBefore = false;
+
+	int FreedAutoSlots = 0;
+
+	if(m->GetID() == 0)
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(XTargets[i].ID == m->GetID())
+		{
+			if(XTargets[i].Type == CurrentTargetNPC)
+				XTargets[i].Type = Auto;
+
+			if(XTargets[i].Type == Auto)
+				++FreedAutoSlots;
+
+			XTargets[i].ID = 0;
+
+			SendXTargetPacket(i, NULL);
+		}
+		else
+		{
+			if((XTargets[i].Type == Auto) && (XTargets[i].ID == 0))
+				HadFreeAutoSlotsBefore = true;
+		}
+	}
+	// If there are more mobs aggro on us than we had auto-hate slots, add one of those haters into the slot(s) we just freed up.
+	if(!HadFreeAutoSlotsBefore && FreedAutoSlots)
+		entity_list.RefreshAutoXTargets(this);
+}
+
+void Client::UpdateXTargetType(XTargetType Type, Mob *m, const char *Name)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(XTargets[i].Type == Type)
+		{
+			if(m)
+				XTargets[i].ID = m->GetID();
+			else
+				XTargets[i].ID = 0;
+
+			if(Name)
+				strncpy(XTargets[i].Name, Name, 64);
+
+			SendXTargetPacket(i, m);
+		}
+	}
+}
+
+void Client::SendXTargetPacket(uint32 Slot, Mob *m)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	uint32 PacketSize = 18;
+
+	if(m)
+		PacketSize += strlen(m->GetCleanName());
+	else
+	{
+		PacketSize += strlen(XTargets[Slot].Name);
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_XTargetResponse, PacketSize);
+	outapp->WriteUInt32(GetMaxXTargets());
+	outapp->WriteUInt32(1);
+	outapp->WriteUInt32(Slot);
+	if(m)
+	{
+		outapp->WriteUInt8(1);
+	}
+	else
+	{
+		if(strlen(XTargets[Slot].Name) && ((XTargets[Slot].Type == CurrentTargetPC) ||
+		  (XTargets[Slot].Type == GroupTank) ||
+		  (XTargets[Slot].Type == GroupAssist) ||
+		  (XTargets[Slot].Type == Puller) ||
+		  (XTargets[Slot].Type == RaidAssist1) ||
+		  (XTargets[Slot].Type == RaidAssist2) ||
+		  (XTargets[Slot].Type == RaidAssist3)))
+		{
+			outapp->WriteUInt8(2);
+		}
+		else
+		{
+			outapp->WriteUInt8(0);
+		}
+	}
+	outapp->WriteUInt32(XTargets[Slot].ID);
+	outapp->WriteString(m ? m->GetCleanName() : XTargets[Slot].Name);
+	FastQueuePacket(&outapp);
+}
+
+void Client::RemoveGroupXTargets()
+{
+	if(!XTargettingAvailable())
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if((XTargets[i].Type == CurrentTargetPC) ||
+		  (XTargets[i].Type == GroupTank) ||
+		  (XTargets[i].Type == GroupAssist) ||
+		  (XTargets[i].Type == Puller) ||
+		  (XTargets[i].Type == RaidAssist1) ||
+		  (XTargets[i].Type == RaidAssist2) ||
+		  (XTargets[i].Type == RaidAssist3) ||
+		  (XTargets[i].Type == GroupMarkTarget1) ||
+		  (XTargets[i].Type == GroupMarkTarget2) ||
+		  (XTargets[i].Type == GroupMarkTarget3))
+		{
+			XTargets[i].ID = 0;
+			XTargets[i].Name[0] = 0;
+			SendXTargetPacket(i, NULL);
+		}
+	}
+}
+
+void Client::ShowXTargets(Client *c)
+{
+	if(!c)
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+		c->Message(0, "Xtarget Slot: %i, Type: %2i, ID: %4i, Name: %s", i, XTargets[i].Type, XTargets[i].ID, XTargets[i].Name);
+}
+
+void Client::SetMaxXTargets(uint8 NewMax)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	if(NewMax > XTARGET_HARDCAP)
+		return;
+
+	MaxXTargets = NewMax;
+
+	Save(0);
+
+	for(int i = MaxXTargets; i < XTARGET_HARDCAP; ++i)
+	{
+		XTargets[i].Type = Auto;
+		XTargets[i].ID = 0;
+		XTargets[i].Name[0] = 0;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_XTargetResponse, 8);
+	outapp->WriteUInt32(GetMaxXTargets());
+	outapp->WriteUInt32(0);
+	FastQueuePacket(&outapp);
+}

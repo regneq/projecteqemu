@@ -530,6 +530,12 @@ void Mob::SetPetID(int16 NewPetID) {
 	if (NewPetID == GetID() && NewPetID != 0)
 		return;
 	petid = NewPetID;
+
+	if(IsClient())
+	{
+		Mob* NewPet = entity_list.GetMob(NewPetID);
+		CastToClient()->UpdateXTargetType(MyPet, NewPet);
+	}
 }
 
 void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {

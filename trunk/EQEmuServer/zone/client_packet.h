@@ -275,4 +275,6 @@
 	void Handle_OP_CrystalReclaim(const EQApplicationPacket *app);
 	void Handle_OP_CrystalCreate(const EQApplicationPacket *app);
 	void Handle_OP_LFGuild(const EQApplicationPacket *app);
+	void Handle_OP_XTargetRequest(const EQApplicationPacket *app);
+	void Handle_OP_XTargetAutoAddHaters(const EQApplicationPacket *app);
 
