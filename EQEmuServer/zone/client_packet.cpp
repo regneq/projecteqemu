@@ -12752,6 +12752,15 @@ void Client::Handle_OP_XTargetRequest(const EQApplicationPacket *app)
 			}
 			break;
 		}
+		case GroupTankTarget:
+		{
+			Group *g = GetGroup();
+
+			if(g)
+				g->NotifyTankTarget(this);
+
+			break;
+		}
 
 		case GroupAssist:
 		{
@@ -12775,6 +12784,17 @@ void Client::Handle_OP_XTargetRequest(const EQApplicationPacket *app)
 			break;
 		}
 
+		case GroupAssistTarget:
+		{
+
+			Group *g = GetGroup();
+
+			if(g)
+				g->NotifyAssistTarget(this);
+
+			break;
+		}
+
 		case Puller:
 		{
 			Group *g = GetGroup();
@@ -12794,6 +12814,43 @@ void Client::Handle_OP_XTargetRequest(const EQApplicationPacket *app)
 				}
 				SendXTargetPacket(Slot, c);
 			}
+			break;
+		}
+
+		case PullerTarget:
+		{
+
+			Group *g = GetGroup();
+
+			if(g)
+				g->NotifyPullerTarget(this);
+
+			break;
+		}
+
+		case GroupMarkTarget1:
+		case GroupMarkTarget2:
+		case GroupMarkTarget3:
+		{
+			Group *g = GetGroup();
+
+			if(g)
+				g->SendMarkedNPCsToMember(this);
+
+			break;
+		}
+
+		case RaidAssist1:
+		case RaidAssist2:
+		case RaidAssist3:
+		case RaidAssist1Target:
+		case RaidAssist2Target:
+		case RaidAssist3Target:
+		case RaidMarkTarget1:
+		case RaidMarkTarget2:
+		case RaidMarkTarget3:
+		{
+			// Not implemented yet.
 			break;
 		}
 

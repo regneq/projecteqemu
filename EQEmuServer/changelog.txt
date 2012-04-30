@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/30/2012==
+Derision: Fixed some minor bugs with Extended Targeting (if the tank/assist/puller had a target before you allocated an XT slot to that function, you would not see the target unti they changed target).
+
 ==04/29/2012==
 Derision: UF+: Support for the Extended Target window (aside from the Raid target types).
 Derision: Fixed Extended Target bugs where CurrentTargetPC targets were incorrectly cleared when leaving a group, and a CurrentTargetPC wasn't updating when they zoned in.
