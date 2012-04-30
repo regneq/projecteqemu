@@ -1574,7 +1574,6 @@ void Group::SetGroupAssistTarget(Mob *m)
 		if(members[i] && members[i]->IsClient())
 		{
 			NotifyAssistTarget(members[i]->CastToClient());
-			members[i]->CastToClient()->UpdateXTargetType(GroupAssistTarget, m);
 		}
 	}
 }
@@ -1623,6 +1622,10 @@ void Group::NotifyAssistTarget(Client *c)
 	c->QueuePacket(outapp);
 
 	safe_delete(outapp);
+
+	Mob *m = entity_list.GetMob(AssistTargetID);
+
+	c->UpdateXTargetType(GroupAssistTarget, m);
 	
 }
 
