@@ -6716,7 +6716,7 @@ void Client::AddAutoXTarget(Mob *m)
 	}
 }
 
-void Client::RemoveXTarget(Mob *m)
+void Client::RemoveXTarget(Mob *m, bool OnlyAutoSlots)
 {
 	if(!XTargettingAvailable())
 		return;
@@ -6730,6 +6730,9 @@ void Client::RemoveXTarget(Mob *m)
 
 	for(int i = 0; i < GetMaxXTargets(); ++i)
 	{
+		if(OnlyAutoSlots && (XTargets[i].Type !=Auto))
+			continue;
+
 		if(XTargets[i].ID == m->GetID())
 		{
 			if(XTargets[i].Type == CurrentTargetNPC)

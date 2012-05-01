@@ -2202,7 +2202,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			if(!killer->CastToClient()->GetGM() && killer->IsClient())
 				this->CheckMinMaxLevel(killer);
 		}
-
+		entity_list.RemoveFromAutoXTargets(this);
 		Corpse* corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,level>54?RuleI(NPC,MajorNPCCorpseDecayTimeMS):RuleI(NPC,MinorNPCCorpseDecayTimeMS));
 		entity_list.LimitRemoveNPC(this);
 		entity_list.AddCorpse(corpse, this->GetID());

@@ -1385,7 +1385,7 @@ void EntityList::RemoveFromTargets(Mob* mob, bool RemoveFromXTargets)
 		m->RemoveFromHateList(mob);
 
 		if(RemoveFromXTargets && m->IsClient())
-			m->CastToClient()->RemoveXTarget(mob);
+			m->CastToClient()->RemoveXTarget(mob, false);
 
 	}	
 }
@@ -1404,7 +1404,26 @@ void EntityList::RemoveFromXTargets(Mob* mob)
 			continue;
 
 		if(m->IsClient())
-			m->CastToClient()->RemoveXTarget(mob);
+			m->CastToClient()->RemoveXTarget(mob, false);
+
+	}	
+}
+
+void EntityList::RemoveFromAutoXTargets(Mob* mob)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
+		iterator.Advance();
+
+		if(!m)
+			continue;
+
+		if(m->IsClient())
+			m->CastToClient()->RemoveXTarget(mob, true);
 
 	}	
 }

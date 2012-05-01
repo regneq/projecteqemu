@@ -1086,7 +1086,7 @@ public:
 	void UpdateClientXTarget(Client *c);
 	void UpdateXTargetType(XTargetType Type, Mob *m, const char *Name = NULL);
 	void AddAutoXTarget(Mob *m);
-	void RemoveXTarget(Mob *m);
+	void RemoveXTarget(Mob *m, bool OnlyAutoSlots);
 	void SendXTargetPacket(uint32 Slot, Mob *m);
 	void RemoveGroupXTargets();
 	void ShowXTargets(Client *c);

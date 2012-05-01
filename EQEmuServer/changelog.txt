@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/01/2012==
+Derision: Corpses no longer appear in Extended Target Auto slots.
+
 ==04/30/2012==
 Derision: Fixed some minor bugs with Extended Targeting (if the tank/assist/puller had a target before you allocated an XT slot to that function, you would not see the target unti they changed target).
 

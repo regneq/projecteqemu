@@ -268,6 +268,7 @@ public:
 
 	void    RemoveFromTargets(Mob* mob, bool RemoveFromXTargets = false);
 	void    RemoveFromXTargets(Mob* mob);
+	void    RemoveFromAutoXTargets(Mob* mob);
     void    ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget);
 	void	QueueCloseClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, float dist=200, Mob* SkipThisMob = 0, bool ackreq = true,eqFilterType filter=FilterNone);
 	void    QueueClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
