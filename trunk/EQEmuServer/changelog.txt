@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/05/2012==
+Derision: Fixed reference to freed memory in Mob::BardPulse, plus a couple of minor memory leaks in  Load/SavePetInfo
 ==05/01/2012==
 Derision: Corpses no longer appear in Extended Target Auto slots.
 
