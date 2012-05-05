@@ -2140,6 +2140,7 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 		safe_delete_array(query);
 		return;
 	}
+	safe_delete_array(query);
 
 	for(i=0; i<MAX_WORN_INVENTORY; i++) {
 		if(suspended->Items[i]) {
@@ -2262,6 +2263,7 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
 		"SELECT `pet`, `slot`, `item_id` FROM `character_pet_inventory` WHERE `char_id`=%u",
 		c->CharacterID()), errbuf, &result))
 	{
+		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {
 			pet = atoi(row[0]);
 			if (pet == 0)
@@ -2282,7 +2284,7 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
 	else {
 		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
 		safe_delete_array(query);
-        return;
+        	return;
 	}
 
 }

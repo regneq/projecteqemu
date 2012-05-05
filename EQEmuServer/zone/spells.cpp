@@ -2262,7 +2262,7 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 
 			if(!IsEffectInSpell(spell_id, SE_BindAffinity))
 			{
-				CastToClient()->FastQueuePacket(&packet);
+				CastToClient()->QueuePacket(packet);
 			}
 			
 			EQApplicationPacket *message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
@@ -2278,6 +2278,7 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 				entity_list.QueueCloseClients(this, message_packet, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 			}
 			safe_delete(message_packet);
+			safe_delete(packet);
 			
 		}
 		//we are done...
