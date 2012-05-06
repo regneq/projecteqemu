@@ -1023,6 +1023,26 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 			curmode = questDefaultByZone;
 			//LogFile->write(EQEMuLog::Debug, "LoadScript(%s)", filename.c_str());
 		}
+
+		tmpf = fopen(filename.c_str(), "r");
+		if(tmpf != NULL)
+		{
+			fclose(tmpf);
+			filefound = true;
+		}
+		
+		// If zone template isn't found look for it globally /quests/template/default.pl
+		if(!filefound)
+		{
+			//Load Default Quests Globally
+			//filename = bnfilename;
+			filename = "quests/";
+			filename += QUEST_TEMPLATES_DIRECTORY;
+			filename += "/";
+			filename += "default.pl";
+			curmode = questDefaultByZone;
+			//LogFile->write(EQEMuLog::Debug, "LoadScript(%s)", filename.c_str());
+		}
 	}
 
 	//check for existance of quest file before trying to make perl load it.
