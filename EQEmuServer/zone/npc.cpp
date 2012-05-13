@@ -43,6 +43,7 @@ using namespace std;
 #include "spawngroup.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
+#include "StringIDs.h"
 
 //#define SPELLQUEUE //Use only if you want to be spammed by spell testing
 
@@ -704,6 +705,8 @@ void NPC::DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPC
 }
 
 void NPC::Depop(bool StartSpawnTimer) {
+	if(this->GetNPCEmoteID() != 0)
+		this->DoNPCEmote(ONDESPAWN);
 	p_depop = true;
 	if (StartSpawnTimer) {
 		if (respawn2 != 0) {
@@ -2189,3 +2192,54 @@ void NPC::SignalNPC(int _signal_id)
 {
 	signal_q.push_back(_signal_id);
 }
+
+NPC_Emote_Struct* NPC::GetNPCEmote(int32 emoteid, int8 event_) {
+	LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		NPC_Emote_Struct* nes = iterator.GetData();
+		if (emoteid == nes->emoteid && event_ == nes->event_) {
+			return (nes);
+		}
+		iterator.Advance();
+	}
+	return (NULL);
+}
+	
+void NPC::DoNPCEmote(int8 event_)
+{
+	if(this == NULL)
+	{
+		return;
+	}
+
+	int32 emoteid = 0;
+	if(this->IsCorpse() && !this->GetOwnerID())
+	{
+		emoteid = this->GetNPCTypeID();
+	}
+	else
+	{
+		emoteid = this->GetNPCEmoteID();
+	}
+
+	NPC_Emote_Struct* nes = GetNPCEmote(emoteid,event_);
+	if(nes == NULL)
+	{
+		return;
+	}
+
+	if(emoteid == nes->emoteid)
+	{
+		if(nes->type == 1)
+			this->Emote("%s",nes->text);
+		else if(nes->type == 2)
+			this->Shout("%s",nes->text);
+		else if(nes->type == 3)
+			entity_list.MessageClose_StringID(this, true, 200, 10, GENERIC_STRING, nes->text);
+		else
+			this->Say("%s",nes->text);
+	}
+}
+

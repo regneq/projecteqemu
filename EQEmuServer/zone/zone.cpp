@@ -872,6 +872,7 @@ Zone::~Zone() {
 	safe_delete_array(short_name);
 	safe_delete_array(long_name);
 	safe_delete(Weather_Timer);
+	NPCEmoteList.Clear();
 	zone_point_list.Clear();
 	entity_list.Clear();
 	ClearBlockedSpells();
@@ -968,6 +969,7 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadLDoNTrapEntries();
 	zone->LoadVeteranRewards();
     zone->LoadAlternateCurrencies();
+	zone->LoadNPCEmotes(&NPCEmoteList);
 
 	//Load AA information
 	adverrornum = 500;
@@ -1040,6 +1042,8 @@ void Zone::ReloadStaticData() {
 
 	zone->LoadVeteranRewards();
     zone->LoadAlternateCurrencies();
+	NPCEmoteList.Clear();
+	zone->LoadNPCEmotes(&NPCEmoteList);
 	
 	//load the zone config file.
 	if (!LoadZoneCFG(zone->GetShortName(), zone->GetInstanceVersion(), true)) // try loading the zone name...
@@ -2456,4 +2460,33 @@ void Zone::DoAdventureActions()
 		did_adventure_actions = true;
 	}
 
+}
+
+void Zone::LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	NPCEmoteList->Clear();
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT emoteid, event_, type, text FROM npc_emotes"), errbuf, &result)) 
+	{
+		while((row = mysql_fetch_row(result))) 
+		{
+			NPC_Emote_Struct* nes = new NPC_Emote_Struct;
+			nes->emoteid = atoi(row[0]);
+			nes->event_ = atoi(row[1]);
+			nes->type = atoi(row[2]);
+			strn0cpy(nes->text, row[3], sizeof(nes->text));
+			NPCEmoteList->Insert(nes);
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadNPCEmotes: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+	}
 }

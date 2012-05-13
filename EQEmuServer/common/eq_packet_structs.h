@@ -3423,6 +3423,13 @@ struct AltCurrencyDefinition_Struct {
     uint32 item_id;
 };
 
+struct NPC_Emote_Struct {
+	int32	emoteid;
+	int8	event_;
+	int8	type;
+	char	text[515];
+};
+
 struct FindPerson_Point {
 	float y;
 	float x;

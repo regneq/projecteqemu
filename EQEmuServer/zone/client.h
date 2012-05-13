@@ -568,6 +568,7 @@ public:
     FACTION_VALUE   GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction, Mob* tnpc);
 	sint32	GetCharacterFactionLevel(sint32 faction_id);
 	sint32  GetModCharacterFactionLevel(sint32 faction_id);
+	bool	HatedByClass(int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction);
 
 	void	SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8 char_race, int8 char_deity);
 	void    SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value, int8 temp);
@@ -1016,6 +1017,7 @@ public:
 	void UpdateLDoNWins(int32 t, sint32 n);
 	void UpdateLDoNLosses(int32 t, sint32 n);
 	void CheckLDoNHail(Mob *target);
+	void CheckEmoteHail(Mob *target, const char* message);
 
 	void HandleLDoNOpen(NPC *target);
 	void HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type);
@@ -1090,6 +1092,9 @@ public:
 	void SendXTargetPacket(uint32 Slot, Mob *m);
 	void RemoveGroupXTargets();
 	void ShowXTargets(Client *c);
+
+	char* GetRacePlural(Client* client);
+	char* GetClassPlural(Client* client);
 
 protected:
 	friend class Mob;

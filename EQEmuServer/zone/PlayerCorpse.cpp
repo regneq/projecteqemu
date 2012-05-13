@@ -455,6 +455,10 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
 	loot_cooldown_timer(10)
 {
+
+	//we really should be loading the decay timer here...
+	LoadPlayerCorpseDecayTime(in_dbid);
+
 	if(!zone->HasGraveyard() || wasAtGraveyard)
 		corpse_graveyard_timer.Disable();
 
@@ -468,9 +472,6 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	charid = in_charid;
 	itemlist = *in_itemlist;
 	in_itemlist->clear();
-
-	//we really should be loading the decay timer here...
-	LoadPlayerCorpseDecayTime(in_dbid);
 	
 	strcpy(orgname, in_charname);
 	strcpy(name, in_charname);
@@ -505,7 +506,10 @@ the client does this too, so it's unchangable
 void Corpse::CalcCorpseName() {
 	EntityList::RemoveNumbers(name);
 	char tmp[64];
-	snprintf(tmp, sizeof(tmp), "'s corpse%d", GetID());
+	if (p_PlayerCorpse)
+		snprintf(tmp, sizeof(tmp), "'s corpse%d", GetID());
+	else
+		snprintf(tmp, sizeof(tmp), "`s_corpse%d", GetID());
 	name[(sizeof(name) - 1) - strlen(tmp)] = 0;
 	strcat(name, tmp);
 }
@@ -1471,7 +1475,8 @@ int32 ZoneDatabase::GraveyardPlayerCorpse(int32 dbid, int32 zoneid, int16 instan
 	char* end = query;
 	int32 affected_rows = 0;
 	
-	end += sprintf(end,"Update player_corpses SET zoneid=%u, instanceid=%u, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f, WasAtGraveyard=1 WHERE id=%d", zoneid, instanceid, x, y, z, heading, dbid);
+	// We probably don't want a graveyard located in an instance.
+	end += sprintf(end,"Update player_corpses SET zoneid=%u, instanceid=0, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f, WasAtGraveyard=1 WHERE id=%d", zoneid, x, y, z, heading, dbid);
 	
 	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
@@ -1973,9 +1978,16 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 				*/
 			}
 			else {
-				corpse_decay_timer.SetTimer(300000);
+				corpse_decay_timer.SetTimer(2000);
 				//corpse_res_timer.SetTimer(300000);
 			}
+			if(atoi(row[0]) > 0 && RuleI(Zone, GraveyardTimeMS) > (atoi(row[0]) * 1000)) {
+				corpse_graveyard_timer.SetTimer(RuleI(Zone, GraveyardTimeMS) - (atoi(row[0]) * 1000));
+			}
+			else {
+				corpse_graveyard_timer.SetTimer(3000);
+			}
+
 		}
 		mysql_free_result(result);
 	}
