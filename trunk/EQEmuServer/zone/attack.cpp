@@ -1517,6 +1517,8 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	{
 		if (killerMob->IsNPC()) {
             parse->EventNPC(EVENT_SLAY, killerMob->CastToNPC(), this, "", 0);
+			if(killerMob->CastToNPC()->GetNPCEmoteID() != 0)
+				killerMob->CastToNPC()->DoNPCEmote(KILLEDPC);
 			killerMob->TrySpellOnKill();
 		}
 		
@@ -2192,8 +2194,8 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 
 	if (!HasOwner() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
 		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetUltimateOwner()->IsClient()) ||
-		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->GetOwner() && killer->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))) {
-		
+		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->GetOwner() && killer->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))) 
+	{
 		if(killer != 0)
 		{
 			if(killer->GetOwner() != 0 && killer->GetOwner()->IsClient())
@@ -2210,9 +2212,10 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		entity_list.UnMarkNPC(GetID());
 		entity_list.RemoveNPC(GetID());
 		this->SetID(0);
+		if(killer != 0)
+			corpse->CastToNPC()->DoNPCEmote(AFTERDEATH);
 		if(killer != 0 && killer->IsClient()) {
 			corpse->AllowMobLoot(killer, 0);
-	
 			if(killer->IsGrouped()) {
 				Group* group = entity_list.GetGroupByClient(killer->CastToClient());
 				if(group != 0) {
@@ -2294,9 +2297,13 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	if(killerMob) {
 		Mob *oos = killerMob->GetOwnerOrSelf();
         parse->EventNPC(EVENT_DEATH, this, oos, "", 0);
+		if(this->GetNPCEmoteID() != 0)
+			this->DoNPCEmote(ONDEATH);
 		if(oos->IsNPC())
 		{
             parse->EventNPC(EVENT_NPC_SLAY, oos->CastToNPC(), this, "", 0);
+			if(oos->CastToNPC()->GetNPCEmoteID() != 0)
+				oos->CastToNPC()->DoNPCEmote(KILLEDNPC);
 			killerMob->TrySpellOnKill();
 		}
 	}

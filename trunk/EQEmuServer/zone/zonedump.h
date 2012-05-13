@@ -115,6 +115,7 @@ struct NPCType
 	bool	private_corpse;
 	bool	unique_spawn_by_name;
     bool    underwater;
+	int32	emoteid;
 };
 
 struct ZSDump_Spawn2 {

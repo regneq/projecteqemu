@@ -37,6 +37,16 @@ using namespace std;
 	#define  M_PI	3.141592
 #endif
 
+#define LEAVECOMBAT 0
+#define ENTERCOMBAT 1
+#define	ONDEATH		2
+#define	AFTERDEATH	3
+#define HAILED		4
+#define	KILLEDPC	5
+#define	KILLEDNPC	6
+#define	ONSPAWN		7
+#define	ONDESPAWN	8
+
 typedef struct {
 	float min_x;
 	float max_x;
@@ -293,6 +303,7 @@ public:
 	//The corpse we make can only be looted by people who got credit for the kill
 	const bool HasPrivateCorpse() const { return NPCTypedata->private_corpse; }
     const bool IsUnderwaterOnly() const { return NPCTypedata->underwater; }
+	const int32 GetNPCEmoteID() const { return NPCTypedata->emoteid; }
 	const char* GetRawNPCTypeName() const { return NPCTypedata->name; }
 
 	bool GetDepop() { return p_depop; }
@@ -304,6 +315,9 @@ public:
 	void RemoveSpellFromNPCList(sint16 spell_id);
     Timer *GetRefaceTimer() const { return reface_timer; }
     const uint32 GetAltCurrencyType() const { return NPCTypedata->alt_currency_type; }
+
+	NPC_Emote_Struct* GetNPCEmote(int32 emoteid, int8 event_);
+	void DoNPCEmote(int8 event_);
 
 protected:
 	

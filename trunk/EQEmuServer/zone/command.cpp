@@ -442,6 +442,9 @@ int command_init(void) {
 		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object) ||
 		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot) ||
 		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview) ||
+		command_add("emoteview","Lists all NPC Emotes",80,command_emoteview) ||
+		command_add("reloademote","Reloads NPC Emotes",80,command_reloademote) ||
+		command_add("emotesearch","Searches NPC Emotes",80,command_emotesearch) ||
 		command_add("distance","- Reports the distance between you and your target.", 80, command_distance) ||
 		command_add("cvs","- Summary of client versions currently online.", 200, command_cvs) ||
 		command_add("maxskills","Maxes skills for you.", 200, command_max_all_skills) ||
@@ -1861,6 +1864,7 @@ void command_npcstats(Client *c, const Seperator *sep)
 		c->Message(0, "Gender: %i  Size: %f  Bodytype: %d", c->GetTarget()->GetGender(), c->GetTarget()->GetSize(), c->GetTarget()->GetBodyType());
 		c->Message(0, "Runspeed: %f  Walkspeed: %f", c->GetTarget()->GetRunspeed(), c->GetTarget()->GetWalkspeed());
 		c->Message(0, "Spawn Group: %i  Grid: %i", c->GetTarget()->CastToNPC()->GetSp2(), c->GetTarget()->CastToNPC()->GetGrid());
+		c->Message(0, "EmoteID: %i", c->GetTarget()->CastToNPC()->GetNPCEmoteID());
 		c->GetTarget()->CastToNPC()->QueryLoot(c);
 	}
 }
@@ -3755,7 +3759,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		if (target == 0 || !target->IsClient())
 			c->Message(0, "Error: Target must be a player.");
 		else if (c->Admin() >= commandEditPlayerCorpses && target->IsClient()) {
-			c->Message(0, "Depoping %s's corpses.", target->GetName());
+			c->Message(0, "Depoping %s\'s corpses.", target->GetName());
 			target->CastToClient()->DepopAllCorpses();
 			if(!sep->arg[2][0] || atoi(sep->arg[2]) != 0)
 				target->CastToClient()->BuryPlayerCorpses();
@@ -11028,6 +11032,109 @@ void command_raidloot(Client *c, const Seperator *sep)
 	{
 		c->Message(0, "You must be in a raid to use that command.");
 	}
+}
+
+void command_emoteview(Client *c, const Seperator *sep)
+{
+	if(!c->GetTarget() || !c->GetTarget()->IsNPC())
+	{ 
+		c->Message(0, "You must target a NPC to view their emotes.");
+		return;
+	}
+
+	if(c->GetTarget() && c->GetTarget()->IsNPC())
+	{ 
+		int count=0;
+		int32 npcid = c->GetTarget()->GetNPCTypeID();
+		int emoteid = c->GetTarget()->CastToNPC()->GetNPCEmoteID();
+
+		LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			NPC_Emote_Struct* nes = iterator.GetData();
+			if(npcid == nes->emoteid || emoteid ==  nes->emoteid)
+			{
+				c->Message(0, "EmoteID: %i Event: %i Type: %i Text: %s", nes->emoteid, nes->event_, nes->type, nes->text);
+				count++;
+			}
+			iterator.Advance();
+		}
+		if (count == 0)
+			c->Message(0, "No emotes found.");
+		else
+			c->Message(0, "%i emote(s) found", count);
+	}
+}
+
+void command_emotesearch(Client *c, const Seperator *sep)
+{
+	if (sep->arg[1][0] == 0)
+		c->Message(0, "Usage: #emotesearch [search string or emoteid]");
+	else
+	{
+		const char *search_criteria=sep->argplus[1];
+		int count=0;
+
+		if (Seperator::IsNumber(search_criteria)) 
+		{
+			int16 emoteid = atoi(search_criteria);
+			LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
+			iterator.Reset();
+			while(iterator.MoreElements())
+			{
+			NPC_Emote_Struct* nes = iterator.GetData();
+				if(emoteid ==  nes->emoteid)
+				{
+					c->Message(0, "EmoteID: %i Event: %i Type: %i Text: %s", nes->emoteid, nes->event_, nes->type, nes->text);
+					count++;
+				}
+				iterator.Advance();
+			}
+			if (count == 0)
+				c->Message(0, "No emotes found.");
+			else
+				c->Message(0, "%i emote(s) found", count);
+		}
+		else
+		{
+			char sText[64];
+			char sCriteria[515];
+			strn0cpy(sCriteria, search_criteria, sizeof(sCriteria));
+			strupr(sCriteria);
+			char* pdest;
+
+			LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
+			iterator.Reset();
+			while(iterator.MoreElements())
+			{
+			NPC_Emote_Struct* nes = iterator.GetData();
+			strn0cpy(sText, nes->text, sizeof(sText));
+			strupr(sText);
+			pdest = strstr(sText, sCriteria);
+				if (pdest != NULL) 
+				{
+					c->Message(0, "EmoteID: %i Event: %i Type: %i Text: %s", nes->emoteid, nes->event_, nes->type, nes->text);
+					count++;
+				}
+				if (count == 50)
+					break;
+
+				iterator.Advance();
+			}
+			if (count == 50)
+				c->Message(0, "50 emotes shown...too many results.");
+			else
+				c->Message(0, "%i emote(s) found", count);
+		}
+	}
+}
+
+void command_reloademote(Client *c, const Seperator *sep)
+{
+	zone->NPCEmoteList.Clear();
+	zone->LoadNPCEmotes(&zone->NPCEmoteList);
+	c->Message(0, "NPC emotes reloaded.");
 }
 
 void command_globalview(Client *c, const Seperator *sep)

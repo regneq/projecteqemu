@@ -996,6 +996,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		if (GetTarget() != 0 && GetTarget()->IsNPC()) {
 			if(!GetTarget()->CastToNPC()->IsEngaged()) {
 				CheckLDoNHail(GetTarget());
+				CheckEmoteHail(GetTarget(),message);
 
 				if(parse->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_SAY")){
 					if (DistNoRootNoZ(*GetTarget()) <= 200) {
@@ -5765,6 +5766,30 @@ void Client::CheckLDoNHail(Mob *target)
 		" I'll stay close behind you!");
 }
 
+void Client::CheckEmoteHail(Mob *target, const char* message)
+{
+	if(
+		(message[0] != 'H'	&&
+		message[0] != 'h')	||
+		message[1] != 'a'	|| 
+		message[2] != 'i'	|| 
+		message[3] != 'l'){
+		return;
+	}
+
+	if(!target || !target->IsNPC())
+	{
+		return;
+	}
+
+	if(target->GetOwnerID() != 0)
+	{
+		return;
+	}
+	if(target->CastToNPC()->GetNPCEmoteID() != 0)
+		target->CastToNPC()->DoNPCEmote(HAILED);
+}
+
 void Client::MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count)
 {
 
@@ -6878,4 +6903,84 @@ void Client::SetMaxXTargets(uint8 NewMax)
 	outapp->WriteUInt32(GetMaxXTargets());
 	outapp->WriteUInt32(0);
 	FastQueuePacket(&outapp);
+}
+
+char* Client::GetRacePlural(Client* client) {
+
+	switch (client->CastToMob()->GetRace()) {
+		case HUMAN:
+			return "Humans"; break;
+		case BARBARIAN:
+			return "Barbarians"; break;
+		case ERUDITE:
+			return "Erudites"; break;
+		case WOOD_ELF:
+			return "Wood Elves"; break;
+		case HIGH_ELF:
+			return "High Elves"; break;
+		case DARK_ELF:
+			return "Dark Elves"; break;
+		case HALF_ELF:
+			return "Half Elves"; break;
+		case DWARF:
+			return "Dwarves"; break;
+		case TROLL:
+			return "Trolls"; break;
+		case OGRE:
+			return "Ogres"; break;
+		case HALFLING:
+			return "Halflings"; break;
+		case GNOME:
+			return "Gnomes"; break;
+		case IKSAR:
+			return "Iksar"; break;
+		case VAHSHIR:
+			return "Vah Shir"; break;
+		case FROGLOK:
+			return "Frogloks"; break;
+		case DRAKKIN:
+			return "Drakkin"; break;
+		default:
+			return "Races"; break;
+	}
+}
+
+char* Client::GetClassPlural(Client* client) {
+
+	switch (client->CastToMob()->GetClass()) {
+		case WARRIOR:
+			return "Warriors"; break;
+		case CLERIC:
+			return "Clerics"; break;
+		case PALADIN:
+			return "Paladins"; break;
+		case RANGER:
+			return "Rangers"; break;
+		case SHADOWKNIGHT:
+			return "Shadowknights"; break;
+		case DRUID:
+			return "Druids"; break;
+		case MONK:
+			return "Monks"; break;
+		case BARD:
+			return "Bards"; break;
+		case ROGUE:
+			return "Rogues"; break;
+		case SHAMAN:
+			return "Shamen"; break;
+		case NECROMANCER:
+			return "Necromancers"; break;
+		case WIZARD:
+			return "Wizards"; break;
+		case MAGICIAN:
+			return "Magicians"; break;
+		case ENCHANTER:
+			return "Enchanters"; break;
+		case BEASTLORD:
+			return "Beastlords"; break;
+		case BERSERKER:
+			return "Berserkers"; break;
+		default:
+			return "Classes"; break;
+	}
 }

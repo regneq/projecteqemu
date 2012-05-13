@@ -1109,7 +1109,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.scalerate,"
 			"npc_types.private_corpse,"
             "npc_types.unique_spawn_by_name,"
-            "npc_types.underwater";
+            "npc_types.underwater,"
+			"npc_types.emoteid";
 
 		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
@@ -1284,6 +1285,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->private_corpse = atoi(row[r++]) == 1 ? true : false;
 				tmpNPCType->unique_spawn_by_name = atoi(row[r++]) == 1 ? true : false;
                 tmpNPCType->underwater = atoi(row[r++]) == 1 ? true : false;
+				tmpNPCType->emoteid = atoi(row[r++]);
 
 				// If NPC with duplicate NPC id already in table,
 				// free item we attempted to add.

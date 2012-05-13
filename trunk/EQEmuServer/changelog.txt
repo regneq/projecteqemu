@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/13/2012==
+cavedude: Corrected the text merchants give when they refuse to sell to you.
+cavedude: The graveyard timer will now resume when a dynamic GY zone boots, instead of resetting.
+cavedude: When a corpse is moved to the graveyard, it will no longer attempt to use an instanced version of the zone.
+cavedude: Added the ability to load NPC emotes from the DB. Wiki entry for this will be at http://www.eqemulator.net/wiki/wikka.php?wakka=NPCEmotes when I write it up.
+
+REQUIRED SQL: utils/sql/svn/2142_emotes.sql
+
 ==05/06/2012==
 Akkadius: Added the ability to load a default.pl script underneath quests/templates
 

@@ -1043,3 +1043,28 @@ bool ZoneDatabase::GetFactionIdsForNPC(uint32 nfl_id, list<struct NPCFaction*> *
 	return true;
 }
 
+bool Client::HatedByClass(int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction)
+{
+	
+	bool Result = false;
+	_ZP(Client_GetFactionLevel);
+
+	sint32 tmpFactionValue;
+	FactionMods fmods;
+
+    //First get the NPC's Primary faction
+	if(pFaction > 0)
+	{
+		//Get the faction data from the database
+		if(database.GetFactionData(&fmods, p_class, p_race, p_deity, pFaction))
+		{
+			tmpFactionValue = GetCharacterFactionLevel(pFaction);
+			tmpFactionValue += GetFactionBonus(pFaction);
+			tmpFactionValue += GetItemFactionBonus(pFaction);
+			CalculateFaction(&fmods, tmpFactionValue);
+			if(fmods.class_mod < fmods.race_mod)
+				Result = true;
+		}
+	}
+	return Result;
+}

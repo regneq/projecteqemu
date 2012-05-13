@@ -600,6 +600,8 @@ void EntityList::AddCorpse(Corpse* corpse, int32 in_id) {
 void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	npc->SetID(GetFreeID());
     parse->EventNPC(EVENT_SPAWN, npc, NULL, "", 0);
+	if(npc->GetNPCEmoteID() != 0)
+		npc->DoNPCEmote(ONSPAWN);
 	
 	if (SendSpawnPacket) {
 		if (dontqueue) { // aka, SEND IT NOW BITCH!

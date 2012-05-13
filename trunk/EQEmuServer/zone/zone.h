@@ -183,6 +183,7 @@ public:
 	void	DoAdventureActions();
 	void	LoadVeteranRewards();
     void    LoadAlternateCurrencies();
+	void	LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList);
 
 	Map*	zonemap;
 	WaterMap* watermap;
@@ -234,6 +235,8 @@ public:
 	LinkedList<ZonePoint*> zone_point_list;
 	int32	numzonepoints;
 	
+	LinkedList<NPC_Emote_Struct*> NPCEmoteList;
+
 private:
 	int32	zoneid;
 	int32	instanceid;
