@@ -963,6 +963,15 @@ bool IsResistDebuffSpell(int16 spell_id) {
                 return false;
 }
 
+bool IsSelfConversionSpell(int16 spell_id) {
+
+        if(GetSpellTargetType(spell_id) == ST_Self && IsEffectInSpell(spell_id, SE_CurrentMana) && IsEffectInSpell(spell_id, SE_CurrentHP) 
+			&& spells[spell_id].base[GetSpellEffectIndex(spell_id, SE_CurrentMana)] > 0 && spells[spell_id].base[GetSpellEffectIndex(spell_id, SE_CurrentHP)] < 0)
+                return true;
+        else
+                return false;
+}
+
 uint32 GetMorphTrigger(uint32 spell_id) 
 {
 	for(int i = 0; i < EFFECT_COUNT; ++i)

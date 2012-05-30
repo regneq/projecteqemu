@@ -15633,7 +15633,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 					for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 						if(g->members[i] && !g->members[i]->qglobal) {
 							if(g->members[i]->IsClient() && g->members[i]->GetHPRatio() < 90) {
-								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+								if(caster->AICastSpell(g->members[i], 100, SpellType_Heal))
 									return true;
 							}
 							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) && g->members[i]->GetHPRatio() < 95) {
