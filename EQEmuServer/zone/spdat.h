@@ -795,6 +795,7 @@ bool IsGroupCompleteHealSpell(int16 spell_id);
 bool IsGroupHealOverTimeSpell(int16 spell_id);
 bool IsDebuffSpell(int16 spell_id);
 bool IsResistDebuffSpell(int16 spell_id);
+bool IsSelfConversionSpell(int16 spell_id);
 uint32 GetMorphTrigger(uint32 spell_id);
 uint32 GetPartialMeleeRuneReduction(uint32 spell_id);
 uint32 GetPartialMagicRuneReduction(uint32 spell_id);

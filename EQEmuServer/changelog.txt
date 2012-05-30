@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/30/2012==
+Bad_Captain: Fixed bug that allowed pets to steal xp when using bots.
+Bad_Captain: Bots: Fixed bug that allowed bots to sometimes cast HoT buffs during combat instead of HoT heals.
+Bad_Captain: Bots: Tweaked bard casting chances to restore twisting of multiple songs.
+Bad_Captain: Bots: Implemented Shaman cannibalization during combat.
+
 ==05/13/2012==
 cavedude: Corrected the text merchants give when they refuse to sell to you.
 cavedude: The graveyard timer will now resume when a dynamic GY zone boots, instead of resetting.

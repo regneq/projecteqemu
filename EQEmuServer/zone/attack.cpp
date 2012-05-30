@@ -2107,10 +2107,8 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	if(give_exp && give_exp->HasOwner()) {
 #ifdef BOTS
 		bool ownerInGroup = false;
-		if(give_exp->IsBot()) {
-			if(give_exp->HasGroup() && give_exp->GetGroup()->IsGroupMember(give_exp->GetUltimateOwner()))
-				ownerInGroup = true;
-		}
+		if((give_exp->HasGroup() && give_exp->GetGroup()->IsGroupMember(give_exp->GetUltimateOwner())) || (give_exp->IsPet() && give_exp->GetOwner()->IsClient()))
+			ownerInGroup = true;
 #endif //BOTS
 
 		give_exp = give_exp->GetUltimateOwner();
