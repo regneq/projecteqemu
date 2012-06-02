@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/02/2012==
+cavedude: Exported quest::addldonwin(wins, theme); and quest::addldonloss(losses, theme);
+
 ==05/30/2012==
 Bad_Captain: Fixed bug that allowed pets to steal xp when using bots.
 Bad_Captain: Bots: Fixed bug that allowed bots to sometimes cast HoT buffs during combat instead of HoT heals.

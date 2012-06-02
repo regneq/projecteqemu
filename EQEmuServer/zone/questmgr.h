@@ -129,6 +129,8 @@ public:
 	void moveto(float x, float y, float z, float h, bool saveguardspot);
 	void resume();
 	void addldonpoints(sint32 points, int32 theme);
+	void addldonwin(sint32 wins, int32 theme);
+	void addldonloss(sint32 losses, int32 theme);
 	void setnexthpevent(int at);
 	void setnextinchpevent(int at);
 	void respawn(int npc_type, int grid);
