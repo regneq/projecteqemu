@@ -1400,6 +1400,16 @@ void QuestManager::addldonpoints(sint32 points, int32 theme) {
 		initiator->UpdateLDoNPoints(points, theme);
 }
 
+void QuestManager::addldonwin(sint32 wins, int32 theme) {
+	if(initiator)
+		initiator->UpdateLDoNWins(theme, wins);
+}
+
+void QuestManager::addldonloss(sint32 losses, int32 theme) {
+	if(initiator)
+		initiator->UpdateLDoNLosses(theme, losses);
+}
+
 void QuestManager::setnexthpevent(int at) {
 	owner->SetNextHPEvent( at );
 }

@@ -1519,6 +1519,36 @@ XS(XS__addldonpoints)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__addldonwin);
+XS(XS__addldonwin)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: addldonwin(wins, theme)");
+
+	long	wins = (long)SvIV(ST(0));
+	unsigned long		theme = (unsigned long)SvUV(ST(1));
+
+	quest_manager.addldonwin(wins, theme);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__addldonloss);
+XS(XS__addldonloss)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: addldonloss(losses, theme)");
+
+	long	losses = (long)SvIV(ST(0));
+	unsigned long		theme = (unsigned long)SvUV(ST(1));
+
+	quest_manager.addldonloss(losses, theme);
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__setnexthpevent);
 XS(XS__setnexthpevent)
 {
@@ -3365,6 +3395,8 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "moveto"), XS__moveto, file);
 		newXS(strcpy(buf, "resume"), XS__resume, file);
 		newXS(strcpy(buf, "addldonpoints"), XS__addldonpoints, file);
+		newXS(strcpy(buf, "addldonwin"), XS__addldonpoints, file);
+		newXS(strcpy(buf, "addldonloss"), XS__addldonpoints, file);
 		newXS(strcpy(buf, "setnexthpevent"), XS__setnexthpevent, file);
 		newXS(strcpy(buf, "setnextinchpevent"), XS__setnextinchpevent, file);
 		newXS(strcpy(buf, "sethp"), XS__sethp, file);
