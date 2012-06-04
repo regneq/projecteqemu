@@ -30,13 +30,14 @@ public:
     bool ItemHasQuestSub(ItemInst *itm, const char *subname);
 
     void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data);
-    void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
+    void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data, bool player_global = false);
     void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data);
     void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data);
 
 private:
     QuestInterface *GetQIByNPCQuest(uint32 npcid);
     QuestInterface *GetQIByPlayerQuest();
+	QuestInterface *GetQIByPlayerQuestGlobal();
     QuestInterface *GetQIBySpellQuest(uint32 spell_id);
     QuestInterface *GetQIByItemQuest(std::string item_script);
 

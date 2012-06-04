@@ -209,7 +209,7 @@ void PerlembParser::HandleQueue() {
 	eventQueueProcessing = false;
 }
 
-void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata)
+void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata, int script_type)
 {
 	if(!perl)
 		return;
@@ -287,15 +287,27 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		}
 	}
 	else if(isPlayerQuest) {
-		if(!zone || !zone->GetShortName()) // possible segfault fix
-			return;
-		packagename = "player";
-		packagename += "_";
-		packagename += zone->GetShortName();
+		if(script_type == 1){
+			if(!zone || !zone->GetShortName()) // possible segfault fix
+				return;
 
-		if(!isloaded(packagename.c_str()))
-		{
-			LoadPlayerScript(zone->GetShortName());
+				packagename = "Global_Player";
+				if(!isloaded(packagename.c_str()))
+				{
+					LoadGlobalPlayerScript(zone->GetShortName());
+				}
+		}
+		else{
+			if(!zone || !zone->GetShortName()) // possible segfault fix
+				return;
+
+				packagename = "player";
+				packagename += "_";
+				packagename += zone->GetShortName();
+				if(!isloaded(packagename.c_str()))
+				{
+					LoadPlayerScript(zone->GetShortName());
+				}
 		}
 	}
 	else
@@ -797,8 +809,11 @@ void PerlembParser::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string 
     EventCommon(evt, npc->GetNPCTypeID(), data.c_str(), npc, NULL, init, extra_data);
 }
 
-void PerlembParser::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {
-    EventCommon(evt, 0, data.c_str(), NULL, NULL, client, extra_data);
+void PerlembParser::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data, bool player_global = false) {
+	int script_type = 0;
+	if(player_global == true){ script_type = PlayerGlobal; }
+	LogFile->write(EQEMuLog::Quest, "Loading EventPlayer: Event: %i, %s, %i", evt, client->GetName(), script_type);
+    EventCommon(evt, 0, data.c_str(), NULL, NULL, client, extra_data, script_type);
 }
 
 void PerlembParser::EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) {
@@ -1172,6 +1187,63 @@ int PerlembParser::LoadPlayerScript(const char *zone_name)
 		playerQuestLoaded[zone_name] = pQuestEventCast;
 	else 
 		playerQuestLoaded[zone_name] = pQuestLoaded;
+	return 1;
+}
+
+int PerlembParser::LoadGlobalPlayerScript(const char *zone_name)
+{
+	if(!perl)
+		return(0);
+
+	if(perl->InUse())
+	{
+		return 0;
+	}
+
+	if(playerGlobalQuestLoaded.count(zone_name) == 1) {
+		return(1);
+	}
+
+	string filename = "quests/";
+	filename += QUEST_TEMPLATES_DIRECTORY;
+	filename += "/global_player.pl";
+	string packagename = "Global_Player";
+
+	try {
+			LogFile->write(EQEMuLog::Quest, "Reading packagename %s", packagename.c_str());
+			perl->eval_file(packagename.c_str(), filename.c_str());
+	}
+	catch(const char * err)
+	{
+			LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s", filename.c_str(), err);
+	}
+
+    //todo: change this to just read eval_file's %cache - duh!
+	if(!isloaded(packagename.c_str()))
+	{
+		filename = "quests/";
+		filename += QUEST_TEMPLATES_DIRECTORY;
+		filename += "/global_player.pl";
+		try {
+			LogFile->write(EQEMuLog::Quest, "Reading packagename %s", packagename.c_str());
+			perl->eval_file(packagename.c_str(), filename.c_str());
+		}
+		catch(const char * err)
+		{
+				LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s", filename.c_str(), err);
+		}
+		if(!isloaded(packagename.c_str()))
+		{
+			LogFile->write(EQEMuLog::Quest, "Global Player is not loading", packagename.c_str());
+			playerGlobalQuestLoaded[zone_name] = pQuestGlobalUnloaded;
+			return 0;
+		}
+	}
+
+	if(perl->SubExists(packagename.c_str(), "EVENT_CAST")) 
+		playerGlobalQuestLoaded[zone_name] = pQuestGlobalEventCast;
+	else 
+		playerGlobalQuestLoaded[zone_name] = pQuestGlobalLoaded;
 	return 1;
 }
 

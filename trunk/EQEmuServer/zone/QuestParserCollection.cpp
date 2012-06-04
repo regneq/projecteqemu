@@ -147,16 +147,21 @@ void QuestParserCollection::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std:
     }
 }
 
-void QuestParserCollection::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {
+void QuestParserCollection::EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data, bool player_global) {
     if(_player_quest_status == QuestUnloaded) {
         QuestInterface *qi = GetQIByPlayerQuest();
         if(qi) {
             _player_quest_status = qi->GetIdentifier();
-            qi->EventPlayer(evt, client, data, extra_data);
+            qi->EventPlayer(evt, client, data, extra_data, false);
+        }
+		QuestInterface *qi_global = GetQIByPlayerQuestGlobal();
+        if(qi_global) {
+            _player_quest_status = qi_global->GetIdentifier();
+            qi_global->EventPlayer(evt, client, data, extra_data, true);
         }
     } else if(_player_quest_status != QuestFailedToLoad) {
         std::map<uint32, QuestInterface*>::iterator iter = _interfaces.find(_player_quest_status);
-        iter->second->EventPlayer(evt, client, data, extra_data);
+        iter->second->EventPlayer(evt, client, data, extra_data, player_global);
     }
 }
 
@@ -342,6 +347,33 @@ QuestInterface *QuestParserCollection::GetQIByNPCQuest(uint32 npcid) {
             return (*iter);
         }
 
+        iter++;
+    }
+
+    return NULL;
+}
+
+QuestInterface *QuestParserCollection::GetQIByPlayerQuestGlobal() {
+    std::string filename;
+    std::string tmp;
+    FILE *f = NULL;
+
+    //Look for  /quests/templates/global_player.ext (precedence)
+    filename = "quests/";
+    filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/";
+    filename += "global_player";
+    std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
         iter++;
     }
 
