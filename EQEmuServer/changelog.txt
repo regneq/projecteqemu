@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/03/2012==
+Akkadius: Added the ability to run a dual-stack global_player.pl with the existing player.pl that will run locally in quests/zone/player.pl or quests/templates/player.pl
+	- This allows the player.pl to be ran globally without interference of a local script (quests/zone/player.pl OR quests/templates/player.pl)
+	- 'global_player.pl' simply needs to be added to quests/templates/global_player.pl to be parsed otherwise it will not be loaded
+	- 'global_player.pl' parses after the local player.pl
+	- 'global_player.pl' parses all of the same events a regular player.pl does and will work with any new subroutines added to it in the future
+	- Thanks Derision for being a pair of eyes on a part of the diff for this
+
 ==06/02/2012==
 cavedude: Exported quest::addldonwin(wins, theme); and quest::addldonloss(losses, theme);
 
