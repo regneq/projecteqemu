@@ -30,14 +30,14 @@ public:
     bool ItemHasQuestSub(ItemInst *itm, const char *subname);
 
     void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data);
-    void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data, bool player_global = false);
+    void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
     void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data);
     void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data);
 
 private:
     QuestInterface *GetQIByNPCQuest(uint32 npcid);
     QuestInterface *GetQIByPlayerQuest();
-	QuestInterface *GetQIByPlayerQuestGlobal();
+    QuestInterface *GetQIByGlobalPlayerQuest();
     QuestInterface *GetQIBySpellQuest(uint32 spell_id);
     QuestInterface *GetQIByItemQuest(std::string item_script);
 
@@ -49,6 +49,7 @@ private:
     //0xFFFFFFFF = Failed to Load
     std::map<uint32, uint32> _npc_quest_status;
     uint32 _player_quest_status;
+    uint32 _global_player_quest_status;
     std::map<uint32, uint32> _spell_quest_status;
     std::map<std::string, uint32> _item_quest_status;
 };
