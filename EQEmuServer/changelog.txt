@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/22/2012==
+Secrets: (demonstar55) Spells now display to all clients and can be filtered as such.
+Secrets: Damage Shields now go to the proper filter, and do not show the non-melee damage to everyone.
+
 ==06/03/2012==
 Akkadius: Added the ability to run a dual-stack global_player.pl with the existing player.pl that will run locally in quests/zone/player.pl or quests/templates/player.pl
 	- This allows the player.pl to be ran globally without interference of a local script (quests/zone/player.pl OR quests/templates/player.pl)
