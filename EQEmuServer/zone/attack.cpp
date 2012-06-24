@@ -3392,7 +3392,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 
 				if(attacker && attacker->IsClient() && (spell_id != SPELL_UNKNOWN) && damage>0) {
 					char val1[20]={0};
-					entity_list.MessageClose_StringID(this, false, 100, MT_NonMelee, OTHER_HIT_NON_MELEE, attacker->GetCleanName(), GetCleanName(),ConvertArray(damage,val1));
+					entity_list.MessageClose_StringID(this, false, 100, MT_NonMelee, OTHER_HIT_NONMELEE, attacker->GetCleanName(), GetCleanName(),ConvertArray(damage,val1));
 				}
 
 				Death(attacker, damage, spell_id, skill_used);
