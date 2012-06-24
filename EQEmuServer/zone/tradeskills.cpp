@@ -700,14 +700,14 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 	char *buf = new char[775];	//dynamic so we can just give it to EQApplicationPacket
 	uint8 r,k;
 	
-	unsigned long *header = (unsigned long *) buf;
+	uint32 *header = (uint32 *) buf;
 	//Hell if I know why this is in the wrong byte order....
 	*header = htonl(recipe_id);
 	
 	char *startblock = buf;
-	startblock += sizeof(unsigned long);
+	startblock += sizeof(uint32);
 	
-	unsigned long *ffff_start = (unsigned long *) startblock;
+	uint32 *ffff_start = (uint32 *) startblock;
 	//fill in the FFFF's as if there were 0 items
 	for(r = 0; r < 10; r++) {
 		*ffff_start = 0xFFFFFFFF;
@@ -716,8 +716,8 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 	char * datastart = (char *) ffff_start;
 	char * cblock = (char *) ffff_start;
 	
-	unsigned long *itemptr;
-	unsigned long *iconptr;
+	uint32 *itemptr;
+	uint32 *iconptr;
 	uint32 len;
 	uint32 datalen = 0;
 	uint8 count = 0;
@@ -746,12 +746,12 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 		
 		//if we get more than 10 items, just start skipping them...
 		for(k = 0; k < num && count < 10; k++) {
-			itemptr = (unsigned long *) cblock;
-			cblock += sizeof(unsigned long);
-			datalen += sizeof(unsigned long);
-			iconptr = (unsigned long *) cblock;
-			cblock += sizeof(unsigned long);
-			datalen += sizeof(unsigned long);
+			itemptr = (uint32 *) cblock;
+			cblock += sizeof(uint32);
+			datalen += sizeof(uint32);
+			iconptr = (uint32 *) cblock;
+			cblock += sizeof(uint32);
+			datalen += sizeof(uint32);
 			
 			*itemptr = item;
 			*iconptr = icon;
@@ -767,11 +767,11 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 	mysql_free_result(result);
 	
 	//now move the item data over top of the FFFFs
-	uint8 dist = sizeof(unsigned long) * (10 - count);
+	uint8 dist = sizeof(uint32) * (10 - count);
 	startblock += dist;
 	memmove(startblock, datastart, datalen);
 	
-	uint32 total = sizeof(unsigned long) + dist + datalen;
+	uint32 total = sizeof(uint32) + dist + datalen;
 	
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RecipeDetails);
 	outapp->size = total;
