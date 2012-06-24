@@ -5990,12 +5990,12 @@ void Client::Handle_OP_RecipesSearch(const EQApplicationPacket *app)
 
 void Client::Handle_OP_RecipeDetails(const EQApplicationPacket *app)
 {
-	if(app->size != sizeof(unsigned long)) {
+	if(app->size <= sizeof(uint32)) {
 		LogFile->write(EQEMuLog::Error, "Invalid size for RecipeDetails Request: Expected: %i, Got: %i",
-			sizeof(unsigned long), app->size);
+			sizeof(uint32), app->size);
 		return;
 	}
-	unsigned long *recipe_id = (unsigned long *) app->pBuffer;
+	uint32 *recipe_id = (uint32*) app->pBuffer;
 
 	SendTradeskillDetails(*recipe_id);
 
