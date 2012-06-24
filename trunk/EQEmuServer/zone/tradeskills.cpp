@@ -662,7 +662,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 	mysql_free_result(result);
 }
 
-void Client::SendTradeskillDetails(unsigned long recipe_id) {
+void Client::SendTradeskillDetails(uint32 recipe_id) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
