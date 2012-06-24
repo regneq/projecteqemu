@@ -3392,7 +3392,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 
 				if(attacker && attacker->IsClient() && (spell_id != SPELL_UNKNOWN) && damage>0) {
 					char val1[20]={0};
-					entity_list.MessageClose_StringID(this, false, 100, MT_NonMelee, OTHER_HIT_NONMELEE, attacker->GetCleanName(), GetCleanName(),ConvertArray(damage,val1));
+					entity_list.MessageClose_StringID(this, false, 100, MT_NonMelee, HIT_NON_MELEE, attacker->GetCleanName(), GetCleanName(),ConvertArray(damage,val1));
 				}
 
 				Death(attacker, damage, spell_id, skill_used);
@@ -3538,11 +3538,11 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 						{
 							if(!attacker->CastToClient()->GetFilter(FilterDamageShields) == FilterHide)
 							{
-							attacker->Message_StringID(MT_DS,HIT_NON_MELEE,GetCleanName(),ConvertArray(damage,val1));
+							attacker->Message_StringID(MT_DS,OTHER_HIT_NONMELEE,GetCleanName(),ConvertArray(damage,val1));
 							}
 						}	
 						else
-                            entity_list.MessageClose_StringID(this, true, 100, MT_NonMelee,OTHER_HIT_NONMELEE,attacker->GetCleanName(),GetCleanName(),ConvertArray(damage,val1));
+                            entity_list.MessageClose_StringID(this, true, 100, MT_NonMelee,HIT_NON_MELEE,attacker->GetCleanName(),GetCleanName(),ConvertArray(damage,val1));
 			    } else {
 			    	if(damage > 0) {
 						if(spell_id != SPELL_UNKNOWN)
