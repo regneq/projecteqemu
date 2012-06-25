@@ -5990,7 +5990,7 @@ void Client::Handle_OP_RecipesSearch(const EQApplicationPacket *app)
 
 void Client::Handle_OP_RecipeDetails(const EQApplicationPacket *app)
 {
-	if(app->size <= sizeof(uint32)) {
+	if(app->size < sizeof(uint32)) {
 		LogFile->write(EQEMuLog::Error, "Invalid size for RecipeDetails Request: Expected: %i, Got: %i",
 			sizeof(uint32), app->size);
 		return;
