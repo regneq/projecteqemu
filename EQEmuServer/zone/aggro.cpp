@@ -705,6 +705,9 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 	if(!target)
 		return false;
 
+	if (target->GetAllowBeneficial())
+		return true;
+
 	// solar: see IsAttackAllowed for notes
 	
 	// first figure out if we're pets.  we always look at the master's flags.

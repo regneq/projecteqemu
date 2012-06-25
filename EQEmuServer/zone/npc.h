@@ -105,6 +105,14 @@ public:
 	void CalcNPCResists();
 	void CalcNPCRegen();
 	void CalcNPCDamage();
+
+
+	sint32 GetActSpellDamage(int16 spell_id, sint32 value); 
+	sint32 GetActSpellHealing(int16 spell_id, sint32 value); 
+	inline void SetSpellFocusDMG(sint32 NewSpellFocusDMG) {SpellFocusDMG = NewSpellFocusDMG;} 
+	inline void SetSpellFocusHeal(sint32 NewSpellFocusHeal) {SpellFocusHeal = NewSpellFocusHeal;} 
+	sint32 SpellFocusDMG; 
+	sint32 SpellFocusHeal; 
 	
 	virtual void SetTarget(Mob* mob);
 	virtual uint16 GetSkill(SkillType skill_num) const { if (skill_num <= HIGHEST_SKILL) { return skills[skill_num]; } return 0; }

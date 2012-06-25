@@ -7613,6 +7613,225 @@ XS(XS_Mob_SetTargetable)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_ModSkillDmgTaken); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_ModSkillDmgTaken)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Mob::ModSkillDmgTaken(THIS, skill, value)");
+	{
+		Mob *		THIS;
+		SkillType	skill_num = (SkillType)SvUV(ST(1));
+		sint16		value = (sint16)SvIV(ST(2));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->ModSkillDmgTaken(skill_num,value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_GetModSkillDmgTaken); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetModSkillDmgTaken)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::GetModSkillDmgTaken(THIS, skill_num)");
+	{
+		Mob *		THIS;
+		uint32		RETVAL;
+		dXSTARG;
+		SkillType		skill_num = (SkillType)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetModSkillDmgTaken(skill_num);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetSkillDmgTaken); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetSkillDmgTaken)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::GetSkillDmgTaken(THIS, skill_num)");
+	{
+		Mob *		THIS;
+		sint32		RETVAL;
+		dXSTARG;
+		SkillType		skill_num = (SkillType)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSkillDmgTaken(skill_num);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_SetAllowBeneficial);
+XS(XS_Mob_SetAllowBeneficial)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetAllowBeneficial(THIS, value)");
+	{
+		Mob *	THIS;
+		bool value = (bool)SvTRUE(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        THIS->SetAllowBeneficial(value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_GetAllowBeneficial); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetAllowBeneficial)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetAllowBeneficial(THIS)");
+	{
+		Mob *		THIS;
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetAllowBeneficial();
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_IsBeneficialAllowed);
+XS(XS_Mob_IsBeneficialAllowed)
+{
+	dXSARGS;
+	if (items != 2)
+	Perl_croak(aTHX_ "Usage: Mob::IsBeneficialAllowed(THIS, target)");
+	{
+		dXSTARG;
+		Mob * THIS;
+		Mob * target;
+		bool RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+		IV tmp = SvIV((SV*)SvRV(ST(1)));
+		target = INT2PTR(Mob *,tmp);
+		}
+		else
+		Perl_croak(aTHX_ "target is not of type Mob");
+		if(target == NULL)
+		Perl_croak(aTHX_ "target is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsBeneficialAllowed(target);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_ModVulnerability); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_ModVulnerability)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Mob::ModVulnerability(THIS, resist, value)");
+	{
+		Mob *		THIS;
+		uint8		resist =  (uint8)SvIV(ST(1));
+		sint16		value = (sint16)SvIV(ST(2));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->ModVulnerability(resist, value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_GetModVulnerability); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetModVulnerability)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::GetModVulnerability(THIS, resist)");
+	{
+		Mob *		THIS;
+		sint32		RETVAL;
+		dXSTARG;
+		uint8		resist = (uint8)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetModVulnerability(resist);
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -7897,6 +8116,15 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetTargetDestSteps"), XS_Mob_SetTargetDestSteps, file, "$$");
         newXSproto(strcpy(buf, "SetTargetable"), XS_Mob_SetTargetable, file, "$$");
 		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$$");
+		newXSproto(strcpy(buf, "ModSkillDmgTaken"), XS_Mob_ModSkillDmgTaken, file, "$$$");
+		newXSproto(strcpy(buf, "GetModSkillDmgTaken"), XS_Mob_GetModSkillDmgTaken, file, "$$");
+		newXSproto(strcpy(buf, "GetSkillDmgTaken"), XS_Mob_GetSkillDmgTaken, file, "$$");
+		newXSproto(strcpy(buf, "SetAllowBeneficial"), XS_Mob_SetAllowBeneficial, file, "$$");
+		newXSproto(strcpy(buf, "GetAllowBeneficial"), XS_Mob_GetAllowBeneficial, file, "$$");
+		newXSproto(strcpy(buf, "IsBeneficialAllowed"), XS_Mob_IsBeneficialAllowed, file, "$$");
+		newXSproto(strcpy(buf, "ModVulnerability"), XS_Mob_ModVulnerability, file, "$$$");
+		newXSproto(strcpy(buf, "GetModVulnerability"), XS_Mob_GetModVulnerability, file, "$$");
+		
 	XSRETURN_YES;
 }
 

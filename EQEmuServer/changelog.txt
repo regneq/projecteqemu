@@ -1,5 +1,43 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/25/2012==
+Trevius: Reviewed and Committed the below by Kayen:
+Kayen: Added Rule: AvgSpellProcsPerMinute (Default = 6.0) Determines proc rate of spells applied from sympathetic focus effect
+Kayen: Added Rule: ResistFalloff (Default = 67) Max that level that will adjust our resist chance based on level modifiers
+Kayen: Adjusted Mob::TrySpellOnKill()
+		- Will now check AA, Items and Buffs for SE_SpellOnKill (Same logic problem as TrySpellOnDeath)
+		- Level of the npc you killed and the spell_id used to kill it now both passed into the function.
+		- SE_TrySpellOnKill will now correctly check if there is a min level of the npc required for the spell effect to work (max value in spelldat)
+Kayen: Implemented: SE_SpellOnKill2: For deterimental spells where landing the kill gives x% chance to give a buff.
+Kayen: Sympathetic proc now calculates chance to proc a sympathetic spell accurately like live using Procs per minute.
+Kayen: Adjusted Mob::TrySpellOnDeath() - Now checks all avialable effects and trys to use each one.
+Kayen: Fixed SE_TargetsTarget - Target's Target must be in CombatRange to recieve the effect (Verified from live)
+Kayen: Fixed TryApplyEffect - No longer incorrectly lands on the target's target's taget. (Example of spells that use this are Shaman Mending Couterbias)
+Kayen: Adjusted Twincast to now select the buff with the highest chance to Twincast and use that, it will also stack with item focus and AA (when implemented).
+Kayen: Removed the mana cost portion from twin casting a spell.
+Kayen: Fix for SE_SympatheticProc - The focus effect now checks all items/buffs for the focus effect and adds all returned proc spellid's to a list from which one is randomly selected.
+Kayen: Implemented SE_FF_Damage_Amount - Focus/Buff that adds damage to the casted spell. Usually found on spell group limited augments and stackable with SE_SpellDamage.
+Kayen: Adjusted SE_SpellDamage to be handled properly as a focus effect.
+Kayen: Extra damage from Focuses is now calculated correctly for DoTs
+Kayen: SE_SpellResistChance should now directly modify your chance to resist the spell
+Kayen: Implemented Perl NPC Quest Object SetSpellFocusDMG(focus amount) - Focus all npc direct/dot damage spells by value
+Kayen: Implemented Perl NPC Quest Object SetSpellFocusHeal(focus amount) - Focus all npc healing spells by value 
+Kayen: Implemented Perl Mob Quest Object ModSkillDmgTaken(skill_num,value) - Set a weakness/bonus of weapon attacks to a Mob 
+		- Example: mob can be set to take 5% more damage from blunt weapons - ModSkillDmgTaken(0,5)
+		- Stacks with spell/item bonuses - Setting skill to -1 will effect all skills
+Kayen: Implemented Perl Mob Quest Object GetModSkillDmgTaken(skill_num) - Returns only the quest skill mod for specified skill
+Kayen: Implemented Perl Mob Quest Object GetSkillDmgTaken(skill_num) - Returns the total skill damage taken mod for the specified skill (item+spell+quest_mod value)
+Kayen: Implemented Perl Mob Quest Object SetAllowBeneficial(false) - Allow a specific Mob to be healed/buffed by a client
+Kayen: Implemented Perl Mob Quest Object GetAllowBeneficial() - Returns SetAllowBeneficial flag
+Kayen: Implemented Perl Mob Quest Object IsBeneficialAllowed(target) - Returns if target can have beneficial spells cast on them
+Kayen: Implemented Perl Mob Quest Object ModVulnerability(resist type, value) - Set Spell Vulnerability of mob by resist type(0-9) ALL = -1
+		- Example: mob can be set to take 5% more damage from Fire spells (2,5);
+		- Applied effect will stack with spell buff effects.
+		- If a resist type SPECIFIC and a resist type ALL mod are applied to the same MOB, the SPECIFIC value will be used if spell cast on MOB is the same resist type.
+Kayen: Implemented Perl Mob Quest Object GetModVulnerability(resist type) - Return the quest applied value for each resist (ALL = -1) 
+
+Optional SQL: utils/sql/svn/2154_optional_rule_spell_procs_resists_falloff.sql
+
 ==06/22/2012==
 Secrets: (demonstar55) Spells now display to all clients and can be filtered as such.
 Secrets: Damage Shields now go to the proper filter, and do not show the non-melee damage to everyone.

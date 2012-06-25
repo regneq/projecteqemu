@@ -56,6 +56,8 @@
 #define CON_YELLOW		15
 #define CON_RED			13
 
+#define	HIGHEST_RESIST 9 //Max resist type value
+
 //LOS Parameters:
 #define HEAD_POSITION 0.9f	//ratio of GetSize() where NPCs see from
 #define SEE_POSITION 0.5f	//ratio of GetSize() where NPCs try to see for LOS
@@ -96,6 +98,7 @@ typedef enum {	//focus types
 	focusTwincast,
 	focusSympatheticProc,
 	focusSpellDamage,
+	focusFF_Damage_Amount, 
 	focusSpellDurByTic,
 	focusSwarmPetDuration,
 	focusReduceRecastTime,
@@ -303,8 +306,8 @@ struct StatBonuses {
 	sint32 	Clairvoyance;						// Item Effect
 	sint16 	DSMitigation;						// Item Effect
 	uint32 	SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
-	uint32 	SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
-	uint32 	SpellOnDeath[MAX_SPELL_TRIGGER];		// Chance to have effect cast when you die
+	uint32 	SpellOnKill[MAX_SPELL_TRIGGER*3];	// Chance to proc after killing a mob
+	uint32 	SpellOnDeath[MAX_SPELL_TRIGGER*2];		// Chance to have effect cast when you die
 	sint16 	CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
 	sint16 	SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
 	sint16 	SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
@@ -783,7 +786,11 @@ bool logpos;
  	void SendSpellBarEnable(int16 spellid);
 	void ZeroCastingVars();
 	virtual void SpellProcess();
+
+
+	
 	//TODO: put these ridiculous options in a damned struct or something
+
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0, sint16 *resist_adjust = NULL);
 	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0, sint16 resist_adjust = 0);
 	void CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF, sint16 resist_adjust = 0);
@@ -873,7 +880,7 @@ bool logpos;
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
 	sint16 CalcResistChanceBonus();
 	sint16 CalcFearResistChance();
-	void TrySpellOnKill();
+	void TrySpellOnKill(uint8 level, int16 spell_id);
 	bool TrySpellOnDeath();
 	sint16 GetCritDmgMob(int16 skill);
 	sint16 GetMeleeDamageMod_SE(int16 skill);
@@ -883,6 +890,15 @@ bool logpos;
 	sint16 GetSkillDmgAmt(int16 skill);
 	bool TryReflectSpell(uint32 spell_id);
 	bool CanBlockSpell() const { return(spellbonuses.BlockNextSpell); }
+
+	void  ModSkillDmgTaken(SkillType skill_num, int value); 
+	sint16 GetModSkillDmgTaken(const SkillType skill_num);
+	void ModVulnerability(uint8 resist, sint16 value); 
+	sint16 GetModVulnerability(const uint8 resist);	
+
+	void SetAllowBeneficial(bool value) { m_AllowBeneficial = value; }
+	bool GetAllowBeneficial() { return m_AllowBeneficial; }
+
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
@@ -1144,6 +1160,10 @@ protected:
 	std::vector<std::string> RampageArray;
 	std::map<std::string, std::string> m_EntityVariables;
 
+	sint16 SkillDmgTaken_Mod[HIGHEST_SKILL+2];
+	sint16 Vulnerability_Mod[HIGHEST_RESIST+2]; 
+	bool m_AllowBeneficial;
+
 	bool	isgrouped; //These meant to be private?
 	bool	israidgrouped;
 	bool	pendinggroup;
@@ -1231,6 +1251,8 @@ protected:
 	VERTEX UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &WaypointChange, bool &NodeReached);
 	void PrintRoute();
 	void UpdateRuneFlags();
+
+	virtual float GetSympatheticProcChances(float &ProcBonus, float &ProcChance, sint32 cast_time, sint16 ProcRateMod);
 
 	enum {MAX_PROCS = 4};
 	tProc PermaProcs[MAX_PROCS];

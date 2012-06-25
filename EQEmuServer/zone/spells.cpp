@@ -1130,6 +1130,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 			if(spells[buffs[buffSlot].spellid].numhits > 0)
 				CheckHitsRemaining(buffSlot, true);
 		}
+
 		TrySympatheticProc(target, spell_id);
 	}
 
@@ -1604,7 +1605,10 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			Mob *spell_target_tot = spell_target ? spell_target->GetTarget() : NULL;
 			if(!spell_target_tot)
 				return false;
-				
+			//Verfied from live - Target's Target needs to be in combat range to recieve the effect 
+			if (!this->CombatRange(spell_target))
+				return false;
+
 			spell_target = spell_target_tot;
 			CastAction = SingleTarget;
 			break;
@@ -2903,6 +2907,7 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 //
 bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, sint16 resist_adjust)
 {
+
 	// well we can't cast a spell on target without a target
 	if(!spelltar)
 	{
@@ -3070,6 +3075,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 			if(IsClient() &&	//let NPCs do beneficial spells on anybody if they want, should be the job of the AI, not the spell code to prevent this from going wrong
 				spelltar != this)
 			{
+
 				Client* pClient = 0;
 				Raid* pRaid = 0;
 				Group* pBasicGroup = 0;
@@ -3868,14 +3874,6 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 	//Check for specific resistance to spell effect.
 	//Don't think we have this implemented except for fear.
 
-	//Check for sanctification
-	int resist_bonuses = CalcResistChanceBonus();
-	if(MakeRandomInt(0, 99) < resist_bonuses)
-	{
-		mlog(SPELLS__RESISTS, "Resisted spell in sanctification, had %d chance to resist", resist_bonuses);
-		return 0;
-	}
-
 	//Get the resist chance for the target
 	if(resist_type == RESIST_NONE)
 	{
@@ -3955,9 +3953,9 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 
 	//Adjust our resist chance based on level modifiers
 	int temp_level_diff = GetLevel() - caster->GetLevel();
-	if(IsNPC() && GetLevel() >=67)
+	if(IsNPC() && GetLevel() >= RuleI(Casting,ResistFalloff))
 	{
-		int a = 66 - caster->GetLevel();
+		int a = (RuleI(Casting,ResistFalloff)-1) - caster->GetLevel();
 		if(a > 0)
 		{
 			temp_level_diff = a;
@@ -3998,9 +3996,9 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 	if(IsNPC() && IsDamageSpell(spell_id) && GetLevel() >= 17)
 	{
 		int level_diff;
-		if(GetLevel() >= 67)
+		if(GetLevel() >= RuleI(Casting,ResistFalloff))
 		{
-			level_diff = 66 - caster->GetLevel();
+			level_diff = (RuleI(Casting,ResistFalloff)-1) - caster->GetLevel();
 			if(level_diff < 0)
 			{
 				level_diff = 0;
@@ -4023,6 +4021,10 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 	{
 		resist_chance = spells[spell_id].MinResist;
 	}
+
+	//Apply SE_ResistSpellChance to the FINAL resist chance value. "Increase Chance to Resist Spell by %resist_bonuses'
+	int resist_bonuses = CalcResistChanceBonus();
+	resist_chance += (resist_chance*resist_bonuses/100);
 
 	//Finally our roll
 	int roll = MakeRandomInt(0, 200);

@@ -393,6 +393,11 @@ Mob::Mob(const char*   in_name,
 	DistractedFromGrid = false;
 	PathingTraversedNodes = 0;
 	hate_list.SetOwner(this);
+
+	m_AllowBeneficial = false;
+	for (int i = 0; i < HIGHEST_SKILL+2; i++) { SkillDmgTaken_Mod[i] = 0; } 
+	for (int i = 0; i < 11; i++) { Vulnerability_Mod[i] = 0; } 
+	
 }
 
 Mob::~Mob()
@@ -3146,16 +3151,13 @@ void Mob::TryApplyEffect(Mob *target, uint32 spell_id)
 		{
 			if(MakeRandomInt(0, 100) <= spells[spell_id].base[i]) 
 			{
-				if(spells[spells[spell_id].base2[i]].targettype == ST_TargetsTarget)
-					target = target->GetTarget();
-				
 				if(target)
 					SpellFinished(spells[spell_id].base2[i], target);
 			}
 		}
 	}
 }
-
+//Twincast Focus effects should stack across different types (Spell, AA - when implemented ect)
 void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 {
 	if(!IsValidSpell(spell_id))
@@ -3163,24 +3165,39 @@ void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 		return;
 	}
 
-	uint32 buff_count = GetMaxTotalSlots();
-	for(int i = 0; i < buff_count; i++) 
+	if (spells[spell_id].mana <= 10)
 	{
-		if(IsEffectInSpell(buffs[i].spellid, SE_Twincast))
+		return;
+	}
+	
+	if(this->IsClient())
+	{
+		sint32 focus = this->CastToClient()->GetFocusEffect(focusTwincast, spell_id); 
+
+		if (focus > 0)
 		{
-			sint32 focus = CalcFocusEffect(focusTwincast, buffs[i].spellid, spell_id);
-			if(focus == 1)
+			if(MakeRandomInt(0, 100) <= focus)
 			{
-				if(MakeRandomInt(0, 100) <= spells[buffs[i].spellid].base[0])
+				this->Message(MT_Spells,"You twincast %s!",spells[spell_id].name);
+				SpellFinished(spell_id, target);
+			}
+		}
+	}
+
+	else
+	{
+		uint32 buff_count = GetMaxTotalSlots();
+		for(int i = 0; i < buff_count; i++) 
+		{
+			if(IsEffectInSpell(buffs[i].spellid, SE_Twincast))
+			{
+				sint32 focus = CalcFocusEffect(focusTwincast, buffs[i].spellid, spell_id);
+				if(focus > 0)
 				{
-					uint32 mana_cost = (spells[spell_id].mana);
-					if(this->IsClient())
+					if(MakeRandomInt(0, 100) <= focus)
 					{
-						mana_cost = GetActSpellCost(spell_id, mana_cost);
-						this->Message(MT_Spells,"You twincast %s!",spells[spell_id].name);
+						SpellFinished(spell_id, target);
 					}
-					this->SetMana(GetMana() - mana_cost);
-					SpellFinished(spell_id, target);
 				}
 			}
 		}
@@ -3189,6 +3206,17 @@ void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 
 sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining)
 {
+
+	if (Vulnerability_Mod[GetSpellResistType(spell_id)] != 0)
+	{
+		damage += damage * Vulnerability_Mod[GetSpellResistType(spell_id)] / 100;
+	}
+
+	else if (Vulnerability_Mod[HIGHEST_RESIST+1] != 0)
+	{
+		damage += damage * Vulnerability_Mod[HIGHEST_RESIST+1] / 100;
+	}
+
 	// If we increased the datatype on GetBuffSlotFromType, this wouldnt be needed
 	uint32 buff_count = GetMaxTotalSlots();
 	for(int i = 0; i < buff_count; i++) 
@@ -3279,6 +3307,12 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 	skilldmg_mod += this->itembonuses.SkillDmgTaken[HIGHEST_SKILL+1] + this->spellbonuses.SkillDmgTaken[HIGHEST_SKILL+1] + 
 					this->itembonuses.SkillDmgTaken[skill_used] + this->spellbonuses.SkillDmgTaken[skill_used];
 	
+	//Innate SkillDmgTaken Mod $mob->SetSkillDamgeTaken(skill,value); 
+	if ((SkillDmgTaken_Mod[skill_used]) || (SkillDmgTaken_Mod[HIGHEST_SKILL+1]))
+	{
+		skilldmg_mod += SkillDmgTaken_Mod[skill_used] + SkillDmgTaken_Mod[HIGHEST_SKILL+1];
+	}
+
 	if(skilldmg_mod < -100)
 		skilldmg_mod = -100;
 
@@ -3325,7 +3359,8 @@ void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
 		return;
 	}
 	
-	int focus_spell = this->CastToClient()->GetFocusEffect(focusSympatheticProc,spell_id);
+	int focus_spell = this->CastToClient()->GetSympatheticFocusEffect(focusSympatheticProc,spell_id);
+
 	if(focus_spell > 0)
 	{
 		int focus_trigger = spells[focus_spell].base2[0];
@@ -3333,6 +3368,7 @@ void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
 		// if the triggered spell is detrimental, then it will trigger on the caster(ie cursed items)
 		if(IsBeneficialSpell(spell_id))
 		{
+
 			if(IsBeneficialSpell(focus_trigger))
 			{
 				SpellFinished(focus_trigger, target);
@@ -3346,6 +3382,7 @@ void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
 		// if the triggered spell is also detrimental, then it will land on the target
 		else
 		{
+
 			if(IsBeneficialSpell(focus_trigger))
 			{
 				SpellFinished(focus_trigger, this);
@@ -3978,58 +4015,78 @@ void Mob::DoKnockback(Mob *caster, uint32 pushback, uint32 pushup)
 	}
 }
 
-void Mob::TrySpellOnKill()
+void Mob::TrySpellOnKill(uint8 level, int16 spell_id)
 {
-	for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2) {
+	if (spell_id != SPELL_UNKNOWN)
+	{
+		if(IsEffectInSpell(spell_id, SE_SpellOnKill2)) {
+			for (int i = 0; i < EFFECT_COUNT; i++) {
+				if (spells[spell_id].effectid[i] == SE_SpellOnKill2)
+				{
+					if (spells[spell_id].max[i] <= level)
+					{
+						if(MakeRandomInt(0,99) < spells[spell_id].base[i])
+							SpellFinished(spells[spell_id].base2[i], this);
+					}
+				}
+			}
+		}
+	}
+	
+	// Allow to check AA, items and buffs in all cases. Base2 = Spell to fire | Base1 = % chance | Base3 = min level
+	for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3) {
+	
 		if(IsClient() && aabonuses.SpellOnKill[i]) {
 			if(MakeRandomInt(0,99) < aabonuses.SpellOnKill[i+1])
 				SpellFinished(aabonuses.SpellOnKill[i], this);
 		}
-		else {
-			if(itembonuses.SpellOnKill[i]) {
-				if(MakeRandomInt(0,99) < itembonuses.SpellOnKill[i+1]) 
-					SpellFinished(itembonuses.SpellOnKill[i], this);
-			}
-			if(spellbonuses.SpellOnKill[i]) {
-				if(MakeRandomInt(0,99) < spellbonuses.SpellOnKill[i+1]) 
-					SpellFinished(spellbonuses.SpellOnKill[i], this);
-			}
+
+		if((itembonuses.SpellOnKill[i]) && (itembonuses.SpellOnKill[i+2] <= level)){
+			if(MakeRandomInt(0,99) < itembonuses.SpellOnKill[i+1]) 
+				SpellFinished(itembonuses.SpellOnKill[i], this);
 		}
+		
+		if((spellbonuses.SpellOnKill[i]) && (spellbonuses.SpellOnKill[i+2] <= level)) {
+			if(MakeRandomInt(0,99) < spellbonuses.SpellOnKill[i+1]) 
+				SpellFinished(spellbonuses.SpellOnKill[i], this);
+		}
+		
 	}
 }
 
 bool Mob::TrySpellOnDeath()
 {
-	for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2) {
+	if (IsNPC() && !spellbonuses.SpellOnDeath[0] && !itembonuses.SpellOnDeath[0])
+		return false;
+	
+	if (IsClient() && !aabonuses.SpellOnDeath[0] && !spellbonuses.SpellOnDeath[0] && !itembonuses.SpellOnDeath[0])
+		return false;
+
+	for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2) {
 		if(IsClient() && aabonuses.SpellOnDeath[i]) {
 			if(MakeRandomInt(0,99) < aabonuses.SpellOnDeath[i+1]) {
-				BuffFadeAll();
 				SpellFinished(aabonuses.SpellOnDeath[i], this);
 			}
 		}
-		else {
-			if(itembonuses.SpellOnDeath[i]) {
-				if(MakeRandomInt(0,99) < itembonuses.SpellOnDeath[i+1]) {
-					BuffFadeAll();
-					SpellFinished(itembonuses.SpellOnDeath[i], this);
-				}
+
+		if(itembonuses.SpellOnDeath[i]) {
+			if(MakeRandomInt(0,99) < itembonuses.SpellOnDeath[i+1]) {
+				SpellFinished(itembonuses.SpellOnDeath[i], this); 
 			}
-			if(spellbonuses.SpellOnDeath[i]) {
-				if(MakeRandomInt(0,99) < spellbonuses.SpellOnDeath[i+1])  {
-					int temp_id = spellbonuses.SpellOnDeath[i];
-					BuffFadeAll();
-					SpellFinished(temp_id, this);
+		}
+			
+		if(spellbonuses.SpellOnDeath[i]) {
+			if(MakeRandomInt(0,99) < spellbonuses.SpellOnDeath[i+1])  {
+				SpellFinished(spellbonuses.SpellOnDeath[i], this); 
 				}
 			}
 		}
-	}
-	int death_hp = 0;
-	death_hp = GetDelayDeath();
-		
-	if(GetHP() > death_hp)
-		return true;
-	else
-		return false;
+	
+	BuffFadeAll();
+	return false;
+	//You should not be able to use this effect and survive (ALWAYS return false), 
+	//attempting to place a heal in these effects will still result
+	//in death because the heal will not register before the script kills you.
 }
 
 sint16 Mob::GetCritDmgMob(int16 skill)
@@ -4325,4 +4382,46 @@ void Mob::SetBodyType(bodyType new_body, bool overwrite_orig) {
 	    entity_list.QueueClients(this, app);
 	    safe_delete(app);
     }
+}
+
+
+void  Mob::ModSkillDmgTaken(SkillType skill_num, int value) 
+{ 
+	if (skill_num <= HIGHEST_SKILL) 
+		SkillDmgTaken_Mod[skill_num] = value; 
+	
+	
+	else if (skill_num == 255) 
+		SkillDmgTaken_Mod[HIGHEST_SKILL+1] = value; 
+}
+	
+sint16 Mob::GetModSkillDmgTaken(const SkillType skill_num) 
+{ 
+	if (skill_num <= HIGHEST_SKILL) 
+		return SkillDmgTaken_Mod[skill_num];
+		
+	else if (skill_num == 255) 
+		return SkillDmgTaken_Mod[HIGHEST_SKILL+1];
+	
+	return 0; 
+}
+
+void Mob::ModVulnerability(uint8 resist, sint16 value) 
+{ 
+	if (resist < HIGHEST_RESIST+1) 
+		Vulnerability_Mod[resist] = value;	
+
+	else if (resist == 255)
+		Vulnerability_Mod[HIGHEST_RESIST+1] = value; 
+}
+	
+sint16 Mob::GetModVulnerability(const uint8 resist) 
+{ 
+	if (resist < HIGHEST_RESIST+1) 
+		return Vulnerability_Mod[resist]; 
+
+	else if (resist == 255) 
+		return Vulnerability_Mod[HIGHEST_RESIST+1];  
+	
+	return 0;
 }

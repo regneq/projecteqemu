@@ -39,23 +39,35 @@ float Client::GetActSpellRange(int16 spell_id, float range)
 	return (range * extrange) / 100;
 }
 
+
 sint32 Client::Additional_SpellDmg(int16 spell_id) 
 {
-	sint32 spell_dmg = 0;
-	uint32 buff_count = GetMaxTotalSlots();
-	sint16 focus = 0;
-	
-	for (int i=0; i < buff_count; i++) 
-	{
-		if(IsEffectInSpell(buffs[i].spellid, SE_SpellDamage))
-		{
-			focus = CalcFocusEffect(focusSpellDamage, buffs[i].spellid, spell_id);
-			if(focus)
-				spell_dmg += focus;
-		}
-	}
 
+	sint32 spell_dmg = 0;
+
+	spell_dmg  += GetFocusEffect(focusFF_Damage_Amount, spell_id);
+	spell_dmg  += GetFocusEffect(focusSpellDamage, spell_id); 
+
+	//For DOTs you need to apply the damage over the duration of the dot to each tick (this is how live did it)
+	int duration = CalcBuffDuration(this, this, spell_id);
+	if (duration > 0)
+	{
+		return spell_dmg /= duration;
+	}
+	
 	return spell_dmg;
+}
+
+//Scale all NPC spell Damage via $npc->SetSpellFocusDMG(value)
+//Direct Damage is checked in Mob::SpellEffect [spell_effects.cpp]
+//DoT Damage is checked in Mob::DoBuffTic [spell_effects.cpp] (This was added for npcs in that routine)
+sint32 NPC::GetActSpellDamage(int16 spell_id, sint32 value) {
+	
+	sint32 modifier = 100;
+
+	modifier += SpellFocusDMG;
+
+	return (value * modifier / 100);
 }
 
 sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
@@ -67,11 +79,12 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	
 	sint32 modifier = 100;
 	sint16 spell_dmg = 0;
-	
+
+
 	//Dunno if this makes sense:
 	if (spells[spell_id].resisttype > 0)
 		modifier += GetFocusEffect((focusType)(0-spells[spell_id].resisttype), spell_id);
-	
+		
 	
 	int tt = spells[spell_id].targettype;
 	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
@@ -108,10 +121,10 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			if(spell_dmg > -value)
 				spell_dmg = -value;
 		}
+		
 		// Spell-based SpellDmg adds directly but it restricted by focuses.
-		if(this->spellbonuses.SpellDmg)
-			spell_dmg += this->Additional_SpellDmg(spell_id);
-	
+		spell_dmg += Additional_SpellDmg(spell_id);
+
 		int chance = RuleI(Spells, BaseCritChance);
 		sint32 ratio = RuleI(Spells, BaseCritRatio);
 
@@ -167,6 +180,21 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	}
 	
 	return ((value * modifier / 100) - spell_dmg);
+}
+
+//Scale all NPC spell healing via SetSpellFocusHeal(value)
+sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
+
+	sint32 modifier = 100;
+	modifier += SpellFocusHeal;
+	
+		// Check for buffs that affect the healrate of the target
+		if(this->GetTarget())
+		{
+			value += value * GetHealRate() / 100;
+		}
+
+	return (value * modifier / 100);
 }
 
 sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {

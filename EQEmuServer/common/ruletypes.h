@@ -264,6 +264,8 @@ RULE_INT ( Spells, VirusSpreadDistance, 30) // The distance a viral spell will j
 RULE_BOOL( Spells, LiveLikeFocusEffects, true) // Determines whether specific healing, dmg and mana reduction focuses are randomized
 RULE_INT ( Spells, BaseImmunityLevel, 55) // The level that targets start to be immune to stun, fear and mez spells with a max level of 0.
 RULE_BOOL ( Spells, NPCIgnoreBaseImmunity, true) // Whether or not NPCs get to ignore the BaseImmunityLevel for their spells.
+RULE_REAL ( Spells, AvgSpellProcsPerMinute, 6.0) //Adjust rate for sympathetic spell procs
+RULE_INT ( Spells, ResistFalloff, 67) //Max that level that will adjust our resist chance based on level modifiers
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

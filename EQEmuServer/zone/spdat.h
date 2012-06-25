@@ -417,7 +417,7 @@ typedef enum  {
 #define	SE_TradeSkillMastery			263	// implemented - lets you raise more than one tradeskill above master.
 #define SE_HastenedAASkill				264 // not implemented as bonus
 #define SE_MasteryofPast				265 // not implemented as bonus
-#define SE_ExtraAttackChance			266 // implemented
+#define SE_ExtraAttackChance			266 // implemented 
 #define SE_PetDiscipline2				267 // *not implemented - /pet focus, /pet no cast
 #define SE_ReduceTradeskillFail			268 // *not implemented? - reduces chance to fail with given tradeskill by a percent chance
 //#define SE_Unknown269					269	// not used
@@ -448,17 +448,17 @@ typedef enum  {
 #define SE_CriticalSpellChance			294 // implemented
 //#define SE_Unknown295					295	// not used
 #define SE_SpellVulnerability			296	// implemented - increase in incoming spell damage
-#define SE_Empathy						297 // *not implemented - some kind of damage focus effect, maybe defensive?
+#define SE_Empathy						297 // *not implemented - debuff that adds X points damage to X amount of nukes or for X duration.
 #define SE_ChangeHeight					298	// implemented
 #define SE_WakeTheDead					299	// implemented
 #define SE_Doppelganger					300	// implemented
 //#define SE_Unknown301					301	// not used
 //#define SE_Unknown302					302	// not used
-#define SE_FF_Damage_Amount				303	// *not implemented - focus effect for specific spells
+#define SE_FF_Damage_Amount				303	// implemented - adds direct spell damage
 #define SE_OffhandRiposteFail			304 // not implemented as bonus - enemy cannot riposte offhand attacks
 #define SE_MitigateDamageShield			305 // implemented
-#define SE_ArmyOfTheDead				306 // *not implemented
-#define SE_Appraisal					307 // *not implemented
+#define SE_ArmyOfTheDead				306 // *not implemented  NecroAA - This ability calls up to five shades of nearby corpses back to life to serve the necromancer. The soulless abominations will mindlessly fight the target until called back to the afterlife some time later. The first rank summons up to three shades that serve for 60 seconds, and each additional rank adds one more possible shade and increases their duration by 15 seconds
+#define SE_Appraisal					307 // *not implemented Rogue AA - This ability allows you to estimate the selling price of an item you are holding on your cursor. 
 #define SE_SuspendMinion				308 // not implemented as bonus
 #define SE_YetAnotherGate				309 // implemented
 #define SE_ReduceReuseTimer				310 // implemented
@@ -483,7 +483,7 @@ typedef enum  {
 #define SE_ManaAbsorbPercentDamage		329 // implemented
 #define SE_CriticalDamageMob			330	// implemented
 #define SE_Salvage						331 // *not implemented - chance to recover items that would be destroyed in failed tradeskill combine
-#define SE_SummonToCorpse				332 // *not implemented
+#define SE_SummonToCorpse				332 // *not implemented AA - Call of the Wild (Druid/Shaman Res spell with no exp)
 #define SE_EffectOnFade					333 // implemented
 #define SE_BardAEDot					334	// implemented
 #define SE_BlockNextSpellFocus			335	// implemented - base1 chance to block next spell ie Puratus (8494)
@@ -511,12 +511,12 @@ typedef enum  {
 //#define SE_Unknown357					357	// not used
 #define SE_CurrentManaOnce				358	// implemented
 //#define SE_Unknown359					359	// not used
-#define SE_SpellOnKill					360	// implemented - has a base1 % to cast spell base2 when you kill a "challenging foe" (>= max?)
+#define SE_SpellOnKill					360	// implemented - a buff that has a base1 % to cast spell base2 when you kill a "challenging foe" base3 min level
 #define SE_SpellOnDeath					361	// implemented - casts spell on death of buffed 
 //#define SE_Unknown362					362	// not used
 //#define SE_Unknown363					363	// not used
 //#define SE_Unknown364					364	// not used
-#define SE_SpellOnKill2					365	// *not implemented - Same as SpellOnKill except casts based on a min level of mob regardless of con
+#define SE_SpellOnKill2					365	// implemented - chance to trigger a spell on kill when the kill is caused by a specific spell with this effect in it (10470 Venin)
 //#define SE_Unknown366					366	// not used - corr test(9429) only spell
 #define SE_SetBodyType					367	// implemented - set body type of base1 so it can be affected by spells that are limited to that type (Plant, Animal, Undead, etc)
 #define SE_FactionMod					368	// *not implemented - increases faction with base1 (faction id, live won't match up w/ ours) by base2
@@ -569,7 +569,7 @@ typedef enum  {
 //#define SE_Unknown415					415 // not used
 #define SE_ACv2							416 // *not implemented - New AC spell effect
 #define SE_ManaRegen_v2					417 // *not implemented - New mana regen effect
-#define SE_AddSkillDmg					418 // *not implemented - adds base directly to certain attacks(ie piercing)
+#define SE_AddSkillDmg					418 // *not implemented - adds base directly to certain attacks(ie piercing)  Increase 1H Blunt Damage Bonus by 1
 #define SE_AddMeleeProc					419 // implemented - Adds a proc
 //#define SE_Unknown420					420 // not used
 //#define SE_Unknown421					421 // not used

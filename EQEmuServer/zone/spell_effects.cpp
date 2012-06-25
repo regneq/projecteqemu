@@ -2509,6 +2509,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_SpellTrigger:
 			case SE_ApplyEffect:
 			case SE_Twincast:
+			case SE_Twinproc: 
+			case SE_DelayDeath: 
 			case SE_InterruptCasting:
 			case SE_ImprovedSpellEffect:
 			case SE_BossSpellTrigger:
@@ -2524,6 +2526,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_CriticalHealOverTime:
 			case SE_CriticalDoTChance:
 			case SE_SpellOnKill:
+			case SE_SpellOnKill2: 
 			case SE_CriticalDamageMob:
 			case SE_LimitSpellGroup:
 			case SE_ResistCorruption:
@@ -2535,6 +2538,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_IncreaseBlockChance:
 			case SE_AntiGate:
 			case SE_Fearless:
+			case SE_FF_Damage_Amount: 
 			{
 				break;
 			}
@@ -2892,13 +2896,11 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			case SE_CurrentHP:
 			{
 				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
-
+				
 				//TODO: account for AAs and stuff
 
 				//dont know what the signon this should be... - makes sense
-				if (caster && caster->IsClient() &&
-					IsDetrimentalSpell(spell_id) &&
-					effect_value < 0) {
+				if (caster && caster->IsClient() && IsDetrimentalSpell(spell_id) && effect_value < 0) {
 					sint32 modifier = 100;
 					modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
 
@@ -2917,9 +2919,17 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 					effect_value = effect_value * modifier / 100;
 				}
 
-				if(effect_value < 0) {
-					if(caster && !caster->IsClient())
-						effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
+				if(effect_value < 0)
+				{
+					if(caster)
+					{
+						if(!caster->IsClient())
+							effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
+
+						if(caster->IsNPC())
+							effect_value = caster->CastToNPC()->GetActSpellDamage(spell_id, effect_value);
+					}
+
 					effect_value = -effect_value;
 					Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 				} else if(effect_value > 0) {
@@ -4018,7 +4028,7 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		{
 			if(type == focusTwincast)
 			{
-				value = 1;
+				value = focus_spell.base[i]; 
 			}
 			break;
 		}
@@ -4026,7 +4036,12 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		{
 			if(type == focusSympatheticProc)
 			{
-				if(MakeRandomInt(0, 1000) <= focus_spell.base[i])
+				float ProcChance, ProcBonus; //ProcBonus's are not yet implemented for this
+				sint16 ProcRateMod = focus_spell.base[i]; //Baseline is 100 for most Sympathetic foci
+				sint32 cast_time = GetActSpellCasttime(spell_id, spells[spell_id].cast_time);
+				float FinalProcChance = GetSympatheticProcChances(ProcBonus, ProcChance, cast_time, ProcRateMod);
+
+				if(MakeRandomFloat(0, 1) <= FinalProcChance)
 				{
 					value = focus_id;
 				}
@@ -4045,6 +4060,14 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 			break;
 		}
 
+		case SE_FF_Damage_Amount:
+		{
+			if(type == focusFF_Damage_Amount)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
 #if EQDEBUG >= 6
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.
@@ -4054,6 +4077,98 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		}
 	}
 	return(value*lvlModifier/100);
+}
+
+sint16 Client::GetSympatheticFocusEffect(focusType type, int16 spell_id) {
+
+	if (IsBardSong(spell_id))
+		return 0;
+	
+	const Item_Struct* TempItem = 0;
+	uint16 proc_spellid = 0;
+	uint8 SizeProcList = 0;
+	uint8 MAX_SYMPATHETIC = 10;
+	
+	vector<int> SympatheticProcList;
+
+	//item focus
+	for(int x=0; x<=21; x++)
+	{
+		if (SizeProcList > MAX_SYMPATHETIC)
+			continue;
+	
+		TempItem = NULL;
+		ItemInst* ins = GetInv().GetItem(x);
+		if (!ins)
+			continue;
+		TempItem = ins->GetItem();
+		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+		
+				//CalcFocus will run Mob::GetSympatheticProcChances (spell_effects.cpp)
+				proc_spellid = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id); 
+
+				if (proc_spellid > 0)
+				{
+					SympatheticProcList.push_back(proc_spellid);
+					SizeProcList = SympatheticProcList.size();
+				}
+		}
+		
+		for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+		{
+			if (SizeProcList > MAX_SYMPATHETIC)
+				continue;
+		
+			ItemInst *aug = NULL;
+			aug = ins->GetAugment(y);
+			if(aug)
+			{
+				const Item_Struct* TempItemAug = aug->GetItem();
+				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
+
+					proc_spellid = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
+					
+					if (proc_spellid > 0)
+					{
+						SympatheticProcList.push_back(proc_spellid);
+						SizeProcList = SympatheticProcList.size();
+					}
+				}
+			}
+		}
+	}
+
+	//Spell Focus
+	int buff_slot = 0;
+	int16 focusspellid  = 0;
+	uint32 buff_max = GetMaxTotalSlots();
+	for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
+		
+		if (SizeProcList > MAX_SYMPATHETIC)
+			continue;
+		
+		focusspellid = buffs[buff_slot].spellid;
+		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
+			continue;
+		
+			proc_spellid = CalcFocusEffect(type, focusspellid, spell_id);
+	
+			if (proc_spellid > 0)
+			{
+				SympatheticProcList.push_back(proc_spellid); 
+				SizeProcList = SympatheticProcList.size();
+			}
+	}
+
+	if (SizeProcList > 0) 
+	{
+		uint8 random = MakeRandomInt(0, SizeProcList-1);
+		int FinalSympatheticProc = SympatheticProcList[random];
+		SympatheticProcList.clear(); 
+		return FinalSympatheticProc;
+	}
+
+	return 0;
 }
 
 sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
@@ -4487,3 +4602,16 @@ bool Mob::AffectedExcludingSlot(int slot, int effect)
 	return false;
 }
 
+float Mob::GetSympatheticProcChances(float &ProcBonus, float &ProcChance, sint32 cast_time, sint16 ProcRateMod) {
+
+	ProcBonus = 0; 
+	ProcChance = 0;
+	
+	if(cast_time > 0) 
+	{
+		ProcChance = ((float)cast_time * RuleR(Casting, AvgSpellProcsPerMinute) / 60000.0f); 
+		ProcChance = ProcChance * ProcRateMod/100;
+	}
+
+	return ProcChance;
+}

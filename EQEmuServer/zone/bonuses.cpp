@@ -809,22 +809,23 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				else
 					newbon->CriticalHitChance[base2] += base1;
 				break;
-				
+
 			case SE_SpellOnKill:
-				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3)
 				{
 					if(!newbon->SpellOnKill[i])
 					{
-						// base1 = SpellID to be triggered, base2 = chance to fire
+						// base1 = SpellID to be triggered, base2 = chance to fire, base3 = min npc level
 						newbon->SpellOnKill[i] = base1;
 						newbon->SpellOnKill[i+1] = base2;
+						newbon->SpellOnKill[i+2] = 0;
 						break;
 					}
 				}
 				break;
 				
 			case SE_SpellOnDeath:
-				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2)
 				{
 					if(!newbon->SpellOnDeath[i])
 					{
@@ -1483,6 +1484,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->SpellDmg += effect_value;
 				break;
 			}
+
+			case SE_FF_Damage_Amount:
+			{
+				newbon->SpellDmg += effect_value;
+				break;
+			}
 			
 			case SE_TriggerOnCast:
 			{
@@ -1524,16 +1531,17 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			case SE_CriticalDoTChance:
 				newbon->CriticalDoTChance += effect_value;
 				break;
-				
+	
 			case SE_SpellOnKill:
 			{
-				for(int e = 0; e < MAX_SPELL_TRIGGER; e+=2)
+				for(int e = 0; e < MAX_SPELL_TRIGGER*3; e+=3)
 				{
 					if(!newbon->SpellOnKill[e])
 					{
-						// Base2 = Spell to fire | Base1 = % chance
+						// Base2 = Spell to fire | Base1 = % chance | Base3 = min level
 						newbon->SpellOnKill[e] = spells[spell_id].base2[i];
 						newbon->SpellOnKill[e+1] = effect_value;
+						newbon->SpellOnKill[e+2] = spells[spell_id].max[i];
 						break;
 					}
 				}
