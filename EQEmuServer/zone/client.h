@@ -652,7 +652,7 @@ public:
 	int8	SkillTrainLevel(SkillType skillid, int16 class_);
 
 	void TradeskillSearchResults(const char *query, unsigned long qlen, unsigned long objtype, unsigned long someid);
-	void SendTradeskillDetails(unsigned long  recipe_id);
+	void SendTradeskillDetails(uint32 recipe_id);
 	bool TradeskillExecute(DBTradeskillRecipe_Struct *spec);
 	void CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill);
 
