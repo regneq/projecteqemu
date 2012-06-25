@@ -1470,13 +1470,13 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 		return;	//cant die more than once...
 
 	int exploss;
-
+	
 	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob ? killerMob->GetName() : "Unknown", damage, spell, attack_skill);
 	
 	//
 	// #1: Send death packet to everyone
 	//
-
+	uint8 killed_level = GetLevel();
 	if(!spell) spell = SPELL_UNKNOWN;
 	
 	SendLogoutPackets();
@@ -1519,7 +1519,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
             parse->EventNPC(EVENT_SLAY, killerMob->CastToNPC(), this, "", 0);
 			if(killerMob->CastToNPC()->GetNPCEmoteID() != 0)
 				killerMob->CastToNPC()->DoNPCEmote(KILLEDPC);
-			killerMob->TrySpellOnKill();
+			killerMob->TrySpellOnKill(killed_level,spell);
 		}
 		
 		if(killerMob->IsClient() && (IsDueling() || killerMob->CastToClient()->IsDueling())) {
@@ -2075,7 +2075,8 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		return;
 
 	BuffFadeAll();
-	
+	uint8 killed_level = GetLevel();
+
 	EQApplicationPacket* app= new EQApplicationPacket(OP_Death,sizeof(Death_Struct));
 	Death_Struct* d = (Death_Struct*)app->pBuffer;
 	d->spawn_id = GetID();
@@ -2135,7 +2136,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			if(!IsLdonTreasure) {
 				kr->SplitExp((EXP_FORMULA), this);
 				if(killerMob && (kr->IsRaidMember(killerMob->GetName()) || kr->IsRaidMember(killerMob->GetUltimateOwner()->GetName())))
-					killerMob->TrySpellOnKill();
+					killerMob->TrySpellOnKill(killed_level,spell);
 			}
 			/* Send the EVENT_KILLED_MERIT event for all raid members */
 			for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
@@ -2151,7 +2152,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			if(!IsLdonTreasure) {
 				kg->SplitExp((EXP_FORMULA), this);
 				if(killerMob && (kg->IsGroupMember(killerMob->GetName()) || kg->IsGroupMember(killerMob->GetUltimateOwner()->GetName())))
-					killerMob->TrySpellOnKill();
+					killerMob->TrySpellOnKill(killed_level,spell);
 			}
 			/* Send the EVENT_KILLED_MERIT event and update kill tasks
 			 * for all group members */
@@ -2175,7 +2176,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 					else {
 						give_exp_client->AddEXP((EXP_FORMULA), conlevel); // Pyro: Comment this if NPC death crashes zone
 						if(killerMob && (killerMob->GetID() == give_exp_client->GetID() || killerMob->GetUltimateOwner()->GetID() == give_exp_client->GetID()))
-							killerMob->TrySpellOnKill();
+							killerMob->TrySpellOnKill(killed_level,spell);
 					}
 				}
 			}
@@ -2302,7 +2303,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
             parse->EventNPC(EVENT_NPC_SLAY, oos->CastToNPC(), this, "", 0);
 			if(oos->CastToNPC()->GetNPCEmoteID() != 0)
 				oos->CastToNPC()->DoNPCEmote(KILLEDNPC);
-			killerMob->TrySpellOnKill();
+			killerMob->TrySpellOnKill(killed_level,spell);
 		}
 	}
 	
@@ -3386,7 +3387,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 					IsSaved = true;
 				}
 			}
-						
+
 			if(!IsSaved && !TrySpellOnDeath()) {
 				SetHP(-500);
 

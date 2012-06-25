@@ -1945,6 +1945,54 @@ XS(XS_NPC_RemoveSpellFromNPCList)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_NPC_SetSpellFocusDMG); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetSpellFocusDMG)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetSpellFocusDMG(THIS, NewSpellFocusDMG)");
+	{
+		NPC *		THIS;
+		sint32		NewSpellFocusDMG = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSpellFocusDMG(NewSpellFocusDMG);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_SetSpellFocusHeal); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetSpellFocusHeal)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetSpellFocusHeal(THIS, NewSpellFocusHeal)");
+	{
+		NPC *		THIS;
+		sint32		NewSpellFocusHeal = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSpellFocusHeal(NewSpellFocusHeal);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -2038,6 +2086,8 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "ModifyNPCStat"), XS_NPC_ModifyNPCStat, file, "$$$");
 		newXSproto(strcpy(buf, "AddAISpell"), XS_NPC_AddSpellToNPCList, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "RemoveAISpell"), XS_NPC_RemoveSpellFromNPCList, file, "$$");
+		newXSproto(strcpy(buf, "SetSpellFocusDMG"), XS_NPC_SetSpellFocusDMG, file, "$$");
+		newXSproto(strcpy(buf, "SetSpellFocusHeal"), XS_NPC_SetSpellFocusHeal, file, "$$");
 	XSRETURN_YES;
 }
 

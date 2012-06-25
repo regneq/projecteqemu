@@ -507,7 +507,6 @@ public:
 
 	inline uint32	GetEXP()		const { return m_pp.exp; }
 
-
 	bool	UpdateLDoNPoints(sint32 points, int32 theme);
 	void	SetPVPPoints(uint32 Points) { m_pp.PVPCurrentPoints = Points; }
 	int32	GetPVPPoints() { return m_pp.PVPCurrentPoints; }
@@ -1108,6 +1107,7 @@ protected:
 	bool client_data_loaded;
 
 	sint16	GetFocusEffect(focusType type, int16 spell_id);
+	sint16	GetSympatheticFocusEffect(focusType type, int16 spell_id); 
 
 	Mob*	bind_sight_target;
 
