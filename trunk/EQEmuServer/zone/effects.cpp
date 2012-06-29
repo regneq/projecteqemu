@@ -197,16 +197,32 @@ sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
 	return (value * modifier / 100);
 }
 
+sint32 Client::Additional_Heal(int16 spell_id) 
+{
+	sint32 heal_amt = 0;
+
+	heal_amt  += GetFocusEffect(focusAdditionalHeal, spell_id);
+
+	int duration = CalcBuffDuration(this, this, spell_id);
+	if (duration > 0)
+	{
+		return heal_amt /= duration;
+	}
+	
+	return heal_amt;
+}
+
 sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 
 	sint32 modifier = 100;
+	sint16 heal_amt = 0;
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
+	heal_amt += Additional_Heal(spell_id);
 	int chance = 0;
 	
 	// Instant Heals					
 	if(spells[spell_id].buffduration < 1) 
 	{
-		sint16 heal_amt = 0;
 		// Formula = HealAmt * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant heal more than the spell itself.
 		if(this->itembonuses.HealAmt && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
 			heal_amt = this->itembonuses.HealAmt * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
@@ -267,9 +283,9 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 	else {
 		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 		if(MakeRandomInt(0,99) < chance) 
-			return (value * modifier / 50);
+			return ((value * modifier / 50) + heal_amt*2);
 	}
-	return (value * modifier / 100);
+	return ((value * modifier / 100) + heal_amt);
 }
 
 sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)

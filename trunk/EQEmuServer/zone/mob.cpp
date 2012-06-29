@@ -103,7 +103,6 @@ Mob::Mob(const char*   in_name,
 		 sint16 in_hp_regen,
 		 sint16 in_mana_regen,
 		 int8	in_qglobal,
-		 float	in_slow_mitigation,	// Allows for mobs to mitigate how much they are slowed.
 		 int8	in_maxlevel,
 		 int32	in_scalerate
 		 ) : 
@@ -198,6 +197,7 @@ Mob::Mob(const char*   in_name,
 	drakkin_tattoo		= in_drakkin_tattoo;
 	drakkin_details		= in_drakkin_details;
 	attack_speed= 0;
+	slow_mitigation= 0;
 	findable	= false;
 	trackable	= true;
 
@@ -225,7 +225,6 @@ Mob::Mob(const char*   in_name,
 	hp_regen = in_hp_regen;
 	mana_regen = in_mana_regen;
 	oocregen = RuleI(NPC, OOCRegen); //default Out of Combat Regen
-	slow_mitigation = in_slow_mitigation;
 	maxlevel = in_maxlevel;
 	scalerate = in_scalerate;
 	invisible = false;
@@ -2788,6 +2787,14 @@ int Mob::GetHaste() {
 	h += spellbonuses.hastetype3;
 	h += ExtraHaste;	//GM granted haste.
 
+	if (spellbonuses.inhibitmelee){
+		if (h >= 0)
+			h -= spellbonuses.inhibitmelee; 
+	
+		else 
+			h -=((100+h)*spellbonuses.inhibitmelee/100);
+	}
+
 	return(h); 
 }
 
@@ -3341,10 +3348,23 @@ bool Mob::TryFadeEffect(int slot)
 			{
 				int16 spell_id = spells[buffs[slot].spellid].base[i];
 				BuffFadeBySlot(slot);
+				
 				if(spell_id)
-				{
-					ExecWeaponProc(spell_id, this);
-					return true;
+				{	
+					
+					if(spell_id == SPELL_UNKNOWN)
+						return false;
+
+					if(IsValidSpell(spell_id))
+					{
+						if (IsBeneficialSpell(spell_id)) {
+							SpellFinished(spell_id, this, 10, 0, -1, spells[spell_id].ResistDiff);
+						}
+						else if(!(IsClient() && CastToClient()->dead)) {
+							SpellFinished(spell_id, this, 10, 0, -1, spells[spell_id].ResistDiff);
+						}
+						return true;
+					}
 				}
 			}
 		}
@@ -4424,4 +4444,62 @@ sint16 Mob::GetModVulnerability(const uint8 resist)
 		return Vulnerability_Mod[HIGHEST_RESIST+1];  
 	
 	return 0;
+}
+
+void Mob::CastOnCurer(uint32 spell_id)
+{
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if (spells[spell_id].effectid[i] == SE_CastOnCurer)
+		{
+			if(IsValidSpell(spells[spell_id].base[i]))
+			{
+				SpellFinished(spells[spell_id].base[i], this);
+			}
+		}
+	}
+}
+
+void Mob::CastOnCure(uint32 spell_id)
+{
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if (spells[spell_id].effectid[i] == SE_CastOnCure)
+		{
+			if(IsValidSpell(spells[spell_id].base[i]))
+			{
+				SpellFinished(spells[spell_id].base[i], this);
+			}
+		}
+	}
+}
+//Pass as a float (100 - effect_value)
+int Mob::SlowMitigation(bool slow_msg, Mob *caster, int slow_value) 
+{ 
+	uint8 int_slow_mitigation = slow_mitigation * 100.0f;
+
+	if (int_slow_mitigation > 100)
+		return 0;
+
+	if (slow_msg)
+	{
+		if (caster && caster->IsClient())
+		{
+			if ((int_slow_mitigation > 0) && (int_slow_mitigation < 26))
+				caster->Message(262, "Your spell was mostly successful");
+
+			else if ((int_slow_mitigation > 26) && (int_slow_mitigation < 74))
+				caster->Message(262, "Your spell was partially successful");
+
+			else if ((int_slow_mitigation > 74) && (int_slow_mitigation < 101))
+				caster->Message(262, "Your spell was slightly successful");
+		}
+		return 0;
+	}
+
+	else
+	{
+		slow_value -= (slow_value*int_slow_mitigation/100);
+		return slow_value;
+	}
 }

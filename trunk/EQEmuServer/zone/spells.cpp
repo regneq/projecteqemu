@@ -3822,7 +3822,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 // pvp_resist_base
 // pvp_resist_calc
 // pvp_resist_cap
-float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_resist_override, int resist_override)
+float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_resist_override, int resist_override, bool CharismaCheck)
 {
 
 	if(!caster)
@@ -3991,6 +3991,14 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 	resist_chance += level_mod;
 	resist_chance += resist_modifier;
 	resist_chance += target_resist;
+
+	if (CharismaCheck)
+	{
+		//For charm chance to break checks, Default 10 CHA = -1 resist mod. 
+		sint16 cha_resist_modifier = 0;
+		cha_resist_modifier	= caster->GetCHA()/RuleI(Spells, CharismaEffectiveness); 
+		resist_chance -= cha_resist_modifier;
+	}
 
 	//Even more level stuff this time dealing with damage spells
 	if(IsNPC() && IsDamageSpell(spell_id) && GetLevel() >= 17)

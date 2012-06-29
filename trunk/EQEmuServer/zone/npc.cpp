@@ -106,7 +106,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->hp_regen,
 	  d->mana_regen,
 	  d->qglobal,
-	  d->slow_mitigation,
 	  d->maxlevel,
 	  d->scalerate ),
 	attacked_timer(CombatEventTimer_expire),
@@ -238,6 +237,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	delaytimer = false;
 	combat_event = false;
 	attack_speed = d->attack_speed;
+	slow_mitigation = d->slow_mitigation;
 
 	EntityList::RemoveNumbers(name);
     entity_list.MakeNameUnique(name);
@@ -1940,7 +1940,7 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 
 	if(id == "slow_mitigation")
 	{
-		slow_mitigation = atof(val.c_str());
+		slow_mitigation = (float)atof(val.c_str());
 		return;
 	}
 }

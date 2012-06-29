@@ -1412,6 +1412,14 @@ int Client::CalcHaste() {
 
 	h += spellbonuses.hastetype3;
 	h += ExtraHaste;	//GM granted haste.
+
+	if (spellbonuses.inhibitmelee){
+		if (h >= 0)
+			h -= spellbonuses.inhibitmelee; 
+	
+		else 
+			h -=((100+h)*spellbonuses.inhibitmelee/100);
+	}
 	
 	Haste = h;
 	return(Haste); 

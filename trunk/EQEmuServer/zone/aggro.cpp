@@ -1434,50 +1434,63 @@ void Mob::ClearFeignMemory() {
 }
 
 bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
-	bool Result = false;
 
 	if(!caster) return false;
 
 	if(spells[spell_id].ResistDiff <= -600)
 		return true;
 
-	float r1 = ((((float)spellTarget->GetMR() + spellTarget->GetLevel()) / 3) / spellTarget->GetMaxMR()) + ((float)MakeRandomFloat(-10, 10) / 100.0f);
-	float r2 = 0.0f;
+	//Applies additional Charisma bonus to resist rate
+	float resist_check = ResistSpell(spells[spell_id].resisttype, spell_id, caster,0,0,1);
 
 	if(IsCharmSpell(spell_id)) {
-		// Assume this is a charm spell
-		int32 TotalDominationRank = 0.00f;
-		float TotalDominationBonus = 0.00f;
 
-		TotalDominationRank = GetAA(aaTotalDomination);
+		//1: The mob has a default 25% chance of being allowed a resistance check against the charm.
+		if (MakeRandomInt(0, 100) > RuleI(Spells, CharmBreakCheckChance))
+			return true;
+			
+		//2: The mob makes a resistance check against the charm
+		if (resist_check == 100)
+			return true; 
+				
+		else
+		{
+			if (caster->IsClient())
+			{
+				//3: At maxed ability, Total Domination has a 50% chance of preventing the charm break that otherwise would have occurred. 
+				int32 TotalDominationRank = 0;
+				uint8 TotalDominationBonus = 0;
+				TotalDominationRank = GetAA(aaTotalDomination);
+								
+				switch(TotalDominationRank) {
+					case 1 :
+						TotalDominationBonus = 16;
+						break;
+					case 2 :
+						TotalDominationBonus = 33;
+						break;
+					case 3 :
+						TotalDominationBonus = 50;
+						break;
+					default :
+						TotalDominationBonus = 0;
+				}
+				
+				if (MakeRandomFloat(0, 100) < TotalDominationBonus)
+					return true;
 
-		// WildcardX: If someone ever finds for certain what value the TotalDomination ranks provide, please change the values
-		// I implemented below.
-
-		switch(TotalDominationRank) {
-			case 1 :
-				TotalDominationBonus = 0.05f;
-				break;
-			case 2 :
-				TotalDominationBonus = 0.10f;
-				break;
-			case 3 :
-				TotalDominationBonus = 0.15f;
-				break;
-			default :
-				TotalDominationBonus = 0.00f;
+			}
 		}
-
-		r2 = ((((float)caster->GetCHA()  + caster->GetLevel()) / 3) / caster->GetMaxCHA()) + ((float)MakeRandomFloat(-10, 10) / 100.0f) + TotalDominationBonus;
 	}
+
 	else
+	{
 		// Assume this is a harmony/pacify spell
-		r2 = ((((float)caster->GetCHA()  + caster->GetLevel()) / 3) / caster->GetMaxCHA()) + ((float)MakeRandomFloat(-10, 10) / 100.0f);
+		if (resist_check == 100)
+			return true; 
+	}
 
-	if(r1 < r2)
-			Result = true;
-
-	return Result;
+	return false;
 }
 
 

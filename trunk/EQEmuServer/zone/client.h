@@ -453,6 +453,7 @@ public:
 	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath; }
 	
 	sint32 Additional_SpellDmg(int16 spell_id);
+	sint32 Additional_Heal(int16 spell_id);
 	float GetActSpellRange(int16 spell_id, float range);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);
 	sint32 GetActSpellHealing(int16 spell_id, sint32 value);

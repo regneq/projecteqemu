@@ -522,7 +522,7 @@ typedef enum  {
 #define SE_FactionMod					368	// *not implemented - increases faction with base1 (faction id, live won't match up w/ ours) by base2
 #define SE_CorruptionCounter			369	// implemented
 #define SE_ResistCorruption				370	// implemented
-#define SE_AttackSpeed4					371 // *not implemented - some type of melee slow
+#define SE_AttackSpeed4					371 // implemented - stackable slow effect 'Inhibit Melee'
 //#define SE_Unknown372					372	// not used
 #define SE_CastOnWearoff				373 // implemented
 #define SE_ApplyEffect					374 // implemented 
@@ -537,8 +537,8 @@ typedef enum  {
 #define SE_SympatheticProc				383 // implemented - focus on items that has chance to proc a spell when you cast
 #define SE_Leap							384	// implemented - Leap effect, ie stomping leap
 #define SE_LimitSpellGroup				385	// implemented - Limits to spell group(ie type 3 reuse reduction augs that are class specific and thus all share s SG)
-#define SE_CastOnCurer					386 // *not implemented - Casts a spell on the person curing
-#define SE_CastOnCure					387 // *not implemented - Casts a spell on the cured person
+#define SE_CastOnCurer					386 // *implemented - Casts a spell on the person curing
+#define SE_CastOnCure					387 // *implemented - Casts a spell on the cured person
 #define SE_SummonCorpseZone				388 // *not implemented - summons a corpse from any zone(nec AA)
 #define SE_Forceful_Rejuv				389 // Refresh spell icons
 #define SE_CastResistRestrict			390 // *not implemented - some sort of restriction of what resist spells you can cast
@@ -547,7 +547,7 @@ typedef enum  {
 #define SE_HealRate2					393 // *not implemented - Appears to be exactly the same as HealRate except with focus restrictions
 //#define SE_Unknown394					394 // not used
 //#define SE_Unknown395					395 // not used
-#define SE_AdditionalHeal				396 // *not implemented - Adds/removes healing from specific spells(restricted to spell groups)
+#define SE_AdditionalHeal				396 // implemented - Adds a direct healing amount to spells
 //#define SE_Unknown397					397 // not used
 #define SE_SwarmPetDuration				398 // implemented - Affects the duration of swarm pets
 #define SE_Twincast						399 // implemented - cast 2 spells for every 1
