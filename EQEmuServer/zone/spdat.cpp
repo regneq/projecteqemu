@@ -174,12 +174,8 @@ bool IsSlowSpell(int16 spell_id)
 
 	for(i = 0; i < EFFECT_COUNT; i++)
 	{
-		if
-		(
-			sp.effectid[i] == SE_AttackSpeed			// attack speed effect
-			 && sp.base[i] < 100		// less than 100%
-		)
-			return true;
+		if ((sp.effectid[i] == SE_AttackSpeed && sp.base[i] < 100) || (sp.effectid[i] == SE_AttackSpeed4))
+		return true;
 	}
 
 	return false;

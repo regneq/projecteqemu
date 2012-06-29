@@ -227,6 +227,8 @@ public:
 	
 	int32	GetMaxDMG() const {return max_dmg;}
 	int32	GetMinDMG() const {return min_dmg;}
+	float	GetSlowMitigation() const {return slow_mitigation;}
+	float	GetAttackSpeed() const {return attack_speed;}
 	bool	IsAnimal() const { return(bodytype == BT_Animal); }
 	int16   GetPetSpellID() const {return pet_spell_id;}
 	void    SetPetSpellID(int16 amt) {pet_spell_id = amt;}

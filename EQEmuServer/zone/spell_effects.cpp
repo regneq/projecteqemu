@@ -1678,6 +1678,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						if (effect_value >= buffs[j].counters) {
 							if (caster)
 								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+								caster->CastOnCurer(buffs[j].spellid);
+								CastOnCure(buffs[j].spellid);
 							effect_value -= buffs[j].counters;
 							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
@@ -1709,6 +1711,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						{
 							if (caster)
 								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+								caster->CastOnCurer(buffs[j].spellid);
+								CastOnCure(buffs[j].spellid);
 							effect_value -= buffs[j].counters;
 							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
@@ -1742,6 +1746,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						{
 							if (caster)
 								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+								caster->CastOnCurer(buffs[j].spellid);
+								CastOnCure(buffs[j].spellid);
 							effect_value -= buffs[j].counters;
 							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
@@ -1774,6 +1780,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						if (effect_value >= buffs[j].counters) {
 							if (caster)
 								caster->Message(MT_Spells,"You have cured your target of %s!",spells[buffs[j].spellid].name);
+								caster->CastOnCurer(buffs[j].spellid);
+								CastOnCure(buffs[j].spellid);
 							effect_value -= buffs[j].counters;
 							buffs[j].counters = 0;
 							BuffFadeBySlot(j);
@@ -2480,6 +2488,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_AttackSpeed:
 			case SE_AttackSpeed2:
 			case SE_AttackSpeed3:
+			case SE_AttackSpeed4:
 			case SE_Purify:
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
@@ -2538,7 +2547,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_IncreaseBlockChance:
 			case SE_AntiGate:
 			case SE_Fearless:
-			case SE_FF_Damage_Amount: 
+			case SE_FF_Damage_Amount:
+			case SE_AdditionalHeal:
+			case SE_CastOnCurer:
+			case SE_CastOnCure:
 			{
 				break;
 			}
@@ -4063,6 +4075,14 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		case SE_FF_Damage_Amount:
 		{
 			if(type == focusFF_Damage_Amount)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_AdditionalHeal:
+		{
+			if(type == focusAdditionalHeal)
 				value = focus_spell.base[i];
 
 			break;

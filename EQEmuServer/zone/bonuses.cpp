@@ -959,17 +959,20 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					if ((effect_value - 100) > newbon->haste) {
 						newbon->haste = effect_value - 100;
 					}
-				} else if ((effect_value - 100) < 0) { // Slow
+				} 
+				else if ((effect_value - 100) < 0) { // Slow
 					//Slow Mitigation works by taking the amount that would be slowed, and adding a multiplied version of the difference.
-					int new_effect_value;
-					float slow_amount_mitigated = 100 - effect_value; //Gives us a value that actually represents the slow amount.
-					slow_amount_mitigated *= this->slow_mitigation;
-					new_effect_value = effect_value + slow_amount_mitigated;
-					if (new_effect_value > 100)
-						new_effect_value = 100;
-					if ((new_effect_value - 100) < newbon->haste) 
-					{
-						newbon->haste = new_effect_value - 100;
+					int real_slow_value = (100 - effect_value) * -1;
+					if (slow_mitigation){
+						int new_effect_value = SlowMitigation(false,caster,real_slow_value);
+						if (new_effect_value < newbon->haste) {
+							newbon->haste = new_effect_value;
+							SlowMitigation(true,caster);
+						}
+					}
+					else {
+						if (real_slow_value < newbon->haste) 
+							newbon->haste = real_slow_value;
 					}
 				}
 				break;
@@ -994,6 +997,23 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				}
 				break;
  			}
+
+			case SE_AttackSpeed4:
+			{
+				if (effect_value > 0) {
+					if (slow_mitigation){
+						int new_effect_value = SlowMitigation(false,caster,effect_value);
+						if (new_effect_value > newbon->inhibitmelee) {
+								newbon->inhibitmelee = new_effect_value;
+								SlowMitigation(true,caster);
+						}
+					}
+					else if (effect_value > newbon->inhibitmelee) {
+								newbon->inhibitmelee = effect_value;
+					}
+				}
+				break;
+			}
 
 			case SE_TotalHP:
 			{

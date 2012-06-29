@@ -135,7 +135,6 @@ Client::Client(EQStreamInterface* ieqs)
 	0,
 	0,
 	0,	// qglobal
-	0,	// slow_mitigation
 	0,	// maxlevel
 	0	// scalerate
 

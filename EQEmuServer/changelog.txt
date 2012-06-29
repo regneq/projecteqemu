@@ -1,5 +1,28 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==06/29/2012==
+Kayen: Implemented Perl NPC Quest Object GetSlowMitigation() 
+Kayen: Implemented Perl NPC Quest Object GetAttackSpeed() 
+Kayen: Implemented Perl NPC Quest Object GetAccuracyRating() 
+Kayen: Fixed: Slow Mitigation (was not loading from dbase),optimized its application in source and added lives slow mitigation messages.
+		Slow mitigation Messages: 'slighty' 0.00 - 0.25 'partial' 0.25-0.75 'mostly' 0.75-1
+Kayen: Implemented: SE_AttackSpeed4: 'Inhibit Melee' effect works different then regular haste/slow effect
+		1) If target is hasted (or no haste) Inhibit Melee will decrease attack speed by the Inhibit Melee value.
+		2) If target is slowed Inhibit Melee is applied as a percent change to remaining attack speed after regular slow.
+		ie. You cast 75% Slow (25 attack speed remains) then apply 25% Inhibit melee (18.75 attack speed remains): Final slow 81.75%
+Kayen: Added Rule: Spells:CharismaEffectiveness (Default = 10) Deterimes how much resist modification charisma applies to charm/pacify checks (10 CHA = -1 resist mod).
+Kayen: Added Rule: Spells:CharmBreakCheckChance (Default = 25) Determines percent chance for a charm break check to occur each buff tick.
+Kayen: Reworked code to that handles charm breaks/lull to be accurate to live and more functional in general.
+		1) Each charm buff tick there is a default 25% [Rule.CharmBreakCheckChance] chance to trigger a spell resistance check.
+		2) Spell resistance check then adds an additional bonus resist modification based casters Charisma at a default 
+		   ratio of 10 CHA per -1 resist mod [Rule.CharismaEffectiveness]
+		3) If resisted (ie Charm is to break) Total Domination AA is then applied to give another chance to maintain the charm.
+Kayen: Implemented: SE_AdditionalHeal:  Focus Effect that adds an additional heal amount to the casted spell.
+Kayen: Implemented: SE_CastOnCure: Casts a spell on cured target.
+Kayen: Implemented: SE_CastOnCurer: Casts a spell on the curer of the target.
+Kayen: Modified: Mob::TryFadeEffect	to avoid interaction wtih Twinproc effect.	
+
 ==06/25/2012==
 Trevius: Reviewed and Committed the below by Kayen:
 Kayen: Added Rule: AvgSpellProcsPerMinute (Default = 6.0) Determines proc rate of spells applied from sympathetic focus effect

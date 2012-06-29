@@ -103,6 +103,7 @@ typedef enum {	//focus types
 	focusSwarmPetDuration,
 	focusReduceRecastTime,
 	focusBlockNextSpell,
+	focusAdditionalHeal,
 } focusType;
 
 /*
@@ -252,6 +253,7 @@ struct StatBonuses {
 	sint16	haste;
 	sint16	hastetype2;
 	sint16	hastetype3;
+	sint16  inhibitmelee;
 	float	AggroRange;							// when calculate just replace original value with this
 	float	AssistRange;
 	sint16	skillmod[HIGHEST_SKILL+1];
@@ -478,7 +480,6 @@ bool logpos;
 		sint16	in_hp_regen,
 		sint16	in_mana_regen,
 		int8	in_qglobal,
-		float	in_slow_mitigation,	// Allows for mobs to mitigate how much they are slowed.
 		int8	in_maxlevel,
 		int32	in_scalerate
 	);
@@ -734,7 +735,7 @@ bool logpos;
 	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost){ return cost;}
 	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration){ return duration;}
 	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
-	float ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_resist_override = false, int resist_override = 0);
+	float ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_resist_override = false, int resist_override = 0, bool CharismaCheck = false);
 	uint16 GetSpecializeSkillValue(int16 spell_id) const;
 
 	void ShowStats(Client* client);
@@ -882,6 +883,9 @@ bool logpos;
 	sint16 CalcFearResistChance();
 	void TrySpellOnKill(uint8 level, int16 spell_id);
 	bool TrySpellOnDeath();
+	void CastOnCurer(uint32 spell_id);
+	void CastOnCure(uint32 spell_id);
+	int SlowMitigation(bool slow_msg=false, Mob *caster = NULL,int slow_value = 0); 
 	sint16 GetCritDmgMob(int16 skill);
 	sint16 GetMeleeDamageMod_SE(int16 skill);
 	sint16 GetCrippBlowChance();
@@ -1198,7 +1202,6 @@ protected:
 	sint16	hp_regen;
 	sint16	mana_regen;
 	sint32	oocregen; // Out of Combat Regen, % per tick
-	float slow_mitigation;	// Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
 	int8 maxlevel;
 	int32 scalerate;
 	Buffs_Struct *buffs;
@@ -1286,6 +1289,7 @@ protected:
 	Timer	attack_dw_timer;
 	Timer	ranged_timer;
 	float	attack_speed;		//% increase/decrease in attack speed (not haste)
+	float	slow_mitigation;   // Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
 	Timer	tic_timer;
 	Timer	mana_timer;
 
