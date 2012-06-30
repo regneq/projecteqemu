@@ -22,6 +22,7 @@ Kayen: Implemented: SE_AdditionalHeal:  Focus Effect that adds an additional hea
 Kayen: Implemented: SE_CastOnCure: Casts a spell on cured target.
 Kayen: Implemented: SE_CastOnCurer: Casts a spell on the curer of the target.
 Kayen: Modified: Mob::TryFadeEffect	to avoid interaction wtih Twinproc effect.	
+cavedude: (Uleat) Multiple changes and additions to doors, per the forums.
 
 ==06/25/2012==
 Trevius: Reviewed and Committed the below by Kayen:

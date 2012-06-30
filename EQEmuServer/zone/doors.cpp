@@ -31,6 +31,8 @@ using namespace std;
 
 #define OPEN_DOOR 0x02
 #define CLOSE_DOOR 0x03
+#define OPEN_INVDOOR 0x03
+#define CLOSE_INVDOOR 0x02
 
 extern EntityList entity_list;
 extern WorldServer worldserver;
@@ -120,9 +122,19 @@ bool Doors::Process()
 {
     if(close_timer.Enabled() && close_timer.Check() && IsDoorOpen())
     {
-	triggered=false;
-        close_timer.Disable();
-        SetOpenState(false);
+		if (opentype == 40 || GetTriggerType() == 1)
+		{
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
+			MoveDoor_Struct* md = (MoveDoor_Struct*)outapp->pBuffer;
+			md->doorid = door_id;
+			md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
+			entity_list.QueueClients(0, outapp);
+			safe_delete(outapp);
+		}
+
+		triggered=false;
+		close_timer.Disable();
+		SetOpenState(false);
     }
 	return true;
 }
@@ -200,11 +212,11 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		{ // this door is only triggered by an object
 			if(!IsDoorOpen() || (opentype == 58))
 			{
-				md->action = OPEN_DOOR;
+				md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 			}
 			else
 			{
-				md->action = CLOSE_DOOR;
+				md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
 			}
 		}
 		else
@@ -221,11 +233,11 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	{	//door not locked
 		if(!IsDoorOpen() || (opentype == 58))
 		{
-			md->action = OPEN_DOOR;
+			md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 		}
 		else
 		{
-			md->action = CLOSE_DOOR;
+			md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
 		}
 	}
 	else
@@ -243,6 +255,8 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				strcpy(tmpmsg, "Door is locked by an unknown guild");
 			}
 			sender->Message(4, tmpmsg);
+			// safe_delete(outapp);
+			// /\ possible missing line..all other 'fail' returns seem to have it
 			return;
 		}
 		// a key is required or the door is locked but can be picked or both
@@ -252,11 +266,11 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			sender->Message_StringID(4,DOORS_GM);
 			if(!IsDoorOpen() || (opentype == 58))
 			{
-				md->action = OPEN_DOOR;
+				md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 			}
 			else
 			{
-				md->action = CLOSE_DOOR;
+				md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
 			}
 		}
 		else if(playerkey)
@@ -270,11 +284,11 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				sender->Message(4, "You got it open!");
 				if(!IsDoorOpen() || (opentype == 58))
 				{
-					md->action = OPEN_DOOR;
+					md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 				}
 				else
 				{
-					md->action = CLOSE_DOOR;
+					md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
 				}
 			}
 		}
@@ -295,11 +309,11 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 					{
 						if(!IsDoorOpen())
 						{
-							md->action = OPEN_DOOR;
+							md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 						}
 						else
 						{
-							md->action = CLOSE_DOOR;
+							md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
 						}
 						sender->Message_StringID(4, DOORS_SUCCESSFUL_PICK);
 					}
@@ -333,11 +347,11 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				sender->Message(4, "You got it open!"); // more debug spam
 				if(!IsDoorOpen() || (opentype == 58))
 				{ 
-					md->action = OPEN_DOOR; 
+					md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 				} 
 				else
 				{ 
-					md->action = CLOSE_DOOR; 
+					md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
 				} 
 			}
 			else 
@@ -365,7 +379,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//and met all the reqs for opening
 	//everything to do with closed doors has already been taken care of
 	//we return because we don't want people using teleports on an unlocked door (exploit!)
-	if(md->action == CLOSE_DOOR)
+	if((md->action == CLOSE_DOOR && invert_state == 0) || (md->action == CLOSE_INVDOOR && invert_state == 1))
 	{
 		safe_delete(outapp);
 		return;
@@ -439,7 +453,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	}
 }
 
-void Doors::NPCOpen(NPC* sender)
+void Doors::NPCOpen(NPC* sender, bool alt_mode)
 {
 	if(sender) {
 		if(GetTriggerType() == 255 || GetTriggerDoorID() > 0 || GetLockpick() != 0 || GetKeyItem() != 0 || opentype == 59 || opentype == 58 || !sender->IsNPC()) { // this object isnt triggered or door is locked - NPCs should not open locked doors!
@@ -449,10 +463,37 @@ void Doors::NPCOpen(NPC* sender)
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
 		MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
 		md->doorid = door_id;
-		md->action = OPEN_DOOR;
+		md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
 		entity_list.QueueCloseClients(sender,outapp,false,200);
 		safe_delete(outapp);
 
+		if(!alt_mode) { // original function
+			if(!isopen) {
+				close_timer.Start();
+				isopen=true;
+			}
+			else {
+				close_timer.Disable();
+				isopen=false;
+			}
+		}
+		else { // alternative function
+			close_timer.Start();
+			isopen=true;
+		}
+	}
+}
+
+void Doors::ForceOpen(Mob *sender, bool alt_mode)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
+	MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
+	md->doorid = door_id;
+	md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
+	entity_list.QueueClients(sender,outapp,false);
+	safe_delete(outapp);
+
+	if(!alt_mode) { // original function
 		if(!isopen) {
 			close_timer.Start();
 			isopen=true;
@@ -462,44 +503,59 @@ void Doors::NPCOpen(NPC* sender)
 			isopen=false;
 		}
 	}
+	else { // alternative function
+		close_timer.Start();
+		isopen=true;
+	}
 }
 
-void Doors::ForceOpen(Mob *sender)
+void Doors::ForceClose(Mob *sender, bool alt_mode)
 {
-    EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
 	MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
 	md->doorid = door_id;
-	md->action = OPEN_DOOR;
+	md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR; // change from original (open to close)
 	entity_list.QueueClients(sender,outapp,false);
 	safe_delete(outapp);
 
-    if(!isopen) {
-        close_timer.Start();
-        isopen=true;
-    }
-    else {
-        close_timer.Disable();
-        isopen=false;
-    }
+	if(!alt_mode) { // original function
+		if(!isopen) {
+			close_timer.Start();
+			isopen=true;
+		}
+		else {
+			close_timer.Disable();
+			isopen=false;
+		}
+	}
+	else { // alternative function
+		if(isopen)
+			close_timer.Trigger();
+	}
 }
 
-void Doors::ForceClose(Mob *sender)
+void Doors::ToggleState(Mob *sender)
 {
-    EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
+	if(GetTriggerDoorID() > 0 || GetLockpick() != 0 || GetKeyItem() != 0 || opentype == 58 || opentype == 40) { // borrowed some NPCOpen criteria
+		return;
+	}
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
 	MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
 	md->doorid = door_id;
-	md->action = OPEN_DOOR;
+
+	if(!isopen) {
+		md->action = invert_state == 0 ? OPEN_DOOR : OPEN_INVDOOR;
+		isopen=true;
+	}
+	else
+	{
+		md->action = invert_state == 0 ? CLOSE_DOOR : CLOSE_INVDOOR;
+		isopen=false;
+	}
+
 	entity_list.QueueClients(sender,outapp,false);
 	safe_delete(outapp);
-
-    if(!isopen) {
-        close_timer.Start();
-        isopen=true;
-    }
-    else {
-        close_timer.Disable();
-        isopen=false;
-    }
 }
 
 void Doors::DumpDoor(){

@@ -1921,26 +1921,64 @@ XS(XS__forcedooropen);
 XS(XS__forcedooropen)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: forcedooropen(doorid)");
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: forcedooropen(doorid [, altmode=0])");
 
+	if (items == 1)
+	{
 	int32	did = (int)SvIV(ST(0));
 
-	quest_manager.forcedooropen(did);
+	quest_manager.forcedooropen(did, false);
 
 	XSRETURN_EMPTY;
+	}
+	else
+	{
+	int32	did = (int)SvIV(ST(0));
+	bool	am = (int)SvIV(ST(1)) == 0?false:true;
+
+	quest_manager.forcedooropen(did, am);
+
+	XSRETURN_EMPTY;
+	}
 }
 
 XS(XS__forcedoorclose);
 XS(XS__forcedoorclose)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: forcedoorclose(doorid)");
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: forcedoorclose(doorid [, altmode=0])");
+
+	if (items == 1)
+	{
+	int32	did = (int)SvIV(ST(0));
+
+	quest_manager.forcedoorclose(did, false);
+
+	XSRETURN_EMPTY;
+	}
+	else
+	{
+	int32	did = (int)SvIV(ST(0));
+	bool	am = (int)SvIV(ST(1)) == 0?false:true;
+
+	quest_manager.forcedoorclose(did, am);
+
+	XSRETURN_EMPTY;
+	}
+}
+
+XS(XS__toggledoorstate);
+XS(XS__toggledoorstate)
+{
+	dXSARGS;
+	if (items !=1)
+			Perl_croak(aTHX_ "Usage: toggledoorstate(doorid)");
 
 	int32	did = (int)SvIV(ST(0));
 
-	quest_manager.forcedoorclose(did);
+	quest_manager.toggledoorstate(did);
 
 	XSRETURN_EMPTY;
 }
@@ -3421,6 +3459,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "buryplayercorpse"), XS__buryplayercorpse, file);
 		newXS(strcpy(buf, "forcedooropen"), XS__forcedooropen, file);
 		newXS(strcpy(buf, "forcedoorclose"), XS__forcedoorclose, file);
+		newXS(strcpy(buf, "toggledoorstate"), XS__toggledoorstate, file);
 		newXS(strcpy(buf, "isdooropen"), XS__isdooropen, file);
 		newXS(strcpy(buf, "depopall"), XS__depopall, file);
 		newXS(strcpy(buf, "depopzone"), XS__depopzone, file);

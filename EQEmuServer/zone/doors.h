@@ -58,9 +58,10 @@ public:
 	int8	IsLDoNDoor() { return is_ldon_door; }
 	int32	GetClientVersionMask() { return client_version_mask; }
 	
-	void	NPCOpen(NPC* sender);
-	void	ForceOpen(Mob *sender);
-	void	ForceClose(Mob *sender);
+	void	NPCOpen(NPC* sender, bool alt_mode=false);
+	void	ForceOpen(Mob *sender, bool alt_mode=false);
+	void	ForceClose(Mob *sender, bool alt_mode=false);
+	void	ToggleState(Mob *sender);
 
 	void	SetX(float in);
 	void	SetY(float in);
