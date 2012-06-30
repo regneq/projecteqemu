@@ -151,12 +151,12 @@ public:
 	bool summonallplayercorpses(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading);
 	int32 getplayerburriedcorpsecount(int32 char_id);
 	bool buryplayercorpse(int32 char_id);
-	void forcedooropen(int32 doorid);
-	void forcedoorclose(int32 doorid);
+	void forcedooropen(int32 doorid, bool altmode);
+	void forcedoorclose(int32 doorid, bool altmode);
+	void toggledoorstate(int32 doorid);
 	bool isdooropen(int32 doorid);
 	void npcrace(int race_id);
-	void npcgender(int gender_id);
-	void npcsize(int newsize);
+	void npcgender(int gender_id);	void npcsize(int newsize);
 	void npctexture(int newtexture);
 	void playerrace(int race_id);
 	void playergender(int gender_id);

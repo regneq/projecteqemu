@@ -1623,23 +1623,33 @@ bool QuestManager::buryplayercorpse(int32 char_id)
 	return Result;
 }
 
-void QuestManager::forcedooropen(int32 doorid) {
+void QuestManager::forcedooropen(int32 doorid, bool altmode) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){
 		if(GetInitiator())
-			d->ForceOpen(GetInitiator());
+			d->ForceOpen(GetInitiator(), altmode);
 		else if(GetOwner())
-			d->ForceOpen(GetOwner());
+			d->ForceOpen(GetOwner(), altmode);
 	}
 }
 
-void QuestManager::forcedoorclose(int32 doorid) {
+void QuestManager::forcedoorclose(int32 doorid, bool altmode) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){
 		if(GetInitiator())
-			d->ForceClose(GetInitiator());
+			d->ForceClose(GetInitiator(), altmode);
 		else if(GetOwner())
-			d->ForceClose(GetOwner());
+			d->ForceClose(GetOwner(), altmode);
+	}
+}
+
+void QuestManager::toggledoorstate(int32 doorid) {
+	Doors* d = entity_list.FindDoor(doorid);
+	if(d){
+		if(GetInitiator())
+			d->ToggleState(GetInitiator());
+		else if(GetOwner())
+			d->ToggleState(GetOwner());
 	}
 }
 
