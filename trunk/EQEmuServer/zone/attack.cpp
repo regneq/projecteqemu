@@ -271,6 +271,8 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	if(bonus > 0) {
 		chancetohit -= ((bonus * chancetohit) / 1000);
 		mlog(COMBAT__TOHIT, "Applied avoidance chance %.2f/10, yeilding %.2f", bonus, chancetohit);
+		if (defender->spellbonuses.AvoidMeleeChance)
+			defender->CheckHitsRemaining(0, false, false,SE_AvoidMeleeChance);
 	}
 
 	if(attacker->IsNPC())
@@ -1377,6 +1379,9 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
 		//heal self for damage done..
 		HealDamage(lifetap_amt);
+		
+		if (spellbonuses.MeleeLifetap)
+			CheckHitsRemaining(0, false,false, SE_MeleeLifetap);
 	}
 	
 	//break invis when you attack
@@ -1410,13 +1415,12 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 		safe_delete(outapp);
 	}
 	
+	// Give the opportunity to throw back a defensive proc (Live does not require hit to trigger proc)
+	TryDefensiveProc(weapon, other, Hand);
+
 	if (damage > 0)
-	{
-		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
-		other->TriggerDefensiveProcs(this);
-		
-        return true;
-	}
+		return true;
+
 	else
 		return false;
 }
@@ -2002,11 +2006,11 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool
 		DoRiposte(other);
 	}
 	
+	TryDefensiveProc(NULL, other, Hand);
+
 	if (damage > 0)
-	{
-		other->TriggerDefensiveProcs(this);
         return true;
-	}
+	
 	else
         return false;
 }
@@ -3044,6 +3048,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 				" damage remaining.", damage_to_reduce, buffs[slot].melee_rune);
 			buffs[slot].melee_rune = (buffs[slot].melee_rune - damage_to_reduce);
 			damage -= damage_to_reduce;
+			if (!CheckHitsRemaining(slot))
+				UpdateRuneFlags();
 		}
 	}
 
@@ -3086,6 +3092,7 @@ sint32 Mob::ReduceDamage(sint32 damage)
 				if(GetMana() > damage * spells[buffs[slot].spellid].base[i] / 100) {
 					damage -= (damage * spells[buffs[slot].spellid].base[i] / 100);
 					SetMana(GetMana() - damage);
+					CheckHitsRemaining(slot);
 				}
 			}
 		}
@@ -3139,6 +3146,8 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 					" damage remaining.", damage_to_reduce, buffs[slot].magic_rune);
 				buffs[slot].magic_rune = (buffs[slot].magic_rune - damage_to_reduce);
 				damage -= damage_to_reduce;
+				if (!CheckHitsRemaining(slot))
+					UpdateRuneFlags();
 			}
 		}
 
@@ -3177,6 +3186,7 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 					if(GetMana() > damage * spells[buffs[slot].spellid].base[k] / 100) {
 						damage -= (damage * spells[buffs[slot].spellid].base[k] / 100);
 						SetMana(GetMana() - damage);
+						CheckHitsRemaining(slot);
 					}
 				}
 			}
@@ -3284,12 +3294,10 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
     // only apply DS if physical damage (no spell damage)
     // damage shield calls this function with spell_id set, so its unavoidable
 	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) {
-		this->DamageShield(attacker);
-		uint32 buff_count = GetMaxTotalSlots();
-		for(uint32 bs = 0; bs < buff_count; bs++){
-			if((buffs[bs].spellid != SPELL_UNKNOWN) && IsEffectInSpell(buffs[bs].spellid, SE_DamageShield) && spells[buffs[bs].spellid].numhits > 0)
-				CheckHitsRemaining(bs);
-		}		
+		DamageShield(attacker);
+		
+		if (spellbonuses.DamageShield)
+			CheckHitsRemaining(0, false, false, SE_DamageShield);
 	}
 	
 	if(attacker){
@@ -3697,10 +3705,33 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	return ProcChance;
 }
 
-void Mob::TryDefensiveProc(Mob *on) {
-	// this should have already been checked, but just in case...
-	if (!this->HasDefensiveProcs())
-		return;
+float Mob::GetDefensiveProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
+	int myagi = GetAGI();
+	ProcBonus = 0;
+	ProcChance = 0;
+	
+	float PermaHaste;
+	if(GetHaste() > 0)
+		PermaHaste = 1 / (1 + (float)GetHaste()/100);
+	else if(GetHaste() < 0)
+		PermaHaste = 1 * (1 - (float)GetHaste()/100);
+	else
+		PermaHaste = 1.0f;
+		
+	//calculate the weapon speed in ms, so we can use the rule to compare against.
+	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste));
+	if(weapon_speed < RuleI(Combat, MinHastedDelay)) // fast as a client can swing, so should be the floor of the proc chance
+		weapon_speed = RuleI(Combat, MinHastedDelay);
+
+	ProcChance = ((float)weapon_speed * RuleR(Combat, AvgDefProcsPerMinute) / 60000.0f); // compensate for weapon_speed being in ms
+	ProcBonus += float(myagi) * RuleR(Combat, DefProcPerMinAgiContrib) / 100.0f;
+	ProcChance = ProcChance + (ProcChance * ProcBonus);
+	
+	mlog(COMBAT__PROCS, "Defensive Proc chance %.2f (%.2f from bonuses)", ProcChance, ProcBonus);
+	return ProcChance;
+}
+
+void Mob::TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand) {
 
 	if (!on) {
 		SetTarget(NULL);
@@ -3708,13 +3739,25 @@ void Mob::TryDefensiveProc(Mob *on) {
 		return;
 	}
 
-	// iterate through our defensive procs and try each of them
-	for (int i = 0; i < MAX_PROCS; i++) {
-			if (MakeRandomInt(0, 100) < MakeRandomInt(0, 20)) {
-				ExecWeaponProc(DefensiveProcs[i].spellID, on);
-			}
-	}
+	if (!on->HasDefensiveProcs())
+		return;
 
+	float ProcChance, ProcBonus;
+	if(weapon!=NULL)
+		GetProcChances(ProcBonus, ProcChance, weapon->GetItem()->Delay);
+	else
+		GetProcChances(ProcBonus, ProcChance);
+	if(hand != 13)
+		ProcChance /= 2;	
+	
+		for (int i = 0; i < MAX_PROCS; i++) {
+		int chance = ProcChance * (on->DefensiveProcs[i].chance);
+			if ((on->DefensiveProcs[i].spellID != SPELL_UNKNOWN) && (MakeRandomInt(0, 100) < chance)) {
+				on->ExecWeaponProc(on->DefensiveProcs[i].spellID, this);
+				on->CheckHitsRemaining(0, false, false, 0, on->DefensiveProcs[i].base_spellID);
+				return;
+			}
+		}
 	return;
 }
 
@@ -4178,13 +4221,8 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	damage += damage * GetMeleeDamageMod_SE(skill) / 100;
 	
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
-	uint32 buff_count = GetMaxTotalSlots();
-	for(int bs = 0; bs < buff_count; bs++){
-		if((buffs[bs].spellid != SPELL_UNKNOWN) && IsEffectInSpell(buffs[bs].spellid, SE_HitChance) && spells[buffs[bs].spellid].numhits > 0){
-			if(skill == spells[buffs[bs].spellid].skill)
-				CheckHitsRemaining(bs);
-		}	
-	}	
+	if (spellbonuses.HitChance)
+		CheckHitsRemaining(0, false, false, SE_HitChance,0,true,skill);
 }
 
 bool Mob::HasDied() {
