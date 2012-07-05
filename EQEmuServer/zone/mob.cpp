@@ -246,15 +246,15 @@ Mob::Mob(const char*   in_name,
     {
         PermaProcs[j].spellID = SPELL_UNKNOWN;
         PermaProcs[j].chance = 0;
-        PermaProcs[j].pTimer = NULL;
+        PermaProcs[j].base_spellID = SPELL_UNKNOWN;
         SpellProcs[j].spellID = SPELL_UNKNOWN;
 
 		DefensiveProcs[j].spellID = SPELL_UNKNOWN;
 		DefensiveProcs[j].chance = 0;
-		DefensiveProcs[j].pTimer = NULL;
+		DefensiveProcs[j].base_spellID = SPELL_UNKNOWN;
 		RangedProcs[j].spellID = SPELL_UNKNOWN;
 		RangedProcs[j].chance = 0;
-		RangedProcs[j].pTimer = NULL;
+		RangedProcs[j].base_spellID = SPELL_UNKNOWN;
     }
 
 	for (i = 0; i < MAX_MATERIALS; i++)
@@ -395,8 +395,7 @@ Mob::Mob(const char*   in_name,
 
 	m_AllowBeneficial = false;
 	for (int i = 0; i < HIGHEST_SKILL+2; i++) { SkillDmgTaken_Mod[i] = 0; } 
-	for (int i = 0; i < 11; i++) { Vulnerability_Mod[i] = 0; } 
-	
+	for (int i = 0; i < HIGHEST_RESIST+2; i++) { Vulnerability_Mod[i] = 0; } 
 }
 
 Mob::~Mob()
@@ -2908,10 +2907,11 @@ int Mob::GetSnaredAmount()
 	return worst_snare;
 }
 
+//This function is no longer used.
 void Mob::TriggerDefensiveProcs(Mob *on)
 {
-	if (this->HasDefensiveProcs()) {
-		this->TryDefensiveProc(on);
+	if (HasDefensiveProcs()) {
+		//TryDefensiveProc(on);
 	}
 
 	return;
@@ -3057,16 +3057,8 @@ void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
 						{	
 							SpellFinished(spells[focus_spell].base2[i], this->GetTarget());
 						}
-						// Take into account the max hit limit
-						uint32 buff_count = GetMaxTotalSlots();
-						for(uint32 bs = 0; bs < buff_count; bs++){
-							if((buffs[bs].spellid != SPELL_UNKNOWN) && IsEffectInSpell(buffs[bs].spellid, SE_TriggerOnCast) && buffs[bs].numhits > 0 && buffs[bs].spellid == focus_spell){
-								if(--buffs[bs].numhits == 0) {
-									if(!TryFadeEffect(bs))
-										BuffFadeBySlot(bs);
-								}
-							}
-						}
+
+						CheckHitsRemaining(0, false,false, 0, focus_spell);
 					}
 				}
 			}
@@ -3215,15 +3207,12 @@ sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 
 {
 
 	if (Vulnerability_Mod[GetSpellResistType(spell_id)] != 0)
-	{
 		damage += damage * Vulnerability_Mod[GetSpellResistType(spell_id)] / 100;
-	}
+	
 
 	else if (Vulnerability_Mod[HIGHEST_RESIST+1] != 0)
-	{
 		damage += damage * Vulnerability_Mod[HIGHEST_RESIST+1] / 100;
-	}
-
+	
 	// If we increased the datatype on GetBuffSlotFromType, this wouldnt be needed
 	uint32 buff_count = GetMaxTotalSlots();
 	for(int i = 0; i < buff_count; i++) 
@@ -3237,6 +3226,7 @@ sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 
 				if(focus == 1)
 				{
 					damage += damage * spells[buffs[i].spellid].base[0] / 100;
+					CheckHitsRemaining(i);
 					break;
 				}
 			}
@@ -3284,20 +3274,25 @@ sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 
 					}
 				}
 				// DDs and Dots of all resists 
-				if ((npc_instant) || (npc_duration)) 
+				if ((npc_instant) || (npc_duration))
+				{
 					damage += damage * spells[buffs[i].spellid].base[0] / 100;
-				
+					CheckHitsRemaining(i);
+				}
+
 				else if (npc_resist) 
 				{
 					// DDs and Dots restricted by resists
 					if ((npc_instant) || (npc_duration)) 
 					{
 						damage += damage * spells[buffs[i].spellid].base[0] / 100;
+						CheckHitsRemaining(i);
 					}
 					// DD and Dots of 1 resist ... these are to maintain compatibility with current spells, not ideal.
 					else if (!npc_instant && !npc_duration)
 					{
 						damage += damage * spells[buffs[i].spellid].base[0] / 100;
+						CheckHitsRemaining(i);
 					}
 				}
 			}
@@ -3311,17 +3306,18 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 	int skilldmg_mod = 0;
 
 	// All skill dmg mod + Skill specific
-	skilldmg_mod += this->itembonuses.SkillDmgTaken[HIGHEST_SKILL+1] + this->spellbonuses.SkillDmgTaken[HIGHEST_SKILL+1] + 
-					this->itembonuses.SkillDmgTaken[skill_used] + this->spellbonuses.SkillDmgTaken[skill_used];
+	skilldmg_mod += itembonuses.SkillDmgTaken[HIGHEST_SKILL+1] + spellbonuses.SkillDmgTaken[HIGHEST_SKILL+1] + 
+					itembonuses.SkillDmgTaken[skill_used] + spellbonuses.SkillDmgTaken[skill_used];
 	
-	//Innate SkillDmgTaken Mod $mob->SetSkillDamgeTaken(skill,value); 
+	//Innate SetSkillDamgeTaken(skill,value)
 	if ((SkillDmgTaken_Mod[skill_used]) || (SkillDmgTaken_Mod[HIGHEST_SKILL+1]))
-	{
 		skilldmg_mod += SkillDmgTaken_Mod[skill_used] + SkillDmgTaken_Mod[HIGHEST_SKILL+1];
-	}
 
 	if(skilldmg_mod < -100)
 		skilldmg_mod = -100;
+
+	if (spellbonuses.SkillDmgTaken[HIGHEST_SKILL+1] || spellbonuses.SkillDmgTaken[skill_used])
+		CheckHitsRemaining(0, false,false, SE_SkillDamageTaken,0,true,skill_used);
 
 	return skilldmg_mod;
 }
@@ -3375,44 +3371,34 @@ bool Mob::TryFadeEffect(int slot)
 void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
 {
 	if(target == NULL || !IsValidSpell(spell_id))
-	{
 		return;
-	}
 	
-	int focus_spell = this->CastToClient()->GetSympatheticFocusEffect(focusSympatheticProc,spell_id);
+	int focus_spell = CastToClient()->GetSympatheticFocusEffect(focusSympatheticProc,spell_id);
 
-	if(focus_spell > 0)
-	{
-		int focus_trigger = spells[focus_spell].base2[0];
-		// For beneficial spells, if the triggered spell is also beneficial then proc it on the target
-		// if the triggered spell is detrimental, then it will trigger on the caster(ie cursed items)
-		if(IsBeneficialSpell(spell_id))
-		{
-
-			if(IsBeneficialSpell(focus_trigger))
+		if(IsValidSpell(focus_spell)){
+			int focus_trigger = spells[focus_spell].base2[0];
+			// For beneficial spells, if the triggered spell is also beneficial then proc it on the target
+			// if the triggered spell is detrimental, then it will trigger on the caster(ie cursed items)
+			if(IsBeneficialSpell(spell_id))
 			{
-				SpellFinished(focus_trigger, target);
+				if(IsBeneficialSpell(focus_trigger))
+					SpellFinished(focus_trigger, target);
+				
+				else
+					SpellFinished(focus_trigger, this);
 			}
+			// For detrimental spells, if the triggered spell is beneficial, then it will land on the caster
+			// if the triggered spell is also detrimental, then it will land on the target
 			else
 			{
-				SpellFinished(focus_trigger, this);
-			}
-		}
-		// For detrimental spells, if the triggered spell is beneficial, then it will land on the caster
-		// if the triggered spell is also detrimental, then it will land on the target
-		else
-		{
+				if(IsBeneficialSpell(focus_trigger))
+					SpellFinished(focus_trigger, this);
 
-			if(IsBeneficialSpell(focus_trigger))
-			{
-				SpellFinished(focus_trigger, this);
+				else
+					SpellFinished(focus_trigger, target);
 			}
-			else
-			{
-				SpellFinished(focus_trigger, target);
-			}
+			CheckHitsRemaining(0, false,false, 0, focus_spell);
 		}
-	}
 }
 
 int32 Mob::GetItemStat(int32 itemid, const char *identifier)
@@ -4181,14 +4167,17 @@ sint16 Mob::GetMeleeDamageMod_SE(int16 skill)
 	int dmg_mod = 0;
 
 	// All skill dmg mod + Skill specific
-	dmg_mod += this->itembonuses.DamageModifier[HIGHEST_SKILL+1] + this->spellbonuses.DamageModifier[HIGHEST_SKILL+1] + 
-					this->itembonuses.DamageModifier[skill] + this->spellbonuses.DamageModifier[skill];
+	dmg_mod += itembonuses.DamageModifier[HIGHEST_SKILL+1] + spellbonuses.DamageModifier[HIGHEST_SKILL+1] + 
+					itembonuses.DamageModifier[skill] + spellbonuses.DamageModifier[skill];
 	
 	if(IsClient())
-		dmg_mod += this->aabonuses.DamageModifier[HIGHEST_SKILL+1] + this->aabonuses.DamageModifier[skill];
+		dmg_mod += aabonuses.DamageModifier[HIGHEST_SKILL+1] + aabonuses.DamageModifier[skill];
 					
 	if(dmg_mod < -100)
 		dmg_mod = -100;
+
+	if (spellbonuses.DamageModifier[HIGHEST_SKILL+1] || spellbonuses.DamageModifier[skill])
+		CheckHitsRemaining(0, false, false, SE_DamageModifier,0,true,skill);
 
 	return dmg_mod;
 }
@@ -4223,26 +4212,10 @@ sint16 Mob::GetSkillDmgAmt(int16 skill)
 	// All skill dmg(only spells do this) + Skill specific
 	skill_dmg += spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + 
 				itembonuses.SkillDamageAmount[skill] + spellbonuses.SkillDamageAmount[skill];
-	
+
 	// Deplete the buff if needed
-	uint32 buff_count = GetMaxTotalSlots();
-	for(int i = 0; i < buff_count; i++) {
-		if((IsEffectInSpell(buffs[i].spellid, SE_SkillDamageAmount)) && spells[buffs[i].spellid].numhits > 0) {
-			for (int j = 0; j < EFFECT_COUNT; j++) {
-				if (spells[buffs[i].spellid].effectid[j] == SE_SkillDamageAmount) {
-					if(spells[buffs[i].spellid].base[j] == -1 || spells[buffs[i].spellid].base[j] == skill) {
-						if(buffs[i].numhits > 0) {
-							buffs[i].numhits--;
-						}
-						else {
-							if(!TryFadeEffect(i)) 
-								BuffFadeBySlot(i, true);
-						}
-					}
-				}
-			}
-		}
-	}
+	if (spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] ||  spellbonuses.SkillDamageAmount[skill])
+		CheckHitsRemaining(0, false,false, SE_SkillDamageAmount,0,true,skill);
 	
 	return skill_dmg;
 }
@@ -4251,7 +4224,10 @@ bool Mob::TryReflectSpell(uint32 spell_id)
 {
 	if(!GetTarget())
 		return false;
-		
+	
+	if(GetTarget()->spellbonuses.reflect_chance)
+		CheckHitsRemaining(0, false, false, SE_Reflect);
+
 	if(MakeRandomInt(0, 99) < (GetTarget()->itembonuses.reflect_chance + GetTarget()->spellbonuses.reflect_chance))
 		return true;
 
@@ -4473,7 +4449,26 @@ void Mob::CastOnCure(uint32 spell_id)
 		}
 	}
 }
-//Pass as a float (100 - effect_value)
+
+void Mob::CastOnNumHitFade(uint32 spell_id)
+{
+	if(!IsValidSpell(spell_id))
+		return;
+
+	uint32 buff_max = GetMaxTotalSlots();
+
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if (spells[spell_id].effectid[i] == SE_CastonNumHitFade)
+		{
+			if(IsValidSpell(spells[spell_id].base[i]))
+			{
+				SpellFinished(spells[spell_id].base[i], this);
+			}
+		}
+	}
+}
+
 int Mob::SlowMitigation(bool slow_msg, Mob *caster, int slow_value) 
 { 
 	uint8 int_slow_mitigation = slow_mitigation * 100.0f;

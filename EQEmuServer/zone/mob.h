@@ -339,7 +339,7 @@ typedef struct
 {
     int16 spellID;
     int16 chance;
-    Timer *pTimer;
+    int16 base_spellID;
 } tProc;
 
 struct Shielders_Struct {
@@ -564,7 +564,7 @@ bool logpos;
 	bool RemoveRangedProc(int16 spell_id, bool bAll = false);
 	bool HasRangedProcs() const;
 
-	bool AddDefensiveProc(int16 spell_id, int16 iChance = 3);
+	bool AddDefensiveProc(int16 spell_id, int16 iChance = 3, int16 base_spell_id=SPELL_UNKNOWN);
 	bool RemoveDefensiveProc(int16 spell_id, bool bAll = false);
 	bool HasDefensiveProcs() const;
 
@@ -605,7 +605,7 @@ bool logpos;
 	int16	GetSpellIDFromSlot(int8 slot);
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
-	bool	CheckHitsRemaining(uint32 buff_slot, bool when_spell_done=false, bool negate=false);
+	bool	CheckHitsRemaining(uint32 buff_slot, bool when_spell_done=false, bool negate=false,int16 type=0, int16 spell_id=0, bool use_skill=false,int16 skill=0);
 	void 	SpreadVirus(int16 spell_id, int16 casterID);
 
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
@@ -885,6 +885,7 @@ bool logpos;
 	bool TrySpellOnDeath();
 	void CastOnCurer(uint32 spell_id);
 	void CastOnCure(uint32 spell_id);
+	void CastOnNumHitFade(uint32 spell_id);
 	int SlowMitigation(bool slow_msg=false, Mob *caster = NULL,int slow_value = 0); 
 	sint16 GetCritDmgMob(int16 skill);
 	sint16 GetMeleeDamageMod_SE(int16 skill);
@@ -1239,11 +1240,12 @@ protected:
 	bool held;
 	void CalcSpellBonuses(StatBonuses* newbon);
 	virtual void CalcBonuses();
-	void TryDefensiveProc(Mob *on);
+	void TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand = 13);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
 	virtual float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
+	virtual float GetDefensiveProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate = NULL);
 	int GetKickDamage() const;

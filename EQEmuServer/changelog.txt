@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/05/2012==
+Kayen: Implemented SE_Manaburn: Drains mana for damage/heal at a defined ratio up to a defined maximum amount of mana.
+Kayen: Implemented SE_CastonNumHitFade: Casts a spell when a buff fades due to its numhits being depleted.	
+Kayen: Implemented support for all remaining live spell effects that use 'numhits'.
+	   Significantly optimized how all spell effects that utilize 'numhits' are handled throughout the source. 
+Kayen: Fixed: SE_DefensiveProc - Proc rate will now be calculated similiar to live.  *Spell specific rate modifcations will now work.
+Kayen: Added Rule: Combat:AvgDefProcsPerMinute (Default = 2.0) Determine defensive procs per minute.
+Kayen: Added Rule: Combat:DefProcPerMinAgiContrib (Default = 0.075) Determines how much agility effects proc rate.
+
+Optional SQL: utils/sql/svn/2159_optional_defensiveproc_rules
 
 ==06/29/2012==
 Kayen: Implemented Perl NPC Quest Object GetSlowMitigation() 
@@ -24,6 +34,8 @@ Kayen: Implemented: SE_CastOnCurer: Casts a spell on the curer of the target.
 Kayen: Modified: Mob::TryFadeEffect	to avoid interaction wtih Twinproc effect.	
 cavedude: (Uleat) Multiple changes and additions to doors, per the forums.
 
+Optional SQL: utils/sql/svn/2156_optional_charm_break_rule.sql
+
 ==06/25/2012==
 Trevius: Reviewed and Committed the below by Kayen:
 Kayen: Added Rule: AvgSpellProcsPerMinute (Default = 6.0) Determines proc rate of spells applied from sympathetic focus effect
@@ -43,7 +55,6 @@ Kayen: Fix for SE_SympatheticProc - The focus effect now checks all items/buffs 
 Kayen: Implemented SE_FF_Damage_Amount - Focus/Buff that adds damage to the casted spell. Usually found on spell group limited augments and stackable with SE_SpellDamage.
 Kayen: Adjusted SE_SpellDamage to be handled properly as a focus effect.
 Kayen: Extra damage from Focuses is now calculated correctly for DoTs
-Kayen: SE_SpellResistChance should now directly modify your chance to resist the spell
 Kayen: Implemented Perl NPC Quest Object SetSpellFocusDMG(focus amount) - Focus all npc direct/dot damage spells by value
 Kayen: Implemented Perl NPC Quest Object SetSpellFocusHeal(focus amount) - Focus all npc healing spells by value 
 Kayen: Implemented Perl Mob Quest Object ModSkillDmgTaken(skill_num,value) - Set a weakness/bonus of weapon attacks to a Mob 

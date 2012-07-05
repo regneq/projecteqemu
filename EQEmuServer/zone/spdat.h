@@ -363,7 +363,7 @@ typedef enum  {
 #define SE_DispelBeneficial				209 // implemented
 #define SE_PetShield					210	// *not implemented
 #define SE_AEMelee						211	// implemented
-#define SE_ProlongedDestruction			212	// *not implemented
+#define SE_CastingSkills				212	// *not implemented -Include/Exclude Casting Skill type
 //#define SE_Unknown213					213	// not used
 #define SE_MaxHPChange 					214	// implemented
 //#define SE_Unknown215					215	// not used
@@ -501,7 +501,7 @@ typedef enum  {
 //#define SE_Unknown347					347	// not used
 #define SE_LimitManaCost				348	// implemented
 //#define SE_Unknown349					349	// not used
-#define SE_ManaBurn						350	// *not implemented
+#define SE_ManaBurn						350	// implemented - Drains mana for damage/heal at a defined ratio up to a defined maximum amount of mana. 
 #define SE_PersistentEffect				351	// *not implemented. creates a trap/totem that casts a spell (spell id + base1?) when anything comes near it. can probably make a beacon for this
 #define SE_Unknown352					352	// *not implemented - looks to be some type of invulnerability? Test ITC (8755)
 #define SE_Unknown353					353	// *not implemented - allows use of more than 1 aura, aa effect
@@ -509,7 +509,7 @@ typedef enum  {
 #define SE_Unknown355					355	// *not implemented - looks to be some type of invulnerability? Test LT (8758)
 //#define SE_Unknown356					356	// not used
 //#define SE_Unknown357					357	// not used
-#define SE_CurrentManaOnce				358	// implemented
+#define SE_CurrentManaOnce				358	// implemented 
 //#define SE_Unknown359					359	// not used
 #define SE_SpellOnKill					360	// implemented - a buff that has a base1 % to cast spell base2 when you kill a "challenging foe" base3 min level
 #define SE_SpellOnDeath					361	// implemented - casts spell on death of buffed 
@@ -537,8 +537,8 @@ typedef enum  {
 #define SE_SympatheticProc				383 // implemented - focus on items that has chance to proc a spell when you cast
 #define SE_Leap							384	// implemented - Leap effect, ie stomping leap
 #define SE_LimitSpellGroup				385	// implemented - Limits to spell group(ie type 3 reuse reduction augs that are class specific and thus all share s SG)
-#define SE_CastOnCurer					386 // *implemented - Casts a spell on the person curing
-#define SE_CastOnCure					387 // *implemented - Casts a spell on the cured person
+#define SE_CastOnCurer					386 // implemented - Casts a spell on the person curing
+#define SE_CastOnCure					387 // implemented - Casts a spell on the cured person
 #define SE_SummonCorpseZone				388 // *not implemented - summons a corpse from any zone(nec AA)
 #define SE_Forceful_Rejuv				389 // Refresh spell icons
 #define SE_CastResistRestrict			390 // *not implemented - some sort of restriction of what resist spells you can cast
@@ -557,7 +557,7 @@ typedef enum  {
 #define SE_ReluctantBene				403 // *not implemented - Reluctant Benevolence(21662)
 #define SE_AxiomPH						404 // *not implemented - Axiom Omission(15931)
 #define SE_Twinproc						405 // implemented - Proc twice
-#define SE_CastonNumHitFade				406 // *not implemented - casts a spell when a buff fades due to its numhits being depleted
+#define SE_CastonNumHitFade				406 // implemented - casts a spell when a buff fades due to its numhits being depleted
 //#define SE_Unknown407					407 // not used
 #define SE_LimitHPPercent				408 // implemented - limited to a certain percent of your hp(ie heals up to 50%)
 #define SE_LimitManaPercent				409 // implemented - limited to a certain percent of your mana
@@ -583,6 +583,20 @@ typedef enum  {
 #define SE_HitLimitedProc				429 // *not implemented - Noira's Song of Suffering(26019)
 //#define SE_Unknown430					430 // *not implemented - Fear of the Dark(27641)
 //#define SE_Unknown431					431 // *not implemented - Fear of the Dark(27641)
+//#define SE_Unknown432					432 // not used
+//#define SE_Uknonwn433					433 // not used
+#define SE_CriticalHealChance2			434 // *not implemented increase critical heal chance
+#define SE_CriticalHealOverTime2		435 // *not implemented increase critical heal chance	
+//#define SE_Unknown432					436 // not used
+#define SE_Anchor						437 // *not implemented - Teleport Guild Hall Anchor(33099)
+//#define SE_Unknown438					438 // not used
+//#define SE_Uknonwn439					439 // not used
+//#define SE_Unknown440					440 // not used
+#define SE_MovementSpeed2				441 // *not implemented - new snare effect
+#define SE_TriggerOnHPAmount			442 // *not implemented - triggers a spell which a certain hp level is reached
+//#define SE_Unknown444					444 // not used
+#define SE_AggroLock					444 // *not implemented - target will ignore all but caster for duration
+//#define SE_Uknown445					445 // *not implemented - ABTest-SPA445-BE1 (32780)
 // LAST
 
 

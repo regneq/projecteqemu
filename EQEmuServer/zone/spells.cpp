@@ -3392,8 +3392,10 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 			}
 		}
 
-	if(spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id))
-		spelltar->DamageShield(this, true);
+		if(spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id)){
+			spelltar->DamageShield(this, true);
+			spelltar->CheckHitsRemaining(0, false, false, SE_DamageShield);
+		}
 		
 	TrySpellTrigger(spelltar, spell_id);
 	TryApplyEffect(spelltar, spell_id);
@@ -3874,6 +3876,14 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 	//Check for specific resistance to spell effect.
 	//Don't think we have this implemented except for fear.
 
+	//Check for sanctification
+	int resist_bonuses = CalcResistChanceBonus();
+	if(MakeRandomInt(0, 99) < resist_bonuses)
+	{
+		mlog(SPELLS__RESISTS, "Resisted spell in sanctification, had %d chance to resist", resist_bonuses);
+		return 0;
+	}
+
 	//Get the resist chance for the target
 	if(resist_type == RESIST_NONE)
 	{
@@ -4030,10 +4040,6 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 		resist_chance = spells[spell_id].MinResist;
 	}
 
-	//Apply SE_ResistSpellChance to the FINAL resist chance value. "Increase Chance to Resist Spell by %resist_bonuses'
-	int resist_bonuses = CalcResistChanceBonus();
-	resist_chance += (resist_chance*resist_bonuses/100);
-
 	//Finally our roll
 	int roll = MakeRandomInt(0, 200);
 	if(roll > resist_chance)
@@ -4102,8 +4108,12 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 sint16 Mob::CalcResistChanceBonus()
 {
 	int resistchance = spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
-	if(this->IsClient()) 
+	
+	if(IsClient()) 
 		resistchance += aabonuses.ResistSpellChance;
+
+	if (spellbonuses.ResistSpellChance)
+		CheckHitsRemaining(0, false, false, SE_ResistSpellChance);
 		
 	return resistchance;
 }
@@ -4987,7 +4997,7 @@ bool Mob::AddProcToWeapon(int16 spell_id, bool bPerma, int16 iChance) {
 			if (PermaProcs[i].spellID == SPELL_UNKNOWN) {
 				PermaProcs[i].spellID = spell_id;
 				PermaProcs[i].chance = iChance;
-				PermaProcs[i].pTimer = NULL;
+				PermaProcs[i].base_spellID = SPELL_UNKNOWN;
 				mlog(SPELLS__PROCS, "Added permanent proc spell %d with chance %d to slot %d", spell_id, iChance, i);
 
 				return true;
@@ -4999,7 +5009,7 @@ bool Mob::AddProcToWeapon(int16 spell_id, bool bPerma, int16 iChance) {
 			if (SpellProcs[i].spellID == SPELL_UNKNOWN) {
 				SpellProcs[i].spellID = spell_id;
 				SpellProcs[i].chance = iChance;
-				SpellProcs[i].pTimer = NULL;
+				SpellProcs[i].base_spellID = SPELL_UNKNOWN;;
 				mlog(SPELLS__PROCS, "Added spell-granted proc spell %d with chance %d to slot %d", spell_id, iChance, i);
 				return true;
 			}
@@ -5014,14 +5024,14 @@ bool Mob::RemoveProcFromWeapon(int16 spell_id, bool bAll) {
 		if (bAll || SpellProcs[i].spellID == spell_id) {
 			SpellProcs[i].spellID = SPELL_UNKNOWN;
 			SpellProcs[i].chance = 0;
-			SpellProcs[i].pTimer = NULL;
+			SpellProcs[i].base_spellID = SPELL_UNKNOWN;
 			mlog(SPELLS__PROCS, "Removed proc %d from slot %d", spell_id, i);
 		}
 	}
     return true;
 }
 
-bool Mob::AddDefensiveProc(int16 spell_id, int16 iChance)
+bool Mob::AddDefensiveProc(int16 spell_id, int16 iChance, int16 base_spell_id)
 {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
@@ -5031,7 +5041,7 @@ bool Mob::AddDefensiveProc(int16 spell_id, int16 iChance)
 		if (DefensiveProcs[i].spellID == SPELL_UNKNOWN) {
 			DefensiveProcs[i].spellID = spell_id;
 			DefensiveProcs[i].chance = iChance;
-			DefensiveProcs[i].pTimer = NULL;
+			DefensiveProcs[i].base_spellID = base_spell_id;
 			mlog(SPELLS__PROCS, "Added spell-granted defensive proc spell %d with chance %d to slot %d", spell_id, iChance, i);
 			return true;
 		}
@@ -5046,7 +5056,7 @@ bool Mob::RemoveDefensiveProc(int16 spell_id, bool bAll)
 		if (bAll || DefensiveProcs[i].spellID == spell_id) {
 			DefensiveProcs[i].spellID = SPELL_UNKNOWN;
 			DefensiveProcs[i].chance = 0;
-			DefensiveProcs[i].pTimer = NULL;
+			DefensiveProcs[i].base_spellID = SPELL_UNKNOWN;
 			mlog(SPELLS__PROCS, "Removed defensive proc %d from slot %d", spell_id, i);
 		}
 	}
@@ -5063,7 +5073,7 @@ bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
 		if (RangedProcs[i].spellID == SPELL_UNKNOWN) {
 			RangedProcs[i].spellID = spell_id;
 			RangedProcs[i].chance = iChance;
-			RangedProcs[i].pTimer = NULL;
+			RangedProcs[i].base_spellID = SPELL_UNKNOWN;
 			mlog(SPELLS__PROCS, "Added spell-granted ranged proc spell %d with chance %d to slot %d", spell_id, iChance, i);
 			return true;
 		}
@@ -5078,7 +5088,7 @@ bool Mob::RemoveRangedProc(int16 spell_id, bool bAll)
 		if (bAll || RangedProcs[i].spellID == spell_id) {
 			RangedProcs[i].spellID = SPELL_UNKNOWN;
 			RangedProcs[i].chance = 0;
-			RangedProcs[i].pTimer = NULL;
+			RangedProcs[i].base_spellID = SPELL_UNKNOWN;;
 			mlog(SPELLS__PROCS, "Removed ranged proc %d from slot %d", spell_id, i);
 		}
 	}
