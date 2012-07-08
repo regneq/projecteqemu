@@ -1313,9 +1313,11 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 						slippery_attack = true;
 					} else 
 						DoRiposte(other);
+						if (IsDead()) return false;
 				}
 				else 
 					DoRiposte(other);
+					if (IsDead()) return false;
 			}
 		}
 
@@ -1368,6 +1370,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 	///////////////////////////////////////////////////////////
 	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
 
+	if (IsDead()) return false;
+
 	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap))
 	{
 		int lifetap_amt = spellbonuses.MeleeLifetap + itembonuses.MeleeLifetap;
@@ -1414,9 +1418,9 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 		entity_list.QueueClients(this, outapp, true);
 		safe_delete(outapp);
 	}
-	
-	// Give the opportunity to throw back a defensive proc (Live does not require hit to trigger proc)
-	TryDefensiveProc(weapon, other, Hand);
+
+	if(GetTarget())
+		TriggerDefensiveProcs(weapon, other, Hand, damage);
 
 	if (damage > 0)
 		return true;
@@ -1953,11 +1957,17 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool
 		mlog(COMBAT__DAMAGE, "Riposte of riposte canceled.");
 		return false;
 	}
-		
-	if(GetHP() > 0 && other->GetHP() >= -11) {
+
+	sint16 DeathHP = 0;
+	DeathHP = other->GetDelayDeath() * -1;
+
+	if(GetHP() > 0 && other->GetHP() >= DeathHP) {
 		other->Damage(this, damage, SPELL_UNKNOWN, skillinuse, false); // Not avoidable client already had thier chance to Avoid
-    }
+    } else
+		return false;
 	
+	if (HasDied()) //killed by damage shield ect
+		return false;
 	
 	//break invis when you attack
 	if(invisible) {
@@ -1992,21 +2002,21 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool
 
 	hidden = false;
 	improved_hidden = false;
-	
+
 	//I doubt this works...
 	if (!GetTarget())
 		return true; //We killed them
-	
+
 	if( !bRiposte && other->GetHP() > 0 ) {
 		TryWeaponProc(weapon, other, Hand);	//no weapon
 	}
+
+	TriggerDefensiveProcs(NULL, other, Hand, damage);
 	
 	// now check ripostes
 	if (damage == -3) { // riposting
 		DoRiposte(other);
 	}
-	
-	TryDefensiveProc(NULL, other, Hand);
 
 	if (damage > 0)
         return true;
@@ -3211,6 +3221,14 @@ bool Mob::HasDefensiveProcs() const
     return false;
 }
 
+bool Mob::HasSkillProcs() const
+{
+	for (int i = 0; i < MAX_PROCS; i++)
+        if (SkillProcs[i].spellID != SPELL_UNKNOWN)
+            return true;
+    return false;
+}
+
 bool Mob::HasRangedProcs() const
 {
 	for (int i = 0; i < MAX_PROCS; i++)
@@ -3295,11 +3313,11 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
     // damage shield calls this function with spell_id set, so its unavoidable
 	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) {
 		DamageShield(attacker);
-		
+				
 		if (spellbonuses.DamageShield)
 			CheckHitsRemaining(0, false, false, SE_DamageShield);
 	}
-	
+
 	if(attacker){
 		if(attacker->IsClient()){
 			if(!attacker->CastToClient()->GetFeigned())
@@ -3537,7 +3555,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			skip = owner;
 		} else {
 			//attacker is not a pet, send to the attacker
-			
+
 			//if the attacker is a client, try them with the correct filter
 			if(attacker && attacker->IsClient()) {
 				if (((spell_id != SPELL_UNKNOWN)||(FromDamageShield)) && damage>0) {
@@ -3731,7 +3749,7 @@ float Mob::GetDefensiveProcChances(float &ProcBonus, float &ProcChance, int16 we
 	return ProcChance;
 }
 
-void Mob::TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand) {
+void Mob::TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand, int damage) {
 
 	if (!on) {
 		SetTarget(NULL);
@@ -3739,26 +3757,49 @@ void Mob::TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand) {
 		return;
 	}
 
-	if (!on->HasDefensiveProcs())
+	bool bSkillProc = HasSkillProcs();
+	bool bDefensiveProc = HasDefensiveProcs();
+
+	if (!bDefensiveProc && !bSkillProc)
+		return;
+
+	if (!bDefensiveProc && (bSkillProc && damage >= 0))
 		return;
 
 	float ProcChance, ProcBonus;
 	if(weapon!=NULL)
-		GetProcChances(ProcBonus, ProcChance, weapon->GetItem()->Delay);
+		on->GetDefensiveProcChances(ProcBonus, ProcChance, weapon->GetItem()->Delay);
 	else
-		GetProcChances(ProcBonus, ProcChance);
+		on->GetDefensiveProcChances(ProcBonus, ProcChance);
 	if(hand != 13)
 		ProcChance /= 2;	
 	
-		for (int i = 0; i < MAX_PROCS; i++) {
-		int chance = ProcChance * (on->DefensiveProcs[i].chance);
-			if ((on->DefensiveProcs[i].spellID != SPELL_UNKNOWN) && (MakeRandomInt(0, 100) < chance)) {
-				on->ExecWeaponProc(on->DefensiveProcs[i].spellID, this);
-				on->CheckHitsRemaining(0, false, false, 0, on->DefensiveProcs[i].base_spellID);
-				return;
+		if (bDefensiveProc){
+			for (int i = 0; i < MAX_PROCS; i++) {
+				if (DefensiveProcs[i].spellID != SPELL_UNKNOWN) {
+					int chance = ProcChance * (DefensiveProcs[i].chance);
+					if ((MakeRandomInt(0, 100) < chance)) {
+						ExecWeaponProc(DefensiveProcs[i].spellID, on);
+						CheckHitsRemaining(0, false, false, 0, DefensiveProcs[i].base_spellID);
+					}
+				}
 			}
 		}
-	return;
+
+		if (bSkillProc && damage < 0){
+		
+			if (damage == -1)
+				TrySkillProc(on, BLOCKSKILL, ProcChance);
+
+			if (damage == -2)
+				TrySkillProc(on, PARRY, ProcChance);
+
+			if (damage == -3)
+				TrySkillProc(on, RIPOSTE, ProcChance);
+
+			if (damage == -4)
+				TrySkillProc(on, DODGE, ProcChance);
+		}
 }
 
 void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
@@ -3822,6 +3863,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
 
 void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 	_ZP(Mob_TryWeaponProcB);
+	int16 skillinuse = 28;
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
 	if(weapon!=NULL)
@@ -3834,6 +3876,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 	
 	//give weapon a chance to proc first.
 	if(weapon != NULL) {
+		skillinuse = GetSkillByItemType(weapon->ItemType);
 		if (weapon->Proc.Type == ET_CombatProc) {
 			float WPC = ProcChance*(100.0f+(float)weapon->ProcRate)/100.0f;
 			if (MakeRandomFloat(0, 1) <= WPC) {	// 255 dex = 0.084 chance of proc. No idea what this number should be really.
@@ -3889,6 +3932,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				mlog(COMBAT__PROCS, "Permanent proc %d failed to proc %d (%d percent chance)", i, PermaProcs[i].spellID, PermaProcs[i].chance);
 			}
 		}
+
 		if(!isRanged)
 		{
 				int chance = ProcChance * (SpellProcs[i].chance);
@@ -3907,8 +3951,10 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				mlog(COMBAT__PROCS, "Ranged proc %d failed to proc %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
 			}
 		}
-	
 	}
+
+	if (HasSkillProcs())
+		TrySkillProc(on, skillinuse, ProcChance);
 }
 
 void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
@@ -4145,7 +4191,11 @@ bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 void Mob::DoRiposte(Mob* defender) {
 	mlog(COMBAT__ATTACKS, "Preforming a riposte");
 
+	if (!defender)
+		return;
+
 	defender->Attack(this, SLOT_PRIMARY, true);
+	if (!GetTarget()) return;
 
 	//double riposte
 	int DoubleRipChance = 0;
@@ -4167,6 +4217,7 @@ void Mob::DoRiposte(Mob* defender) {
 		mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
 
 		defender->Attack(this, SLOT_PRIMARY, true);
+		if (!GetTarget()) return;
 	}
 
 	if(defender->GetAA(aaReturnKick)){
@@ -4187,6 +4238,7 @@ void Mob::DoRiposte(Mob* defender) {
 			mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
 			defender->MonkSpecialAttack(this, FLYING_KICK);
 		}
+
 	}		
 }
  
@@ -4278,5 +4330,27 @@ int16 Mob::GetDamageTable(SkillType skillinuse)
 			return (dmg_table[GetLevel()-51]*(100+RuleI(Combat,MonkDamageTableBonus))/100);
 		else
 			return dmg_table[GetLevel()-51];
+	}
+}
+
+void Mob::TrySkillProc(Mob *on, int16 skill, float chance)
+{
+
+	if (!on) {
+		SetTarget(NULL);
+		LogFile->write(EQEMuLog::Error, "A null Mob object was passed to Mob::TrySkillProc for evaluation!");
+		return;
+	}
+
+	for (int i = 0; i < MAX_PROCS; i++) {
+		if (SkillProcs[i].spellID != SPELL_UNKNOWN){
+			if (PassLimitToSkill(SkillProcs[i].base_spellID,skill)){
+				int ProcChance = chance * (float)SkillProcs[i].chance;
+				if ((MakeRandomInt(0, 100) < ProcChance)) {
+					ExecWeaponProc(SkillProcs[i].spellID, on);
+					CheckHitsRemaining(0, false, false, 0, SkillProcs[i].base_spellID);
+				}
+			}
+		}
 	}
 }

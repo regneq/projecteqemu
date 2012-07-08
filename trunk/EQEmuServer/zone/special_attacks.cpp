@@ -27,6 +27,9 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemulator.net)
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 
+
+
+
 int Mob::GetKickDamage() const {
 	int multiple=(GetLevel()*100/5);
 	multiple += 100;
@@ -100,7 +103,7 @@ int Mob::GetBashDamage() const {
 	return(dmg);
 }
 
-void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override) {
+void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override,int ReuseTime) {
 	//this really should go through the same code as normal melee damage to
 	//pick up all the special behavior there
 
@@ -134,8 +137,16 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 		ApplyMeleeDamageBonus(skill, max_damage);
 		max_damage += (itembonuses.HeroicSTR / 10) + (max_damage * who->GetSkillDmgTaken(skill) / 100) + GetSkillDmgAmt(skill);
 		TryCriticalHit(who, skill, max_damage);
+		if (HasSkillProcs()){
+			float chance = (float)ReuseTime*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
+			TrySkillProc(who, skill, chance);
+		}
 	}
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
+
+	//Make sure 'this' has not killed the target and 'this' is not dead (Damage shield ect).
+	if(!GetTarget())return;
+	if (HasDied())	return;
 
 	if(max_damage >= 0)
 		who->AddToHateList(this, hate);
@@ -227,9 +238,9 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				}
 			}
 
-			DoSpecialAttackDamage(GetTarget(), BASH, dmg, 1, ht);
 			ReuseTime = BashReuseTime-1-skill_reduction;
 			ReuseTime = (ReuseTime*HasteMod)/100;
+			DoSpecialAttackDamage(GetTarget(), BASH, dmg, 1, ht, ReuseTime);
 			if(ReuseTime > 0)
 			{
 				p_timers.Start(pTimerCombatAbility, ReuseTime);
@@ -319,8 +330,9 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 					}
 				}
 
-				DoSpecialAttackDamage(GetTarget(), KICK, dmg, 1, ht);
 				ReuseTime = KickReuseTime-1-skill_reduction;
+				DoSpecialAttackDamage(GetTarget(), KICK, dmg, 1, ht, ReuseTime);
+				
 			}
 			break;
 		case MONK: {
@@ -346,7 +358,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			if (ca_atk->m_atk != 100 || ca_atk->m_skill != BACKSTAB) {
 				break;
 			}
-			TryBackstab(GetTarget());
+			TryBackstab(GetTarget(), ReuseTime);
 			ReuseTime = BackstabReuseTime-1 - skill_reduction;
 			break;
 		}
@@ -399,7 +411,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 			}
 		}
 
-		DoAnim(animFlyingKick);
+		DoAnim(animFlyingKick); 
 		reuse = FlyingKickReuseTime;
 		break;
 		}
@@ -480,7 +492,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		}
 	}
 	
-	DoSpecialAttackDamage(other, skill_type, ndamage, min_dmg, ht);
+	DoSpecialAttackDamage(other, skill_type, ndamage, min_dmg, ht, reuse);
 
 	if(unchecked_type == DRAGON_PUNCH && GetAA(aaDragonPunch) && MakeRandomInt(0, 99) < 25){
 		SpellFinished(904, other, 10, 0, -1, spells[904].ResistDiff);
@@ -489,7 +501,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 	return(reuse);
 }
 
-void Mob::TryBackstab(Mob *other) {
+void Mob::TryBackstab(Mob *other, int ReuseTime) {
 	if(!other)
 		return;
 	
@@ -570,11 +582,11 @@ void Mob::TryBackstab(Mob *other) {
 				if(MakeRandomFloat(0, 1) < DoubleAttackProbability)	// Max 62.4 % chance of DA
 				{
 					if(other->GetHP() > 0)
-						RogueBackstab(other);
+						RogueBackstab(other,false,ReuseTime);
 
 					if (tripleBackstab && other->GetHP() > 0) 
 					{
-						RogueBackstab(other);
+						RogueBackstab(other,false,ReuseTime);
 					}
 				}
 			}
@@ -592,10 +604,10 @@ void Mob::TryBackstab(Mob *other) {
 			// Check for double attack with main hand assuming maxed DA Skill (MS)
 			if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
 				if(other->GetHP() > 0)
-					RogueBackstab(other, true);
+					RogueBackstab(other,true, ReuseTime);
 
 			if (tripleBackstab && other->GetHP() > 0) {
-					RogueBackstab(other);
+					RogueBackstab(other,false,ReuseTime);
 				}
 		}
 	}
@@ -605,7 +617,7 @@ void Mob::TryBackstab(Mob *other) {
 }
 
 //heko: backstab
-void Mob::RogueBackstab(Mob* other, bool min_damage)
+void Mob::RogueBackstab(Mob* other, bool min_damage, int ReuseTime)
 {
 	sint32 ndamage = 0;
 	sint32 max_hit = 0;
@@ -678,7 +690,7 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 		ndamage = -5;
 	}
 
-	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit, hate);
+	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit, hate, ReuseTime);
 	DoAnim(animPiercing);
 }
 
@@ -1411,8 +1423,8 @@ void NPC::DoClassAttacks(Mob *target) {
 	switch(GetClass()) {
 		case ROGUE: case ROGUEGM:
 			if(level >= 10) {
-				TryBackstab(target);
 				reuse = BackstabReuseTime * 1000;
+				TryBackstab(target, reuse);
 				did_attack = true;
 			}
 			break;
@@ -1455,8 +1467,8 @@ void NPC::DoClassAttacks(Mob *target) {
 						}
 					}
 
-					DoSpecialAttackDamage(target, KICK, dmg);
 					reuse = KickReuseTime * 1000;
+					DoSpecialAttackDamage(target, KICK, dmg, reuse);
 					did_attack = true;
 				}
 				else
@@ -1476,8 +1488,8 @@ void NPC::DoClassAttacks(Mob *target) {
 						}
 					}
 
-					DoSpecialAttackDamage(target, BASH, dmg);
 					reuse = BashReuseTime * 1000;
+					DoSpecialAttackDamage(target, BASH, dmg, reuse);
 					did_attack = true;
 				}
 			}
@@ -1516,8 +1528,8 @@ void NPC::DoClassAttacks(Mob *target) {
 					}
 				}
 
-				DoSpecialAttackDamage(target, KICK, dmg);
 				reuse = KickReuseTime * 1000;
+				DoSpecialAttackDamage(target, KICK, dmg, reuse);
 				did_attack = true;
 			}
 			break;
@@ -1542,8 +1554,8 @@ void NPC::DoClassAttacks(Mob *target) {
 					}
 				}
 
-				DoSpecialAttackDamage(target, BASH, dmg);
 				reuse = BashReuseTime * 1000;
+				DoSpecialAttackDamage(target, BASH, dmg, reuse);
 				did_attack = true;
 			}
 			break;
@@ -1659,9 +1671,9 @@ void Client::DoClassAttacks(Mob *ca_target)
 				}
 			}
 
-			DoSpecialAttackDamage(ca_target, BASH, dmg);
 			ReuseTime = BashReuseTime-1;
 			ReuseTime = (ReuseTime*HasteMod)/100;
+			DoSpecialAttackDamage(ca_target, BASH, dmg, ReuseTime);
 			if(ReuseTime > 0)
 			{
 				p_timers.Start(pTimerCombatAbility, ReuseTime);
@@ -1741,8 +1753,8 @@ void Client::DoClassAttacks(Mob *ca_target)
 				}
 			}
 
-			DoSpecialAttackDamage(ca_target, KICK, dmg);
 			ReuseTime = KickReuseTime-1;
+			DoSpecialAttackDamage(ca_target, KICK, dmg, ReuseTime);
 		}
 	}
 
@@ -1765,8 +1777,8 @@ void Client::DoClassAttacks(Mob *ca_target)
 	
 	if(skill_to_use == BACKSTAB)
 	{
-		TryBackstab(ca_target);
 		ReuseTime = BackstabReuseTime-1;
+		TryBackstab(ca_target,ReuseTime);
 	}
 	
 	ReuseTime = (ReuseTime*HasteMod)/100;
@@ -1776,6 +1788,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 	}	
 }
 void Mob::Taunt(NPC* who, bool always_succeed) {
+
 	if (who == NULL)
 		return;
 	
@@ -1849,6 +1862,10 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 		
 	//generate at least some hate reguardless of the outcome.
 	who->CastToNPC()->AddToHateList(this, (MakeRandomInt(2, 4)*level));
+	if (HasSkillProcs()){
+		float chance = (float)TauntReuseTime*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
+		TrySkillProc(who, TAUNT, chance);
+	}
 }
 
 void Mob::InstillDoubt(Mob *who) {

@@ -185,7 +185,7 @@ typedef enum  {
 #define SE_Mez							31	// implemented
 #define SE_SummonItem					32	// implemented
 #define SE_SummonPet					33	// implemented
-//#define SE_Unknown34					34	// not used
+//#define SE_Unknown34					34	// not used (Nimbus of Temporal Rifting) ?
 #define SE_DiseaseCounter				35	// implemented
 #define SE_PoisonCounter				36	// implemented
 //#define SE_Unknown37					37	// not used
@@ -295,9 +295,9 @@ typedef enum  {
 #define SE_LimitInstant					141 // implemented
 #define SE_LimitMinLevel				142 // implemented
 #define SE_LimitCastTime				143 // implemented
-//#define SE_Unknown144					144	// not used
+//#define SE_Unknown144					144	// not used 
 #define SE_Teleport2					145	// implemented - Banishment of the Pantheon
-//#define SE_Unknown146					146	// not used
+//#define SE_Unknown146					146	// not used (Lightning Rod) Electrical Resist? (exp. VoA)
 #define SE_PercentalHeal				147 // implemented
 #define SE_StackingCommand_Block		148 // implemented?
 #define SE_StackingCommand_Overwrite 	149 // implemented?
@@ -338,7 +338,7 @@ typedef enum  {
 #define SE_HitChance					184	// implemented
 #define SE_DamageModifier				185	// implemented
 #define SE_MinDamageModifier			186	// implemented
-//#define SE_Unknown187					187	// not used
+#define SE_BalancePartyMana				187	// *not implemented - Balances groups mana
 #define SE_IncreaseBlockChance			188	// implemented
 #define SE_CurrentEndurance				189	// implemented
 #define SE_EndurancePool				190	// implemented
@@ -363,7 +363,7 @@ typedef enum  {
 #define SE_DispelBeneficial				209 // implemented
 #define SE_PetShield					210	// *not implemented
 #define SE_AEMelee						211	// implemented
-#define SE_CastingSkills				212	// *not implemented -Include/Exclude Casting Skill type
+#define SE_CastingSkills				212	// *not implemented -Include/Exclude Casting Skill type.
 //#define SE_Unknown213					213	// not used
 #define SE_MaxHPChange 					214	// implemented
 //#define SE_Unknown215					215	// not used
@@ -373,7 +373,7 @@ typedef enum  {
 #define SE_SlayUndead					219	// not implemented as bonus
 #define SE_SkillDamageAmount			220	// implemented
 #define SE_Packrat						221 // not implemented as bonus
-//#define SE_Unknown222					222	// not used
+#define SE_BlockBehind					222	// *not implemented - Chance to block from behind
 //#define SE_Unknown223					223	// not used
 #define	SE_GiveDoubleRiposte			224 // not implemented as bonus
 #define SE_GiveDoubleAttack				225	// not implemented as bonus
@@ -384,9 +384,9 @@ typedef enum  {
 //#define SE_Unknown230					230	// not used
 //#define SE_Unknown231					231	// not used
 #define SE_DivineSave					232	// implemented (base == % chance on death to insta-res)
-//#define SE_Unknown233					233	// not used
+#define SE_Metabolism					233	// *not implemented - (Crown of Feathers) Increase metabolism?
 //#define SE_Unknown234					234	// not used
-#define	SE_ChannelingChance				235 // not implemented
+#define	SE_ChannelingChance				235 // not implemented *no longer used on live
 //#define SE_Unknown236					236	// not used
 #define SE_GivePetGroupTarget			237 // not implemented as bonus(Pet Affinity)
 //#define SE_Unknown238					238	// not used
@@ -394,14 +394,14 @@ typedef enum  {
 //#define SE_Unknown240					240	// not used
 //#define SE_Unknown241					241	// not used
 //#define SE_Unknown242					242	// not used
-//#define SE_Unknown243					243	// not used
+#define SE_CharmBreakChance				243	// *not implemented Decrease charm break chance by %
 //#define SE_Unknown244					244	// not used
 //#define SE_Unknown245					245	// not used
 #define SE_SetBreathLevel				246 // not implemented as bonus
 //#define SE_Unknown247					247	// not used
 #define SE_SecondaryForte				248 // not implemented as bonus(gives you a 2nd specialize skill that can go past 50 to 100)
 #define SE_SecondaryDmgInc				249 // not implemented as bonus(Sinister Strikes)
-//#define SE_Unknown250					250	// not used
+#define SE_SpellProcChance				250	// *not implemented - Increase chance to sympathetic proc by %
 //#define SE_Unknown251					251	// not used
 //#define SE_Unknown252					252	// not used
 //#define SE_Unknown253					253	// not used
@@ -421,9 +421,9 @@ typedef enum  {
 #define SE_PetDiscipline2				267 // *not implemented - /pet focus, /pet no cast
 #define SE_ReduceTradeskillFail			268 // *not implemented? - reduces chance to fail with given tradeskill by a percent chance
 //#define SE_Unknown269					269	// not used
-//#define SE_Unknown270					270	// not used
+#define SE_BardSongRange				270	// *not implemented (Sionachie's Crescendo)
 #define SE_BaseMovementSpeed			271 // *not implemented - mods basemove speed, doesn't stack with other move mods, aa effect
-#define SE_CastingLevel2				272 // *not implemented
+#define SE_CastingLevel2				272 // implemented
 #define SE_CriticalDoTChance			273	// implemented
 #define SE_CriticalHealChance			274	// implemented
 //#define SE_Unknown275					275	// not used
@@ -453,7 +453,7 @@ typedef enum  {
 #define SE_WakeTheDead					299	// implemented
 #define SE_Doppelganger					300	// implemented
 //#define SE_Unknown301					301	// not used
-//#define SE_Unknown302					302	// not used
+#define SE_SpellCriticalFocus			302	// *not implemented - Spell critical chance as a focus
 #define SE_FF_Damage_Amount				303	// implemented - adds direct spell damage
 #define SE_OffhandRiposteFail			304 // not implemented as bonus - enemy cannot riposte offhand attacks
 #define SE_MitigateDamageShield			305 // implemented
@@ -471,8 +471,8 @@ typedef enum  {
 //#define SE_Unknown317					317	// not used
 #define SE_ItemManaRegenCapIncrease		318 // implemented - increases amount of mana regen you can gain via items
 #define SE_CriticalHealOverTime			319 // implemented
-//#define SE_Unknown320					320	// not used
-#define SE_ReduceHate					321 // *not implemented
+#define SE_ShieldBlock					320	// *not implemented - Block attacks with shield
+#define SE_ReduceHate					321 // implemented
 #define SE_GateToHomeCity				322 // implemented
 #define SE_DefensiveProc				323 // implemented
 #define SE_HPToMana						324 // implemented
@@ -508,14 +508,14 @@ typedef enum  {
 #define SE_Unknown354					354	// *not implemented - looks to be some type of invulnerability? Test DAT (8757)
 #define SE_Unknown355					355	// *not implemented - looks to be some type of invulnerability? Test LT (8758)
 //#define SE_Unknown356					356	// not used
-//#define SE_Unknown357					357	// not used
+#define SE_LimitEffectChance			357	// *not implemented - % Chance to prevent ability that is limited (SE_LimitEffect,SE_BlockSpellEffect)	
 #define SE_CurrentManaOnce				358	// implemented 
-//#define SE_Unknown359					359	// not used
+#define SE_Invulnerabilty				359	// *not implemented - Invulnerability (Brell's Blessing)
 #define SE_SpellOnKill					360	// implemented - a buff that has a base1 % to cast spell base2 when you kill a "challenging foe" base3 min level
 #define SE_SpellOnDeath					361	// implemented - casts spell on death of buffed 
 //#define SE_Unknown362					362	// not used
 //#define SE_Unknown363					363	// not used
-//#define SE_Unknown364					364	// not used
+#define SE_TripleAttackChance			364	// *not implemented - Chance to triple attack
 #define SE_SpellOnKill2					365	// implemented - chance to trigger a spell on kill when the kill is caused by a specific spell with this effect in it (10470 Venin)
 //#define SE_Unknown366					366	// not used - corr test(9429) only spell
 #define SE_SetBodyType					367	// implemented - set body type of base1 so it can be affected by spells that are limited to that type (Plant, Animal, Undead, etc)
@@ -526,13 +526,13 @@ typedef enum  {
 //#define SE_Unknown372					372	// not used
 #define SE_CastOnWearoff				373 // implemented
 #define SE_ApplyEffect					374 // implemented 
-//#define SE_Unknown375					375	// not used
+#define SE_DotCritDmgIncrease			375	// *not implemented - Increase damage of DoT critical amount
 //#define SE_Unknown376					376	// *not implemented - used in 2 spells
 #define SE_BossSpellTrigger				377	// implemented - spell is cast on fade
 //#define SE_Unknown372					378	// not used
 #define SE_ShadowStepDirectional		379 // implemented - handled by client
 #define SE_Knockdown					380 // implemented - small knock back(handled by client)
-//#define SE_Unknown381					381	// not used
+#define	SE_KnockTowardCaster			381	// *not implemented (Call of Hither) knocks you back to caster (value) distance units infront
 #define SE_BlockSpellEffect				382 // implemented - blocks a spell effect from landing while this buff is on
 #define SE_SympatheticProc				383 // implemented - focus on items that has chance to proc a spell when you cast
 #define SE_Leap							384	// implemented - Leap effect, ie stomping leap
@@ -542,10 +542,10 @@ typedef enum  {
 #define SE_SummonCorpseZone				388 // *not implemented - summons a corpse from any zone(nec AA)
 #define SE_Forceful_Rejuv				389 // Refresh spell icons
 #define SE_CastResistRestrict			390 // *not implemented - some sort of restriction of what resist spells you can cast
-//#define SE_Unknown391					391 // not used
+//#define SE_Unknown391					391 // not used (Warlord's Fury) ?
 #define SE_HealingFocus					392 // *not implemented - Adds or removes healing from spells
 #define SE_HealRate2					393 // *not implemented - Appears to be exactly the same as HealRate except with focus restrictions
-//#define SE_Unknown394					394 // not used
+//#define SE_Unknown394					394 // *not implemented - (Diminishing Presence) Adds or removes healing from spells
 //#define SE_Unknown395					395 // not used
 #define SE_AdditionalHeal				396 // implemented - Adds a direct healing amount to spells
 //#define SE_Unknown397					397 // not used
@@ -558,7 +558,7 @@ typedef enum  {
 #define SE_AxiomPH						404 // *not implemented - Axiom Omission(15931)
 #define SE_Twinproc						405 // implemented - Proc twice
 #define SE_CastonNumHitFade				406 // implemented - casts a spell when a buff fades due to its numhits being depleted
-//#define SE_Unknown407					407 // not used
+//#define SE_Unknown397					407 // *not implemented (Diminished Presence) Triggerable spell effect
 #define SE_LimitHPPercent				408 // implemented - limited to a certain percent of your hp(ie heals up to 50%)
 #define SE_LimitManaPercent				409 // implemented - limited to a certain percent of your mana
 #define SE_LimitEndPercent				410 // implemented - limited to a certain percent of your end
@@ -578,9 +578,9 @@ typedef enum  {
 #define SE_GravityEffect				424 // implemented - Pulls/pushes you toward/away the mob at a set pace
 #define SE_Display						425 // *not implemented - Illusion: Flying Dragon(21626)
 //#define SE_Unknown426					426 // not used
-#define SE_SkillProc					427 // *not implemented - chance to proc when using a skill(ie taunt)
-#define SE_LimitToSkill					428 // *not implemented - Only fires when a particular skills is used(ie dodge)	
-#define SE_HitLimitedProc				429 // *not implemented - Noira's Song of Suffering(26019)
+#define SE_SkillProc					427 // implemented - chance to proc when using a skill(ie taunt)
+#define SE_LimitToSkill					428 // implemented - limits what skills will effect a skill proc	
+#define SE_SkillProc2					429 // implemented - chance to proc when using a skill (most have hit limits)
 //#define SE_Unknown430					430 // *not implemented - Fear of the Dark(27641)
 //#define SE_Unknown431					431 // *not implemented - Fear of the Dark(27641)
 //#define SE_Unknown432					432 // not used

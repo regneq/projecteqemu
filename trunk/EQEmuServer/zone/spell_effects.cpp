@@ -1573,6 +1573,20 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_SkillProc2:
+			case SE_SkillProc:
+			{
+				uint16 procid = GetProcID(spell_id, i);
+#ifdef SPELL_EFFECT_SPAM
+			snprintf(effect_desc, _EDLEN, "Weapon Proc: %s (id %d)", spells[effect_value].name, procid);
+#endif
+				if(spells[spell_id].base2[i] == 0)
+					AddSkillProc(procid, 100, spell_id);
+				else
+					AddSkillProc(procid, spells[spell_id].base2[i]+100, spell_id);
+				break;
+			}
+
 			case SE_NegateAttacks:
 			{
 #ifdef SPELL_EFFECT_SPAM
@@ -2074,9 +2088,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				//these are considered magical attacks, so we don't need to test that
 				//if they are resistable that's been taken care of, all these discs have a 10000 hit chance so they auto hit, no need to test
 				if(RuleB(Combat, UseIntervalAC))
-					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, tDmg, mDmg, (mDmg / 20));
+					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, tDmg, mDmg, (mDmg / 20), spells[spell_id].recast_time);
 				else
-					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, tDmg), mDmg, (mDmg / 20));
+					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, tDmg), mDmg, (mDmg / 20), spells[spell_id].recast_time);
 				break;
 			}
 
@@ -2478,6 +2492,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_Lycanthropy:
 			case SE_NegateIfCombat:
 			case SE_CastingLevel:
+			case SE_CastingLevel2:
 			case SE_RaiseStatCap:
 			case SE_ResistAll:
 			case SE_ResistMagic:
@@ -2507,6 +2522,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_Hate2:
 			case SE_Identify:
 			case SE_Calm:
+			case SE_ReduceHate:
 			case SE_SpellDamageShield:
 			case SE_ReverseDS:
 			case SE_DamageShield:
@@ -2585,6 +2601,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_CastOnCurer:
 			case SE_CastOnCure:
 			case SE_CastonNumHitFade:
+			case SE_LimitToSkill:
 			{
 				break;
 			}
@@ -3200,6 +3217,14 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			{
 				uint16 procid = GetProcID(buffs[slot].spellid, i);
 				RemoveProcFromWeapon(procid, false);
+				break;
+			}
+
+			case SE_SkillProc2:
+			case SE_SkillProc:
+			{
+				uint16 procid = GetProcID(buffs[slot].spellid, i);
+				RemoveSkillProc(procid);
 				break;
 			}
 
@@ -4158,7 +4183,6 @@ sint16 Client::GetSympatheticFocusEffect(focusType type, int16 spell_id) {
 		TempItem = ins->GetItem();
 		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
 		
-				//CalcFocus will run Mob::GetSympatheticProcChances (spell_effects.cpp)
 				proc_spellid = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id); 
 
 				if (proc_spellid > 0)
@@ -4450,7 +4474,7 @@ bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate
 {
 
 	//Effects: Cast:	SE_ResistSpellChance, SE_Reflect, SE_SpellDamageShield
-	//Effects: Attack:	SE_MeleeLifetap : SE_DamageShield, SE_AvoidMeleeChance
+	//Effects: Attack:	SE_MeleeLifetap : SE_DamageShield, SE_AvoidMeleeChance, SE_SkillProc
 	//Effects: Skill:	SE_DamageModifier, SE_SkillDamageTaken, SE_SkillDamageAmount, SE_HitChance
 	//For spell buffs that are limited typically when you are attacked or are subject to an attack/cast and we do not know the buff slot.
 	if (type){
@@ -4731,3 +4755,4 @@ float Mob::GetSympatheticProcChances(float &ProcBonus, float &ProcChance, sint32
 
 	return ProcChance;
 }
+
