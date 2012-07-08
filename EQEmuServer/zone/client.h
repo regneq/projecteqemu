@@ -450,7 +450,7 @@ public:
 	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
 	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
 	
-	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath; }
+	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath + 11; }
 	
 	sint32 Additional_SpellDmg(int16 spell_id);
 	sint32 Additional_Heal(int16 spell_id);

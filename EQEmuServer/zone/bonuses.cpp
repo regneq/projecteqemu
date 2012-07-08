@@ -1200,6 +1200,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 
+			case SE_CastingLevel2:
 			case SE_CastingLevel:	// Brilliance of Ro
 			{
 				newbon->effective_casting_level += effect_value;

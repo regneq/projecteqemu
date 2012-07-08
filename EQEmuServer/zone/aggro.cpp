@@ -1272,6 +1272,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				AggroAmount += slevel;			
 				break;
 			}
+			case SE_ReduceHate:
 			case SE_Calm:{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				nonModifiedAggro = val;

@@ -426,11 +426,11 @@ bool logpos;
 //	static	int		CheckEffectIDMatch(int8 effectindex, int16 spellid1, int8 caster_level1, int16 spellid2, int8 caster_level2);
 
 
-	virtual void	RogueBackstab(Mob* other, bool min_damage = false);
+	virtual void	RogueBackstab(Mob* other, bool min_damage = false, int ReuseTime = 10);
 	virtual void	RogueAssassinate(Mob* other); // solar
 	bool	BehindMob(Mob* other = 0, float playerx = 0.0f, float playery = 0.0f) const;
 
-	void	TriggerDefensiveProcs(Mob *on);
+	void	TriggerDefensiveProcs(const ItemInst* weapon, Mob *on, int16 hand = 13, int damage=0);
 
 	Mob(const char*   in_name,
 	    const char*   in_lastname,
@@ -540,7 +540,7 @@ bool logpos;
 	bool ChangeHP(Mob* other, sint32 amount, int16 spell_id = 0, sint8 buffslot = -1, bool iBuffTic = false);
 	inline void SetOOCRegen(sint32 newoocregen) {oocregen = newoocregen;}
 	int MonkSpecialAttack(Mob* other, int8 skill_used);
-	virtual void TryBackstab(Mob *other);
+	virtual void TryBackstab(Mob *other,int ReuseTime = 10);
 	void DoAnim(const int animnum, int type=0, bool ackreq = true, eqFilterType filter = FilterNone);
 	void ProjectileAnimation(Mob* to, int16 item_id, bool IsArrow = false, float speed = 0, float angle = 0, float tilt = 0, float arc = 0);
 
@@ -568,6 +568,10 @@ bool logpos;
 	bool RemoveDefensiveProc(int16 spell_id, bool bAll = false);
 	bool HasDefensiveProcs() const;
 
+	bool AddSkillProc(int16 spell_id, int16 iChance = 3, int16 base_spell_id=SPELL_UNKNOWN);
+	bool RemoveSkillProc(int16 spell_id, bool bAll = false);
+	bool HasSkillProcs() const;
+
 	bool AddProcToWeapon(int16 spell_id, bool bPerma = false, int16 iChance = 3);
 	bool RemoveProcFromWeapon(int16 spell_id, bool bAll = false);
 	bool HasProcs() const;
@@ -588,6 +592,7 @@ bool logpos;
 	void SetFlyMode(int8 flymode);
 
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
+	int16 GetSkillByItemType(int ItemType);
 	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
 	virtual bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
@@ -806,7 +811,7 @@ bool logpos;
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
 	inline bool IsCasting() const { return((casting_spell_id != 0)); }
 	uint16 CastingSpellID() const { return casting_spell_id; }
-
+	
 	//Song related
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	bool ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
@@ -974,7 +979,7 @@ bool logpos;
 	sint32	ReduceDamage(sint32 damage);
 	sint32  AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker);
 
-	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10);
     bool Flurry();
     bool Rampage();
     bool AddRampage(Mob*);
@@ -1240,7 +1245,9 @@ protected:
 	bool held;
 	void CalcSpellBonuses(StatBonuses* newbon);
 	virtual void CalcBonuses();
-	void TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
+	void TrySkillProc(Mob *on, int16 skill, float chance);
+	bool PassLimitToSkill(int16 spell_id, int16 skill);
+	void TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand = 13, int damage=0);
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand = 13);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
@@ -1264,6 +1271,7 @@ protected:
 	tProc SpellProcs[MAX_PROCS];
 	tProc DefensiveProcs[MAX_PROCS];
 	tProc RangedProcs[MAX_PROCS];
+	tProc SkillProcs[MAX_PROCS];
 
 	char    name[64];
 	char    orig_name[64];

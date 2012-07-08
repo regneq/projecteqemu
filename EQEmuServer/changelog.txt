@@ -1,9 +1,20 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==07/08/2012==
+
+Kayen: Implemented: SE_SkillProc, SE_SkillProc2 which can be limited by SE_LimitToSkill - Procs an effect when a specific skill is used
+       *Functional will all melee skills, special attacks, backstab, taunt, dodge,block,parry,riposte.
+Kayen: Added checks to attack process to prevent mob from performing certain actions after being killed (riposte, defensive proc ect).
+Kayen: Fixed bug where if client had delay death effect NPC would not be able to attack them if HP < -11, clients without delay death will now bleed again.
+Kayen: Implemented: SE_CastingLevel2, SE_ReduceHate
+Kayen: Fix to bug where some spell procs and defensive procs were not loading after zoning.
+Kayen: Updated spdat.h with many new live spell effects that were previously 'unused'.
+
 ==07/05/2012==
-Kayen: Implemented SE_Manaburn: Drains mana for damage/heal at a defined ratio up to a defined maximum amount of mana.
-Kayen: Implemented SE_CastonNumHitFade: Casts a spell when a buff fades due to its numhits being depleted.	
-Kayen: Implemented support for all remaining live spell effects that use 'numhits'.
+Kayen: Implemented: SE_Manaburn: Drains mana for damage/heal at a defined ratio up to a defined maximum amount of mana.
+Kayen: Implemented: SE_CastonNumHitFade: Casts a spell when a buff fades due to its numhits being depleted.	
+Kayen: Implemented: support for all remaining live spell effects that use 'numhits'.
 	   Significantly optimized how all spell effects that utilize 'numhits' are handled throughout the source. 
 Kayen: Fixed: SE_DefensiveProc - Proc rate will now be calculated similiar to live.  *Spell specific rate modifcations will now work.
 Kayen: Added Rule: Combat:AvgDefProcsPerMinute (Default = 2.0) Determine defensive procs per minute.

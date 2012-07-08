@@ -255,6 +255,9 @@ Mob::Mob(const char*   in_name,
 		RangedProcs[j].spellID = SPELL_UNKNOWN;
 		RangedProcs[j].chance = 0;
 		RangedProcs[j].base_spellID = SPELL_UNKNOWN;
+		SkillProcs[j].spellID = SPELL_UNKNOWN;
+		SkillProcs[j].chance = 0;
+		SkillProcs[j].base_spellID = SPELL_UNKNOWN;
     }
 
 	for (i = 0; i < MAX_MATERIALS; i++)
@@ -2907,14 +2910,12 @@ int Mob::GetSnaredAmount()
 	return worst_snare;
 }
 
-//This function is no longer used.
-void Mob::TriggerDefensiveProcs(Mob *on)
+void Mob::TriggerDefensiveProcs(const ItemInst* weapon, Mob *on, int16 hand, int damage)
 {
-	if (HasDefensiveProcs()) {
-		//TryDefensiveProc(on);
-	}
+	if (!on)
+		return;
 
-	return;
+	on->TryDefensiveProc(weapon, this, hand, damage);
 }
 
 void Mob::SetDeltas(float dx, float dy, float dz, float dh) {
@@ -4498,3 +4499,47 @@ int Mob::SlowMitigation(bool slow_msg, Mob *caster, int slow_value)
 		return slow_value;
 	}
 }
+
+int16 Mob::GetSkillByItemType(int ItemType)
+{
+	switch (ItemType)
+	{
+		case ItemType1HS: 
+			return _1H_SLASHING;
+		case ItemType2HS:
+			return _2H_SLASHING;
+		case ItemTypePierce:
+			return PIERCING;
+		case ItemType1HB: 
+			return _1H_BLUNT;
+		case ItemType2HB: 
+			return _2H_BLUNT;
+		case ItemType2HPierce: 
+			return PIERCING;
+		case ItemTypeHand2Hand:
+			return HAND_TO_HAND;
+		default:
+			return HAND_TO_HAND;
+	}
+	return HAND_TO_HAND;
+ }
+
+
+bool Mob::PassLimitToSkill(int16 spell_id, int16 skill) {
+
+	if (!IsValidSpell(spell_id))
+		return false;
+
+	if (!IsEffectInSpell(spell_id, SE_LimitToSkill))
+		return false;
+		
+	for (int i = 0; i < EFFECT_COUNT; i++) {
+		if (spells[spell_id].effectid[i] == SE_LimitToSkill){
+			if (spells[spell_id].base[i] == skill){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
