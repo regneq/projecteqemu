@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==07/09/2012==
+
+Kayen: Fixed major crash bug with rev2159.
+
 ==07/08/2012==
 
 Kayen: Implemented: SE_SkillProc, SE_SkillProc2 which can be limited by SE_LimitToSkill - Procs an effect when a specific skill is used

@@ -182,8 +182,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 	if(spells[spell_id].numhits > 0)
 		buffs[buffslot].numhits = spells[spell_id].numhits;
-	else
-		buffs[buffslot].numhits = 0;
 
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
@@ -2432,21 +2430,21 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				
 				if (caster){
 					if (caster->GetMana() <= max_mana){
-							dmg = ratio*GetMana()/10; 
-							SetMana(0);
+							dmg = ratio*caster->GetMana()/10; 
+							caster->SetMana(0);
 					}
 
 					else {
 						dmg = ratio*max_mana/10; 
-						SetMana(GetMana() - max_mana);
+						caster->SetMana(caster->GetMana() - max_mana);
 					}
-				}
-
-				if(IsDetrimentalSpell(spell_id)) {
-					dmg = -dmg;
-					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
-				} else {
-					HealDamage(dmg, caster);
+				
+					if(IsDetrimentalSpell(spell_id)) {
+						dmg = -dmg;
+						Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
+					} else {
+						HealDamage(dmg, caster);
+					}
 				}
 			}
 			
