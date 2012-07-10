@@ -5787,8 +5787,9 @@ void Client::CheckEmoteHail(Mob *target, const char* message)
 	{
 		return;
 	}
-	if(target->CastToNPC()->GetNPCEmoteID() != 0)
-		target->CastToNPC()->DoNPCEmote(HAILED);
+	int16 emoteid = target->CastToNPC()->GetNPCEmoteID();
+	if(emoteid != 0)
+		target->CastToNPC()->DoNPCEmote(HAILED,emoteid);
 }
 
 void Client::MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count)
