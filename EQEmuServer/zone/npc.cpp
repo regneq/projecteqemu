@@ -709,8 +709,9 @@ void NPC::DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPC
 }
 
 void NPC::Depop(bool StartSpawnTimer) {
-	if(this->GetNPCEmoteID() != 0)
-		this->DoNPCEmote(ONDESPAWN);
+	int16 emoteid = this->GetNPCEmoteID();
+	if(emoteid != 0)
+		this->DoNPCEmote(ONDESPAWN,emoteid);
 	p_depop = true;
 	if (StartSpawnTimer) {
 		if (respawn2 != 0) {
@@ -2197,7 +2198,7 @@ void NPC::SignalNPC(int _signal_id)
 	signal_q.push_back(_signal_id);
 }
 
-NPC_Emote_Struct* NPC::GetNPCEmote(int32 emoteid, int8 event_) {
+NPC_Emote_Struct* NPC::GetNPCEmote(int16 emoteid, int8 event_) {
 	LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2211,21 +2212,11 @@ NPC_Emote_Struct* NPC::GetNPCEmote(int32 emoteid, int8 event_) {
 	return (NULL);
 }
 	
-void NPC::DoNPCEmote(int8 event_)
+void NPC::DoNPCEmote(int8 event_, int16 emoteid)
 {
-	if(this == NULL)
+	if(this == NULL || emoteid == 0)
 	{
 		return;
-	}
-
-	int32 emoteid = 0;
-	if(this->IsCorpse() && !this->GetOwnerID())
-	{
-		emoteid = this->GetNPCTypeID();
-	}
-	else
-	{
-		emoteid = this->GetNPCEmoteID();
 	}
 
 	NPC_Emote_Struct* nes = GetNPCEmote(emoteid,event_);

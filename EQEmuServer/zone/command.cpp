@@ -11045,7 +11045,6 @@ void command_emoteview(Client *c, const Seperator *sep)
 	if(c->GetTarget() && c->GetTarget()->IsNPC())
 	{ 
 		int count=0;
-		int32 npcid = c->GetTarget()->GetNPCTypeID();
 		int emoteid = c->GetTarget()->CastToNPC()->GetNPCEmoteID();
 
 		LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
@@ -11053,7 +11052,7 @@ void command_emoteview(Client *c, const Seperator *sep)
 		while(iterator.MoreElements())
 		{
 			NPC_Emote_Struct* nes = iterator.GetData();
-			if(npcid == nes->emoteid || emoteid ==  nes->emoteid)
+			if(emoteid ==  nes->emoteid)
 			{
 				c->Message(0, "EmoteID: %i Event: %i Type: %i Text: %s", nes->emoteid, nes->event_, nes->type, nes->text);
 				count++;

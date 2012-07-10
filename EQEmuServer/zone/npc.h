@@ -326,8 +326,8 @@ public:
     Timer *GetRefaceTimer() const { return reface_timer; }
     const uint32 GetAltCurrencyType() const { return NPCTypedata->alt_currency_type; }
 
-	NPC_Emote_Struct* GetNPCEmote(int32 emoteid, int8 event_);
-	void DoNPCEmote(int8 event_);
+	NPC_Emote_Struct* GetNPCEmote(int16 emoteid, int8 event_);
+	void DoNPCEmote(int8 event_, int16 emoteid);
 
 protected:
 	
