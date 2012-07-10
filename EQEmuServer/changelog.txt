@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==07/09/2012==
 
+Kayen: Fixed issue causing npc special attacks (kick/bash ect) to do extra damage.
 Kayen: Fixed major crash bug with rev2159.
 
 ==07/08/2012==

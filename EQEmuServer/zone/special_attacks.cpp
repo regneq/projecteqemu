@@ -1468,7 +1468,7 @@ void NPC::DoClassAttacks(Mob *target) {
 					}
 
 					reuse = KickReuseTime * 1000;
-					DoSpecialAttackDamage(target, KICK, dmg, reuse);
+					DoSpecialAttackDamage(target, KICK, dmg, 1, -1, reuse);
 					did_attack = true;
 				}
 				else
@@ -1489,7 +1489,7 @@ void NPC::DoClassAttacks(Mob *target) {
 					}
 
 					reuse = BashReuseTime * 1000;
-					DoSpecialAttackDamage(target, BASH, dmg, reuse);
+					DoSpecialAttackDamage(target, BASH, dmg, 1, -1, reuse);
 					did_attack = true;
 				}
 			}
@@ -1529,7 +1529,7 @@ void NPC::DoClassAttacks(Mob *target) {
 				}
 
 				reuse = KickReuseTime * 1000;
-				DoSpecialAttackDamage(target, KICK, dmg, reuse);
+				DoSpecialAttackDamage(target, KICK, dmg, 1, -1, reuse);
 				did_attack = true;
 			}
 			break;
@@ -1555,7 +1555,7 @@ void NPC::DoClassAttacks(Mob *target) {
 				}
 
 				reuse = BashReuseTime * 1000;
-				DoSpecialAttackDamage(target, BASH, dmg, reuse);
+				DoSpecialAttackDamage(target, BASH, dmg, 1, -1, reuse);
 				did_attack = true;
 			}
 			break;
@@ -1673,7 +1673,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 
 			ReuseTime = BashReuseTime-1;
 			ReuseTime = (ReuseTime*HasteMod)/100;
-			DoSpecialAttackDamage(ca_target, BASH, dmg, ReuseTime);
+			DoSpecialAttackDamage(ca_target, BASH, dmg, 1,-1,ReuseTime);
 			if(ReuseTime > 0)
 			{
 				p_timers.Start(pTimerCombatAbility, ReuseTime);
@@ -1754,7 +1754,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 			}
 
 			ReuseTime = KickReuseTime-1;
-			DoSpecialAttackDamage(ca_target, KICK, dmg, ReuseTime);
+			DoSpecialAttackDamage(ca_target, KICK, dmg, 1,-1, ReuseTime);
 		}
 	}
 
