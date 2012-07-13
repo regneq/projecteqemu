@@ -25,6 +25,9 @@ extern WorldServer worldserver;
 
 const int BotAISpellRange = 100; // TODO: Write a method that calcs what the bot's spell range is based on spell, equipment, AA, whatever and replace this
 const int MaxSpellTimer = 15;
+const int MaxDisciplineTimer = 10;
+const int DisciplineReuseStart = MaxSpellTimer + 1;
+const int MaxTimer = MaxSpellTimer + MaxDisciplineTimer;
 const int MaxStances = 7;
 const int MaxSpellTypes = 16;
 
@@ -203,6 +206,7 @@ public:
 	bool IsStanding();
 	bool IsBotCasterCombatRange(Mob *target);
 	bool CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true) ;
+	bool UseDiscipline(int32 spell_id, int32 target);
 	int8 GetNumberNeedingHealedInGroup(int8 hpr, bool includePets);
 	bool GetNeedsCured(Mob *tar);
 	bool HasOrMayGetAggro();
@@ -344,6 +348,9 @@ public:
 	static bool ProcessGuildRemoval(Client* guildOfficer, std::string botName);	// Processes a client's request to deguild a bot
 	static sint32 GetSpellRecastTimer(Bot *caster, int timer_index);
 	static bool CheckSpellRecastTimers(Bot *caster, int SpellIndex);
+	static sint32 GetDisciplineRecastTimer(Bot *caster, int timer_index);
+	static bool CheckDisciplineRecastTimers(Bot *caster, int timer_index);
+	static int32 GetDisciplineRemainingTime(Bot *caster, int timer_index);
 	static std::list<BotSpell> GetBotSpellsForSpellEffect(Bot* botCaster, int spellEffect);
 	static std::list<BotSpell> GetBotSpellsForSpellEffectAndTargetType(Bot* botCaster, int spellEffect, SpellTargetType targetType);
 	static std::list<BotSpell> GetBotSpellsBySpellType(Bot* botCaster, int16 spellType);
@@ -477,6 +484,7 @@ public:
 	void SetBotRole(BotRoleType botRole) { _botRole = botRole; }
 	void SetBotStance(BotStanceType botStance) { _botStance = botStance; }
 	void SetSpellRecastTimer(int timer_index, sint32 recast_delay);
+	void SetDisciplineRecastTimer(int timer_index, sint32 recast_delay);
 	void SetHasBeenSummoned(bool s);
 	void SetPreSummonX(float x) { _preSummonX = x; }
 	void SetPreSummonY(float y) { _preSummonY = y; }
@@ -532,7 +540,7 @@ private:
 	sint32	cur_end;
 	sint32	max_end;
 	sint16	end_regen;
-	int32 spellRecastTimers[MaxSpellTimer];
+	int32 timers[MaxTimer];
 	bool _hasBeenSummoned;
 	float _preSummonX;
 	float _preSummonY;
@@ -596,6 +604,8 @@ private:
 	void LoadGuildMembership(int32* guildId, int8* guildRank, std::string* guildName);
 	void LoadStance();
 	void SaveStance();
+	void LoadTimers();
+	void SaveTimers();
 };
 
 #endif // BOTS
