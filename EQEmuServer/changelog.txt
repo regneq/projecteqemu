@@ -1,6 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==07/13/2012==
+Bad_Captain: Fixed another bug that allowed pets to steal xp when using bots.
+Bad_Captain: Bots: Persisting spell & discipline timers.
+Bad_Captain: Bots: Bot pets will no longer continuously try to get behind a mob if they are tanking.
+Bad_Captain: Bots: Fixed potential duplicate lore item bug when trading with bots. 
+Bad_Captain: Bots: Fixed bot compile issue from Rev 2160.
+Bad_Captain: Bots: Fixed multiple issues with #bot spawn and #bot botgroup load (c0ncrete).
+Bad_Captain: Bots: Implemented new #bot defensive command for Warriors and Knights. Includes most of the code required to implement disciplines for bots. Requires disc AI & disc lists.
+
 ==07/09/2012==
 
 Kayen: Fixed issue causing npc special attacks (kick/bash ect) to do extra damage.

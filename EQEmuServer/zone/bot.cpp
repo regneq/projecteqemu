@@ -74,9 +74,9 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	mana_regen = CalcManaRegen();
 	end_regen = CalcEnduranceRegen();
 
-	for (int i = 0; i < MaxSpellTimer; i++)
+	for (int i = 0; i < MaxTimer; i++)
 	{
-		spellRecastTimers[i] = 0;
+		timers[i] = 0;
 	}
 
 	strcpy(this->name, this->GetCleanName());
@@ -151,10 +151,12 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 			GetBotOwner()->Message(13, TempErrorMessage.c_str());
 	}
 
-	for (int i = 0; i < MaxSpellTimer; i++)
+	for (int i = 0; i < MaxTimer; i++)
 	{
-		spellRecastTimers[i] = 0;
+		timers[i] = 0;
 	}
+
+	LoadTimers();
 
 	GenerateBaseStats();
 
@@ -3691,6 +3693,7 @@ bool Bot::Save() {
 		SaveBuffs();
 		SavePet();
 		SaveStance();
+		SaveTimers();
 	}
 
 	return Result;
@@ -4219,7 +4222,7 @@ void Bot::LoadStance() {
 	Query = 0;
 
 	if(!errorMessage.empty()) {
-		// TODO: Record this error message to zone error log
+		LogFile->write(EQEMuLog::Error, "Error in Bot::LoadStance()");
 	}
 
 	if(loaded)
@@ -4245,8 +4248,71 @@ void Bot::SaveStance() {
 		}
 
 		if(!errorMessage.empty()) {
-			// TODO: Record this error message to zone error log
+			LogFile->write(EQEMuLog::Error, "Error in Bot::SaveStance()");
 		}
+	}
+}
+
+void Bot::LoadTimers() {
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT bt.TimerID, bt.Value, MAX(sn.recast_time) AS MaxTimer FROM bottimers bt, spells_new sn WHERE bt.BotID = %u AND sn.EndurTimerIndex = (SELECT case WHEN TimerID > %i THEN TimerID - %i ELSE TimerID END AS TimerID FROM bottimers WHERE TimerID = bt.TimerID ) AND sn.classes%i <= %i;", GetBotID(), DisciplineReuseStart-1, GetClass(), GetLevel()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		int TimerID = 0;
+		int32 Value = 0;
+		int32 MaxValue = 0;
+
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			TimerID = atoi(DataRow[0]);
+			Value = atoi(DataRow[1]);
+			MaxValue = atoi(DataRow[2]);
+
+			if(TimerID >= 0 && TimerID < MaxTimer && Value < (Timer::GetCurrentTime() + MaxValue)) {
+				timers[TimerID] = Value;
+			}
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in Bot::LoadTimers()");
+	}
+}
+
+void Bot::SaveTimers() {
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM bottimers WHERE BotID = %u;", GetBotID()), TempErrorMessageBuffer)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+		safe_delete(Query);
+		Query = 0;
+	}
+
+	for(int i = 0; i < MaxTimer; i++) {
+		if(timers[i] > Timer::GetCurrentTime()) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "REPLACE INTO bottimers (BotID, TimerID, Value) VALUES(%u, %u, %u);", GetBotID(), i, timers[i]), TempErrorMessageBuffer)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+			}
+
+			safe_delete(Query);
+			Query = 0;
+		}
+	}
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in Bot::SaveTimers()");
 	}
 }
 
@@ -5181,15 +5247,20 @@ void Bot::PetAIProcess() {
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
+				bool petHasAggro = false;
 
-				if(botPet->GetClass() == ROGUE && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
+				if(botPet->GetTarget() && botPet->GetTarget()->GetHateTop() && botPet->GetTarget()->GetHateTop() == botPet) {
+					petHasAggro = true;
+				}
+
+				if(botPet->GetClass() == ROGUE && !petHasAggro && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
 					// Move the rogue to behind the mob
 					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ)) {
 						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 						return;
 					}
 				}
-				else if(GetTarget() == botPet->GetTarget() && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
+				else if(GetTarget() == botPet->GetTarget() && !petHasAggro && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
 					// If the bot owner and the bot are fighting the same mob, then move the pet to the rear arc of the mob
 					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ)) {
 						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
@@ -5199,11 +5270,15 @@ void Bot::PetAIProcess() {
 				else if(botPet->DistNoRootNoZ(*botPet->GetTarget()) < botPet->GetTarget()->GetSize()) {
 					// Let's try to adjust our melee range so we don't appear to be bunched up
 					bool isBehindMob = false;
+					bool moveBehindMob = false;
 
 					if(botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY()))
 						isBehindMob = true;
 
-					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ, isBehindMob)) {
+					if (!isBehindMob && !petHasAggro)
+						moveBehindMob = true;
+
+					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ, moveBehindMob)) {
 						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 						return;
 					}
@@ -7171,12 +7246,21 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 								if(j == SLOT_PRIMARY) {
 									if((mWeaponItem->ItemType == ItemType2HS) || (mWeaponItem->ItemType == ItemType2HB) || (mWeaponItem->ItemType == ItemType2HPierce)) {
 										if(GetBotItem(SLOT_SECONDARY)) {
-											ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
-											BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+											if(mWeaponItem && (mWeaponItem->ItemType == ItemType2HS) || (mWeaponItem->ItemType == ItemType2HB) || (mWeaponItem->ItemType == ItemType2HPierce)) {
+												if(client->CheckLoreConflict(GetBotItem(SLOT_SECONDARY)->GetItem())) {
+													failedLoreCheck = true;
+												}
+											}
+											else {
+												ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
+												BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+											}
 										}
 									}
-									BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
-									success = true;
+									if(!failedLoreCheck) {
+										BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
+										success = true;
+									}
 									break;
 								}
 								else if(j == SLOT_SECONDARY) {
@@ -7233,12 +7317,19 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 									if(j == SLOT_PRIMARY) {
 										if((mWeaponItem->ItemType == ItemType2HS) || (mWeaponItem->ItemType == ItemType2HB) || (mWeaponItem->ItemType == ItemType2HPierce)) {
 											if(GetBotItem(SLOT_SECONDARY)) {
-												ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
-												BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+												if(client->CheckLoreConflict(GetBotItem(SLOT_SECONDARY)->GetItem())) {
+													failedLoreCheck = true;
+												}
+												else {
+													ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
+													BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+												}
 											}
 										}
-										BotTradeSwapItem(client, SLOT_PRIMARY, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
-										success = true;
+										if(!failedLoreCheck) {
+											BotTradeSwapItem(client, SLOT_PRIMARY, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
+											success = true;
+										}
 										break;
 									}
 									else if(j == SLOT_SECONDARY) {
@@ -7741,7 +7832,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 	
 	if(damage > 0) {
 		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
-		other->TriggerDefensiveProcs(this);
+		TriggerDefensiveProcs(weapon, other, Hand, damage);
 		return true;
 	}
 	else {
@@ -12123,6 +12214,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot taunt [on|off] - Turns taunt on/off for targeted bot");
 		c->Message(0, "#bot stance [name] [stance (id)|list] - Sets/lists stance for named bot (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
 		c->Message(0, "#bot groupmessages [on|off] [bot name|all] - Turns group messages on/off for named bot/all bots.");
+		c->Message(0, "#bot defensive  [bot name] - Causes warrior or knight bot to use defensive discipline / buff.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
@@ -12255,7 +12347,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 		else {
 			// Camp only the targetted bot
-			if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c)) {
+			if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner()->CastToClient() == c)) {
 				Bot* targetedBot = c->GetTarget()->CastToBot();
 				if(targetedBot)
 					targetedBot->Camp();
@@ -12484,13 +12576,20 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		if(c->IsGrouped()) {
 			Group *g = entity_list.GetGroupByClient(c);
 			for (int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(g && g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetAppearance() != eaDead) && g->members[i]->IsEngaged()) {
+				if(g && g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetAppearance() != eaDead) 
+					&& (g->members[i]->IsEngaged() || (g->members[i]->IsClient() && g->members[i]->CastToClient()->GetAggroCount()))) {
 					c->Message(0, "You can't summon bots while you are engaged.");
 					return;
 				}
 				if(g && g->members[i] && g->members[i]->qglobal) {
 					return;
 				}
+			}
+		}
+		else {
+			if(c->GetAggroCount() > 0) {
+				c->Message(0, "You can't spawn bots while you are engaged.");
+				return;
 			}
 		}
 
@@ -15156,86 +15255,162 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "load")) {
+    if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "load")) {
+
+		// If client is grouped, check for aggro on each group member.
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+				// Skip invalid group members.
+				if(!g->members[i]) { continue; }
+
+				// Fail if current group member is client and has aggro
+				// OR has a popuplated hate list (assume bot).
+				if((g->members[i]->IsClient() && g->members[i]->CastToClient()->GetAggroCount())
+				||  g->members[i]->IsEngaged()) {
+					c->Message(0, "You can't spawn bots while your group is engaged.");
+					return;
+				}
+			}
+		}
+		// Fail if ungrouped client has aggro.
+		else {
+			if(c->GetAggroCount() > 0) {
+				c->Message(0, "You can't spawn bots while you are engaged.");
+				return;
+			}
+		}
+
+		// Parse botgroup name.
 		std::string botGroupName = std::string(sep->arg[3]);
-
-		int spawnedBotCount = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
-
-		if(spawnedBotCount >= RuleI(Bots, SpawnBotCount) && !c->GetGM()) {
-			c->Message(0, "You cannot spawn more than %i bots.", spawnedBotCount);
+		if(botGroupName.empty()) {
+			c->Message(13, "Invalid botgroup name supplied.");
 			return;
 		}
 
-		if(!botGroupName.empty()) {
-			uint32 botGroupId = CanLoadBotGroup(c->CharacterID(), botGroupName, &TempErrorMessage);
+		// Get botgroup id.
+		uint32 botGroupID = CanLoadBotGroup(c->CharacterID(), botGroupName, &TempErrorMessage);
+		if(!TempErrorMessage.empty()) {
+			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			return;
+		}
+		if(botGroupID <= 0) {
+			c->Message(13, "Invalid botgroup id found.");
+			return;
+		}
 
+		// Get list of bots in specified group.
+		std::list<BotGroup> botGroup = LoadBotGroup(botGroupName, &TempErrorMessage);
+		if(!TempErrorMessage.empty()) {
+			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			return;
+		}
+
+		// Count of client's currently spawned bots.
+		int spawnedBots = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
+		if(!TempErrorMessage.empty()) {
+			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			return;
+		}
+
+		// BotQuest rule value in database is True.
+		if(RuleB(Bots, BotQuest)) {
+			// Max number of allowed spawned bots for client.
+			const int allowedBotsBQ = AllowedBotSpawns(c->CharacterID(), &TempErrorMessage);
 			if(!TempErrorMessage.empty()) {
 				c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 				return;
 			}
 
-			if(botGroupId > 0) {
-				std::list<BotGroup> botGroup = LoadBotGroup(botGroupName, &TempErrorMessage);
-
-				if(!TempErrorMessage.empty()) {
-					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-					return;
-				}
-
-				uint32 botGroupLeaderBotId = GetBotGroupLeaderIdByBotGroupName(botGroupName);
-
-				Bot* groupLeader = LoadBot(botGroupLeaderBotId, &TempErrorMessage);
-
-				if(!TempErrorMessage.empty()) {
-					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-					safe_delete(groupLeader);
-					return;
-				}
-
-				groupLeader->Spawn(c, &TempErrorMessage);
-				
-				if(!TempErrorMessage.empty()) {
-					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-					safe_delete(groupLeader);
-					return;
-				}
-
-				if(BotGroupCreate(groupLeader)) {
-					Group* g = groupLeader->GetGroup();
-
-					for(std::list<BotGroup>::iterator botGroupItr = botGroup.begin(); botGroupItr != botGroup.end(); botGroupItr++) {
-						if(botGroupItr->BotID == groupLeader->GetBotID())
-							continue;
-
-						spawnedBotCount = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
-
-						if(spawnedBotCount >= RuleI(Bots, SpawnBotCount) && !c->GetGM()) {
-							c->Message(0, "You cannot spawn more than %i bots.", spawnedBotCount);
-							return;
-						}
-
-						Bot* botGroupMember = LoadBot(botGroupItr->BotID, &TempErrorMessage);
-
-						if(!TempErrorMessage.empty()) {
-							c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-							safe_delete(botGroupMember);
-							return;
-						}
-
-						if(botGroupMember) {
-							botGroupMember->Spawn(c, &TempErrorMessage);
-
-							if(!TempErrorMessage.empty()) {
-								c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-								safe_delete(botGroupMember);
-								return;
-							}
-
-							AddBotToGroup(botGroupMember, g);
-						}
-					}
-				}
+			// Fail if no bots allowed for client.
+			if(allowedBotsBQ == 0) {
+				c->Message(0, "You can't spawn any bots.");
+				return;
 			}
+
+			// Fail if maximum number of spawned bots allowed for client met or exceeded
+			// OR will be when bot group is spawned.
+			if(spawnedBots >= allowedBotsBQ
+			|| spawnedBots + (int)botGroup.size() > allowedBotsBQ) {
+				c->Message(0, "You can't spawn more than %i bot(s). [Rule:BQ]", allowedBotsBQ);
+				return;
+			}
+		}
+
+		// Fail if maximum number of spawned bots allowed for client met or exceeded
+		// OR will be when bot group is spawned. 
+		const int allowedBotsSBC = RuleI(Bots, SpawnBotCount);
+		if(spawnedBots >= allowedBotsSBC
+		|| spawnedBots + (int)botGroup.size() > allowedBotsSBC) {
+			c->Message(0, "You can't spawn more than %i bots. [Rule:SBC]", allowedBotsSBC);
+			return;
+		}
+
+		// Passed all checks. Spawn requested bot group.
+
+		// Get botgroup's leader's id.
+		uint32 botGroupLeaderBotID = GetBotGroupLeaderIdByBotGroupName(botGroupName);
+
+		// Load botgroup's leader.
+		Bot *botGroupLeader = LoadBot(botGroupLeaderBotID, &TempErrorMessage);
+		if(!TempErrorMessage.empty()) {
+			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			safe_delete(botGroupLeader);
+			return;
+		}
+		if(!botGroupLeader) {
+			c->Message(13, "Failed to load botgroup leader.");
+			safe_delete(botGroupLeader);
+			return;
+		}
+
+		// Spawn botgroup's leader.
+		botGroupLeader->Spawn(c, &TempErrorMessage);
+		if(!TempErrorMessage.empty()) {
+			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			safe_delete(botGroupLeader);
+			return;
+		}
+
+		// Create botgroup.
+		if(!BotGroupCreate(botGroupLeader)) {
+			c->Message(13, "Unable to create botgroup.");
+			return;
+		}
+		Group *newBotGroup = botGroupLeader->GetGroup();
+		if(!newBotGroup) {
+			c->Message(13, "Unable to find valid botgroup");
+			return;
+		}
+
+		std::list<BotGroup>::iterator botGroupItr = botGroup.begin();
+		for(botGroupItr; botGroupItr != botGroup.end(); botGroupItr++) {
+			// Don't try to re-spawn the botgroup's leader.
+			if(botGroupItr->BotID == botGroupLeader->GetBotID()) { continue; }
+
+			// Load current botgroup member
+			Bot *botGroupMember = LoadBot(botGroupItr->BotID, &TempErrorMessage);
+			if(!TempErrorMessage.empty()) {
+				c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+				safe_delete(botGroupMember);
+				return;
+			}
+			// Skip invalid botgroup members.
+			if(!botGroupMember) {
+				safe_delete(botGroupMember);
+				continue;
+			}
+
+			// Spawn current botgroup member.
+			botGroupMember->Spawn(c, &TempErrorMessage);
+			if(!TempErrorMessage.empty()) {
+				c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+				safe_delete(botGroupMember);
+				return;
+			}
+
+			// Add current botgroup member to botgroup.
+			AddBotToGroup(botGroupMember, newBotGroup);
 		}
 
 		return;
@@ -15588,6 +15763,77 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
+	if(!strcasecmp(sep->arg[1], "defensive")) {
+		Bot* tempBot;
+		std::string botName = std::string(sep->arg[2]);
+
+		if(!botName.empty())
+			tempBot = entity_list.GetBotByBotName(botName);
+		else {
+			c->Message(13, "You must name a valid bot.");
+			return;
+		}
+
+		if(tempBot) {
+			uint8 botlevel = tempBot->GetLevel();
+			int32 defensiveSpellID = 0;
+
+			if (tempBot->GetBotOwner() != c) {	
+				c->Message(13, "You must target a bot that you own.");
+				return;
+			}
+
+			switch (tempBot->GetClass()) {
+				case WARRIOR:
+					if(botlevel >= 72)
+						defensiveSpellID = 10965;		//Final Stand discipline
+					else if(botlevel >= 65)
+						defensiveSpellID = 4688;		//Stonewall discipline
+					else if(botlevel >= 55)
+						defensiveSpellID = 4499;		//Defensive discipline
+					else if(botlevel >= 52)
+						defensiveSpellID = 4503;		//Evasive discipline
+					else
+						c->Message(0, "Error: warrior must be level 52+");
+					break;
+				case PALADIN:
+					if(botlevel >= 73)
+						defensiveSpellID = 11854;		//Armor of Righteousness
+					else if(botlevel >= 69)
+						defensiveSpellID = 6663;		//Guard of Righteousness
+					else if(botlevel >= 61)
+						defensiveSpellID = 6731;		//Guard of Humility
+					else if(botlevel >= 56)
+						defensiveSpellID = 7004;		//Guard of Piety
+					else
+						c->Message(0, "Error: paladin must be level 56+");
+					break;
+				case SHADOWKNIGHT:
+					if(botlevel >= 73)
+						defensiveSpellID = 11866;		//Soul Carapace
+					else if(botlevel >= 69)
+						defensiveSpellID = 6673;		//Soul shield
+					else if(botlevel >= 61)
+						defensiveSpellID = 6741;		//Soul guard
+					else if(botlevel >= 56)
+						defensiveSpellID = 7005;		//Ichor guard
+					else
+						c->Message(0, "Error: shadowknight must be level 56+");
+					break;
+				default:
+					c->Message(0, "Error: you must select a warrior or knight");
+					break;
+			}
+
+			if(defensiveSpellID > 0) {
+				tempBot->UseDiscipline(defensiveSpellID, tempBot->GetID());
+			}
+		}
+		else {
+			c->Message(13, "You must name a valid bot.");
+		}
+		return;
+	}
 }
 
 // franck: EQoffline
@@ -16384,6 +16630,72 @@ void Bot::BotGroupSay(Mob *speaker, const char *msg, ...)
 		if(g)
 			g->GroupMessage(speaker->CastToMob(), 0, 100, buf);
 	}
+}
+
+bool Bot::UseDiscipline(int32 spell_id, int32 target) {
+	//make sure we have the spell...
+	int r;
+	/*for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
+		if(m_pp.disciplines.values[r] == spell_id)
+			break;
+	}
+	if(r == MAX_PP_DISCIPLINES)
+		return(false);	//not found.
+
+	//Check the disc timer
+	pTimerType DiscTimer = pTimerDisciplineReuseStart + spells[spell_id].EndurTimerIndex;
+	if(!p_timers.Expired(&database, DiscTimer)) {
+		int32 remain = p_timers.GetRemainingTime(DiscTimer);
+		//Message_StringID(0, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
+		Message(0, "You can use this discipline in %d minutes %d seconds.", ((remain)/60), (remain%60));
+		return(false);
+	}*/
+	
+	//make sure we can use it..
+	if(!IsValidSpell(spell_id)) {
+	    Say("Not a valid spell");
+		return(false);
+	}
+	
+	//can we use the spell?
+	const SPDat_Spell_Struct &spell = spells[spell_id];
+	int8 level_to_use = spell.classes[GetClass() - 1];
+	if(level_to_use == 255) {
+		return(false);
+	}
+	
+	if(level_to_use > GetLevel()) {
+		return(false);
+	}
+	
+	if(spell.recast_time > 0)
+	{
+		if(CheckDisciplineRecastTimers(this, spells[spell_id].EndurTimerIndex)) {
+
+			//CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
+			if(spells[spell_id].EndurTimerIndex > 0 && spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS) {
+				SetDisciplineRecastTimer(spells[spell_id].EndurTimerIndex, spell.recast_time);
+			}	
+		}
+		else {
+			int32 remain = GetDisciplineRemainingTime(this, spells[spell_id].EndurTimerIndex) / 1000;
+			GetOwner()->Message(0, "%s can use this discipline in %d minutes %d seconds.", GetCleanName(), ((remain)/60), (remain%60));
+			return(false);
+		}
+	}
+
+	if(GetEndurance() > spell.EndurCost) {
+		SetEndurance(GetEndurance() - spell.EndurCost);
+	} else {
+		return(false);
+	}
+
+	if(IsCasting())
+		InterruptSpell();
+
+	CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
+	
+	return(true);
 }
 
 #endif

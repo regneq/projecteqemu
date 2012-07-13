@@ -2054,7 +2054,7 @@ BotSpell Bot::GetBestBotSpellForCure(Bot* botCaster, Mob *tar) {
 
 void Bot::SetSpellRecastTimer(int timer_index, sint32 recast_delay) {
 	if(timer_index > 0 && timer_index <= MaxSpellTimer) {
-		spellRecastTimers[timer_index - 1] = Timer::GetCurrentTime() + recast_delay;
+		timers[timer_index - 1] = Timer::GetCurrentTime() + recast_delay;
 	}
 }
 
@@ -2062,7 +2062,7 @@ sint32 Bot::GetSpellRecastTimer(Bot *caster, int timer_index) {
 	sint32 result = 0;
 	if(caster) {
 		if(timer_index > 0 && timer_index <= MaxSpellTimer) {
-			result = caster->spellRecastTimers[timer_index - 1];
+			result = caster->timers[timer_index - 1];
 		}
 	}
 	return result;
@@ -2074,6 +2074,42 @@ bool Bot::CheckSpellRecastTimers(Bot *caster, int SpellIndex) {
 			if(GetSpellRecastTimer(caster, spells[caster->AIspells[SpellIndex].spellid].EndurTimerIndex) < Timer::GetCurrentTime()) {   //checks for spells on the same timer
 				return true;    //can cast spell
 			}
+		}
+	}
+	return false;
+}
+
+void Bot::SetDisciplineRecastTimer(int timer_index, sint32 recast_delay) {
+	if(timer_index > 0 && timer_index <= MaxDisciplineTimer) {
+		timers[DisciplineReuseStart + timer_index - 1] = Timer::GetCurrentTime() + recast_delay;
+	}
+}
+
+sint32 Bot::GetDisciplineRecastTimer(Bot *caster, int timer_index) {
+	sint32 result = 0;
+	if(caster) {
+		if(timer_index > 0 && timer_index <= MaxDisciplineTimer) {
+			result = caster->timers[DisciplineReuseStart + timer_index - 1];
+		}
+	}
+	return result;
+}
+
+int32 Bot::GetDisciplineRemainingTime(Bot *caster, int timer_index) {
+	sint32 result = 0;
+	if(caster) {
+		if(timer_index > 0 && timer_index <= MaxDisciplineTimer) {
+			if(GetDisciplineRecastTimer(caster, timer_index) > Timer::GetCurrentTime())
+				result = GetDisciplineRecastTimer(caster, timer_index) - Timer::GetCurrentTime();
+		}
+	}
+	return result;
+}
+
+bool Bot::CheckDisciplineRecastTimers(Bot *caster, int timer_index) {
+	if(caster) {
+		if(GetDisciplineRecastTimer(caster, timer_index) < Timer::GetCurrentTime()) {   //checks for spells on the same timer
+			return true;    //can cast spell
 		}
 	}
 	return false;
