@@ -3177,7 +3177,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 	if (!item) {
 		if (ivrs->item_id > 500000)
 		{
-			char response[65] = {0};
+			string response = "";
 			int sayid = ivrs->item_id - 500000;
 			bool silentsaylink = false;
 
@@ -3200,35 +3200,32 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 					if (mysql_num_rows(result) == 1)
 					{
 						row = mysql_fetch_row(result);
-						if(strlen(row[0]) < 65)
-						{
-							strcpy(response, row[0]);
-						}
+						response = row[0];
 					}
 					mysql_free_result(result);	
 				}
 				else 
 				{
-					Message(13, "Error: The saylink (%s) was not found in the database.",response);
+					Message(13, "Error: The saylink (%s) was not found in the database.",response.c_str());
 					safe_delete_array(query);
 					return;
 				}
 				safe_delete_array(query);
 			}
 
-			if(strlen(response) > 0)
+			if((response).size() > 0)
 			{
 				if(this->GetTarget() && this->GetTarget()->IsNPC())
 				{
 					if(silentsaylink)
 					{
-                        parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, response, 0);
-                        parse->EventPlayer(EVENT_SAY, this, response, 0);
+                        parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, response.c_str(), 0);
+                        parse->EventPlayer(EVENT_SAY, this, response.c_str(), 0);
 					}
 					else
 					{
-						Message(7, "You say, '%s'",response);
-						ChannelMessageReceived(8, 0, 100, response);
+						Message(7, "You say, '%s'", response.c_str());
+						ChannelMessageReceived(8, 0, 100, response.c_str());
 					}
 					return;
 				}
@@ -3236,12 +3233,12 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 				{
 					if(silentsaylink)
 					{
-						parse->EventPlayer(EVENT_SAY, this, response, 0);
+						parse->EventPlayer(EVENT_SAY, this, response.c_str(), 0);
 					}
 					else
 					{
-						Message(7, "You say, '%s'",response);
-						ChannelMessageReceived(8, 0, 100, response);
+						Message(7, "You say, '%s'", response.c_str());
+						ChannelMessageReceived(8, 0, 100, response.c_str());
 					}
 					return;
 				}
@@ -3249,6 +3246,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 			else
 			{
 				Message(13, "Error: Say Link not found or is too long.");
+				return;
 			}
 		}
 		else {

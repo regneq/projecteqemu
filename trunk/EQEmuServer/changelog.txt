@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==07/15/2012==
+Secrets: Fixed an issue with saylinks above 255 characters. If you do want to use saylinks above 255 characters, it is reccomended you adjust the varchar field in the saylinks table to a "TEXT" field, which supports up to 65535 characters.
+
 ==07/13/2012==
 Bad_Captain: Fixed another bug that allowed pets to steal xp when using bots.
 Bad_Captain: Bots: Persisting spell & discipline timers.
