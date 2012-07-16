@@ -221,6 +221,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					if(caster)
 					{
 						dmg = GetVulnerability(dmg, caster, spell_id, 0);
+						dmg -= GetAdditionalDamage(caster, spell_id);
 						dmg = caster->GetActSpellDamage(spell_id, dmg);	
 					}
 					dmg = -dmg;
@@ -1161,8 +1162,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Melee Absorb Rune: %+i", effect_value);
 #endif
-				buffs[buffslot].melee_rune = effect_value;	
-					SetHasRune(true);
+				effect_value = ApplySpellEffectiveness(caster, spell_id, effect_value);
+				buffs[buffslot].melee_rune = effect_value;
+				SetHasRune(true);
 				break;
 			}
 
@@ -2077,12 +2079,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 								tDmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
 							break;
 					}
-					
 				}
 				
 				if(tDmg == 0)
 					tDmg = effect_value;
-				
+
+				tDmg += GetAdditionalDamage(caster, spell_id);
+				tDmg = ApplySpellEffectiveness(caster, spell_id, tDmg);
+	
 				//these are considered magical attacks, so we don't need to test that
 				//if they are resistable that's been taken care of, all these discs have a 10000 hit chance so they auto hit, no need to test
 				if(RuleB(Combat, UseIntervalAC))
@@ -2220,6 +2224,34 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					break;
 
 				g->BalanceHP(spell.base[i]);
+				break;
+			}
+
+			case SE_BalanceMana: {
+				if(!caster)
+					break;
+
+				if(!caster->IsClient())
+					break;
+
+				Raid *r = entity_list.GetRaidByClient(caster->CastToClient());
+				if(r)
+				{
+					int32 gid = 0xFFFFFFFF;
+					gid = r->GetGroup(caster->GetName());
+					if(gid < 11)
+					{
+						r->BalanceMana(spell.base[i], gid);
+						break;
+					}
+				}
+
+				Group *g = entity_list.GetGroupByClient(caster->CastToClient());
+
+				if(!g)
+					break;
+
+				g->BalanceMana(spell.base[i]);
 				break;
 			}
 
@@ -2448,9 +2480,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 			}
 			
+			case SE_Taunt:
+			{	
+				if (IsNPC())
+					caster->Taunt(this->CastToNPC(), false,  spell.base[i]);
+			}
+
 			// Handled Elsewhere
 			case SE_ImmuneFleeing:
-			case SE_BlockSpellEffect:
+			case SE_NegateSpellEffect:
 			case SE_Knockdown: // handled by client
 			case SE_ShadowStepDirectional: // handled by client
 			case SE_SpellOnDeath:
@@ -2473,6 +2511,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_AllInstrumentMod:
 			case SE_MeleeLifetap:
 			case SE_DoubleAttackChance:
+			case SE_TripleAttackChance:
 			case SE_DualWieldChance:
 			case SE_ParryChance:
 			case SE_DodgeChance:
@@ -2578,6 +2617,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_CriticalSpellChance:
 			case SE_SpellCritChance:
 			case SE_SpellCritDmgIncrease:
+			case SE_DotCritDmgIncrease:
 			case SE_CriticalHealChance:
 			case SE_CriticalHealOverTime:
 			case SE_CriticalDoTChance:
@@ -2590,6 +2630,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_HPToMana:
 			case SE_ManaAbsorbPercentDamage:
 			case SE_SkillDamageAmount:
+			case SE_SkillDamageAmount2:
 			case SE_GravityEffect:
 			case SE_IncreaseBlockChance:
 			case SE_AntiGate:
@@ -2600,6 +2641,24 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_CastOnCure:
 			case SE_CastonNumHitFade:
 			case SE_LimitToSkill:
+			case SE_SpellProcChance:
+			case SE_CharmBreakChance:
+			case SE_BardSongRange:
+			case SE_ACv2:
+			case SE_ManaRegen_v2:
+			case SE_SpellCriticalFocus:
+			case SE_AdditionalHeal2:
+			case SE_HealRate2:
+			case SE_CriticalHealChance2:
+			case SE_CriticalHealOverTime2:
+			case SE_Empathy:
+			case SE_LimitSpellSkill:
+			case SE_MitigateDamageShield:
+			case SE_IncreaseSpellPower:
+			case SE_LimitClass:
+			case SE_LimitExcludeSkill:
+			case SE_BlockBehind:
+			case SE_ShieldBlock:
 			{
 				break;
 			}
@@ -2632,8 +2691,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 int Mob::CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {
+	if (!caster)
+		return 0;
+	
 	int formula, base, max, effect_value;
-
+	
 	if
 	(
 		!IsValidSpell(spell_id) ||
@@ -2658,10 +2720,13 @@ int Mob::CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level, M
 	(spells[spell_id].effectid[effect_id] != SE_Lull) &&
 	(spells[spell_id].effectid[effect_id] != SE_ChangeFrenzyRad) &&
 	(spells[spell_id].effectid[effect_id] != SE_Harmony) &&
-	(spells[spell_id].effectid[effect_id] != SE_CurrentMana))
+	(spells[spell_id].effectid[effect_id] != SE_CurrentMana)&&
+	(spells[spell_id].effectid[effect_id] != SE_ManaRegen_v2))
 	{
+
 		int oval = effect_value;
 		int mod = caster->GetInstrumentMod(spell_id);
+		mod = ApplySpellEffectiveness(caster, spell_id, mod, true);
 		effect_value = effect_value * mod / 10;
 		mlog(SPELLS__BARDS, "Effect value %d altered with bard modifier of %d to yeild %d", oval, mod, effect_value);
 	}
@@ -2957,35 +3022,24 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			case SE_CurrentHP:
 			{
 				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
-				
-				//TODO: account for AAs and stuff
-
-				//dont know what the signon this should be... - makes sense
+				//Handle client cast DOTs here.
 				if (caster && caster->IsClient() && IsDetrimentalSpell(spell_id) && effect_value < 0) {
-					sint32 modifier = 100;
-					modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
-
-					if(caster){
-						if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
-							AddToHateList(caster, -effect_value);
-						}
-						else if(!caster->IsClient())
-						{
-							if(!IsClient())
-								AddToHateList(caster, -effect_value);
-						}
-						effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
-						caster->TryDotCritical(spell_id, effect_value);
-					}
-					effect_value = effect_value * modifier / 100;
+					effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
+					effect_value = caster->CastToClient()->GetActDoTDamage(spell_id, effect_value);
+					
+					if (!caster->CastToClient()->GetFeigned())
+						AddToHateList(caster, -effect_value);
 				}
 
 				if(effect_value < 0)
 				{
 					if(caster)
 					{
-						if(!caster->IsClient())
+						if(!caster->IsClient()){
 							effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
+							if (!IsClient()) //Allow NPC's to generate hate if casted on other NPC's.
+								AddToHateList(caster, -effect_value);
+						}
 
 						if(caster->IsNPC())
 							effect_value = caster->CastToNPC()->GetActSpellDamage(spell_id, effect_value);
@@ -3790,12 +3844,14 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 	int lvlModifier = 100;
 	int spell_level = 0;
 	int lvldiff = 0;
+	bool LimitSpellSkill = false;
+	bool SpellSkill_Found = false;
 
 	for (int i = 0; i < EFFECT_COUNT; i++) {
+
 		switch (focus_spell.effectid[i]) {
 		case SE_Blank:
 			break;
-
 		//check limits
 
 		case SE_LimitResist:{
@@ -3812,6 +3868,8 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		}
 
 		case SE_LimitMaxLevel:{
+			if (IsNPC())
+				break;
 			spell_level = spell.classes[(GetClass()%16) - 1];
 			lvldiff = spell_level - focus_spell.base[i];
 			//every level over cap reduces the effect by focus_spell.base2[i] percent unless from a clicky when ItemCastsUseFocus is true
@@ -3832,6 +3890,8 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		}
 
 		case SE_LimitMinLevel:
+			if (IsNPC())
+				break;
 			if (spell.classes[(GetClass()%16) - 1] < focus_spell.base[i])
 				return(0);
 			break;
@@ -3926,7 +3986,26 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 				else if(focus_spell.base[i] < 0 && focus_spell.base[i] == spell.spellgroup)
 					return 0;
 			break;
-	
+
+		case SE_LimitSpellSkill:
+				LimitSpellSkill = true;
+				if(focus_spell.base[i] == spell.skill)
+					SpellSkill_Found = true;
+			break;
+
+		case SE_LimitExcludeSkill:{
+			sint16 spell_skill = spell.skill * -1;
+			if(focus_spell.base[i] == spell_skill)
+				return 0;	
+			break;
+			}
+
+		case SE_LimitClass:
+			//Do not use this limit more then once per spell. If multiple class, treat value like items would.
+			if (!PassLimitClass(focus_spell.base[i], GetClass()))
+				return 0; 
+			break;
+
 		//handle effects
 		case SE_ImprovedDamage:
 		// No Spell used this, its handled by different spell effect IDs.
@@ -4080,7 +4159,7 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		{
 			if(type == focusSpellVulnerability)
 			{
-				value = 1;
+				value = focus_spell.base[i];
 			}
 			break;
 		}
@@ -4105,19 +4184,16 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		{
 			if(type == focusSympatheticProc)
 			{
-				float ProcChance, ProcBonus; //ProcBonus's are not yet implemented for this
+				float ProcChance, ProcBonus; 
 				sint16 ProcRateMod = focus_spell.base[i]; //Baseline is 100 for most Sympathetic foci
 				sint32 cast_time = GetActSpellCasttime(spell_id, spells[spell_id].cast_time);
-				float FinalProcChance = GetSympatheticProcChances(ProcBonus, ProcChance, cast_time, ProcRateMod);
+				GetSympatheticProcChances(ProcBonus, ProcChance, cast_time, ProcRateMod);
 
-				if(MakeRandomFloat(0, 1) <= FinalProcChance)
-				{
+				if(MakeRandomFloat(0, 1) <= ProcChance)
 					value = focus_id;
-				}
+				
 				else
-				{
 					value = 0;
-				}
 			}
 			break;
 		}
@@ -4137,9 +4213,48 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 			break;
 		}
 
+		case SE_Empathy:
+		{
+			if(type == focusAdditionalDamage)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
 		case SE_AdditionalHeal:
 		{
 			if(type == focusAdditionalHeal)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_AdditionalHeal2:
+		{
+			if(type == focusAdditionalHeal2)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_HealRate2:
+		{
+			if(type == focusHealRate)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_IncreaseSpellPower:
+		{
+			if (type == focusSpellEffectiveness)
+				value = focus_spell.base[i];
+
+			break;
+		}
+		case SE_SpellCriticalFocus:
+		{
+			if(type == focusImprovedCritical)
 				value = focus_spell.base[i];
 
 			break;
@@ -4153,6 +4268,10 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 #endif
 		}
 	}
+	//Check for spell skill limits.
+	if ((LimitSpellSkill) && (!SpellSkill_Found))
+		return 0;
+
 	return(value*lvlModifier/100);
 }
 
@@ -4161,7 +4280,6 @@ sint16 Client::GetSympatheticFocusEffect(focusType type, int16 spell_id) {
 	if (IsBardSong(spell_id))
 		return 0;
 	
-	const Item_Struct* TempItem = 0;
 	uint16 proc_spellid = 0;
 	uint8 SizeProcList = 0;
 	uint8 MAX_SYMPATHETIC = 10;
@@ -4169,45 +4287,50 @@ sint16 Client::GetSympatheticFocusEffect(focusType type, int16 spell_id) {
 	vector<int> SympatheticProcList;
 
 	//item focus
-	for(int x=0; x<=21; x++)
-	{
-		if (SizeProcList > MAX_SYMPATHETIC)
-			continue;
-	
-		TempItem = NULL;
-		ItemInst* ins = GetInv().GetItem(x);
-		if (!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
-		
-				proc_spellid = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id); 
+	if (itembonuses.FocusEffects[type]){
 
-				if (proc_spellid > 0)
-				{
-					SympatheticProcList.push_back(proc_spellid);
-					SizeProcList = SympatheticProcList.size();
-				}
-		}
+		const Item_Struct* TempItem = 0;
 		
-		for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+		for(int x=0; x<=21; x++)
 		{
 			if (SizeProcList > MAX_SYMPATHETIC)
 				continue;
 		
-			ItemInst *aug = NULL;
-			aug = ins->GetAugment(y);
-			if(aug)
-			{
-				const Item_Struct* TempItemAug = aug->GetItem();
-				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
+			TempItem = NULL;
+			ItemInst* ins = GetInv().GetItem(x);
+			if (!ins)
+				continue;
+			TempItem = ins->GetItem();
+			if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+			
+					proc_spellid = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id); 
 
-					proc_spellid = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
-					
 					if (proc_spellid > 0)
 					{
 						SympatheticProcList.push_back(proc_spellid);
 						SizeProcList = SympatheticProcList.size();
+					}
+			}
+			
+			for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+			{
+				if (SizeProcList > MAX_SYMPATHETIC)
+					continue;
+			
+				ItemInst *aug = NULL;
+				aug = ins->GetAugment(y);
+				if(aug)
+				{
+					const Item_Struct* TempItemAug = aug->GetItem();
+					if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
+
+						proc_spellid = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
+						
+						if (proc_spellid > 0)
+						{
+							SympatheticProcList.push_back(proc_spellid);
+							SizeProcList = SympatheticProcList.size();
+						}
 					}
 				}
 			}
@@ -4215,25 +4338,27 @@ sint16 Client::GetSympatheticFocusEffect(focusType type, int16 spell_id) {
 	}
 
 	//Spell Focus
-	int buff_slot = 0;
-	int16 focusspellid  = 0;
-	uint32 buff_max = GetMaxTotalSlots();
-	for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
+	if (spellbonuses.FocusEffects[type]){
+		int buff_slot = 0;
+		int16 focusspellid  = 0;
+		uint32 buff_max = GetMaxTotalSlots();
+		for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
+			
+			if (SizeProcList > MAX_SYMPATHETIC)
+				continue;
+			
+			focusspellid = buffs[buff_slot].spellid;
+			if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
+				continue;
+			
+				proc_spellid = CalcFocusEffect(type, focusspellid, spell_id);
 		
-		if (SizeProcList > MAX_SYMPATHETIC)
-			continue;
-		
-		focusspellid = buffs[buff_slot].spellid;
-		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
-			continue;
-		
-			proc_spellid = CalcFocusEffect(type, focusspellid, spell_id);
-	
-			if (proc_spellid > 0)
-			{
-				SympatheticProcList.push_back(proc_spellid); 
-				SizeProcList = SympatheticProcList.size();
-			}
+				if (proc_spellid > 0)
+				{
+					SympatheticProcList.push_back(proc_spellid); 
+					SizeProcList = SympatheticProcList.size();
+				}
+		}
 	}
 
 	if (SizeProcList > 0) 
@@ -4248,16 +4373,13 @@ sint16 Client::GetSympatheticFocusEffect(focusType type, int16 spell_id) {
 }
 
 sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
-	if (IsBardSong(spell_id))
+
+	if (IsBardSong(spell_id) && type != focusSpellEffectiveness)
 		return 0;
 	
-	const Item_Struct* TempItem = 0;
-	const Item_Struct* UsedItem = 0;
-	int16 UsedFocusID = 0;
-	sint16 Total = 0;
 	sint16 realTotal = 0;
-	sint16 focus_max = 0;
-	sint16 focus_max_real = 0;
+	sint16 realTotal2 = 0;
+	sint16 realTotal3 = 0;
 	bool rand_effectiveness = false;
 
 	//Improved Healing, Damage & Mana Reduction are handled differently in that some are random percentages
@@ -4268,175 +4390,188 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 		rand_effectiveness = true;
 	}
 
-	//item focus
-	for(int x=0; x<=21; x++)
-	{
-		TempItem = NULL;
-		ItemInst* ins = GetInv().GetItem(x);
-		if (!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
-			if(rand_effectiveness) {
-				focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
-				if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
-					focus_max_real = focus_max;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
-				} else if (focus_max < 0 && focus_max < focus_max_real) {
-					focus_max_real = focus_max;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
-				}
-			}
-			else {
-				Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
-				if (Total > 0 && realTotal >= 0 && Total > realTotal) {
-					realTotal = Total;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
-				} else if (Total < 0 && Total < realTotal) {
-					realTotal = Total;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
-				}
-			}
-		}
-		
-		for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+	//Check if item focus effect exists for the client.
+	if (itembonuses.FocusEffects[type]){
+
+		const Item_Struct* TempItem = 0;
+		const Item_Struct* UsedItem = 0;
+		int16 UsedFocusID = 0;
+		sint16 Total = 0;
+		sint16 focus_max = 0;
+		sint16 focus_max_real = 0;
+
+		//item focus
+		for(int x=0; x<=21; x++)
 		{
-			ItemInst *aug = NULL;
-			aug = ins->GetAugment(y);
-			if(aug)
-			{
-				const Item_Struct* TempItemAug = aug->GetItem();
-				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
-					if(rand_effectiveness) {
-						focus_max = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id, true);
-						if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
-							focus_max_real = focus_max;
-							UsedItem = TempItem;
-							UsedFocusID = TempItemAug->Focus.Effect;
-						} else if (focus_max < 0 && focus_max < focus_max_real) {
-							focus_max_real = focus_max;
-							UsedItem = TempItem;
-							UsedFocusID = TempItemAug->Focus.Effect;
-						}
+			TempItem = NULL;
+			ItemInst* ins = GetInv().GetItem(x);
+			if (!ins)
+				continue;
+			TempItem = ins->GetItem();
+			if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+				if(rand_effectiveness) {
+					focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
+					if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+						focus_max_real = focus_max;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					} else if (focus_max < 0 && focus_max < focus_max_real) {
+						focus_max_real = focus_max;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
 					}
-					else {
-						Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
-						if (Total > 0 && realTotal >= 0 && Total > realTotal) {
-							realTotal = Total;
-							UsedItem = TempItem;
-							UsedFocusID = TempItemAug->Focus.Effect;
-						} else if (Total < 0 && Total < realTotal) {
-							realTotal = Total;
-							UsedItem = TempItem;
-							UsedFocusID = TempItemAug->Focus.Effect;
+				}
+				else {
+					Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
+					if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					} else if (Total < 0 && Total < realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					}
+				}
+			}
+			
+			for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+			{
+				ItemInst *aug = NULL;
+				aug = ins->GetAugment(y);
+				if(aug)
+				{
+					const Item_Struct* TempItemAug = aug->GetItem();
+					if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
+						if(rand_effectiveness) {
+							focus_max = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id, true);
+							if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+								focus_max_real = focus_max;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							} else if (focus_max < 0 && focus_max < focus_max_real) {
+								focus_max_real = focus_max;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							}
+						}
+						else {
+							Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
+							if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+								realTotal = Total;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							} else if (Total < 0 && Total < realTotal) {
+								realTotal = Total;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							}
 						}
 					}
 				}
 			}
 		}
+	
+		//Tribute Focus
+		for(int x = TRIBUTE_SLOT_START; x < (TRIBUTE_SLOT_START + MAX_PLAYER_TRIBUTES); ++x)
+		{
+			TempItem = NULL;
+			ItemInst* ins = GetInv().GetItem(x);
+			if (!ins)
+				continue;
+			TempItem = ins->GetItem();
+			if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+				if(rand_effectiveness) {
+					focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
+					if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+						focus_max_real = focus_max;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					} else if (focus_max < 0 && focus_max < focus_max_real) {
+						focus_max_real = focus_max;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					}
+				}
+				else {
+					Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
+					if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					}
+					else if (Total < 0 && Total < realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					}
+				}
+			}
+		}
+		
+		if(UsedItem && rand_effectiveness && focus_max_real != 0)
+			realTotal = CalcFocusEffect(type, UsedFocusID, spell_id);
+		
+		if (realTotal != 0 && UsedItem) 
+			Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
 	}
 	
-	//Tribute Focus
-	for(int x = TRIBUTE_SLOT_START; x < (TRIBUTE_SLOT_START + MAX_PLAYER_TRIBUTES); ++x)
-	{
-		TempItem = NULL;
-		ItemInst* ins = GetInv().GetItem(x);
-		if (!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+	//Check if spell focus effect exists for the client.
+	if (spellbonuses.FocusEffects[type]){
+
+		//Spell Focus
+		sint16 Total2 = 0;
+		sint16 focus_max2 = 0;
+		sint16 focus_max_real2 = 0;
+		
+		int buff_tracker = -1;
+		int buff_slot = 0;
+		int16 focusspellid  = 0;
+		int16 focusspell_tracker  = 0;
+		uint32 buff_max = GetMaxTotalSlots();
+		for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
+			focusspellid = buffs[buff_slot].spellid;
+			if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
+				continue;
+			
 			if(rand_effectiveness) {
-				focus_max = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id, true);
-				if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
-					focus_max_real = focus_max;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
-				} else if (focus_max < 0 && focus_max < focus_max_real) {
-					focus_max_real = focus_max;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
+				focus_max2 = CalcFocusEffect(type, focusspellid, spell_id, true);
+				if (focus_max2 > 0 && focus_max_real2 >= 0 && focus_max2 > focus_max_real2) {
+					focus_max_real2 = focus_max2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
+				} else if (focus_max2 < 0 && focus_max2 < focus_max_real2) {
+					focus_max_real2 = focus_max2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
 				}
 			}
 			else {
-				Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
-				if (Total > 0 && realTotal >= 0 && Total > realTotal) {
-					realTotal = Total;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
-				}
-				else if (Total < 0 && Total < realTotal) {
-					realTotal = Total;
-					UsedItem = TempItem;
-					UsedFocusID = TempItem->Focus.Effect;
+				Total2 = CalcFocusEffect(type, focusspellid, spell_id);
+				if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
+					realTotal2 = Total2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
+				} else if (Total2 < 0 && Total2 < realTotal2) {
+					realTotal2 = Total2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
 				}
 			}
 		}
-	}
-	
-	if(UsedItem && rand_effectiveness && focus_max_real != 0)
-		realTotal = CalcFocusEffect(type, UsedFocusID, spell_id);
-	
-	if (realTotal != 0 && UsedItem) 
-		Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
-	
-	//Spell Focus
-	sint16 Total2 = 0;
-	sint16 realTotal2 = 0;
-	sint16 focus_max2 = 0;
-	sint16 focus_max_real2 = 0;
-	
-	int buff_tracker = -1;
-	int buff_slot = 0;
-	int16 focusspellid  = 0;
-	int16 focusspell_tracker  = 0;
-	uint32 buff_max = GetMaxTotalSlots();
-	for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
-		focusspellid = buffs[buff_slot].spellid;
-		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
-			continue;
 		
-		if(rand_effectiveness) {
-			focus_max2 = CalcFocusEffect(type, focusspellid, spell_id, true);
-			if (focus_max2 > 0 && focus_max_real2 >= 0 && focus_max2 > focus_max_real2) {
-				focus_max_real2 = focus_max2;
-				buff_tracker = buff_slot;
-				focusspell_tracker = focusspellid;
-			} else if (focus_max2 < 0 && focus_max2 < focus_max_real2) {
-				focus_max_real2 = focus_max2;
-				buff_tracker = buff_slot;
-				focusspell_tracker = focusspellid;
-			}
-		}
-		else {
-			Total2 = CalcFocusEffect(type, focusspellid, spell_id);
-			if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
-				realTotal2 = Total2;
-				buff_tracker = buff_slot;
-				focusspell_tracker = focusspellid;
-			} else if (Total2 < 0 && Total2 < realTotal2) {
-				realTotal2 = Total2;
-				buff_tracker = buff_slot;
-				focusspell_tracker = focusspellid;
-			}
+		if(focusspell_tracker && rand_effectiveness && focus_max_real2 != 0)
+			realTotal2 = CalcFocusEffect(type, focusspell_tracker, spell_id);
+		
+		// For effects like gift of mana that only fire once, save the spellid into an array that consists of all available buff slots.
+		if(buff_tracker >= 0 && buffs[buff_tracker].numhits > 0) {
+			m_spellHitsLeft[buff_tracker] = focusspell_tracker;
 		}
 	}
 	
-	if(focusspell_tracker && rand_effectiveness && focus_max_real2 != 0)
-		realTotal2 = CalcFocusEffect(type, focusspell_tracker, spell_id);
-	
-	// For effects like gift of mana that only fire once, save the spellid into an array that consists of all available buff slots.
-	if(buff_tracker >= 0 && buffs[buff_tracker].numhits > 0) {
-		m_spellHitsLeft[buff_tracker] = focusspell_tracker;
-	}
-	
+	//TODO: Add focustype bonus check for AA
 	// AA Focus
 	sint16 Total3 = 0;
-	sint16 realTotal3 = 0;
-	
 	uint32 slots = 0;
 	uint32 aa_AA = 0;
 	uint32 aa_value = 0;
@@ -4460,17 +4595,17 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
 		return 100;
 
-	if(type == focusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
+	if(type == focusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id)))
 		return 0;
 	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
 	//by reagent conservation for obvious reasons.
-	}
+	
 	return realTotal + realTotal2 + realTotal3;
 }
 
 bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate, int16 type, int16 spell_id,bool use_skill,int16 skill)
 {
-
+	bool bDepleted = false; 
 	//Effects: Cast:	SE_ResistSpellChance, SE_Reflect, SE_SpellDamageShield
 	//Effects: Attack:	SE_MeleeLifetap : SE_DamageShield, SE_AvoidMeleeChance, SE_SkillProc
 	//Effects: Skill:	SE_DamageModifier, SE_SkillDamageTaken, SE_SkillDamageAmount, SE_HitChance
@@ -4488,9 +4623,13 @@ bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate
 						}
 					}
 					else{
+						bDepleted = false;
 						for (int j = 0; j < EFFECT_COUNT; j++) {
+							if (bDepleted) 
+								continue;
 							if ((buffs[d].spellid != SPELL_UNKNOWN) && (spells[buffs[d].spellid].effectid[j] == type)) {
 								if(spells[buffs[d].spellid].base2[j] == -1 || spells[buffs[d].spellid].base2[j] == skill) {
+									bDepleted = true;
 									if(--buffs[d].numhits == 0) {
 										if(!TryFadeEffect(d)){
 											CastOnNumHitFade(buffs[d].spellid);
@@ -4508,7 +4647,7 @@ bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate
 	}
 
 	// For spell buffs that are limited by the number of times it can successfully trigger a spell.
-	// Effects: SE_TriggerOnCast, SE_SympatheticProc,SE_DefensiveProc
+	// Effects: SE_TriggerOnCast, SE_SympatheticProc,SE_DefensiveProc, SE_SkillProc
 	if(spell_id){
 		uint32 buff_count = GetMaxTotalSlots();
 		for(uint32 d = 0; d < buff_count; d++){
@@ -4708,25 +4847,6 @@ bool Mob::TryDeathSave() {
 	return Result;
 }
 
-void Mob::TryDotCritical(int16 spell_id, int &damage)
-{
-	int critChance = 0;
-	critChance += itembonuses.CriticalDoTChance + spellbonuses.CriticalDoTChance + aabonuses.CriticalDoTChance;
-
-	// since DOTs are the Necromancer forte, give an innate bonus
-	// however, no chance to crit unless they've trained atleast one level in the AA first
-	if (GetClass() == NECROMANCER && critChance > 0){
-		critChance += 5;
-	}
-
-	if (critChance > 0){
-		if (MakeRandomFloat(0, 99) < critChance)
-		{
-			damage *= 2;
-		}
-	}
-}
-
 bool Mob::AffectedExcludingSlot(int slot, int effect)
 {
 	for (int i = 0; i <= EFFECT_COUNT; i++)
@@ -4742,15 +4862,101 @@ bool Mob::AffectedExcludingSlot(int slot, int effect)
 
 float Mob::GetSympatheticProcChances(float &ProcBonus, float &ProcChance, sint32 cast_time, sint16 ProcRateMod) {
 
-	ProcBonus = 0; 
+	ProcBonus = spellbonuses.SpellProcChance + itembonuses.SpellProcChance; 
 	ProcChance = 0;
 	
 	if(cast_time > 0) 
 	{
 		ProcChance = ((float)cast_time * RuleR(Casting, AvgSpellProcsPerMinute) / 60000.0f); 
-		ProcChance = ProcChance * ProcRateMod/100;
+		ProcChance = ProcChance * (float)(ProcRateMod/100);
+		ProcChance = ProcChance+(ProcChance*ProcBonus/100);
 	}
-
 	return ProcChance;
 }
 
+bool Mob::CharmBreakBonusCheck()
+{
+	if (IsCharmed()){
+		if (spellbonuses.CharmBreakChance || itembonuses.CharmBreakChance){
+			sint16 CharmBreakMod = spellbonuses.CharmBreakChance + itembonuses.CharmBreakChance;
+			if ((MakeRandomInt(0, 100) <= CharmBreakMod))
+				return true;
+		}
+		return false;
+	}
+	return false;
+}
+
+bool Mob::DoHPToManaCovert(int16 mana_cost)
+{
+	if (spellbonuses.HPToManaConvert){
+		int hp_cost = spellbonuses.HPToManaConvert * mana_cost / 100;
+		if(hp_cost) {
+			SetHP(GetHP()-hp_cost);
+			return true;
+		}
+	return false;
+	}
+	
+	return false;
+}
+
+sint32 Mob::GetAdditionalDamage(Mob *caster, uint32 spell_id)
+{
+	sint32 dmg = 0;
+
+	if (!caster)
+		return 0;
+
+	if (spellbonuses.FocusEffects[focusAdditionalDamage]){
+		uint32 buff_count = GetMaxTotalSlots();
+		for(int i = 0; i < buff_count; i++){
+
+			if( (IsValidSpell(buffs[i].spellid) && (IsEffectInSpell(buffs[i].spellid, SE_Empathy))) ){
+
+			sint32 focus = caster->CalcFocusEffect(focusAdditionalDamage, buffs[i].spellid, spell_id);
+				if(focus){
+					dmg += focus;
+					CheckHitsRemaining(i);
+				}
+			}
+		}
+	}
+	return dmg;
+}
+
+sint32 Mob::ApplySpellEffectiveness(Mob* caster, sint16 spell_id, sint32 value, bool IsBard) {
+
+	if (!caster)
+		return value;
+
+	if (caster->IsClient()){
+		sint16 focus = caster->CastToClient()->GetFocusEffect(focusSpellEffectiveness, spell_id);
+
+			if (IsBard)
+				value += focus;
+			
+			else
+				value += value*focus/100;
+	}
+	return value;
+}
+
+bool Mob::PassLimitClass(uint32 Classes_, int16 Class_)
+{
+	//The class value for SE_LimitClass is +1 to its equivelent value in item dbase
+	//Example Bard on items is '128' while Bard on SE_LimitClass is '256', keep this in mind if making custom spells.
+	if (Class_ > 16)
+		return false;
+	
+	Class_ += 1;
+
+	for (int CurrentClass = 1; CurrentClass <= PLAYER_CLASS_COUNT; ++CurrentClass){
+		if (Classes_ % 2 == 1){
+   	 		if (CurrentClass == Class_)
+    			return true;
+		}
+		Classes_ >>= 1;
+	}
+	return false;
+}

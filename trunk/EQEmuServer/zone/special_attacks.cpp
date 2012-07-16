@@ -133,8 +133,9 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 		{
 			who->AvoidDamage(this, max_damage);
 		}
+		
 		who->MeleeMitigation(this, max_damage, min_damage);
-		ApplyMeleeDamageBonus(skill, max_damage);
+		ApplyMeleeDamageBonus(skill, max_damage); 
 		max_damage += (itembonuses.HeroicSTR / 10) + (max_damage * who->GetSkillDmgTaken(skill) / 100) + GetSkillDmgAmt(skill);
 		TryCriticalHit(who, skill, max_damage);
 		if (HasSkillProcs()){
@@ -142,6 +143,7 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 			TrySkillProc(who, skill, chance);
 		}
 	}
+
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
 
 	//Make sure 'this' has not killed the target and 'this' is not dead (Damage shield ect).
@@ -1673,7 +1675,9 @@ void Client::DoClassAttacks(Mob *ca_target)
 
 			ReuseTime = BashReuseTime-1;
 			ReuseTime = (ReuseTime*HasteMod)/100;
+
 			DoSpecialAttackDamage(ca_target, BASH, dmg, 1,-1,ReuseTime);
+
 			if(ReuseTime > 0)
 			{
 				p_timers.Start(pTimerCombatAbility, ReuseTime);
@@ -1754,6 +1758,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 			}
 
 			ReuseTime = KickReuseTime-1;
+
 			DoSpecialAttackDamage(ca_target, KICK, dmg, 1,-1, ReuseTime);
 		}
 	}
@@ -1787,7 +1792,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 		p_timers.Start(pTimerCombatAbility, ReuseTime);
 	}	
 }
-void Mob::Taunt(NPC* who, bool always_succeed) {
+void Mob::Taunt(NPC* who, bool always_succeed, float chance_bonus) {
 
 	if (who == NULL)
 		return;
@@ -1802,7 +1807,6 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 		CastToClient()->CheckIncreaseSkill(TAUNT, who, 10);
 	
 	int level = GetLevel();
-	
 	Mob *hate_top = who->GetHateMost();
 	
 	// Check to see if we're already at the top of the target's hate list
@@ -1845,6 +1849,10 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 					tauntchance = 95.0;
 			}
 		}
+
+		if (chance_bonus)
+			tauntchance = tauntchance + (tauntchance*chance_bonus/100.0f);
+		
 		if (tauntchance > MakeRandomFloat(0, 100)) {
 			// this is the max additional hate added per succesfull taunt
 			tauntvalue = (MakeRandomInt(2, 4) * level);

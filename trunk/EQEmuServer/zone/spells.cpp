@@ -1967,7 +1967,8 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot,
 	if(slot != USE_ITEM_SPELL_SLOT  && slot != POTION_BELT_SPELL_SLOT && mana_used > 0)
 	{
 		mlog(SPELLS__CASTING, "Spell %d: consuming %d mana", spell_id, mana_used);
-		SetMana(GetMana() - mana_used);
+		if (!DoHPToManaCovert(mana_used))
+			SetMana(GetMana() - mana_used);
 	}
 	
 	//set our reuse timer on long ass reuse_time spells...
@@ -2071,7 +2072,7 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 	//range check our target, if we have one and it is not us
 	float range = 0.00f;
 
-	range = GetActSpellRange(spell_id, spells[spell_id].range);
+	range = GetActSpellRange(spell_id, spells[spell_id].range, true);
 	if(spell_target != NULL && spell_target != this) {
 		//casting a spell on somebody but ourself, make sure they are in range
 		float dist2 = DistNoRoot(*spell_target);
@@ -3191,18 +3192,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 					CheckHitsRemaining(b);
 					Message_StringID(MT_Shout, SPELL_WOULDNT_HOLD);
 					return false;
-				}
-			}
-
-			if(IsEffectInSpell(buffs[b].spellid, SE_BlockSpellEffect)) {
-				for(int e = 0; e < EFFECT_COUNT; e++) {
-					if ((spellbonuses.BlockSpellEffect[e]) &&
-						(IsEffectInSpell(spell_id, spellbonuses.BlockSpellEffect[e]))) 
-					{
-						CheckHitsRemaining(b);
-						Message_StringID(MT_Shout, SPELL_WOULDNT_HOLD);
-						return false;
-					}
 				}
 			}
 		}

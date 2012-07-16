@@ -9173,6 +9173,7 @@ void Client::CompleteConnect()
 					AddSkillProc(GetProcID(buffs[j1].spellid, x1), 100+spells[buffs[j1].spellid].base2[x1],buffs[j1].spellid);
 					break;
 					}
+
 			}
 		}
 	}

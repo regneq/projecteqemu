@@ -1168,6 +1168,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				break;
 			}
 			case SE_ATK:
+			case SE_ACv2:
 			case SE_ArmorClass:	{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if (val < 0)
@@ -1257,7 +1258,8 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				AggroAmount += slevel*2;
 				break;
 			}
-			case SE_CurrentMana:	
+			case SE_CurrentMana:
+			case SE_ManaRegen_v2:
 			case SE_ManaPool:
 			case SE_CurrentEndurance:{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
@@ -1446,14 +1448,21 @@ bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
 
 	if(IsCharmSpell(spell_id)) {
 
+		if (spells[spell_id].field209 == -1) //If charm spell has this set(-1), it can not break till end of duration.
+			return true;
+
 		//1: The mob has a default 25% chance of being allowed a resistance check against the charm.
 		if (MakeRandomInt(0, 100) > RuleI(Spells, CharmBreakCheckChance))
 			return true;
-			
+
+		//Check if pet has any charm break bonuses
+		if (CharmBreakBonusCheck())
+			return true;
+
 		//2: The mob makes a resistance check against the charm
 		if (resist_check == 100)
 			return true; 
-				
+						
 		else
 		{
 			if (caster->IsClient())

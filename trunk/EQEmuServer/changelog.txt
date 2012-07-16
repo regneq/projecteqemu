@@ -1,6 +1,32 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==07/16/2012==
+Kayen: Implemented: SE_SpellProcChance, SE_CharmBreakChance, SE_BalanceMana, SE_DotCritDmgIncrease, SE_TripleAttackChance, SE_Taunt
+					SE_BardSongRange, SE_ACv2, SE_ManaRegen_v2,	SE_SpellCriticalFocus, SE_AdditionalHeal2, SE_HealRate2,
+					SE_CriticalHealOverTime2, SE_CriticalHealChance2, SE_SkillDamageAmount2, SE_LimitSpellSkill, SE_LimitClass
+					SE_LimitExcludeSkill, SE_ShieldBlock, SE_BlockBehind
+Kayen: Implemented: SE_Empathy - A focus limited debuff which causes (spells/skill attacks) cast on target to do +X amount more damage.
+					*This spell effect is often limited using SE_LimitSpellSkill. 
+					*(Ie. If empathy value is 1000 and limited to evocation, all nukes on target using evoc. will get +1000 damage)
+Kayen: Implemented: SE_SpellPowerIncrease - Can be used to apply a worn/buff focus effect with limits for...
+					1) Additional bard instrument modifiers.
+					2) Healing/Damage focus to bard songs. (Note: This is only effect that can do this).
+					3) Increase effectiviess of casted/disc Skill Attacks.
+					4) General use stackable Healing/Damage focus.
+					5) Increase the value of melee runes by focus amount.
+Kayen: SE_HPtoMana will no longer drain your HP before the spell is finished casting. Effect now handled as a bonus using best value.	
+Kayen: SE_SpellVulunerability will now correctly calculate and apply the highest value if target has mulitple effects.				
+Kayen: Fixed an issue where DOTs cast by an NPC on another NPC would not generate hate per tick. Improved how we calc damage from DOTs.		
+Kayen: SE_BlockSpellEffect was implemented incorrectly and has been revised to SE_NegateSpellEffect.
+		*It is not meant to block buffs, rather it negates the specific spell bonuses or effects from buffs you already have.
+		*Currently functional with any effect that is handled under bonuses, and focus effects.
+Kayen: Vastly improved how we handle melee/spell runes/partial mitigation runes ect. Should be significantly more efficient.
+		*Melee/Spell Mitigation runes and ManaAbsorbPercentDamage effects will now use the best mitigation value if multiple effects.
+Kayen: Improved the process we use to get spell/item focus effects. An initial check if the client has a specific focusType
+is done while checking for item/spell bonuses. GetFocusEffect will no longer check all inventory and buff slots every cast for the 
+focusType if that focusType doesn't exist on the client. This should improve performance since these checks are done 10-20x per cast/proc.
+
 ==07/15/2012==
 Secrets: Fixed an issue with saylinks above 255 characters. If you do want to use saylinks above 255 characters, it is reccomended you adjust the varchar field in the saylinks table to a "TEXT" field, which supports up to 65535 characters.
 
@@ -16,15 +42,13 @@ Bad_Captain: Bots: Implemented new #bot defensive command for Warriors and Knigh
 Required SQL: utils/sql/svn/2164_require_bots_bottimers.sql
 
 ==07/09/2012==
-
 Kayen: Fixed issue causing npc special attacks (kick/bash ect) to do extra damage.
 Kayen: Fixed major crash bug with rev2159.
 cavedude: AFTERDEATH npc_emote will now use emoteid instead of npcid.
 
 ==07/08/2012==
-
 Kayen: Implemented: SE_SkillProc, SE_SkillProc2 which can be limited by SE_LimitToSkill - Procs an effect when a specific skill is used
-       *Functional will all melee skills, special attacks, backstab, taunt, dodge,block,parry,riposte.
+       *Functional with all melee skills, special attacks, backstab, taunt, dodge,block,parry,riposte.
 Kayen: Added checks to attack process to prevent mob from performing certain actions after being killed (riposte, defensive proc ect).
 Kayen: Fixed bug where if client had delay death effect NPC would not be able to attack them if HP < -11, clients without delay death will now bleed again.
 Kayen: Implemented: SE_CastingLevel2, SE_ReduceHate

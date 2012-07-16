@@ -1058,6 +1058,37 @@ void Group::BalanceHP(sint32 penalty)
 	}
 }
 
+void Group::BalanceMana(sint32 penalty)
+{
+	int manataken = 0, numMem = 0;
+	unsigned int gi = 0;
+	for(; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			manataken += (members[gi]->GetMaxMana() - members[gi]->GetMana());
+			numMem += 1;
+		}
+	}
+
+	manataken += manataken * penalty / 100;
+	manataken /= numMem;
+	for(gi = 0; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			if((members[gi]->GetMaxMana() - manataken) < 1){ 
+				members[gi]->SetMana(1);
+				if (members[gi]->IsClient())
+					members[gi]->CastToClient()->SendManaUpdate();
+			}
+			else{
+				members[gi]->SetMana(members[gi]->GetMaxMana() - manataken);
+				if (members[gi]->IsClient())
+					members[gi]->CastToClient()->SendManaUpdate();
+			}
+		}
+	}
+}
+
 uint16 Group::GetAvgLevel()
 {
 	double levelHolder = 0;
