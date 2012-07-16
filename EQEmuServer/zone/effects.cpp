@@ -30,31 +30,39 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-float Client::GetActSpellRange(int16 spell_id, float range)
+float Client::GetActSpellRange(int16 spell_id, float range, bool IsBard)
 {
 	float extrange = 100;
 
 	extrange += GetFocusEffect(focusRange, spell_id);
 	
+	if (IsBard){
+		if(spellbonuses.SongRange || itembonuses.SongRange){
+			if (IsBardSong(spell_id) && IsBeneficialSpell(spell_id) && IsGroupSpell(spell_id)){	
+				float song_bonus = spellbonuses.SongRange + itembonuses.SongRange;
+				extrange += song_bonus;
+			}
+		}
+	}
+	
 	return (range * extrange) / 100;
 }
 
 
-sint32 Client::Additional_SpellDmg(int16 spell_id) 
+sint32 Client::Additional_SpellDmg(int16 spell_id, bool bufftick) 
 {
-
 	sint32 spell_dmg = 0;
-
 	spell_dmg  += GetFocusEffect(focusFF_Damage_Amount, spell_id);
 	spell_dmg  += GetFocusEffect(focusSpellDamage, spell_id); 
 
 	//For DOTs you need to apply the damage over the duration of the dot to each tick (this is how live did it)
-	int duration = CalcBuffDuration(this, this, spell_id);
-	if (duration > 0)
-	{
-		return spell_dmg /= duration;
+	if (bufftick){
+		int duration = CalcBuffDuration(this, this, spell_id);
+		if (duration > 0)
+			return spell_dmg /= duration;
+		else
+			return 0;
 	}
-	
 	return spell_dmg;
 }
 
@@ -93,6 +101,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
     } else {
     	//damage spells.
 		modifier += GetFocusEffect(focusImprovedDamage, spell_id);
+		modifier += GetFocusEffect(focusSpellEffectiveness, spell_id);
 	}
 	
 	// Need to scale HT damage differently after level 40! It no longer scales by the constant value in the spell file. It scales differently, instead of 10 more damage per level, it does 30 more damage per level. So we multiply the level minus 40 times 20 if they are over level 40.
@@ -182,6 +191,36 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	return ((value * modifier / 100) - spell_dmg);
 }
 
+sint32 Client::GetActDoTDamage(int16 spell_id, sint32 value) {
+
+	sint32 modifier = 100;
+	sint16 spell_dmg = 0;
+	sint16 critChance = 0;
+	sint32 ratio = 0;
+
+	modifier += GetFocusEffect(focusImprovedDamage, spell_id);
+	critChance += itembonuses.CriticalDoTChance + spellbonuses.CriticalDoTChance + aabonuses.CriticalDoTChance;
+	ratio += itembonuses.DotCritDmgIncrease + spellbonuses.DotCritDmgIncrease + aabonuses.DotCritDmgIncrease;
+	spell_dmg += Additional_SpellDmg(spell_id,true);
+	
+	// since DOTs are the Necromancer forte, give an innate bonus (Kayen: Is this a real bonus?)
+	// however, no chance to crit unless they've trained atleast one level in the AA first
+	if (GetClass() == NECROMANCER && critChance > 0)
+		critChance += 5;
+	
+	if (critChance > 0){
+		if (MakeRandomInt(0, 99) < critChance){
+			modifier += modifier*ratio/100;
+			value = ((value*modifier/100)-spell_dmg)*2;
+		}
+	}
+	
+	else
+		value = (value*modifier/100)-spell_dmg;
+	
+	return value;
+}
+
 //Scale all NPC spell healing via SetSpellFocusHeal(value)
 sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
 
@@ -191,7 +230,7 @@ sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
 		// Check for buffs that affect the healrate of the target
 		if(this->GetTarget())
 		{
-			value += value * GetHealRate() / 100;
+			value += value * GetHealRate(spell_id) / 100; 
 		}
 
 	return (value * modifier / 100);
@@ -202,11 +241,12 @@ sint32 Client::Additional_Heal(int16 spell_id)
 	sint32 heal_amt = 0;
 
 	heal_amt  += GetFocusEffect(focusAdditionalHeal, spell_id);
+	heal_amt  += GetFocusEffect(focusAdditionalHeal2, spell_id);
 
-	int duration = CalcBuffDuration(this, this, spell_id);
-	if (duration > 0)
-	{
-		return heal_amt /= duration;
+	if (heal_amt){
+		int duration = CalcBuffDuration(this, this, spell_id);
+		if (duration > 0)
+			return heal_amt /= duration;
 	}
 	
 	return heal_amt;
@@ -217,6 +257,7 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 	sint32 modifier = 100;
 	sint16 heal_amt = 0;
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
+	modifier += GetFocusEffect(focusSpellEffectiveness, spell_id);
 	heal_amt += Additional_Heal(spell_id);
 	int chance = 0;
 	
@@ -232,7 +273,7 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 
 		// Check for buffs that affect the healrate of the target
 		if(this->GetTarget())
-			value += value * GetHealRate() / 100;
+			value += value * GetHealRate(spell_id) / 100;
 		
 		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 		
@@ -373,21 +414,6 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 			if(IsEffectInSpell(buffs[buffSlot].spellid, SE_ReduceManaCost)) {
 				if(CalcFocusEffect(focusManaCost, buffs[buffSlot].spellid, spell_id) == 100)
 					cost = 1;
-			}
-		}
-	}
-	
-	if(cost > 1) {
-		int slot = GetBuffSlotFromType(SE_HPToMana);
-		if(slot >= 0) {
-			for (int k = 0; k < EFFECT_COUNT; k++) {
-				if (spells[buffs[slot].spellid].effectid[k] == SE_HPToMana) {
-					int hp_cost = spells[buffs[slot].spellid].base[k] * cost / 100;
-					if(hp_cost) {
-						this->SetHP(GetHP()-hp_cost);
-						cost = 0;
-					}
-				}
 			}
 		}
 	}

@@ -450,9 +450,10 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	///////////////////////////////////////////////////////
 
 	bool bBlockFromRear = false;
-
+	bool bShieldBlockFromRear = false;
+	
 	if (this->IsClient()) {
-		float aaChance = 0;
+		int aaChance = 0;
 
 		// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
 		// from a direction other than the rear is granted.
@@ -474,8 +475,14 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 			break;
 		}
 
-		if (aaChance > MakeRandomInt(1, 100))
+		float BlockBehindChance = aaChance + spellbonuses.BlockBehind + itembonuses.BlockBehind;
+
+		if (BlockBehindChance > MakeRandomInt(1, 100)){
 			bBlockFromRear = true;
+
+			if (spellbonuses.BlockBehind || itembonuses.BlockBehind)
+				bShieldBlockFromRear = true; //This bonus should allow a chance to Shield Block from behind.
+		}
 	}
 
 	float block_chance = 0.0f;
@@ -496,23 +503,29 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		RollTable[1] = RollTable[0];
 	}
 
-	if(damage > 0 && GetAA(aaShieldBlock) && (!other->BehindMob(this, other->GetX(), other->GetY()))) {
+	if(damage > 0 && (GetAA(aaShieldBlock) || spellbonuses.ShieldBlock || itembonuses.ShieldBlock) 
+		&& (!other->BehindMob(this, other->GetX(), other->GetY()) || bShieldBlockFromRear)) {
 		bool equiped = CastToClient()->m_inv.GetItem(14);
 		if(equiped) {
 			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
-
+			float aaShieldBlockChance = 0.0f;
+			float bonusShieldBlock = 0.0f;
 			if(shield == ItemTypeShield) {
 				switch(GetAA(aaShieldBlock)) {
 					 case 1:
-						RollTable[1] = RollTable[0] + 2.50;
+						aaShieldBlockChance = 2.50;
                         break;
 	                 case 2:
-		                RollTable[1] = RollTable[0] + 5.00;
+		                aaShieldBlockChance = 5.00;
 			            break;
 				     case 3:
-					    RollTable[1] = RollTable[0] + 10.00;
+					    aaShieldBlockChance = 10.00;
 						break;
 				}
+
+				bonusShieldBlock = (float)spellbonuses.ShieldBlock + (float)itembonuses.ShieldBlock;
+
+				RollTable[1] = RollTable[0] + aaShieldBlockChance + bonusShieldBlock;
 			}
 		}
 	}
@@ -803,7 +816,6 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		if(damage != 0 && damage < minhit)
 			damage = minhit;
 	}
-
 
 	//reduce the damage from shielding item and aa based on the min dmg
 	//spells offer pure mitigation
@@ -3038,118 +3050,25 @@ sint32 Mob::ReduceDamage(sint32 damage)
 	if(damage <= 0)
 		return damage;
 
-	int slot = GetBuffSlotFromType(SE_NegateAttacks);
-	if(slot >= 0) {
-		if(CheckHitsRemaining(slot, false, true))
-			return -6;
-	}
+	sint32 slot = -1;
 
-	slot = GetBuffSlotFromType(SE_MitigateMeleeDamage);
-	if(slot >= 0)
-	{
-		int damage_to_reduce = damage * GetPartialMeleeRuneReduction(buffs[slot].spellid) / 100;
-		if(damage_to_reduce > buffs[slot].melee_rune)
-		{
-			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
-				" damage remaining, fading buff.", damage_to_reduce, buffs[slot].melee_rune);
-			damage -= damage_to_reduce;
-			if(!TryFadeEffect(slot))
-				BuffFadeBySlot(slot);
-			UpdateRuneFlags();
-		}
-		else
-		{
-			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
-				" damage remaining.", damage_to_reduce, buffs[slot].melee_rune);
-			buffs[slot].melee_rune = (buffs[slot].melee_rune - damage_to_reduce);
-			damage -= damage_to_reduce;
-			if (!CheckHitsRemaining(slot))
-				UpdateRuneFlags();
+	if (spellbonuses.NegateAttacks[0]){
+		slot = spellbonuses.NegateAttacks[1];
+		if(slot >= 0) {
+			if(CheckHitsRemaining(slot, false, true))
+				return -6;
 		}
 	}
 
-	if(damage < 1)
-	{
-		return -6;
-	}
-
-	slot = GetBuffSlotFromType(SE_Rune);
-	while(slot >= 0)
-	{
-		uint32 melee_rune_left = buffs[slot].melee_rune;
-		if(melee_rune_left >= damage)
-		{
-			melee_rune_left -= damage;
-			damage = -6;
-			buffs[slot].melee_rune = melee_rune_left;
-			break;
-		}
-		else
-		{
-			if(melee_rune_left > 0)
-				damage -= melee_rune_left;
-			if(!TryFadeEffect(slot))
-				BuffFadeBySlot(slot);
-			slot = GetBuffSlotFromType(SE_Rune);
-			UpdateRuneFlags();
-		}
-	}
-	
-	if(damage < 1)
-	{
-		return -6;
-	}
-	
-	slot = GetBuffSlotFromType(SE_ManaAbsorbPercentDamage);
-	if(slot >= 0) {
-		for (int i = 0; i < EFFECT_COUNT; i++) {
-			if (spells[buffs[slot].spellid].effectid[i] == SE_ManaAbsorbPercentDamage) {
-				if(GetMana() > damage * spells[buffs[slot].spellid].base[i] / 100) {
-					damage -= (damage * spells[buffs[slot].spellid].base[i] / 100);
-					SetMana(GetMana() - damage);
-					CheckHitsRemaining(slot);
-				}
-			}
-		}
-	}
-
-	return(damage);
-}
-	
-sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker) 
-{
-	if(damage <= 0)
-	{
-		return damage;
-	}
-
-	// See if we block the spell outright first
-	int slot = GetBuffSlotFromType(SE_NegateAttacks);
-	if(slot >= 0) {
-		if(CheckHitsRemaining(slot, false, true))
-			return -6;
-	}
-	
-	// If this is a DoT, use DoT Shielding...
-	if(iBuffTic)
-	{
-		damage -= (damage * this->itembonuses.DoTShielding / 100);
-	}
-	// This must be a DD then so lets apply Spell Shielding and runes.
-	else 
-	{
-		// Reduce damage by the Spell Shielding first so that the runes don't take the raw damage.
-		damage -= (damage * this->itembonuses.SpellShield / 100);
-	
-		// Do runes now.
-		slot = GetBuffSlotFromType(SE_MitigateSpellDamage);
+	if (spellbonuses.MitigateMeleeRune[0]){
+		slot = spellbonuses.MitigateMeleeRune[1];
 		if(slot >= 0)
 		{
-			int damage_to_reduce = damage * GetPartialMagicRuneReduction(buffs[slot].spellid) / 100;
-			if(damage_to_reduce > buffs[slot].magic_rune)
+			int damage_to_reduce = damage * spellbonuses.MitigateMeleeRune[0] / 100;
+			if(damage_to_reduce > buffs[slot].melee_rune)
 			{
-				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateSpellDamage %d damage negated, %d"
-					" damage remaining, fading buff.", damage_to_reduce, buffs[slot].magic_rune);
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+					" damage remaining, fading buff.", damage_to_reduce, buffs[slot].melee_rune);
 				damage -= damage_to_reduce;
 				if(!TryFadeEffect(slot))
 					BuffFadeBySlot(slot);
@@ -3158,53 +3077,106 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 			else
 			{
 				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
-					" damage remaining.", damage_to_reduce, buffs[slot].magic_rune);
-				buffs[slot].magic_rune = (buffs[slot].magic_rune - damage_to_reduce);
+					" damage remaining.", damage_to_reduce, buffs[slot].melee_rune);
+				buffs[slot].melee_rune = (buffs[slot].melee_rune - damage_to_reduce);
 				damage -= damage_to_reduce;
 				if (!CheckHitsRemaining(slot))
 					UpdateRuneFlags();
 			}
 		}
+	}
 
-		if(damage < 1)
-		{
-			return -6;
-		}
+	if(damage < 1)
+		return -6;
+	
+	if (HasRune())
+		damage = RuneAbsorb(damage, SE_Rune);
 
-
-		slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-		while(slot >= 0)
-		{
-            uint32 magic_rune_left = buffs[slot].magic_rune;
-			if(magic_rune_left >= damage)
-			{
-				magic_rune_left -= damage;
-				damage = 0;
-				buffs[slot].magic_rune = magic_rune_left;
-				break;
-			}
-			else
-			{
-				if(magic_rune_left > 0)
-					damage -= magic_rune_left;
-				if(!TryFadeEffect(slot))
-					BuffFadeBySlot(slot);
-				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-				UpdateRuneFlags();
-			}
-		}
+	if(damage < 1)
+		return -6;
 		
-		slot = GetBuffSlotFromType(SE_ManaAbsorbPercentDamage);
+	if (spellbonuses.ManaAbsorbPercentDamage[0]){
+		slot = spellbonuses.ManaAbsorbPercentDamage[1];
+		if(GetMana() > damage * spellbonuses.ManaAbsorbPercentDamage[0] / 100) {
+			damage -= (damage * spellbonuses.ManaAbsorbPercentDamage[0] / 100);
+			SetMana(GetMana() - damage);
+			CheckHitsRemaining(slot);
+		}	
+	}
+
+	return(damage);
+}
+	
+sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker) 
+{
+	if(damage <= 0)
+		return damage;
+	
+	sint32 slot = -1;
+
+	// See if we block the spell outright first
+	if (spellbonuses.NegateAttacks[0]){
+		slot = spellbonuses.NegateAttacks[1];
 		if(slot >= 0) {
-			for (int k = 0; k < EFFECT_COUNT; k++) {
-				if (spells[buffs[slot].spellid].effectid[k] == SE_ManaAbsorbPercentDamage) {
-					if(GetMana() > damage * spells[buffs[slot].spellid].base[k] / 100) {
-						damage -= (damage * spells[buffs[slot].spellid].base[k] / 100);
-						SetMana(GetMana() - damage);
-						CheckHitsRemaining(slot);
-					}
+			if(CheckHitsRemaining(slot, false, true))
+				return 0;
+		}
+	}
+	
+	// If this is a DoT, use DoT Shielding...
+	if(iBuffTic)
+		damage -= (damage * itembonuses.DoTShielding / 100);
+	
+	// This must be a DD then so lets apply Spell Shielding and runes.
+	else 
+	{
+		// Reduce damage by the Spell Shielding first so that the runes don't take the raw damage.
+		damage -= (damage * itembonuses.SpellShield / 100);
+	
+		// Do runes now.
+		if (spellbonuses.MitigateSpellRune[0]){
+			slot = spellbonuses.MitigateSpellRune[1];
+			if(slot >= 0)
+			{
+				int damage_to_reduce = damage * spellbonuses.MitigateSpellRune[0] / 100;
+				if(damage_to_reduce > buffs[slot].magic_rune)
+				{
+					mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateSpellDamage %d damage negated, %d"
+						" damage remaining, fading buff.", damage_to_reduce, buffs[slot].magic_rune);
+					damage -= damage_to_reduce;
+					if(!TryFadeEffect(slot))
+						BuffFadeBySlot(slot);
+					UpdateRuneFlags();
+				}
+				else
+				{
+					mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+						" damage remaining.", damage_to_reduce, buffs[slot].magic_rune);
+					buffs[slot].magic_rune = (buffs[slot].magic_rune - damage_to_reduce);
+					damage -= damage_to_reduce;
+					if (!CheckHitsRemaining(slot))
+						UpdateRuneFlags();
 				}
 			}
+		}
+
+		if(damage < 1)
+			return 0;
+		
+
+		if (HasSpellRune())
+			damage = RuneAbsorb(damage, SE_AbsorbMagicAtt);
+
+		if(damage < 1)
+			return 0;
+
+		if (spellbonuses.ManaAbsorbPercentDamage[0]){
+			slot = spellbonuses.ManaAbsorbPercentDamage[1];
+			if(GetMana() > damage * spellbonuses.ManaAbsorbPercentDamage[0] / 100) {
+				damage -= (damage * spellbonuses.ManaAbsorbPercentDamage[0] / 100);
+				SetMana(GetMana() - damage);
+				CheckHitsRemaining(slot);
+			}	
 		}
 	}
 	return damage;
@@ -3280,7 +3252,8 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 		// Only some Double Attack classes get Triple Attack
 		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
 			// We only get half the skill, but should get all the bonuses
-			chance = (skill/2) + buffs + aaBonus;
+			sint16 triple_bonus = spellbonuses.TripleAttackChance + itembonuses.TripleAttackChance;
+			chance = (skill/2) + buffs + aaBonus + triple_bonus;
 		}
 		else {
 			return false;
@@ -3373,11 +3346,15 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		} else {
 			sint32 origdmg = damage;
 			damage = AffectMagicalDamage(damage, spell_id, iBuffTic, attacker);
-			mlog(COMBAT__HITS, "Melee Damage reduced to %d", damage);
 			if (origdmg != damage && attacker && attacker->IsClient()) {
 				if(attacker->CastToClient()->GetFilter(FILTER_DAMAGESHIELD) != FilterHide)
 					attacker->Message(15, "The Spellshield absorbed %d of %d points of damage", origdmg - damage, origdmg);
 			}
+			if (damage == 0  && origdmg != damage && IsClient()) {
+				//Kayen: Probably need to add a filter for this - Not sure if this msg is correct but there should be a message for spell negate/runes.			
+				Message(263, "%s tries to cast on you, but YOUR magical skin absorbs the spell.",attacker->GetCleanName());
+			}
+
 		}
 		
 
@@ -4357,5 +4334,60 @@ void Mob::TrySkillProc(Mob *on, int16 skill, float chance)
 				}
 			}
 		}
+	}
+}
+
+sint32 Mob::RuneAbsorb(sint32 damage, int16 type)
+{		
+	uint32 buff_max = GetMaxTotalSlots();
+	if (type == SE_Rune){
+		for(uint32 slot = 0; slot < buff_max; slot++) {
+			if((buffs[slot].spellid != SPELL_UNKNOWN) && (buffs[slot].melee_rune) && IsEffectInSpell(buffs[slot].spellid, type)){
+				uint32 melee_rune_left = buffs[slot].melee_rune;
+				if(melee_rune_left >= damage)
+				{
+					melee_rune_left -= damage;
+					buffs[slot].melee_rune = melee_rune_left;
+					return -6;
+				}
+
+				else
+				{
+					if(melee_rune_left > 0)
+						damage -= melee_rune_left;
+					if(!TryFadeEffect(slot))
+						BuffFadeBySlot(slot);
+					UpdateRuneFlags();
+					continue;
+				}
+			}
+		}
+		return damage;
+	}
+
+
+	else{
+		for(uint32 slot = 0; slot < buff_max; slot++) {
+			if((buffs[slot].spellid != SPELL_UNKNOWN) && (buffs[slot].magic_rune) && IsEffectInSpell(buffs[slot].spellid, type)){
+				uint32 magic_rune_left = buffs[slot].magic_rune;
+				if(magic_rune_left >= damage)
+				{
+					magic_rune_left -= damage;
+					buffs[slot].magic_rune = magic_rune_left;
+					return 0;
+				}
+
+				else
+				{
+					if(magic_rune_left > 0)
+						damage -= magic_rune_left;
+					if(!TryFadeEffect(slot))
+						BuffFadeBySlot(slot);
+					UpdateRuneFlags();
+					continue;
+				}
+			}
+		}
+		return damage;
 	}
 }

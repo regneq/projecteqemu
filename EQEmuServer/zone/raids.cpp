@@ -496,6 +496,43 @@ void Raid::BalanceHP(sint32 penalty, int32 gid)
 	}
 }
 
+void Raid::BalanceMana(sint32 penalty, int32 gid)
+{
+	int manataken = 0, numMem = 0;
+	int gi = 0;
+	for(; gi < MAX_RAID_MEMBERS; gi++)
+	{
+		if(members[gi].member){
+			if(members[gi].GroupNumber == gid)
+			{
+				manataken += (members[gi].member->GetMaxMana() - members[gi].member->GetMana());
+				numMem += 1;
+			}
+		}
+	}
+
+	manataken += manataken * penalty / 100;
+	manataken /= numMem;
+	for(gi = 0; gi < MAX_RAID_MEMBERS; gi++)
+	{
+		if(members[gi].member){
+			if(members[gi].GroupNumber == gid)
+			{
+				if((members[gi].member->GetMaxMana() - manataken) < 1){ 
+					members[gi].member->SetMana(1);		
+					if (members[gi].member->IsClient())		
+						members[gi].member->CastToClient()->SendManaUpdate();	 
+				}
+				else{
+					members[gi].member->SetMana(members[gi].member->GetMaxMana() - manataken);
+					if (members[gi].member->IsClient())		
+						members[gi].member->CastToClient()->SendManaUpdate();
+				}
+			}
+		}
+	}
+}
+
 //basically the same as Group's version just with more people like a lot of non group specific raid stuff
 void Raid::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter){
 	//avoid unneeded work

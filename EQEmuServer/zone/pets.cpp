@@ -727,3 +727,4 @@ bool ZoneDatabase::GetBasePetItems(sint32 equipmentset, int32 *items) {
 
 	return true;
 }
+

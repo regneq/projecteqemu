@@ -406,6 +406,11 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 	if (item->Worn.Effect>0 && (item->Worn.Type == ET_WornEffect)) { // latent effects
 		ApplySpellsBonuses(item->Worn.Effect, item->Worn.Level, newbon, 0, true);
 	}
+
+	if (item->Focus.Effect>0 && (item->Focus.Type == ET_Focus)) { // focus effects
+		ApplySpellsBonuses(item->Focus.Effect, item->Focus.Level, newbon, 0, true);
+	}
+
 	switch(item->BardType)
 	{
 	case 51: /* All (e.g. Singing Short Sword) */
@@ -787,6 +792,10 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				newbon->SpellCritDmgIncrease += base1;
 				break;
 
+			case SE_DotCritDmgIncrease:
+				newbon->DotCritDmgIncrease += base1;
+				break;
+
 			case SE_ResistSpellChance:
 				newbon->ResistSpellChance += base1;
 				break;
@@ -894,14 +903,21 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	uint32 buff_count = GetMaxTotalSlots();
 	for(i = 0; i < buff_count; i++) {
 		if(buffs[i].spellid != SPELL_UNKNOWN)
-			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid, false, buffs[i].ticsremaining);
+			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid, false, buffs[i].ticsremaining,i);
 	}
-	
+
+	//Removes the spell bonuses that are effected by a 'negate' debuff.
+	if (spellbonuses.NegateEffects){
+		for(i = 0; i < buff_count; i++) {
+			if( (buffs[i].spellid != SPELL_UNKNOWN) && (IsEffectInSpell(buffs[i].spellid, SE_NegateSpellEffect)) )
+				NegateSpellsBonuses(buffs[i].spellid);
+		}
+	}
 	//this prolly suffer from roundoff error slightly...
 	newbon->AC = newbon->AC * 10 / 34;	//ratio determined impirically from client.
 }
 
-void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId, bool item_bonus, int32 ticsremaining)
+void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId, bool item_bonus, int32 ticsremaining, int buffslot)
 {
 	int i, effect_value;
 	Mob *caster = NULL;
@@ -917,6 +933,13 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 		if(IsBlankSpellEffect(spell_id, i))
 			continue;
 
+		uint8 focus = IsFocusEffect(spell_id, i);
+		if (focus)
+		{
+			newbon->FocusEffects[focus] = spells[spell_id].effectid[i];
+			continue;
+		}
+		
 		effect_value = CalcSpellEffectValue(spell_id, i, casterlevel, caster, ticsremaining);
 
 		switch (spells[spell_id].effectid[i])
@@ -1021,11 +1044,13 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 			
+			case SE_ManaRegen_v2:
 			case SE_CurrentMana:
 			{
 				newbon->ManaRegen += effect_value;
 				break;
 			}
+
 			case SE_ManaPool:
 			{
 				newbon->Mana += effect_value;
@@ -1038,6 +1063,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 			
+			case SE_ACv2:	
 			case SE_ArmorClass:
 			{
 				newbon->AC += effect_value;
@@ -1338,6 +1364,13 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->DoubleAttackChance = effect_value;
 				break;
 			}
+
+			case SE_TripleAttackChance:
+			{
+				if(newbon->TripleAttackChance < effect_value)
+					newbon->TripleAttackChance = effect_value;
+				break;
+			}
 				
 			case SE_MeleeLifetap:
 			{
@@ -1537,10 +1570,16 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->SpellCritDmgIncrease += effect_value;
 				break;
 
+			case SE_DotCritDmgIncrease:
+				newbon->DotCritDmgIncrease += effect_value;
+				break;
+
+			case SE_CriticalHealChance2:
 			case SE_CriticalHealChance:
 				newbon->CriticalHealChance += effect_value;
 				break;
 			
+			case SE_CriticalHealOverTime2:
 			case SE_CriticalHealOverTime:
 				newbon->CriticalHealOverTime += effect_value;
 				break;
@@ -1667,18 +1706,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->BlockNextSpell = true;
 				break;
 			}
-			case SE_BlockSpellEffect:
+			case SE_NegateSpellEffect:
 			{
-				newbon->BlockNextSpell = true;
-				for(int e = 0; e < EFFECT_COUNT; e++)
-				{
-					if(!newbon->BlockSpellEffect[e])
-					{
-						newbon->BlockSpellEffect[e] = spells[spell_id].base2[i];
-						break;
-					}
-				}
-				break;
+				newbon->NegateEffects = true;
 			}
 			case SE_ImmuneFleeing:
 			{
@@ -1690,6 +1720,95 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->DelayDeath += effect_value;
 				break;
 			}
+
+			case SE_SpellProcChance:
+			{
+				newbon->SpellProcChance += effect_value;
+				break;
+			}
+			
+			case SE_CharmBreakChance:
+			{
+				newbon->CharmBreakChance += effect_value;
+				break;
+			}
+
+			case SE_BardSongRange:
+			{	
+				if(newbon->SongRange < effect_value)
+				newbon->SongRange = effect_value;
+				break;
+			}
+
+			case SE_HPToMana:
+			{
+				//Lower the ratio the more favorable
+				if((!newbon->HPToManaConvert) || (newbon->HPToManaConvert >= effect_value)) 
+				newbon->HPToManaConvert = spells[spell_id].base[i];
+				break;
+			}
+
+			case SE_SkillDamageAmount2:
+			{
+				if(spells[spell_id].base2[i] == -1)
+					newbon->SkillDamageAmount2[HIGHEST_SKILL+1] += effect_value;
+				else
+					newbon->SkillDamageAmount2[spells[spell_id].base2[i]] += effect_value;
+				break;
+			}
+
+			case SE_NegateAttacks:
+			{
+				if (!newbon->NegateAttacks[0]){
+				newbon->NegateAttacks[0] = 1;
+				newbon->NegateAttacks[1] = buffslot;
+				}
+				break;
+			}
+
+			case SE_MitigateMeleeDamage:
+			{
+				if (newbon->MitigateMeleeRune[0] < effect_value){
+					newbon->MitigateMeleeRune[0] = effect_value;
+					newbon->MitigateMeleeRune[1] = buffslot;
+				}
+				break;
+			}
+
+			case SE_MitigateSpellDamage:
+			{
+				if (newbon->MitigateSpellRune[0] < effect_value){
+					newbon->MitigateSpellRune[0] = effect_value;
+					newbon->MitigateSpellRune[1] = buffslot;
+				}
+				break;
+			}
+
+			case SE_ManaAbsorbPercentDamage:
+			{
+				if (newbon->ManaAbsorbPercentDamage[0] < effect_value){
+					newbon->ManaAbsorbPercentDamage[0] = effect_value;
+					newbon->ManaAbsorbPercentDamage[1] = buffslot;
+				}
+				break;
+			}
+
+			case SE_ShieldBlock:
+			{
+				if (newbon->ShieldBlock < effect_value)
+					newbon->ShieldBlock = effect_value;
+
+				break;
+			}
+
+			case SE_BlockBehind:
+			{
+				if (newbon->BlockBehind < effect_value)
+					newbon->BlockBehind = effect_value;
+
+				break;
+			}
+
 		}
 	}
 }
@@ -1853,4 +1972,710 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
 		}
 	}
 	return changed;
+}
+
+uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index)
+{	
+	switch (spells[spell_id].effectid[effect_index])
+	{
+		case SE_ImprovedDamage:
+			return focusImprovedDamage;
+		case SE_ImprovedHeal:
+			return focusImprovedHeal;
+		case SE_ReduceManaCost:
+			return focusManaCost;
+		case SE_IncreaseSpellHaste:
+			return focusSpellHaste;
+		case SE_IncreaseSpellDuration:
+			return focusSpellDuration;
+		case SE_SpellDurationIncByTic:
+			return focusSpellDurByTic;
+		case SE_SwarmPetDuration:
+			return focusSwarmPetDuration;
+		case SE_IncreaseRange:
+			return focusRange;
+		case SE_ReduceReagentCost:
+			return focusReagentCost;
+		case SE_PetPowerIncrease:
+			return focusPetPower;
+		case SE_SpellResistReduction:
+			return focusResistRate;
+		case SE_SpellHateMod:
+			return focusSpellHateMod;
+		case SE_ReduceReuseTimer:
+			return focusReduceRecastTime;
+		case SE_TriggerOnCast:
+			return focusTriggerOnCast;
+		case SE_SpellVulnerability:
+			return focusSpellVulnerability;
+		case SE_BlockNextSpellFocus:
+			return focusBlockNextSpell;
+		case SE_Twincast:
+			return focusTwincast;
+		case SE_SympatheticProc:
+			return focusSympatheticProc;
+		case SE_SpellDamage:
+			return focusSpellDamage;
+		case SE_FF_Damage_Amount:
+			return focusFF_Damage_Amount;
+		case SE_SpellCriticalFocus:
+			return focusImprovedCritical;
+		case SE_Empathy:
+			return focusAdditionalDamage;
+		case SE_HealRate2:
+			return focusHealRate;
+		case SE_IncreaseSpellPower:
+			return focusSpellEffectiveness;
+		case SE_AdditionalHeal2:
+			return focusAdditionalHeal2;
+		case SE_AdditionalHeal:
+			return focusAdditionalHeal;
+	}
+	return 0;
+}
+
+void Mob::NegateSpellsBonuses(int16 spell_id)
+{
+	if(!IsValidSpell(spell_id))
+		return;
+
+	int effect_value = 0;
+	
+	for (int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if (spells[spell_id].effectid[i] == SE_NegateSpellEffect){
+
+			//Negate focus effects
+			for(int e = 0; e < HIGHEST_FOCUS+1; e=1)
+			{
+				if (spellbonuses.FocusEffects[e] == spells[spell_id].base2[i])
+				{
+					spellbonuses.FocusEffects[e] = effect_value;
+					continue;
+				}
+			}
+
+			//Negate bonuses
+			switch (spells[spell_id].base2[i])
+			{
+				case SE_CurrentHP: 
+					if(spells[spell_id].base[i] == 1) {
+						spellbonuses.HPRegen = effect_value;
+					}
+					break;
+				case SE_CurrentEndurance: 
+					spellbonuses.EnduranceRegen = effect_value;
+					break;
+			
+				case SE_ChangeFrenzyRad:
+				{
+					spellbonuses.AggroRange = effect_value;
+					break;
+				}
+
+				case SE_Harmony:
+				{
+					spellbonuses.AssistRange = effect_value;
+					break;
+				}
+
+				case SE_AttackSpeed:
+				{
+					spellbonuses.haste = effect_value;
+					break;
+				}
+
+				case SE_AttackSpeed2:
+				{
+					spellbonuses.hastetype2 = effect_value;
+					break;
+				}
+
+				case SE_AttackSpeed3:
+				{
+					if (effect_value > 0) {
+						spellbonuses.hastetype3 = effect_value;
+						
+					}
+					break;
+				}
+				
+				case SE_AttackSpeed4:
+				{
+					spellbonuses.inhibitmelee = effect_value;
+					break;
+				}
+				
+
+				case SE_TotalHP:
+				{
+					spellbonuses.HP = effect_value;
+					break;
+				}
+				
+				case SE_ManaRegen_v2:
+				case SE_CurrentMana:
+				{
+					spellbonuses.ManaRegen = effect_value;
+					break;
+				}
+
+				case SE_ManaPool:
+				{
+					spellbonuses.Mana = effect_value;
+					break;
+				}
+
+				case SE_Stamina:
+				{
+					spellbonuses.EnduranceReduction = effect_value;
+					break;
+				}
+				
+				case SE_ACv2:	
+				case SE_ArmorClass:
+				{
+					spellbonuses.AC = effect_value;
+					break;
+				}
+
+				case SE_ATK:
+				{
+					spellbonuses.ATK = effect_value;
+					break;
+				}
+
+				case SE_STR:
+				{
+					spellbonuses.STR = effect_value;
+					break;
+				}
+
+				case SE_DEX:
+				{
+					spellbonuses.DEX = effect_value;
+					break;
+				}
+
+				case SE_AGI:
+				{
+					spellbonuses.AGI = effect_value;
+					break;
+				}
+
+				case SE_STA:
+				{
+					spellbonuses.STA = effect_value;
+					break;
+				}
+
+				case SE_INT:
+				{
+					spellbonuses.INT = effect_value;
+					break;
+				}
+
+				case SE_WIS:
+				{
+					spellbonuses.WIS = effect_value;
+					break;
+				}
+
+				case SE_CHA:
+				{
+					spellbonuses.CHA = effect_value;
+					break;
+				}
+
+				case SE_AllStats:
+				{
+					spellbonuses.STR = effect_value;
+					spellbonuses.DEX = effect_value;
+					spellbonuses.AGI = effect_value;
+					spellbonuses.STA = effect_value;
+					spellbonuses.INT = effect_value;
+					spellbonuses.WIS = effect_value;
+					spellbonuses.CHA = effect_value;
+					break;
+				}
+
+				case SE_ResistFire:
+				{
+					spellbonuses.FR = effect_value;
+					break;
+				}
+
+				case SE_ResistCold:
+				{
+					spellbonuses.CR = effect_value;
+					break;
+				}
+
+				case SE_ResistPoison:
+				{
+					spellbonuses.PR = effect_value;
+					break;
+				}
+
+				case SE_ResistDisease:
+				{
+					spellbonuses.DR = effect_value;
+					break;
+				}
+
+				case SE_ResistMagic:
+				{
+					spellbonuses.MR = effect_value;
+					break;
+				}
+
+				case SE_ResistAll:
+				{
+					spellbonuses.MR = effect_value;
+					spellbonuses.DR = effect_value;
+					spellbonuses.PR = effect_value;
+					spellbonuses.CR = effect_value;
+					spellbonuses.FR = effect_value;
+					break;
+				}
+
+				case SE_ResistCorruption:
+				{
+					spellbonuses.Corrup = effect_value;
+					break;
+				}
+				
+				case SE_RaiseStatCap:
+				{
+					spellbonuses.STRCapMod = effect_value;
+					spellbonuses.STACapMod = effect_value;
+					spellbonuses.AGICapMod = effect_value;
+					spellbonuses.DEXCapMod = effect_value;
+					spellbonuses.WISCapMod = effect_value;
+					spellbonuses.INTCapMod = effect_value;
+					spellbonuses.CHACapMod = effect_value;
+					spellbonuses.MRCapMod = effect_value;
+					spellbonuses.CRCapMod = effect_value;
+					spellbonuses.FRCapMod = effect_value;
+					spellbonuses.PRCapMod = effect_value;
+					spellbonuses.DRCapMod = effect_value;
+					spellbonuses.CorrupCapMod = effect_value;
+					break;
+				}
+
+				case SE_CastingLevel2:
+				case SE_CastingLevel:	// Brilliance of Ro
+				{
+					spellbonuses.effective_casting_level = effect_value;
+					break;
+				}
+
+				case SE_MovementSpeed:
+				{
+					spellbonuses.movementspeed = effect_value;
+					break;
+				}
+				
+				case SE_SpellDamageShield:
+				{
+					spellbonuses.SpellDamageShield = effect_value;
+					break;
+				}
+				
+				case SE_DamageShield:
+				{
+					spellbonuses.DamageShield = effect_value;
+					break;
+				}
+				
+				case SE_ReverseDS:
+				{
+					spellbonuses.ReverseDamageShield = effect_value;
+					break;
+				}
+
+				case SE_Reflect:
+				{
+					spellbonuses.reflect_chance = effect_value;
+					break;
+				}
+
+				case SE_SingingSkill:
+				{
+					spellbonuses.singingMod = effect_value;
+					break;
+				}
+				
+				case SE_ChangeAggro:
+				{
+					spellbonuses.hatemod = effect_value;
+					break;
+				}
+				case SE_MeleeMitigation:
+				{
+					spellbonuses.MeleeMitigation = 0;
+					break;
+				}
+				
+				case SE_CriticalHitChance:
+				{
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.CriticalHitChance[e] = effect_value;
+					}
+				}
+					
+				case SE_CrippBlowChance:
+				{
+					spellbonuses.CrippBlowChance = effect_value;
+					break;
+				}
+					
+				case SE_AvoidMeleeChance:
+				{
+					spellbonuses.AvoidMeleeChance = effect_value;
+					break;
+				}
+					
+				case SE_RiposteChance:
+				{
+					spellbonuses.RiposteChance = effect_value;
+					break;
+				}
+					
+				case SE_DodgeChance:
+				{
+					spellbonuses.DodgeChance = effect_value;
+					break;
+				}
+					
+				case SE_ParryChance:
+				{
+					spellbonuses.ParryChance = effect_value;
+					break;
+				}
+					
+				case SE_DualWieldChance:
+				{
+					spellbonuses.DualWieldChance = effect_value;
+					break;
+				}
+					
+				case SE_DoubleAttackChance:
+				{
+					spellbonuses.DoubleAttackChance = effect_value;
+					break;
+				}
+
+				case SE_TripleAttackChance:
+				{
+					spellbonuses.TripleAttackChance = effect_value;
+					break;
+				}
+					
+				case SE_MeleeLifetap:
+				{
+					spellbonuses.MeleeLifetap = effect_value;
+					break;
+				}
+					
+				case SE_AllInstrumentMod:
+				{
+					spellbonuses.singingMod = effect_value;
+					spellbonuses.brassMod = effect_value;
+					spellbonuses.percussionMod = effect_value;
+					spellbonuses.windMod = effect_value;
+					spellbonuses.stringedMod = effect_value;
+					break;
+				}
+					
+				case SE_ResistSpellChance:
+				{
+					spellbonuses.ResistSpellChance = effect_value;
+					break;
+				}	
+				case SE_ResistFearChance:
+				{
+					spellbonuses.Fearless = false;
+					spellbonuses.ResistFearChance = effect_value; // these should stack
+					break;
+				}
+				case SE_Fearless:
+				{
+					spellbonuses.Fearless = false;  
+					break;
+				}
+				case SE_HundredHands:
+				{
+					spellbonuses.HundredHands = effect_value;
+					break;
+				}
+					
+				case SE_MeleeSkillCheck:
+				{
+					spellbonuses.MeleeSkillCheck = effect_value;
+					spellbonuses.MeleeSkillCheckSkill = effect_value;
+					break;
+				}
+					
+				case SE_HitChance:
+				{
+					spellbonuses.HitChance = effect_value;
+					break;
+				}
+					
+				case SE_DamageModifier:
+				{
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.DamageModifier[e] = effect_value;
+					}
+					break;
+				}
+					
+				case SE_MinDamageModifier:
+				{
+					spellbonuses.MinDamageModifier = effect_value;
+					break;
+				}
+					
+				case SE_StunResist:
+				{
+					spellbonuses.StunResist = effect_value;
+					break;
+				}
+					
+				case SE_ProcChance:
+				{
+					spellbonuses.ProcChance = effect_value;
+					break;
+				}
+					
+				case SE_ExtraAttackChance:
+				{
+					spellbonuses.ExtraAttackChance = effect_value;
+					break;
+				}
+				case SE_PercentXPIncrease:
+				{
+					spellbonuses.XPRateMod = effect_value;
+					break;
+				}
+				case SE_DivineSave:
+				{
+					SetDeathSaveChance(true);
+					break;
+				}
+				case SE_Flurry:
+				{
+					spellbonuses.FlurryChance = effect_value;
+					break;
+				}
+				case SE_Accuracy:
+				{
+					spellbonuses.Accuracy = effect_value;
+					break;
+				}
+				case SE_MaxHPChange:
+				{
+					spellbonuses.MaxHPChange = effect_value;
+					break;
+				}
+				case SE_EndurancePool:
+				{
+					spellbonuses.Endurance = effect_value;
+					break;
+				}
+				case SE_HealRate:
+				{
+					spellbonuses.HealRate = effect_value;
+					break;
+				}
+				case SE_SkillDamageTaken:
+				{
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.SkillDmgTaken[e] = effect_value;
+						
+					}
+					break;
+				}
+
+				case SE_TriggerOnCast:
+				{
+					for(int e = 0; e < MAX_SPELL_TRIGGER; e++)
+					{
+						spellbonuses.SpellTriggers[e] = SPELL_UNKNOWN;
+					}
+					break;
+				}
+				case SE_SpellCritChance:
+					spellbonuses.CriticalSpellChance = effect_value;
+					break;
+				
+				case SE_CriticalSpellChance:
+					spellbonuses.CriticalSpellChance = effect_value;
+					spellbonuses.SpellCritDmgIncrease = effect_value;
+					break;
+
+				case SE_SpellCritDmgIncrease:
+					spellbonuses.SpellCritDmgIncrease = effect_value;
+					break;
+
+				case SE_DotCritDmgIncrease:
+					spellbonuses.DotCritDmgIncrease = effect_value;
+					break;
+
+				case SE_CriticalHealChance2:
+				case SE_CriticalHealChance:
+					spellbonuses.CriticalHealChance = effect_value;
+					break;
+				
+				case SE_CriticalHealOverTime2:
+				case SE_CriticalHealOverTime:
+					spellbonuses.CriticalHealOverTime = effect_value;
+					break;
+					
+				case SE_MitigateDamageShield:
+					spellbonuses.DSMitigation = effect_value;
+					break;
+				
+				case SE_CriticalDoTChance:
+					spellbonuses.CriticalDoTChance = effect_value;
+					break;
+
+				case SE_SpellOnKill:
+				{
+					for(int e = 0; e < MAX_SPELL_TRIGGER*3; e=3)
+					{
+						spellbonuses.SpellOnKill[e] = SPELL_UNKNOWN;
+						spellbonuses.SpellOnKill[e+1] = effect_value;
+						spellbonuses.SpellOnKill[e+2] = effect_value;
+					}
+					break;
+				}
+				
+				case SE_SpellOnDeath:
+				{
+					for(int e = 0; e < MAX_SPELL_TRIGGER; e=2)
+					{
+						spellbonuses.SpellOnDeath[e] = SPELL_UNKNOWN;
+						spellbonuses.SpellOnDeath[e+1] = effect_value;
+					}
+					break;
+				}
+				case SE_CriticalDamageMob:
+				{
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.CritDmgMob[e] = effect_value;
+					}
+					break;
+				}
+
+				case SE_SkillDamageAmount:
+				{
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.SkillDamageAmount[e] = effect_value;
+					}
+					break;
+				}
+				
+				case SE_Twinproc:
+				{
+					spellbonuses.TwinProc = effect_value;
+					break;
+				}
+
+				case SE_IncreaseBlockChance:
+				{
+					spellbonuses.IncreaseBlockChance = effect_value;
+					break;
+				}
+				case SE_PersistantCasting:
+				{
+					spellbonuses.PersistantCasting = effect_value;
+					break;
+				}
+				
+				case SE_ImmuneFleeing:
+				{
+					spellbonuses.ImmuneToFlee = false;
+					break;
+				}
+				case SE_DelayDeath:
+				{
+					spellbonuses.DelayDeath = effect_value;
+					break;
+				}
+
+				case SE_SpellProcChance:
+				{
+					spellbonuses.SpellProcChance = effect_value;
+					break;
+				}
+				
+				case SE_CharmBreakChance:
+				{
+					spellbonuses.CharmBreakChance = effect_value;
+					break;
+				}
+				
+				case SE_BardSongRange:
+				{	
+					spellbonuses.SongRange = effect_value;
+					break;
+				}
+
+				case SE_SkillDamageAmount2:
+				{
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.SkillDamageAmount2[e] = effect_value;
+					}
+					break;
+				}
+
+				case SE_NegateAttacks:
+				{
+					spellbonuses.NegateAttacks[0] = effect_value;
+					spellbonuses.NegateAttacks[1] = effect_value;
+					break;
+				}
+
+				case SE_MitigateMeleeDamage:
+				{
+					spellbonuses.MitigateMeleeRune[0] = effect_value;
+					spellbonuses.MitigateMeleeRune[1] = -1;
+					break;
+				}
+
+				case SE_MitigateSpellDamage:
+				{
+					spellbonuses.MitigateSpellRune[0] = effect_value;
+					spellbonuses.MitigateSpellRune[1] = -1;
+					break;
+				}
+
+				case SE_ManaAbsorbPercentDamage:
+				{
+					spellbonuses.ManaAbsorbPercentDamage[0] = effect_value;
+					spellbonuses.ManaAbsorbPercentDamage[1] = -1;
+					break;
+				}
+			
+				case SE_ShieldBlock:
+				{
+					spellbonuses.ShieldBlock = effect_value;
+				}
+
+				case SE_BlockBehind:
+				{
+					spellbonuses.BlockBehind = effect_value;
+					break;
+				}
+			}
+		}
+	}
 }

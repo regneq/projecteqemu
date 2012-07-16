@@ -452,15 +452,16 @@ public:
 	
 	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath + 11; }
 	
-	sint32 Additional_SpellDmg(int16 spell_id);
+	sint32 Additional_SpellDmg(int16 spell_id, bool bufftick = false);
 	sint32 Additional_Heal(int16 spell_id);
-	float GetActSpellRange(int16 spell_id, float range);
+	float GetActSpellRange(int16 spell_id, float range, bool IsBard = false);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);
 	sint32 GetActSpellHealing(int16 spell_id, sint32 value);
 	sint32 GetActSpellCost(int16 spell_id, sint32);
 	sint32 GetActSpellDuration(int16 spell_id, sint32);
 	sint32 GetActSpellCasttime(int16 spell_id, sint32);
 	sint32 GetDotFocus(int16 spell_id, sint32 value);
+	sint32 GetActDoTDamage(int16 spell_id, sint32 value);
 	virtual bool CheckFizzle(int16 spell_id);
 	virtual int GetCurrentBuffSlots() const;
 	virtual int GetCurrentSongSlots() const;

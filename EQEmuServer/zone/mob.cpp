@@ -3206,98 +3206,52 @@ void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 
 sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining)
 {
-
+	if (!caster)
+		return damage;
+	//Apply innate vulnerabilities
 	if (Vulnerability_Mod[GetSpellResistType(spell_id)] != 0)
 		damage += damage * Vulnerability_Mod[GetSpellResistType(spell_id)] / 100;
 	
 
 	else if (Vulnerability_Mod[HIGHEST_RESIST+1] != 0)
 		damage += damage * Vulnerability_Mod[HIGHEST_RESIST+1] / 100;
-	
-	// If we increased the datatype on GetBuffSlotFromType, this wouldnt be needed
-	uint32 buff_count = GetMaxTotalSlots();
-	for(int i = 0; i < buff_count; i++) 
-	{
-		if(IsEffectInSpell(buffs[i].spellid, SE_SpellVulnerability))
-		{
-			// For Clients, Pets and Bots that are casting the spell, see if the vulnerability affects their spell.
-			if(!caster->IsNPC())
-			{
+
+	//Apply spell derived vulnerabilities
+	if (spellbonuses.FocusEffects[focusSpellVulnerability]){
+
+		sint32 tmp_focus = 0;
+		int tmp_buffslot = -1;
+
+		uint32 buff_count = GetMaxTotalSlots();
+		for(int i = 0; i < buff_count; i++) {
+
+			if((IsValidSpell(buffs[i].spellid) && IsEffectInSpell(buffs[i].spellid, SE_SpellVulnerability))){
+
 				sint32 focus = caster->CalcFocusEffect(focusSpellVulnerability, buffs[i].spellid, spell_id);
-				if(focus == 1)
-				{
-					damage += damage * spells[buffs[i].spellid].base[0] / 100;
-					CheckHitsRemaining(i);
-					break;
-				}
-			}
-			// If an NPC is casting the spell on a player that has a vulnerability, relaxed restrictions on focus 
-			// so that either the Client is vulnerable to DoTs or DDs of various resists or all.
-			else if (caster->IsNPC())
-			{
-				int npc_resist = 0;
-				int npc_instant = 0;
-				int npc_duration = 0;
-				for(int j = 0; j < EFFECT_COUNT; j++)
-				{
-					switch (spells[buffs[i].spellid].effectid[j]) 
-					{
-					
-					case SE_Blank:
-						break;
 
-					case SE_LimitResist:
-						if(spells[buffs[i].spellid].base[j])
-						{
-							if(spells[spell_id].resisttype == spells[buffs[i].spellid].base[j])
-								npc_resist = 1;
-						}
-						break;
+				if (!focus)
+					continue;
 
-					case SE_LimitInstant:
-						if(!ticsremaining) 
-						{
-							npc_instant = 1;
-							break;
-						}
-
-					case SE_LimitMinDur:
-						if(ticsremaining) 
-						{
-							npc_duration = 1;
-							break;
-						}
-
-						default:{
-						// look pretty
-							break;
-						}	
-					}
-				}
-				// DDs and Dots of all resists 
-				if ((npc_instant) || (npc_duration))
-				{
-					damage += damage * spells[buffs[i].spellid].base[0] / 100;
-					CheckHitsRemaining(i);
+				if (tmp_focus && focus > tmp_focus){
+					tmp_focus = focus;
+					tmp_buffslot = i; 
 				}
 
-				else if (npc_resist) 
-				{
-					// DDs and Dots restricted by resists
-					if ((npc_instant) || (npc_duration)) 
-					{
-						damage += damage * spells[buffs[i].spellid].base[0] / 100;
-						CheckHitsRemaining(i);
-					}
-					// DD and Dots of 1 resist ... these are to maintain compatibility with current spells, not ideal.
-					else if (!npc_instant && !npc_duration)
-					{
-						damage += damage * spells[buffs[i].spellid].base[0] / 100;
-						CheckHitsRemaining(i);
-					}
+				else if (!tmp_focus){
+					tmp_focus = focus;
+					tmp_buffslot = i; 
 				}
+				
 			}
 		}
+
+		if (tmp_focus < -99)
+			tmp_focus = -99;
+		
+		damage += damage * tmp_focus / 100;
+
+		if (tmp_buffslot >= 0)
+			CheckHitsRemaining(tmp_buffslot);
 	}
 	return damage;
 }
@@ -3323,15 +3277,23 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 	return skilldmg_mod;
 }
 
-sint16 Mob::GetHealRate()
+sint16 Mob::GetHealRate(int16 spell_id)
 {
+	if (!GetTarget())
+		return 0;
+
 	sint16 heal_rate = 0;
-	if (this->GetTarget())
-		heal_rate = this->GetTarget()->itembonuses.HealRate + this->GetTarget()->spellbonuses.HealRate;
-	
-	if(heal_rate < -99)
-		heal_rate = -99;
-	
+
+	if (GetTarget()){
+		heal_rate = GetTarget()->itembonuses.HealRate + GetTarget()->spellbonuses.HealRate;
+			
+		if (GetTarget()->IsClient())
+			heal_rate += GetTarget()->CastToClient()->GetFocusEffect(focusHealRate, spell_id);
+
+		if(heal_rate < -99)
+			heal_rate = -99;
+	}
+
 	return heal_rate;
 }
 
@@ -4211,12 +4173,18 @@ sint16 Mob::GetSkillDmgAmt(int16 skill)
 	int skill_dmg = 0;
 
 	// All skill dmg(only spells do this) + Skill specific
-	skill_dmg += spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + 
-				itembonuses.SkillDamageAmount[skill] + spellbonuses.SkillDamageAmount[skill];
+	skill_dmg += spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + itembonuses.SkillDamageAmount[HIGHEST_SKILL+1]
+				 + itembonuses.SkillDamageAmount[skill] + spellbonuses.SkillDamageAmount[skill];
+
+	skill_dmg += spellbonuses.SkillDamageAmount2[HIGHEST_SKILL+1] + itembonuses.SkillDamageAmount2[HIGHEST_SKILL+1]
+				 + itembonuses.SkillDamageAmount2[skill] + spellbonuses.SkillDamageAmount2[skill];
 
 	// Deplete the buff if needed
 	if (spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] ||  spellbonuses.SkillDamageAmount[skill])
 		CheckHitsRemaining(0, false,false, SE_SkillDamageAmount,0,true,skill);
+
+	if (spellbonuses.SkillDamageAmount2[HIGHEST_SKILL+1] ||  spellbonuses.SkillDamageAmount2[skill])
+		CheckHitsRemaining(0, false,false, SE_SkillDamageAmount2,0,true,skill);
 	
 	return skill_dmg;
 }
