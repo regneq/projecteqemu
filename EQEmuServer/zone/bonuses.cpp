@@ -2046,7 +2046,7 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 		if (spells[spell_id].effectid[i] == SE_NegateSpellEffect){
 
 			//Negate focus effects
-			for(int e = 0; e < HIGHEST_FOCUS+1; e=1)
+			for(int e = 0; e < HIGHEST_FOCUS+1; e++)
 			{
 				if (spellbonuses.FocusEffects[e] == spells[spell_id].base2[i])
 				{

@@ -721,7 +721,7 @@ void Client::RangedAttack(Mob* other) {
 		return;
 	}
 	const ItemInst* RangeWeapon = m_inv[SLOT_RANGE];
-	
+
 	//locate ammo
 	int ammo_slot = SLOT_AMMO;
 	const ItemInst* Ammo = m_inv[SLOT_AMMO];
@@ -913,7 +913,7 @@ void Client::RangedAttack(Mob* other) {
 	//try proc on hits and misses
 	if(GetTarget() && (GetTarget()->GetHP() > -10))
 	{
-		TryWeaponProc(RangeWeapon, GetTarget());
+		TryWeaponProc(RangeWeapon, GetTarget(), 11);
 	}
 	
 	//consume ammo (should stay at the end, after we are done with everything)
@@ -1223,7 +1223,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	}
 	
 	if(GetTarget() && (GetTarget()->GetHP() > -10))
-		TryWeaponProc(RangeWeapon, GetTarget());
+		TryWeaponProc(RangeWeapon, GetTarget(), 11);
 	
 	//consume ammo
 	DeleteItemInInventory(ammo_slot, 1, true);

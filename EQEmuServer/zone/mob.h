@@ -114,11 +114,11 @@ typedef enum {	//focus types
 /*
 Used:
 b,d,f,g,j,m,n,o,p,r,t
-A,B,C,D,E,F,G,H,I,J,L,M,N,O,Q,R,S,T,U,W,Y
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,Q,R,S,T,U,W,Y
 
 Unused:
 a,c,e,h,i,k,l,q,s,u,v,w,x,y,z
-K,P,V,X,Z
+P,V,X,Z
 */
 
 enum {
@@ -140,6 +140,7 @@ enum {
 	UNSTUNABLE,					// N
 	UNSNAREABLE,				// I
 	UNFEARABLE,					// D
+	UNDISPELLABLE,				// K
 	IMMUNE_MELEE,				// A
 	IMMUNE_MAGIC,				// B
 	IMMUNE_FLEEING,				// f
@@ -582,7 +583,7 @@ bool logpos;
 	void CreateHPPacket(EQApplicationPacket* app);
 	void SendHPUpdate();
 
-	bool AddRangedProc(int16 spell_id, int16 iChance = 3);
+	bool AddRangedProc(int16 spell_id, int16 iChance = 3, int16 base_spell_id=SPELL_UNKNOWN);
 	bool RemoveRangedProc(int16 spell_id, bool bAll = false);
 	bool HasRangedProcs() const;
 
@@ -1280,8 +1281,8 @@ protected:
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand = 13);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
-	virtual float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
-	virtual float GetDefensiveProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
+	virtual float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30, int16 hand = 13);
+	virtual float GetDefensiveProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30, int16 hand = 13);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate = NULL);
 	int GetKickDamage() const;

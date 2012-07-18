@@ -5083,7 +5083,7 @@ bool Mob::RemoveSkillProc(int16 spell_id, bool bAll)
     return true;
 }
 
-bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
+bool Mob::AddRangedProc(int16 spell_id, int16 iChance, int16 base_spell_id)
 {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
@@ -5093,7 +5093,7 @@ bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
 		if (RangedProcs[i].spellID == SPELL_UNKNOWN) {
 			RangedProcs[i].spellID = spell_id;
 			RangedProcs[i].chance = iChance;
-			RangedProcs[i].base_spellID = SPELL_UNKNOWN;
+			RangedProcs[i].base_spellID = base_spell_id;
 			mlog(SPELLS__PROCS, "Added spell-granted ranged proc spell %d with chance %d to slot %d", spell_id, iChance, i);
 			return true;
 		}

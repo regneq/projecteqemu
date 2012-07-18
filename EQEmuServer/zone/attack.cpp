@@ -3648,7 +3648,7 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 
 
 //proc chance includes proc bonus
-float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
+float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed, int16 hand) {
 	int mydex = GetDEX();
 	float AABonus = 0;
 	ProcBonus = 0;
@@ -3673,7 +3673,20 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 				break;
 		}
 	}
+	
+	switch(hand){
+		case 13:
+			weapon_speed = attack_timer.GetDuration();
+			break;
+		case 14:
+			weapon_speed = attack_dw_timer.GetDuration();
+			break;
+		case 11:
+			weapon_speed = ranged_timer.GetDuration();
+			break;
+	}
 
+	/* //Do not need to recalc attack rate
 	float PermaHaste;
 	if(GetHaste() > 0)
 		PermaHaste = 1 / (1 + (float)GetHaste()/100);
@@ -3681,9 +3694,11 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 		PermaHaste = 1 * (1 - (float)GetHaste()/100);
 	else
 		PermaHaste = 1.0f;
+	*/
 		
 	//calculate the weapon speed in ms, so we can use the rule to compare against.
-	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste));
+	//weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste)); //Do not need to recalc attack rate.
+
 	if(weapon_speed < RuleI(Combat, MinHastedDelay)) // fast as a client can swing, so should be the floor of the proc chance
 		weapon_speed = RuleI(Combat, MinHastedDelay);
 
@@ -3705,11 +3720,24 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	return ProcChance;
 }
 
-float Mob::GetDefensiveProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
+float Mob::GetDefensiveProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed, int16 hand) {
 	int myagi = GetAGI();
 	ProcBonus = 0;
 	ProcChance = 0;
 	
+	switch(hand){
+		case 13:
+			weapon_speed = attack_timer.GetDuration();
+			break;
+		case 14:
+			weapon_speed = attack_dw_timer.GetDuration();
+			break;
+		case 11:
+			return 0;
+			break;
+	}
+
+	/*
 	float PermaHaste;
 	if(GetHaste() > 0)
 		PermaHaste = 1 / (1 + (float)GetHaste()/100);
@@ -3717,9 +3745,10 @@ float Mob::GetDefensiveProcChances(float &ProcBonus, float &ProcChance, int16 we
 		PermaHaste = 1 * (1 - (float)GetHaste()/100);
 	else
 		PermaHaste = 1.0f;
+	*/
 		
 	//calculate the weapon speed in ms, so we can use the rule to compare against.
-	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste));
+	//weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste));
 	if(weapon_speed < RuleI(Combat, MinHastedDelay)) // fast as a client can swing, so should be the floor of the proc chance
 		weapon_speed = RuleI(Combat, MinHastedDelay);
 
@@ -3750,7 +3779,7 @@ void Mob::TryDefensiveProc(const ItemInst* weapon, Mob *on, int16 hand, int dama
 
 	float ProcChance, ProcBonus;
 	if(weapon!=NULL)
-		on->GetDefensiveProcChances(ProcBonus, ProcChance, weapon->GetItem()->Delay);
+		on->GetDefensiveProcChances(ProcBonus, ProcChance, weapon->GetItem()->Delay, hand);
 	else
 		on->GetDefensiveProcChances(ProcBonus, ProcChance);
 	if(hand != 13)
@@ -3809,7 +3838,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
 	//we have to calculate these again, oh well
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
-	GetProcChances(ProcBonus, ProcChance, weapon_g->GetItem()->Delay);
+	GetProcChances(ProcBonus, ProcChance, weapon_g->GetItem()->Delay, hand);
 	if(hand != 13)
 	{
 		ProcChance /= 2;
@@ -3849,13 +3878,13 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
 	if(weapon!=NULL)
-		GetProcChances(ProcBonus, ProcChance, weapon->Delay);
+		GetProcChances(ProcBonus, ProcChance, weapon->Delay, hand);
 	else
 		GetProcChances(ProcBonus, ProcChance);
 		
-	if(hand != 13)
+	if(hand != 13) //Is Archery intended to proc at 50% rate?
 		ProcChance /= 2;	
-	
+
 	//give weapon a chance to proc first.
 	if(weapon != NULL) {
 		skillinuse = GetSkillByItemType(weapon->ItemType);
@@ -3926,9 +3955,11 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				}
 		}
 		if (bRangedAttack) {
-			if(MakeRandomInt(0, 100) < MakeRandomInt(0, 25)) {
+			int chance = ProcChance * RangedProcs[i].chance;
+			if(MakeRandomInt(0, 100) < chance) {
 				mlog(COMBAT__PROCS, "Ranged proc %d procing spell %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
 				ExecWeaponProc(RangedProcs[i].spellID, on);
+				CheckHitsRemaining(0, false, false, 0, RangedProcs[i].base_spellID);
 			} else {
 				mlog(COMBAT__PROCS, "Ranged proc %d failed to proc %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
 			}
