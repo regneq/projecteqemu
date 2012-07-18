@@ -2691,9 +2691,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 int Mob::CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {
-	if (!caster)
-		return 0;
-	
 	int formula, base, max, effect_value;
 	
 	if

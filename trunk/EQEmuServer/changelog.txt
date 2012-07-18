@@ -1,20 +1,23 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==07/18/2012==
+Kayen: Fixed for buff issue with rev2167.
+
 ==07/16/2012==
 Kayen: Implemented: SE_SpellProcChance, SE_CharmBreakChance, SE_BalanceMana, SE_DotCritDmgIncrease, SE_TripleAttackChance, SE_Taunt
-					SE_BardSongRange, SE_ACv2, SE_ManaRegen_v2,	SE_SpellCriticalFocus, SE_AdditionalHeal2, SE_HealRate2,
-					SE_CriticalHealOverTime2, SE_CriticalHealChance2, SE_SkillDamageAmount2, SE_LimitSpellSkill, SE_LimitClass
-					SE_LimitExcludeSkill, SE_ShieldBlock, SE_BlockBehind
+			SE_BardSongRange, SE_ACv2, SE_ManaRegen_v2,	SE_SpellCriticalFocus, SE_AdditionalHeal2, SE_HealRate2,
+			SE_CriticalHealOverTime2, SE_CriticalHealChance2, SE_SkillDamageAmount2, SE_LimitSpellSkill, SE_LimitClass
+			SE_LimitExcludeSkill, SE_ShieldBlock, SE_BlockBehind
 Kayen: Implemented: SE_Empathy - A focus limited debuff which causes (spells/skill attacks) cast on target to do +X amount more damage.
-					*This spell effect is often limited using SE_LimitSpellSkill. 
-					*(Ie. If empathy value is 1000 and limited to evocation, all nukes on target using evoc. will get +1000 damage)
+			*This spell effect is often limited using SE_LimitSpellSkill. 
+			*(Ie. If empathy value is 1000 and limited to evocation, all nukes on target using evoc. will get +1000 damage)
 Kayen: Implemented: SE_SpellPowerIncrease - Can be used to apply a worn/buff focus effect with limits for...
-					1) Additional bard instrument modifiers.
-					2) Healing/Damage focus to bard songs. (Note: This is only effect that can do this).
-					3) Increase effectiviess of casted/disc Skill Attacks.
-					4) General use stackable Healing/Damage focus.
-					5) Increase the value of melee runes by focus amount.
+			1) Additional bard instrument modifiers.
+			2) Healing/Damage focus to bard songs. (Note: This is only effect that can do this).
+			3) Increase effectiviess of casted/disc Skill Attacks.
+			4) General use stackable Healing/Damage focus.
+			5) Increase the value of melee runes by focus amount.
 Kayen: SE_HPtoMana will no longer drain your HP before the spell is finished casting. Effect now handled as a bonus using best value.	
 Kayen: SE_SpellVulunerability will now correctly calculate and apply the highest value if target has mulitple effects.				
 Kayen: Fixed an issue where DOTs cast by an NPC on another NPC would not generate hate per tick. Improved how we calc damage from DOTs.		
