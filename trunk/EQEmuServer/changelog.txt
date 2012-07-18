@@ -2,6 +2,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==07/18/2012==
+Kayen: Implemented NPC Special Attack 'K'. Immune to Dispell.
+Kayen: Fixed SE_RangedProc to be applied after zoning, calculate proc rate correctly, utilize numhits.
+Kayen: Fixed a bug that would cause NPC procrates to be incorrectly effected by equipped weapon delay.
+Kayen: Modified functions related to obtaining proc chance to no longer recalculate the 'attack rate' every swing.
+Instead it will use the already calculated attack timer values. (Not implement for BOTs, but should be no compile problems).
 Kayen: Fixed for buff issue with rev2167.
 
 ==07/16/2012==

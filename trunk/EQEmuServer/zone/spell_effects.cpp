@@ -965,6 +965,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Cancel Magic: %d", effect_value);
 #endif
+				if(SpecAttacks[UNDISPELLABLE]){ 
+					caster->Message_StringID(MT_SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
+					break;
+				}
+				
 				uint32 buff_count = GetMaxTotalSlots();
 				for(int slot = 0; slot < buff_count; slot++) {
 					if(	buffs[slot].spellid != SPELL_UNKNOWN &&
@@ -984,6 +989,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Dispel Detrimental: %d", effect_value);
 #endif
+				if(SpecAttacks[UNDISPELLABLE]){ 
+					caster->Message_StringID(MT_SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
+					break;
+				}
+
 				uint32 buff_count = GetMaxTotalSlots();
 				for(int slot = 0; slot < buff_count; slot++) {
 					if (buffs[slot].spellid != SPELL_UNKNOWN &&
@@ -1003,6 +1013,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Dispel Beneficial: %d", effect_value);
 #endif
+				if(SpecAttacks[UNDISPELLABLE]){ 
+					caster->Message_StringID(MT_SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
+					break;
+				}
+
 				uint32 buff_count = GetMaxTotalSlots();
 				for(int slot = 0; slot < buff_count; slot++) {
 					if (buffs[slot].spellid != SPELL_UNKNOWN &&
@@ -1992,9 +2007,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				uint16 procid = GetProcID(spell_id, i);
 
-				AddRangedProc(procid, spells[spell_id].base2[i]);
-				
-				break;		
+				if(spells[spell_id].base2[i] == 0)
+					AddRangedProc(procid, 100, spell_id);
+				else
+					AddRangedProc(procid, spells[spell_id].base2[i]+100, spell_id);
+				break;
 			}
 			
 			case SE_Rampage:
@@ -2083,7 +2100,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				
 				if(tDmg == 0)
 					tDmg = effect_value;
-
+				//Kayen: Move this to DoSpecialAttack? Probably should apply to all skill attacks not just cast.
 				tDmg += GetAdditionalDamage(caster, spell_id);
 				tDmg = ApplySpellEffectiveness(caster, spell_id, tDmg);
 	
@@ -4644,7 +4661,7 @@ bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate
 	}
 
 	// For spell buffs that are limited by the number of times it can successfully trigger a spell.
-	// Effects: SE_TriggerOnCast, SE_SympatheticProc,SE_DefensiveProc, SE_SkillProc
+	// Effects: SE_TriggerOnCast, SE_SympatheticProc,SE_DefensiveProc, SE_SkillProc, SE_RangedProc
 	if(spell_id){
 		uint32 buff_count = GetMaxTotalSlots();
 		for(uint32 d = 0; d < buff_count; d++){

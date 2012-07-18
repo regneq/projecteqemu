@@ -1472,6 +1472,9 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
 			case 'D':
 				SpecAttacks[UNFEARABLE] = (remove ? false : true);
 				break;
+			case 'K':
+				SpecAttacks[UNDISPELLABLE] = (remove ? false : true);
+				break;
 			case 'A':
 				SpecAttacks[IMMUNE_MELEE] = (remove ? false : true);
 				break;
