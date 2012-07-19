@@ -85,6 +85,7 @@
       <DependentUpon>EQExtractor2Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="InternalTypes.cs" />
+    <Compile Include="PatchJuly13-2012.cs" />
     <Compile Include="PatchJune25-2012.cs" />
     <Compile Include="PatchMar15-2012.cs" />
     <Compile Include="PatchMarch15-2011.cs" />
@@ -136,6 +137,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="patch_Feb8-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_July13-2012.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="patch_June25-2012.conf">
