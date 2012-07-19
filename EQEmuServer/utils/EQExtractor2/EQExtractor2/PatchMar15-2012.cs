@@ -167,7 +167,7 @@ namespace EQExtractor2.Patches
 
                 NewSpawn.Helm = Buffer.ReadByte();
 
-                NewSpawn.LastName = Buffer.ReadString(false);
+                NewSpawn.LastName = Buffer.ReadString(true);
 
                 Buffer.SkipBytes(5);    // AATitle + unknown byte
 
