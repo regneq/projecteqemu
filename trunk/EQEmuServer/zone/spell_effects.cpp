@@ -2051,65 +2051,31 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Skill Attack");
 #endif
-				const ItemInst* itm = NULL;
-				sint32 tDmg = 0; //total damage done
-				int mDmg = 1; //minimume damage done
-				
-				/* for this, spells[spell_id].base2[i] is the damage for the attack "weapon damage" */
-				
-				//if we are a client, do stuff involving clients attacks
+				/*Kayen:
+				Weapon Damage = spells[spell_id].base[i]
+				Chance to Hit Bonus = spells[spell_id].base2[i]
+				????  = spells[spell_id].max[i] - MOST of the effects have this value.
+				*Max is lower value then Weapon base, possibly min hit vs Weapon Damage range ie. MakeRandInt(max,base)
+				*/
+				sint16 focus = 0;
+
 				if(caster->IsClient())
+					focus = caster->CastToClient()->GetFocusEffect(focusSpellEffectiveness, spell_id);
+
+				switch(spells[spell_id].skill)
 				{
-					//which skill are we using, get the damage based on that skill
-					switch(spells[spell_id].skill)
-					{
-						case THROWING:
-							caster->CastToClient()->GetThrownDamage(spells[spell_id].base[i], tDmg, mDmg);
-							break;
-						case ARCHERY:
-							itm = caster->CastToClient()->GetInv().GetItem(SLOT_RANGE);
-							if(itm)
-								tDmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + spells[spell_id].base[i] + GetDEX()) / 225);
-							break;
-						case BASH:
-							itm = caster->CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
-							if(itm)
-								tDmg = effect_value + ((itm->GetItem()->AC/4)+1) * 2 + (((itm->GetItem()->AC/4)+1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-							break;
-						case KICK:
-						case FLYING_KICK:
-						case ROUND_KICK:
-							itm = caster->CastToClient()->GetInv().GetItem(SLOT_FEET);
-							if(itm)
-								tDmg = effect_value + ((itm->GetItem()->AC / 2) + 1) * 2 + (((itm->GetItem()->AC / 2) + 1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-							break;
-						case HAND_TO_HAND:
-						case EAGLE_STRIKE:
-						case TIGER_CLAW:
-							itm = caster->CastToClient()->GetInv().GetItem(SLOT_HANDS);
-							if(itm)
-								tDmg = effect_value + ((itm->GetItem()->AC / 2) + 1) + (((itm->GetItem()->AC / 2) + 1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-							break;
-						default:
-							itm = caster->CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
-							if(itm)
-								tDmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-							break;
-					}
+					case THROWING:
+						caster->DoThrowingAttackDmg(this, NULL, NULL, spells[spell_id].base[i],spells[spell_id].base2[i], focus);
+					break; 
+					
+					case ARCHERY:
+						caster->DoArcheryAttackDmg(this, NULL, NULL, spells[spell_id].base[i],spells[spell_id].base2[i],focus);
+					break;
+					
+					default:
+						caster->DoMeleeSkillAttackDmg(this, spells[spell_id].base[i], spells[spell_id].skill, spells[spell_id].base2[i], focus);
+					break;
 				}
-				
-				if(tDmg == 0)
-					tDmg = effect_value;
-				//Kayen: Move this to DoSpecialAttack? Probably should apply to all skill attacks not just cast.
-				tDmg += GetAdditionalDamage(caster, spell_id);
-				tDmg = ApplySpellEffectiveness(caster, spell_id, tDmg);
-	
-				//these are considered magical attacks, so we don't need to test that
-				//if they are resistable that's been taken care of, all these discs have a 10000 hit chance so they auto hit, no need to test
-				if(RuleB(Combat, UseIntervalAC))
-					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, tDmg, mDmg, (mDmg / 20), spells[spell_id].recast_time);
-				else
-					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, tDmg), mDmg, (mDmg / 20), spells[spell_id].recast_time);
 				break;
 			}
 
@@ -4915,9 +4881,12 @@ bool Mob::DoHPToManaCovert(int16 mana_cost)
 	return false;
 }
 
-sint32 Mob::GetAdditionalDamage(Mob *caster, uint32 spell_id)
+sint32 Mob::GetAdditionalDamage(Mob *caster, uint32 spell_id, bool use_skill, int16 skill )
 {
+	//Used to check focus derived from SE_Empathy which adds direct damage to Spells or Skill based attacks.
 	sint32 dmg = 0;
+	bool limit_exists = false;
+	bool skill_found = false;
 
 	if (!caster)
 		return 0;
@@ -4928,10 +4897,37 @@ sint32 Mob::GetAdditionalDamage(Mob *caster, uint32 spell_id)
 
 			if( (IsValidSpell(buffs[i].spellid) && (IsEffectInSpell(buffs[i].spellid, SE_Empathy))) ){
 
-			sint32 focus = caster->CalcFocusEffect(focusAdditionalDamage, buffs[i].spellid, spell_id);
-				if(focus){
-					dmg += focus;
-					CheckHitsRemaining(i);
+				if (use_skill){
+					sint32 temp_dmg = 0;
+					for (int e = 0; e < EFFECT_COUNT; e++) {
+						
+						if (spells[buffs[i].spellid].effectid[e] == SE_Empathy){
+							temp_dmg += spells[buffs[i].spellid].base[e];
+							continue;
+						}
+
+						if (!skill_found){
+							if ((spells[buffs[i].spellid].effectid[e] == SE_LimitToSkill) ||
+								(spells[buffs[i].spellid].effectid[e] == SE_LimitSpellSkill)){ 
+								limit_exists = true;
+								
+								if (spells[buffs[i].spellid].base[e] == skill)
+									skill_found = true;
+							}
+						}
+					}
+					if ((!limit_exists) || (limit_exists && skill_found)){
+						dmg += temp_dmg;
+						CheckHitsRemaining(i);
+					}
+				}
+
+				else{
+					sint32 focus = caster->CalcFocusEffect(focusAdditionalDamage, buffs[i].spellid, spell_id);
+					if(focus){
+						dmg += focus;
+						CheckHitsRemaining(i);
+					}
 				}
 			}
 		}

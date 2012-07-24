@@ -1,6 +1,23 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+  
+==07/24/2012==  
+  
+Kayen: Implemented: SE_HundredHands (incorrectly marked as already implemented) - Increases/Decrease actual weapon delay by % of value.
+Kayen: Implemented: Missing modifications from the Archery/Throw damage pathways.
+	*SkillAmount/SkillDamageTaken mods, ability to Block/Dodge/Parry ranged attacks (Can not riposte), other new focus/mod effects.
+Kayen: Fixed: aaThrowingMastery will no longer be applied 2x per throw.	
+Kayen: Implemented: Damage bonus to skill attacks from specific armor slot AC (ie KICK from BOOT AC) can adjust with rule 'SpecialAttackACBonus'
+Kayen: SE_MinDamageModifier should now apply to skill specific effects and to special attacks.
+Kayen: Implemented: Complete revision of SE_SkillAttack. (+ required various fixes/adjustments to functions related to special attacks)
+	*This spell effect performs a physical attack from a specific skill with a set weapon damage value and chance to hit modifier.
+	*Attacks will now calculate correctly and use their actual respected pathways utilizing all skill specific mods/bonus.
+Kayen: Implemented Perl MOB Quest Object DoMeleeSkillAttackDmg(target, weapon_damage, skill, chance_mod, focus, CanRiposte) 
+Kayen: Implemented Perl MOB Quest Object DoArcheryAttackDmg(target,NULL,NULL, weapon_damage, chance_mod, focus)  
+Kayen: Implemented Perl MOB Quest Object DoThrowingAttackDmg(target,NULL,NULL, weapon_damage, chance_mod, focus)		
 
+Optional SQL: utils/sql/svn/2171_optional_SpecialAttackACBonus_rule
+	
 ==07/18/2012==
 Kayen: Implemented NPC Special Attack 'K'. Immune to Dispell.
 Kayen: Fixed SE_RangedProc to be applied after zoning, calculate proc rate correctly, utilize numhits.

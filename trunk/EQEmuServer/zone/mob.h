@@ -299,14 +299,14 @@ struct StatBonuses {
 	sint16 	HitChance;							//HitChance/15 == % increase i = Accuracy
 	uint8  	HitChanceSkill;
 	sint16 	DamageModifier[HIGHEST_SKILL+2];	//i
-	sint16 	MinDamageModifier;   				//i
+	sint16 	MinDamageModifier[HIGHEST_SKILL+2]; //i
 	sint16 	ProcChance;							// ProcChance/10 == % increase i = CombatEffects
 	sint16 	ExtraAttackChance;
 	sint16	DoTShielding;
 	sint16 	DivineSaveChance;					// Second Chance
 	sint16 	FlurryChance;
 	sint16	Accuracy;							// Works like HitChance but on all skills	
-	sint8	HundredHands;						//extra haste, stacks with all other haste  i
+	sint16	HundredHands;						//extra haste, stacks with all other haste  i
 	sint8	MeleeLifetap;						//i
 	sint16 	HealRate;							// Spell effect that influences effectiveness of heals
 	sint16 	MaxHPChange;						// Spell Effect
@@ -616,8 +616,8 @@ bool logpos;
 
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
 	int16 GetSkillByItemType(int ItemType);
-	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
-	virtual bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
+	virtual bool AvoidDamage(Mob* attacker, sint32 &damage, bool CanRiposte=true);
+	virtual bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand, sint16 chance_mod=0);
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
@@ -907,7 +907,7 @@ bool logpos;
 	bool TryFadeEffect(int slot);
 	sint16 GetHealRate(int16 spell_id);
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
-	sint32 GetAdditionalDamage(Mob *caster, uint32 spell_id);
+	sint32 GetAdditionalDamage(Mob *caster, uint32 spell_id, bool use_skill = false, int16 skill=0);
 	sint16 GetSkillDmgTaken(const SkillType skill_used);
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
 	sint16 CalcResistChanceBonus();
@@ -920,6 +920,7 @@ bool logpos;
 	int SlowMitigation(bool slow_msg=false, Mob *caster = NULL,int slow_value = 0); 
 	sint16 GetCritDmgMob(int16 skill);
 	sint16 GetMeleeDamageMod_SE(int16 skill);
+	sint16 GetMeleeMinDamageMod_SE(int16 skill);
 	sint16 GetCrippBlowChance();
 	sint16 GetSkillReuseTime(int16 skill);
 	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
@@ -1008,7 +1009,11 @@ bool logpos;
 	sint32  AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker);
 
 	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10);
-    bool Flurry();
+	virtual void DoThrowingAttackDmg(Mob* other, const ItemInst* RangeWeapon=NULL, const Item_Struct* item=NULL, int16 weapon_damage=0, sint16 chance_mod=0,sint16 focus=0);
+	virtual void DoMeleeSkillAttackDmg(Mob* other, int16 weapon_damage, SkillType skillinuse, sint16 chance_mod=0, sint16 focus=0, bool CanRiposte=false);
+	virtual void DoArcheryAttackDmg(Mob* other, const ItemInst* RangeWeapon=NULL, const ItemInst* Ammo=NULL, int16 weapon_damage=0, sint16 chance_mod=0, sint16 focus=0);
+	bool CanDoSpecialAttack(Mob *other);
+	bool Flurry();
     bool Rampage();
     bool AddRampage(Mob*);
 	void ClearRampage();
@@ -1285,8 +1290,9 @@ protected:
 	virtual float GetDefensiveProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30, int16 hand = 13);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate = NULL);
-	int GetKickDamage() const;
-	int GetBashDamage() const;
+	int GetKickDamage();
+	int GetBashDamage();
+	void ApplySpecialAttackMod(SkillType skill, sint32 &dmg, sint32 &mindmg);
 	bool HasDied();
 	void CalculateNewFearpoint();
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);
