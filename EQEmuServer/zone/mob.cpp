@@ -1953,20 +1953,24 @@ void Mob::SetAttackTimer() {
 			}
 		}
 
+		sint16 DelayMod = itembonuses.HundredHands + spellbonuses.HundredHands;
+		if (DelayMod < -99)
+			DelayMod = -99;
+
 		//if we have no weapon..
 		if (ItemToUse == NULL) {
 			//above checks ensure ranged weapons do not fall into here
 			// Work out if we're a monk
 			if ((GetClass() == MONK) || (GetClass() == BEASTLORD)) {
 				//we are a monk, use special delay
-				int speed = (int)(GetMonkHandToHandDelay()*(100.0f+attack_speed)*PermaHaste);
+				int speed = (int)( (GetMonkHandToHandDelay()*(100+DelayMod)/100)*(100.0f+attack_speed)*PermaHaste);
 				// 1200 seemed too much, with delay 10 weapons available
 				if(speed < RuleI(Combat, MinHastedDelay))	//lower bound
 					speed = RuleI(Combat, MinHastedDelay);
 				TimerToUse->SetAtTrigger(speed, true);	// Hand to hand, delay based on level or epic
 			} else {
 				//not a monk... using fist, regular delay
-				int speed = (int)(36*(100.0f+attack_speed)*PermaHaste);
+				int speed = (int)((36 *(100+DelayMod)/100)*(100.0f+attack_speed)*PermaHaste);
 				if(speed < RuleI(Combat, MinHastedDelay) && IsClient())	//lower bound
 					speed = RuleI(Combat, MinHastedDelay);
 				TimerToUse->SetAtTrigger(speed, true); 	// Hand to hand, non-monk 2/36
@@ -1975,7 +1979,7 @@ void Mob::SetAttackTimer() {
 			//we have a weapon, use its delay
 			// Convert weapon delay to timer resolution (milliseconds)
 			//delay * 100
-			int speed = (int)(ItemToUse->Delay*(100.0f+attack_speed)*PermaHaste);
+			int speed = (int)((ItemToUse->Delay*(100+DelayMod)/100)*(100.0f+attack_speed)*PermaHaste);
 			if(speed < RuleI(Combat, MinHastedDelay))
 				speed = RuleI(Combat, MinHastedDelay);
 
@@ -4141,6 +4145,19 @@ sint16 Mob::GetMeleeDamageMod_SE(int16 skill)
 
 	if (spellbonuses.DamageModifier[HIGHEST_SKILL+1] || spellbonuses.DamageModifier[skill])
 		CheckHitsRemaining(0, false, false, SE_DamageModifier,0,true,skill);
+
+	return dmg_mod;
+}
+
+sint16 Mob::GetMeleeMinDamageMod_SE(int16 skill)
+{
+	int dmg_mod = 0;
+					
+	dmg_mod  = itembonuses.MinDamageModifier[skill] + spellbonuses.MinDamageModifier[skill] +
+				itembonuses.MinDamageModifier[HIGHEST_SKILL+1] + spellbonuses.MinDamageModifier[HIGHEST_SKILL+1];
+
+	if(dmg_mod < -100)
+		dmg_mod = -100;
 
 	return dmg_mod;
 }

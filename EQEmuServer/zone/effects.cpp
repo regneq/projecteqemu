@@ -211,14 +211,12 @@ sint32 Client::GetActDoTDamage(int16 spell_id, sint32 value) {
 	if (critChance > 0){
 		if (MakeRandomInt(0, 99) < critChance){
 			modifier += modifier*ratio/100;
-			value = ((value*modifier/100)-spell_dmg)*2;
+			return (((value*modifier/100)-spell_dmg)*2);
 		}
 	}
 	
-	else
-		value = (value*modifier/100)-spell_dmg;
-	
-	return value;
+	return ((value*modifier/100)-spell_dmg);
+
 }
 
 //Scale all NPC spell healing via SetSpellFocusHeal(value)

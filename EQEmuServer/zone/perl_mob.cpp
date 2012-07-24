@@ -7831,6 +7831,120 @@ XS(XS_Mob_GetModVulnerability)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_DoMeleeSkillAttackDmg); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_DoMeleeSkillAttackDmg)
+{
+	dXSARGS;
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: Mob::DoMeleeSkillAttackDmg(THIS, target, weapon_damage, skill, chance_mod, focus, CanRiposte)");
+	{
+		Mob *		THIS;
+		Mob*		target;
+		int16		weapon_damage = (int16)SvIV(ST(2));
+		SkillType	skill = (SkillType)SvUV(ST(3));
+		sint16		chance_mod = (sint16)SvIV(ST(4));
+		sint16		focus = (sint16)SvIV(ST(5));
+		uint8		CanRiposte = (uint8)SvIV(ST(6));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+		if(target == NULL)
+			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
+
+		THIS->DoMeleeSkillAttackDmg(target, weapon_damage, skill, chance_mod, focus, CanRiposte);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_DoArcheryAttackDmg); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_DoArcheryAttackDmg)
+{
+	dXSARGS;
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: Mob::DoArcheryAttackDmg(THIS, target, RangeWeapon=NULL, Ammo=NULL, weapon_damage, chance_mod, focus)");
+	{
+		Mob *		THIS;
+		Mob*		target;
+		ItemInst*   RangeWeapon = NULL;
+		ItemInst*   Ammo = NULL;
+		int16		weapon_damage = (int16)SvIV(ST(4));
+		sint16		chance_mod = (sint16)SvIV(ST(5));
+		sint16		focus = (sint16)SvIV(ST(6));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+		if(target == NULL)
+			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
+
+		THIS->DoArcheryAttackDmg(target, RangeWeapon, Ammo, weapon_damage, chance_mod, focus);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_DoThrowingAttackDmg); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_DoThrowingAttackDmg)
+{
+	dXSARGS;
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: Mob::DoThrowingAttackDmg(THIS, target, RangeWeapon=NULL,item=NULL,weapon_damage, chance_mod, focus)");
+	{
+		Mob *		THIS;
+		Mob*		target;
+		ItemInst*   RangeWeapon = NULL;
+		Item_Struct* item = NULL;
+		int16		weapon_damage = (int16)SvIV(ST(4));
+		sint16		chance_mod = (sint16)SvIV(ST(5));
+		sint16		focus = (sint16)SvIV(ST(6));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+		if(target == NULL)
+			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
+
+		THIS->DoThrowingAttackDmg(target, RangeWeapon, item, weapon_damage, chance_mod, focus);
+	}
+	XSRETURN_EMPTY;
+}
+
 
 #ifdef __cplusplus
 extern "C"
@@ -8124,7 +8238,10 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "IsBeneficialAllowed"), XS_Mob_IsBeneficialAllowed, file, "$$");
 		newXSproto(strcpy(buf, "ModVulnerability"), XS_Mob_ModVulnerability, file, "$$$");
 		newXSproto(strcpy(buf, "GetModVulnerability"), XS_Mob_GetModVulnerability, file, "$$");
-		
+		newXSproto(strcpy(buf, "DoMeleeSkillAttackDmg"), XS_Mob_DoMeleeSkillAttackDmg, file, "$$$$$$$");
+		newXSproto(strcpy(buf, "DoArcheryAttackDmg"), XS_Mob_DoArcheryAttackDmg, file, "$$$$$$$");
+		newXSproto(strcpy(buf, "DoThrowingAttackDmg"), XS_Mob_DoThrowingAttackDmg, file, "$$$$$$$");
+			
 	XSRETURN_YES;
 }
 

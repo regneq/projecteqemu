@@ -1414,12 +1414,20 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
  			case SE_HundredHands:
  			{
+				if (effect_value > 0 && effect_value > newbon->HundredHands)
+					newbon->HundredHands = effect_value; //Increase Weapon Delay
+				else if (effect_value < 0 && effect_value < newbon->HundredHands)
+					newbon->HundredHands = effect_value; //Decrease Weapon Delay
+				break;
+
+				/*
 				if(IsBeneficialSpell(spell_id)){ //If it's a beneficial spell we switch it cause
 					effect_value *= -1; //of the way it's stored by sony, negative for both ben and det spells
 				}
 				effect_value = effect_value > 120 ? 120 : (effect_value < -120 ? -120 : effect_value);
 				newbon->HundredHands = newbon->HundredHands > effect_value ? newbon->HundredHands : effect_value;
  				break;
+				*/
  			}
 				
 			case SE_MeleeSkillCheck:
@@ -1454,8 +1462,10 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_MinDamageModifier:
 			{
-				if(newbon->MinDamageModifier < effect_value)
-					newbon->MinDamageModifier = effect_value;
+				if(spells[spell_id].base2[i] == -1)
+					newbon->MinDamageModifier[HIGHEST_SKILL+1] += effect_value;
+				else
+					newbon->MinDamageModifier[spells[spell_id].base2[i]] += effect_value;
 				break;
 			}
 				
@@ -2435,7 +2445,10 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 					
 				case SE_MinDamageModifier:
 				{
-					spellbonuses.MinDamageModifier = effect_value;
+					for(int e = 0; e < HIGHEST_SKILL+1; e++)
+					{
+						spellbonuses.MinDamageModifier[e] = effect_value;
+					}
 					break;
 				}
 					

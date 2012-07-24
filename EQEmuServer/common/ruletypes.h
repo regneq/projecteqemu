@@ -331,6 +331,7 @@ RULE_INT ( Combat, HitCapPre10, 20) // live has it capped at 20, see above :p
 RULE_INT ( Combat, MinHastedDelay, 400) // how fast we can get with haste.
 RULE_REAL ( Combat, AvgDefProcsPerMinute, 2.0)
 RULE_REAL ( Combat, DefProcPerMinAgiContrib, 0.075) //How much agility contributes to defensive proc rate
+RULE_INT ( Combat, SpecialAttackACBonus, 15) //Percent amount of damage per AC gained for certain special attacks (damage = AC*SpecialAttackACBonus/100).
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

@@ -178,13 +178,17 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 
 // called when a mob is attacked, does the checks to see if it's a hit
 // and does other mitigation checks.  'this' is the mob being attacked.
-bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
+bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand, sint16 chance_mod)
 {
 /*
 		Reworked a lot of this code to achieve better balance at higher levels.
 		The old code basically meant that any in high level (50+) combat,
 		both parties always had 95% chance to hit the other one.
 */
+	//If chance bonus set in spell data for Skill Attacks is 10k allow to hit without calculations.
+	if (chance_mod == 10000)
+		return true;
+
 	Mob *attacker=other;
 	Mob *defender=this;
 	float chancetohit = RuleR(Combat, BaseHitChance);
@@ -315,6 +319,14 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		mlog(COMBAT__TOHIT, "Applied spell melee accuracy chance %.2f, yeilding %.2f", hitBonus, chancetohit);
 	}
 
+	//Apply specified bonus when doing a spell derived skill attack
+	hitBonus = 0;
+	if (chance_mod) {
+		hitBonus = chance_mod;
+		chancetohit += chancetohit * chance_mod / 100;
+		mlog(COMBAT__TOHIT, "Applied SE_S chance bonus %.2f, yeilding %.2f", hitBonus, chancetohit);
+	}
+
 	hitBonus = 0;
 	if(attacker->itembonuses.HitChanceSkill == 255 || attacker->itembonuses.HitChanceSkill == skillinuse)
 	{
@@ -394,7 +406,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	return(tohit_roll <= chancetohit);
 }
 
-bool Mob::AvoidDamage(Mob* other, sint32 &damage)
+bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 {
 	/* solar: called when a mob is attacked, does the checks to see if it's a hit
 	*  and does other mitigation checks.  'this' is the mob being attacked.
@@ -430,7 +442,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	// riposte
 	/////////////////////////////////////////////////////////
 	float riposte_chance = 0.0f;
-	if (damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
+	if (CanRiposte && damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
 		riposte_chance = (100.0f + (float)defender->spellbonuses.RiposteChance + (float)defender->itembonuses.RiposteChance) / 100.0f;
         skill = GetSkill(RIPOSTE);
@@ -1277,7 +1289,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 		}
 #endif
 
-		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
+		min_hit += min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
 
 		if (Hand==14) {
 			if(GetAA(aaSinisterStrikes)) {
@@ -4256,21 +4268,6 @@ void Mob::DoRiposte(Mob* defender) {
 }
  
 void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
-
-	if(skill == THROWING) {
-		switch(GetAA(aaThrowingMastery))
-		{
-			case 1:
-				damage = damage * 115/100;
-				break;
-			case 2:
-				damage = damage * 125/100;
-				break;
-			case 3:
-				damage = damage * 150/100;
-				break;
-		}
-	}
 
 	if(!RuleB(Combat, UseIntervalAC)){
 		if(IsNPC()){ //across the board NPC damage bonuses.
