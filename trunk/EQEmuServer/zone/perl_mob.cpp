@@ -7945,6 +7945,56 @@ XS(XS_Mob_DoThrowingAttackDmg)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_SetDisableMelee);
+XS(XS_Mob_SetDisableMelee)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetDisableMelee(THIS, value)");
+	{
+		Mob *	THIS;
+		bool value = (bool)SvTRUE(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        THIS->SetDisableMelee(value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_IsMeleeDisabled); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_IsMeleeDisabled)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::IsMeleeDisabled(THIS)");
+	{
+		Mob *		THIS;
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsMeleeDisabled();
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
 
 #ifdef __cplusplus
 extern "C"
@@ -8241,6 +8291,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "DoMeleeSkillAttackDmg"), XS_Mob_DoMeleeSkillAttackDmg, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "DoArcheryAttackDmg"), XS_Mob_DoArcheryAttackDmg, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "DoThrowingAttackDmg"), XS_Mob_DoThrowingAttackDmg, file, "$$$$$$$");
+		newXSproto(strcpy(buf, "SetDisableMelee"), XS_Mob_SetDisableMelee, file, "$$");
+		newXSproto(strcpy(buf, "IsMeleeDisabled"), XS_Mob_IsMeleeDisabled, file, "$$");
 			
 	XSRETURN_YES;
 }

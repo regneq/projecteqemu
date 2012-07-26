@@ -397,6 +397,7 @@ Mob::Mob(const char*   in_name,
 	hate_list.SetOwner(this);
 
 	m_AllowBeneficial = false;
+	m_DisableMelee = false;
 	for (int i = 0; i < HIGHEST_SKILL+2; i++) { SkillDmgTaken_Mod[i] = 0; } 
 	for (int i = 0; i < HIGHEST_RESIST+2; i++) { Vulnerability_Mod[i] = 0; } 
 }

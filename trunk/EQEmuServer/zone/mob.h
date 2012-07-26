@@ -118,7 +118,7 @@ A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,Q,R,S,T,U,W,Y
 
 Unused:
 a,c,e,h,i,k,l,q,s,u,v,w,x,y,z
-P,V,X,Z
+P,V,X
 */
 
 enum {
@@ -293,6 +293,7 @@ struct StatBonuses {
 	sint16 	ResistSpellChance;					//i
 	sint16 	ResistFearChance;					//i
 	bool   	Fearless;							//i
+	bool   	IsFeared;							//i
 	sint16 	StunResist;							//i
 	sint16 	MeleeSkillCheck;					//i
 	uint8  	MeleeSkillCheckSkill;
@@ -937,7 +938,8 @@ bool logpos;
 
 	void SetAllowBeneficial(bool value) { m_AllowBeneficial = value; }
 	bool GetAllowBeneficial() { return m_AllowBeneficial; }
-
+	void SetDisableMelee(bool value) { m_DisableMelee = value; }
+	bool IsMeleeDisabled() { return m_DisableMelee; }
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
@@ -1207,6 +1209,7 @@ protected:
 	sint16 SkillDmgTaken_Mod[HIGHEST_SKILL+2];
 	sint16 Vulnerability_Mod[HIGHEST_RESIST+2]; 
 	bool m_AllowBeneficial;
+	bool m_DisableMelee;
 
 	bool	isgrouped; //These meant to be private?
 	bool	israidgrouped;

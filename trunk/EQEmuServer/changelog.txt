@@ -1,8 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-  
+
+==07/26/2012==  
+Kayen: Fixed: SE_ImmuneFleeing - Will now disable fleeing if used after mob begins to run, will not effect fleeing from fear.
+Kayen: Implemented Perl MOB Quest Object SetDisableMelee(1=Disabled) - Prevents the ability to auto attack.  
+Kayen: Implemented Perl MOB Quest Object IsMeleeDisabled()
+ 
 ==07/24/2012==  
-  
 Kayen: Implemented: SE_HundredHands (incorrectly marked as already implemented) - Increases/Decrease actual weapon delay by % of value.
 Kayen: Implemented: Missing modifications from the Archery/Throw damage pathways.
 	*SkillAmount/SkillDamageTaken mods, ability to Block/Dodge/Parry ranged attacks (Can not riposte), other new focus/mod effects.

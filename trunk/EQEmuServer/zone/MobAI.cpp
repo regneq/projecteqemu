@@ -1175,7 +1175,7 @@ void Mob::AI_Process() {
 			}
 			
 			//casting checked above...
-			if(target && !IsStunned() && !IsMezzed() && GetAppearance() != eaDead) {
+			if(target && !IsStunned() && !IsMezzed() && GetAppearance() != eaDead && !IsMeleeDisabled()) {
 				
 				//we should check to see if they die mid-attacks, previous
 				//crap of checking target for null was not gunna cut it
