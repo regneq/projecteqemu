@@ -149,7 +149,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\..\Build\</OutDir>
     <IntDir>.\../Build/queryserv/Release\</IntDir>
-    <TargetName>Chatserver</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -159,7 +159,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">
     <OutDir>.\..\Build\</OutDir>
     <IntDir>.\../Build/queryserv/Release\</IntDir>
-    <TargetName>Chatserver</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -167,7 +167,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>Chatserver</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -175,7 +175,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release x64|x64'">
-    <TargetName>QueryServer</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
