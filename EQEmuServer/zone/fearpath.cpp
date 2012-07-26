@@ -48,7 +48,7 @@ void Mob::CheckFlee() {
 	//dont bother if we are immune to fleeing
 	if(SpecAttacks[IMMUNE_FLEEING] || spellbonuses.ImmuneToFlee)
 		return;
-	
+
 	if(!flee_timer.Check())
 		return;	//only do all this stuff every little while, since
 				//its not essential that we start running RIGHT away
@@ -103,6 +103,14 @@ void Mob::CheckFlee() {
 
 
 void Mob::ProcessFlee() {
+
+	//Stop fleeing if effect is applied after they start to run. 
+	//When ImmuneToFlee effect fades it will turn fear back on and check if it can still flee. 
+	if(flee_mode && (SpecAttacks[IMMUNE_FLEEING] || spellbonuses.ImmuneToFlee) && !spellbonuses.IsFeared){
+		curfp = false;
+		return;
+	}
+
 	//see if we are still dying, if so, do nothing
 	if(GetHPRatio() < (float)RuleI(Combat, FleeHPRatio))
 		return;
@@ -112,8 +120,7 @@ void Mob::ProcessFlee() {
 	flee_mode = false;
 	
 	//see if we are legitimately feared now
-	sint8 slot = GetBuffSlotFromType(SE_Fear);
-	if(slot == -1) {
+	if(!spellbonuses.IsFeared) {
 		//not feared... were done...
 		curfp = false;
 		return;

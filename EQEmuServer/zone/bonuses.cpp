@@ -878,6 +878,7 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				newbon->Fearless = true;  
 				break;
 			}
+
 			case SE_PersistantCasting:
 			{
 				newbon->PersistantCasting += base1;
@@ -1819,6 +1820,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 
+			case SE_Fear:
+			{
+				newbon->IsFeared = true;  
+				break;
+			}
+
 		}
 	}
 }
@@ -2686,6 +2693,12 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 				case SE_BlockBehind:
 				{
 					spellbonuses.BlockBehind = effect_value;
+					break;
+				}
+
+				case SE_Fear:
+				{
+					spellbonuses.IsFeared = false;  
 					break;
 				}
 			}

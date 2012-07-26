@@ -272,7 +272,7 @@ bool Client::Process() {
 		if(auto_attack) {
 			if(!IsAIControlled() && !dead
 				&& !(spellend_timer.Enabled() && (spells[casting_spell_id].classes[7] < 1 && spells[casting_spell_id].classes[7] > 65)) 
-				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead
+				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead && !IsMeleeDisabled()
 				)
 				may_use_attacks = true;
 			

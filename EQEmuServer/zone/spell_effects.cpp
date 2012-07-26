@@ -3473,6 +3473,17 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 				break;
 			}
 
+			case SE_ImmuneFleeing:
+			{
+				if(RuleB(Combat, EnableFearPathing)){
+					if(flee_mode) {
+						curfp = true;
+						CheckFlee();
+						break;
+					}
+				}
+			}
+
 			case SE_BindSight:
 			{
 				if(IsClient())
