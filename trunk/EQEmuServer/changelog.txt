@@ -5,6 +5,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Kayen: Fixed: SE_ImmuneFleeing - Will now disable fleeing if used after mob begins to run, will not effect fleeing from fear.
 Kayen: Implemented Perl MOB Quest Object SetDisableMelee(1=Disabled) - Prevents the ability to auto attack.  
 Kayen: Implemented Perl MOB Quest Object IsMeleeDisabled()
+Sorvani: corrected build name for queryserv project in all the various build types.
  
 ==07/24/2012==  
 Kayen: Implemented: SE_HundredHands (incorrectly marked as already implemented) - Increases/Decrease actual weapon delay by % of value.
