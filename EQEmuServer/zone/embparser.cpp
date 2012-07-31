@@ -204,7 +204,7 @@ void PerlembParser::HandleQueue() {
 		EventRecord e = eventQueue.front();
 		eventQueue.pop();
 
-		EventCommon(e.event, e.objid, e.data.c_str(), e.npcmob, e.iteminst, e.mob, e.extradata);
+		EventCommon(e.event, e.objid, e.data.c_str(), e.npcmob, e.iteminst, e.mob, e.extradata, e.global);
 	}
 
 	eventQueueProcessing = false;
@@ -229,6 +229,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		e.iteminst = iteminst;
 		e.mob = mob;
 		e.extradata = extradata;
+		e.global = global;
 		eventQueue.push(e);
 		return;
 	}

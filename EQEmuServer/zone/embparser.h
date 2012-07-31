@@ -59,6 +59,7 @@ struct EventRecord {
 	ItemInst* iteminst;
 	Mob* mob;
 	int32 extradata;
+	bool global;
 };
 
 class PerlembParser : public Parser

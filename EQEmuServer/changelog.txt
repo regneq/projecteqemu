@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==07/31/2012==
+Akkadius: (KLS) Fix for global_player.pl synchronization. There was an issue where certain subroutines were not passing as global
+
 ==07/26/2012==  
 Kayen: Fixed: SE_ImmuneFleeing - Will now disable fleeing if used after mob begins to run, will not effect fleeing from fear.
 Kayen: Implemented Perl MOB Quest Object SetDisableMelee(1=Disabled) - Prevents the ability to auto attack.  
