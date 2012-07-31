@@ -28,7 +28,7 @@ Eglin
 //#pragma comment(lib, "perl56.lib")
 #ifdef _WINDOWS
 #if _MSC_VER >= 1600 // for V100+ toolset
-#pragma comment(lib, "perl510.lib")
+#pragma comment(lib, "perl514.lib")
 #else
 #pragma comment(lib, "perl510.lib")
 #endif
