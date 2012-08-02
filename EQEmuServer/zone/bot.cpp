@@ -4446,13 +4446,13 @@ void Bot::BotMeditate(bool isSitting) {
 	}
 }
 
-bool Bot::BotRangedAttack(Mob* other) {
+void Bot::BotRangedAttack(Mob* other) {
 	//make sure the attack and ranged timers are up
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) {
 		mlog(COMBAT__RANGED, "Bot Archery attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-		return false;
+		return;
 	}
 
 	ItemInst* rangedItem = GetBotItem(SLOT_RANGE);
@@ -4466,7 +4466,7 @@ bool Bot::BotRangedAttack(Mob* other) {
 		Ammo = ammoItem->GetItem();
 
 	if(!RangeWeapon || !Ammo)
-		return false;
+		return;
 
 	
 	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetCleanName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
@@ -4478,83 +4478,43 @@ bool Bot::BotRangedAttack(Mob* other) {
 		IsMezzed() ||
 		(GetAppearance() == eaDead))
 	{
-		return false;
+		return;
 	}
 	
 	SendItemAnimation(other, Ammo, ARCHERY);
 
-	// Hit?
-	if(!other->CheckHitChance(other, ARCHERY, SLOT_RANGE)) {
-		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetCleanName());
-		other->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
+	DoArcheryAttackDmg(GetTarget(), rangedItem, ammoItem);	
+
+	//break invis when you attack
+	if(invisible) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility due to melee attack.");
+		BuffFadeByEffect(SE_Invisibility);
+		BuffFadeByEffect(SE_Invisibility2);
+		invisible = false;
 	}
-	else {
-		mlog(COMBAT__RANGED, "Ranged attack hit %s.", other->GetCleanName());
-		
-		if(!TryHeadShot(other, ARCHERY)) {
-			sint16 WDmg = GetWeaponDamage(other, RangeWeapon);
-			sint16 ADmg = GetWeaponDamage(other, Ammo);
-			if((WDmg > 0) || (ADmg > 0)){
-				if(WDmg < 0)
-					WDmg = 0;
-				if(ADmg < 0)
-					ADmg = 0;
-
-				uint32 MaxDmg = (2*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
-
-				switch(GetAA(aaArcheryMastery)) {
-					case 1:
-						MaxDmg = MaxDmg * 130/100;
-						break;
-					case 2:
-						MaxDmg = MaxDmg * 160/100;
-						break;
-					case 3:
-						MaxDmg = MaxDmg * 2;
-						break;
-				}
-
-				mlog(COMBAT__RANGED, "Bow DMG %d, Arrow DMG %d, Max Damage %d.", WDmg, ADmg, MaxDmg);
-				
-				if(GetClass()==RANGER && other->IsNPC() && !other->IsMoving() && !other->IsRooted() && GetLevel() > 50){
-					MaxDmg *= 2;
-					mlog(COMBAT__RANGED, "Ranger. Target is stationary, doubling max damage to %d", MaxDmg);
-				}
-
-				sint32 TotalDmg = 0;
-
-				if (MaxDmg == 0)
-					MaxDmg = 1;
-
-				if(RuleB(Combat, UseIntervalAC))
-					TotalDmg = MaxDmg;
-				else
-					TotalDmg = MakeRandomInt(1, MaxDmg);
-
-				int minDmg = 1;
-				if(GetLevel() > 25){
-					//twice, for ammo and weapon
-					TotalDmg += (2*((GetLevel()-25)/3));
-					minDmg += (2*((GetLevel()-25)/3));
-				}
-
-				other->MeleeMitigation(this, TotalDmg, minDmg);
-				ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
-				TryCriticalHit(other, ARCHERY, TotalDmg);
-				other->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
-			}
-			else {
-				other->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
-			}
-		}
+	if(invisible_undead) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. undead due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsUndead);
+		BuffFadeByEffect(SE_InvisVsUndead2);
+		invisible_undead = false;
+	}
+	if(invisible_animals){
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. animals due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsAnimals);
+		invisible_animals = false;
 	}
 
-	//try proc on hits and misses
-	if(other && (other->GetHP() > -10)) {
-		TryWeaponProc(RangeWeapon, other);
+	if(hidden || improved_hidden){
+		hidden = false;
+		improved_hidden = false;
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+		sa_out->spawn_id = GetID();
+		sa_out->type = 0x03;
+		sa_out->parameter = 0;
+		entity_list.QueueClients(this, outapp, true);
+		safe_delete(outapp);
 	}
-
-	return true;
 }
 
 bool Bot::CheckBotDoubleAttack(bool tripleAttack) {
@@ -4615,6 +4575,135 @@ bool Bot::CheckBotDoubleAttack(bool tripleAttack) {
 	}
 
 	return false;
+}
+
+void Bot::DoMeleeSkillAttackDmg(Mob* other, int16 weapon_damage, SkillType skillinuse, sint16 chance_mod, sint16 focus, bool CanRiposte)
+{
+	if (!CanDoSpecialAttack(other))
+		return;
+
+	//For spells using skill value 98 (feral swipe ect) server sets this to 67 automatically.
+	//Kayen: This is unlikely to be completely accurate but use OFFENSE skill value for these effects.
+	if (skillinuse == BEGGING)
+		skillinuse = OFFENSE;
+
+	int damage = 0;
+	int32 hate = 0;
+	int Hand = 13;
+	if (hate == 0 && weapon_damage > 1) hate = weapon_damage;
+	
+	if(weapon_damage > 0){
+		
+		if(GetClass() == BERSERKER){
+			int bonus = 3 + GetLevel()/10;
+			weapon_damage = weapon_damage * (100+bonus) / 100;
+		}
+
+		sint32 min_hit = 1;
+		sint32 max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
+
+		if(GetLevel() >= 28 && IsWarriorClass() )
+		{
+			int ucDamageBonus = GetWeaponDamageBonus((const Item_Struct*) NULL );
+
+			min_hit += (int) ucDamageBonus;
+			max_hit += (int) ucDamageBonus;
+			hate += ucDamageBonus;
+		}
+
+		ApplySpecialAttackMod(skillinuse, max_hit, min_hit);
+
+		min_hit += min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
+
+		if(max_hit < min_hit)
+			max_hit = min_hit;
+
+		if(RuleB(Combat, UseIntervalAC))
+			damage = max_hit;
+		else
+			damage = MakeRandomInt(min_hit, max_hit);
+
+		if(!other->CheckHitChance(this, skillinuse, Hand, chance_mod)) {
+			damage = 0;
+		} else {
+			other->AvoidDamage(this, damage, CanRiposte);
+			other->MeleeMitigation(this, damage, min_hit);
+			if(damage > 0) {
+				damage += damage*focus/100;
+				ApplyMeleeDamageBonus(skillinuse, damage);
+				damage += other->GetAdditionalDamage(this, 0, true, skillinuse);
+				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100) + GetSkillDmgAmt(skillinuse);
+				TryCriticalHit(other, skillinuse, damage);
+			}
+		}
+
+		if (damage == -3)  {
+			DoRiposte(other);
+			if (HasDied())
+				return;
+		}
+	}
+	
+	else
+		damage = -5;
+
+	if(skillinuse == BASH){
+		const ItemInst* inst = GetBotItem(SLOT_SECONDARY);
+		const Item_Struct* botweapon = 0;
+		if(inst)
+			botweapon = inst->GetItem();
+		if(botweapon) {
+			if(botweapon->ItemType == ItemTypeShield) {
+				hate += botweapon->AC;
+			}
+			hate = hate * (100 + GetFuriousBash(botweapon->Focus.Effect)) / 100;
+		}
+	}
+	
+	other->AddToHateList(this, hate);
+
+	bool CanSkillProc = true;
+	if (skillinuse == OFFENSE){ //Hack to allow damage to display.
+		skillinuse = TIGER_CLAW; //'strike' your opponent - Arbitrary choice for message. 
+		CanSkillProc = false; //Disable skill procs	
+	}
+
+	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
+
+	if (HasDied())
+		return;
+
+	if((skillinuse == DRAGON_PUNCH) && GetAA(aaDragonPunch) && MakeRandomInt(0, 99) < 25){
+		SpellFinished(904, other, 10, 0, -1, spells[904].ResistDiff);
+		other->Stun(100);
+	}
+
+	if (CanSkillProc && HasSkillProcs()){
+		float chance = 10.0f*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
+		TrySkillProc(other, skillinuse, chance);
+	}
+}
+
+bool Bot::CanDoSpecialAttack(Mob *other)
+{
+	//Make sure everything is valid before doing any attacks.
+	if (!other) {
+		SetTarget(NULL);
+		return false;
+	}
+	
+	if(!GetTarget())
+		SetTarget(other);
+	
+	if ((other == NULL || ((GetAppearance() == eaDead) || (other->IsClient() && other->CastToClient()->IsDead()))
+		|| HasDied() || (!IsAttackAllowed(other)))) {
+		return false; 
+	}
+
+	if(other->GetInvul() || other->SpecAttacks[IMMUNE_MELEE])
+		return false;
+
+	return true;
 }
 
 void Bot::SetTarget(Mob* mob) {
@@ -7693,7 +7782,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 			hate += ucDamageBonus;
 		}
 
-		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
+		min_hit = min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
 
 		if(Hand == SLOT_SECONDARY) {
 			if(GetAA(aaSinisterStrikes)) { // Sinister Strikes AA
@@ -8763,7 +8852,7 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", aa_mit, damage);
 }
 
-void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override) {
+void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override,int ReuseTime) {
 	//this really should go through the same code as normal melee damage to
 	//pick up all the special behavior there
 
@@ -8780,30 +8869,44 @@ void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 			if(botweapon->ItemType == ItemTypeShield) {
 				hate += botweapon->AC;
 			}
+			hate = hate * (100 + GetFuriousBash(botweapon->Focus.Effect)) / 100;
 		}
-
 	}
 
+	min_damage += min_damage * GetMeleeMinDamageMod_SE(skill) / 100;
+
+	bool CanRiposte = true;
+	if(skill == THROWING && skill == ARCHERY)
+		CanRiposte = false;
+
+	who->AvoidDamage(this, max_damage, CanRiposte);
+	who->MeleeMitigation(this, max_damage, min_damage);
+		
 	if(max_damage > 0) {
-		if(skill != THROWING && skill != ARCHERY) {
-			who->AvoidDamage(this, max_damage);
-		}
-		who->MeleeMitigation(this, max_damage, min_damage);
-		ApplyMeleeDamageBonus(skill, max_damage);
+		ApplyMeleeDamageBonus(skill, max_damage); 
+		max_damage += who->GetAdditionalDamage(this, 0, true, skill);
+		max_damage += (itembonuses.HeroicSTR / 10) + (max_damage * who->GetSkillDmgTaken(skill) / 100) + GetSkillDmgAmt(skill);
 		TryCriticalHit(who, skill, max_damage);
-		if(max_damage > 0) {
-			who->AddToHateList(this, hate);
-		}
-		else
-			who->AddToHateList(this, 0);
 	}
+
+	if(max_damage >= 0) //You should probably get aggro no matter what, but unclear why it was set like this.
+		who->AddToHateList(this, hate);
+
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
+
+	if(!GetTarget())return;
+	if (HasDied())	return;
+
+	if (HasSkillProcs()){
+		float chance = (float)ReuseTime*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
+		TrySkillProc(who, skill, chance);
+	}
 	
 	if(max_damage == -3)
 		DoRiposte(who);	
 }
 
-void Bot::TryBackstab(Mob *other) {
+void Bot::TryBackstab(Mob *other, int ReuseTime) {
 	if(!other)
 		return;
 
@@ -8888,7 +8991,7 @@ void Bot::TryBackstab(Mob *other) {
 
 					if (tripleBackstab && other->GetHP() > 0) 
 					{
-						RogueBackstab(other);
+						RogueBackstab(other, ReuseTime);
 					}
 				}
 			}
@@ -8908,7 +9011,7 @@ void Bot::TryBackstab(Mob *other) {
 
 			if (tripleBackstab && other->GetHP() > 0)
 			{
-				RogueBackstab(other);
+				RogueBackstab(other, ReuseTime);
 			}
 		}
 	}
@@ -8918,7 +9021,7 @@ void Bot::TryBackstab(Mob *other) {
 }
 
 //heko: backstab
-void Bot::RogueBackstab(Mob* other, bool min_damage)
+void Bot::RogueBackstab(Mob* other, bool min_damage, int ReuseTime)
 {
 	sint32 ndamage = 0;
 	sint32 max_hit = 0;
@@ -8983,7 +9086,7 @@ void Bot::RogueBackstab(Mob* other, bool min_damage)
 		ndamage = -5;
 	}
 
-	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit, hate);
+	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit, hate, ReuseTime);
 	DoAnim(animPiercing);
 }
 
@@ -9155,8 +9258,8 @@ void Bot::DoClassAttacks(Mob *target) {
 						}
 					}
 
-					DoSpecialAttackDamage(target, KICK, dmg);
 					reuse = KickReuseTime * 1000;
+					DoSpecialAttackDamage(target, KICK, dmg, 1, -1, reuse);
 					did_attack = true;
 				}
 				else
@@ -9183,8 +9286,8 @@ void Bot::DoClassAttacks(Mob *target) {
 							}
 						}
 
-						DoSpecialAttackDamage(target, BASH, dmg);
 						reuse = BashReuseTime * 1000;
+						DoSpecialAttackDamage(target, BASH, dmg, 1, -1, reuse);
 						did_attack = true;
 					}
 				}
@@ -9255,8 +9358,8 @@ void Bot::DoClassAttacks(Mob *target) {
 					}
 				}
 
-				DoSpecialAttackDamage(target, KICK, dmg);
 				reuse = KickReuseTime * 1000;
+				DoSpecialAttackDamage(target, KICK, dmg, 1, -1, reuse);
 				did_attack = true;
 			}
 			break;
@@ -9287,8 +9390,8 @@ void Bot::DoClassAttacks(Mob *target) {
 							}
 						}
 
-						DoSpecialAttackDamage(target, BASH, dmg);
 						reuse = BashReuseTime * 1000;
+						DoSpecialAttackDamage(target, BASH, dmg, 1, -1, reuse);
 						did_attack = true;
 					}
 				}
@@ -9758,20 +9861,24 @@ void Bot::SetAttackTimer() {
 			}
 		}
 
+		sint16 DelayMod = itembonuses.HundredHands + spellbonuses.HundredHands;
+		if (DelayMod < -99)
+			DelayMod = -99;
+
 		//if we have no weapon..
 		if (ItemToUse == NULL) {
 			//above checks ensure ranged weapons do not fall into here
 			// Work out if we're a monk
 			if ((GetClass() == MONK) || (GetClass() == BEASTLORD)) {
 				//we are a monk, use special delay
-				int speed = (int)(GetMonkHandToHandDelay()*(100.0f+attack_speed)*PermaHaste);
+				int speed = (int)( (GetMonkHandToHandDelay()*(100+DelayMod)/100)*(100.0f+attack_speed)*PermaHaste);
 				// 1200 seemed too much, with delay 10 weapons available
 				if(speed < RuleI(Combat, MinHastedDelay))	//lower bound
 					speed = RuleI(Combat, MinHastedDelay);
 				TimerToUse->SetAtTrigger(speed, true);	// Hand to hand, delay based on level or epic
 			} else {
 				//not a monk... using fist, regular delay
-				int speed = (int)(36*(100.0f+attack_speed)*PermaHaste);
+				int speed = (int)((36 *(100+DelayMod)/100)*(100.0f+attack_speed)*PermaHaste);
 				//if(speed < RuleI(Combat, MinHastedDelay) && IsClient())	//lower bound
 				//	speed = RuleI(Combat, MinHastedDelay);
 				TimerToUse->SetAtTrigger(speed, true); 	// Hand to hand, non-monk 2/36
@@ -9780,7 +9887,7 @@ void Bot::SetAttackTimer() {
 			//we have a weapon, use its delay
 			// Convert weapon delay to timer resolution (milliseconds)
 			//delay * 100
-			int speed = (int)(ItemToUse->Delay*(100.0f+attack_speed)*PermaHaste);
+			int speed = (int)((ItemToUse->Delay*(100+DelayMod)/100)*(100.0f+attack_speed)*PermaHaste);
 			if(speed < RuleI(Combat, MinHastedDelay))
 				speed = RuleI(Combat, MinHastedDelay);
 
