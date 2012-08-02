@@ -168,12 +168,14 @@ public:
 	uint16 GetATKRating();
 	uint16 GetPrimarySkillValue();
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
-	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
-	virtual void TryBackstab(Mob *other);
-	virtual void RogueBackstab(Mob* other, bool min_damage = false);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10);
+	virtual void TryBackstab(Mob *other,int ReuseTime = 10);
+	virtual void RogueBackstab(Mob* other, bool min_damage = false, int ReuseTime = 10);
 	virtual void RogueAssassinate(Mob* other);
 	virtual void DoClassAttacks(Mob *target);
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
+	virtual void DoMeleeSkillAttackDmg(Mob* other, int16 weapon_damage, SkillType skillinuse, sint16 chance_mod=0, sint16 focus=0, bool CanRiposte=false);
+	bool CanDoSpecialAttack(Mob *other);
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses();
 	void CalcItemBonuses();
@@ -498,7 +500,7 @@ protected:
 	virtual void PetAIProcess();
 	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint32 hp, sint32 mana, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 corrup, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
 	virtual void BotMeditate(bool isSitting);
-	virtual bool BotRangedAttack(Mob* other);
+	virtual void BotRangedAttack(Mob* other);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
 	virtual sint16 GetBotFocusEffect(BotfocusType bottype, int16 spell_id);
 	virtual sint16 CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id);

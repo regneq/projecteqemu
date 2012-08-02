@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==08/01/2012==  
+Bad_Captain: Fixed bot compile issue introduced in Rev 2171.
+Bad_Captain: Integrated Kayen's skill attack code with bots' code, as well as other changes from Rev 2171.
+
 ==07/31/2012==
 Akkadius: (KLS) Fix for global_player.pl synchronization. There was an issue where certain subroutines were not passing as global
 
