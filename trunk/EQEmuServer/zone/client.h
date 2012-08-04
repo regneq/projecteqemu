@@ -1104,7 +1104,7 @@ protected:
 	int  CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat);
 	void CalcEdibleBonuses(StatBonuses* newbon);
 	void CalcAABonuses(StatBonuses* newbon);
-	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon);
+	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon); 
 	void MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message = true);
 	bool client_data_loaded;
 

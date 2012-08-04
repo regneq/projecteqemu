@@ -352,11 +352,29 @@ struct StatBonuses {
 	sint16  BlockBehind;						// Chance to Block Behind (with our without shield)
 	//bool	AbsorbMagicAtt;						// Magic Rune *Need to be implemented for NegateEffect
 	//bool	MeleeRune;							// Melee Rune *Need to be implemented for NegateEffect
-
+	
 	// AAs
 	sint8	Packrat;							//weight reduction for items, 1 point = 10%
 	int8	BuffSlotIncrease;					// Increases number of available buff slots
 	int16	DelayDeath;							// how far below 0 hp you can go
+	sint8	BaseMovementSpeed;					// Adjust base run speed, does not stack with other movement bonuses.
+	uint8	IncreaseRunSpeedCap;				// Increase max run speed above cap.
+	sint16	DoubleSpecialAttack;				// Chance to to perform a double special attack (ie flying kick 2x)
+	sint16	SpecialAttackKBProc[2];				// Chance to to do a knockback from special attacks. (0 = chance 1 = Skill)
+	uint8	FrontalStunResist;					// Chance to resist a frontal stun
+	sint16  BindWound;							// Increase amount of HP by percent.
+	sint16  MaxBindWound;						// Increase max amount of HP you can bind wound.
+	sint16  ChannelChance;						// Modify chance to channel a spell.
+	uint8	SeeInvis;							// See Invs. 
+	uint8	TripleBackstab;						// Chance to triple backstab
+	bool	FrontalBackstabMinDmg;				// Allow frontal backstabs for min damage
+	uint8   FrontalBackstabChance;				// Chance to backstab from the front for full damage
+	uint8	ConsumeProjectile;						// Chance to not consume arrow.
+	uint16 	ArcheryDamageModifier;				// Increase Archery Damage by percent
+	bool	SecondaryDmgInc;					// Allow off hand weapon to recieve damage bonus.
+	uint16	GiveDoubleAttack;					// Allow classes to double attack with a specified chance.
+	sint16	SlayUndead[2];						// Pending
+
 };
 
 typedef struct
@@ -1010,7 +1028,7 @@ bool logpos;
 	sint32	ReduceDamage(sint32 damage);
 	sint32  AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker);
 
-	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10, bool HitChance=false);
 	virtual void DoThrowingAttackDmg(Mob* other, const ItemInst* RangeWeapon=NULL, const Item_Struct* item=NULL, int16 weapon_damage=0, sint16 chance_mod=0,sint16 focus=0);
 	virtual void DoMeleeSkillAttackDmg(Mob* other, int16 weapon_damage, SkillType skillinuse, sint16 chance_mod=0, sint16 focus=0, bool CanRiposte=false);
 	virtual void DoArcheryAttackDmg(Mob* other, const ItemInst* RangeWeapon=NULL, const ItemInst* Ammo=NULL, int16 weapon_damage=0, sint16 chance_mod=0, sint16 focus=0);

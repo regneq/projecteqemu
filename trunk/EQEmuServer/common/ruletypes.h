@@ -310,6 +310,7 @@ RULE_INT ( Combat, DragonPunchBonus, 20) //% Modifier that this skill gets to st
 RULE_INT ( Combat, EagleStrikeBonus, 15) //% Modifier that this skill gets to str and skill bonuses
 RULE_INT ( Combat, TigerClawBonus, 10) //% Modifier that this skill gets to str and skill bonuses
 RULE_INT ( Combat, RoundKickBonus, 5) //% Modifier that this skill gets to str and skill bonuses
+RULE_INT ( Combat, FrenzyBonus, 0) //% Modifier to damage
 RULE_BOOL ( Combat, ProcTargetOnly, true) //true = procs will only affect our target, false = procs will affect all of our targets
 RULE_REAL ( Combat, NPCACFactor, 2.25)
 RULE_INT ( Combat, ClothACSoftcap, 75)

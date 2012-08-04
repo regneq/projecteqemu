@@ -758,8 +758,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			case SE_PetDiscipline2:
 				break;
-			case SE_BaseMovementSpeed:
-				break;
 			case SE_SpellSlotIncrease:
 				break;
 			case SE_MysticalAttune:
@@ -887,6 +885,171 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_DelayDeath:
 			{
 				newbon->DelayDeath += base1;
+				break;
+			}
+
+			case SE_FrontalStunResist:
+			{
+				newbon->FrontalStunResist += base1;
+				break;
+			}
+
+			case SE_ImprovedBindWound:
+			{
+				newbon->BindWound += base1;
+				break;
+			}
+
+			case SE_MaxBindWound:
+			{
+				newbon->MaxBindWound += base1;
+				break;
+			}
+
+			case SE_ChannelChance:
+			{
+				newbon->ChannelChance += base1;
+				break;
+			}
+
+			case SE_ExtraAttackChance:
+			{
+				if(newbon->ExtraAttackChance < base1)
+					newbon->ExtraAttackChance = base1;
+				break;
+			}
+
+			case SE_SeeInvis:
+			{
+				newbon->SeeInvis = base1;
+				break;
+			}
+
+			case SE_BaseMovementSpeed:
+			{
+				newbon->BaseMovementSpeed += base1; 
+				break;
+			}
+
+			case SE_IncreaseRunSpeedCap:
+			{
+				newbon->IncreaseRunSpeedCap += base1;
+				break;
+			}
+
+			case SE_SkillDamageAmount:
+			{
+				if(base2 == -1)
+					newbon->SkillDamageAmount[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->SkillDamageAmount[base2] += base1;
+				break;
+			}
+
+			case SE_DoubleSpecialAttack:
+			{
+				if(newbon->DoubleSpecialAttack < base1)
+					newbon->DoubleSpecialAttack = base1;
+				break;
+			}
+
+			case SE_SpecialAttackKBProc:
+			{
+				//You can only have one of these per client. [AA Dragon Punch]
+				newbon->SpecialAttackKBProc[0] = base1; //Chance base 100 = 25% proc rate
+				newbon->SpecialAttackKBProc[1] = base2; //Skill to KB Proc Off
+				break;
+			}
+
+			case SE_TripleBackstab:
+			{
+				if(newbon->TripleBackstab < base1)
+					newbon->TripleBackstab = base1;
+				break;
+			}
+
+			case SE_FrontalBackstabMinDmg:
+			{
+				newbon->FrontalBackstabMinDmg = true;
+				break;
+			}
+
+			case SE_FrontalBackstabChance:
+			{
+				if(newbon->FrontalBackstabChance < base1)
+					newbon->FrontalBackstabChance = base1;
+				break;
+			}
+
+			case SE_ConsumeProjectile:
+			{
+				newbon->ConsumeProjectile = true;
+				break;
+			}
+
+			case SE_ArcheryDamageModifier:
+			{
+				newbon->ArcheryDamageModifier += base1;
+				break;
+			}
+
+			case SE_DamageModifier:
+			{
+				if(base2 == -1)
+					newbon->DamageModifier[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->DamageModifier[base2] += base1;
+				break;
+			}
+
+			case SE_SecondaryDmgInc:
+			{
+				newbon->SecondaryDmgInc = true;
+				break;
+			}
+
+
+			case SE_BlockBehind:
+			{
+				if (newbon->BlockBehind < base1)
+					newbon->BlockBehind = base1;
+
+				break;
+			}
+
+			case SE_ShieldBlock:
+			{
+				if (newbon->ShieldBlock < base1)
+					newbon->ShieldBlock = base1;
+
+				break;
+			}
+
+			case SE_StrikeThrough2:
+			{
+				if (newbon->StrikeThrough < base1)
+					newbon->StrikeThrough = base1;
+				break;
+			}
+
+			case SE_DoubleAttackChance:
+			{
+				if(newbon->DoubleAttackChance < base1)
+					newbon->DoubleAttackChance = base1;
+				break;
+			}
+
+			case SE_GiveDoubleAttack:
+			{
+				if(newbon->GiveDoubleAttack < base1)
+					newbon->GiveDoubleAttack = base1;
+				break;
+			}
+
+			case SE_ProcChance:
+			{
+				if(newbon->ProcChance < base1)
+					newbon->ProcChance = base1;
 				break;
 			}
 		}
@@ -1442,6 +1605,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_HitChance:
 			{
+				
 				//multiplier is to be compatible with item effects
 				//watching for overflow too
 				effect_value = effect_value<2000? effect_value * 15 : 30000;
@@ -1826,6 +1990,99 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 
+			//AA bonuses - implemented broadly into spell/item effects
+			case SE_FrontalStunResist:
+			{
+				newbon->FrontalStunResist += effect_value;
+				break;
+			}
+
+			case SE_ImprovedBindWound:
+			{
+				newbon->BindWound += effect_value;
+				break;
+			}
+
+			case SE_MaxBindWound:
+			{
+				newbon->MaxBindWound += effect_value;
+				break;
+			}
+
+			case SE_ChannelChance:
+			{
+				newbon->ChannelChance += effect_value;
+				break;
+			}
+
+			case SE_BaseMovementSpeed:
+			{
+				newbon->BaseMovementSpeed += effect_value; 
+				break;
+			}
+
+			case SE_IncreaseRunSpeedCap:
+			{
+				newbon->IncreaseRunSpeedCap += effect_value;
+				break;
+			}
+
+			case SE_DoubleSpecialAttack:
+			{
+				if(newbon->DoubleSpecialAttack < effect_value)
+					newbon->DoubleSpecialAttack = effect_value;
+				break;
+			}
+
+			case SE_TripleBackstab:
+			{
+				newbon->TripleBackstab += effect_value;
+				break;
+			}
+
+			case SE_FrontalBackstabMinDmg:
+			{
+				newbon->FrontalBackstabMinDmg = true;
+				break;
+			}
+
+
+			case SE_FrontalBackstabChance:
+			{
+				newbon->FrontalBackstabChance += effect_value;
+				break;
+			}
+			
+			case SE_ConsumeProjectile:
+			{
+				newbon->ConsumeProjectile = true;
+				break;
+			}
+
+			case SE_ArcheryDamageModifier:
+			{
+				newbon->ArcheryDamageModifier += effect_value;
+				break;
+			}
+
+			case SE_SecondaryDmgInc:
+			{
+				newbon->SecondaryDmgInc = true;
+				break;
+			}
+
+			case SE_StrikeThrough2:
+			{
+				newbon->StrikeThrough += effect_value;	
+				break;
+			}
+
+			case SE_GiveDoubleAttack:
+			{
+				if(newbon->GiveDoubleAttack < effect_value)
+					newbon->GiveDoubleAttack = effect_value;
+				break;
+			}
 		}
 	}
 }

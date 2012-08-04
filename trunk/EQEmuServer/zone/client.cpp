@@ -2594,10 +2594,12 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 					bind_out->type = 0;
 					CheckIncreaseSkill(BIND_WOUND, NULL, 5);
 
-					int max_percent = 50 + 10 * GetAA(aaFirstAid);
+					int maxHPBonus = spellbonuses.MaxBindWound + itembonuses.MaxBindWound + aabonuses.MaxBindWound;
+
+					int max_percent = 50 + 10 * maxHPBonus;
 
 					if(GetClass() == MONK && GetSkill(BIND_WOUND) > 200) {
-						max_percent = 70 + 10 * GetAA(aaFirstAid);
+						max_percent = 70 + 10 * maxHPBonus;
 					}
 
 					int max_hp = bindmob->GetMaxHP()*max_percent/100;
@@ -2615,19 +2617,10 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 						}
 
 						//Implementation of aaMithanielsBinding is a guess (the multiplier)
-						switch (GetAA(aaBandageWound))
-						{
-							case 1:
-								bindhps = bindhps * (110 + 20*GetAA(aaMithanielsBinding)) / 100;
-								break;
-							case 2:
-								bindhps = bindhps * (125 + 20*GetAA(aaMithanielsBinding)) / 100;
-								break;
-							case 3:
-								bindhps = bindhps * (150 + 20*GetAA(aaMithanielsBinding)) / 100;
-								break;
-						}
+						int bindBonus = spellbonuses.BindWound + itembonuses.BindWound + aabonuses.BindWound;
 
+						bindhps += bindhps*bindBonus / 100;
+							
 						//if the bind takes them above the max bindable
 						//cap it at that value. Dont know if live does it this way
 						//but it makes sense to me.
