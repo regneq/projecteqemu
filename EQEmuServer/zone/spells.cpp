@@ -902,11 +902,14 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 
 			if(IsClient())
 			{
+				sint16 channelbonuses = spellbonuses.ChannelChance + itembonuses.ChannelChance + aabonuses.ChannelChance;
+
 				// max 93% chance at 252 skill
 				channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
 				channelchance -= attacked_count * 2;			
 				channelchance += channelchance * (GetAA(aaChanellingFocus)*5) / 100; 
 				channelchance += channelchance * (GetAA(aaInternalMetronome)*5) / 100;
+				channelchance +=  channelchance * (float)channelbonuses / 100.0f;
 			} 
 #ifdef BOTS
 			else if(IsBot()) {

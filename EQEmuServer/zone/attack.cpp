@@ -469,27 +469,11 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 
 		// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
 		// from a direction other than the rear is granted.
-		switch (GetAA(aaHightenedAwareness)) {
-		case 1:
-			aaChance = 8;
-			break;
-		case 2:
-			aaChance = 16;
-			break;
-		case 3:
-			aaChance = 24;
-			break;
-		case 4:
-			aaChance = 32;
-			break;
-		case 5:
-			aaChance = 40;
-			break;
-		}
 
-		float BlockBehindChance = aaChance + spellbonuses.BlockBehind + itembonuses.BlockBehind;
+		//Live AA - HightenedAwareness
+		int BlockBehindChance = aabonuses.BlockBehind + spellbonuses.BlockBehind + itembonuses.BlockBehind;
 
-		if (BlockBehindChance > MakeRandomInt(1, 100)){
+		if (BlockBehindChance && (BlockBehindChance > MakeRandomInt(1, 100))){
 			bBlockFromRear = true;
 
 			if (spellbonuses.BlockBehind || itembonuses.BlockBehind)
@@ -523,21 +507,10 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 			float aaShieldBlockChance = 0.0f;
 			float bonusShieldBlock = 0.0f;
 			if(shield == ItemTypeShield) {
-				switch(GetAA(aaShieldBlock)) {
-					 case 1:
-						aaShieldBlockChance = 2.50;
-                        break;
-	                 case 2:
-		                aaShieldBlockChance = 5.00;
-			            break;
-				     case 3:
-					    aaShieldBlockChance = 10.00;
-						break;
-				}
 
-				bonusShieldBlock = (float)spellbonuses.ShieldBlock + (float)itembonuses.ShieldBlock;
-
-				RollTable[1] = RollTable[0] + aaShieldBlockChance + bonusShieldBlock;
+				//Live AA - Shield Block
+				bonusShieldBlock = aabonuses.ShieldBlock + spellbonuses.ShieldBlock + itembonuses.ShieldBlock;
+				RollTable[1] = RollTable[0] + bonusShieldBlock;
 			}
 		}
 	}
@@ -1276,29 +1249,33 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 		// This is not recommended for normal usage, as the damage bonus represents a non-trivial component of the DPS output
 		// of weapons wielded by higher-level melee characters (especially for two-handed weapons).
 
+		int ucDamageBonus = 0;
+
 		if( Hand == 13 && GetLevel() >= 28 && IsWarriorClass() )
 		{
 			// Damage bonuses apply only to hits from the main hand (Hand == 13) by characters level 28 and above
 			// who belong to a melee class. If we're here, then all of these conditions apply.
 
-			int ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
+			ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
 
 			min_hit += (int) ucDamageBonus;
 			max_hit += (int) ucDamageBonus;
 			hate += ucDamageBonus;
 		}
 #endif
-
-		min_hit += min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
-
+		//Live AA - Sinister Strikes *Adds weapon damage bonus to offhand weapon.
 		if (Hand==14) {
-			if(GetAA(aaSinisterStrikes)) {
-				int sinisterBonus = MakeRandomInt(5, 10);
-				min_hit += (min_hit * sinisterBonus / 100);
-				max_hit += (max_hit * sinisterBonus / 100);
-				hate += (hate * sinisterBonus / 100);
+			if (aabonuses.SecondaryDmgInc || itembonuses.SecondaryDmgInc || spellbonuses.SecondaryDmgInc){
+				
+				ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
+
+				min_hit += (int) ucDamageBonus;
+				max_hit += (int) ucDamageBonus;
+				hate += ucDamageBonus;
 			}
 		}
+
+		min_hit += min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
 
 		if(max_hit < min_hit)
 			max_hit = min_hit;
@@ -1345,34 +1322,10 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 			}
 		}
 
-		//strikethrough..
-		int aaStrikethroughBonus = 0;
-		switch (GetAA(aaStrikethrough))
-		{
-		case 1:
-			aaStrikethroughBonus = 2;
-			break;
-		case 2:
-			aaStrikethroughBonus = 4;
-			break;
-		case 3:
-			aaStrikethroughBonus = 6;
-			break;
-		}
-		switch (GetAA(aaTacticalMastery))
-		{
-		case 1:
-			aaStrikethroughBonus = 2;
-			break;
-		case 2:
-			aaStrikethroughBonus = 4;
-			break;
-		case 3:
-			aaStrikethroughBonus = 6;
-			break;
-		}
 		if (((damage < 0) || slippery_attack) && !bRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
-			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
+			sint16 bonusStrikeThrough = itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aabonuses.StrikeThrough;
+	
+			if(bonusStrikeThrough && (MakeRandomInt(0, 100) < bonusStrikeThrough)) {
 				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
 				Attack(other, Hand, false, true); // Strikethrough only gives another attempted hit
 				return false;
@@ -3228,59 +3181,39 @@ bool Mob::HasRangedProcs() const
 
 bool Client::CheckDoubleAttack(bool tripleAttack) {
 
-	// If you don't have the double attack skill, return
-	if(!HasSkill(DOUBLE_ATTACK) && !(GetClass() == BARD || GetClass() == BEASTLORD))
+	//Check for bonuses that give you a double attack chance regardless of skill (ie Bestial Frenzy/Harmonious Attack AA)
+	uint16 bonusGiveDA = aabonuses.GiveDoubleAttack + spellbonuses.GiveDoubleAttack + itembonuses.GiveDoubleAttack;
+
+	if(!HasSkill(DOUBLE_ATTACK) && !bonusGiveDA)
 		return false;
 	
-	// You start with no chance of double attacking
-	int chance = 0;
+	float chance = 0.0f;
 	
-	// Used for maxSkill and triple attack calcs
-	int8 classtype = GetClass();
-	
-	// The current skill level
 	uint16 skill = GetSkill(DOUBLE_ATTACK);
 
-	// Discipline bonuses give you 100% chance to double attack
-	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
-	
-	// The maximum value for the Class based on the server rule of MaxLevel
-	int16 maxSkill = MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
+	sint16 bonusDA = aabonuses.DoubleAttackChance + spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
 
-	// AA bonuses for the melee classes
-	int32 aaBonus =
-		GetAA(aaBestialFrenzy) +
-		GetAA(aaHarmoniousAttack) +
-		GetAA(aaKnightsAdvantage)*10 +
-		GetAA(aaFerocity)*10;
-	
-	// Bard Dance of Blades Double Attack bonus is not cumulative
-	if(GetAA(aaDanceofBlades)) {
-		aaBonus += 500;
-	}
-	
-	// Half of Double Attack Skill used to check chance for Triple Attack
+	//Use skill calculations otherwise, if you only have AA applied GiveDoubleAttack chance then use that value as the base.
+	if (skill)
+		chance = (float(skill+GetLevel()) * (float(100.0f+bonusDA+bonusGiveDA) /100.0f)) /500.0f;
+	else 
+		chance = (float(bonusGiveDA) * (float(100.0f+bonusDA)/100.0f) ) /100.0f;
+
+	//Live now uses a static Triple Attack skill (lv 46 = 2% lv 60 = 20%) - We do not have this skill on EMU ATM.
+	//A reasonable forumla would then be TA = 20% * chance
 	if(tripleAttack) {
-		// Only some Double Attack classes get Triple Attack
-		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
-			// We only get half the skill, but should get all the bonuses
-			sint16 triple_bonus = spellbonuses.TripleAttackChance + itembonuses.TripleAttackChance;
-			chance = (skill/2) + buffs + aaBonus + triple_bonus;
-		}
-		else {
-			return false;
-		}
+		// Only some Double Attack classes get Triple Attack [This is already checked in client_processes.cpp]
+		sint16 triple_bonus = spellbonuses.TripleAttackChance + itembonuses.TripleAttackChance;
+		chance *= 0.2f;
+		chance *= float(100.0f+triple_bonus)/100.0f;
 	}
-	else {
-		// This is the actual Double Attack chance
-		chance = skill + buffs + aaBonus;
-	}
+	else 
+		return false;
 	
-	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.
-	if(chance > MakeRandomInt(0, (maxSkill + itembonuses.DoubleAttackChance + aaBonus)*1.05)) {
+	
+	if((MakeRandomFloat(0, 1) < chance))
 		return true;
-	}
-
+	
 	return false;
 }
 
@@ -3437,11 +3370,16 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				if (MakeRandomInt(0,99) < (RuleI(Character, NPCBashKickStunChance)) || attacker->IsClient())
 				{
 					int stun_resist = itembonuses.StunResist+spellbonuses.StunResist;
+					int frontal_stun_resist = itembonuses.FrontalStunResist+spellbonuses.FrontalStunResist;
 			
-					if(this->IsClient())
+					if(IsClient()){
 						stun_resist += aabonuses.StunResist;
-			
-					if(this->GetBaseRace() == OGRE && this->IsClient() && !attacker->BehindMob(this, attacker->GetX(), attacker->GetY())) 
+						frontal_stun_resist += aabonuses.FrontalStunResist;
+					}
+
+					if( (GetBaseRace() == OGRE && IsClient() || 
+						(frontal_stun_resist && ((frontal_stun_resist >= 100) || (MakeRandomInt(0,100) <= frontal_stun_resist)))) 
+						&& !attacker->BehindMob(this, attacker->GetX(), attacker->GetY())) 
 					{
 						mlog(COMBAT__HITS, "Stun Resisted. Ogres are immune to frontal melee stuns.");
 					}
@@ -3454,7 +3392,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 						} 
 						else 
 						{
-							if(this->IsClient())
+							if(IsClient())
 								Message_StringID(MT_Stun, SHAKE_OFF_STUN);
 							
 							mlog(COMBAT__HITS, "Stun Resisted. We had %dpercent resist chance.");
@@ -3665,27 +3603,10 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	float AABonus = 0;
 	ProcBonus = 0;
 	ProcChance = 0;
-	if(IsClient()) {
-		//increases based off 1 guys observed results.
-		switch(CastToClient()->GetAA(aaWeaponAffinity)) {
-			case 1:
-				AABonus = 0.10;
-				break;
-			case 2:
-				AABonus = 0.20;
-				break;
-			case 3:
-				AABonus = 0.30;
-				break;
-			case 4:
-				AABonus = 0.40;
-				break;
-			case 5:
-				AABonus = 0.50;
-				break;
-		}
-	}
-	
+
+	if (aabonuses.ProcChance)
+		AABonus = float(aabonuses.ProcChance) / 100.0f;
+
 	switch(hand){
 		case 13:
 			weapon_speed = attack_timer.GetDuration();
@@ -3698,18 +3619,8 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 			break;
 	}
 
-	/* //Do not need to recalc attack rate
-	float PermaHaste;
-	if(GetHaste() > 0)
-		PermaHaste = 1 / (1 + (float)GetHaste()/100);
-	else if(GetHaste() < 0)
-		PermaHaste = 1 * (1 - (float)GetHaste()/100);
-	else
-		PermaHaste = 1.0f;
-	*/
 		
 	//calculate the weapon speed in ms, so we can use the rule to compare against.
-	//weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste)); //Do not need to recalc attack rate.
 
 	if(weapon_speed < RuleI(Combat, MinHastedDelay)) // fast as a client can swing, so should be the floor of the proc chance
 		weapon_speed = RuleI(Combat, MinHastedDelay);

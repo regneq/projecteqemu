@@ -1,6 +1,45 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==08/05/2012==  
+Kayen: Complete revision of how double attack chance is calculate to be consistent with live.
+Kayen: Berserker 'Frenzy' skill attack will now function as it does on live. Gives a chance for 1-3 attacks using frenzy skill specific damage.
+*Note: This will be a considerable nerf to bersekers because it was previously coded to give actual melee rounds using weapon damage.
+Kayen: Implemented a few miscellaneous new AA's, mostly from DODH.
+Kayen: Added almost all remaining spell effects into spdat.h (~90% defined).
+Kayen: Alternate Advancement Update: In the process of coverting most of the hard coded AA data out of the source and into the 'aa_effects' table
+using live data. These effects are then reimplemented using the bonus system in the broadest possible way, most of these effects will
+also be useable as regular spell/item effects. This will allow developers in the future to adjust,implement and customize AA effects 
+without requiring source changes. Beware in doing this, many AA effects that were previously either implemented incorrectly or with values 
+not consistent with live data will be adjusted to be as accurate as possible.
+
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: All innate run speed AA's have been converted to use bonus SE_BaseMovementSpeed. 
+MISC AA: All bind wound related AA have been converted to use bonuses, SE_ImprovedBindWound, SE_MaxBindWound.
+MISC AA: Shield Block will now be calculated using bonuses, SE_ShieldBlock.
+MISC AA: Sinister Strike will now correctly allow your off hand weapon to recieve a weapon damage bonus, SE_SecondaryDmgInc.
+MISC AA: Strengthened Strike/Vicious Smash/Kick Mastery will now accurately to live add skill damage to respective special abilities.
+MISC AA: StrikeThrough, Tactical Mastery - will now be calculated from bonus, SE_Strikethrough2.
+MISC AA: Ferocity, Knight's Advantage ect - will now be calculated from bonus SE_DoubleAttackChance.
+MISC AA: Harmonious Attacks, Bestial Frenzy - will allow double attack chance using bonus SE_GiveDoubleAttack (any class can be given this) 
+MISC AA: Weapon Affinity, will now use SE_ProcChance.
+MISC AA: PunishingBlade, SpeedoftheKnight will now allow an extra 2 Handed attack using bonus, SE_ExtraAttackChance.
+BRD  AA: Fleet of Foot will now correctly allow bards to run over the speed cap using, SE_IncreaseRunSpeedCap.
+WAR  AA: Previously non functional 'Stalwart Endurance' and 'Dauntless Preservence' now working using bonus, SE_FrontalStunResist
+MNK  AA: HightenedAwareness - Implemented using bonus, SE_BlockBehind.
+MNK  AA: Technique of Master Wu - Will now correclty use a random monk special attack, chance for double/triple attack as SE_DoubleSpecialAttack.
+MNK  AA: Dragon Punch - Implemented as now using bonus SE_SpecialAttackKBProc, (base1 = 100 [25% proc chance at 100] base2 = skill)
+RNG  AA: Endless Quiver - Implemented as SE_ConsumeProjectile which gives a percent chance NOT to consume an arrow. (EQ base1 = 100)
+RNG  AA: Archery Mastery- Implemented as SE_ArcheryDamageModifier which gives a percent increase to archery attacks.
+BER  AA: Throwing Mastery - Implemented using SE_DamageModifier.
+BER  AA: Blur of Axes, Vicious Frenzy - will now correctly add skill damage to 'Frenzy' skill attacks.
+ROG  AA: Triple Backstab, SiezedOpportunity, Chaotic Stab - as bonus, SE_TripleBackstab, SE_FrontalBackstabChance,SE_FrontalBackstabMinDmg. 
+
+REQUIRED SQL: utils/sql/svn/2176_required_aa_updates
+Optional SQL: utils/sql/svn/2176_optional_FrenzyBonus_rule
+Optional SQL: utils/sql/svn/2176_optional_aa_expansion_sof_fix (Allow AA to show proper expansion in SOF+ clients)
+
+
 ==08/01/2012==  
 Bad_Captain: Fixed bot compile issue introduced in Rev 2171.
 Bad_Captain: Integrated Kayen's skill attack code with bots' code, as well as other changes from Rev 2171.

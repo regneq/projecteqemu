@@ -498,9 +498,13 @@ bool Mob::IsInvisible(Mob* other) const
 {
 	if(!other)
 		return(false);
+
+	uint8 SeeInvisBonus = 0; 
+	if (IsClient())
+		SeeInvisBonus = aabonuses.SeeInvis;
 	
 	//check regular invisibility
-	if (invisible && invisible > other->SeeInvisible())
+	if (invisible && invisible > (other->SeeInvisible()))
 		return true;
 	
 	//check invis vs. undead
@@ -562,12 +566,8 @@ float Mob::_GetMovementSpeed(int mod) const {
 		}
 	}
 	
-	aa_mod += ((GetAA(aaInnateRunSpeed) * 0.10)
-			+ (GetAA(aaFleetofFoot) * 0.10)
-			+ (GetAA(aaSwiftJourney) * 0.10)
-			);
-		//Selo's Enduring Cadence should be +7% per level
-
+	aa_mod += itembonuses.BaseMovementSpeed + spellbonuses.BaseMovementSpeed + aabonuses.BaseMovementSpeed; 
+	
 	int spell_mod = spellbonuses.movementspeed + itembonuses.movementspeed;
 	int movemod = 0;
 
@@ -575,13 +575,13 @@ float Mob::_GetMovementSpeed(int mod) const {
 	{
 		movemod += spell_mod;
 	}
-	else if(spell_mod > (aa_mod*100))
+	else if(spell_mod > (aa_mod))
 	{
 		movemod = spell_mod;
 	}
 	else
 	{
-		movemod = (aa_mod * 100);
+		movemod = (aa_mod);
 	}
 	
 	if(movemod < -85) //cap it at moving very very slow
@@ -599,12 +599,14 @@ float Mob::_GetMovementSpeed(int mod) const {
 	//runspeed cap.
 	if(IsClient())
 	{
-		if(GetClass() == BARD) {
-			//this extra-high bard cap should really only apply if they have AAs
-			if(speed_mod > 1.74)
-				speed_mod = 1.74;
-		} else {
-			if(speed_mod > 1.58)
+		if (speed_mod > 1.58){
+			uint8 bonus_IncreaseRunSpeedCap = itembonuses.IncreaseRunSpeedCap + spellbonuses.IncreaseRunSpeedCap + aabonuses.IncreaseRunSpeedCap;
+			if (bonus_IncreaseRunSpeedCap){
+				speed_mod += float(bonus_IncreaseRunSpeedCap)/100.0f;
+					if(speed_mod > 1.74)
+						speed_mod = 1.74;
+			}
+			else
 				speed_mod = 1.58;
 		}
 	}
@@ -4135,11 +4137,8 @@ sint16 Mob::GetMeleeDamageMod_SE(int16 skill)
 	int dmg_mod = 0;
 
 	// All skill dmg mod + Skill specific
-	dmg_mod += itembonuses.DamageModifier[HIGHEST_SKILL+1] + spellbonuses.DamageModifier[HIGHEST_SKILL+1] + 
-					itembonuses.DamageModifier[skill] + spellbonuses.DamageModifier[skill];
-	
-	if(IsClient())
-		dmg_mod += aabonuses.DamageModifier[HIGHEST_SKILL+1] + aabonuses.DamageModifier[skill];
+	dmg_mod += itembonuses.DamageModifier[HIGHEST_SKILL+1] + spellbonuses.DamageModifier[HIGHEST_SKILL+1] + aabonuses.DamageModifier[HIGHEST_SKILL+1] +
+				itembonuses.DamageModifier[skill] + spellbonuses.DamageModifier[skill] + aabonuses.DamageModifier[skill];
 					
 	if(dmg_mod < -100)
 		dmg_mod = -100;
@@ -4191,8 +4190,8 @@ sint16 Mob::GetSkillDmgAmt(int16 skill)
 	int skill_dmg = 0;
 
 	// All skill dmg(only spells do this) + Skill specific
-	skill_dmg += spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + itembonuses.SkillDamageAmount[HIGHEST_SKILL+1]
-				 + itembonuses.SkillDamageAmount[skill] + spellbonuses.SkillDamageAmount[skill];
+	skill_dmg += spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + itembonuses.SkillDamageAmount[HIGHEST_SKILL+1] + aabonuses.SkillDamageAmount[HIGHEST_SKILL+1]
+				 + itembonuses.SkillDamageAmount[skill] + spellbonuses.SkillDamageAmount[skill] + aabonuses.SkillDamageAmount[skill];
 
 	skill_dmg += spellbonuses.SkillDamageAmount2[HIGHEST_SKILL+1] + itembonuses.SkillDamageAmount2[HIGHEST_SKILL+1]
 				 + itembonuses.SkillDamageAmount2[skill] + spellbonuses.SkillDamageAmount2[skill];

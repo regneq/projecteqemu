@@ -498,16 +498,16 @@ bool Client::Process() {
 						Attack(GetTarget(), 13, false);
 				}
 				
-				if (auto_attack_target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
+				sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
+
+				if (auto_attack_target && ExtraAttackChanceBonus) {
 					ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
 					if(wpn){
 						if(wpn->GetItem()->ItemType == ItemType2HS || 
 							wpn->GetItem()->ItemType == ItemType2HB ||
 							wpn->GetItem()->ItemType == ItemType2HPierce )
 						{
-							int extatk = GetAA(aaPunishingBlade)*5;
-							extatk += GetAA(aaSpeedoftheKnight)*5;
-							if(MakeRandomInt(0, 100) < extatk)
+							if(MakeRandomInt(0, 100) < ExtraAttackChanceBonus)
 							{
 								Attack(auto_attack_target, 13, false);
 							}
