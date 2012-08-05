@@ -799,7 +799,8 @@ void Client::RangedAttack(Mob* other) {
 	//EndlessQuiver AA base1 = 100% Chance to avoid consumption arrow.
 	int ChanceAvoidConsume = aabonuses.ConsumeProjectile + itembonuses.ConsumeProjectile + spellbonuses.ConsumeProjectile;
 
-	if (!ChanceAvoidConsume || (ChanceAvoidConsume < 100 && MakeRandomInt(0,99) < ChanceAvoidConsume)){
+	if (!ChanceAvoidConsume || (ChanceAvoidConsume < 100 && MakeRandomInt(0,99) > ChanceAvoidConsume)){
+
 		DeleteItemInInventory(ammo_slot, 1, true);
 		mlog(COMBAT__RANGED, "Consumed one arrow from slot %d", ammo_slot);
 	} else {

@@ -235,9 +235,9 @@ UPDATE `aa_effects` SET `effectid`=271, `base1`=14 WHERE `aaid`=63;
 UPDATE `aa_effects` SET `effectid`=271, `base1`=21 WHERE `aaid`=64;
 
 -- Strikethrough
-UPDATE `aa_effects` SET `effectid`=292, `base1`=5 WHERE `aaid`=62;
-UPDATE `aa_effects` SET `effectid`=292, `base1`=10 WHERE `aaid`=63;
-UPDATE `aa_effects` SET `effectid`=292, `base1`=15 WHERE `aaid`=64;
+UPDATE `aa_effects` SET `effectid`=292, `base1`=5 WHERE `aaid`=807;
+UPDATE `aa_effects` SET `effectid`=292, `base1`=10 WHERE `aaid`=808;
+UPDATE `aa_effects` SET `effectid`=292, `base1`=15 WHERE `aaid`=809;
 
 -- altadv_vars
 UPDATE `altadv_vars` SET `prereq_skill` = 263 WHERE `skill_id` = 537;
