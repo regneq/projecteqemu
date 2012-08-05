@@ -3207,10 +3207,7 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 		chance *= 0.2f;
 		chance *= float(100.0f+triple_bonus)/100.0f;
 	}
-	else 
-		return false;
-	
-	
+
 	if((MakeRandomFloat(0, 1) < chance))
 		return true;
 	

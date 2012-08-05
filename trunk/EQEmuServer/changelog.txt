@@ -1,11 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==08/06/2012==
+Kayen: Fixes to rev2176 - Double Attack, EndlessQuiver, Run Speed.
+REQUIRED SQL: utils/sql/svn/2176_required_aa_updates will need to be applied again for Run Speed fix.
+
 ==08/05/2012==  
 Kayen: Complete revision of how double attack chance is calculate to be consistent with live.
 Kayen: Berserker 'Frenzy' skill attack will now function as it does on live. Gives a chance for 1-3 attacks using frenzy skill specific damage.
 *Note: This will be a considerable nerf to bersekers because it was previously coded to give actual melee rounds using weapon damage.
-Kayen: Implemented a few miscellaneous new AA's, mostly from DODH.
+Kayen: Implemented a few miscellaneous new AA's, mostly from DODH. (These will show in OoW Window in Titanium)
 Kayen: Added almost all remaining spell effects into spdat.h (~90% defined).
 Kayen: Alternate Advancement Update: In the process of coverting most of the hard coded AA data out of the source and into the 'aa_effects' table
 using live data. These effects are then reimplemented using the bonus system in the broadest possible way, most of these effects will

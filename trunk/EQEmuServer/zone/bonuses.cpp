@@ -983,7 +983,7 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 
 			case SE_ConsumeProjectile:
 			{
-				newbon->ConsumeProjectile = true;
+				newbon->ConsumeProjectile += base1;
 				break;
 			}
 
@@ -2055,7 +2055,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			
 			case SE_ConsumeProjectile:
 			{
-				newbon->ConsumeProjectile = true;
+				newbon->ConsumeProjectile += effect_value;
 				break;
 			}
 
