@@ -5,8 +5,6 @@ all:
 	$(MAKE) -C world
 	$(MAKE) -C zone
 	$(MAKE) -C eqlaunch
-	$(MAKE) -C mailserver
-	$(MAKE) -C chatserver
 	$(MAKE) -C ucs
 	$(MAKE) -C queryserv 
 	$(MAKE) -C utils
@@ -16,8 +14,6 @@ clean:
 	$(MAKE) -C world clean
 	$(MAKE) -C zone clean
 	$(MAKE) -C eqlaunch clean
-	$(MAKE) -C mailserver clean
-	$(MAKE) -C chatserver clean
 	$(MAKE) -C ucs clean
 	$(MAKE) -C queryserv clean
 	$(MAKE) -C utils clean
