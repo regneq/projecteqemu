@@ -82,6 +82,8 @@ class EQStream : public EQStreamInterface {
 		uint8 app_opcode_size;
 		EQStreamType StreamType;
 		bool compressed,encoded;
+		uint32 retransmittimer;
+		uint32 retransmittimeout;
 
 		//uint32 buffer_len;
 
@@ -121,7 +123,7 @@ class EQStream : public EQStreamInterface {
 		//a buffer we use for compression/decompression
 		unsigned char _tempBuffer[2048];
 		
-		// Packes waiting to be processed
+		// Packets waiting to be processed
 		vector<EQRawApplicationPacket *> InboundQueue;
 		map<unsigned short,EQProtocolPacket *> PacketQueue;		//not mutex protected, only accessed by caller of Process()
 		Mutex MInboundQueue;
