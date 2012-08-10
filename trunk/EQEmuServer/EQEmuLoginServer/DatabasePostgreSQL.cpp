@@ -125,10 +125,8 @@ bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_nam
 	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
 	query << "SLT.ServerListTypeDescription, SAR.AccountName, SAR.AccountPassword FROM " << server.options.GetWorldRegistrationTable();
 	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID JOIN ";
-	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerLongName";
+	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerShortName";
 	query << " = '";
-	query << long_name;
-	query << "' AND WSR.ServerShortName = '";
 	query << short_name;
 	query << "'";
 
@@ -195,7 +193,7 @@ void DatabasePostgreSQL::UpdateLSAccountData(unsigned int id, string ip_address)
 	PQclear(res);
 }
 
-void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string ip_address)
+void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string long_name, string ip_address)
 {
 	if(!db)
 	{
@@ -218,6 +216,8 @@ void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string ip_addr
 	stringstream query(stringstream::in | stringstream::out);
 	query << "UPDATE " << server.options.GetWorldRegistrationTable() << " SET ServerLastLoginDate = current_date, ServerLastIPAddr = '";
 	query << ip_address;
+	query << "', ServerLongName = '";
+	query << long_name;
 	query << "' where ServerID = ";
 	query << id;
 	PGresult *res = PQexec(db, query.str().c_str());

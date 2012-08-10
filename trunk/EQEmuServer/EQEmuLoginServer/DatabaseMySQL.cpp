@@ -107,20 +107,15 @@ bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, un
 
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-	char escaped_long_name[201];
 	char escaped_short_name[101];
 	unsigned long length;
-	length = mysql_real_escape_string(db, escaped_long_name, long_name.substr(0, 100).c_str(), long_name.substr(0, 100).length());
-	escaped_long_name[length+1] = 0;
 	length = mysql_real_escape_string(db, escaped_short_name, short_name.substr(0, 100).c_str(), short_name.substr(0, 100).length());
 	escaped_short_name[length+1] = 0;
 	stringstream query(stringstream::in | stringstream::out);
 	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
 	query << "SLT.ServerListTypeDescription, WSR.ServerAdminID FROM " << server.options.GetWorldRegistrationTable();
 	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID";
-	query << " WHERE WSR.ServerLongName = '";
-	query << escaped_long_name;
-	query << "' AND WSR.ServerShortName = '";
+	query << " WHERE WSR.ServerShortName = '";
 	query << escaped_short_name;
 	query << "'";
 	
@@ -216,17 +211,23 @@ void DatabaseMySQL::UpdateLSAccountInfo(unsigned int id, string name, string pas
 	}
 }
 
-void DatabaseMySQL::UpdateWorldRegistration(unsigned int id, string ip_address)
+void DatabaseMySQL::UpdateWorldRegistration(unsigned int id, string long_name, string ip_address)
 {
 	if(!db)
 	{
 		return;
 	}
 
+	char escaped_long_name[101];
+	unsigned long length;
+	length = mysql_real_escape_string(db, escaped_long_name, long_name.substr(0, 100).c_str(), long_name.substr(0, 100).length());
+	escaped_long_name[length+1] = 0;
 	stringstream query(stringstream::in | stringstream::out);
 	query << "UPDATE " << server.options.GetWorldRegistrationTable() << " SET ServerLastLoginDate = now(), ServerLastIPAddr = '";
 	query << ip_address;
-	query << "' where ServerID = ";
+	query << "', ServerLongName = '";
+	query << escaped_long_name;
+	query << "' WHERE ServerID = ";
 	query << id;
 
 	if(mysql_query(db, query.str().c_str()) != 0)
