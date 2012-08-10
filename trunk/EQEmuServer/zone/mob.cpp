@@ -4070,12 +4070,9 @@ sint16 Mob::GetCritDmgMob(int16 skill)
 	int critDmg_mod = 0;
 
 	// All skill dmg mod + Skill specific
-	critDmg_mod += this->itembonuses.CritDmgMob[HIGHEST_SKILL+1] + this->spellbonuses.CritDmgMob[HIGHEST_SKILL+1] + 
-					this->itembonuses.CritDmgMob[skill] + this->spellbonuses.CritDmgMob[skill];
-	
-	if(IsClient())
-		critDmg_mod += this->aabonuses.CritDmgMob[HIGHEST_SKILL+1] + this->aabonuses.CritDmgMob[skill];
-					
+	critDmg_mod += itembonuses.CritDmgMob[HIGHEST_SKILL+1] + spellbonuses.CritDmgMob[HIGHEST_SKILL+1] + aabonuses.CritDmgMob[HIGHEST_SKILL+1] +
+					itembonuses.CritDmgMob[skill] + spellbonuses.CritDmgMob[skill] + aabonuses.CritDmgMob[skill];
+
 	if(critDmg_mod < -100)
 		critDmg_mod = -100;
 
@@ -4113,19 +4110,14 @@ void Mob::SetRaidGrouped(bool v)
 	}
 }
 
-sint16 Mob::GetCriticalChanceBonus(int16 skill, bool aa_bonus)
+sint16 Mob::GetCriticalChanceBonus(int16 skill)
 {
 	int critical_chance = 0;
 
 	// All skills + Skill specific
-	if(!aa_bonus) {
-		critical_chance += this->itembonuses.CriticalHitChance[HIGHEST_SKILL+1] + this->spellbonuses.CriticalHitChance[HIGHEST_SKILL+1] + 
-						this->itembonuses.CriticalHitChance[skill] + this->spellbonuses.CriticalHitChance[skill];
-	}
-	else {
-		critical_chance += this->aabonuses.CriticalHitChance[HIGHEST_SKILL+1] + this->aabonuses.CriticalHitChance[skill];
-	}
-	
+	critical_chance +=	itembonuses.CriticalHitChance[HIGHEST_SKILL+1] + spellbonuses.CriticalHitChance[HIGHEST_SKILL+1] + aabonuses.CriticalHitChance[HIGHEST_SKILL+1] +
+						itembonuses.CriticalHitChance[skill] + spellbonuses.CriticalHitChance[skill] + aabonuses.CriticalHitChance[skill];
+
 	if(critical_chance < -100)
 		critical_chance = -100;
 

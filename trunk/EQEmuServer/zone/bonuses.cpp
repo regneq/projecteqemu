@@ -811,6 +811,7 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 				
 			case SE_CriticalHitChance:
+
 				if(base2 == -1)
 					newbon->CriticalHitChance[HIGHEST_SKILL+1] += base1;
 				else
@@ -1050,6 +1051,20 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			{
 				if(newbon->ProcChance < base1)
 					newbon->ProcChance = base1;
+				break;
+			}
+
+			case SE_SlayUndead:
+			{
+				if(newbon->SlayUndead[1] < base1)
+					newbon->SlayUndead[0] = base1; // Rate
+					newbon->SlayUndead[1] = base2; // Damage Modifier
+				break;
+			}
+
+			case SE_PetCriticalHit:
+			{
+				newbon->PetCriticalHit += base1;
 				break;
 			}
 		}
@@ -2081,6 +2096,20 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			{
 				if(newbon->GiveDoubleAttack < effect_value)
 					newbon->GiveDoubleAttack = effect_value;
+				break;
+			}
+
+			case SE_SlayUndead:
+			{
+				if(newbon->SlayUndead[1] < effect_value)
+					newbon->SlayUndead[0] = effect_value; // Rate
+					newbon->SlayUndead[1] = spells[spell_id].base2[i]; // Damage Modifier
+				break;
+			}
+
+			case SE_PetCriticalHit:
+			{
+				newbon->PetCriticalHit += effect_value;
 				break;
 			}
 		}

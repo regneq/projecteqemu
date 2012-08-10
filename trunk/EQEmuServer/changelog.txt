@@ -1,5 +1,28 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/08/2012==
+Kayen: Updates to critical hit calcuations to be consistent with live. 
+  *Baseline critical rate is determined by DEX stat (255 dex = 2%),this baseline is then modified by item,spell and AA critical chance bonuses. 
+  *Pet critical baseline is determined by the rate from AA effects that give pets the ability to critical. (Can not crit w/o this effect)
+Kayen: Slay Undead effect will now be working consistent with live. 
+  *Slay rate is no longer effected by critical hit rate, it uses it's own predetermined rates from the spell effect data. 
+  *Damage modification will now be much closer to that of lives utilizing the spell effects damage modifier. 
+  *Example(AA Slay Undead I - Rate: 225 (2.25%) Damage Mod: 680%)
+  *Note that that spell effects using Slay Undead (Holyforge) will stack with AA and increase the damage and the rate.
+Kayen: Crippling Blow's derived from spell effects will now be calculated consistent with live. 
+  *Cippling blow chance is determined by modifying your critical hit chance. 
+  *Example (Savage Onslaught - 200% chance to crippling blow) If you have a base chance to critical hit of 10% 
+   and you score a critical hit, you will then have a 20% chance to crippling blow.
+Kayen: Fixed effect for AA 'War Cry' will now provide group fear immunity for duration.
+Kayen: Few new AA's added including shaman Ancestral Aid and Spirit Channeling.
+   
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: 'Combat Fury', 'Fury of the Ages' will now calculate from bonus SE_CriticalHitChance. 
+MISC AA: 'Veteran's Wrath' will now calculate from bonus SE_CriticalDmgMod.
+MISC AA: All AA that give pet criticals will be calculated from SE_PetCriticalHit.
+PAL AA: 'Slay Undead', 'Vanquish Undead' will now calculate from bonus SE_SlayUndead. (Holyforge now works correctly)
+
+REQUIRED SQL: utils/sql/svn/2178_required_aa_updates
 
 ==08/06/2012==
 Kayen: Fixes to rev2176 - Double Attack, EndlessQuiver, Run Speed.
