@@ -446,7 +446,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 				}
 				else
 				{
-					// this is the one case where we should deny access even if unregistered is allowed
+					// this is the first of two cases where we should deny access even if unregistered is allowed
 					server_log->Log(log_world, "Server %s(%s) attempted to log in but account and password did not match the entry in the database.",
 						 long_name.c_str(), short_name.c_str());
 				}
@@ -455,6 +455,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 			{
 				if(s_acct_name.size() > 0 || s_acct_pass.size() > 0)
 				{
+					// this is the second of two cases where we should deny access even if unregistered is allowed
 					server_log->Log(log_world, "Server %s(%s) did not attempt to log in but this server requires a password.",
 						 long_name.c_str(), short_name.c_str());
 				}
@@ -483,7 +484,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 
 	in_addr in;
 	in.s_addr = connection->GetrIP();
-	server.db->UpdateWorldRegistration(GetRuntimeID(), string(inet_ntoa(in)));
+	server.db->UpdateWorldRegistration(GetRuntimeID(), long_name, string(inet_ntoa(in)));
 	
 	if(authorized)
 	{
