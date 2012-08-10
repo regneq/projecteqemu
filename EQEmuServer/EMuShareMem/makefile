@@ -22,5 +22,14 @@ LINKRES=-g -shared -Wl,-soname,$(LIB) -o $(LIB)
 
 all: $(LIB)
 
+include .depend
+
 include makefile.common
+
+.depend depend:
+	for f in $(SF); \
+	do \
+		i=`echo $$f | sed -e 's#.obj/#../common/#g' -e 's/\.o/.cpp/g' `; \
+		gcc -MM $(COPTS) $$i | sed "s#^[^ ]*:#$$f:#g"; \
+	done  >.depend
 
