@@ -369,8 +369,8 @@ typedef enum  {
 #define SE_PetAvoidance					215	// not implemented as bonus - increases pet ability to avoid melee damage
 #define SE_Accuracy						216	// implemented
 #define SE_HeadShot						217	// not implemented as bonus - ability to head shot (base2 = damage)
-#define SE_PetCriticalHit				218 // not implemented as bonus
-#define SE_SlayUndead					219	// not implemented as bonus
+#define SE_PetCriticalHit				218 // implemented[AA] - gives pets a baseline critical hit chance
+#define SE_SlayUndead					219	// implemented - Allow extra damage against undead (base1 = rate, base2 = damage mod).
 #define SE_SkillDamageAmount			220	// implemented
 #define SE_Packrat						221 // not implemented as bonus
 #define SE_BlockBehind					222	// implemented - Chance to block from behind (with our without Shield)

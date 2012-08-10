@@ -3894,44 +3894,44 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
 	if(damage < 1)
 		return;
+
+	//Allows pets to perform critical hits. 
+	//Each rank adds an additional 1% chance for any melee hit (primary, secondary, kick, bash, etc) to critical, 
+	//dealing up to 63% more damage. http://www.magecompendium.com/aa-short-library.html
 		
 	Mob *owner = NULL;
-	int critChance = RuleI(Combat, MeleeBaseCritChance);
-	uint16 critMod = 200;
+	float critChance = 0.0f;
+	critChance += RuleI(Combat, MeleeBaseCritChance);
+	uint16 critMod = 163;
 
 	if (damage < 1) //We can't critical hit if we don't hit.
 		return;
 
-	if (!this->IsPet())
+	if (!IsPet())
 		return;
 
-	owner = this->GetOwner();
+	owner = GetOwner();
 
-	sint16 aaClass = -1;
-	switch (owner->GetClass()) {
-		case NECROMANCER:
-			aaClass = aaDeathsFury;
-			break;
-		case MAGICIAN:
-			aaClass = aaElementalFury;
-			break;
-		case BEASTLORD:
-			aaClass = aaWardersFury;
-			break;
+	if (!owner)
+		return;
+
+	sint16 CritPetChance = owner->aabonuses.PetCriticalHit + owner->itembonuses.PetCriticalHit + owner->spellbonuses.PetCriticalHit;
+	sint16 CritChanceBonus = GetCriticalChanceBonus(skill);
+
+	if (CritPetChance || critChance) {
+
+		//For pets use PetCriticalHit for base chance, pets do not innately critical with without it
+		//even if buffed with a CritChanceBonus effects.
+		critChance += CritPetChance;
+		critChance += critChance*CritChanceBonus/100.0f;
 	}
 
-	critChance += owner->GetAA(aaClass);
-	//critChance += owner->GetAA(aaCompanionsFury);
-
-	int CritBonus = GetCriticalChanceBonus(skill);
-	if(CritBonus > 0) {
-		if(critChance == 0) //If we have a bonus to crit in items or spells but no actual chance to crit
-			critChance = (CritBonus / 100) + 1; //Give them a small one so skills and items appear to have some effect.
-		else
-			critChance += (critChance * CritBonus / 100); //crit chance is a % increase to your reg chance
-	}
-	if (critChance > 0) {
-		if (MakeRandomInt(0, 99) < critChance) {
+	if(critChance > 0){
+		
+		critChance /= 100;
+	
+		if(MakeRandomFloat(0, 1) < critChance)
+		{
 			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = (damage * critMod) / 100;
             entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRITICAL_HIT, GetCleanName(), itoa(damage));
@@ -3943,13 +3943,11 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
 	if(damage < 1)
 		return;
-		
-	bool slayUndeadCrit = false;
 
 	// decided to branch this into it's own function since it's going to be duplicating a lot of the
 	// code in here, but could lead to some confusion otherwise
-	if (this->IsPet() && this->GetOwner()->IsClient()) {
-		this->TryPetCriticalHit(defender,skill,damage);
+	if (IsPet() && GetOwner()->IsClient()) {
+		TryPetCriticalHit(defender,skill,damage);
 		return;
 	}
 
@@ -3960,93 +3958,104 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	}
 #endif //BOTS
 
-	int critChance = RuleI(Combat, MeleeBaseCritChance);
-	if(IsClient())
-		critChance += RuleI(Combat, ClientBaseCritChance);
-	
-	// Bonus to crippling blow chance 
-	bool crip_success = false;
-	if(MakeRandomInt(0,99) < GetCrippBlowChance())
-		crip_success = true;
 
-	uint16 critMod = 200; 
-	if(((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12 && IsClient()) || crip_success) 
-	{
-		if(CastToClient()->berserk || crip_success)
-		{
-			critChance += RuleI(Combat, BerserkBaseCritChance);
-			critMod = 400;
-		}
-		else
-		{
-			critChance += RuleI(Combat, WarBerBaseCritChance);
-		}
-	}
+	float critChance = 0.0f;
 
-	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65){
-		critChance += 6;
-	}
-
-	int CritBonus = GetCriticalChanceBonus(skill);
-	if(IsClient())
-		critChance += GetCriticalChanceBonus(skill, true); // These add straight on
-
-	if(CritBonus > 0) {
-		if(critChance == 0) //If we have a bonus to crit in items or spells but no actual chance to crit
-			critChance = (CritBonus / 100) + 1; //Give them a small one so skills and items appear to have some effect.
-		else
-			critChance += (critChance * CritBonus / 100); //crit chance is a % increase to your reg chance
-	}
+	//1: Try Slay Undead 
+	if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
 		
-	if(GetAA(aaSlayUndead)){
-		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
-			switch(GetAA(aaSlayUndead)){
-			case 1:
-				critMod += 33;
-				break;
-			case 2:
-				critMod += 66;
-				break;
-			case 3:
-				critMod += 100;
-				break;
-			}
-			slayUndeadCrit = true;
-		}
-	}
+		sint16 SlayRateBonus = aabonuses.SlayUndead[0] + itembonuses.SlayUndead[0] + spellbonuses.SlayUndead[0];
 
-	if(critChance > 0){
-		if(MakeRandomInt(0, 99) < critChance)
-		{
-			if (slayUndeadCrit)
-			{
-				damage = (damage * (critMod * 2.65)) / 100;
+		if (SlayRateBonus) {
+
+			critChance += (float(SlayRateBonus)/100.0f);
+			critChance /= 100.0f;
+
+			if(MakeRandomFloat(0, 1) < critChance){
+				sint16 SlayDmgBonus = aabonuses.SlayUndead[1] + itembonuses.SlayUndead[1] + spellbonuses.SlayUndead[1];
+				damage = (damage*SlayDmgBonus*2.25)/100;
 				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s cleanses %s target!(%d)", GetCleanName(), this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its", damage);
 				return;
 			}
-			//Veteran's Wrath AA
-			//first, find out of we have it (don't multiply by 0 :-\ )
-			int32 AAdmgmod = GetAA(aaVeteransWrath);
-			if (AAdmgmod > 0) {
-				//now, make sure it's not a special attack
-				if (skill == _1H_BLUNT
-					|| skill == _2H_BLUNT
-					|| skill == _1H_SLASHING
-					|| skill == _2H_SLASHING
-					|| skill == PIERCING
-					|| skill == HAND_TO_HAND
-					)
-					critMod += AAdmgmod * 3; //AndMetal: guessing
+		}
+	}	
+
+	//2: Try Melee Critical
+
+	//Base critical rate for all classes is dervived from DEX stat, this rate is then augmented
+	//by item,spell and AA bonuses allowing you a chance to critical hit. If the following rules
+	//are defined you will have an innate chance to hit at Level 1 regardless of bonuses.
+	//Warning: Do not define these rules if you want live like critical hits.
+	critChance += RuleI(Combat, MeleeBaseCritChance); 
+	
+	if(IsClient())
+		critChance += RuleI(Combat, ClientBaseCritChance);
+	
+	bool IsBerserk = false;
+	if(((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12 && IsClient())) 
+	{
+		if(CastToClient()->berserk){
+			critChance += RuleI(Combat, BerserkBaseCritChance);
+			IsBerserk = true;
+		}
+
+		else
+			critChance += RuleI(Combat, WarBerBaseCritChance);
+	}
+	
+	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65)
+		critChance += 6;
+
+	if(skill == THROWING && GetClass() == ROGUE && GetSkill(THROWING) >= 65)
+		critChance += 6;
+	
+	int CritChanceBonus = GetCriticalChanceBonus(skill);
+
+	if (CritChanceBonus || critChance) {
+
+		//Get Base CritChance from Dex. (200 = ~1.6%, 255 = ~2.0%, 355 = ~2.20%) Fall off rate > 255
+		//http://giline.versus.jp/shiden/su.htm , http://giline.versus.jp/shiden/damage_e.htm
+		if (GetDEX() <= 255)
+			critChance += (float(GetDEX()) / 125.0f); 
+		else if (GetDEX() > 255)
+			critChance += (float(GetDEX()-255)/ 500.0f) + 2.0f;
+		critChance += critChance*(float)CritChanceBonus /100.0f;
+	}
+		
+	if(critChance > 0){
+
+		critChance /= 100;
+
+		if(MakeRandomFloat(0, 1) < critChance)
+		{
+			uint16 critMod = 200;
+			bool crip_success = false;
+			sint16 CripplingBlowChance = GetCrippBlowChance();
+			
+			//Crippling Blow Chance: The percent value of the effect is applied
+			//to the your Chance to Critical. (ie You have 10% chance to critical and you
+			//have a 200% Chance to Critical Blow effect, therefore you have a 20% Chance to Critical Blow.
+			if (CripplingBlowChance){
+				critChance *= float(CripplingBlowChance)/100.0f;
+
+				if(MakeRandomFloat(0, 1) < critChance){
+					critMod = 400;
+					crip_success = true;
+				}
 			}
+
 			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = damage * critMod / 100;
-			
-			if(IsClient() && CastToClient()->berserk || crip_success)
+
+			if(IsBerserk || crip_success)
 			{
 				entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRIPPLING_BLOW, GetCleanName(), itoa(damage));
-				// Crippling blows also have a chance to stun
-				if(MakeRandomInt(0,99) < 50) //improbable to stun every hit
-					defender->Stun(0);
+				// Crippling blows also have a chance to stun 
+				//Kayen: Crippling Blow would cause a chance to interrupt for npcs < 55, with a staggers message.
+				if (defender->GetLevel() <= 55 && !defender->SpecAttacks[IMMUNE_STUN]){
+					defender->Emote("staggers.");
+					defender->Stun(0); 
+				}
 			}
 
 			else
@@ -4056,6 +4065,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		}
 	}
 }
+
 
 bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 {

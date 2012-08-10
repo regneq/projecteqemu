@@ -369,12 +369,12 @@ struct StatBonuses {
 	uint8	TripleBackstab;						// Chance to triple backstab
 	bool	FrontalBackstabMinDmg;				// Allow frontal backstabs for min damage
 	uint8   FrontalBackstabChance;				// Chance to backstab from the front for full damage
-	uint8	ConsumeProjectile;						// Chance to not consume arrow.
+	uint8	ConsumeProjectile;					// Chance to not consume arrow.
 	uint16 	ArcheryDamageModifier;				// Increase Archery Damage by percent
 	bool	SecondaryDmgInc;					// Allow off hand weapon to recieve damage bonus.
 	uint16	GiveDoubleAttack;					// Allow classes to double attack with a specified chance.
-	sint16	SlayUndead[2];						// Pending
-
+	sint16	SlayUndead[2];						// Allow classes to do extra damage verse undead.(base1 = rate, base2 = damage mod)
+	sint16  PetCriticalHit;						// Allow pets to critical hit with % value.
 };
 
 typedef struct
@@ -942,7 +942,7 @@ bool logpos;
 	sint16 GetMeleeMinDamageMod_SE(int16 skill);
 	sint16 GetCrippBlowChance();
 	sint16 GetSkillReuseTime(int16 skill);
-	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
+	sint16 GetCriticalChanceBonus(int16 skill);
 	sint16 GetSkillDmgAmt(int16 skill);
 	bool TryReflectSpell(uint32 spell_id);
 	bool CanBlockSpell() const { return(spellbonuses.BlockNextSpell); }

@@ -3736,6 +3736,14 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 			caster->Message_StringID(MT_Shout, SPELL_NO_EFFECT);
 			return true;
 		}
+
+		else if (IsClient() && CastToClient()->CheckAAEffect(aaEffectWarcry))
+		{
+			Message(13, "Your are immune to fear.");
+			mlog(SPELLS__RESISTS, "Clients has WarCry effect, immune to fear!");
+			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
+			return true;
+		}
 	}
 
 	if(IsCharmSpell(spell_id))

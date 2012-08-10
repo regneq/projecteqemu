@@ -581,21 +581,42 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Group Fear Immunity");
 #endif
-				if(IsClient()){
-					Group *g = entity_list.GetGroupByClient(CastToClient());
+				//Added client messages to give some indication this effect is active.
+				uint32 group_id_caster = 0;
+				uint32 time = spell.base[i]*10;
+				if(caster->IsClient())
+				{
+					if(caster->IsGrouped())
+					{
+						group_id_caster = GetGroup()->GetID();
+					}
+					else if(caster->IsRaidGrouped())
+					{
+						group_id_caster = (GetRaid()->GetGroup(CastToClient()) == 0xFFFF) ? 0 : (GetRaid()->GetGroup(CastToClient()) + 1);
+					}
+				}
+				if(group_id_caster){
+					Group *g = entity_list.GetGroupByID(group_id_caster);
 					uint32 time = spell.base[i]*10;
 					if(g){
 						for(int gi=0; gi < 6; gi++){
 							if(g->members[gi] && g->members[gi]->IsClient())
 							{
 								g->members[gi]->CastToClient()->EnableAAEffect(aaEffectWarcry , time);
+								if (g->members[gi]->GetID() != caster->GetID())
+									g->members[gi]->Message(13, "You hear the war cry.");
+								else
+									Message(13, "You let loose a fierce war cry.");
 							}
 						}
 					}
-					else{
-						CastToClient()->EnableAAEffect(aaEffectWarcry , time);
-					}
 				}
+				
+				else{
+					CastToClient()->EnableAAEffect(aaEffectWarcry , time);
+					Message(13, "You let loose a fierce war cry."); 
+				}
+
 				break;
 			}
 
@@ -2642,6 +2663,23 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_LimitExcludeSkill:
 			case SE_BlockBehind:
 			case SE_ShieldBlock:
+			case SE_PetCriticalHit:
+			case SE_SlayUndead:
+			case SE_GiveDoubleAttack:
+			case SE_StrikeThrough2:
+			case SE_SecondaryDmgInc:
+			case SE_ArcheryDamageModifier:
+			case SE_ConsumeProjectile:
+			case SE_FrontalBackstabChance:
+			case SE_FrontalBackstabMinDmg:
+			case SE_TripleBackstab:
+			case SE_DoubleSpecialAttack:
+			case SE_IncreaseRunSpeedCap:
+			case SE_BaseMovementSpeed:
+			case SE_FrontalStunResist:
+			case SE_ImprovedBindWound:
+			case SE_MaxBindWound:
+			case SE_ChannelChance:
 			{
 				break;
 			}
