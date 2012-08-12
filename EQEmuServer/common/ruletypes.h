@@ -384,6 +384,7 @@ RULE_BOOL ( Bots, BotQuest, false ) // Optional quest method to manage bot spawn
 RULE_BOOL ( Bots, BotGroupBuffing, false ) // Bots will cast single target buffs as group buffs, default is false for single. Does not make single target buffs work for MGB.
 RULE_BOOL ( Bots, BotSpellQuest, false ) // Anita Thrall's (Anita_Thrall.pl) Bot Spell Scriber quests.
 RULE_INT ( Bots, BotAAExpansion, 8 ) // Bots get AAs through this expansion
+RULE_BOOL ( Bots, BotGroupXP, false ) // Determines whether client gets xp for bots outside their group.
 RULE_CATEGORY_END()
 #endif
 
