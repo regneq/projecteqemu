@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==08/12/2012==
+Bad_Captain: Fixed an issue when using bots where you would not get xp when your pet did most of the damage and you are not grouped.
+Bad_Captain: Added rule to enable receiving xp from bots not in your group. Defaults to false. 
+
+OPTIONAL SQL: utils/sql/svn/2183_optional_bot_xp_rule.sql 
+
 ==08/08/2012==
 Kayen: Updates to critical hit calcuations to be consistent with live. 
   *Baseline critical rate is determined by DEX stat (255 dex = 2%),this baseline is then modified by item,spell and AA critical chance bonuses. 
