@@ -279,22 +279,14 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 		record.petpower = act_power;
 	}
 
-	switch (GetAA(aaElementalDurability))
-	{
-	case 1:
-		npc_type->max_hp *= 1.02;
-		npc_type->cur_hp = npc_type->max_hp;
-		break;
-	case 2:
-		npc_type->max_hp *= 1.05;
-		npc_type->cur_hp = npc_type->max_hp;
-		break;
-	case 3:
-		npc_type->max_hp *= 1.10;
-		npc_type->cur_hp = npc_type->max_hp;
-		break;
-	}
+	//Live AA - Elemental Durability
+	sint16 MaxHP = aabonuses.PetMaxHP + itembonuses.PetMaxHP + spellbonuses.PetMaxHP;
 
+	if (MaxHP){
+		npc_type->max_hp += (npc_type->max_hp*MaxHP)/100;
+		npc_type->cur_hp = npc_type->max_hp;
+	}
+	
 	//TODO: think about regen (engaged vs. not engaged)
 	
 	// Pet naming:

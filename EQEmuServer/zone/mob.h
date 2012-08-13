@@ -297,8 +297,8 @@ struct StatBonuses {
 	sint16 	StunResist;							//i
 	sint16 	MeleeSkillCheck;					//i
 	uint8  	MeleeSkillCheckSkill;
-	sint16 	HitChance;							//HitChance/15 == % increase i = Accuracy
-	uint8  	HitChanceSkill;
+	sint16 	HitChance;							//HitChance/15 == % increase i = Accuracy (Item: Accuracy)
+	sint16 	HitChanceEffect[HIGHEST_SKILL+2];	//Spell effect Chance to Hit, straight percent increase
 	sint16 	DamageModifier[HIGHEST_SKILL+2];	//i
 	sint16 	MinDamageModifier[HIGHEST_SKILL+2]; //i
 	sint16 	ProcChance;							// ProcChance/10 == % increase i = CombatEffects
@@ -306,7 +306,7 @@ struct StatBonuses {
 	sint16	DoTShielding;
 	sint16 	DivineSaveChance;					// Second Chance
 	sint16 	FlurryChance;
-	sint16	Accuracy;							// Works like HitChance but on all skills	
+	sint16	Accuracy[HIGHEST_SKILL+2];			//Accuracy/15 == % increase	[Spell Effect: Accuracy)
 	sint16	HundredHands;						//extra haste, stacks with all other haste  i
 	sint8	MeleeLifetap;						//i
 	sint16 	HealRate;							// Spell effect that influences effectiveness of heals
@@ -375,6 +375,13 @@ struct StatBonuses {
 	uint16	GiveDoubleAttack;					// Allow classes to double attack with a specified chance.
 	sint16	SlayUndead[2];						// Allow classes to do extra damage verse undead.(base1 = rate, base2 = damage mod)
 	sint16  PetCriticalHit;						// Allow pets to critical hit with % value.
+	sint16	PetAvoidance;						// Pet avoidance chance.
+	sint16  CombatStability;					// Melee damage mitigation.
+	sint16  GiveDoubleRiposte[3];				// 0=Regular Chance, 1=Skill Attack Chance, 2=Skill
+	uint16	RaiseSkillCap[2];					// Raise a specific skill cap (1 = value, 2=skill)
+	sint16  Ambidexterity;						// Increase chance to duel wield by adding bonus 'skill'.
+	sint16  PetMaxHP;							// Increase the max hp of your pet.
+	sint16  PetFlurry;							// Chance for pet to flurry.
 };
 
 typedef struct
@@ -959,6 +966,9 @@ bool logpos;
 	void SetDisableMelee(bool value) { m_DisableMelee = value; }
 	bool IsMeleeDisabled() { return m_DisableMelee; }
 
+	inline void SetFlurryChance(int8 value) { NPC_FlurryChance = value;}
+	int8 GetFlurryChance() { return NPC_FlurryChance; }
+	
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
 	void SetAppearance(EmuAppearance app, bool iIgnoreSelf = true);
@@ -1228,6 +1238,7 @@ protected:
 	sint16 Vulnerability_Mod[HIGHEST_RESIST+2]; 
 	bool m_AllowBeneficial;
 	bool m_DisableMelee;
+	int8 NPC_FlurryChance;
 
 	bool	isgrouped; //These meant to be private?
 	bool	israidgrouped;

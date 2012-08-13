@@ -180,11 +180,11 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 // and does other mitigation checks.  'this' is the mob being attacked.
 bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand, sint16 chance_mod)
 {
-/*
-		Reworked a lot of this code to achieve better balance at higher levels.
-		The old code basically meant that any in high level (50+) combat,
-		both parties always had 95% chance to hit the other one.
-*/
+/*/
+		//Reworked a lot of this code to achieve better balance at higher levels.
+		//The old code basically meant that any in high level (50+) combat,
+		//both parties always had 95% chance to hit the other one.
+/*/
 	//If chance bonus set in spell data for Skill Attacks is 10k allow to hit without calculations.
 	if (chance_mod == 10000)
 		return true;
@@ -199,7 +199,8 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand, sint16 chan
 #if ATTACK_DEBUG>=11
 		LogFile->write(EQEMuLog::Debug, "CheckHitChance(%s) attacked by %s", defender->GetName(), attacker->GetName());
 #endif
-	
+	mlog(COMBAT__TOHIT,"CheckHitChance(%s) attacked by %s", defender->GetName(), attacker->GetName());
+
 	bool pvpmode = false;
 	if(IsClient() && other->IsClient())
 		pvpmode = true;
@@ -270,8 +271,16 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand, sint16 chan
 		mlog(COMBAT__TOHIT, "Applied item melee skill bonus %d, yeilding %.2f", attacker->spellbonuses.MeleeSkillCheck, chancetohit);
 	}
 	
-	//subtract off avoidance by the defender
-	bonus = defender->spellbonuses.AvoidMeleeChance + defender->itembonuses.AvoidMeleeChance;
+	//subtract off avoidance by the defender. (Live AA - Combat Agility)
+	bonus = defender->spellbonuses.AvoidMeleeChance + defender->itembonuses.AvoidMeleeChance + (defender->aabonuses.AvoidMeleeChance * 10);
+	
+	//AA Live - Elemental Agility
+	if (IsPet()) {
+		Mob *owner = defender->GetOwner();
+		if (!owner)return false;
+		bonus += (owner->aabonuses.PetAvoidance + owner->spellbonuses.PetAvoidance + owner->itembonuses.PetAvoidance)*10;
+	}
+	
 	if(bonus > 0) {
 		chancetohit -= ((bonus * chancetohit) / 1000);
 		mlog(COMBAT__TOHIT, "Applied avoidance chance %.2f/10, yeilding %.2f", bonus, chancetohit);
@@ -284,94 +293,29 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand, sint16 chan
 
 	mlog(COMBAT__TOHIT, "Chance to hit after accuracy rating calc %.2f", chancetohit);
 
-	uint16 AA_mod = 0;
-	switch(GetAA(aaCombatAgility))
-	{
-	case 1:
-		AA_mod = 2;
-		break;
-	case 2:
-		AA_mod = 5;
-		break;
-	case 3:
-		AA_mod = 10;
-		break;
-	}
-	AA_mod += 3*GetAA(aaPhysicalEnhancement);
-	AA_mod += 2*GetAA(aaLightningReflexes);
-	AA_mod += GetAA(aaReflexiveMastery);
-	chancetohit -= chancetohit * AA_mod / 100;
-
-	mlog(COMBAT__TOHIT, "Chance to hit after AA calc %.2f", chancetohit);
-
-	//add in our hit chance bonuses if we are using the right skill
-	//does the hit chance cap apply to spell bonuses from disciplines?
 	float hitBonus = 0;
-	if(attacker->spellbonuses.HitChanceSkill == 255 || attacker->spellbonuses.HitChanceSkill == skillinuse)
-	{
-		hitBonus = (attacker->spellbonuses.HitChance / 15.0f > attacker->spellbonuses.Accuracy) ? attacker->spellbonuses.HitChance / 15.0f : attacker->spellbonuses.Accuracy;
-		chancetohit += chancetohit * hitBonus / 100;
-		mlog(COMBAT__TOHIT, "Applied spell melee hit chance %.2f, yeilding %.2f", hitBonus, chancetohit);
-	}
-	else if(attacker->spellbonuses.Accuracy) {
-		hitBonus = attacker->spellbonuses.Accuracy;
-		chancetohit += chancetohit * hitBonus / 100;
-		mlog(COMBAT__TOHIT, "Applied spell melee accuracy chance %.2f, yeilding %.2f", hitBonus, chancetohit);
-	}
 
-	//Apply specified bonus when doing a spell derived skill attack
-	hitBonus = 0;
-	if (chance_mod) {
-		hitBonus = chance_mod;
-		chancetohit += chancetohit * chance_mod / 100;
-		mlog(COMBAT__TOHIT, "Applied SE_S chance bonus %.2f, yeilding %.2f", hitBonus, chancetohit);
-	}
+	/*
+	Kayen: Unknown if the HitChance and Accuracy effect's should modify 'chancetohit'
+	cumulatively or successively. For now all hitBonuses are cumulative. 
+	*/
 
-	hitBonus = 0;
-	if(attacker->itembonuses.HitChanceSkill == 255 || attacker->itembonuses.HitChanceSkill == skillinuse)
-	{
-		hitBonus = (attacker->itembonuses.HitChance / 15.0f > attacker->itembonuses.Accuracy) ? attacker->itembonuses.HitChance / 15.0f : attacker->itembonuses.Accuracy;
-		chancetohit += chancetohit * hitBonus / 100;
-		mlog(COMBAT__TOHIT, "Applied item melee hit chance %.2f, yeilding %.2f", hitBonus, chancetohit);
-	} 
-	else if(attacker->itembonuses.Accuracy)
-	{
-		hitBonus = attacker->itembonuses.Accuracy;
-		chancetohit += chancetohit * hitBonus / 100;
-		mlog(COMBAT__TOHIT, "Applied item melee accuracy chance %.2f, yeilding %.2f", hitBonus, chancetohit);
-	}
+	hitBonus +=	attacker->itembonuses.HitChanceEffect[skillinuse] + 
+				attacker->spellbonuses.HitChanceEffect[skillinuse]+
+				attacker->itembonuses.HitChanceEffect[HIGHEST_SKILL+1] + 
+				attacker->spellbonuses.HitChanceEffect[HIGHEST_SKILL+1];
 
-	if (attacker->GetAA(aaPrecisionofthePathfinder)) {
-		int modAA = 100;
-		switch (attacker->GetAA(aaPrecisionofthePathfinder)) {
-			case 1:
-				modAA += 2;
-				break;
-			case 2:
-				modAA += 4;
-				break;
-			case 3:
-				modAA += 6;
-				break;
-		}
-		chancetohit = ((chancetohit * modAA) / 100);
-	}
-	//Wolftousen - Add Berserker Dead Aim AA accuracy bonus for throwing
-	if(skillinuse == THROWING)
-	{
-		switch(GetAA(aaDeadAim))
-		{
-			case 1:
-				chancetohit = chancetohit * 105/100;
-				break;
-			case 2:
-				chancetohit = chancetohit * 110/100;
-				break;
-			case 3:
-				chancetohit = chancetohit * 115/100;
-				break;
-		}
-	}
+	//Accuracy = Spell Effect , HitChance = 'Accuracy' from Item Effect
+	//Only AA derived accuracy can be skill limited. ie (Precision of the Pathfinder, Dead Aim)
+	hitBonus += (attacker->itembonuses.Accuracy[HIGHEST_SKILL+1] + 
+				 attacker->spellbonuses.Accuracy[HIGHEST_SKILL+1] + 
+				 attacker->aabonuses.Accuracy[HIGHEST_SKILL+1] +
+				 attacker->aabonuses.Accuracy[skillinuse] +
+				 attacker->itembonuses.HitChance) / 15.0f;
+
+	hitBonus += chance_mod; //Modifier applied from casted/disc skill attacks.
+
+	chancetohit += ((chancetohit * hitBonus) / 100.0f);
 
 	if(skillinuse == ARCHERY)
 		chancetohit -= (chancetohit * RuleR(Combat, ArcheryHitPenalty)) / 100.0f;
@@ -405,6 +349,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand, sint16 chan
 	
 	return(tohit_roll <= chancetohit);
 }
+
 
 bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 {
@@ -444,7 +389,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 	float riposte_chance = 0.0f;
 	if (CanRiposte && damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
-		riposte_chance = (100.0f + (float)defender->spellbonuses.RiposteChance + (float)defender->itembonuses.RiposteChance) / 100.0f;
+		riposte_chance = (100.0f + (float)defender->aabonuses.RiposteChance + (float)defender->spellbonuses.RiposteChance + (float)defender->itembonuses.RiposteChance) / 100.0f;
         skill = GetSkill(RIPOSTE);
 		if (IsClient()) {
 			CastToClient()->CheckIncreaseSkill(RIPOSTE, other, -10);
@@ -499,7 +444,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 		RollTable[1] = RollTable[0];
 	}
 
-	if(damage > 0 && (GetAA(aaShieldBlock) || spellbonuses.ShieldBlock || itembonuses.ShieldBlock) 
+	if(damage > 0 && (aabonuses.ShieldBlock || spellbonuses.ShieldBlock || itembonuses.ShieldBlock) 
 		&& (!other->BehindMob(this, other->GetX(), other->GetY()) || bShieldBlockFromRear)) {
 		bool equiped = CastToClient()->m_inv.GetItem(14);
 		if(equiped) {
@@ -590,37 +535,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	Mob* defender = this;
 	float aa_mit = 0;
 
-	switch(GetAA(aaCombatStability)){
-		case 1:
-			aa_mit += 0.02;
-			break;
-		case 2:
-			aa_mit += 0.05;
-			break;
-		case 3:
-			aa_mit += 0.10;
-			break;
-	}
-
-	aa_mit += GetAA(aaPhysicalEnhancement) * 0.02;
-	aa_mit += GetAA(aaInnateDefense) * 0.03;
-	aa_mit += GetAA(aaDefensiveInstincts)*0.02;
-
-	if (IsPet() && GetOwner()) {
-		if(GetOwner()->GetAA(aaElementalAgility)) {
-			switch(GetOwner()->GetAA(aaElementalAgility)){
-				case 1:
-					aa_mit += 0.02;
-					break;
-				case 2:
-					aa_mit += 0.05;
-					break;
-				case 3:
-					aa_mit += 0.10;
-					break;
-			}
-		}
-	}
+	aa_mit = (aabonuses.CombatStability + itembonuses.CombatStability + spellbonuses.CombatStability)/100.0f;;
 
 	if(RuleB(Combat, UseIntervalAC))
 	{
@@ -3202,11 +3117,13 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 
 	//Live now uses a static Triple Attack skill (lv 46 = 2% lv 60 = 20%) - We do not have this skill on EMU ATM.
 	//A reasonable forumla would then be TA = 20% * chance
+	//AA's can also give triple attack skill over cap. (ie Burst of Power) NOTE: Skill ID in spell data is 76 (Triple Attack)
+	//Kayen: Need to decide if we can implement triple attack skill before working in over the cap effect.
 	if(tripleAttack) {
 		// Only some Double Attack classes get Triple Attack [This is already checked in client_processes.cpp]
 		sint16 triple_bonus = spellbonuses.TripleAttackChance + itembonuses.TripleAttackChance;
-		chance *= 0.2f;
-		chance *= float(100.0f+triple_bonus)/100.0f;
+		chance *= 0.2f; //Baseline chance is 20% of your double attack chance.
+		chance *= float(100.0f+triple_bonus)/100.0f; //Apply modifiers.
 	}
 
 	if((MakeRandomFloat(0, 1) < chance))
@@ -4139,51 +4056,31 @@ void Mob::DoRiposte(Mob* defender) {
 		return;
 
 	defender->Attack(this, SLOT_PRIMARY, true);
-	if (!GetTarget()) return;
+	if (HasDied()) return;
 
-	//double riposte
-	int DoubleRipChance = 0;
-	switch(defender->GetAA(aaDoubleRiposte)) {
-		case 1: 
-			DoubleRipChance = 15;
-			break;
-		case 2:
-			DoubleRipChance = 35;
-			break;
-		case 3:
-			DoubleRipChance = 50;
-			break;
-	}
-
-	DoubleRipChance += 10*defender->GetAA(aaFlashofSteel);
-
-	if(DoubleRipChance >= MakeRandomInt(0, 100)) {
+	sint16 DoubleRipChance = defender->aabonuses.GiveDoubleRiposte[0] + 
+							 defender->spellbonuses.GiveDoubleRiposte[0] + 
+							 defender->itembonuses.GiveDoubleRiposte[0];
+	
+	//Live AA - Double Riposte
+	if(DoubleRipChance && (DoubleRipChance >= MakeRandomInt(0, 100))) {
 		mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
-
 		defender->Attack(this, SLOT_PRIMARY, true);
-		if (!GetTarget()) return;
+		if (HasDied()) return;
 	}
 
-	if(defender->GetAA(aaReturnKick)){
-		int ReturnKickChance = 0;
-		switch(defender->GetAA(aaReturnKick)){
-			case 1:
-				ReturnKickChance = 25;
-				break;
-			case 2:
-				ReturnKickChance = 35;
-				break;
-			case 3:
-				ReturnKickChance = 50;
-				break;
-		}
+	//Double Riposte effect, allows for a chance to do RIPOSTE with a skill specfic special attack (ie Return Kick).
+	//Coded narrowly: Limit to one per client. Limit AA only. [1 = Skill Attack Chance, 2 = Skill]
+	DoubleRipChance = defender->aabonuses.GiveDoubleRiposte[1]; 
+	
+	if(DoubleRipChance && (DoubleRipChance >= MakeRandomInt(0, 100))) {
+	mlog(COMBAT__ATTACKS, "Preforming a return SPECIAL ATTACK (%d percent chance)", DoubleRipChance);
 
-		if(ReturnKickChance >= MakeRandomInt(0, 100)) {
-			mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
-			defender->MonkSpecialAttack(this, FLYING_KICK);
-		}
-
-	}		
+		if (defender->GetClass() == MONK)
+			defender->MonkSpecialAttack(this, defender->aabonuses.GiveDoubleRiposte[2]);
+		else if (defender->IsClient())
+			defender->CastToClient()->DoClassAttacks(this,defender->aabonuses.GiveDoubleRiposte[2], true);
+	}
 }
  
 void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
@@ -4202,7 +4099,7 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	damage += damage * GetMeleeDamageMod_SE(skill) / 100;
 	
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
-	if (spellbonuses.HitChance)
+	if (spellbonuses.HitChanceEffect[HIGHEST_SKILL+1] || spellbonuses.HitChanceEffect[skill])
 		CheckHitsRemaining(0, false, false, SE_HitChance,0,true,skill);
 }
 

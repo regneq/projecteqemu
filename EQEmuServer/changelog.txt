@@ -1,6 +1,31 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==08/13/2012==
+Kayen: Update to how chance to hit bonuses are applied.
+  *Accuracy spell effect will now stack with Hit Chance spell effect. (Accuracy/15 = 1% chance to hit).
+  *Skill specific Hit Chance effects should stack correctly now.
+  *Accuracy/Hit Chance effects that DECREASE your chance to hit will now function.
+Kayen: Minor update to duel wield, chance bonuses will be correctly applied to baseline dw chance.
+Kayen: Implemented Perl MOB Quest Object SetFlurryChance(value) (ie 50 = 50% chance for NPC flurry if special atk "F")
+Kayen: Implemented Perl MOB Quest Object GetFlurryChance(value) returns flurry chance.
+Kayen: Added rule to adjust server wide flurry chance (Default = 20%) *Perl object will override this.
+	
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: Dead Aim, Precision of the Hunter, Scout's Efficiency will now calculate from bonus SE_Accuracy.
+MISC AA: Combat Agility line will now calculate from bonus SE_AvoidMeleeChance. (Now implemented through SoD) 
+MISC AA: Combat Stability line will now calculate from bonus SE_CombatStability. (Now implemented through SoD)
+MISC AA: Double Riposte, Return Kick now calculated from bonus SE_GiveDoubleRiposte. (New AA's implemented that use this)
+MISC AA: Natural Durability, should be working correctly now from bonus SE_MaxHP.
+MISC AA: Ambidexterity will now apply properly to increase chance to duel wield from bonus SE_Ambidexterity.
+MISC AA: Flurry,Rapid Strikes will now properly be applied from bonus SE_Flurry. (New AA's implemented that use this)
+MISC AA: Pet AA's that give flurry chance will now be applied by bonus, SE_PetFlurry.
+MAG  AA: Elemental Agility was incorrectly giving melee mitigation instead of avoidance, to now use SE_PetAvoidance.
+MAG  AA: Elemental Durability will now add to pet max hp with bonus, SE_PetMaxHP.
+
+REQUIRED SQL: utils/sql/svn/2185_required_aa_updates	
+OPTIONAL SQL: utils/sql/svn/2185_optional_NPCFlurryChance_rule
+
 ==08/12/2012==
 Bad_Captain: Fixed an issue when using bots where you would not get xp when your pet did most of the damage and you are not grouped.
 Bad_Captain: Added rule to enable receiving xp from bots not in your group. Defaults to false. 

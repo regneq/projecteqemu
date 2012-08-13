@@ -364,9 +364,9 @@ typedef enum  {
 #define SE_PetShield					210	// *not implemented
 #define SE_AEMelee						211	// implemented
 #define SE_CastingSkills				212	// *not implemented -Include/Exclude Casting Skill type. (*no longer used on live)
-#define SE_PetMaxHP						213	// *not implemented as bonus - increases the maximum hit points of your pet
+#define SE_PetMaxHP						213	// implemented[AA] - increases the maximum hit points of your pet
 #define SE_MaxHPChange 					214	// implemented
-#define SE_PetAvoidance					215	// not implemented as bonus - increases pet ability to avoid melee damage
+#define SE_PetAvoidance					215	// implemented[AA] - increases pet ability to avoid melee damage
 #define SE_Accuracy						216	// implemented
 #define SE_HeadShot						217	// not implemented as bonus - ability to head shot (base2 = damage)
 #define SE_PetCriticalHit				218 // implemented[AA] - gives pets a baseline critical hit chance
@@ -375,7 +375,7 @@ typedef enum  {
 #define SE_Packrat						221 // not implemented as bonus
 #define SE_BlockBehind					222	// implemented - Chance to block from behind (with our without Shield)
 //#define SE_Unknown223					223	// not used
-#define	SE_GiveDoubleRiposte			224 // not implemented as bonus
+#define	SE_GiveDoubleRiposte			224 // implemented[AA]
 #define SE_GiveDoubleAttack				225	// implemented[AA] - Allow any class to double attack with set chance.
 #define SE_TwoHandBash					226 // not implemented as bonus
 #define SE_ReduceSkillTimer				227	// implemented
@@ -398,7 +398,7 @@ typedef enum  {
 #define	SE_RootBreakChance				244	// *not implemented[AA] reduce the chance that your root will break.
 #define SE_TrapCircumvention			245	// *not implemented[AA] - decreases the chance that you will set off a trap when opening a chest
 #define SE_SetBreathLevel				246 // not implemented as bonus
-#define SE_TripleAtkSkillCap			247	// *not implemented[AA] increase triple attack skill cap
+#define SE_RaiseSkillCap				247	// *not implemented[AA] - adds skill over the skill cap.
 #define SE_SecondaryForte				248 // not implemented as bonus(gives you a 2nd specialize skill that can go past 50 to 100)
 #define SE_SecondaryDmgInc				249 // implemented[AA] Allows off hand weapon to recieve a damage bonus (Sinister Strikes)
 #define SE_SpellProcChance				250	// implemented - Increase chance to sympathetic proc by %
@@ -410,7 +410,7 @@ typedef enum  {
 #define SE_ShroudofStealth				256	// not implemented as bonus - rogue improved invs
 #define SE_PetDiscipline				257 // not implemented as bonus - /pet hold
 #define SE_TripleBackstab				258 // implemented[AA] - chance to perform a triple backstab
-#define SE_CombatStability				259 // not implemented as bonus
+#define SE_CombatStability				259 // implemented[AA] - damage mitigation
 #define SE_AddInstrumentMod				260 // *not implemented
 //#define SE_Unknown261					261	// not used
 #define SE_RaiseStatCap					262 // implemented
@@ -427,11 +427,11 @@ typedef enum  {
 #define SE_CriticalDoTChance			273	// implemented
 #define SE_CriticalHealChance			274	// implemented
 //#define SE_Unknown275					275	// not used
-#define SE_Ambidexterity				276 // not implemented as bonus - aa effect
+#define SE_Ambidexterity				276 // implemented[AA] increase chance to duel weild by adding bonus 'skill'
 #define SE_UnfailingDivinity			277	// *not implemented[AA] ability grants your Death Pact-type spells a second chance to successfully heal their target, also can cause said spells to do a portion of their healing value even on a complete failure.
 #define	SE_FinishingBlow				278 // not implemented as bonus - aa effect
 #define SE_Flurry						279	// implemented
-#define SE_PetFlurry					280 // not implemented as bonus
+#define SE_PetFlurry					280 // implemented[AA]
 #define SE_FeignedMinion				281	// *not implemented[AA] ability allows you to instruct your pet to feign death via the '/pet feign' command.  value = succeed chance
 #define SE_ImprovedBindWound			282	// implemented[AA] - increase bind wound amount by percent.
 #define SE_DoubleSpecialAttack			283	// implemented[AA] - Chance to perform second special attack as monk

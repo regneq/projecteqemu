@@ -1226,43 +1226,25 @@ void Mob::AI_Process() {
 					}
 	
 					if (SpecAttacks[SPECATK_FLURRY]) {
-					    // perhaps get the values from the db?
-					    if (MakeRandomInt(0, 99) < 20)
+					   
+						int8 npc_flurry = RuleI(Combat, NPCFlurryChance);
+						if (GetFlurryChance())
+							npc_flurry = GetFlurryChance(); 
+
+					    if (MakeRandomInt(0, 99) < npc_flurry)
 							Flurry();
 					}
 
-					if (IsPet() && GetOwner()->IsClient()) {
-						int aa_chance = 0;
-						// Magician AA
-						int aa_skill = GetOwner()->CastToClient()->GetAA(aaElementalAlacrity);
-						// Necromancer AA
-						if (aa_skill < 1) {
-							aa_skill = GetOwner()->CastToClient()->GetAA(aaQuickeningofDeath);
+					if (IsPet()) {
+						
+						Mob *owner = GetOwner();
+						
+						if (owner){
+						sint16 flurry_chance = owner->aabonuses.PetFlurry + owner->spellbonuses.PetFlurry + owner->itembonuses.PetFlurry;
+
+							if (flurry_chance && (MakeRandomInt(0, 99) < flurry_chance))
+								Flurry();
 						}
-						// Beastlord AA
-						if (aa_skill < 1) {
-							aa_skill = GetOwner()->CastToClient()->GetAA(aaWardersAlacrity);
-						}
-						switch (aa_skill)
-						{
-						case 1:
-							aa_chance = 2;
-							break;
-						case 2:
-							aa_chance = 4;
-							break;
-						case 3:
-							aa_chance = 6;
-							break;
-						case 4:
-							aa_chance = 8;
-							break;
-						case 5:
-							aa_chance = 10;
-							break;
-						}
-						if (MakeRandomInt(1, 100) < aa_chance)
-							Flurry();
 					}
 	
 					if (SpecAttacks[SPECATK_RAMPAGE]) 

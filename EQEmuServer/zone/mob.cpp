@@ -636,7 +636,7 @@ sint32 Mob::CalcMaxMana() {
 
 sint32 Mob::CalcMaxHP() {
 	max_hp = (base_hp + itembonuses.HP + spellbonuses.HP);
-	max_hp += max_hp * (spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
+	max_hp += max_hp * (aabonuses.MaxHPChange + spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
 	return max_hp;
 }
 
@@ -2049,7 +2049,7 @@ bool Mob::CanThisClassDoubleAttack(void) const
     if(!IsClient()) {
         return(GetSkill(DOUBLE_ATTACK) > 0);
     } else {
-        if(GetAA(aaBestialFrenzy) || GetAA(aaHarmoniousAttack) || GetAA(aaKnightsAdvantage) || GetAA(aaFerocity)) {
+        if(aabonuses.GiveDoubleAttack || itembonuses.GiveDoubleAttack || spellbonuses.GiveDoubleAttack) {
 			return true;
 		}
         return(CastToClient()->HasSkill(DOUBLE_ATTACK));

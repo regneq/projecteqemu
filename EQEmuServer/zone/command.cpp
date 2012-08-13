@@ -11278,12 +11278,12 @@ void command_showbonusstats(Client *c, const Seperator *sep)
 		if (bAll || (strcasecmp(sep->arg[1], "item")==0)) {
 			c->Message(0, "Target Item Bonuses:");
 			c->Message(0, "  Accuracy: %i%%   Divine Save: %i%%",c->GetTarget()->GetItemBonuses().Accuracy, c->GetTarget()->GetItemBonuses().DivineSaveChance);
-			c->Message(0, "  Flurry: %i%%     HitChance: %i%% (Skill: %i)",c->GetTarget()->GetItemBonuses().FlurryChance, c->GetTarget()->GetItemBonuses().HitChance / 15, c->GetTarget()->GetItemBonuses().HitChanceSkill);
+			c->Message(0, "  Flurry: %i%%     HitChance: %i%%",c->GetTarget()->GetItemBonuses().FlurryChance, c->GetTarget()->GetItemBonuses().HitChance / 15);
 		}
 		if (bAll || (strcasecmp(sep->arg[1], "spell")==0)) {
 			c->Message(0, "  Target Spell Bonuses:");
 			c->Message(0, "  Accuracy: %i%%   Divine Save: %i%%",c->GetTarget()->GetSpellBonuses().Accuracy, c->GetTarget()->GetSpellBonuses().DivineSaveChance);
-			c->Message(0, "  Flurry: %i%%     HitChance: %i%% (Skill: %i)",c->GetTarget()->GetSpellBonuses().FlurryChance, c->GetTarget()->GetSpellBonuses().HitChance / 15, c->GetTarget()->GetSpellBonuses().HitChanceSkill);
+			c->Message(0, "  Flurry: %i%%     HitChance: %i%% ",c->GetTarget()->GetSpellBonuses().FlurryChance, c->GetTarget()->GetSpellBonuses().HitChance / 15);
 			int deathsaveslot = c->GetTarget()->GetBuffSlotFromType(SE_DeathSave);
 			int dschance = deathsaveslot >= 0 ? c->GetTarget()->GetBuffs()[deathsaveslot].deathSaveSuccessChance : 0;
 			c->Message(0, "  Death Save: %i%%",dschance);
