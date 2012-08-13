@@ -423,81 +423,20 @@ bool Client::Process() {
 						Attack(auto_attack_target, 13, false);
 					}
 				}
-				if (auto_attack_target && (GetAA(aaFlurry) > 0 || spellbonuses.FlurryChance > 0 || itembonuses.FlurryChance > 0))
+								
+				//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
+				sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
+
+				if (auto_attack_target && flurrychance)
 				{
-					// Assuming Flurry Chance (X) effects = X%
-					// Can any class flurry with tribute?
-					// Is flurry supposed to have a chance even without a successful triple attack?
-					int32 flurrychance = (itembonuses.FlurryChance + spellbonuses.FlurryChance) * 10; 
-					switch (GetAA(aaFlurry)) 
-					{
-					case 1:
-						flurrychance += 10;
-						break;
-					case 2:
-						flurrychance += 25;
-						break;
-					case 3:
-						flurrychance += 50;
-						break;
-					}
-
-					if(tripleAttackSuccess) {
-						tripleAttackSuccess = false;
-						switch (GetAA(aaRagingFlurry)) {
-						case 1:
-							flurrychance += 10;
-							break;
-						case 2:
-							flurrychance += 25;
-							break;
-						case 3:
-							flurrychance += 50;
-							break;
-						}
-					}
-
-					if(MakeRandomInt(0, 999) < flurrychance) 
+					if(MakeRandomInt(0, 100) < flurrychance) 
 					{
 						Message_StringID(MT_NPCFlurry, 128);
 						Attack(auto_attack_target, 13, false);
 						Attack(auto_attack_target, 13, false);
 					}
 				}
-
-				if (GetTarget() && GetAA(aaRapidStrikes))
-				{
-					int chance_xhit1 = 0;
-					int chance_xhit2 = 0;
-					switch (GetAA(aaRapidStrikes))
-					{
-					case 1:
-						chance_xhit1 = 10;
-						chance_xhit2 = 2;
-						break;
-					case 2:
-						chance_xhit1 = 12;
-						chance_xhit2 = 4;
-						break;
-					case 3:
-						chance_xhit1 = 14;
-						chance_xhit2 = 6;
-						break;
-					case 4:
-						chance_xhit1 = 16;
-						chance_xhit2 = 8;
-						break;
-					case 5:
-						chance_xhit1 = 20;
-						chance_xhit2 = 10;
-						break;
-					}
-					if (MakeRandomInt(1,100) < chance_xhit1)
-						Attack(GetTarget(), 13, false);
-					if (MakeRandomInt(1,100) < chance_xhit2)
-						Attack(GetTarget(), 13, false);
-				}
-				
+			
 				sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
 				if (auto_attack_target && ExtraAttackChanceBonus) {
@@ -545,12 +484,13 @@ bool Client::Process() {
 				//you can't see your target	
 			}
 			else if(auto_attack_target->GetHP() > -10) {
-				float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
-				if(GetAA(aaAmbidexterity))
-					DualWieldProbability += 0.1f;
-				//discipline effects:
-				DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
+				float DualWieldProbability = 0.0f;
 				
+				sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+				DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
+				sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+				DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;
+
 				float random = MakeRandomFloat(0, 1);
 				CheckIncreaseSkill(DUAL_WIELD, auto_attack_target, -10);
 				if (random < DualWieldProbability){ // Max 78% of DW

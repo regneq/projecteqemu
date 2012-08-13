@@ -798,7 +798,7 @@ public:
 	void    RemoveNoRent();
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other);
-	void	DoClassAttacks(Mob *ca_target);
+	void	DoClassAttacks(Mob *ca_target, int16 skill = -1, bool IsRiposte=false);
 
 	void	SetZoneFlag(uint32 zone_id);
 	void	ClearZoneFlag(uint32 zone_id);

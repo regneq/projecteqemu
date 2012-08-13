@@ -7995,6 +7995,55 @@ XS(XS_Mob_IsMeleeDisabled)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_SetFlurryChance); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetFlurryChance)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetFlurryChance(THIS, value)");
+	{
+		Mob *		THIS;
+		int8		value = (int8)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetFlurryChance(value);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_GetFlurryChance); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetFlurryChance)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetFlurryChance(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetFlurryChance();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -8293,6 +8342,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "DoThrowingAttackDmg"), XS_Mob_DoThrowingAttackDmg, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "SetDisableMelee"), XS_Mob_SetDisableMelee, file, "$$");
 		newXSproto(strcpy(buf, "IsMeleeDisabled"), XS_Mob_IsMeleeDisabled, file, "$$");
+		newXSproto(strcpy(buf, "SetFlurryChance"), XS_Mob_SetFlurryChance, file, "$$");
+		newXSproto(strcpy(buf, "GetFlurryChance"), XS_Mob_GetFlurryChance, file, "$");
 			
 	XSRETURN_YES;
 }

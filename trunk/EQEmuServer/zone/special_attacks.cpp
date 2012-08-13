@@ -1575,7 +1575,7 @@ void NPC::DoClassAttacks(Mob *target) {
 	classattack_timer.Start(reuse*HasteModifier/100);
 }
 
-void Client::DoClassAttacks(Mob *ca_target)
+void Client::DoClassAttacks(Mob *ca_target, int16 skill, bool IsRiposte)
 {
 	if(!ca_target)
 		return;
@@ -1592,7 +1592,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 		return;
 	}
 	
-	if(!p_timers.Expired(&database, pTimerCombatAbility, false)) {
+	if(!IsRiposte && (!p_timers.Expired(&database, pTimerCombatAbility, false))) {
 		return;
 	}
 	
@@ -1608,52 +1608,58 @@ void Client::DoClassAttacks(Mob *ca_target)
 	}
 	sint32 dmg = 0;
 
-	sint32 skill_to_use = -1;
+	int16 skill_to_use = -1;
 	
-	switch(GetClass())
-	{
-	case WARRIOR:
-	case RANGER:
-	case BEASTLORD:
-		skill_to_use = KICK;
-		break;
-	case BERSERKER:
-		skill_to_use = FRENZY;
-		break;
-	case SHADOWKNIGHT:
-	case PALADIN:
-		skill_to_use = BASH;
-		break;
-	case MONK:
-		if(GetLevel() >= 30)
+	if (skill == -1){
+
+		switch(GetClass())
 		{
-			skill_to_use = FLYING_KICK;
-		}
-		else if(GetLevel() >= 25)
-		{
-			skill_to_use = DRAGON_PUNCH;
-		}
-		else if(GetLevel() >= 20)
-		{
-			skill_to_use = EAGLE_STRIKE;
-		}
-		else if(GetLevel() >= 10)
-		{
-			skill_to_use = TIGER_CLAW;
-		}
-		else if(GetLevel() >= 5)
-		{
-			skill_to_use = ROUND_KICK;
-		}
-		else
-		{
+		case WARRIOR:
+		case RANGER:
+		case BEASTLORD:
 			skill_to_use = KICK;
+			break;
+		case BERSERKER:
+			skill_to_use = FRENZY;
+			break;
+		case SHADOWKNIGHT:
+		case PALADIN:
+			skill_to_use = BASH;
+			break;
+		case MONK:
+			if(GetLevel() >= 30)
+			{
+				skill_to_use = FLYING_KICK;
+			}
+			else if(GetLevel() >= 25)
+			{
+				skill_to_use = DRAGON_PUNCH;
+			}
+			else if(GetLevel() >= 20)
+			{
+				skill_to_use = EAGLE_STRIKE;
+			}
+			else if(GetLevel() >= 10)
+			{
+				skill_to_use = TIGER_CLAW;
+			}
+			else if(GetLevel() >= 5)
+			{
+				skill_to_use = ROUND_KICK;
+			}
+			else
+			{
+				skill_to_use = KICK;
+			}
+			break;
+		case ROGUE:
+			skill_to_use = BACKSTAB;
+			break;
 		}
-		break;
-	case ROGUE:
-		skill_to_use = BACKSTAB;
-		break;
 	}
+
+	else
+		skill_to_use = skill;
 	
 	if(skill_to_use == -1)
 		return;
@@ -1686,7 +1692,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 
 			DoSpecialAttackDamage(ca_target, BASH, dmg, 1,-1,ReuseTime);
 
-			if(ReuseTime > 0)
+			if(ReuseTime > 0 && !IsRiposte)
 			{
 				p_timers.Start(pTimerCombatAbility, ReuseTime);
 			}
@@ -1723,7 +1729,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 			AtkRounds--;
 		}
 
-		if(ReuseTime > 0) {
+		if(ReuseTime > 0 && !IsRiposte) {
 			p_timers.Start(pTimerCombatAbility, ReuseTime);
 		}
 		return;
@@ -1763,7 +1769,11 @@ void Client::DoClassAttacks(Mob *ca_target)
 		skill_to_use == ROUND_KICK)
 	{
 		ReuseTime = MonkSpecialAttack(ca_target, skill_to_use) - 1;
-		
+		MonkSpecialAttack(ca_target, skill_to_use);
+
+		if (IsRiposte)
+			return;
+
 		//Live AA - Technique of Master Wu
 		uint16 bDoubleSpecialAttack = itembonuses.DoubleSpecialAttack + spellbonuses.DoubleSpecialAttack + aabonuses.DoubleSpecialAttack;
 		if( bDoubleSpecialAttack && (bDoubleSpecialAttack >= 100 || bDoubleSpecialAttack > MakeRandomInt(0,100))) {
@@ -1785,11 +1795,15 @@ void Client::DoClassAttacks(Mob *ca_target)
 	if(skill_to_use == BACKSTAB)
 	{
 		ReuseTime = BackstabReuseTime-1;
+
+		if (IsRiposte)
+			ReuseTime=0;
+
 		TryBackstab(ca_target,ReuseTime);
 	}
 	
 	ReuseTime = (ReuseTime*HasteMod)/100;
-	if(ReuseTime > 0)
+	if(ReuseTime > 0 && !IsRiposte)
 	{
 		p_timers.Start(pTimerCombatAbility, ReuseTime);
 	}	

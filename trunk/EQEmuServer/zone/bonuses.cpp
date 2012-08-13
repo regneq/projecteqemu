@@ -635,8 +635,12 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 		_log(AA__BONUSES, "Applying Effect %d from AA %u in slot %d (base1: %d, base2: %d) on %s", effect, aaid, slot, base1, base2, this->GetCleanName());
 		switch (effect)
 		{
+			//Note: AA effects that use accuracy are skill limited, while spell effect is not.
 			case SE_Accuracy:
-				newbon->HitChance += base1;
+				if ((base2 == -1) && (newbon->Accuracy[HIGHEST_SKILL+1] < base1))
+					newbon->Accuracy[HIGHEST_SKILL+1] = base1;
+				else if (newbon->Accuracy[base2] < base1)
+					newbon->Accuracy[base2] += base1;
 				break;
 			case SE_CurrentHP: //regens
 				newbon->HPRegen += base1;
@@ -1065,6 +1069,84 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_PetCriticalHit:
 			{
 				newbon->PetCriticalHit += base1;
+				break;
+			}
+
+			case SE_AvoidMeleeChance:
+			{
+				newbon->AvoidMeleeChance += base1;
+				break;
+			}
+
+			case SE_CombatStability:
+			{
+				newbon->CombatStability += base1;
+				break;
+			}
+
+			case SE_PetAvoidance:
+			{
+				newbon->PetAvoidance += base1;
+				break;
+			}
+
+			case SE_GiveDoubleRiposte:
+			{
+				//0=Regular Riposte 1=Skill Attack Riposte 2=Skill
+				if(base2 == 0){
+					if(newbon->GiveDoubleRiposte[0] < base1)
+						newbon->GiveDoubleRiposte[0] = base1;
+				}
+				//Only for special attacks.
+				else if(base2 > 0 && (newbon->GiveDoubleRiposte[1] < base1)){
+					newbon->GiveDoubleRiposte[1] = base1;
+					newbon->GiveDoubleRiposte[2] = base2;
+				}
+
+				break;
+			}
+
+			case SE_RiposteChance:
+			{
+				if(newbon->RiposteChance < base1)
+					newbon->RiposteChance = base1;
+				break;
+			}
+
+			//Kayen: Not sure best way to implement this yet.
+			//Physically raises skill cap ie if 55/55 it will raise to 55/60
+			case SE_RaiseSkillCap:
+			{
+				if(newbon->RaiseSkillCap[0] < base1){
+					newbon->RaiseSkillCap[0] = base1; //value
+					newbon->RaiseSkillCap[1] = base2; //skill
+				}
+				break;
+			}
+
+			case SE_Flurry:
+			{
+				if(newbon->FlurryChance < base1)
+					newbon->FlurryChance = base1;
+				break;
+			}
+
+			case SE_Ambidexterity:
+			{	
+				newbon->Ambidexterity += base1;
+				break;
+			}
+
+			case SE_PetMaxHP:
+			{
+				newbon->PetMaxHP += base1;
+				break;
+			}
+
+			case SE_PetFlurry:
+			{
+				if(newbon->PetFlurry < base1)
+					newbon->PetFlurry = base1;
 				break;
 			}
 		}
@@ -1598,15 +1680,6 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				else if (effect_value < 0 && effect_value < newbon->HundredHands)
 					newbon->HundredHands = effect_value; //Decrease Weapon Delay
 				break;
-
-				/*
-				if(IsBeneficialSpell(spell_id)){ //If it's a beneficial spell we switch it cause
-					effect_value *= -1; //of the way it's stored by sony, negative for both ben and det spells
-				}
-				effect_value = effect_value > 120 ? 120 : (effect_value < -120 ? -120 : effect_value);
-				newbon->HundredHands = newbon->HundredHands > effect_value ? newbon->HundredHands : effect_value;
- 				break;
-				*/
  			}
 				
 			case SE_MeleeSkillCheck:
@@ -1620,7 +1693,29 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_HitChance:
 			{
+				if(spells[spell_id].base2[i] == -1){
+
+					if ((effect_value < 0) && (newbon->HitChanceEffect[HIGHEST_SKILL+1] > effect_value))
+						newbon->HitChanceEffect[HIGHEST_SKILL+1] = effect_value;
+
+					else if (!newbon->HitChanceEffect[HIGHEST_SKILL+1] || 
+							((newbon->HitChanceEffect[HIGHEST_SKILL+1] > 0) && (newbon->HitChanceEffect[HIGHEST_SKILL+1] < effect_value)))
+							newbon->HitChanceEffect[HIGHEST_SKILL+1] = effect_value;
+				}
 				
+				else {
+
+					if ((effect_value < 0) && (newbon->HitChanceEffect[spells[spell_id].base2[i]] > effect_value))
+						newbon->HitChanceEffect[spells[spell_id].base2[i]] = effect_value;
+
+					else if (!newbon->HitChanceEffect[spells[spell_id].base2[i]] || 
+							((newbon->HitChanceEffect[spells[spell_id].base2[i]] > 0) && (newbon->HitChanceEffect[spells[spell_id].base2[i]] < effect_value)))
+							newbon->HitChanceEffect[spells[spell_id].base2[i]] = effect_value;
+				}
+
+				break;
+				
+				/*
 				//multiplier is to be compatible with item effects
 				//watching for overflow too
 				effect_value = effect_value<2000? effect_value * 15 : 30000;
@@ -1629,6 +1724,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->HitChanceSkill = spells[spell_id].base2[i]==-1?255:spells[spell_id].base2[i];
 				}
 				break;
+				*/
 			}
 				
 			case SE_DamageModifier:
@@ -1695,10 +1791,15 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 			case SE_Accuracy:
 			{
-				if(newbon->Accuracy < effect_value)
-					newbon->Accuracy = effect_value;
+				if ((effect_value < 0) && (newbon->Accuracy[HIGHEST_SKILL+1] > effect_value))
+						newbon->Accuracy[HIGHEST_SKILL+1] = effect_value;
+
+				else if (!newbon->Accuracy[HIGHEST_SKILL+1] || 
+						((newbon->Accuracy[HIGHEST_SKILL+1] > 0) && (newbon->Accuracy[HIGHEST_SKILL+1] < effect_value)))
+							newbon->Accuracy[HIGHEST_SKILL+1] = effect_value;
 				break;
 			}
+
 			case SE_MaxHPChange:
 			{
 				newbon->MaxHPChange += effect_value;
@@ -2110,6 +2211,46 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			case SE_PetCriticalHit:
 			{
 				newbon->PetCriticalHit += effect_value;
+				break;
+			}
+
+			case SE_CombatStability:
+			{
+				newbon->CombatStability += effect_value;
+				break;
+			}
+			
+			case SE_PetAvoidance:
+			{
+				newbon->PetAvoidance += effect_value;
+				break;
+			}
+
+			case SE_GiveDoubleRiposte:
+			{
+				//Only allow for regular double riposte chance.
+				if(newbon->GiveDoubleRiposte[spells[spell_id].base2[i]] == 0){
+					if(newbon->GiveDoubleRiposte[0] < effect_value)
+						newbon->GiveDoubleRiposte[0] = effect_value;
+				}
+			}
+
+			case SE_Ambidexterity:
+			{	
+				newbon->Ambidexterity += effect_value;
+				break;
+			}
+
+			case SE_PetMaxHP:
+			{
+				newbon->PetMaxHP += effect_value;
+				break;
+			}
+
+			case SE_PetFlurry:
+			{
+				if(newbon->PetFlurry < effect_value)
+					newbon->PetFlurry = effect_value;
 				break;
 			}
 		}
@@ -2779,7 +2920,7 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 				}
 				case SE_Accuracy:
 				{
-					spellbonuses.Accuracy = effect_value;
+					spellbonuses.Accuracy[HIGHEST_SKILL+1] = effect_value;
 					break;
 				}
 				case SE_MaxHPChange:
@@ -2987,6 +3128,8 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 					spellbonuses.IsFeared = false;  
 					break;
 				}
+
+
 			}
 		}
 	}
