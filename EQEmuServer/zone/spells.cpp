@@ -583,33 +583,12 @@ bool Client::CheckFizzle(int16 spell_id)
 	// GMs don't fizzle
 	if (GetGM()) return(true);
 	
-	int no_fizzle_level = 0;
-	if (GetAA(aaMasteryofthePast) || GetAA(aaMasteryofthePast2)) {
-		switch (GetAA(aaMasteryofthePast) + GetAA(aaMasteryofthePast2)) {
-			case 1:
-				no_fizzle_level = 53;
-				break;
-			case 2:
-				no_fizzle_level = 55;
-				break;
-			case 3:
-				no_fizzle_level = 57;
-				break;
-		}
-	} else {
-		switch (GetAA(aaSpellCastingExpertise)) {
-			case 1:
-				no_fizzle_level = 19;
-				break;
-			case 2:
-				no_fizzle_level = 34;
-				break;
-			case 3:
-				no_fizzle_level = 51;
-				break;
-		}
-	}
-	if (spells[spell_id].classes[GetClass()-1] <= no_fizzle_level)
+	uint8 no_fizzle_level = 0;
+
+	//Live AA - Spell Casting Expertise, Mastery of the Past
+	no_fizzle_level = aabonuses.MasteryofPast + itembonuses.MasteryofPast + spellbonuses.MasteryofPast;
+
+	if (spells[spell_id].classes[GetClass()-1] < no_fizzle_level)
 		return true;
 	
 	//is there any sort of focus that affects fizzling?
@@ -675,7 +654,8 @@ bool Client::CheckFizzle(int16 spell_id)
 	fizzlechance = fizzlechance < 1 ? 1 : (fizzlechance > 95 ? 95 : fizzlechance);
 	if(IsBardSong(spell_id))
 	{
-		fizzlechance -= GetAA(aaInternalMetronome) * 1.5f;
+		//This was a channel chance modifier - no evidence for fizzle reduction
+		fizzlechance -= GetAA(aaInternalMetronome) * 1.5f; 
 	}
 
 	float fizzle_roll = MakeRandomFloat(0, 100);
@@ -806,6 +786,8 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 {
 	_ZP(Mob_CastedSpellFinished);
 	
+	bool IsFromItem = false;
+	
 	if(IsClient() && slot != USE_ITEM_SPELL_SLOT && slot != POTION_BELT_SPELL_SLOT && spells[spell_id].recast_time > 1000) { // 10 is item
 		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + spell_id, false)) {
 			//should we issue a  message or send them a spell gem packet?
@@ -818,6 +800,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 
 	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
 	{
+		IsFromItem = true;
 		ItemInst *itm = CastToClient()->GetInv().GetItem(inventory_slot);
 		if(itm && itm->GetItem()->RecastDelay > 0)
 		{
@@ -902,14 +885,18 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 
 			if(IsClient())
 			{
-				sint16 channelbonuses = spellbonuses.ChannelChance + itembonuses.ChannelChance + aabonuses.ChannelChance;
+				float channelbonuses = 0.0f;
+				//AA that effect Spell channel chance are no longer on live. http://everquest.allakhazam.com/history/patches-2006-2.html
+				//No harm in maintaining the effects regardless, since we do check for channel chance.
+				if (IsFromItem)
+					channelbonuses += spellbonuses.ChannelChanceItems + itembonuses.ChannelChanceItems + aabonuses.ChannelChanceItems;
+				else
+					channelbonuses += spellbonuses.ChannelChanceSpells + itembonuses.ChannelChanceSpells + aabonuses.ChannelChanceSpells;
 
 				// max 93% chance at 252 skill
 				channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
 				channelchance -= attacked_count * 2;			
-				channelchance += channelchance * (GetAA(aaChanellingFocus)*5) / 100; 
-				channelchance += channelchance * (GetAA(aaInternalMetronome)*5) / 100;
-				channelchance +=  channelchance * (float)channelbonuses / 100.0f;
+				channelchance +=  channelchance * channelbonuses / 100.0f;
 			} 
 #ifdef BOTS
 			else if(IsBot()) {
@@ -1878,11 +1865,12 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot,
 				{
 					// if target is grouped, CastGroupSpell will cast it on the caster
 					// too, but if not then we have to do that here.
+
 					if(spell_target != this){
 						SpellOnTarget(spell_id, this);
 	#ifdef GROUP_BUFF_PETS
 						//pet too
-						if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
+						if (GetPet() && HasPetAffinity() && !GetPet()->IsCharmed())
 							SpellOnTarget(spell_id, GetPet());
 	#endif					
 					}
@@ -1890,7 +1878,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot,
 					SpellOnTarget(spell_id, spell_target);
 	#ifdef GROUP_BUFF_PETS
 					//pet too
-					if (spell_target->GetPet() && GetAA(aaPetAffinity) && !spell_target->GetPet()->IsCharmed())
+					if (spell_target->GetPet() && HasPetAffinity() && !spell_target->GetPet()->IsCharmed())
 						SpellOnTarget(spell_id, spell_target->GetPet());
 	#endif
 				}
@@ -2155,7 +2143,7 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 					else{
 						BardPulse(spell_id, this);
 #ifdef GROUP_BUFF_PETS
-						if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
+						if (GetPet() && HasPetAffinity() && !GetPet()->IsCharmed())
 							GetPet()->BardPulse(spell_id, this);
 #endif
 					}
@@ -2165,7 +2153,7 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 				mlog(SPELLS__BARDS, "Bard Song Pulse: spell %d, Group target without group. Affecting caster.", spell_id);
 				BardPulse(spell_id, this);
 #ifdef GROUP_BUFF_PETS
-				if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
+				if (GetPet() && HasPetAffinity() && !GetPet()->IsCharmed())
 					GetPet()->BardPulse(spell_id, this);
 #endif
 			}
@@ -4141,45 +4129,17 @@ float Mob::GetAOERange(uint16 spell_id) {
 	if(range == 0)
 		range = 10;	//something....
 	
-	float mod = 0;
 	if (IsClient()) {
-		if(IsBardSong(spell_id)) {
-			switch (GetAA(aaExtendedNotes) + GetAA(aaExtendedNotes2))
-			{
-				case 1:
-					mod += range * 0.10;
-					break;
-				case 2:
-					mod += range * 0.15;
-					break;
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-					mod += range * 0.25;
-					break;
-			}
-			switch (GetAA(aaSionachiesCrescendo)+GetAA(aaSionachiesCrescendo2))
-			{
-				case 1:
-					mod += range * 0.05;
-					break;
-				case 2:
-					mod += range * 0.10;
-					break;
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-					mod += range * 0.15;
-					break;
-			}
-			range += mod;
+
+		if(IsBardSong(spell_id) && IsBeneficialSpell(spell_id)) {
+			//Live AA - Extended Notes, SionachiesCrescendo
+			float song_bonus = aabonuses.SongRange + spellbonuses.SongRange + itembonuses.SongRange;
+			range += range*song_bonus /100.0f;
 		}
-		
+			
 		range = CastToClient()->GetActSpellRange(spell_id, range);
 	}
-	
+		
 	return(range);
 }
 
@@ -5150,9 +5110,7 @@ bool Mob::UseBardSpellLogic(int16 spell_id, int slot)
 
 int Mob::GetCasterLevel(int16 spell_id) {
 	int level = GetLevel();
-	level += spellbonuses.effective_casting_level;
-	level += itembonuses.effective_casting_level;
-	level += GetAA(aaJamFest);
+	level += itembonuses.effective_casting_level + spellbonuses.effective_casting_level + aabonuses.effective_casting_level;
 	mlog(SPELLS__CASTING, "Determined effective casting level %d+%d+%d=%d", GetLevel(), spellbonuses.effective_casting_level, itembonuses.effective_casting_level, level);
 	return(level);
 }

@@ -3250,11 +3250,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		if(HasDied()) {
 			bool IsSaved = false;
 
-			if(HasDeathSaveChance()) {
-				if(TryDeathSave()) {
-					IsSaved = true;
-				}
-			}
+			if(TryDivineSave()) 
+				IsSaved = true;
 
 			if(!IsSaved && !TrySpellOnDeath()) {
 				SetHP(-500);
@@ -3267,6 +3264,11 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				Death(attacker, damage, spell_id, skill_used);
 				return;
 			}
+		}
+
+		else{
+			if(GetHPRatio() < 16) 
+				TryDeathSave();
 		}
 
     	//fade mez if we are mezzed
@@ -3320,25 +3322,28 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		if(spell_id != SPELL_UNKNOWN && !iBuffTic) {
 			//see if root will break
 			if (IsRooted() && !FromDamageShield) { // neotoyko: only spells cancel root
-				if(GetAA(aaEnhancedRoot))
-				{
-					if (MakeRandomInt(0, 99) < 10) {
-						mlog(COMBAT__HITS, "Spell broke root! 10percent chance");
-						BuffFadeByEffect(SE_Root, buffslot); // buff slot is passed through so a root w/ dam doesnt cancel itself
-					} else {
-						mlog(COMBAT__HITS, "Spell did not break root. 10 percent chance");
-					}
+					
+				/*Dev Quote 2010:  http://forums.station.sony.com/eq/posts/list.m?topic_id=161443
+				The Viscid Roots AA does the following:  Reduces the chance for root to break by X percent.
+				There is no distinction of any kind between the caster inflicted damage, or anyone 
+				else's damage. There is also no distinction between Direct and DOT damage in the root code. 
+				There is however, a provision that if the damage inflicted is greater than 500 per hit, the 
+				chance to break root is increased. My guess is when this code was put in place, the devs at 
+				the time couldn't imagine DOT damage getting that high.
+				*/
+				int BreakChance = RuleI(Spells, RootBreakFromSpells);
+				BreakChance -= BreakChance*rooted_mod/100;
+
+				if (BreakChance < 1)
+					BreakChance = 1;
+
+				if (MakeRandomInt(0, 99) < BreakChance) {
+					mlog(COMBAT__HITS, "Spell broke root! BreakChance percent chance");
+					BuffFadeByEffect(SE_Root, buffslot); // buff slot is passed through so a root w/ dam doesnt cancel itself
+				} else {
+					mlog(COMBAT__HITS, "Spell did not break root. BreakChance percent chance");
 				}
-				else
-				{
-					if (MakeRandomInt(0, 99) < 20) {
-						mlog(COMBAT__HITS, "Spell broke root! 20percent chance");
-						BuffFadeByEffect(SE_Root, buffslot); // buff slot is passed through so a root w/ dam doesnt cancel itself
-					} else {
-						mlog(COMBAT__HITS, "Spell did not break root. 20 percent chance");
-					}
-				}			
-			}
+			}			
 		}
 		else if(spell_id == SPELL_UNKNOWN)
 		{

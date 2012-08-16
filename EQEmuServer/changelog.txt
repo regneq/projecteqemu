@@ -1,6 +1,40 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==08/16/2012==
+Kayen: Nearly complete revision of the Death Save and Divine Save effects and related bonuses to be consistent with live.
+  *Death Save (Death Pact/DI) will no longer fire on death. It should only fire when less 15% HP but not killed.
+  *Death Save chance is determined soley by charisma of client with the buff. (RULE: DeathSaveCharismaMod)
+  *Divine Intervention baseline is now correctly set to 8000HP (from 50k) (RULE: DivineInterventionHeal)
+  *AA Touch of the Divine provides upon failure of first Death Save, a second roll and if successful will
+   do a portion of the original heal value. (Ie DI=8000HP with ToTD-3(60%) your heal will be 8000*0.6 = 4800HP)
+  *Implemented functionality for later expansion Death Save effects (Divine Intercession ect)
+   These can add heal value to the base heal which is limited by level (ie Heal 10,0000+8000 if client less then level 80)
+   
+  *Divine Save (AA Unfailing Divinity) only fire upon death of client with this effect and is independent of Death Save effect.
+  *Increased ranks of AA only increase the chance of firing upon death. Heal value does NOT increase with rank.
+  *Upon firing you will still recieve the Divine Aura like buff, which now also correctly removes all determental effects.
+Kayen: Implemented: SE_Purify - Removes determental buffs. Value determines how many buffs are removed.
+Kayen: Added RULE MaxCastTimeReduction - Max percent your spell cast time can be reduced by spell haste(is/was 50%).
+
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: Internal Metronome/Channeling Focus now implemented with bonus, SE_ChannelChanceSpells.
+MISC AA: Concentration now correctly implemented with bonus, SE_ChannelChanceItems.
+MISC AA: Pet Affinity now implemented with bonus, SE_GivePetGroupTarget.
+MISC AA: Spell Casting Expertise, Mastery of the Past ect will prevent fizzles from spells under certain level, SE_MasteryofPast.
+BRD	 AA: Extended Notes/Sionachie's Crescendo will increase ranage of songs with bonus, SE_SongRange.
+BRD	 AA: Jam Fest now implemented with bonus, SE_CastingLevel2.
+CLR  AA: Unfailing Divinity now implemented with bonus SE_Unfailing Divinity.
+CLR  AA: Touch of the Divine now implemented with bonus SE_DivineSave.
+DRU	 AA: Enchanted root/Viscid Root (was implemented completely wrong), now uses bonus SE_RootBreakChance.
+  *If a root is cast on the target and target has this AA it will decrease the chance for that root to break
+   from any damage spells. The damage spells can be cast by any one, not just the client with the bonus.
+   Added RULE: RootBreakFromSpells - Baseline is/was set at 20% chance from nukes.
+
+
+REQUIRED SQL: utils/sql/svn/2188_required_aa_updates	
+OPTIONAL SQL: utils/sql/svn/2188_optional_miscspelleffect_rules
+
 ==08/13/2012==
 Kayen: Update to how chance to hit bonuses are applied.
   *Accuracy spell effect will now stack with Hit Chance spell effect. (Accuracy/15 = 1% chance to hit).

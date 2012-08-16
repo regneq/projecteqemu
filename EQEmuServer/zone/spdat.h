@@ -383,12 +383,12 @@ typedef enum  {
 #define SE_PersistantCasting			229 // implemented
 #define SE_ExtendedShielding			230	// not used as bonus - increase range of /shield ability
 //#define SE_Unknown231					231	// not used *Unknown limit used in AA Overpowering Strikes (Decrease chance stun resist)
-#define SE_DivineSave					232	// implemented (base == % chance on death to insta-res)
+#define SE_DivineSave					232	// implemented (base1 == % chance on death to insta-res) (base2 == spell cast on save)
 #define SE_Metabolism					233	// *not implemented - (Crown of Feathers) Increase metabolism?
 #define SE_ReduceApplyPoisonTime		234	// not implemented as bonus - reduces the time to apply poison
-#define	SE_ChannelingChance				235 // not implemented
+#define	SE_ChannelChanceSpells			235 // implemented[AA] - chance to channel from SPELLS *No longer used on live.
 //#define SE_Unknown236					236	// not used
-#define SE_GivePetGroupTarget			237 // not implemented as bonus(Pet Affinity)
+#define SE_GivePetGroupTarget			237 // implemented[AA] - (Pet Affinity)
 #define SE_IllusionPersistence			238	// *not implemented - lends persistence to your illusionary disguises, causing them to last until you die or the illusion is forcibly removed.
 #define SE_FeignedCastOnChance			239	// *not implemented as bonus - ability gives you an increasing chance for your feigned deaths to not be revealed by spells cast upon you. 
 //#define SE_Unknown240					240	// not used  [Likely related to above - you become immune to feign breaking on a resisted spell and have a good chance of feigning through a spell that successfully lands upon you.]
@@ -411,12 +411,12 @@ typedef enum  {
 #define SE_PetDiscipline				257 // not implemented as bonus - /pet hold
 #define SE_TripleBackstab				258 // implemented[AA] - chance to perform a triple backstab
 #define SE_CombatStability				259 // implemented[AA] - damage mitigation
-#define SE_AddInstrumentMod				260 // *not implemented
+#define SE_AddSingingMod				260 // *not implemented
 //#define SE_Unknown261					261	// not used
 #define SE_RaiseStatCap					262 // implemented
 #define	SE_TradeSkillMastery			263	// implemented - lets you raise more than one tradeskill above master.
 #define SE_HastenedAASkill				264 // not implemented as bonus
-#define SE_MasteryofPast				265 // not implemented as bonus
+#define SE_MasteryofPast				265 // implemented[AA] - Spells less than effect values level can not be fizzled
 #define SE_ExtraAttackChance			266 // implemented  - increase chance to score an extra attack with a 2-Handed Weapon.
 #define SE_PetDiscipline2				267 // *not implemented - /pet focus, /pet no cast
 #define SE_ReduceTradeskillFail			268 // *not implemented? - reduces chance to fail with given tradeskill by a percent chance
@@ -442,7 +442,7 @@ typedef enum  {
 #define SE_SpecialAttackKBProc			288	// implemented[AA] - Chance to to do a knockback from special attacks [AA Dragon Punch].
 #define SE_ImprovedSpellEffect			289 // implemented 
 #define SE_IncreaseRunSpeedCap			290	// implemented[AA] - increases run speed over the hard cap
-#define SE_Purify						291 // not implemented
+#define SE_Purify						291 // implemented - Removes determental effects
 #define SE_StrikeThrough2				292	// implemented[AA] - increasing chance of bypassing an opponent's special defenses, such as dodge, block, parry, and riposte.
 #define SE_FrontalStunResist			293	// implemented[AA] - Reduce chance to be stunned from front.
 #define SE_CriticalSpellChance			294 // implemented
@@ -495,7 +495,7 @@ typedef enum  {
 #define SE_ItemAttackCapIncrease		341	// *not implemented[AA] - increases the maximum amount of attack you can gain from items.
 #define SE_ImmuneFleeing				342	// implemented - stop mob from fleeing
 #define SE_InterruptCasting				343	// implemented - % chance to interrupt spells being cast every tic. Cacophony (8272)
-#define SE_ChannelChance				344	// implemented[AA] - chance to not have item effects interrupted when you take damage.
+#define SE_ChannelChanceItems			344	// implemented[AA] - chance to not have ITEM effects interrupted when you take damage.
 #define SE_AssassinationLevel			345	// not implemented as bonus - AA Assisination max level to kill
 #define SE_HeadShotLevel				346	// not implemented as bonus - AA HeadShot max level to kill
 #define SE_ExtraArcheryAttack			347	// not implemented - chance at an additional archery attack (consumes arrow)

@@ -304,7 +304,8 @@ struct StatBonuses {
 	sint16 	ProcChance;							// ProcChance/10 == % increase i = CombatEffects
 	sint16 	ExtraAttackChance;
 	sint16	DoTShielding;
-	sint16 	DivineSaveChance;					// Second Chance
+	sint16 	DivineSaveChance[2];				// Second Chance (base1 = chance, base2 = spell on trigger)
+	uint16	DeathSave[4];						// Death Pact [0](value = 1 partial 2 = full) [1]=slot [2]=LvLimit [3]=HealAmt 
 	sint16 	FlurryChance;
 	sint16	Accuracy[HIGHEST_SKILL+2];			//Accuracy/15 == % increase	[Spell Effect: Accuracy)
 	sint16	HundredHands;						//extra haste, stacks with all other haste  i
@@ -364,7 +365,8 @@ struct StatBonuses {
 	uint8	FrontalStunResist;					// Chance to resist a frontal stun
 	sint16  BindWound;							// Increase amount of HP by percent.
 	sint16  MaxBindWound;						// Increase max amount of HP you can bind wound.
-	sint16  ChannelChance;						// Modify chance to channel a spell.
+	sint16  ChannelChanceSpells;				// Modify chance to channel a spell.
+	sint16  ChannelChanceItems;					// Modify chance to channel a items.
 	uint8	SeeInvis;							// See Invs. 
 	uint8	TripleBackstab;						// Chance to triple backstab
 	bool	FrontalBackstabMinDmg;				// Allow frontal backstabs for min damage
@@ -382,6 +384,10 @@ struct StatBonuses {
 	sint16  Ambidexterity;						// Increase chance to duel wield by adding bonus 'skill'.
 	sint16  PetMaxHP;							// Increase the max hp of your pet.
 	sint16  PetFlurry;							// Chance for pet to flurry.
+	uint8	MasteryofPast;						// Can not fizzle spells below this level specified in value.
+	bool	GivePetGroupTarget;					// All pets to recieve group buffs. (Pet Affinity)
+	sint16	RootBreakChance;					// Chance root will break;
+	sint16  UnfailingDivinity;					// Improves chance that DI will fire + increase partial heal.
 };
 
 typedef struct
@@ -727,7 +733,7 @@ bool logpos;
 	void SetRunning(bool val) { m_is_running = val; }
 
 	virtual int GetCasterLevel(int16 spell_id);
-	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0, bool item_bonus = false, int32 ticsremaining = 0, int buffslot=0);
+	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0, bool item_bonus = false, int32 ticsremaining = 0, int buffslot=-1);
 	void NegateSpellsBonuses(int16 spell_id);
 
 	inline sint32	GetMaxMana()	const { return max_mana; }
@@ -900,8 +906,8 @@ bool logpos;
 	inline void SetHasSpellRune(bool hasSpellRune) { m_hasSpellRune = hasSpellRune; }
 	inline void SetHasPartialMeleeRune(bool hasPartialMeleeRune) { m_hasPartialMeleeRune = hasPartialMeleeRune; }
 	inline void SetHasPartialSpellRune(bool hasPartialSpellRune) { m_hasPartialSpellRune = hasPartialSpellRune; }
-	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
-	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
+	//inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
+	//inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	EQApplicationPacket *MakeBuffsPacket(bool for_target = true);
 	void SendBuffsToClient(Client *c);
 	inline Buffs_Struct* GetBuffs() { return buffs; }
@@ -923,6 +929,7 @@ bool logpos;
 	void Kill();
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id);
 	bool TryDeathSave();
+	bool TryDivineSave();	
 	void DoBuffWearOffEffect(uint32 index);
 	void TryTriggerOnCast(uint32 spell_id, bool aa_trigger);
 	void TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance);
@@ -999,6 +1006,7 @@ bool logpos;
 	inline bool HasPet() const { if(GetPetID()==0){return false;} return (entity_list.GetMob(GetPetID()) != 0);}
 	bool HadTempPets() const { return(hasTempPet); }
 	void TempPets(bool i) { hasTempPet = i; }
+	bool HasPetAffinity() { if (aabonuses.GivePetGroupTarget ||	itembonuses.GivePetGroupTarget || spellbonuses.GivePetGroupTarget) return true; return false; }
 
 	inline const bodyType GetBodyType() const { return bodytype; }
 	inline const bodyType GetOrigBodyType() const { return orig_bodytype; }
@@ -1420,6 +1428,7 @@ protected:
 	bool	inWater;	// Set to true or false by Water Detection code if enabled by rules
 	bool	has_virus;	// whether this mob has a viral spell on them
 	int16	viral_spells[MAX_SPELL_TRIGGER*2]; // Stores the spell ids of the viruses on target and caster ids
+	sint16	rooted_mod; //Modifier to root break chance, defined when root is cast on a target.
 
 	Timer	stunned_timer;
 	Timer	spun_timer;

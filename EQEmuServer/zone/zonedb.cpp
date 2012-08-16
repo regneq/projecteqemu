@@ -2022,10 +2022,12 @@ void ZoneDatabase::LoadBuffs(Client *c) {
             else if(IsMagicRuneSpell(spell_id)) {
                 c->SetHasSpellRune(true);
             } 
-            
+           
+			/*
             if(IsDeathSaveSpell(spell_id)) {
                 c->SetDeathSaveChance(true);
             }
+			*/
 		}
 		mysql_free_result(result);
 	}
