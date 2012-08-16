@@ -592,10 +592,6 @@ void Client::CalcAABonuses(StatBonuses* newbon) {
 			}
 		}
 	}
-
-	// Not any other clear place to put this at the moment
-	if(GetAA(aaTouchoftheDivine))
-		this->SetDeathSaveChance(true);
 }
 
 
@@ -911,11 +907,20 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			}
 
-			case SE_ChannelChance:
+			case SE_ChannelChanceItems:
 			{
-				newbon->ChannelChance += base1;
+				if(newbon->ChannelChanceItems < base1)
+					newbon->ChannelChanceItems = base1;
 				break;
 			}
+
+			case SE_ChannelChanceSpells:
+			{
+				if(newbon->ChannelChanceSpells < base1)
+					newbon->ChannelChanceSpells = base1;
+				break;
+			}
+
 
 			case SE_ExtraAttackChance:
 			{
@@ -1147,6 +1152,57 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			{
 				if(newbon->PetFlurry < base1)
 					newbon->PetFlurry = base1;
+				break;
+			}
+
+			case SE_MasteryofPast:
+			{
+				if(newbon->MasteryofPast < base1)
+					newbon->MasteryofPast = base1;
+				break;
+			}
+
+			case SE_BardSongRange:
+			{	
+				if(newbon->SongRange < base1)
+					newbon->SongRange = base1;
+				break;
+			}
+
+			case SE_CastingLevel2:
+			case SE_CastingLevel:
+			{
+				newbon->effective_casting_level += base1;
+				break;
+			}
+
+			case SE_GivePetGroupTarget:
+			{
+				newbon->GivePetGroupTarget = true;
+				break;
+			}
+
+			case SE_RootBreakChance:
+			{
+				if(newbon->RootBreakChance < base1)
+					newbon->RootBreakChance = base1;
+				break;
+			}
+
+			case SE_UnfailingDivinity:
+			{
+				if(newbon->UnfailingDivinity < base1)
+					newbon->UnfailingDivinity = base1;
+				break;
+			}
+
+			case SE_DivineSave:
+			{
+				if(newbon->DivineSaveChance[0] < base1)
+				{
+					newbon->DivineSaveChance[0] = base1;
+					newbon->DivineSaveChance[1] = base2;
+				}
 				break;
 			}
 		}
@@ -1774,15 +1830,31 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->XPRateMod = effect_value;
 				break;
 			}
-			case SE_DivineSave:
+
+			case SE_DeathSave:
 			{
-				if(newbon->DivineSaveChance < effect_value)
+				if(newbon->DeathSave[0] < effect_value)
 				{
-					newbon->DivineSaveChance = effect_value;
-					SetDeathSaveChance(true);
+					newbon->DeathSave[0] = effect_value; //1='Partial' 2='Full'
+					newbon->DeathSave[1] = buffslot;	
+					//These are used in later expansion spell effects.
+					newbon->DeathSave[2] = spells[spell_id].base2[i];//Min level for HealAmt
+					newbon->DeathSave[3] = spells[spell_id].max[i];//HealAmt
 				}
 				break;
 			}
+
+			case SE_DivineSave:
+			{
+				if(newbon->DivineSaveChance[0] < effect_value)
+				{
+					newbon->DivineSaveChance[0] = effect_value;
+					newbon->DivineSaveChance[1] = spells[spell_id].base2[i];
+					//SetDeathSaveChance(true);
+				}
+				break;
+			}
+
 			case SE_Flurry:
 			{
 				if(newbon->FlurryChance < effect_value)
@@ -2125,11 +2197,6 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 
-			case SE_ChannelChance:
-			{
-				newbon->ChannelChance += effect_value;
-				break;
-			}
 
 			case SE_BaseMovementSpeed:
 			{
@@ -2251,6 +2318,48 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			{
 				if(newbon->PetFlurry < effect_value)
 					newbon->PetFlurry = effect_value;
+				break;
+			}
+
+			case SE_MasteryofPast:
+			{
+				if(newbon->MasteryofPast < effect_value)
+					newbon->MasteryofPast = effect_value;
+				break;
+			}
+
+			case SE_GivePetGroupTarget:
+			{
+				newbon->GivePetGroupTarget = true;
+				break;
+			}
+
+			case SE_RootBreakChance:
+			{
+				if(newbon->RootBreakChance < effect_value)
+					newbon->RootBreakChance = effect_value;
+				break;
+			}
+
+
+			case SE_ChannelChanceItems:
+			{
+				if(newbon->ChannelChanceItems < effect_value)
+					newbon->ChannelChanceItems = effect_value;
+				break;
+			}
+
+			case SE_ChannelChanceSpells:
+			{
+				if(newbon->ChannelChanceSpells < effect_value)
+					newbon->ChannelChanceSpells = effect_value;
+				break;
+			}
+
+			case SE_UnfailingDivinity:
+			{
+				if(newbon->UnfailingDivinity < effect_value)
+					newbon->UnfailingDivinity = effect_value;
 				break;
 			}
 		}
@@ -2908,11 +3017,7 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 					spellbonuses.XPRateMod = effect_value;
 					break;
 				}
-				case SE_DivineSave:
-				{
-					SetDeathSaveChance(true);
-					break;
-				}
+
 				case SE_Flurry:
 				{
 					spellbonuses.FlurryChance = effect_value;

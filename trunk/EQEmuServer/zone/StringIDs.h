@@ -150,6 +150,7 @@
 #define CRITICAL_HIT				1023	//%1 scores a critical hit! (%2)
 #define RESISTS_URGE				1025	//%1 resists their urge to flee.
 #define BERSERK_START				1027	//%1 goes into a berserker frenzy!
+#define DEATH_PACT					1028	//%1's death pact has been benevolently fulfilled!
 #define DIVINE_INTERVENTION			1029	//%1 has been rescued by divine intervention!
 #define BERSERK_END					1030	//%1 is no longer berserk.
 #define GATES						1031	//%1 Gates.

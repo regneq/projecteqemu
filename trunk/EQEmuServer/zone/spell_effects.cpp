@@ -1527,6 +1527,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Root: %+i", effect_value);
 #endif
 				rooted = true;
+				rooted_mod = 0;
+				
+				if (caster){
+					rooted_mod = caster->aabonuses.RootBreakChance + 
+								 caster->itembonuses.RootBreakChance + 
+								 caster->spellbonuses.RootBreakChance;
+				}
+
 				break;
 			}
 
@@ -2263,49 +2271,22 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Death Save: %+i", effect_value);
 #endif
+				int8 BonusChance = 0;
 				if(caster) {
-					int8 SuccessChance = 0;
-					float BaseChance = 0.00f;
-					float BonusChance = 0.00f;
 
-					switch(effect_value) {
-						case 1: {
-							BaseChance = 0.10f;
-							break;
-						}
-						case 2: {
-							BaseChance = 0.30f;
-							break;
-						}
-						default: {
-							LogFile->write(EQEMuLog::Error, "Unknown SE_DeathSave effect value in spell: %s (%i).", spells[spell_id].name, spell_id);
-						}
-					}
-
-					switch(caster->GetAA(aaUnfailingDivinity)) {
-						case 1: {
-							BonusChance = 0.10f;
-							break;
-						}
-						case 2: {
-							BonusChance = 0.20f;
-							break;
-						}
-						case 3: {
-							BonusChance = 0.30f;
-							break;
-						}
-					}
-
-					SuccessChance = (((float)GetCHA() * 0.0005f) + BaseChance + BonusChance) * 100;
-						
-#ifdef SPELL_EFFECT_SPAM
-					snprintf(effect_desc, _EDLEN, "Death Save Chance: %+i", SuccessChance);
-#endif
-					buffs[buffslot].deathSaveSuccessChance = SuccessChance;
-					buffs[buffslot].deathsaveCasterAARank = caster->GetAA(aaUnfailingDivinity);
-					SetDeathSaveChance(true);
+					BonusChance = caster->aabonuses.UnfailingDivinity + 
+								  caster->itembonuses.UnfailingDivinity + 
+								  caster->spellbonuses.UnfailingDivinity;
 				}
+											
+#ifdef SPELL_EFFECT_SPAM
+					//snprintf(effect_desc, _EDLEN, "Death Save Chance: %+i", SuccessChance);
+#endif
+					//buffs[buffslot].deathSaveSuccessChance = SuccessChance;
+					//buffs[buffslot].deathsaveCasterAARank = caster->GetAA(aaUnfailingDivinity);
+					buffs[buffslot].deathsaveCasterAARank = BonusChance;
+					//SetDeathSaveChance(true);
+				
 
 				break;
 			}
@@ -2490,6 +2471,27 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					caster->Taunt(this->CastToNPC(), false,  spell.base[i]);
 			}
 
+			case SE_Purify:
+			{
+				/*
+				Guessing as to exactly how this effect works. 
+				All spells that utilize it 'remove all determental effects'
+				with a value of (20). Lets assume the value determines
+				how many determental effects can be removed.
+				*/
+				uint32 buff_count = GetMaxTotalSlots();
+				int FadeCount = 0;
+
+				for (int j = 0; j <= buff_count; j++) {
+					if(buffs[j].spellid != SPELL_UNKNOWN) {
+						if((FadeCount <= spell.base[i]) && IsDetrimentalSpell(buffs[j].spellid)){
+							BuffFadeBySlot(j, false);
+							FadeCount++;
+						}
+					}
+				}
+			}
+
 			// Handled Elsewhere
 			case SE_ImmuneFleeing:
 			case SE_NegateSpellEffect:
@@ -2579,7 +2581,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_AttackSpeed2:
 			case SE_AttackSpeed3:
 			case SE_AttackSpeed4:
-			case SE_Purify:
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:
@@ -2679,7 +2680,18 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_FrontalStunResist:
 			case SE_ImprovedBindWound:
 			case SE_MaxBindWound:
-			case SE_ChannelChance:
+			case SE_CombatStability:
+			case SE_PetAvoidance:
+			case SE_GiveDoubleRiposte:
+			case SE_Ambidexterity:
+			case SE_PetMaxHP:
+			case SE_PetFlurry:
+			case SE_MasteryofPast:
+			case SE_GivePetGroupTarget:
+			case SE_RootBreakChance:
+			case SE_UnfailingDivinity:
+			case SE_ChannelChanceSpells:
+			case SE_ChannelChanceItems:
 			{
 				break;
 			}
@@ -3486,6 +3498,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_Root:
 			{
 				rooted = false;
+				rooted_mod = 0;
 				break;
 			}
 
@@ -4759,121 +4772,138 @@ uint16 Mob::GetProcID(uint16 spell_id, uint8 effect_index) {
 	}
 }
 
-bool Mob::TryDeathSave() {
-	bool Result = false;
+bool Mob::TryDivineSave() {
 
-	int aaClientTOTD = IsClient() ? CastToClient()->GetAA(aaTouchoftheDivine) : -1;
-	int8 SuccessChance = IsClient() ? (1.2 * CastToClient()->GetAA(aaTouchoftheDivine)) : 0;
-	SuccessChance += spellbonuses.DivineSaveChance + itembonuses.DivineSaveChance;
-	int SaveRoll = MakeRandomInt(0, 100);
+	/*
+	How Touch of the Divine AA works:
+	-Gives chance to avoid death when client is killed.
+	-Chance is determined by the AA value. (base1)
+	-Spell can be triggered from divine save (base2) in this case a Heal
+	Note: Heal value does not and should not increase from more levels of this AA.
+	-If chance is met, a heal is done and a divine aura like effect 'Touch of the Divine'
+	is applied to the client. Determintal spell effects are removed.
+	*/
+	sint16 SuccessChance = aabonuses.DivineSaveChance[0] + itembonuses.DivineSaveChance[0] + spellbonuses.DivineSaveChance[0];
 
-	if (SuccessChance > 0)
+	if (SuccessChance)
 	{
-		LogFile->write(EQEMuLog::Debug, "%s chance for a divine save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
-		if (SaveRoll <= SuccessChance)
+		if (MakeRandomInt(0, 100) <= SuccessChance)
 		{
-			Result = true;
-			/*
-			int touchHealSpellID = 4544;
-			switch (aaClientTOTD) {
-				case 1:
-					touchHealSpellID = 4544;
-					break;
-				case 2:
-					touchHealSpellID = 4545;
-					break;
-				case 3:
-					touchHealSpellID = 4546;
-					break;
-				case 4:
-					touchHealSpellID = 4547;
-					break;
-				case 5:
-					touchHealSpellID = 4548;
-					break;
-			} */
-
-			// The above spell effect is not currently working. So, do a manual heal instead:
-
-			float touchHealAmount = 0;
-			switch (aaClientTOTD) {
-				case 1:
-					touchHealAmount = 0.15;
-					break;
-				case 2:
-					touchHealAmount = 0.3;
-					break;
-				case 3:
-					touchHealAmount = 0.6;
-					break;
-				case 4:
-					touchHealAmount = 0.8;
-					break;
-				case 5:
-					touchHealAmount = 1.0;
-					break;
-				default:
-					touchHealAmount = 0.05; // No AA, still get small heal from Divine Save
-			}
-
-			this->Message(0, "Divine power heals your wounds.");
-			SetHP(this->max_hp * touchHealAmount);
-
+			int32 HealAmt = 0;
 			BuffFadeByEffect(SE_DivineSave);
-			// and "Touch of the Divine", an Invulnerability/HoT/Purify effect, only one for all 5 levels
-			SpellOnTarget(4789, this);
+			//Touch of the Divine=4789, an Invulnerability/HoT/Purify effect hard coded to trigger if spell effect is defined from base2.
+			if (aabonuses.DivineSaveChance[1] || itembonuses.DivineSaveChance[1] || spellbonuses.DivineSaveChance[1]) {
+			
+				SetHP(1);
 
-			return Result;
-		}
-	}
+				if (aabonuses.DivineSaveChance[1])
+					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
 
-	int buffSlot = GetBuffSlotFromType(SE_DeathSave);
+				if (itembonuses.DivineSaveChance[1])
+					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
 
-	if(buffSlot >= 0)
-	{
-		SuccessChance = buffs[buffSlot].deathSaveSuccessChance;
-		int8 CasterUnfailingDivinityAARank = buffs[buffSlot].deathsaveCasterAARank;
-		int16 BuffSpellID = buffs[buffSlot].spellid;
-		SaveRoll = MakeRandomInt(0, 100);
+				if (spellbonuses.DivineSaveChance[1])
+					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
 
-		LogFile->write(EQEMuLog::Debug, "%s chance for a death save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
-
-		if(SuccessChance >= SaveRoll) {
-			// Success
-			Result = true;
-
-			if(IsFullDeathSaveSpell(BuffSpellID)) {
-				// Lazy man's full heal.
-				SetHP(50000);
-			}
-			else {
-				SetHP(300);
-			}
-
-			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, DIVINE_INTERVENTION, GetCleanName());
-
-			// Fade the buff
-			BuffFadeBySlot(buffSlot);
-
-			if (spellbonuses.DivineSaveChance + itembonuses.DivineSaveChance == 0) // Don't turn this off if we still have Divine Save
-				SetDeathSaveChance(false);
-		}
-		else if (CasterUnfailingDivinityAARank >= 1) {
-			// Roll the virtual dice to see if the target atleast gets a heal out of this
-			SuccessChance = 30;
-			SaveRoll = MakeRandomInt(0, 100);
-
-			LogFile->write(EQEMuLog::Debug, "%s chance for a Unfailing Divinity AA proc was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
-
-			if(SuccessChance >= SaveRoll) {
-				// Yep, target gets a modest heal
-				SetHP(1500);
-				Result = true; // This is technically a save, was giving this heal but still killing you
+				SpellOnTarget(4789, this);
+				SendHPUpdate();
+				return true;
 			}
 		}
 	}
+	return false;
+}
 
-	return Result;
+bool Mob::TryDeathSave() {
+
+	/*
+	How Death Save works: 
+	-Chance for Death Save to fire is the same for Death Pact/Divine Intervention
+	-Base value of these determines amount healed (1=partial(300HP), 2='full (8000HP)) HARD CODED
+	-Charisma of client who has the effect determines fire rate, parses show this clearly with ratio used.
+	-Unfailing Divinity AA - Allows for a chance to give a heal for a percentage of the orginal value
+	 when your innate chance fails and removes the buff. The spell effect for Unfailing Divinity gives 
+	 the a value of a heal modifier of the base effects heal. 
+	 Ie. Divine Intervention is 8000 HP Max UD1=20, therefore heal is 8000*20/100
+	-No evidence of chance rate increasing between UD1-3, numbers indicate it uses same CHA rate as first DI.
+	-In later expansions this SE_DeathSave was given a level limit and a heal value in its effect data.
+	*/
+
+	if (spellbonuses.DeathSave[0]){
+
+		int SuccessChance = 0;
+		int buffSlot = spellbonuses.DeathSave[1];
+		int8 UD_HealMod = buffs[buffSlot].deathsaveCasterAARank; //Contains value of UD heal modifier.
+		int32 HealAmt = 300; //Death Pact max Heal
+
+		if(buffSlot >= 0){
+
+			SuccessChance = ( (GetCHA() * (RuleI(Spells, DeathSaveCharismaMod))) + 1) / 10; //(CHA Mod Default = 3)
+
+			if (SuccessChance > 95)
+				SuccessChance = 95;
+
+			if(SuccessChance >= MakeRandomInt(0, 100)) {
+				
+				if(spellbonuses.DeathSave[0] == 2) 
+					HealAmt = RuleI(Spells, DivineInterventionHeal); //8000HP is how much LIVE Divine Intervention max heals 
+
+				//Check if bonus Heal amount can be applied ([3] Bonus Heal [2] Level limit)
+				if (spellbonuses.DeathSave[3] && (GetLevel() >= spellbonuses.DeathSave[2]))
+					HealAmt += spellbonuses.DeathSave[3];
+
+				if ((GetMaxHP() - GetHP()) < HealAmt)
+					HealAmt = GetMaxHP() - GetHP();
+
+				SetHP((GetHP()+HealAmt));
+				Message(263, "The gods have healed you for %i points of damage.", HealAmt);
+
+				if(spellbonuses.DeathSave[0] == 2) 
+					entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, DIVINE_INTERVENTION, GetCleanName());
+				else 
+					entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, DEATH_PACT, GetCleanName());
+
+				SendHPUpdate();
+				BuffFadeBySlot(buffSlot);
+				return true;
+			}
+			else if (UD_HealMod) {
+
+				SuccessChance = ((GetCHA() * (RuleI(Spells, DeathSaveCharismaMod))) + 1) / 10;
+
+				if (SuccessChance > 95)
+					SuccessChance = 95;
+
+				if(SuccessChance >= MakeRandomInt(0, 100)) {
+	
+					if(spellbonuses.DeathSave[0] == 2) 
+						HealAmt = RuleI(Spells, DivineInterventionHeal);  
+
+					//Check if bonus Heal amount can be applied ([3] Bonus Heal [2] Level limit)
+					if (spellbonuses.DeathSave[3] && (GetLevel() >= spellbonuses.DeathSave[2]))
+						HealAmt += spellbonuses.DeathSave[3];
+
+					HealAmt = HealAmt*UD_HealMod/100;
+
+					if ((GetMaxHP() - GetHP()) < HealAmt)
+						HealAmt = GetMaxHP() - GetHP();
+			
+					SetHP((GetHP()+HealAmt)); 
+					Message(263, "The gods have healed you for %i points of damage.", HealAmt);
+					
+					if(spellbonuses.DeathSave[0] == 2) 
+						entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, DIVINE_INTERVENTION, GetCleanName());
+					else 
+						entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, DEATH_PACT, GetCleanName());
+					
+					SendHPUpdate();
+					BuffFadeBySlot(buffSlot);
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 bool Mob::AffectedExcludingSlot(int slot, int effect)

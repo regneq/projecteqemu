@@ -36,15 +36,6 @@ float Client::GetActSpellRange(int16 spell_id, float range, bool IsBard)
 
 	extrange += GetFocusEffect(focusRange, spell_id);
 	
-	if (IsBard){
-		if(spellbonuses.SongRange || itembonuses.SongRange){
-			if (IsBardSong(spell_id) && IsBeneficialSpell(spell_id) && IsGroupSpell(spell_id)){	
-				float song_bonus = spellbonuses.SongRange + itembonuses.SongRange;
-				extrange += song_bonus;
-			}
-		}
-	}
-	
 	return (range * extrange) / 100;
 }
 
@@ -537,8 +528,9 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 				break;
 		}
 	}
-	if (cast_reducer > 50)
-		cast_reducer = 50;	//is this just an arbitrary limit?
+
+	if (cast_reducer > RuleI(Spells, MaxCastTimeReduction))
+		cast_reducer = RuleI(Spells, MaxCastTimeReduction);	
 	
 	casttime = (casttime*(100 - cast_reducer)/100);
 	
