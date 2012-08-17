@@ -1808,6 +1808,8 @@ void Client::DoClassAttacks(Mob *ca_target, int16 skill, bool IsRiposte)
 		p_timers.Start(pTimerCombatAbility, ReuseTime);
 	}	
 }
+
+/*
 void Mob::Taunt(NPC* who, bool always_succeed, float chance_bonus) {
 
 	if (who == NULL)
@@ -1891,6 +1893,95 @@ void Mob::Taunt(NPC* who, bool always_succeed, float chance_bonus) {
 		TrySkillProc(who, TAUNT, chance);
 	}
 }
+*/
+
+void Mob::Taunt(NPC* who, bool always_succeed, float chance_bonus) {
+
+	if (who == NULL)
+		return;
+	
+	if(DivineAura())
+		return;
+
+	if(!CombatRange(who))
+		return;
+
+	if(!always_succeed && IsClient())
+		CastToClient()->CheckIncreaseSkill(TAUNT, who, 10);
+	
+	Mob *hate_top = who->GetHateMost();
+
+	float level_difference = GetLevel() - who->GetLevel();
+
+	//Support for how taunt worked pre 2000 on LIVE - Can not taunt NPC over your level.
+	if ((RuleB(Combat,TauntOverLevel) == false) && (level_difference < 0)){
+		Message_StringID(MT_SpellFailure,FAILED_TAUNT); 
+		return;
+	}
+
+	//All values used based on live parses after taunt was updated in 2006.
+	if ((hate_top && hate_top->GetHPRatio() >= 20) || hate_top == NULL) {
+		
+		sint32 newhate = 0;
+		float tauntchance = 50.0f; 
+
+		if(always_succeed) 
+			tauntchance = 101.0f;
+
+		else {
+
+			if (level_difference < 0){
+				tauntchance += level_difference*3;
+				if (tauntchance < 20)
+					tauntchance = 20.0f;
+			}
+
+			else {
+				tauntchance += level_difference*5;
+				if (tauntchance > 65)
+					tauntchance = 65.0f;
+			}
+		}
+
+		//TauntSkillFalloff rate is not based on any real data. Default of 33% gives a reasonable result.
+		if (IsClient() && !always_succeed)
+			tauntchance -= (RuleR(Combat,TauntSkillFalloff) * (CastToClient()->MaxSkill(TAUNT) - GetSkill(TAUNT))); 
+
+		//From SE_Taunt (Does a taunt with a chance modifier)	
+		if (chance_bonus)
+			tauntchance += tauntchance*chance_bonus/100.0f;
+
+		if (tauntchance < 0)
+			tauntchance = 1.0f;
+		
+		tauntchance /= 100.0f;
+
+		if (tauntchance > MakeRandomFloat(0, 1)) {
+			
+			if (hate_top && hate_top != this){
+				newhate = (who->GetNPCHate(hate_top) - who->GetNPCHate(this)) + 1;
+				who->CastToNPC()->AddToHateList(this, newhate);
+			}
+			else
+				who->CastToNPC()->AddToHateList(this,12);
+				
+			if (who->CanTalk())
+				who->Say_StringID(SUCCESSFUL_TAUNT,GetCleanName()); 
+		}
+		else{
+			Message_StringID(MT_SpellFailure,FAILED_TAUNT); 
+		}
+	}
+
+	else
+		Message_StringID(MT_SpellFailure,FAILED_TAUNT); 
+
+	if (HasSkillProcs()){
+		float chance = (float)TauntReuseTime*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
+		TrySkillProc(who, TAUNT, chance);
+	}
+}
+
 
 void Mob::InstillDoubt(Mob *who) {
 	//make sure we can use this skill

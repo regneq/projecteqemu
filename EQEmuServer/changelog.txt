@@ -1,8 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/17/2012==
+Kayen: Taunt skill updated to work consistent with live.
+  *You can now taunt NPC's over the users level. (RULE: TauntOverLevel)
+  *Taunt success chance should be accurate to live. Penalty of not being at max skill lv can be adjusted with (RULE: Combat:TauntSkillFalloff)
+  *Live messages for taunt success and failure are now implemented. (Note: Only NPC races that can 'talk' will say the success message).
 
+OPTIONAL SQL: utils/sql/svn/2189_optional_taunt_rules 
+  
 ==08/16/2012==
-Kayen: Nearly complete revision of the Death Save and Divine Save effects and related bonuses to be consistent with live.
+Kayen: Complete revision of the Death Save and Divine Save effects and related bonuses to be consistent with live.
   *Death Save (Death Pact/DI) will no longer fire on death. It should only fire when less 15% HP but not killed.
   *Death Save chance is determined soley by charisma of client with the buff. (RULE: DeathSaveCharismaMod)
   *Divine Intervention baseline is now correctly set to 8000HP (from 50k) (RULE: DivineInterventionHeal)
@@ -22,11 +29,11 @@ MISC AA: Internal Metronome/Channeling Focus now implemented with bonus, SE_Chan
 MISC AA: Concentration now correctly implemented with bonus, SE_ChannelChanceItems.
 MISC AA: Pet Affinity now implemented with bonus, SE_GivePetGroupTarget.
 MISC AA: Spell Casting Expertise, Mastery of the Past ect will prevent fizzles from spells under certain level, SE_MasteryofPast.
-BRD	 AA: Extended Notes/Sionachie's Crescendo will increase ranage of songs with bonus, SE_SongRange.
+BRD  AA: Extended Notes/Sionachie's Crescendo will increase ranage of songs with bonus, SE_SongRange.
 BRD	 AA: Jam Fest now implemented with bonus, SE_CastingLevel2.
 CLR  AA: Unfailing Divinity now implemented with bonus SE_Unfailing Divinity.
 CLR  AA: Touch of the Divine now implemented with bonus SE_DivineSave.
-DRU	 AA: Enchanted root/Viscid Root (was implemented completely wrong), now uses bonus SE_RootBreakChance.
+DRU  AA: Enchanted root/Viscid Root (was implemented completely wrong), now uses bonus SE_RootBreakChance.
   *If a root is cast on the target and target has this AA it will decrease the chance for that root to break
    from any damage spells. The damage spells can be cast by any one, not just the client with the bonus.
    Added RULE: RootBreakFromSpells - Baseline is/was set at 20% chance from nukes.

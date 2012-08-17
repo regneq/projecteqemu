@@ -338,6 +338,8 @@ RULE_REAL ( Combat, AvgDefProcsPerMinute, 2.0)
 RULE_REAL ( Combat, DefProcPerMinAgiContrib, 0.075) //How much agility contributes to defensive proc rate
 RULE_INT ( Combat, SpecialAttackACBonus, 15) //Percent amount of damage per AC gained for certain special attacks (damage = AC*SpecialAttackACBonus/100).
 RULE_INT ( Combat, NPCFlurryChance, 20) // Chance for NPC to flurry.
+RULE_BOOL (Combat,TauntOverLevel, 1) //Allows you to taunt NPC's over warriors level.
+RULE_REAL (Combat,TauntSkillFalloff, 0.33)//For every taunt skill point that's not maxed you lose this % chance to taunt.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )
