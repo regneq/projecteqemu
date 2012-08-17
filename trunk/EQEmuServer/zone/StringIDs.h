@@ -166,6 +166,7 @@
 #define DUEL_FINISHED				1088	//dont know text
 #define EATING_MESSAGE				1091	//Chomp, chomp, chomp...  %1 takes a bite from a %2.
 #define DRINKING_MESSAGE			1093	//Glug, glug, glug...  %1 takes a drink from a %2.
+#define SUCCESSFUL_TAUNT            1095    //I'll teach you to interfere with me %3. 
 #define PET_SIT_STRING				1130	//Changing position, Master.
 #define PET_CALMING					1131	//Sorry, Master..calming down.
 #define PET_FOLLOWING				1132	//Following you, Master.
@@ -228,6 +229,7 @@
 #define MELEE_SILENCE				5806	//You *CANNOT* use this melee ability, you are suffering from amnesia!
 #define DISCIPLINE_REUSE_MSG		5807	//You can use the ability %1 again in %2 hour(s) %3 minute(s) %4 seconds.
 #define DISCIPLINE_REUSE_MSG2		5808	//You can use the ability %1 again in %2 minute(s) %3 seconds.
+#define FAILED_TAUNT                5811    //You have failed to taunt your target.
 #define AA_NO_TARGET				5825	//You must first select a target for this ability!
 #define GUILD_BANK_CANNOT_DEPOSIT	6097	// Cannot deposit this item.  Containers must be empty, and only one of each LORE and no NO TRADE or TEMPORARY items may be deposited.
 #define GUILD_BANK_FULL				6098	// There is no more room in the Guild Bank.

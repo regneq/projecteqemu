@@ -328,6 +328,7 @@ public:
 
 	NPC_Emote_Struct* GetNPCEmote(int16 emoteid, int8 event_);
 	void DoNPCEmote(int8 event_, int16 emoteid);
+	bool CanTalk();
 
 protected:
 	
