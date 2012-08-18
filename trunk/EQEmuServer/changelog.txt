@@ -6,8 +6,10 @@ Kayen: Taunt skill updated to work consistent with live.
   *Taunt success chance should be accurate to live. Penalty of not being at max skill lv can be adjusted with (RULE: Combat:TauntSkillFalloff)
   *Live messages for taunt success and failure are now implemented. (Note: Only NPC races that can 'talk' will say the success message).
 Bad_Captain: Bots- Fixed an issue when with bot spell timers that could lead to a crash.
+Kayen: Fixed SQL files from rev2185+ that were not saved as .sql 
 
 OPTIONAL SQL: utils/sql/svn/2189_optional_taunt_rules 
+OPTIONAL SQL: utils/sql/svn/2185_optional_NPCFlurryChance_rule (run this again)
   
 ==08/16/2012==
 Kayen: Complete revision of the Death Save and Divine Save effects and related bonuses to be consistent with live.
