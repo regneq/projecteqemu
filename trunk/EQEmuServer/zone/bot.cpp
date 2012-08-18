@@ -4260,7 +4260,7 @@ void Bot::LoadTimers() {
 	MYSQL_RES* DatasetResult;
 	MYSQL_ROW DataRow;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT bt.TimerID, bt.Value, MAX(sn.recast_time) AS MaxTimer FROM bottimers bt, spells_new sn WHERE bt.BotID = %u AND sn.EndurTimerIndex = (SELECT case WHEN TimerID > %i THEN TimerID - %i ELSE TimerID END AS TimerID FROM bottimers WHERE TimerID = bt.TimerID ) AND sn.classes%i <= %i;", GetBotID(), DisciplineReuseStart-1, GetClass(), GetLevel()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT IfNull(bt.TimerID, 0) As TimerID, IfNull(bt.Value, 0) As Value, IfNull(MAX(sn.recast_time), 0) AS MaxTimer FROM bottimers bt, spells_new sn WHERE bt.BotID = %u AND sn.EndurTimerIndex = (SELECT case WHEN TimerID > %i THEN TimerID - %i ELSE TimerID END AS TimerID FROM bottimers WHERE TimerID = bt.TimerID AND BotID = bt.BotID ) AND sn.classes%i <= %i;", GetBotID(), DisciplineReuseStart-1, DisciplineReuseStart-1, GetClass(), GetLevel()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {
@@ -4269,7 +4269,7 @@ void Bot::LoadTimers() {
 		int32 MaxValue = 0;
 
 		while(DataRow = mysql_fetch_row(DatasetResult)) {
-			TimerID = atoi(DataRow[0]);
+			TimerID = atoi(DataRow[0]) - 1;
 			Value = atoi(DataRow[1]);
 			MaxValue = atoi(DataRow[2]);
 
@@ -4302,7 +4302,7 @@ void Bot::SaveTimers() {
 
 	for(int i = 0; i < MaxTimer; i++) {
 		if(timers[i] > Timer::GetCurrentTime()) {
-			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "REPLACE INTO bottimers (BotID, TimerID, Value) VALUES(%u, %u, %u);", GetBotID(), i, timers[i]), TempErrorMessageBuffer)) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "REPLACE INTO bottimers (BotID, TimerID, Value) VALUES(%u, %u, %u);", GetBotID(), i+1, timers[i]), TempErrorMessageBuffer)) {
 				errorMessage = std::string(TempErrorMessageBuffer);
 			}
 
