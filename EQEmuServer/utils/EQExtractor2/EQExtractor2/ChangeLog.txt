@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==08/22/2012==
+Derision: Changed Base1/Base2 in AA dump to signed Int32
+
 ==08/17/2012==
 Derision: Support for August 15 2012 client.
 
