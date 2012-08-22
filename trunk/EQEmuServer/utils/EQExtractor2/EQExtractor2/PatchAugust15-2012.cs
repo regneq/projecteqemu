@@ -27,7 +27,7 @@ namespace EQExtractor2.Patches
 
             Item NewItem = new Item();
 
-                    Buffer.SetPosition(30);
+            Buffer.SetPosition(30);
             NewItem.MerchantSlot = Buffer.ReadByte();            
             NewItem.Price = Buffer.ReadUInt32();                 
             Buffer.SkipBytes(5);

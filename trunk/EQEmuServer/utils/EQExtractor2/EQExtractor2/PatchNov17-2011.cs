@@ -437,8 +437,8 @@ namespace EQExtractor2.Patches
                 for (int i = 0; i < TotalAbilities; ++i)
                 {
                     UInt32 Ability = Buffer.ReadUInt32();
-                    UInt32 Base1 = Buffer.ReadUInt32();
-                    UInt32 Base2 = Buffer.ReadUInt32();
+                    Int32 Base1 = Buffer.ReadInt32();
+                    Int32 Base2 = Buffer.ReadInt32();
                     UInt32 Slot = Buffer.ReadUInt32();
 
                     OutputFile.WriteLine(String.Format("    Ability:\t{0}\tBase1:\t{1}\tBase2:\t{2}\tSlot:\t{3}", Ability, Base1, Base2, Slot));

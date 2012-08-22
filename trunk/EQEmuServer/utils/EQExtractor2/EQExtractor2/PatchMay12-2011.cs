@@ -224,8 +224,8 @@ namespace EQExtractor2.Patches
                 for (int i = 0; i < TotalAbilities; ++i)
                 {
                     UInt32 Ability = BitConverter.ToUInt32(Packet, 112 + (i * 16));
-                    UInt32 Base1 = BitConverter.ToUInt32(Packet, 116 + (i * 16));
-                    UInt32 Base2 = BitConverter.ToUInt32(Packet, 120 + (i * 16));
+                    Int32 Base1 = BitConverter.ToInt32(Packet, 116 + (i * 16));
+                    Int32 Base2 = BitConverter.ToInt32(Packet, 120 + (i * 16));
                     UInt32 Slot = BitConverter.ToUInt32(Packet, 124 + (i * 16));
 
                     OutputFile.WriteLine(String.Format("    Ability:\t{0}\tBase1:\t{1}\tBase2:\t{2}\tSlot:\t{3}", Ability, Base1, Base2, Slot));
