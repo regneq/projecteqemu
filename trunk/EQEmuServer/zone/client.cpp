@@ -498,6 +498,17 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.guildrank=guildrank;
 	m_pp.heading = heading;
 	
+	// Akkadius (Uleat): Temp Hack for signed values until we get the root of the problem changed over to signed...
+	if (m_pp.copper < 0) { m_pp.copper = 0; }
+	if (m_pp.silver < 0) { m_pp.silver = 0; }
+	if (m_pp.gold < 0) { m_pp.gold = 0; }
+	if (m_pp.platinum < 0) { m_pp.platinum = 0; }
+	if (m_pp.copper_bank < 0) { m_pp.copper_bank = 0; }
+	if (m_pp.silver_bank < 0) { m_pp.silver_bank = 0; }
+	if (m_pp.gold_bank < 0) { m_pp.gold_bank = 0; }
+	if (m_pp.platinum_bank < 0) { m_pp.platinum_bank = 0; }
+
+
 	int spentpoints=0;
 	for(int a=0;a < MAX_PP_AA_ARRAY;a++) {
 		int32 points = aa[a]->value;

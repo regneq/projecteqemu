@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/27/2012==
+Akkadius: (Uleat) Temporary dupe fix until we can iron this out the way it should be (Not use signed ints in the blob). This should trap a majority of it to client saves.
+Akkadius: Account shared platinum field type change (signed to unsigned) to no longer allow negative values...
+
+REQUIRED SQL: utils/sql/svn/2195_required_sharedplatupdates.sql
+
 ==08/17/2012==
 Kayen: Taunt skill updated to work consistent with live.
   *You can now taunt NPC's over the users level. (RULE: TauntOverLevel)
