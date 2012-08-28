@@ -637,23 +637,23 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		{
 			float a_diff = (atk_roll - mit_roll);
 			float thac0 = attack_rating * RuleR(Combat, ACthac0Factor);
-			d -= 10.0 * (a_diff / thac0);
 			float thac0cap = ((attacker->GetLevel() * 9) + 20);
 			if(thac0 > thac0cap)
 			{
 				thac0 = thac0cap;
 			}
+            d -= 10.0 * (a_diff / thac0);
 		}
 		else if(mit_roll > atk_roll)
 		{
 			float m_diff = (mit_roll - atk_roll);
 			float thac20 = mitigation_rating * RuleR(Combat, ACthac20Factor);
-			d += 10 * (m_diff / thac20);
 			float thac20cap = ((defender->GetLevel() * 9) + 20);
 			if(thac20 > thac20cap)
 			{
 				thac20 = thac20cap;
 			}
+            d += 10 * (m_diff / thac20);
 		}
 
 		if(d < 0.0)

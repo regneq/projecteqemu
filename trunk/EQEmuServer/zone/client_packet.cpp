@@ -9447,6 +9447,24 @@ void Client::Handle_OP_BankerChange(const EQApplicationPacket *app)
 	EQApplicationPacket *outapp=new EQApplicationPacket(OP_BankerChange,NULL,sizeof(BankerChange_Struct));
 	BankerChange_Struct *bc=(BankerChange_Struct *)outapp->pBuffer;
 
+    if(m_pp.platinum < 0) 
+        m_pp.platinum = 0;
+    if(m_pp.gold < 0) 
+        m_pp.gold = 0;
+    if(m_pp.silver < 0) 
+        m_pp.silver = 0;
+    if(m_pp.copper < 0) 
+        m_pp.copper = 0;
+
+    if(m_pp.platinum_bank < 0) 
+        m_pp.platinum_bank = 0;
+    if(m_pp.gold_bank < 0) 
+        m_pp.gold_bank = 0;
+    if(m_pp.silver_bank < 0) 
+        m_pp.silver_bank = 0;
+    if(m_pp.copper_bank < 0) 
+        m_pp.copper_bank = 0;
+
 	uint64 cp = static_cast<uint64>(m_pp.copper) + 
 		    (static_cast<uint64>(m_pp.silver) * 10) + 
 		    (static_cast<uint64>(m_pp.gold) * 100) +

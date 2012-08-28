@@ -513,10 +513,25 @@ void NPC::QueryLoot(Client* to) {
 }
 
 void NPC::AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum) {
-	copper = in_copper;
-	silver = in_silver;
-	gold = in_gold;
-	platinum = in_platinum;
+	if(in_copper >= 0)
+        copper = in_copper;
+    else
+        copper = 0;
+
+    if(in_silver >= 0)
+        silver = in_silver;
+    else
+        silver = 0;
+
+    if(in_gold >= 0)
+        gold = in_gold;
+    else
+        gold = 0;
+
+    if(in_platinum >= 0)
+        platinum = in_platinum;
+    else
+        platinum = 0;
 }
 	  
 void NPC::AddCash() {
