@@ -2108,14 +2108,19 @@ bool Client::TakeMoneyFromPP(uint64 copper, bool updateclient) {
 	}
 }
 
-void Client::AddMoneyToPP(uint64 copper,bool updateclient){
+void Client::AddMoneyToPP(uint64 copper, bool updateclient){
 	uint64 tmp;
 	uint64 tmp2;
 	tmp = copper;
 
 	// Add Amount of Platinum
 	tmp2 = tmp/1000;
-	m_pp.platinum = m_pp.platinum + tmp2;
+    sint32 new_val = m_pp.platinum + tmp2;
+    if(new_val < 0) {
+        m_pp.platinum = 0;
+    } else {
+	    m_pp.platinum = m_pp.platinum + tmp2;
+    }
 	tmp-=tmp2*1000;
 
     //if (updateclient)
@@ -2123,15 +2128,25 @@ void Client::AddMoneyToPP(uint64 copper,bool updateclient){
 
 	// Add Amount of Gold
 	tmp2 = tmp/100;
-	m_pp.gold = m_pp.gold + tmp2;
+    new_val = m_pp.gold + tmp2;
+    if(new_val < 0) {
+        m_pp.gold = 0;
+    } else {
+	    m_pp.gold = m_pp.gold + tmp2;
+    }
 	tmp-=tmp2*100;
 	//if (updateclient)
     //  SendClientMoneyUpdate(2,tmp2);
 
 	// Add Amount of Silver
 	tmp2 = tmp/10;
-	tmp-=tmp2*10;
-	m_pp.silver = m_pp.silver + tmp2;
+    new_val = m_pp.silver + tmp2;
+    if(new_val < 0) {
+        m_pp.silver = 0;
+    } else {
+	    m_pp.silver = m_pp.silver + tmp2;
+    }
+    tmp-=tmp2*10;
     //if (updateclient)
 	//	SendClientMoneyUpdate(1,tmp2);
 
@@ -2139,7 +2154,12 @@ void Client::AddMoneyToPP(uint64 copper,bool updateclient){
 	//tmp	= tmp - (tmp2* 10);
     //if (updateclient)
 	//	SendClientMoneyUpdate(0,tmp);
-	m_pp.copper = m_pp.copper + tmp;
+    new_val = m_pp.copper + tmp2;
+    if(new_val < 0) {
+        m_pp.copper = 0;
+    } else {
+	    m_pp.copper = m_pp.copper + tmp2;
+    }
 
 
 	//send them all at once, since the above code stopped working.
@@ -2154,10 +2174,22 @@ void Client::AddMoneyToPP(uint64 copper,bool updateclient){
 }
 
 void Client::AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, bool updateclient){
-	m_pp.platinum += platinum;
-	m_pp.gold += gold;
-	m_pp.silver += silver;
-	m_pp.copper += copper;
+    
+    sint32 new_value = m_pp.platinum + platinum;
+    if(new_value >= 0 && new_value > m_pp.platinum)    
+        m_pp.platinum += platinum;
+
+    new_value = m_pp.gold + gold;
+    if(new_value >= 0 && new_value > m_pp.gold)    
+        m_pp.gold += gold;
+
+    new_value = m_pp.silver + silver;
+    if(new_value >= 0 && new_value > m_pp.silver)    
+        m_pp.silver += silver;
+
+    new_value = m_pp.copper + copper;
+    if(new_value >= 0 && new_value > m_pp.copper)    
+        m_pp.copper += copper;
 
 	if(updateclient)
 		SendMoneyUpdate();
