@@ -320,6 +320,8 @@ void command_picklock(Client *c, const Seperator *sep);
 void command_qtest(Client *c, const Seperator *sep);
 void command_mysql(Client *c, const Seperator *sep);
 void command_xtargets(Client *c, const Seperator *sep);
+void command_printquestitems(Client *c, const Seperator *sep);
+void command_clearquestitems(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);

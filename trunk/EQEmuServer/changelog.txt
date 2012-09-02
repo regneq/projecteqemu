@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/02/2012==
+cavedude: (image) Added Classic Multiquest support.
+cavedude: Added quest::clearhandin and #clearquestitems so that multiquest can co-exist with out current system without issues.
+
+REQUIRED plugin: utils/defaults/plugins/check_handin.pl (Or use PEQ quests repo)
+
 ==08/27/2012==
 Akkadius: (Uleat) Temporary dupe fix until we can iron this out the way it should be (Not use signed ints in the blob). This should trap a majority of it to client saves.
 Akkadius: Account shared platinum field type change (signed to unsigned) to no longer allow negative values...

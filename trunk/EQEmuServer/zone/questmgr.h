@@ -240,6 +240,11 @@ public:
 	inline ItemInst *GetQuestItem() const {return questitem; }
 	inline bool ProximitySayInUse() { return HaveProximitySays; }
 
+	bool TurnInItem(int32 itm, int charges);
+	void CompleteHandIn();
+	void ResetHandIn();
+	void ClearHandIn();
+
 #ifdef BOTS
 	int createbotcount();
 	int spawnbotcount();
