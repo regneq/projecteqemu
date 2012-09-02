@@ -376,6 +376,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 		if(parse->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
 			// This is a quest NPC
 			quest_npc = true;
+			StoreTurnInItems(tradingWith);
 		}
 
 		int32 items[4]={0};
@@ -2534,5 +2535,22 @@ void Client::BuyerItemSearch(const EQApplicationPacket *app) {
 	_pkt(TRADING__BARTER, outapp);
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+bool Client::StoreTurnInItems(Mob* tradingWith) {
+	
+	if ( !tradingWith || !tradingWith->IsNPC() )
+		return false;
+
+				for (sint16 i=3000; i<=3003; i++) {
+					const ItemInst* inst = m_inv[i];
+					if (inst) {
+						database.logevents(AccountName(),AccountID(),admin,GetName(),tradingWith->GetName(),"Quest Turn In Attempt",inst->GetItem()->Name,22);
+
+						tradingWith->CastToNPC()->AddQuestItem(inst->Clone());
+					}
+				}
+
+	return true;
 }
 

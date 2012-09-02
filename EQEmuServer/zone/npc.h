@@ -330,6 +330,113 @@ public:
 	void DoNPCEmote(int8 event_, int16 emoteid);
 	bool CanTalk();
 
+	void AddQuestItem(ItemInst* inst) { questItems.Insert(inst); }
+
+	void ClearQuestLists()
+	{
+		ClearQuestItems(true);
+		ClearQuestDeleteItems(true);
+	}
+
+	void ResetQuestDeleteList()
+	{
+		ClearQuestDeleteItems(true);
+	}
+	
+	
+	void ClearQuestItems(bool delete_=false)
+	{
+		LinkedListIterator<ItemInst*> iterator(questItems);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			ItemInst* inst = iterator.GetData();
+			iterator.RemoveCurrent(delete_);
+		}
+
+		questItems.Clear();
+	}
+
+	void ClearQuestDeleteItems(bool delete_=false)
+	{
+		LinkedListIterator<ItemInst*> iterator(questDeletionItems);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			ItemInst* inst = iterator.GetData();
+			iterator.RemoveCurrent(delete_);
+		}
+
+		questDeletionItems.Clear();
+	}
+	
+	ItemInst* FindQuestItemByID(int32 itmID, int charges, bool flagItemForDeletion=false)
+	{
+		LinkedListIterator<ItemInst*> iterator(questItems);
+		iterator.Reset();
+		int totalCharges = 0;
+		while(iterator.MoreElements())
+		{
+			if ( iterator.GetData()->GetItem()->ID == itmID )
+			{
+				totalCharges += 1;
+
+				if ( flagItemForDeletion )
+					questDeletionItems.Insert(iterator.GetData()->Clone());
+				if ( charges > totalCharges )
+				{
+					iterator.Advance();
+					continue;
+				}
+
+				return iterator.GetData();
+			}
+			iterator.Advance();
+		}
+		return NULL;
+	}
+
+	bool DoesQuestItemExist(int32 itmID, int charges, bool flagItemForDeletion=false) { 	
+		ItemInst* inst = FindQuestItemByID(itmID,charges,flagItemForDeletion);
+		if ( inst != NULL )
+		{
+			return true;
+		}
+		else
+			return false;
+	}
+
+	void ClearQuestItem(ItemInst* inst, bool delete_=true)
+	{
+		LinkedListIterator<ItemInst*> iterator(questItems);
+		iterator.Reset();
+
+		while(iterator.MoreElements())
+		{
+			if ( iterator.GetData ()->GetItem()->ID == inst->GetItem()->ID )
+			{
+				iterator.RemoveCurrent(delete_);
+				break;
+			}
+			iterator.Advance();
+		}
+	}
+
+	void RemoveQuestDeleteItems()
+	{
+		LinkedListIterator<ItemInst*> iterator(questDeletionItems);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			ClearQuestItem(iterator.GetData(),true);
+			iterator.RemoveCurrent(true);
+		}
+
+		questDeletionItems.Clear();
+	}
+
+	void PrintOutQuestItems(Client* c);
+
 protected:
 	
 	const NPCType*	NPCTypedata;
@@ -418,6 +525,9 @@ protected:
 	bool ldon_trap_detected;
 	QGlobalCache *qGlobals;
 	uint32 adventure_template_id;
+
+	LinkedList<ItemInst*> questItems;
+	LinkedList<ItemInst*> questDeletionItems;
 
 private:
 	int32	loottable_id;

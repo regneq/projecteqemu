@@ -456,7 +456,9 @@ int command_init(void) {
         command_add("sensetrap", "Analog for ldon sense trap for the newer clients since we still don't have it working.", 0, command_sensetrap) ||
         command_add("picklock", "Analog for ldon pick lock for the newer clients since we still don't have it working.", 0, command_picklock) ||
 		command_add("mysql", "Mysql CLI, see 'help' for options.", 250, command_mysql) ||
-		command_add("xtargets", "Show your targets Extended Targets and optionally set how many xtargets they can have.", 250, command_xtargets) 
+		command_add("xtargets", "Show your targets Extended Targets and optionally set how many xtargets they can have.", 250, command_xtargets) ||
+		command_add("printquestitems","Returns available quest items for multiquesting currently on the target npc.",200,command_printquestitems) ||
+		command_add("clearquestitems","Clears quest items for multiquesting currently on the target npc.",200,command_clearquestitems)
 		)
 	{
 		command_deinit();
@@ -11528,4 +11530,33 @@ void command_xtargets(Client *c, const Seperator *sep)
 	}
 	else
 		t->ShowXTargets(c);
+}
+
+void command_printquestitems(Client *c, const Seperator *sep)
+{
+	if (c->GetTarget() != 0)
+	{
+		if ( c->GetTarget()->IsNPC() )
+			c->GetTarget()->CastToNPC()->PrintOutQuestItems(c);
+		else
+			c->Message(13,"Pick a NPC target.");
+	}
+	else
+			c->Message(13,"Pick a NPC target.");
+}
+
+void command_clearquestitems(Client *c, const Seperator *sep)
+{
+	if (c->GetTarget() != 0)
+	{
+		if ( c->GetTarget()->IsNPC() )
+		{
+			c->GetTarget()->CastToNPC()->ClearQuestLists();
+			c->Message(5,"Quest item list cleared.");
+		}
+		else
+			c->Message(13,"Pick a NPC target.");
+	}
+	else
+			c->Message(13,"Pick a NPC target.");
 }

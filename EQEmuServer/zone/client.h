@@ -1097,6 +1097,8 @@ public:
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
 
+	bool	StoreTurnInItems(Mob* with);
+
 protected:
 	friend class Mob;
 	void CalcItemBonuses(StatBonuses* newbon);

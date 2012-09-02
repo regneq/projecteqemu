@@ -2642,3 +2642,37 @@ const char* QuestManager::GetZoneLongName(const char *zone) {
     return ln.c_str();
 }
 
+bool QuestManager::TurnInItem(int32 itm, int charges)
+{
+	if ( owner && owner->IsNPC() )
+	{
+		if ( owner->CastToNPC()->DoesQuestItemExist(itm, charges, true) )
+			return true;
+	}
+
+	return false;
+}
+
+void QuestManager::CompleteHandIn()
+{
+	if ( owner && owner->IsNPC() )
+	{
+		owner->CastToNPC()->RemoveQuestDeleteItems();
+	}
+}
+
+void QuestManager::ResetHandIn()
+{
+	if ( owner && owner->IsNPC() )
+	{
+		owner->CastToNPC()->ResetQuestDeleteList();
+	}
+}
+
+void QuestManager::ClearHandIn()
+{
+	if ( owner && owner->IsNPC() )
+	{
+		owner->CastToNPC()->ClearQuestLists();
+	}
+}
