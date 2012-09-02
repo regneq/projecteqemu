@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==09/02/2012==
+Akkadius: First set of efforts to clean up Windows compiling. See:
+	http://www.eqemulator.org/forums/showthread.php?p=212217#post212217
+	- Cleaned up x64 compiles, x86 compiles coming right up
+	- Removed pragma comments and forced them to be used under 'Additional Dependencies' (Windows)
+
+==09/02/2012==
 cavedude: (image) Added Classic Multiquest support.
 cavedude: Added quest::clearhandin and #clearquestitems so that multiquest can co-exist with out current system without issues.
 

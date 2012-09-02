@@ -22,17 +22,6 @@ Eglin
 #define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
 #endif
 #endif
-//#pragma message("You may want to ensure that you add perl\\lib\\CORE to your include path")
-//#pragma message("You may want to ensure that your build settings look like `perl -MExtUtils::Embed -e ccopts -e ldopts`")
-//link against your Perl Lib
-//#pragma comment(lib, "perl56.lib")
-#ifdef _WINDOWS
-#if _MSC_VER >= 1600 // for V100+ toolset
-#pragma comment(lib, "perl514.lib")
-#else
-#pragma comment(lib, "perl510.lib")
-#endif
-#endif
 
 #ifdef EMBPERL_XS
 EXTERN_C XS(boot_quest);
