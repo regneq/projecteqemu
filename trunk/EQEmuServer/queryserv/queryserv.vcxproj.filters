@@ -155,6 +155,9 @@
     <ClCompile Include="queryservconfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lfguild.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database.h">
@@ -272,6 +275,9 @@
       <Filter>Common Header Files</Filter>
     </ClInclude>
     <ClInclude Include="queryservconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lfguild.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

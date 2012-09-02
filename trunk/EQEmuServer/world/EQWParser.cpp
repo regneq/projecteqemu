@@ -35,13 +35,6 @@ using namespace std;
 #endif
 #endif
 
-#ifdef _WINDOWS
-#if _MSC_VER >= 1600 // for V100+ toolset
-#pragma comment(lib, "perl514.lib")
-#else
-#pragma comment(lib, "perl510.lib")
-#endif
-#endif
 
 XS(XS_EQWIO_PRINT);
 
