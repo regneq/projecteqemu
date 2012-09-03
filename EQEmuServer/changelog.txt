@@ -6,6 +6,9 @@ Akkadius: First set of efforts to clean up Windows compiling. See:
 	- Cleaned up x64 compiles, x86 compiles coming right up
 	- Removed pragma comments and forced them to be used under 'Additional Dependencies' (Windows)
 Akkadius: Fixed-up Release & Debug 32-bit compiles
+Akkadius: Uploading includes and libraries for both x64 and x86 so that VS2010 can automatically reference those libraries and requires no configuration
+Akkadius: All project types have had includes and libraries linked to the appropriate machine type
+Akkadius: Most project types have been set to /MP (Multiprocessor compile) and Warning Level 3 to filter some of the garbage
 
 ==09/02/2012==
 cavedude: (image) Added Classic Multiquest support.
