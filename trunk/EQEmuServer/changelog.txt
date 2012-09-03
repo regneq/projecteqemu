@@ -8,7 +8,18 @@ Akkadius: First set of efforts to clean up Windows compiling. See:
 Akkadius: Fixed-up Release & Debug 32-bit compiles
 Akkadius: Uploading includes and libraries for both x64 and x86 so that VS2010 can automatically reference those libraries and requires no configuration
 Akkadius: All project types have had includes and libraries linked to the appropriate machine type
-Akkadius: Most project types have been set to /MP (Multiprocessor compile) and Warning Level 3 to filter some of the garbage
+Akkadius: Most project types have been set to /MP (Multiprocessor compile) and Warning Level 1 to filter most of the garbage
+Akkadius: Got the rest of the VS2010 compiles working on a fresh SVN:
+		Debug x64|x64 = Debug x64|x64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		DebugBots x64|x64 = DebugBots x64|x64
+		DebugBots|Win32 = DebugBots|Win32
+		Release x64|x64 = Release x64|x64
+		Release|Win32 = Release|Win32
+		ReleaseBots x64|x64 = ReleaseBots x64|x64
+		ReleaseBots|Win32 = ReleaseBots|Win32
+		ReleaseBots|x64 = ReleaseBots|x64
 
 ==09/02/2012==
 cavedude: (image) Added Classic Multiquest support.
