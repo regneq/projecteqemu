@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==09/02/2012==
+==09/04/2012==
+cavedude: Added NPC:UseMultiQuest rule to turn multiquest support on or off.
+
+OPTIONAL SQL: INSERT INTO `rule_values` VALUES (1, 'NPC:UseMultiQuest', 'false', 'If true, NPC will remember items handed to them for classic multiquest support.');
+
+==09/03/2012==
 Akkadius: First set of efforts to clean up Windows compiling. See:
 	http://www.eqemulator.org/forums/showthread.php?p=212217#post212217
 	- Cleaned up x64 compiles, x86 compiles coming right up

@@ -376,7 +376,9 @@ void Client::FinishTrade(Mob* tradingWith) {
 		if(parse->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
 			// This is a quest NPC
 			quest_npc = true;
-			StoreTurnInItems(tradingWith);
+			if(RuleB(NPC, UseMultiQuest)){
+				StoreTurnInItems(tradingWith);
+			}
 		}
 
 		int32 items[4]={0};
