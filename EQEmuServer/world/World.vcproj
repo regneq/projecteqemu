@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib zlib.lib mysqlclient.lib advapi32.lib shell32.lib"
+				AdditionalDependencies="perl512.lib odbc32.lib odbccp32.lib wsock32.lib zlib.lib mysqlclient.lib advapi32.lib shell32.lib"
 				OutputFile=".\../build/World.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
