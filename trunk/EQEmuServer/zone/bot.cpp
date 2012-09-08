@@ -54,6 +54,15 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	SetHasBeenSummoned(false);
 	SetTaunting(GetClass() == WARRIOR);
 	SetDefaultBotStance();
+	SetInHealRotation(false);
+	SetHealRotationActive(false);
+	SetHasHealedThisCycle(false);
+	ClearHealRotationLeader();
+	ClearHealRotationTargets();
+	ClearHealRotationMembers();
+	SetHealRotationNextHealTime(0);
+	SetHealRotationTimer(0);
+	SetNumHealRotationMembers(0);
 	CalcChanceToCast();
 	rest_timer.Disable();
 
@@ -74,9 +83,12 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	mana_regen = CalcManaRegen();
 	end_regen = CalcEnduranceRegen();
 
-	for (int i = 0; i < MaxTimer; i++)
-	{
+	for (int i = 0; i < MaxTimer; i++) {
 		timers[i] = 0;
+	}
+
+	for(int i = 0; i < MaxHealRotationTargets; i++) {
+		_healRotationTargets[i] = 0;	
 	}
 
 	strcpy(this->name, this->GetCleanName());
@@ -132,6 +144,16 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	LoadStance();
 	SetTaunting((GetClass() == WARRIOR || GetClass() == PALADIN || GetClass() == SHADOWKNIGHT) && (GetBotStance() == BotStanceAggressive));
 	SetGroupMessagesOn(GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == ENCHANTER);
+	SetInHealRotation(false);
+	SetHealRotationActive(false);
+	SetHasHealedThisCycle(false);
+	SetHealRotationUseFastHeals(false);
+	ClearHealRotationLeader();
+	ClearHealRotationTargets();
+	ClearHealRotationMembers();
+	SetHealRotationNextHealTime(0);
+	SetHealRotationTimer(0);
+	SetNumHealRotationMembers(0);
 	CalcChanceToCast();
 	rest_timer.Disable();
 
@@ -151,9 +173,12 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 			GetBotOwner()->Message(13, TempErrorMessage.c_str());
 	}
 
-	for (int i = 0; i < MaxTimer; i++)
-	{
+	for (int i = 0; i < MaxTimer; i++) {
 		timers[i] = 0;
+	}
+
+	for(int i = 0; i < MaxHealRotationTargets; i++) {
+		_healRotationTargets[i] = 0;	
 	}
 
 	LoadTimers();
@@ -4795,6 +4820,16 @@ void Bot::AI_Process() {
 		return;
 	}
 	
+	if(GetHealRotationActive() && GetHealRotationTarget() && !GetHasHealedThisCycle() && GetHealRotationNextHealTime() < Timer::GetCurrentTime()) {
+		if(AIHealRotation(GetHealRotationTarget(), GetHealRotationUseFastHeals())) {
+			SetHasHealedThisCycle(true);
+			NotifyNextHealRotationMember();
+		}
+		else {
+			NotifyNextHealRotationMember(true);
+		}
+	}
+	
 	if(GetHasBeenSummoned()) {		
 		if(IsBotCaster() || IsBotArcher()) {
 			if (AImovement_timer->Check()) {
@@ -7612,6 +7647,10 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 				}
 			}
 		}
+	}
+
+	if(GetInHealRotation()) {
+		GetHealRotationLeader()->RemoveHealRotationMember(this);
 	}
 
 	entity_list.RemoveBot(this->GetID());
@@ -11619,6 +11658,10 @@ void Bot::Camp(bool databaseSave) {
 		RemoveBotFromGroup(this, GetGroup());
 	}
 
+	if(GetInHealRotation()) {
+		GetHealRotationLeader()->RemoveHealRotationMember(this);
+	}
+
 	if(databaseSave)
 		Save();
 
@@ -11750,6 +11793,30 @@ bool Bot::IsGroupPrimarySlower() {
 			}
 		}
 	}
+	
+	return result;
+}
+
+bool Bot::CanHeal() {
+	bool result = false;
+	
+	if(!AI_HasSpells())
+		return false;
+
+	BotSpell botSpell;
+	botSpell.SpellId = 0;
+	botSpell.SpellIndex = 0;
+	botSpell.ManaCost = 0;
+
+	botSpell = GetFirstBotSpellBySpellType(this, SpellType_Heal);
+
+	if(botSpell.SpellId != 0){
+		result = true;
+	}
+
+	/*if(GetFirstBotSpellBySpellType(this, SpellType_Heal)){
+		result = true;
+	}*/
 	
 	return result;
 }
@@ -12322,6 +12389,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot stance [name] [stance (id)|list] - Sets/lists stance for named bot (Passive = 0, Balanced = 1, Efficient = 2, Reactive = 3, Aggressive = 4, Burn = 5, BurnAE = 6)");
 		c->Message(0, "#bot groupmessages [on|off] [bot name|all] - Turns group messages on/off for named bot/all bots.");
 		c->Message(0, "#bot defensive  [bot name] - Causes warrior or knight bot to use defensive discipline / buff.");
+		c->Message(0, "#bot healrotation help - Displays the commands available to manage BOT heal rotations.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
@@ -15941,6 +16009,641 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 		return;
 	}
+
+	// #bot healrotation ...
+	if(!strcasecmp(sep->arg[1], "healrotation")) {
+		if(!strcasecmp(sep->arg[2], "help")) {
+			c->Message(0, "#bot healrotation help - will show this help.");
+			c->Message(0, "#bot healrotation create <bot healrotation leader name> <timer> <fasthealson | fasthealsoff> [target]. This will create a heal rotation with the designated leader.");
+			c->Message(0, "#bot healrotation addmember <bot healrotation leader name> <bot healrotation member name to add> ");
+			c->Message(0, "#bot healrotation removemember <bot healrotation leader name> <bot healrotation member name to remove>");
+			c->Message(0, "#bot healrotation addtarget <bot healrotation leader name> [bot healrotation target name to add] ");
+			c->Message(0, "#bot healrotation removetarget <bot healrotation leader name> <bot healrotation target name to remove>");
+			c->Message(0, "#bot healrotation cleartargets <bot healrotation leader name>");
+			c->Message(0, "#bot healrotation fastheals <bot healrotation leader name> <on | off>");
+			c->Message(0, "#bot healrotation start <bot healrotation leader name | all>");
+			c->Message(0, "#bot healrotation stop <bot healrotation leader name | all>");
+			c->Message(0, "#bot healrotation list <bot healrotation leader name | all>");
+
+			return;
+		}
+
+		if(!strcasecmp(sep->arg[2], "create")) {
+			if(sep->argnum == 5 || sep->argnum == 6) {	//allows for target or not
+				Bot* leaderBot;
+				
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid heal rotation leader.");
+					return;
+				}
+
+				if(leaderBot) {
+					Mob* target = NULL;
+					int8 timer;
+					bool fastHeals = false;
+
+					timer = atoi(sep->arg[4]);
+
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					if (!(leaderBot->IsBotCaster() && leaderBot->CanHeal())) {	
+						c->Message(13, "Heal rotation members must be able to heal.");
+						return;
+					}
+
+					//get percentage heals
+					if(!strcasecmp(sep->arg[5], "fasthealson"))
+						fastHeals = true;
+					else if(strcasecmp(sep->arg[5], "fasthealsoff")) {
+						c->Message(0, "Usage #bot healrotation create <bot healrotation leader name> <timer> <fasthealson | fasthealsoff> [target].");
+						return;
+					}
+					
+					if(!leaderBot->GetInHealRotation()) {
+						//check for target
+						if(sep->argnum == 6) {
+							std::string targetName = std::string(sep->arg[6]);
+
+							if(!targetName.empty())
+								target = entity_list.GetMob(targetName.c_str());
+							else {
+								c->Message(13, "You must name a valid target.");
+								return;
+							}
+
+							if(!target) {
+								c->Message(13, "You must name a valid target.");
+								return;
+							}
+						}
+
+						//create rotation
+						leaderBot->CreateHealRotation(target, timer);
+						leaderBot->SetHealRotationUseFastHeals(fastHeals);
+						c->Message(0, "Bot heal rotation created successfully.");
+					}
+					else {
+						c->Message(13, "That bot is already in a heal rotation.");
+						return;
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "Usage #bot healrotation create <bot healrotation leader name> <timer> <fasthealson | fasthealsoff> [target].");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "addmember")) {
+			if(sep->argnum == 4) {	
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+
+				if(leaderBot) {
+					Bot* healer;
+					std::string healerName = std::string(sep->arg[4]);
+
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					if(!healerName.empty())
+						healer = entity_list.GetBotByBotName(healerName);
+					else {
+						c->Message(13, "You must name a valid bot.");
+						return;
+					}
+					
+					if(healer) {
+						if (healer->GetBotOwner() != c) {	
+							c->Message(13, "You must target a bot that you own.");
+							return;
+						}
+
+						if (!(healer->IsBotCaster() && healer->CanHeal())) {	
+							c->Message(13, "Heal rotation members must be able to heal.");
+							return;
+						}
+
+						//add to rotation
+						if(leaderBot->AddHealRotationMember(healer)) {
+							c->Message(0, "Bot heal rotation member added successfully.");
+						}
+						else {
+							c->Message(13, "Unable to add bot to rotation. ");
+						}
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation addmember <bot healrotation leader name> <bot healrotation member name to add> ");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "removemember")) {
+			if(sep->argnum == 4) {	
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+
+				if(leaderBot) {
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					Bot* healer;
+					std::string healerName = std::string(sep->arg[4]);
+
+					if(!healerName.empty())
+						healer = entity_list.GetBotByBotName(healerName);
+					else {
+						c->Message(13, "You must name a valid bot.");
+						return;
+					}
+					
+					if(healer) {
+						if (healer->GetBotOwner() != c) {	
+							c->Message(13, "You must target a bot that you own.");
+							return;
+						}
+
+						//remove from rotation
+						if(leaderBot->RemoveHealRotationMember(healer)) {
+							c->Message(0, "Bot heal rotation member removed successfully.");
+						}
+						else {
+							c->Message(13, "Unable to remove bot from rotation. ");
+						}
+					}
+					else {
+						c->Message(13, "You must name a valid bot.");
+						return;
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation removemember <bot healrotation leader name> <bot healrotation member name to remove>");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "addtarget")) {
+			if(sep->argnum == 3 || sep->argnum == 4) {
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid heal rotation leader.");
+					return;
+				}
+
+				if(leaderBot) {
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					Mob* target;
+					std::string targetName = std::string(sep->arg[4]);
+
+					if(!targetName.empty())
+						target = entity_list.GetMob(targetName.c_str());
+					else {
+						if(c->GetTarget() != NULL) {	
+							target = c->GetTarget();
+						}
+					}
+					
+					if(target) {
+						//add target
+						if(leaderBot->AddHealRotationTarget(target)) {
+							c->Message(0, "Bot heal rotation target added successfully.");
+						}
+						else {
+							c->Message(13, "Unable to add rotation target. ");
+						}
+					}
+					else {
+						c->Message(13, "Invalid target.");
+						return;
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation addtarget <bot healrotation leader name> [bot healrotation target name to add] ");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "removetarget")) {
+			if(sep->argnum == 4) {
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid heal rotation leader.");
+					return;
+				}
+
+				if(leaderBot) {
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					Mob* target;
+					std::string targetName = std::string(sep->arg[4]);
+
+					if(!targetName.empty())
+						target = entity_list.GetMob(targetName.c_str());
+					else {
+						c->Message(13, "You must name a valid target.");
+						return;
+					}
+					
+					if(target) {
+						//add to rotation
+						if(leaderBot->RemoveHealRotationTarget(target)) {
+							c->Message(0, "Bot heal rotation target removed successfully.");
+						}
+						else {
+							c->Message(13, "Unable to remove rotation target. ");
+						}
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation removetarget <bot healrotation leader name> <bot healrotation target name to remove>");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "start")) {
+			if(sep->argnum == 3) {
+				if(!strcasecmp(sep->arg[3], "all")) {
+					std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+					for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+						Bot* leaderBot = *botListItr;
+						if(leaderBot->GetInHealRotation() && leaderBot->GetHealRotationLeader() == leaderBot) {
+							//start all heal rotations
+							list<Bot*> rotationMemberList;
+							int index = 0;
+
+							rotationMemberList = GetBotsInHealRotation(leaderBot);
+
+							for(list<Bot*>::iterator rotationMemberItr = rotationMemberList.begin(); rotationMemberItr != rotationMemberList.end(); rotationMemberItr++) {
+								Bot* tempBot = *rotationMemberItr;
+
+								if(tempBot) {
+									tempBot->SetHealRotationActive(true);
+									tempBot->SetHealRotationNextHealTime(Timer::GetCurrentTime() + index * leaderBot->GetHealRotationTimer() * 1000);
+									tempBot->SetHasHealedThisCycle(false);
+								}
+
+								index++;
+							}
+
+							c->Message(0, "Bot heal rotation started successfully.");
+						}
+					}
+				}
+				else {
+					Bot* leaderBot;
+					std::string botName = std::string(sep->arg[3]);
+
+					if(!botName.empty())
+						leaderBot = entity_list.GetBotByBotName(botName);
+					else {
+						c->Message(13, "You must name a valid heal rotation leader.");
+						return;
+					}
+
+					if(leaderBot) {
+						list<Bot*> botList;
+						int index = 0;
+						if (leaderBot->GetBotOwner() != c) {	
+							c->Message(13, "You must target a bot that you own.");
+							return;
+						}
+
+						botList = GetBotsInHealRotation(leaderBot);
+
+						for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+							Bot* tempBot = *botListItr;
+
+							if(tempBot) {
+								tempBot->SetHealRotationActive(true);
+								tempBot->SetHealRotationNextHealTime(Timer::GetCurrentTime() + index * leaderBot->GetHealRotationTimer() * 1000);
+								tempBot->SetHasHealedThisCycle(false);
+							}
+
+							index++;
+						}
+
+						c->Message(0, "Bot heal rotation started successfully.");
+					}
+					else {
+						c->Message(13, "You must name a valid bot.");
+						return;
+					}
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation start <bot healrotation leader name | all>");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "stop")) {
+			if(sep->argnum == 3) {
+				if(!strcasecmp(sep->arg[3], "all")) {
+					std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+					for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+						Bot* leaderBot = *botListItr;
+						if(leaderBot->GetInHealRotation() && leaderBot->GetHealRotationLeader() == leaderBot) {
+							//start all heal rotations
+							list<Bot*> rotationMemberList;
+
+							rotationMemberList = GetBotsInHealRotation(leaderBot);
+
+							for(list<Bot*>::iterator rotationMemberItr = rotationMemberList.begin(); rotationMemberItr != rotationMemberList.end(); rotationMemberItr++) {
+								Bot* tempBot = *rotationMemberItr;
+
+								if(tempBot) {
+									tempBot->SetHealRotationActive(false);
+									tempBot->SetHasHealedThisCycle(false);
+								}
+							}
+
+							c->Message(0, "Bot heal rotation started successfully.");
+						}
+					}
+				}
+				else {
+					Bot* leaderBot;
+					std::string botName = std::string(sep->arg[3]);
+
+					if(!botName.empty())
+						leaderBot = entity_list.GetBotByBotName(botName);
+					else {
+						c->Message(13, "You must name a valid heal rotation leader.");
+						return;
+					}
+
+					if(leaderBot) {
+						list<Bot*> botList;
+						if (leaderBot->GetBotOwner() != c) {	
+							c->Message(13, "You must target a bot that you own.");
+							return;
+						}
+
+						botList = GetBotsInHealRotation(leaderBot);
+
+						for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+							Bot* tempBot = *botListItr;
+
+							if(tempBot && tempBot->GetBotOwnerCharacterID() == c->CharacterID()) {
+								tempBot->SetHealRotationActive(false);
+								tempBot->SetHasHealedThisCycle(false);
+							}
+						}
+
+						c->Message(0, "Bot heal rotation stopped successfully.");
+					}
+					else {
+						c->Message(13, "You must name a valid bot.");
+						return;
+					}
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation stop <bot healrotation leader name | all>");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "list")) {
+			if(sep->argnum == 3) {
+				bool showAll = false;
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!strcasecmp(sep->arg[3], "all")) {
+					std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+					for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+						Bot* tempBot = *botListItr;
+						if(tempBot->GetInHealRotation() && tempBot->GetHealRotationLeader() == tempBot) {
+							//list leaders and number of bots per rotation
+							c->Message(0, "Bot Heal Rotation- Leader: %s, Number of Members: %i", tempBot->GetCleanName(), tempBot->GetNumHealRotationMembers());
+						}
+					}
+				}
+				else {
+					std::string botName = std::string(sep->arg[3]);
+
+					if(!botName.empty())
+						leaderBot = entity_list.GetBotByBotName(botName);
+					else {
+						c->Message(13, "You must name a valid heal rotation leader.");
+						return;
+					}
+
+					if(leaderBot) {
+						list<Bot*> botList;
+						if (leaderBot->GetBotOwner() != c) {	
+							c->Message(13, "You must target a bot that you own.");
+							return;
+						}
+
+						botList = GetBotsInHealRotation(leaderBot);
+
+						//list leader and number of members
+						c->Message(0, "Bot Heal Rotation- Leader: %s", leaderBot->GetCleanName());
+						c->Message(0, "Bot Heal Rotation- Number of Members: %i", leaderBot->GetNumHealRotationMembers());
+
+						for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+							Bot* tempBot = *botListItr;
+
+							if(tempBot && tempBot->GetBotOwnerCharacterID() == c->CharacterID()) {
+								//list rotation members
+								c->Message(0, "Bot Heal Rotation- Member: %s", tempBot->GetCleanName());
+							}
+						}
+
+						for(int i=0; i<MaxHealRotationTargets; i++) {
+							if(leaderBot->GetHealRotationTarget(i)) {
+								Mob* tempTarget = leaderBot->GetHealRotationTarget(i);
+
+								if(tempTarget) {
+									std::string targetInfo = "";
+
+									targetInfo += tempTarget->GetHPRatio() < 0 ? "(dead) " : "";
+									targetInfo += tempTarget->GetZoneID() != leaderBot->GetZoneID() ? "(not in zone) " : "";
+
+									//list targets
+									c->Message(0, "Bot Heal Rotation- Target: %s %s", tempTarget->GetCleanName(), targetInfo.c_str());
+								}
+							}
+						}
+					}
+					else {
+						c->Message(13, "You must name a valid bot.");
+						return;
+					}
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation list <bot healrotation leader name | all>");
+				return;
+			}
+		}
+		
+		if(!strcasecmp(sep->arg[2], "cleartargets")) {
+			if(sep->argnum == 3) {
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid heal rotation leader.");
+					return;
+				}
+
+				if(leaderBot) {
+					list<Bot*> botList;
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+
+					botList = GetBotsInHealRotation(leaderBot);
+
+					for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+						Bot* tempBot = *botListItr;
+
+						if(tempBot && tempBot->GetBotOwnerCharacterID() == c->CharacterID())
+							tempBot->ClearHealRotationTargets();
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation cleartargets <bot healrotation leader name>");
+				return;
+			}
+		}
+		
+		if(!strcasecmp(sep->arg[2], "fastheals")) {
+			if(sep->argnum == 3) {
+				Bot* leaderBot;
+				std::string botName = std::string(sep->arg[3]);
+
+				if(!botName.empty())
+					leaderBot = entity_list.GetBotByBotName(botName);
+				else {
+					c->Message(13, "You must name a valid heal rotation leader.");
+					return;
+				}
+
+				if(leaderBot) {
+					bool fastHeals = false;
+					list<Bot*> botList;
+					if (leaderBot->GetBotOwner() != c) {	
+						c->Message(13, "You must target a bot that you own.");
+						return;
+					}
+					
+					//get percentage heals & target
+					if(!strcasecmp(sep->arg[4], "on"))
+						fastHeals = true;
+					else if(strcasecmp(sep->arg[4], "off")) {
+						c->Message(0, "Usage #bot healrotation fastheals <bot healrotation leader name> <on | off>.");
+						return;
+					}
+
+					botList = GetBotsInHealRotation(leaderBot);
+
+					for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+						Bot* tempBot = *botListItr;
+
+						if(tempBot && tempBot->GetBotOwnerCharacterID() == c->CharacterID())
+							tempBot->SetHealRotationUseFastHeals(fastHeals);
+					}
+				}
+				else {
+					c->Message(13, "You must name a valid bot.");
+					return;
+				}
+			}
+			else {
+				c->Message(0, "#bot healrotation fastheals <bot healrotation leader name> <on | off>");
+				return;
+			}
+		}
+
+		if(!strcasecmp(sep->arg[2], "load")) {
+		}
+
+		if(!strcasecmp(sep->arg[2], "save")) {
+		}
+
+		if(!strcasecmp(sep->arg[2], "delete")) {
+		}
+	}
 }
 
 // franck: EQoffline
@@ -16803,6 +17506,365 @@ bool Bot::UseDiscipline(int32 spell_id, int32 target) {
 	CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
 	
 	return(true);
+}
+
+void Bot::CreateHealRotation( Mob* target, int8 timer ) {
+	SetInHealRotation(true);
+	SetHealRotationActive(false);
+	SetNumHealRotationMembers(GetNumHealRotationMembers()+1);
+	SetHealRotationLeader(this);
+	SetNextHealRotationMember(this);
+	SetPrevHealRotationMember(this);
+	SetHealRotationTimer(timer);
+	SetHasHealedThisCycle(false);
+
+	if(target)
+		AddHealRotationTarget(target);
+}
+
+bool Bot::AddHealRotationMember( Bot* healer ) {
+	if(healer) {
+		if(GetNumHealRotationMembers() > 0 && GetNumHealRotationMembers() < MaxHealRotationMembers) { 
+			Bot* tempBot = GetPrevHealRotationMember();
+		    
+			if(tempBot) {
+				//add new healer to rotation at end of list
+				for(int i=0; i<3; i++){
+					healer->ClearHealRotationMembers();
+					healer->ClearHealRotationTargets();
+					healer->AddHealRotationTarget(entity_list.GetMob(_healRotationTargets[i]));   // add all targets..
+				}
+				healer->SetHealRotationTimer(tempBot->GetHealRotationTimer());
+				healer->SetHealRotationLeader(this);
+				healer->SetNextHealRotationMember(this);
+				healer->SetPrevHealRotationMember(tempBot);
+				healer->SetInHealRotation(true);
+				healer->SetHasHealedThisCycle(false);
+				healer->SetHealRotationUseFastHeals(tempBot->GetHealRotationUseFastHeals());
+		        
+				//set previous rotation member's next member to new member
+				tempBot->SetNextHealRotationMember(healer);        
+		        
+				//update leader's previous member (end of list) to new member and update rotation data
+				SetPrevHealRotationMember(healer);
+		        
+				list<Bot*> botList = GetBotsInHealRotation(this);
+
+				for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+					Bot* tempBot = *botListItr;
+
+					if(tempBot)
+						tempBot->SetNumHealRotationMembers(GetNumHealRotationMembers()+1);
+				}
+
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+bool Bot::RemoveHealRotationMember( Bot* healer ) {
+    if(healer && GetNumHealRotationMembers() > 0) { 
+		Bot* leader = healer->GetHealRotationLeader();
+	    Bot* prevBot = healer->GetPrevHealRotationMember();
+	    Bot* nextBot = healer->GetNextHealRotationMember();
+
+		if(healer == this) {
+			if(nextBot != this) {
+				//get new leader
+				leader = nextBot;
+			}
+		}
+
+		//remove healer from list
+        healer->SetHealRotationTimer(0);
+        healer->ClearHealRotationMembers();
+		healer->ClearHealRotationTargets();
+		healer->ClearHealRotationLeader();
+		healer->SetHasHealedThisCycle(false);
+		healer->SetHealRotationActive(false);
+        healer->SetInHealRotation(false);
+
+	    if(prevBot && nextBot && GetNumHealRotationMembers() > 1) {
+	        //set previous rotation member's next member to new member
+	        prevBot->SetNextHealRotationMember(nextBot);    
+	        
+	        //set previous rotation member's next member to new member
+	        nextBot->SetPrevHealRotationMember(prevBot);      
+	    }
+
+		//update rotation data
+		list<Bot*> botList = GetBotsInHealRotation(leader);
+
+		for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+			Bot* tempBot = *botListItr;
+
+			if(tempBot) {
+				tempBot->SetNumHealRotationMembers(GetNumHealRotationMembers()-1);
+
+				if(tempBot->GetHealRotationLeader() != leader) {
+					// change leader if leader is being removed
+					tempBot->SetHealRotationLeader(leader);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+void Bot::SetHealRotationLeader( Bot* leader ) {
+	_healRotationLeader = leader->GetBotID();
+}
+
+void Bot::SetNextHealRotationMember( Bot* healer ) {
+	_healRotationMemberNext = healer->GetBotID();
+}
+
+void Bot::SetPrevHealRotationMember( Bot* healer ) {
+	_healRotationMemberPrev = healer->GetBotID();
+}
+
+Bot* Bot::GetHealRotationLeader( ) {
+	if(_healRotationLeader)
+		return entity_list.GetBotByBotID(_healRotationLeader);
+	return 0;
+}
+
+Bot* Bot::GetNextHealRotationMember( ) {
+	if(_healRotationMemberNext)
+		return entity_list.GetBotByBotID(_healRotationMemberNext);
+	return 0;
+}
+
+Bot* Bot::GetPrevHealRotationMember( ) {
+	if(_healRotationMemberNext)
+		return entity_list.GetBotByBotID(_healRotationMemberPrev);
+	return 0;
+}
+
+bool Bot::AddHealRotationTarget( Mob* target ) {
+	if(target) {
+
+		for (int i = 0; i < MaxHealRotationTargets; ++i) {
+			if(_healRotationTargets[i] > 0) {
+				Mob* tempTarget = entity_list.GetMob(_healRotationTargets[i]);
+					
+				if(!tempTarget) {
+					_healRotationTargets[i] = 0;
+				}
+				else if(!strcasecmp(tempTarget->GetCleanName(), target->GetCleanName())) {
+					//check to see if target's ID is incorrect (could have zoned, died, etc)
+					if(tempTarget->GetID() != target->GetID()) {
+						_healRotationTargets[i] = target->GetID();
+					}
+					//target already in list
+					return false;
+				}
+			}
+	
+			if (_healRotationTargets[i] == 0)
+			{
+				list<Bot*> botList = GetBotsInHealRotation(this);
+
+				_healRotationTargets[i] = target->GetID();
+
+				for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+					Bot* tempBot = *botListItr;
+
+					if(tempBot && tempBot != this) {
+						//add target to all members
+						tempBot->AddHealRotationTarget(target, i);
+					}
+				}
+
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Bot::AddHealRotationTarget( Mob *target, int index ) {
+	if (target && index < MaxHealRotationTargets) {
+		//add target to list of targets at specified index
+		_healRotationTargets[index] = target->GetID();
+		return true;
+	}
+	return false;
+}
+
+bool Bot::RemoveHealRotationTarget( Mob* target ) {
+	int index = 0;
+	bool removed = false;
+    if(target) {
+		//notify all heal rotation members to remove target
+		for(int i=0; i<MaxHealRotationTargets; i++){
+			if(_healRotationTargets[i] == target->GetID()) {
+				list<Bot*> botList = GetBotsInHealRotation(this);
+				_healRotationTargets[i] = 0;
+				index = i;
+				removed = true;
+
+				for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
+					Bot* tempBot = *botListItr;
+
+					if(tempBot)
+						tempBot->RemoveHealRotationTarget(i);
+				}
+			}
+		}
+	}
+
+	return removed;
+}
+
+bool Bot::RemoveHealRotationTarget( int index ) {
+	if(index >= 0) {
+		//clear rotation target at index
+		_healRotationTargets[index] = 0;
+
+		if(index < MaxHealRotationTargets) {
+			for(int i=index; i<MaxHealRotationTargets; i++){
+				//shift other targets down
+				_healRotationTargets[i] = _healRotationTargets[i+1];
+				_healRotationTargets[i+1] = 0;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+void Bot::ClearHealRotationMembers() {
+	_healRotationMemberPrev = NULL;
+    _healRotationMemberNext = NULL;
+}
+
+void Bot::ClearHealRotationTargets() {
+    for(int i=0; i<MaxHealRotationTargets; i++){
+        _healRotationTargets[i] = 0;
+    }
+}
+
+Mob* Bot::GetHealRotationTarget( ) {
+    Mob* tank = NULL;
+	Mob* first = NULL;
+	Mob* target = NULL;
+	int removeIndex = 0;
+	int count = 0;
+
+	for(int i=0; i<MaxHealRotationTargets; i++) {
+		
+		if(_healRotationTargets[i] > 0) {
+
+			//get first target in list
+			target = entity_list.GetMob(_healRotationTargets[i]);
+
+			if(target) {
+				//check if valid target
+				if(target->GetZoneID() == GetZoneID() 
+					&& !(target->GetAppearance() == eaDead
+					&& !(target->IsClient() && target->CastToClient()->GetFeigned()))) {
+
+					count++;
+
+					//get first valid target
+					if(!first) {
+						first = target;
+					}
+
+					//check to see if target is group main tank 
+					//(target first, in case top target has died and was rez'd - 
+					//we don't want to heal them then)
+					if(!tank) {
+						Group* g = target->GetGroup();
+						if(g && !strcasecmp(g->GetMainTankName(), target->GetCleanName())) {
+							tank = target;
+						}
+					}
+				}
+			}
+			else {
+				//if not valid target, remove from list
+				if(removeIndex == 0)
+					removeIndex = i;
+			}
+		}
+	}
+
+	if (removeIndex > 0) {
+		RemoveHealRotationTarget( removeIndex );
+	}
+
+	if(tank)
+		return tank;
+    
+    return first;
+}
+
+Mob* Bot::GetHealRotationTarget( int8 index ) {
+    Mob* target = NULL;
+
+	if(_healRotationTargets[index] > 0) {
+		//get target at specified index
+		target = entity_list.GetMob(_healRotationTargets[index]);
+	}
+    
+    return target;
+}
+
+list<Bot*> Bot::GetBotsInHealRotation(Bot* rotationLeader) {
+	list<Bot*> Result;
+
+	if(rotationLeader != NULL) {
+		Result.push_back(rotationLeader);
+		Bot* rotationMember = rotationLeader->GetNextHealRotationMember();
+
+		while(rotationMember && rotationMember != rotationLeader) {
+			Result.push_back(rotationMember);
+			rotationMember = rotationMember->GetNextHealRotationMember();
+		}
+	}
+
+	return Result;
+}
+
+void Bot::NotifyNextHealRotationMember(bool notifyNow) {
+	//check if we need to notify to start now, or after timer
+	int32 nextHealTime = notifyNow ? Timer::GetCurrentTime() : Timer::GetCurrentTime() + GetHealRotationTimer() * 1000;
+
+	Bot* nextMember = GetNextHealRotationMember();
+	if(nextMember && nextMember != this) {
+		nextMember->SetHealRotationNextHealTime(nextHealTime);
+		nextMember->SetHasHealedThisCycle(false);
+	}
+}
+
+void Bot::BotHealRotationsClear(Client* c) {
+	if(c) {
+		std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+		for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+			Bot* tempBot = *botListItr;
+			if(tempBot->GetInHealRotation()) {
+				//clear all heal rotation data for bots in a heal rotation
+				tempBot->SetInHealRotation(false);
+				tempBot->SetHealRotationActive(false);
+				tempBot->SetHasHealedThisCycle(false);
+				tempBot->SetHealRotationTimer(0);
+				tempBot->ClearHealRotationMembers();
+				tempBot->ClearHealRotationTargets();
+				tempBot->SetNumHealRotationMembers(0);
+				tempBot->ClearHealRotationLeader();
+			}
+		}
+	}
 }
 
 #endif

@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/07/2012==
+Bad_Captain: Bots- Fixed an issue where bots couldn't have spells with target type of ST_GroupClientAndPet cast on them.
+Bad_Captain: Bots- Added #bot healrotations command. Please see forums for more information.
+
 ==09/04/2012==
 cavedude: Added NPC:UseMultiQuest rule to turn multiquest support on or off.
 

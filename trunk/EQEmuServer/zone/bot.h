@@ -30,6 +30,8 @@ const int DisciplineReuseStart = MaxSpellTimer + 1;
 const int MaxTimer = MaxSpellTimer + MaxDisciplineTimer;
 const int MaxStances = 7;
 const int MaxSpellTypes = 16;
+const int MaxHealRotationMembers = 6;
+const int MaxHealRotationTargets = 3;
 
 typedef enum BotStanceType {
 	BotStancePassive,
@@ -214,6 +216,18 @@ public:
 	bool HasOrMayGetAggro();
 	void SetDefaultBotStance();
 	void CalcChanceToCast();
+	void CreateHealRotation( Mob* target, int8 timer = 10 );
+	bool AddHealRotationMember( Bot* healer );
+	bool RemoveHealRotationMember( Bot* healer );
+	bool AddHealRotationTarget( Mob* target );
+	//bool AddHealRotationTarget( const char *targetName, int index);
+	bool AddHealRotationTarget( Mob* target, int index);
+	bool RemoveHealRotationTarget( Mob* target );
+	bool RemoveHealRotationTarget( int index);
+	void NotifyNextHealRotationMember( bool notifyNow = false );
+	void ClearHealRotationLeader() { _healRotationLeader = NULL; }
+	void ClearHealRotationMembers();
+	void ClearHealRotationTargets();
 	inline virtual sint16  GetMaxStat();
 	inline virtual sint16  GetMaxResist();
 	inline virtual sint16  GetMaxSTR();
@@ -270,6 +284,7 @@ public:
 	virtual bool AI_EngagedCastCheck();
 	virtual bool AI_PursueCastCheck();
 	virtual bool AI_IdleCastCheck();
+	bool AIHealRotation(Mob* tar, bool useFastHeals);
 
 	// Mob AI Virtual Override Methods
 	virtual void AI_Process();
@@ -339,6 +354,7 @@ public:
 	static void ProcessBotGroupInvite(Client* c, std::string botName);
 	static void ProcessBotGroupDisband(Client* c, std::string botName);
 	static void BotOrderCampAll(Client* c);
+	static void BotHealRotationsClear( Client* c );
 	static void ProcessBotInspectionRequest(Bot* inspectedBot, Client* client);
 	static std::list<uint32> GetGroupedBotsByGroupId(uint32 groupId, std::string* errorMessage);
 	static void LoadAndSpawnAllZonedBots(Client* botOwner);
@@ -378,6 +394,7 @@ public:
 	static BotSpell GetBestBotSpellForCure(Bot* botCaster, Mob* target);
 	static BotSpell GetBestBotSpellForResistDebuff(Bot* botCaster, Mob* target);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
+	static std::list<Bot*> GetBotsInHealRotation( Bot* leader );
 
 	// Static Bot Group Methods
 	static bool AddBotToGroup(Bot* bot, Group* group);
@@ -414,6 +431,7 @@ public:
 	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotINTCaster() { return (GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
+	bool CanHeal();
 	int GetRawACNoShield(int &shield_ac);
 	int32 GetAA(int32 aa_id) const;
 	bool GetHasBeenSummoned() { return _hasBeenSummoned; }
@@ -421,6 +439,18 @@ public:
 	float GetPreSummonY() { return _preSummonY; }
 	float GetPreSummonZ() { return _preSummonZ; }
 	bool GetGroupMessagesOn() { return _groupMessagesOn; }
+	bool GetInHealRotation() { return _isInHealRotation; }
+	bool GetHealRotationActive() { return (GetInHealRotation() && _isHealRotationActive); }
+	bool GetHealRotationUseFastHeals() { return _healRotationUseFastHeals; }
+	bool GetHasHealedThisCycle() { return _hasHealedThisCycle; }
+	Mob* GetHealRotationTarget();
+	Mob* GetHealRotationTarget(int8 index);
+	Bot* GetHealRotationLeader();
+	Bot* GetNextHealRotationMember();
+	Bot* GetPrevHealRotationMember();
+	int8 GetNumHealRotationMembers () { return _numHealRotationMembers; }
+	int32 GetHealRotationNextHealTime() { return _healRotationNextHeal; }
+	int8 GetHealRotationTimer () { return _healRotationTimer; }
 	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -492,6 +522,16 @@ public:
 	void SetPreSummonY(float y) { _preSummonY = y; }
 	void SetPreSummonZ(float z) { _preSummonZ = z; }
 	void SetGroupMessagesOn(bool groupMessagesOn) { _groupMessagesOn = groupMessagesOn; }
+	void SetInHealRotation( bool inRotation ) { _isInHealRotation = inRotation; }
+	void SetHealRotationActive( bool isActive ) { _isHealRotationActive = isActive; }
+	void SetHealRotationUseFastHeals( bool useFastHeals ) { _healRotationUseFastHeals = useFastHeals; }
+	void SetHasHealedThisCycle( bool hasHealed ) { _hasHealedThisCycle = hasHealed; }
+	void SetHealRotationLeader( Bot* leader );
+	void SetNextHealRotationMember( Bot* healer );
+	void SetPrevHealRotationMember( Bot* healer );
+	void SetHealRotationNextHealTime( int32 nextHealTime ) { _healRotationNextHeal = nextHealTime; }
+	void SetHealRotationTimer( int8 timer ) { _healRotationTimer = timer; }
+	void SetNumHealRotationMembers( int8 numMembers ) { _numHealRotationMembers = numMembers; }
 
 	// Class Destructors
 	virtual ~Bot();
@@ -549,6 +589,18 @@ private:
 	float _preSummonZ;
 	int8 _spellCastingChances[MaxStances][MaxSpellTypes];
 	bool _groupMessagesOn;
+	bool _isInHealRotation;
+	bool _isHealRotationActive;
+	bool _healRotationUseFastHeals;
+	bool _hasHealedThisCycle;
+	int8 _healRotationTimer;
+	int32 _healRotationNextHeal;
+	//char _healRotationTargets[MaxHealRotationTargets][64];
+	int16 _healRotationTargets[MaxHealRotationTargets];
+	uint32 _healRotationLeader;
+	uint32 _healRotationMemberNext;
+	uint32 _healRotationMemberPrev;
+	int8 _numHealRotationMembers;
 
 	// Private "base stats" Members
 	sint16 _baseMR;

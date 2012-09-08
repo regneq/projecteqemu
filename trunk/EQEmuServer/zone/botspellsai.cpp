@@ -1164,6 +1164,78 @@ bool Bot::AI_EngagedCastCheck() {
 	return result;
 }
 
+bool Bot::AIHealRotation(Mob* tar, bool useFastHeals) {
+
+	if (!tar) {
+		return false;
+	}
+
+	if(!AI_HasSpells())
+		return false;
+	
+	if(tar->GetAppearance() == eaDead) {
+		if((tar->IsClient() && tar->CastToClient()->GetFeigned()) || tar->IsBot()) {
+			// do nothing
+		}
+		else {
+			return false;
+		}
+	}
+
+	int8 botLevel = GetLevel();
+
+	bool castedSpell = false;
+
+	BotSpell botSpell;
+	botSpell.SpellId = 0;
+	botSpell.SpellIndex = 0;
+	botSpell.ManaCost = 0;
+
+	if (useFastHeals) {
+		botSpell = GetBestBotSpellForRegularSingleTargetHeal(this);
+
+		if(botSpell.SpellId == 0)
+			botSpell = GetBestBotSpellForFastHeal(this);
+	}
+	else {
+		botSpell = GetBestBotSpellForPercentageHeal(this);
+
+		if(botSpell.SpellId == 0)
+			botSpell = GetBestBotSpellForRegularSingleTargetHeal(this);
+
+		if(botSpell.SpellId == 0)
+			botSpell = GetFirstBotSpellForSingleTargetHeal(this);
+
+		if(botSpell.SpellId == 0){
+			botSpell = GetFirstBotSpellBySpellType(this, SpellType_Heal);
+		}
+	}
+
+	// If there is still no spell id, then there isn't going to be one so we are done
+	if(botSpell.SpellId == 0)
+		return false;
+
+	// Can we cast this spell on this target?
+	if(!(spells[botSpell.SpellId].targettype==ST_GroupTeleport || spells[botSpell.SpellId].targettype == ST_Target || tar == this)
+		&& !(tar->CanBuffStack(botSpell.SpellId, botLevel, true) >= 0))
+		return false;
+
+	int32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
+
+	castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontHealMeBeforeTime);
+
+	if(castedSpell) {
+		char* gmsg = 0;
+
+		MakeAnyLenString(&gmsg, "Casting %s on %s, please stay in range!", spells[botSpell.SpellId].name, tar->GetCleanName());
+
+		if(gmsg)
+			Say(gmsg);
+	}
+
+	return castedSpell;
+}
+
 std::list<BotSpell> Bot::GetBotSpellsForSpellEffect(Bot* botCaster, int spellEffect) {
 	std::list<BotSpell> result;
 
