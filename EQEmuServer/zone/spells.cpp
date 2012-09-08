@@ -900,11 +900,17 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 			} 
 #ifdef BOTS
 			else if(IsBot()) {
+				float channelbonuses = 0.0f;
+
+				if (IsFromItem)
+					channelbonuses += spellbonuses.ChannelChanceItems + itembonuses.ChannelChanceItems + aabonuses.ChannelChanceItems;
+				else
+					channelbonuses += spellbonuses.ChannelChanceSpells + itembonuses.ChannelChanceSpells + aabonuses.ChannelChanceSpells;
+
 				// max 93% chance at 252 skill
 				channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
 				channelchance -= attacked_count * 2;			
-				channelchance += channelchance * (GetAA(aaChanellingFocus)*5) / 100; 
-				channelchance += channelchance * (GetAA(aaInternalMetronome)*5) / 100;
+				channelchance +=  channelchance * channelbonuses / 100.0f;
 			}
 #endif //BOTS
 			else {
@@ -1550,12 +1556,12 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 					{
 						if(spell_target->IsGrouped())
 						{
-							group_id_caster = spell_target->GetGroup()->GetID();
+							group_id_target = spell_target->GetGroup()->GetID();
 						}
 						else if(spell_target->IsRaidGrouped())
 						{
 							if(spell_target->GetOwner())
-								group_id_caster = (spell_target->GetRaid()->GetGroup(spell_target->GetOwner()->CastToClient()) == 0xFFFF) ? 0 : (spell_target->GetRaid()->GetGroup(spell_target->GetOwner()->CastToClient()) + 1);
+								group_id_target = (spell_target->GetRaid()->GetGroup(spell_target->GetOwner()->CastToClient()) == 0xFFFF) ? 0 : (spell_target->GetRaid()->GetGroup(spell_target->GetOwner()->CastToClient()) + 1);
 						}
 					}
 #endif //BOTS
