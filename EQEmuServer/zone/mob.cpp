@@ -3008,6 +3008,56 @@ void Mob::SetNimbusEffect(uint32 nimbus_effect)
 void Mob::TryTriggerOnCast(uint32 spell_id, bool aa_trigger)
 {
 	if(!IsValidSpell(spell_id))
+			return;
+
+	if (aabonuses.SpellTriggers[0] || spellbonuses.SpellTriggers[0] || itembonuses.SpellTriggers[0]){
+
+		for(int i = 0; i < MAX_SPELL_TRIGGER; i++){
+			
+			if(aabonuses.SpellTriggers[i] && IsClient())
+				TriggerOnCast(aabonuses.SpellTriggers[i], spell_id,1);
+
+			if(spellbonuses.SpellTriggers[i])
+				TriggerOnCast(spellbonuses.SpellTriggers[i], spell_id,0);
+
+			if(itembonuses.SpellTriggers[i])
+				TriggerOnCast(spellbonuses.SpellTriggers[i], spell_id,0);
+		}
+	}
+}
+
+
+void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, bool aa_trigger)
+{
+	if(!IsValidSpell(focus_spell) || !IsValidSpell(spell_id))
+		return;
+
+	uint32 trigger_spell_id = 0;
+
+	if (aa_trigger && IsClient()){
+		//focus_spell = aaid
+		trigger_spell_id = CastToClient()->CalcAAFocus(focusTriggerOnCast, focus_spell, spell_id);
+		
+		if(IsValidSpell(trigger_spell_id) && GetTarget())
+			SpellFinished(trigger_spell_id, GetTarget());
+	}
+
+	else{
+		trigger_spell_id = CalcFocusEffect(focusTriggerOnCast, focus_spell, spell_id);
+		
+		if(IsValidSpell(trigger_spell_id) && GetTarget()){
+			SpellFinished(trigger_spell_id, GetTarget());
+			CheckHitsRemaining(0, false,false, 0, focus_spell);
+		}
+	}
+}
+
+//void Mob::CastTriggerableEffect(Mob* target, uint32 base_spell_id, uint32 triggered_spell_id)
+
+/*
+void Mob::TryTriggerOnCast(uint32 spell_id, bool aa_trigger)
+{
+	if(!IsValidSpell(spell_id))
 		return;
 	
 	if(aa_trigger)
@@ -3038,6 +3088,8 @@ void Mob::TryTriggerOnCast(uint32 spell_id, bool aa_trigger)
 		}
 	}
 }
+
+
 
 void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
 {
@@ -3092,6 +3144,7 @@ void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
 		}
 	}
 }
+*/
 
 void Mob::TrySpellTrigger(Mob *target, uint32 spell_id)
 {
@@ -4008,21 +4061,24 @@ void Mob::TrySpellOnKill(uint8 level, int16 spell_id)
 			}
 		}
 	}
+
+	if (!aabonuses.SpellOnKill[0] && !itembonuses.SpellOnKill[0] && !spellbonuses.SpellOnKill[0]) 
+		return;
 	
 	// Allow to check AA, items and buffs in all cases. Base2 = Spell to fire | Base1 = % chance | Base3 = min level
 	for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3) {
 	
-		if(IsClient() && aabonuses.SpellOnKill[i]) {
+		if(aabonuses.SpellOnKill[i] && (level >= aabonuses.SpellOnKill[i+2])) {
 			if(MakeRandomInt(0,99) < aabonuses.SpellOnKill[i+1])
 				SpellFinished(aabonuses.SpellOnKill[i], this);
 		}
 
-		if((itembonuses.SpellOnKill[i]) && (itembonuses.SpellOnKill[i+2] <= level)){
+		if(itembonuses.SpellOnKill[i] && (level >= itembonuses.SpellOnKill[i+2])){
 			if(MakeRandomInt(0,99) < itembonuses.SpellOnKill[i+1]) 
 				SpellFinished(itembonuses.SpellOnKill[i], this);
 		}
 		
-		if((spellbonuses.SpellOnKill[i]) && (spellbonuses.SpellOnKill[i+2] <= level)) {
+		if(spellbonuses.SpellOnKill[i] && (level >= spellbonuses.SpellOnKill[i+2])) {
 			if(MakeRandomInt(0,99) < spellbonuses.SpellOnKill[i+1]) 
 				SpellFinished(spellbonuses.SpellOnKill[i], this);
 		}
@@ -4517,6 +4573,7 @@ bool Mob::PassLimitToSkill(int16 spell_id, int16 skill) {
 			}
 		}
 	}
-	return false;
+	return false; 
 }
+
 

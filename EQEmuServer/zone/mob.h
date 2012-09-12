@@ -88,7 +88,7 @@ typedef enum {	//focus types
 	focusImprovedHeal,
 	focusImprovedDamage,
 	focusImprovedDOT,		//i dont know about this...
-	focusImprovedCritical,
+	focusImprovedDamage2,
 	focusImprovedUndeadDamage,
 	focusPetPower,
 	focusResistRate,
@@ -111,13 +111,14 @@ typedef enum {	//focus types
 } focusType; //Any new FocusType needs to be added to the Mob::IsFocus function
 #define HIGHEST_FOCUS	focusAdditionalHeal //Should always be last focusType in enum
 
+
 /*
 Used:
 b,d,f,g,j,m,n,o,p,r,t
 A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,Q,R,S,T,U,W,Y
 
 Unused:
-a,c,e,h,i,k,l,q,s,u,v,w,x,y,z
+a,c,e,h,k,l,q,s,u,v,w,x,y,z
 P,V,X
 */
 
@@ -150,6 +151,7 @@ enum {
 	IMMUNE_AGGRO_ON,			// G - Immune to being aggroed
 	IMMUNE_CASTING_FROM_RANGE,	// g
 	IMMUNE_FEIGN_DEATH,			// d
+	IMMUNE_TAUNT,				// i
 	NPC_TUNNELVISION,			// t
 	NPC_NO_BUFFHEAL_FRIENDS,	// n
 	IMMUNE_PACIFY,				// p
@@ -317,6 +319,7 @@ struct StatBonuses {
 	sint32 	SpellDmg;							// Item Effect
 	sint32 	Clairvoyance;						// Item Effect
 	sint16 	DSMitigation;						// Item Effect
+	sint16  DSMitigationOffHand;				// Lowers damage shield from off hand attacks.
 	uint32 	SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
 	uint32 	SpellOnKill[MAX_SPELL_TRIGGER*3];	// Chance to proc after killing a mob
 	uint32 	SpellOnDeath[MAX_SPELL_TRIGGER*2];	// Chance to have effect cast when you die
@@ -388,6 +391,12 @@ struct StatBonuses {
 	bool	GivePetGroupTarget;					// All pets to recieve group buffs. (Pet Affinity)
 	sint16	RootBreakChance;					// Chance root will break;
 	sint16  UnfailingDivinity;					// Improves chance that DI will fire + increase partial heal.
+	sint16  ItemHPRegenCap;						// Increase item regen cap.	
+	sint16  SEResist[MAX_RESISTABLE_EFFECTS*2];	// Resist chance by specific spell effects.
+	sint16  OffhandRiposteFail;					// chance for opponent to fail riposte with offhand attack.
+	sint16	ItemATKCap;							// Raise item attack cap
+	sint32  FinishingBlow[2];					// Chance to do a finishing blow for specified damage amount.
+	uint16	FinishingBlowLvl[2];				// Sets max level an NPC can be affected by FB. (base1 = lv, base2= ???)
 };
 
 typedef struct
@@ -916,7 +925,7 @@ bool logpos;
 
 	//effect related
 	sint16 CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool best_focus=false);
-	uint8 IsFocusEffect(int16 spellid, int effect_index); 
+	uint8 IsFocusEffect(int16 spellid, int effect_index, bool AA=false,int32 aa_effect=0); 
 	void SendIllusionPacket(int16 in_race, int8 in_gender = 0xFF, int8 in_texture = 0xFF, int8 in_helmtexture = 0xFF, int8 in_haircolor = 0xFF, int8 in_beardcolor = 0xFF, int8 in_eyecolor1 = 0xFF, int8 in_eyecolor2 = 0xFF, int8 in_hairstyle = 0xFF, int8 in_luclinface = 0xFF, int8 in_beard = 0xFF, int8 in_aa_title = 0xFF, int32 in_drakkin_heritage = 0xFFFFFFFF, int32 in_drakkin_tattoo = 0xFFFFFFFF, int32 in_drakkin_details = 0xFFFFFFFF, float in_size = 0xFFFFFFFF);
 	virtual void Stun(int duration);
 	virtual void UnStun();
@@ -932,12 +941,13 @@ bool logpos;
 	bool TryDivineSave();	
 	void DoBuffWearOffEffect(uint32 index);
 	void TryTriggerOnCast(uint32 spell_id, bool aa_trigger);
-	void TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance);
+	void TriggerOnCast(uint32 focus_spell, uint32 spell_id, bool aa_trigger);
 	void TrySpellTrigger(Mob *target, uint32 spell_id);
 	void TryApplyEffect(Mob *target, uint32 spell_id);
 	void TryTwincast(Mob *caster, Mob *target, uint32 spell_id);
 	void TrySympatheticProc(Mob *target, uint32 spell_id);
 	bool TryFadeEffect(int slot);
+	int16 GetSpellEffectResistChance(int16 spell_id);
 	sint16 GetHealRate(int16 spell_id);
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
 	sint32 GetAdditionalDamage(Mob *caster, uint32 spell_id, bool use_skill = false, int16 skill=0);
@@ -972,6 +982,9 @@ bool logpos;
 	bool GetAllowBeneficial() { return m_AllowBeneficial; }
 	void SetDisableMelee(bool value) { m_DisableMelee = value; }
 	bool IsMeleeDisabled() { return m_DisableMelee; }
+	
+	bool IsOffHandAtk() const { return offhand; }
+	inline void OffHandAtk(bool val) { offhand = val; }
 
 	inline void SetFlurryChance(int8 value) { NPC_FlurryChance = value;}
 	int8 GetFlurryChance() { return NPC_FlurryChance; }
@@ -1163,7 +1176,6 @@ bool logpos;
 	void	SetShieldTarget(Mob* mob)	{ shield_target = mob; }
 	bool	HasActiveSong() const { return(bardsong != 0); }
 	bool	Charmed() const { return charmed; }
-	bool	CharmBreakBonusCheck();
 	static int32	GetLevelHP(int8 tlevel);
 	int32	GetZoneID() const;	//for perl
 	virtual sint32 CheckAggroAmount(int16 spellid);
@@ -1429,6 +1441,7 @@ protected:
 	bool	has_virus;	// whether this mob has a viral spell on them
 	int16	viral_spells[MAX_SPELL_TRIGGER*2]; // Stores the spell ids of the viruses on target and caster ids
 	sint16	rooted_mod; //Modifier to root break chance, defined when root is cast on a target.
+	bool	offhand;
 
 	Timer	stunned_timer;
 	Timer	spun_timer;

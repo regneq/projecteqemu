@@ -3987,6 +3987,9 @@ struct SendAA_Struct {
 /* EMU additions for internal use */
 	char name[128];
 	sint16 cost_inc;
+	int32 sof_current_level;
+	int32 sof_next_id;
+	int8 level_inc;
 
 /*0000*/	int32 id;
 /*0004*/	int32 unknown004;

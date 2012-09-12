@@ -314,14 +314,14 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		newbon->EnduranceRegen += item->EnduranceRegen;
 
 	if(item->Attack > 0) {
-		if((newbon->ATK + item->Attack) > RuleI(Character, ItemATKCap))
-		{
+		
+		int cap = RuleI(Character, ItemATKCap);
+		cap += itembonuses.ItemATKCap + spellbonuses.ItemATKCap + aabonuses.ItemATKCap; 
+
+		if((newbon->ATK + item->Attack) > cap)
 			newbon->ATK = RuleI(Character, ItemATKCap);
-		}
 		else
-		{
 			newbon->ATK += item->Attack;
-		}
 	}
 	if(item->DamageShield > 0) {
 		if((newbon->DamageShield + item->DamageShield) > RuleI(Character, ItemDamageShieldCap))
@@ -604,8 +604,8 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 
 	//from AA_Ability struct
 	int32 effect = 0;
-	int32 base1 = 0;
-	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
+	sint32 base1 = 0;
+	sint32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
 	int32 slot = 0;
 
 	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aaid);
@@ -629,6 +629,14 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			continue;
 
 		_log(AA__BONUSES, "Applying Effect %d from AA %u in slot %d (base1: %d, base2: %d) on %s", effect, aaid, slot, base1, base2, this->GetCleanName());
+
+		uint8 focus = IsFocusEffect(0, 0, true,effect);
+		if (focus)
+		{
+			newbon->FocusEffects[focus] = effect;
+			continue;
+		}
+
 		switch (effect)
 		{
 			//Note: AA effects that use accuracy are skill limited, while spell effect is not.
@@ -769,68 +777,187 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_StunResist:
 				newbon->StunResist += base1;
 				break;
-			case SE_TriggerOnCast:
-				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
-				{
-					if(!newbon->SpellTriggers[i])
-					{
-						// base1 = SpellID to be triggered, base2 = chance to fire
-						newbon->SpellTriggers[i] = base1;
-						newbon->SpellTriggers[i+1] = base2;
-						break;
-					}
-				}
-				break;
-			case SE_CriticalSpellChance:
 			case SE_SpellCritChance:
 				newbon->CriticalSpellChance += base1;
 				break;
-
 			case SE_SpellCritDmgIncrease:
 				newbon->SpellCritDmgIncrease += base1;
 				break;
-
 			case SE_DotCritDmgIncrease:
 				newbon->DotCritDmgIncrease += base1;
 				break;
-
 			case SE_ResistSpellChance:
 				newbon->ResistSpellChance += base1;
 				break;
-
 			case SE_CriticalHealChance:
 				newbon->CriticalHealChance += base1;
 				break;
-			
 			case SE_CriticalHealOverTime:
 				newbon->CriticalHealOverTime += base1;
 				break;
-			
 			case SE_CriticalDoTChance:
 				newbon->CriticalDoTChance += base1;
 				break;
-				
-			case SE_CriticalHitChance:
-
-				if(base2 == -1)
-					newbon->CriticalHitChance[HIGHEST_SKILL+1] += base1;
-				else
-					newbon->CriticalHitChance[base2] += base1;
+			case SE_ReduceSkillTimer:
+				newbon->SkillReuseTime[base2] += base1;
+				break;
+			case SE_Twinproc:
+				newbon->TwinProc += base1;
+				break;
+			case SE_Fearless:
+				newbon->Fearless = true;  
+				break;
+			case SE_PersistantCasting:
+				newbon->PersistantCasting += base1;
+				break;
+			case SE_DelayDeath:
+				newbon->DelayDeath += base1;
+				break;
+			case SE_FrontalStunResist:
+				newbon->FrontalStunResist += base1;
+				break;
+			case SE_ImprovedBindWound:
+				newbon->BindWound += base1;
+				break;
+			case SE_MaxBindWound:
+				newbon->MaxBindWound += base1;
+				break;
+			case SE_ExtraAttackChance:
+				newbon->ExtraAttackChance += base1;
+				break;
+			case SE_SeeInvis:
+				newbon->SeeInvis = base1;
+				break;
+			case SE_BaseMovementSpeed:
+				newbon->BaseMovementSpeed += base1; 
+				break;
+			case SE_IncreaseRunSpeedCap:
+				newbon->IncreaseRunSpeedCap += base1;
+				break;
+			case SE_ConsumeProjectile:
+				newbon->ConsumeProjectile += base1;
+				break;
+			case SE_ArcheryDamageModifier:
+				newbon->ArcheryDamageModifier += base1;
+				break;
+			case SE_DamageShield:
+				newbon->DamageShield += base1;
+				break;
+			case SE_CharmBreakChance:
+				newbon->CharmBreakChance += base1;
+				break;
+			case SE_OffhandRiposteFail:
+				newbon->OffhandRiposteFail += base1;
+				break;
+			case SE_ItemAttackCapIncrease:
+				newbon->ItemATKCap += base1;
+				break;
+			case SE_GivePetGroupTarget:
+				newbon->GivePetGroupTarget = true;
+				break;
+			case SE_ItemHPRegenCapIncrease:
+				newbon->ItemHPRegenCap = +base1;
+				break;
+			case SE_Ambidexterity:
+				newbon->Ambidexterity += base1;
+				break;
+			case SE_PetMaxHP:
+				newbon->PetMaxHP += base1;
+				break;
+			case SE_AvoidMeleeChance:
+				newbon->AvoidMeleeChance += base1;
+				break;
+			case SE_CombatStability:
+				newbon->CombatStability += base1;
+				break;
+			case SE_PetCriticalHit:
+				newbon->PetCriticalHit += base1;
+				break;
+			case SE_PetAvoidance:
+				newbon->PetAvoidance += base1;
+				break;
+			case SE_ShieldBlock:
+				newbon->ShieldBlock += base1;
+				break;
+			case SE_SecondaryDmgInc:
+				newbon->SecondaryDmgInc = true;
+				break;
+			case SE_ChangeAggro:
+				newbon->hatemod += base1;
+				break;
+			case SE_EndurancePool:
+				newbon->Endurance += base1;
+				break;
+			case SE_ChannelChanceItems:
+				newbon->ChannelChanceItems += base1;
+				break;
+			case SE_ChannelChanceSpells:
+				newbon->ChannelChanceSpells += base1;
+				break;
+			case SE_DoubleSpecialAttack:
+				newbon->DoubleSpecialAttack += base1;
+				break;
+			case SE_TripleBackstab:
+				newbon->TripleBackstab += base1;
+				break;
+			case SE_FrontalBackstabMinDmg:
+				newbon->FrontalBackstabMinDmg = true;
+				break;
+			case SE_FrontalBackstabChance:
+				newbon->FrontalBackstabChance += base1;
+				break;
+			case SE_BlockBehind:
+				newbon->BlockBehind += base1;
+				break;
+			case SE_StrikeThrough2:
+				newbon->StrikeThrough += base1;
+				break;
+			case SE_DoubleAttackChance:
+				newbon->DoubleAttackChance += base1;
+				break;
+			case SE_GiveDoubleAttack:
+				newbon->GiveDoubleAttack += base1;
+				break;
+			case SE_ProcChance:
+				newbon->ProcChance += base1;
+				break;
+			case SE_RiposteChance:
+				newbon->RiposteChance += base1;
+				break;
+			case SE_Flurry:
+				newbon->FlurryChance += base1;
+				break;
+			case SE_PetFlurry:
+				newbon->PetFlurry = base1;
+				break;
+			case SE_BardSongRange:
+				newbon->SongRange += base1;
+				break;
+			case SE_RootBreakChance:
+				newbon->RootBreakChance += base1;
+				break;
+			case SE_UnfailingDivinity:
+				newbon->UnfailingDivinity += base1;
 				break;
 
 			case SE_SpellOnKill:
 				for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3)
 				{
-					if(!newbon->SpellOnKill[i])
+					if(!newbon->SpellOnKill[i] || ((newbon->SpellOnKill[i] == base2) && (newbon->SpellOnKill[i+1] < base1)))
 					{
-						// base1 = SpellID to be triggered, base2 = chance to fire, base3 = min npc level
-						newbon->SpellOnKill[i] = base1;
-						newbon->SpellOnKill[i+1] = base2;
-						newbon->SpellOnKill[i+2] = 0;
+						//base1 = chance, base2 = SpellID to be triggered,  base3 = min npc level
+						newbon->SpellOnKill[i] = base2;
+						newbon->SpellOnKill[i+1] = base1;
+						
+						if (GetLevel() > 15)
+							newbon->SpellOnKill[i+2] = GetLevel() - 15; //AA specifiy "non-trivial"
+						else
+							newbon->SpellOnKill[i+2] = 0;
+
 						break;
 					}
 				}
-				break;
+			break;
 				
 			case SE_SpellOnDeath:
 				for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2)
@@ -843,8 +970,33 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 						break;
 					}
 				}
-				break;
+			break;
+
+			case SE_TriggerOnCast:
+			
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
+				{
+					if (newbon->SpellTriggers[i] == aaid)
+						break;
+
+					if(!newbon->SpellTriggers[i])
+					{
+						//Save the 'aaid' of each triggerable effect to an array
+						newbon->SpellTriggers[i] = aaid;
+						break;
+					}
+				}
+			break;
 				
+			case SE_CriticalHitChance:
+			{
+				if(base2 == -1)
+					newbon->CriticalHitChance[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->CriticalHitChance[base2] += base1;
+			}
+			break;
+
 			case SE_CriticalDamageMob:
 			{
 				// base1 = effect value, base2 = skill restrictions(-1 for all)
@@ -854,96 +1006,23 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 					newbon->CritDmgMob[base2] += base1;
 				break;
 			}
-			case SE_ReduceSkillTimer:
+
+			case SE_CriticalSpellChance:
 			{
-				newbon->SkillReuseTime[base2] += base1;
+				newbon->CriticalSpellChance += base1;
+				
+				if (base2 > 100)
+					newbon->SpellCritDmgIncrease += (base2 - 100);
+				
 				break;
 			}
-			case SE_Twinproc:
-			{
-				newbon->TwinProc += base1;
-				break;
-			}
+
 			case SE_ResistFearChance:
 			{
 				if(base1 == 100) // If we reach 100% in a single spell/item then we should be immune to negative fear resist effects until our immunity is over
 					newbon->Fearless = true;
 					
 				newbon->ResistFearChance += base1; // these should stack
-				break;
-			}
-			case SE_Fearless:
-			{
-				newbon->Fearless = true;  
-				break;
-			}
-
-			case SE_PersistantCasting:
-			{
-				newbon->PersistantCasting += base1;
-				break;
-			}
-			case SE_DelayDeath:
-			{
-				newbon->DelayDeath += base1;
-				break;
-			}
-
-			case SE_FrontalStunResist:
-			{
-				newbon->FrontalStunResist += base1;
-				break;
-			}
-
-			case SE_ImprovedBindWound:
-			{
-				newbon->BindWound += base1;
-				break;
-			}
-
-			case SE_MaxBindWound:
-			{
-				newbon->MaxBindWound += base1;
-				break;
-			}
-
-			case SE_ChannelChanceItems:
-			{
-				if(newbon->ChannelChanceItems < base1)
-					newbon->ChannelChanceItems = base1;
-				break;
-			}
-
-			case SE_ChannelChanceSpells:
-			{
-				if(newbon->ChannelChanceSpells < base1)
-					newbon->ChannelChanceSpells = base1;
-				break;
-			}
-
-
-			case SE_ExtraAttackChance:
-			{
-				if(newbon->ExtraAttackChance < base1)
-					newbon->ExtraAttackChance = base1;
-				break;
-			}
-
-			case SE_SeeInvis:
-			{
-				newbon->SeeInvis = base1;
-				break;
-			}
-
-			case SE_BaseMovementSpeed:
-			{
-				newbon->BaseMovementSpeed += base1; 
-				break;
-			}
-
-			case SE_IncreaseRunSpeedCap:
-			{
-				newbon->IncreaseRunSpeedCap += base1;
 				break;
 			}
 
@@ -956,50 +1035,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			}
 
-			case SE_DoubleSpecialAttack:
-			{
-				if(newbon->DoubleSpecialAttack < base1)
-					newbon->DoubleSpecialAttack = base1;
-				break;
-			}
-
 			case SE_SpecialAttackKBProc:
 			{
 				//You can only have one of these per client. [AA Dragon Punch]
 				newbon->SpecialAttackKBProc[0] = base1; //Chance base 100 = 25% proc rate
 				newbon->SpecialAttackKBProc[1] = base2; //Skill to KB Proc Off
-				break;
-			}
-
-			case SE_TripleBackstab:
-			{
-				if(newbon->TripleBackstab < base1)
-					newbon->TripleBackstab = base1;
-				break;
-			}
-
-			case SE_FrontalBackstabMinDmg:
-			{
-				newbon->FrontalBackstabMinDmg = true;
-				break;
-			}
-
-			case SE_FrontalBackstabChance:
-			{
-				if(newbon->FrontalBackstabChance < base1)
-					newbon->FrontalBackstabChance = base1;
-				break;
-			}
-
-			case SE_ConsumeProjectile:
-			{
-				newbon->ConsumeProjectile += base1;
-				break;
-			}
-
-			case SE_ArcheryDamageModifier:
-			{
-				newbon->ArcheryDamageModifier += base1;
 				break;
 			}
 
@@ -1012,86 +1052,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			}
 
-			case SE_SecondaryDmgInc:
-			{
-				newbon->SecondaryDmgInc = true;
-				break;
-			}
-
-
-			case SE_BlockBehind:
-			{
-				if (newbon->BlockBehind < base1)
-					newbon->BlockBehind = base1;
-
-				break;
-			}
-
-			case SE_ShieldBlock:
-			{
-				if (newbon->ShieldBlock < base1)
-					newbon->ShieldBlock = base1;
-
-				break;
-			}
-
-			case SE_StrikeThrough2:
-			{
-				if (newbon->StrikeThrough < base1)
-					newbon->StrikeThrough = base1;
-				break;
-			}
-
-			case SE_DoubleAttackChance:
-			{
-				if(newbon->DoubleAttackChance < base1)
-					newbon->DoubleAttackChance = base1;
-				break;
-			}
-
-			case SE_GiveDoubleAttack:
-			{
-				if(newbon->GiveDoubleAttack < base1)
-					newbon->GiveDoubleAttack = base1;
-				break;
-			}
-
-			case SE_ProcChance:
-			{
-				if(newbon->ProcChance < base1)
-					newbon->ProcChance = base1;
-				break;
-			}
-
 			case SE_SlayUndead:
 			{
 				if(newbon->SlayUndead[1] < base1)
 					newbon->SlayUndead[0] = base1; // Rate
 					newbon->SlayUndead[1] = base2; // Damage Modifier
-				break;
-			}
-
-			case SE_PetCriticalHit:
-			{
-				newbon->PetCriticalHit += base1;
-				break;
-			}
-
-			case SE_AvoidMeleeChance:
-			{
-				newbon->AvoidMeleeChance += base1;
-				break;
-			}
-
-			case SE_CombatStability:
-			{
-				newbon->CombatStability += base1;
-				break;
-			}
-
-			case SE_PetAvoidance:
-			{
-				newbon->PetAvoidance += base1;
 				break;
 			}
 
@@ -1111,13 +1076,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			}
 
-			case SE_RiposteChance:
-			{
-				if(newbon->RiposteChance < base1)
-					newbon->RiposteChance = base1;
-				break;
-			}
-
 			//Kayen: Not sure best way to implement this yet.
 			//Physically raises skill cap ie if 55/55 it will raise to 55/60
 			case SE_RaiseSkillCap:
@@ -1129,43 +1087,10 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			}
 
-			case SE_Flurry:
-			{
-				if(newbon->FlurryChance < base1)
-					newbon->FlurryChance = base1;
-				break;
-			}
-
-			case SE_Ambidexterity:
-			{	
-				newbon->Ambidexterity += base1;
-				break;
-			}
-
-			case SE_PetMaxHP:
-			{
-				newbon->PetMaxHP += base1;
-				break;
-			}
-
-			case SE_PetFlurry:
-			{
-				if(newbon->PetFlurry < base1)
-					newbon->PetFlurry = base1;
-				break;
-			}
-
 			case SE_MasteryofPast:
 			{
 				if(newbon->MasteryofPast < base1)
 					newbon->MasteryofPast = base1;
-				break;
-			}
-
-			case SE_BardSongRange:
-			{	
-				if(newbon->SongRange < base1)
-					newbon->SongRange = base1;
 				break;
 			}
 
@@ -1176,25 +1101,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			}
 
-			case SE_GivePetGroupTarget:
-			{
-				newbon->GivePetGroupTarget = true;
-				break;
-			}
-
-			case SE_RootBreakChance:
-			{
-				if(newbon->RootBreakChance < base1)
-					newbon->RootBreakChance = base1;
-				break;
-			}
-
-			case SE_UnfailingDivinity:
-			{
-				if(newbon->UnfailingDivinity < base1)
-					newbon->UnfailingDivinity = base1;
-				break;
-			}
 
 			case SE_DivineSave:
 			{
@@ -1202,6 +1108,49 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				{
 					newbon->DivineSaveChance[0] = base1;
 					newbon->DivineSaveChance[1] = base2;
+				}
+				break;
+			}
+
+			case SE_SpellEffectResistChance:
+			{
+				for(int e = 0; e < MAX_RESISTABLE_EFFECTS*2; e+=2)
+				{
+					if(!newbon->SEResist[e] || ((newbon->SEResist[e] = base2) && (newbon->SEResist[e+1] < base1)) ){
+						newbon->SEResist[e] = base2;
+						newbon->SEResist[e+1] = base1;
+					break;
+					}
+				}
+				break;
+			}
+
+			case SE_MitigateDamageShield:
+			{
+				if (base1 < 0)
+					base1 = base1*(-1);
+
+				newbon->DSMitigationOffHand += base1;
+				break;
+			}
+
+			case SE_FinishingBlow:
+			{
+			
+				//base1 = chance, base2 = damage
+				if (newbon->FinishingBlow[1] < base2){
+					newbon->FinishingBlow[0] = base1;
+					newbon->FinishingBlow[1] = base2;
+				}
+				break;
+			}
+
+			case SE_FinishingBlowLvl:
+			{
+				//base1 = level, base2 = ??? (Set to 200 in AA data, possible proc rate mod?)
+				if (newbon->FinishingBlowLvl[0] < base1){
+					newbon->FinishingBlowLvl[0] = base1;
+					newbon->FinishingBlowLvl[1] = base2;
 				}
 				break;
 			}
@@ -1819,11 +1768,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 				
 			case SE_ExtraAttackChance:
-			{
-				if(newbon->ExtraAttackChance < effect_value)
-					newbon->ExtraAttackChance = effect_value;
-				break;
-			}
+				newbon->ExtraAttackChance += effect_value;
+			break;
+			
 			case SE_PercentXPIncrease:
 			{
 				if(newbon->XPRateMod < effect_value)
@@ -1857,10 +1804,10 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 
 			case SE_Flurry:
 			{
-				if(newbon->FlurryChance < effect_value)
-					newbon->FlurryChance = effect_value;
+				newbon->FlurryChance += effect_value;
 				break;
 			}
+
 			case SE_Accuracy:
 			{
 				if ((effect_value < 0) && (newbon->Accuracy[HIGHEST_SKILL+1] > effect_value))
@@ -1925,9 +1872,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			
 			case SE_CriticalSpellChance:
+			{
 				newbon->CriticalSpellChance += effect_value;
-				newbon->SpellCritDmgIncrease += spells[spell_id].base2[i];
+				if (spells[spell_id].base2[i] > 100)
+					newbon->SpellCritDmgIncrease += (spells[spell_id].base2[i] - 100);
 				break;
+			}
 
 			case SE_SpellCritDmgIncrease:
 				newbon->SpellCritDmgIncrease += effect_value;
@@ -1948,8 +1898,13 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 				
 			case SE_MitigateDamageShield:
-				newbon->DSMitigation += effect_value;
+			{
+				if (effect_value < 0)
+					effect_value = effect_value*-1;
+			
+				newbon->DSMitigationOffHand += effect_value;
 				break;
+			}
 			
 			case SE_CriticalDoTChance:
 				newbon->CriticalDoTChance += effect_value;
@@ -2097,12 +2052,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 
 			case SE_BardSongRange:
-			{	
-				if(newbon->SongRange < effect_value)
-				newbon->SongRange = effect_value;
+				newbon->SongRange += effect_value;
 				break;
-			}
-
+			
 			case SE_HPToMana:
 			{
 				//Lower the ratio the more favorable
@@ -2157,12 +2109,8 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 
 			case SE_ShieldBlock:
-			{
-				if (newbon->ShieldBlock < effect_value)
-					newbon->ShieldBlock = effect_value;
-
-				break;
-			}
+				newbon->ShieldBlock += effect_value;
+			break;
 
 			case SE_BlockBehind:
 			{
@@ -2211,31 +2159,21 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 
 			case SE_DoubleSpecialAttack:
-			{
-				if(newbon->DoubleSpecialAttack < effect_value)
-					newbon->DoubleSpecialAttack = effect_value;
+				newbon->DoubleSpecialAttack += effect_value;
 				break;
-			}
-
+			
 			case SE_TripleBackstab:
-			{
 				newbon->TripleBackstab += effect_value;
 				break;
-			}
-
+			
 			case SE_FrontalBackstabMinDmg:
-			{
 				newbon->FrontalBackstabMinDmg = true;
 				break;
-			}
-
-
+		
 			case SE_FrontalBackstabChance:
-			{
 				newbon->FrontalBackstabChance += effect_value;
 				break;
-			}
-			
+						
 			case SE_ConsumeProjectile:
 			{
 				newbon->ConsumeProjectile += effect_value;
@@ -2261,12 +2199,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 
 			case SE_GiveDoubleAttack:
-			{
-				if(newbon->GiveDoubleAttack < effect_value)
-					newbon->GiveDoubleAttack = effect_value;
+				newbon->GiveDoubleAttack += effect_value;
 				break;
-			}
-
+			
 			case SE_SlayUndead:
 			{
 				if(newbon->SlayUndead[1] < effect_value)
@@ -2315,12 +2250,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 
 			case SE_PetFlurry:
-			{
-				if(newbon->PetFlurry < effect_value)
-					newbon->PetFlurry = effect_value;
+				newbon->PetFlurry += effect_value;
 				break;
-			}
-
+			
 			case SE_MasteryofPast:
 			{
 				if(newbon->MasteryofPast < effect_value)
@@ -2335,33 +2267,48 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 
 			case SE_RootBreakChance:
-			{
-				if(newbon->RootBreakChance < effect_value)
-					newbon->RootBreakChance = effect_value;
+				newbon->RootBreakChance += effect_value;
 				break;
-			}
-
-
+			
 			case SE_ChannelChanceItems:
-			{
-				if(newbon->ChannelChanceItems < effect_value)
-					newbon->ChannelChanceItems = effect_value;
+				newbon->ChannelChanceItems += effect_value;
 				break;
-			}
-
+			
 			case SE_ChannelChanceSpells:
+				newbon->ChannelChanceSpells += effect_value;
+				break;
+			
+			case SE_UnfailingDivinity:
+				newbon->UnfailingDivinity += effect_value;
+				break;
+			
+
+			case SE_ItemHPRegenCapIncrease:
+				newbon->ItemHPRegenCap += effect_value;
+			break;
+			
+
+			case SE_SpellEffectResistChance:
 			{
-				if(newbon->ChannelChanceSpells < effect_value)
-					newbon->ChannelChanceSpells = effect_value;
+				for(int e = 0; e < MAX_RESISTABLE_EFFECTS*2; e+=2)
+				{
+					if(!newbon->SEResist[e] && 
+						((newbon->SEResist[e] = spells[spell_id].base2[i]) && (newbon->SEResist[e+1] < effect_value)) ){
+						newbon->SEResist[e] = spells[spell_id].base2[i];
+						newbon->SEResist[e+1] = effect_value;
+						break;
+					}
+				}
 				break;
 			}
 
-			case SE_UnfailingDivinity:
-			{
-				if(newbon->UnfailingDivinity < effect_value)
-					newbon->UnfailingDivinity = effect_value;
-				break;
-			}
+			case SE_OffhandRiposteFail:
+				newbon->OffhandRiposteFail += effect_value;
+			break;
+
+			case SE_ItemAttackCapIncrease:
+				newbon->ItemATKCap += effect_value;
+			break;
 		}
 	}
 }
@@ -2527,9 +2474,16 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
 	return changed;
 }
 
-uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index)
-{	
-	switch (spells[spell_id].effectid[effect_index])
+uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index, bool AA,int32 aa_effect)
+{
+	int16 effect = 0;
+
+	if (!AA)
+		effect = spells[spell_id].effectid[effect_index];
+	else
+		effect = aa_effect;
+
+	switch (effect)
 	{
 		case SE_ImprovedDamage:
 			return focusImprovedDamage;
@@ -2558,7 +2512,8 @@ uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index)
 		case SE_ReduceReuseTimer:
 			return focusReduceRecastTime;
 		case SE_TriggerOnCast:
-			return focusTriggerOnCast;
+			//return focusTriggerOnCast;
+			return 0;
 		case SE_SpellVulnerability:
 			return focusSpellVulnerability;
 		case SE_BlockNextSpellFocus:
@@ -2571,8 +2526,8 @@ uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index)
 			return focusSpellDamage;
 		case SE_FF_Damage_Amount:
 			return focusFF_Damage_Amount;
-		case SE_SpellCriticalFocus:
-			return focusImprovedCritical;
+		case SE_ImprovedDamage2:
+			return focusImprovedDamage2;
 		case SE_Empathy:
 			return focusAdditionalDamage;
 		case SE_HealRate2:
@@ -2860,10 +2815,9 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 				}
 				
 				case SE_ChangeAggro:
-				{
 					spellbonuses.hatemod = effect_value;
-					break;
-				}
+				break;
+				
 				case SE_MeleeMitigation:
 				{
 					spellbonuses.MeleeMitigation = 0;
@@ -3089,7 +3043,7 @@ void Mob::NegateSpellsBonuses(int16 spell_id)
 					break;
 					
 				case SE_MitigateDamageShield:
-					spellbonuses.DSMitigation = effect_value;
+					spellbonuses.DSMitigationOffHand = effect_value;
 					break;
 				
 				case SE_CriticalDoTChance:

@@ -44,6 +44,7 @@
 
 #define EFFECT_COUNT 12
 #define MAX_SPELL_TRIGGER 12	// One for each slot(only 6 for AA since AA use 2)
+#define MAX_RESISTABLE_EFFECTS 12	// Number of effects that are typcially checked agianst resists.
 
 const int Z_AGGRO=10;
 
@@ -394,15 +395,15 @@ typedef enum  {
 //#define SE_Unknown240					240	// not used  [Likely related to above - you become immune to feign breaking on a resisted spell and have a good chance of feigning through a spell that successfully lands upon you.]
 #define SE_ImprovedReclaimEnergy		241	// not implemented as bonus - increase the amount of mana returned to you when reclaiming your pet.
 #define SE_ChanceWipeHateList			242	// *not implemented - increases the chance to wipe hate with memory blurr
-#define SE_CharmBreakChance				243	// implemented - Buff on pet that decreases charm break chance
-#define	SE_RootBreakChance				244	// *not implemented[AA] reduce the chance that your root will break.
+#define SE_CharmBreakChance				243	// implemented - Total Domination
+#define	SE_RootBreakChance				244	// implemented[AA] reduce the chance that your root will break.
 #define SE_TrapCircumvention			245	// *not implemented[AA] - decreases the chance that you will set off a trap when opening a chest
 #define SE_SetBreathLevel				246 // not implemented as bonus
 #define SE_RaiseSkillCap				247	// *not implemented[AA] - adds skill over the skill cap.
 #define SE_SecondaryForte				248 // not implemented as bonus(gives you a 2nd specialize skill that can go past 50 to 100)
 #define SE_SecondaryDmgInc				249 // implemented[AA] Allows off hand weapon to recieve a damage bonus (Sinister Strikes)
 #define SE_SpellProcChance				250	// implemented - Increase chance to sympathetic proc by %
-#define SE_ConsumeProjectile				251	// implemented[AA] - chance to not consume an arrow (ConsumeProjectile = 100)
+#define SE_ConsumeProjectile			251	// implemented[AA] - chance to not consume an arrow (ConsumeProjectile = 100)
 #define SE_FrontalBackstabChance		252	// implemented[AA] - chance to perform a full damage backstab from front.
 #define SE_FrontalBackstabMinDmg		253	// implemented[AA] - allow a frontal backstab for mininum damage.
 #define SE_Blank						254 // implemented
@@ -429,7 +430,7 @@ typedef enum  {
 //#define SE_Unknown275					275	// not used
 #define SE_Ambidexterity				276 // implemented[AA] increase chance to duel weild by adding bonus 'skill'
 #define SE_UnfailingDivinity			277	// *not implemented[AA] ability grants your Death Pact-type spells a second chance to successfully heal their target, also can cause said spells to do a portion of their healing value even on a complete failure.
-#define	SE_FinishingBlow				278 // not implemented as bonus - aa effect
+#define	SE_FinishingBlow				278 // implemented as bonus[AA] - aa effect (base1 = chance, base2 = damage)
 #define SE_Flurry						279	// implemented
 #define SE_PetFlurry					280 // implemented[AA]
 #define SE_FeignedMinion				281	// *not implemented[AA] ability allows you to instruct your pet to feign death via the '/pet feign' command.  value = succeed chance
@@ -453,10 +454,10 @@ typedef enum  {
 #define SE_WakeTheDead					299	// implemented
 #define SE_Doppelganger					300	// implemented
 #define SE_ArcheryDamageModifier		301	// implemented[AA] - increase archery damage by percent
-#define SE_SpellCriticalFocus			302	// implemented - spell critical chance with focus limits
+#define SE_ImprovedDamage2				302	// implemented - spell damage focus
 #define SE_FF_Damage_Amount				303	// implemented - adds direct spell damage
 #define SE_OffhandRiposteFail			304 // not implemented as bonus - enemy cannot riposte offhand attacks
-#define SE_MitigateDamageShield			305 // implemented
+#define SE_MitigateDamageShield			305 // implemented - off hand attacks only (Shielding Resistance)
 #define SE_ArmyOfTheDead				306 // *not implemented  NecroAA - This ability calls up to five shades of nearby corpses back to life to serve the necromancer. The soulless abominations will mindlessly fight the target until called back to the afterlife some time later. The first rank summons up to three shades that serve for 60 seconds, and each additional rank adds one more possible shade and increases their duration by 15 seconds
 #define SE_Appraisal					307 // *not implemented Rogue AA - This ability allows you to estimate the selling price of an item you are holding on your cursor. 
 #define SE_SuspendMinion				308 // not implemented as bonus
@@ -529,7 +530,7 @@ typedef enum  {
 #define SE_DotCritDmgIncrease			375	// implemented - Increase damage of DoT critical amount
 //#define SE_Unknown376					376	// *not implemented - used in 2 spells
 #define SE_BossSpellTrigger				377	// implemented - spell is cast on fade
-#define SE_CharmResistance				378	// *not implemented - Increase chance to resist charm
+#define SE_SpellEffectResistChance		378	// implemented - Increase chance to resist specific spell effect (base1=value, base2=spell effect id)
 #define SE_ShadowStepDirectional		379 // implemented - handled by client
 #define SE_Knockdown					380 // implemented - small knock back(handled by client)
 #define	SE_KnockTowardCaster			381	// *not implemented (Call of Hither) knocks you back to caster (value) distance units infront
@@ -556,7 +557,7 @@ typedef enum  {
 #define SE_EndDrainWithDmg				402 // implemented - Deals damage for the amount of endurance drained
 #define SE_ReluctantBene				403 // *not implemented - Reluctant Benevolence(21662)
 #define SE_LimitExcludeSkill			404 // implemented - Limit a focus to exclude spells cast using a specific skill.
-#define SE_Twinproc						405 // implemented - Proc twice
+#define SE_Twinproc						405 // implemented - Proc twice [THIS IS MADE UP!] 2 Hand Block
 #define SE_CastonNumHitFade				406 // implemented - casts a spell when a buff fades due to its numhits being depleted
 //#define SE_Unknown397					407 // *not implemented (Diminished Presence) Triggerable spell effect
 #define SE_LimitHPPercent				408 // implemented - limited to a certain percent of your hp(ie heals up to 50%)
@@ -590,8 +591,8 @@ typedef enum  {
 //#define SE_Unknown432					436 // not used
 #define SE_Anchor						437 // *not implemented - Teleport Guild Hall Anchor(33099)
 //#define SE_Unknown438					438 // not used
-#define SE_IncreaseAssassinationLv		439 // *not implemented[AA] - increases the maximum level of humanoid that can be affected by assassination
-#define SE_FinishingBlowLv				440 // *not implemented - Sets the level Finishing blow can be triggered on an NPC
+#define SE_IncreaseAssassinationLvl		439 // *not implemented[AA] - increases the maximum level of humanoid that can be affected by assassination
+#define SE_FinishingBlowLvl				440 // implemented[AA] - Sets the level Finishing blow can be triggered on an NPC
 #define SE_MovementSpeed2				441 // *not implemented - new snare effect
 #define SE_TriggerOnHPAmount			442 // *not implemented - triggers a spell which a certain hp level is reached
 //#define SE_Unknown443					443 // *not implemented - related to Finishing Blow AA
@@ -600,7 +601,7 @@ typedef enum  {
 // LAST
 
 
-#define DF_Permanent		50
+#define DF_Permanent			50
 
 // solar: note this struct is historical, we don't actually need it to be
 // aligned to anything, but for maintaining it it is kept in the order that

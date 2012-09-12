@@ -535,7 +535,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	Mob* defender = this;
 	float aa_mit = 0;
 
-	aa_mit = (aabonuses.CombatStability + itembonuses.CombatStability + spellbonuses.CombatStability)/100.0f;;
+	aa_mit = (aabonuses.CombatStability + itembonuses.CombatStability + spellbonuses.CombatStability)/100.0f;
 
 	if(RuleB(Combat, UseIntervalAC))
 	{
@@ -1096,10 +1096,14 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 
 	
 	ItemInst* weapon;
-	if (Hand == 14)	// Kaiyodo - Pick weapon from the attacking hand
+	if (Hand == 14){	// Kaiyodo - Pick weapon from the attacking hand
 		weapon = GetInv().GetItem(SLOT_SECONDARY);
-	else
+		OffHandAtk(true);
+	}
+	else{
 		weapon = GetInv().GetItem(SLOT_PRIMARY);
+		OffHandAtk(false);
+	}
 
 	if(weapon != NULL) {
 		if (!weapon->IsWeapon()) {
@@ -1223,8 +1227,14 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, b
 		if (damage == -3)  {
 			if (bRiposte) return false;
 			else {
-				if (Hand == 14 && GetAA(aaSlipperyAttacks) > 0) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
-					if (MakeRandomInt(0, 100) < (GetAA(aaSlipperyAttacks) * 20)) {
+				if (Hand == 14) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
+					//Live AA - SlipperyAttacks 
+					//This spell effect most likely directly modifies the actual riposte chance when using offhand attack.
+					sint16 OffhandRiposteFail = aabonuses.OffhandRiposteFail + itembonuses.OffhandRiposteFail + spellbonuses.OffhandRiposteFail;
+					OffhandRiposteFail *= -1; //Live uses a negative value for this.
+
+					if (OffhandRiposteFail && 
+						(OffhandRiposteFail > 99 || (MakeRandomInt(0, 100) < OffhandRiposteFail))) {
 						damage = 0; // Counts as a miss
 						slippery_attack = true;
 					} else 
@@ -1686,9 +1696,11 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool
 	SkillType skillinuse = HAND_TO_HAND;
 	if (Hand == 13) {
 		skillinuse = static_cast<SkillType>(GetPrimSkill());
+		OffHandAtk(false);
 	}
 	if (Hand == 14) {
 		skillinuse = static_cast<SkillType>(GetSecSkill());
+		OffHandAtk(true);
 	}
 
 	//figure out what weapon they are using, if any
@@ -2378,30 +2390,19 @@ void Mob::DamageShield(Mob* attacker, bool spell_ds) {
 	//invert DS... spells yield negative values for a true damage shield
 	if(DS < 0) {
 		if(!spell_ds)	{
-			if(GetAA(aaCoatofThistles)) {
-				int dsMod = 100;
-				switch (GetAA(aaCoatofThistles))
-				{
-				case 1:
-					dsMod = 110;
-					break;
-				case 2:
-					dsMod = 115;
-					break;
-				case 3:
-					dsMod = 120;
-					break;
-				case 4:
-					dsMod = 125;
-					break;
-				case 5:
-					dsMod = 130;
-					break;
-				}
-				DS = ((DS * dsMod) / 100);
-			}
+
+			DS += aabonuses.DamageShield; //Live AA - coat of thistles. (negative value)
 			DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
-			DS += attacker->itembonuses.DSMitigation + attacker->spellbonuses.DSMitigation;
+			
+			//Spell data for damage shield mitigation shows a negative value for spells for clients and positive
+			//value for spells that effect pets. Unclear as to why. For now will convert all positive to be consistent.
+			if (attacker->IsOffHandAtk()){
+				sint16 mitigation = attacker->itembonuses.DSMitigationOffHand + 
+								   attacker->spellbonuses.DSMitigationOffHand + 
+								   attacker->aabonuses.DSMitigationOffHand;
+				DS -= DS*mitigation/100;
+			}
+			DS -= DS * attacker->itembonuses.DSMitigation / 100;
 		}
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
 		//we can assume there is a spell now
@@ -3992,62 +3993,25 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 {
-	int8 aa_item = GetAA(aaFinishingBlow) + GetAA(aaCoupdeGrace) + GetAA(aaDeathblow);
 
-	if(aa_item && !defender->IsClient() && defender->GetHPRatio() < 10){
-		int chance = 0;
-		int levelreq = 0;
-		switch(aa_item)
-		{
-		case 1:
-			chance = 2;
-			levelreq = 50;
-			break;
-		case 2:
-			chance = 5;
-			levelreq = 52;
-			break;
-		case 3:
-			chance = 7;
-			levelreq = 54;
-			break;
-		case 4:
-			chance = 7;
-			levelreq = 55;
-			break;
-		case 5:
-			chance = 7;
-			levelreq = 57;
-			break;
-		case 6:
-			chance = 7;
-			levelreq = 59;
-			break;
-            case 7:
-			chance = 7;
-			levelreq = 61;
-			break;
-		case 8:
-			chance = 7;
-			levelreq = 63;
-			break;
-		case 9:
-			chance = 7;
-			levelreq = 65;
-			break;
-		default:
-			break;
-		}
+	if (!defender)
+		return false;
+	
+	if (aabonuses.FinishingBlow[1] && !defender->IsClient() && defender->GetHPRatio() < 10){
 
-		if(chance >= MakeRandomInt(0, 100) && defender->GetLevel() <= levelreq){
-			mlog(COMBAT__ATTACKS, "Landed a finishing blow: AA at %d, other level %d", aa_item, defender->GetLevel());
+		uint32 chance = aabonuses.FinishingBlow[0]/10; //500 = 5% chance.
+		uint32 damage = aabonuses.FinishingBlow[1];
+		uint16 levelreq = aabonuses.FinishingBlowLvl[0];
+
+		if(defender->GetLevel() <= levelreq && (chance >= MakeRandomInt(0, 1000))){
+			mlog(COMBAT__ATTACKS, "Landed a finishing blow: levelreq at %d, other level %d", levelreq , defender->GetLevel());
 			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetName());
-			defender->Damage(this, 32000, SPELL_UNKNOWN, skillinuse);
+			defender->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
 			return true;
 		}
 		else
 		{
-			mlog(COMBAT__ATTACKS, "FAILED a finishing blow: AA at %d, other level %d", aa_item, defender->GetLevel());
+			mlog(COMBAT__ATTACKS, "FAILED a finishing blow: levelreq  at %d, other level %d", levelreq , defender->GetLevel());
 			return false;
 		}
 	}

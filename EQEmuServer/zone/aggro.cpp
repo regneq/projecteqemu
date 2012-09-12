@@ -1308,20 +1308,8 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
 		}
 
-		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
-
-		switch (aaSubtlety)
-		{
-		case 0:
-			break;
-		case 1:
-			HateMod -= 5;
-		case 2:
-			HateMod -= 10;
-		case 3:
-			HateMod -= 20;
-			break;
-		}
+		//Live AA - Spell casting subtlety
+		HateMod += aabonuses.hatemod + spellbonuses.hatemod + itembonuses.hatemod;
 
 		AggroAmount = (AggroAmount * HateMod) / 100;
 
@@ -1376,21 +1364,9 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
 		}
 
-		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
-
-		switch (aaSubtlety)
-		{
-		case 0:
-			break;
-		case 1:
-			HateMod -= 5;
-		case 2:
-			HateMod -= 10;
-		case 3:
-			HateMod -= 20;
-			break;
-		}
-
+		//Live AA - Spell casting subtlety
+		HateMod += aabonuses.hatemod + spellbonuses.hatemod + itembonuses.hatemod;
+		
 		AggroAmount = (AggroAmount * HateMod) / 100;
 
 		//made up number probably scales a bit differently on live but it seems like it will be close enough
@@ -1455,10 +1431,6 @@ bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
 		if (MakeRandomInt(0, 100) > RuleI(Spells, CharmBreakCheckChance))
 			return true;
 
-		//Check if pet has any charm break bonuses
-		if (CharmBreakBonusCheck())
-			return true;
-
 		//2: The mob makes a resistance check against the charm
 		if (resist_check == 100)
 			return true; 
@@ -1468,25 +1440,9 @@ bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
 			if (caster->IsClient())
 			{
 				//3: At maxed ability, Total Domination has a 50% chance of preventing the charm break that otherwise would have occurred. 
-				int32 TotalDominationRank = 0;
-				uint8 TotalDominationBonus = 0;
-				TotalDominationRank = GetAA(aaTotalDomination);
-								
-				switch(TotalDominationRank) {
-					case 1 :
-						TotalDominationBonus = 16;
-						break;
-					case 2 :
-						TotalDominationBonus = 33;
-						break;
-					case 3 :
-						TotalDominationBonus = 50;
-						break;
-					default :
-						TotalDominationBonus = 0;
-				}
-				
-				if (MakeRandomFloat(0, 100) < TotalDominationBonus)
+				uint16 TotalDominationBonus = caster->aabonuses.CharmBreakChance + caster->spellbonuses.CharmBreakChance + caster->itembonuses.CharmBreakChance;
+									
+				if (MakeRandomInt(0, 100) < TotalDominationBonus)
 					return true;
 
 			}

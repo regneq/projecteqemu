@@ -1,5 +1,28 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==09/12/2012==
+Kayen: Implemented NPC Special Attack 'i'. Immune to Taunt.
+Kayen: Implemented: SOF+ live like stacking of AA's that belong to the same series in the AA window (Expection: AA's that use hot keys).
+Kayen: Implemented SE_SpellEffectResistChance - Increase chance to resist specific spell effects ie. Charm
+Kayen: Revision to how AA focus effects are handled to correclty utilize live AA data.
+Kayen: Almost all 'General' and most 'Archetype' AA's implemented through Underfoot.
+Kayen: aaID data (AA.h) updated through VoA expansion.
+
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: Spell Casting Subtlety now implemented with bonus SE_ChangeAggro
+MISC AA: Many AA that are spell focus effects now implemented using live data.
+MISC AA: Finishing Blow ect, will now implemented using bonus, SE_FinishingBlow and SE_FinishingBlowLvl.
+ENC  AA: Total Domination now implemented with bonus SE_CharmBreakChance.
+SK   AA: Soul Abrasion now implemented with bonus SE_ImprovedDamage2.
+*Many fixes to previously implemented AA effects.
+
+REQUIRED SQL: utils/sql/svn/2208_required_aa_updates	
+OPTIONAL SQL: utils/sql/svn/2208_optional_EnableSoulAbrasionAA
+OPTIONAL SQL: utils/sql/svn/2208_optional_aa_stacking_rule.sql (If false will disable AA stacking for all clients)
+ *If using an older server spell file (pre SOF), will need to run this to correctly populate the 'spellgroups' field.
+
+=======
 ==09/07/2012==
 Bad_Captain: Bots- Fixed an issue where bots couldn't have spells with target type of ST_GroupClientAndPet cast on them.
 Bad_Captain: Bots- Added #bot healrotations command. Please see forums for more information.

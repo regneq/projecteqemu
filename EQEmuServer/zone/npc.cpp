@@ -1546,6 +1546,9 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag, bool reset, bool rem
 			case 'Z':
 				SpecAttacks[NO_HARM_FROM_CLIENT] = (remove ? false : true);
 				break;
+			case 'i':
+				SpecAttacks[IMMUNE_TAUNT] = (remove ? false : true);
+				break;
 
 			default:
 				break;
