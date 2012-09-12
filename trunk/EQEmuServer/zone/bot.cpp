@@ -8130,7 +8130,7 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 					}
 					break;
 				case 1:
-					if (bottype == BotfocusImprovedCritical && focus_spell.base[i] > value)
+					if (bottype == BotfocusImprovedDamage2 && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}

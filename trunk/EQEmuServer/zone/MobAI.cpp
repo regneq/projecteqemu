@@ -833,91 +833,31 @@ void Client::AI_Process()
 
 								if(GetTarget())
 								{
-									int32 flurry_chance = 0;
-									switch (GetAA(aaFlurry)) 
-									{
-									case 1:
-										flurry_chance += 10;
-										break;
-									case 2:
-										flurry_chance += 25;
-										break;
-									case 3:
-										flurry_chance += 50;
-										break;
-									}
+									//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
+									sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
 
-									if(triple_attack_success) 
+									if (flurrychance)
 									{
-										triple_attack_success = false;
-										switch (GetAA(aaRagingFlurry)) 
+										if(MakeRandomInt(0, 100) < flurrychance) 
 										{
-										case 1:
-											flurry_chance += 10;
-											break;
-										case 2:
-											flurry_chance += 25;
-											break;
-										case 3:
-											flurry_chance += 50;
-											break;
+											Message_StringID(MT_NPCFlurry, 128);
+											Attack(GetTarget(), 13, false);
+											Attack(GetTarget(), 13, false);
 										}
 									}
 
-									if(MakeRandomInt(0, 999) < flurry_chance) 
-									{
-										Message_StringID(MT_NPCFlurry, 128);
-										Attack(GetTarget(), 13, true);
-										Attack(GetTarget(), 13, true);
-									}
+									sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
-									if (GetTarget() && GetAA(aaRapidStrikes))
-									{
-										int32 chance_xhit1 = 0;
-										int32 chance_xhit2 = 0;
-										switch (GetAA(aaRapidStrikes))
-										{
-										case 1:
-											chance_xhit1 = 10;
-											chance_xhit2 = 2;
-											break;
-										case 2:
-											chance_xhit1 = 12;
-											chance_xhit2 = 4;
-											break;
-										case 3:
-											chance_xhit1 = 14;
-											chance_xhit2 = 6;
-											break;
-										case 4:
-											chance_xhit1 = 16;
-											chance_xhit2 = 8;
-											break;
-										case 5:
-											chance_xhit1 = 20;
-											chance_xhit2 = 10;
-											break;
-										}
-										if (MakeRandomInt(1,100) < chance_xhit1)
-											Attack(GetTarget(), 13, true);
-										if (MakeRandomInt(1,100) < chance_xhit2)
-											Attack(GetTarget(), 13, true);
-									}
-
-									if(GetTarget() && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) 
-									{
+									if (ExtraAttackChanceBonus && GetTarget()) {
 										ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
-										if(wpn)
-										{
+										if(wpn){
 											if(wpn->GetItem()->ItemType == ItemType2HS || 
 												wpn->GetItem()->ItemType == ItemType2HB ||
 												wpn->GetItem()->ItemType == ItemType2HPierce )
 											{
-												int32 extatk = GetAA(aaPunishingBlade)*5;
-												extatk += GetAA(aaSpeedoftheKnight)*5;
-												if(MakeRandomInt(0, 100) < extatk)
+												if(MakeRandomInt(0, 100) < ExtraAttackChanceBonus)
 												{
-													Attack(GetTarget(), 13, true);
+													Attack(GetTarget(), 13, false);
 												}
 											}
 										}
@@ -947,9 +887,12 @@ void Client::AI_Process()
 			{
 				if(GetTarget())
 				{
-					float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
-					DualWieldProbability += (0.1f * GetAA(aaAmbidexterity));
-					DualWieldProbability += ((spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f);			
+					float DualWieldProbability = 0.0f;
+					
+					sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+					DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
+					sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+					DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;		
 
 					if(MakeRandomFloat(0.0, 1.0) < DualWieldProbability)
 					{

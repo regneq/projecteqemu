@@ -227,6 +227,8 @@ sint32 Client::CalcHPRegen() {
 sint32 Client::CalcHPRegenCap()
 {
 	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
+
+	cap += aabonuses.ItemHPRegenCap + spellbonuses.ItemHPRegenCap + itembonuses.ItemHPRegenCap;
 	
 	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
@@ -1484,8 +1486,7 @@ sint16	Client::CalcMR()
 			MR = 20;
 	}
 	
-	MR += itembonuses.MR + spellbonuses.MR;
-	MR += (GetAA(aaInnateMagicProtection) + GetAA(aaMarrsProtection))*2;
+	MR += itembonuses.MR + spellbonuses.MR + aabonuses.MR;
 	
 	if(GetClass() == WARRIOR)
 		MR += GetLevel() / 2;
@@ -1564,8 +1565,7 @@ sint16	Client::CalcFR()
 			FR += l - 49;
 	}
 	
-	FR += itembonuses.FR + spellbonuses.FR;
-	FR += (GetAA(aaInnateFireProtection) + GetAA(aaWardingofSolusek))*2;
+	FR += itembonuses.FR + spellbonuses.FR + aabonuses.FR;
 	
 	if(FR < 1)
 		FR = 1;
@@ -1648,8 +1648,7 @@ sint16	Client::CalcDR()
 			DR += l - 49;
 	}
 	
-	DR += itembonuses.DR + spellbonuses.DR;
-	DR += (GetAA(aaInnateDiseaseProtection) + GetAA(aaBertoxxulousGift))*2;
+	DR += itembonuses.DR + spellbonuses.DR + aabonuses.DR;
 	
 	if(DR < 1)
 		DR = 1;
@@ -1732,8 +1731,7 @@ sint16	Client::CalcPR()
 			PR += l - 49;
 	}
 	
-	PR += itembonuses.PR + spellbonuses.PR;
-	PR += (GetAA(aaInnatePoisonProtection) + GetAA(aaShroudofTheFaceless))*2;
+	PR += itembonuses.PR + spellbonuses.PR + aabonuses.PR;
 	
 	if(PR < 1)
 		PR = 1;
@@ -1809,8 +1807,7 @@ sint16	Client::CalcCR()
 			CR += l - 49;
 	}
 	
-	CR += itembonuses.CR + spellbonuses.CR;
-	CR += (GetAA(aaInnateColdProtection) + GetAA(aaBlessingofEci))*2;
+	CR += itembonuses.CR + spellbonuses.CR + aabonuses.CR;
 	
 	if(CR < 1)
 		CR = 1;

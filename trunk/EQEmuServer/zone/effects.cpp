@@ -93,6 +93,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
     	//damage spells.
 		modifier += GetFocusEffect(focusImprovedDamage, spell_id);
 		modifier += GetFocusEffect(focusSpellEffectiveness, spell_id);
+		modifier += GetFocusEffect(focusImprovedDamage2, spell_id);
 	}
 	
 	// Need to scale HT damage differently after level 40! It no longer scales by the constant value in the spell file. It scales differently, instead of 10 more damage per level, it does 30 more damage per level. So we multiply the level minus 40 times 20 if they are over level 40.
@@ -130,8 +131,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 
 		chance += itembonuses.CriticalSpellChance + spellbonuses.CriticalSpellChance + aabonuses.CriticalSpellChance;
 		ratio += itembonuses.SpellCritDmgIncrease + spellbonuses.SpellCritDmgIncrease + aabonuses.SpellCritDmgIncrease;
-		chance += GetFocusEffect(focusImprovedCritical, spell_id);
-		
+
 		if(GetClass() == WIZARD) {
 			if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
 				chance += RuleI(Spells, WizCritChance);
@@ -147,6 +147,11 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 				chance = 100;
 		} 
 
+		/*
+		//Handled in aa_effects will focus spells from 'spellgroup=99'. (SK life tap from buff procs)
+		//If you are using an older spell file table (Pre SOF)...
+		//Use SQL optional_EnableSoulAbrasionAA to update your spells table to properly use the effect.
+		//If you do not want to update your table then you may want to enable this.
 		if(tt == ST_Tap) {
 			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH){
 				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
@@ -166,6 +171,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 				}
 			}
 		}
+		*/
 		
 		if (chance > 0) {
 			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
@@ -264,43 +270,9 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		if(this->GetTarget())
 			value += value * GetHealRate(spell_id) / 100;
 		
+		//Live AA - Healing Gift, Theft of Life
 		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 		
-		if(spells[spell_id].targettype == ST_Tap) {
-			switch(GetAA(aaTheftofLife)) {
-			case 1:
-				chance += 2;
-				break;
-			case 2:
-				chance += 5;
-				break;
-			case 3:
-				chance += 10;
-				break;
-			}
-
-			switch(GetAA(aaAdvancedTheftofLife)) {
-			case 1:
-				chance += 3;
-				break;
-			case 2:
-				chance += 6;
-				break;
-			}
-   
-			switch(GetAA(aaSoulThief)) {
-			case 1:
-				chance += 2;
-				break;
-			case 2:
-				chance += 4;
-				break;
-			case 3:
-				chance += 6;
-				break;
-			}
-		}
-
 		if(MakeRandomInt(0,99) < chance) {
 			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier / 50) + heal_amt*2));		
 			return ((value * modifier / 50) + heal_amt*2);
@@ -457,78 +429,8 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 			|| GetClass() == PALADIN || GetClass() == BEASTLORD ))
 		cast_reducer += (GetLevel()-50)*3;
 	
-	if(casttime >= 4000 && BeneficialSpell(spell_id) && CalcBuffDuration(this, this, spell_id) > 0){
-		switch (GetAA(aaSpellCastingDeftness)) {
-			case 1:
-				cast_reducer += 5;
-				break;
-			case 2:
-				cast_reducer += 10;
-				break;
-			case 3:
-				cast_reducer += 25;
-				break;
-		}
-
-		switch (GetAA(aaQuickBuff))
-		{
-			case 1:
-				cast_reducer += 10;
-				break;
-			case 2:
-				cast_reducer += 25;
-				break;
-			case 3:
-				cast_reducer += 50;
-				break;
-		}
-	}
-	if (IsSummonSpell(spell_id))
-	{
-		switch (GetAA(aaQuickSummoning))
-		{
-			case 1:
-				cast_reducer += 10;
-				break;
-			case 2:
-				cast_reducer += 25;
-				break;
-			case 3:
-				cast_reducer += 50;
-				break;
-		}
-	}
-	if (IsEvacSpell(spell_id))
-	{
-		switch (GetAA(aaQuickEvacuation))
-		{
-			case 1:
-				cast_reducer += 10;
-				break;
-			case 2:
-				cast_reducer += 25;
-				break;
-			case 3:
-				cast_reducer += 50;
-				break;
-		}
-	}
-	if (IsDamageSpell(spell_id) && spells[spell_id].cast_time >= 4000)
-	{
-		switch (GetAA(aaQuickDamage))
-		{
-			case 1:
-				cast_reducer += 2;
-				break;
-			case 2:
-				cast_reducer += 5;
-				break;
-			case 3:
-				cast_reducer += 10;
-				break;
-		}
-	}
-
+	//LIVE AA SpellCastingDeftness, QuickBuff, QuickSummoning, QuickEvacuation, QuickDamage
+	
 	if (cast_reducer > RuleI(Spells, MaxCastTimeReduction))
 		cast_reducer = RuleI(Spells, MaxCastTimeReduction);	
 	

@@ -652,11 +652,14 @@ bool Client::CheckFizzle(int16 spell_id)
 
 	// always at least 1% chance to fail or 5% to succeed
 	fizzlechance = fizzlechance < 1 ? 1 : (fizzlechance > 95 ? 95 : fizzlechance);
+	
+	/*
 	if(IsBardSong(spell_id))
 	{
 		//This was a channel chance modifier - no evidence for fizzle reduction
 		fizzlechance -= GetAA(aaInternalMetronome) * 1.5f; 
 	}
+	*/
 
 	float fizzle_roll = MakeRandomFloat(0, 100);
 
@@ -1132,14 +1135,16 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 
 	TryTwincast(this, target, spell_id);
 
-	if(this->itembonuses.SpellTriggers[0] || this->spellbonuses.SpellTriggers[0])
+	TryTriggerOnCast(spell_id, 0);
+
+	/*
+	if(itembonuses.SpellTriggers[0] || spellbonuses.SpellTriggers[0])
 		TryTriggerOnCast(spell_id, 0);
 
-	if(IsClient()) {
-		if(this->aabonuses.SpellTriggers[0])
-			TryTriggerOnCast(spell_id, 1);
-	}
-
+	if(IsClient() && aabonuses.SpellTriggers[0]) 
+		TryTriggerOnCast(spell_id, 1);
+	*/
+	
 	// we're done casting, now try to apply the spell
 	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot, resist_adjust) )
 	{
@@ -3867,15 +3872,23 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster, bool use_r
 		}
 	}
 
-	//Check for specific resistance to spell effect.
-	//Don't think we have this implemented except for fear.
 
-	//Check for sanctification
-	int resist_bonuses = CalcResistChanceBonus();
-	if(MakeRandomInt(0, 99) < resist_bonuses)
-	{
-		mlog(SPELLS__RESISTS, "Resisted spell in sanctification, had %d chance to resist", resist_bonuses);
-		return 0;
+	if (!CharismaCheck){
+
+		//Check for Spell Effect specific resistance chances (ie AA Mental Fortitude)
+		int se_resist_bonuses = GetSpellEffectResistChance(spell_id);
+		if(se_resist_bonuses && (MakeRandomInt(0, 99) < se_resist_bonuses))
+		{
+			return 0;
+		}
+
+		// Check for Chance to Resist Spell bonuses (ie Sanctification Discipline)
+		int resist_bonuses = CalcResistChanceBonus();
+		if(resist_bonuses && (MakeRandomInt(0, 99) < resist_bonuses))
+		{
+			mlog(SPELLS__RESISTS, "Resisted spell in sanctification, had %d chance to resist", resist_bonuses);
+			return 0;
+		}
 	}
 
 	//Get the resist chance for the target

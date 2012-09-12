@@ -395,8 +395,8 @@ ENCODE(OP_SendAATable) {
 	ALLOC_VAR_ENCODE(structs::SendAA_Struct, sizeof(structs::SendAA_Struct) + emu->total_abilities*sizeof(structs::AA_Ability));
 	
 	// Check clientver field to verify this AA should be sent for SoF
-	// clientver 1 is for all clients and 5 is for Underfoot
-	if (emu->clientver <= 5 )
+	// clientver 1 is for all clients and 6 is for Underfoot
+	if (emu->clientver <= 6 )
 	{
 		OUT(id);
 		eq->unknown004 = 1;

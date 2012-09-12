@@ -1082,3 +1082,4 @@ bool IsShortDurationBuff(int16 spell_id)
 	}
 	return false;
 }
+

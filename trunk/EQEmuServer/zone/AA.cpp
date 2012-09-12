@@ -50,6 +50,7 @@ std::map<uint32, AALevelCost_Struct> AARequiredLevelAndCost;
 
 /*
 
+
 Schema:
 
 spell_id is spell to cast, SPELL_UNKNOWN == no spell
@@ -279,6 +280,7 @@ void Client::ActivateAA(aaID activate){
 	
 	//cast the spell, if we have one
 	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) {
+
 		if(caa->reuse_time > 0)
 		{
 			int32 timer_base = CalcAAReuseTimer(caa);
@@ -1038,8 +1040,14 @@ void Client::BuyAA(AA_Action* action)
 		m_pp.aapoints -= real_cost;
 
 		Save();
+		if ((RuleB(AA, Stacking) && (GetClientVersionBit() >= 4) && (aa2->hotkey_sid == 4294967295))
+			&& ((aa2->max_level == (cur_level+1)) && aa2->sof_next_id)){
+			SendAA(aa2->id);
+			SendAA(aa2->sof_next_id);
+		}
+		else 
+			SendAA(aa2->id);
 
-		SendAA(aa2->id);
 		SendAATable();
 
 		//we are building these messages ourself instead of using the stringID to work around patch discrepencies
@@ -1047,7 +1055,7 @@ void Client::BuyAA(AA_Action* action)
 		if(cur_level<1)
 			Message(15,"You have gained the ability \"%s\" at a cost of %d ability %s.", aa2->name, real_cost, (real_cost>1)?"points":"point");
 		else
-			Message(15,"You have improved %s %d at a cost of %d ability %s.", aa2->name, cur_level, real_cost, (real_cost>1)?"points":"point");
+			Message(15,"You have improved %s %d at a cost of %d ability %s.", aa2->name, cur_level+1, real_cost, (real_cost>1)?"points":"point");
 
 		
 		SendAAStats();
@@ -1125,6 +1133,7 @@ void Client::SendPreviousAA(int32 id, int seq){
 	outapp->pBuffer=(uchar*)saa;
 	value--;
 	memcpy(saa,saa2,size);
+
 	if(value>0){
 		if(saa->spellid==0)
 			saa->spellid=0xFFFFFFFF;
@@ -1140,15 +1149,21 @@ void Client::SendPreviousAA(int32 id, int seq){
 			saa->cost2 += saa->cost + (saa->cost_inc * i);
 		}
 	}
+
 	database.FillAAEffects(saa);
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
 
 void Client::SendAA(int32 id, int seq) {
+
 	uint32 value=0;
 	SendAA_Struct* saa2 = NULL;
 	SendAA_Struct* qaa = NULL;
+	SendAA_Struct* saa_pp = NULL;
+	bool IsBaseLevel = true;
+	bool aa_stack = false;
+	
 	if(id==0)
 		saa2 = zone->GetAABySequence(seq);
 	else
@@ -1209,6 +1224,63 @@ void Client::SendAA(int32 id, int seq) {
 		}
 	}
 	
+	/*
+	AA stacking on SoF+ clients.
+	
+	Note: There were many ways to achieve this effect - The method used proved to be the most straight forward and consistent.
+	Stacking does not currently work ideally for AA's that use hotkeys, therefore they will be excluded at this time.
+	
+	TODO: Problem with AA hotkeys - When you reach max rank of an AA tier (ie 5/5), it automatically displays the next AA in 
+	the series and you can not transfer the hotkey to the next AA series. To the best of the my ability and through many
+	different variations of coding I could not find an ideal solution to this issue.
+	
+	How stacking works:
+	Utilizes two new fields: sof_next_id (which is the next id in the series), sof_current_level (ranks the AA's as the current level)
+	1) If no AA's purchased only display the base levels of each AA series.
+	2) When you purchase an AA and its rank is maxed it sends the packet for the completed AA, and the packet
+	   for the next aa in the series. The previous tier is removed from your window, and the new AA is displayed.	
+	3) When you zone/buy your player profile will be checked and determine what AA can be displayed base on what you have already.
+	*/
+	
+	if (RuleB(AA, Stacking) && (GetClientVersionBit() >= 4) && (saa2->hotkey_sid == 4294967295))
+		aa_stack = true;
+
+	if (aa_stack){
+		uint32 aa_AA = 0;
+		uint32 aa_value = 0;
+		for (int i = 0; i < MAX_PP_AA_ARRAY; i++) {	
+			if (aa[i]) {	
+				aa_AA = aa[i]->AA;
+				aa_value = aa[i]->value;
+				
+				if (aa_AA){
+		
+					if (aa_value > 0)
+						aa_AA -= aa_value-1;
+
+					saa_pp = zone->FindAA(aa_AA);
+
+					if (saa_pp){
+
+						if (saa_pp->sof_next_skill == saa2->sof_next_skill){
+							
+							if (saa_pp->id == saa2->id)
+								break; //You already have this in the player profile.
+							else if ((saa_pp->sof_current_level <  saa2->sof_current_level) && (aa_value < saa_pp->max_level))
+								return; //DISABLE DISPLAY HIGHER - You have not reached max level yet of your current AA.
+							else if ((saa_pp->sof_current_level <  saa2->sof_current_level) && (aa_value == saa_pp->max_level) && (saa_pp->sof_next_id == saa2->id))
+								IsBaseLevel = false; //ALLOW DISPLAY HIGHER
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//Hide higher tiers of multi tiered AA's if the base level is not fully purchased.
+	if (aa_stack && IsBaseLevel && saa2->sof_current_level > 0)
+		return;
+	
 	int size=sizeof(SendAA_Struct)+sizeof(AA_Ability)*saa2->total_abilities;
 	uchar* buffer = new uchar[size];
 	SendAA_Struct* saa=(SendAA_Struct*)buffer;
@@ -1219,26 +1291,57 @@ void Client::SendAA(int32 id, int seq) {
 	
 	value=GetAA(saa->id);
 	int32 orig_val = value;
-	bool dump = false;
-	if(value){
-		dump = true;
+
+	if(value && saa->id){
+
 		if(value < saa->max_level){
 			saa->id+=value;
 			saa->next_id=saa->id+1;
 			value++;
 		}
+
+		else if (aa_stack && saa->sof_next_id){
+			saa->id+=value-1;
+			saa->next_id=saa->sof_next_id;
+		
+			//Prevent removal of previous AA from window if next AA belongs to a higher client version.
+			SendAA_Struct* saa_next = NULL;
+			saa_next = zone->FindAA(saa->sof_next_id);
+			if (saa_next && 
+			   (((GetClientVersionBit() == 4) && (saa_next->clientver > 4))
+			   || ((GetClientVersionBit() == 8) && (saa_next->clientver > 5))
+			   || ((GetClientVersionBit() == 16) && (saa_next->clientver > 6)))){
+				saa->next_id=0xFFFFFFFF;
+			}
+		}
+
 		else{
 			saa->id+=value-1;
 			saa->next_id=0xFFFFFFFF;
 		}
+
+		int32 current_level_mod = 0;
+		if (aa_stack)
+			current_level_mod = saa->sof_current_level;
+		
 		saa->last_id=saa->id-1;
-		saa->current_level=value;
+		saa->current_level=value+(current_level_mod);
 		saa->cost = saa2->cost + (saa2->cost_inc*(value-1));
 		saa->cost2 = 0;
 		for(int i=0;i<value;i++){
 			saa->cost2 += saa2->cost + (saa2->cost_inc * i);
 		}
+		saa->class_type = saa2->class_type + (saa2->level_inc*(value-1));
 	}
+	
+	if (aa_stack){
+
+		if (saa->sof_current_level > 1 && value == 0)
+			saa->current_level = saa->sof_current_level+1;
+		
+		saa->max_level = saa->sof_max_level;
+	}
+	
 	database.FillAAEffects(saa);
 
 	if(value > 0)
@@ -1248,6 +1351,9 @@ void Client::SendAA(int32 id, int seq) {
 		if(caa && caa->reuse_time > 0)
 			saa->spell_refresh = CalcAAReuseTimer(caa);
 	}
+	
+	//You can now use the level_inc field in the altadv_vars table to accomplish this, though still needed
+	//for special cases like LOH/HT due to inability to implement correct stacking of AA's that use hotkeys.
 	std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(saa->id);
 
 	if(RequiredLevel != AARequiredLevelAndCost.end())
@@ -1255,14 +1361,14 @@ void Client::SendAA(int32 id, int seq) {
 		saa->class_type = RequiredLevel->second.Level;
 		saa->cost = RequiredLevel->second.Cost;
 	}
+	
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendAATable);
 	outapp->size=size;
 	outapp->pBuffer=(uchar*)saa;
 	if(id==0 && value && (orig_val < saa->max_level)) //send previous AA only on zone in
 		SendPreviousAA(id, seq);
-	//if(dump)
-		//DumpPacket(outapp);
+	
 	QueuePacket(outapp);
 	safe_delete(outapp);
 	//will outapp delete the buffer for us even though it didnt make it?  --- Yes, it should
@@ -1759,8 +1865,11 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				"a.sof_cost_inc, "
 				"a.sof_max_level, "
 				"a.sof_next_skill, "
-				"a.clientver, "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 3 = SoF
-				"a.account_time_required "
+				"a.clientver, "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 4 = SoF 5 = SOD 6 = UF
+				"a.account_time_required, "
+				"a.sof_current_level,"
+				"a.sof_next_id, "
+				"a.level_inc "
 			" FROM altadv_vars a WHERE skill_id=%i", skill_id), errbuf, &result)) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) == 1) {
@@ -1812,6 +1921,10 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				sendaa->sof_next_skill = atoul(row[22]);
 				sendaa->clientver = atoul(row[23]);
 				sendaa->account_time_required = atoul(row[24]);
+				//Internal use only - not sent to client
+				sendaa->sof_current_level = atoul(row[25]);
+				sendaa->sof_next_id = atoul(row[26]);
+				sendaa->level_inc = atoul(row[27]);
 			}
 			mysql_free_result(result);
 		} else {
