@@ -713,6 +713,9 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	if(casting_spell_id && IsNPC()) {
 		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
 	}
+    
+	if(casting_spell_type == 1 && IsClient()) //Rest AA Timer on failed cast
+		CastToClient()->GetPTimers().Clear(&database, casting_spell_timer);
 	
 	ZeroCastingVars();	// resets all the state keeping stuff
 	

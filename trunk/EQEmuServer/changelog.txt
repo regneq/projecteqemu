@@ -1,6 +1,36 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/13/2012==
+cavedude: Uleat implemented the following changes:
+
+The bandolier function should no longer CAUSE desyncs. Its use can still be affected by previous issues, just like any manual swap. Message cues have been temporarily added to certain procedures to indicate to the player that a possible desync condition exists and that they should zone or relog to correct the situation immediately.
+
+The chance of player corpses becoming bugged should now be minimal. Corpse processing was changed to better emulate client behavior when 'RespawnFromHover' is set to true or false. Message cues and #commands were added to help determine whether a corpse is bugged. (Previously, queued cursor items were sent to the corpse..but, the packet builder did not include the 8000-series of items when a player looted their corpse.)
+
+Tweaked several areas where item swaps were not handled properly, or at all, and the client-server inventories became desyncronized. Additional areas are still suspect for causing desync's. (A 'ResyncInventory' method is in-work to eliminate the need for item deletion...)
+
+Client::SummonItem now limits the size of a summoned stack to the value of stacksize in the database. If you are using script to summon stacks greater than item->stacksize, this action was/is incorrect and you will need to modify your 'quest' to summon multiple stacks.
+
+
+command changes:
+	#equipitem - modified partial stack movements..if a partial stack would be left on cursor, the action now fails.
+	#corpse - added subcommand 'InspectLoot'..works for client and npc corpses..additional information with client.
+	#peekinv - added stack size(charges) to report and modified the cursor depth reporting of bag slots.
+	#zopp - new command for troubleshooting..forces a client 'trade' or 'summon' to desync the client inventory.
+
+references:
+	http://www.eqemulator.org/forums/showthread.php?t=35604 - CSD Support Patch
+	http://www.eqemulator.org/forums/showthread.php?t=35629 - CSD Bugged Corpse Patch
+	http://www.eqemulator.org/forums/showthread.php?t=35699 - CSD Bandolier Patch
+	
+cavedude: (demonstar55) Damage shields by default will no longer count towards EXP gain. (Rule also added to change this behaviour.)
+cavedude: (demonstar55) Extended targets should now clear when aggro is lost using skills.
+cavedude: (demonstar55) AAs with shorter reuse timers should now reset if the cast failed (interrupted.)
+KLS: Fixed a cause of raids disbanding on zoning.
+
+OPTIONAL SQL: INSERT INTO `rule_values` VALUES (1, 'Combat:EXPFromDmgShield', 'false', 'Determine if damage from a damage shield counts for EXP gain.');
+
 ==09/12/2012==
 Kayen: Implemented NPC Special Attack 'i'. Immune to Taunt.
 Kayen: Implemented: SOF+ live like stacking of AA's that belong to the same series in the AA window (Expection: AA's that use hot keys).

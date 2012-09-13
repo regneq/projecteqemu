@@ -458,7 +458,8 @@ int command_init(void) {
 		command_add("mysql", "Mysql CLI, see 'help' for options.", 250, command_mysql) ||
 		command_add("xtargets", "Show your targets Extended Targets and optionally set how many xtargets they can have.", 250, command_xtargets) ||
 		command_add("printquestitems","Returns available quest items for multiquesting currently on the target npc.",200,command_printquestitems) ||
-		command_add("clearquestitems","Clears quest items for multiquesting currently on the target npc.",200,command_clearquestitems)
+		command_add("clearquestitems","Clears quest items for multiquesting currently on the target npc.",200,command_clearquestitems) ||
+		command_add("zopp", "Troubleshooting command - Sends a fake item packet to you. No server reference is created.", 250, command_zopp) 
 		)
 	{
 		command_deinit();
@@ -3037,15 +3038,17 @@ void command_peekinv(Client *c, const Seperator *sep)
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "WornSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "WornSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			else
 			{
-				c->Message((item==0), "WornSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "WornSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 		}
 	}
@@ -3057,15 +3060,17 @@ void command_peekinv(Client *c, const Seperator *sep)
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			else
 			{
-				c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			
 			if (inst && inst->IsType(ItemClassContainer)) {
@@ -3074,17 +3079,19 @@ void command_peekinv(Client *c, const Seperator *sep)
 					item = (instbag) ? instbag->GetItem() : NULL;
 					if (c->GetClientVersion() >= EQClientSoF)
 					{
-						c->Message((item==0), "   InvBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   InvBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:instbag->GetCharges()));
 					}
 					else
 					{
-						c->Message((item==0), "   InvBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   InvBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:instbag->GetCharges()));
 					}
 				}
 			}
@@ -3093,49 +3100,72 @@ void command_peekinv(Client *c, const Seperator *sep)
 		{
 			const ItemInst* inst = client->GetInv().GetItem(9999);
 			item = (inst) ? inst->GetItem() : NULL;
-			c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", 9999,
+			c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", 9999,
 			((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-			((item==0)?"null":item->Name), 0x12);
+			((item==0)?"null":item->Name), 0x12,
+			((item==0)?0:inst->GetCharges()));
 		}
 	}
+
+	// Changed to show 'empty' cursors and not to show bag slots on 'queued' cursor slots (cursor bag slots 331 to 340 are not arrayed...)
+	// - was pointless to show bags on anything after slot 30[0], because it only repeated the 30[0] bag items.
 	if (bAll || (strcasecmp(sep->arg[1], "cursor")==0)) {
 		// Personal inventory items
 		bFound = true;
 		iter_queue it;
 		int i=0;
-		for(it=client->GetInv().cursor_begin();it!=client->GetInv().cursor_end();it++,i++) {
-			const ItemInst* inst = *it;
-			item = (inst) ? inst->GetItem() : NULL;
+
+		if(client->GetInv().CursorEmpty()) { // Display 'front' cursor slot even if 'empty' (item(30[0]) == null)
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", SLOT_CURSOR,i,
-					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+				c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", SLOT_CURSOR,i,
+					0, 0x12, 0, "null", 0x12, 0);
 			}
 			else
 			{
-				c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", SLOT_CURSOR,i,
-					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+				c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", SLOT_CURSOR,i,
+					0, 0x12, 0, "null", 0x12, 0);
 			}
+		}
+		else {
+			for(it=client->GetInv().cursor_begin();it!=client->GetInv().cursor_end();it++,i++) {
+				const ItemInst* inst = *it;
+				item = (inst) ? inst->GetItem() : NULL;
+				if (c->GetClientVersion() >= EQClientSoF)
+				{
+					c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", SLOT_CURSOR,i,
+						((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+						((item==0)?"null":item->Name), 0x12,
+						((item==0)?0:inst->GetCharges()));
+				}
+				else
+				{
+					c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", SLOT_CURSOR,i,
+						((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+						((item==0)?"null":item->Name), 0x12,
+						((item==0)?0:inst->GetCharges()));
+				}
 			
-			if (inst && inst->IsType(ItemClassContainer)) {
-				for (uint8 j=0; j<10; j++) {
-					const ItemInst* instbag = client->GetInv().GetItem(SLOT_CURSOR, j);
-					item = (instbag) ? instbag->GetItem() : NULL;
-					if (c->GetClientVersion() >= EQClientSoF)
-					{
-						c->Message((item==0), "   CursorBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
-							Inventory::CalcSlotId(SLOT_CURSOR, j),
-							SLOT_CURSOR, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
-					}
-					else
-					{
-						c->Message((item==0), "   CursorBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c)",
-							Inventory::CalcSlotId(SLOT_CURSOR, j),
-							SLOT_CURSOR, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+				if (inst && inst->IsType(ItemClassContainer) && i==0) { // 'CSD 1' - only display contents of slot 30[0] container..higher ones don't exist
+					for (uint8 j=0; j<10; j++) {
+						const ItemInst* instbag = client->GetInv().GetItem(SLOT_CURSOR, j);
+						item = (instbag) ? instbag->GetItem() : NULL;
+						if (c->GetClientVersion() >= EQClientSoF)
+						{
+							c->Message((item==0), "   CursorBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i",
+								Inventory::CalcSlotId(SLOT_CURSOR, j),
+								SLOT_CURSOR, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+								((item==0)?"null":item->Name), 0x12,
+								((item==0)?0:instbag->GetCharges()));
+						}
+						else
+						{
+							c->Message((item==0), "   CursorBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i",
+								Inventory::CalcSlotId(SLOT_CURSOR, j),
+								SLOT_CURSOR, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+								((item==0)?"null":item->Name), 0x12,
+								((item==0)?0:instbag->GetCharges()));
+						}
 					}
 				}
 			}
@@ -3150,15 +3180,17 @@ void command_peekinv(Client *c, const Seperator *sep)
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "TributeSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "TributeSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", i,
 				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-				((item==0)?"null":item->Name), 0x12);
+				((item==0)?"null":item->Name), 0x12,
+				((item==0)?0:inst->GetCharges()));
 			}
 			else
 			{
-			c->Message((item==0), "TributeSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+			c->Message((item==0), "TributeSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", i,
 				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-				((item==0)?"null":item->Name), 0x12);
+				((item==0)?"null":item->Name), 0x12,
+				((item==0)?0:inst->GetCharges()));
 			}
 		}
 	}
@@ -3172,15 +3204,17 @@ void command_peekinv(Client *c, const Seperator *sep)
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "BankSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "BankSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", i,
 				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-				((item==0)?"null":item->Name), 0x12);
+				((item==0)?"null":item->Name), 0x12,
+				((item==0)?0:inst->GetCharges()));
 			}
 			else
 			{
-			c->Message((item==0), "BankSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+			c->Message((item==0), "BankSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", i,
 				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-				((item==0)?"null":item->Name), 0x12);
+				((item==0)?"null":item->Name), 0x12,
+				((item==0)?0:inst->GetCharges()));
 			}
 				
 			if (inst && inst->IsType(ItemClassContainer)) {
@@ -3189,17 +3223,19 @@ void command_peekinv(Client *c, const Seperator *sep)
 					item = (instbag) ? instbag->GetItem() : NULL;
 					if (c->GetClientVersion() >= EQClientSoF)
 					{
-						c->Message((item==0), "   BankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   BankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:inst->GetCharges()));
 					}
 					else
 					{
-						c->Message((item==0), "   BankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   BankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:inst->GetCharges()));
 					}
 				}
 			}
@@ -3209,15 +3245,17 @@ void command_peekinv(Client *c, const Seperator *sep)
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "ShBankSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "ShBankSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			else
 			{
-				c->Message((item==0), "ShBankSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "ShBankSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			
 			if (inst && inst->IsType(ItemClassContainer)) {
@@ -3226,17 +3264,19 @@ void command_peekinv(Client *c, const Seperator *sep)
 					item = (instbag) ? instbag->GetItem() : NULL;
 					if (c->GetClientVersion() >= EQClientSoF)
 					{
-						c->Message((item==0), "   ShBankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   ShBankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:inst->GetCharges()));
 					}
 					else
 					{
-						c->Message((item==0), "   ShBankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   ShBankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:inst->GetCharges()));
 					}
 				}
 			}
@@ -3250,15 +3290,17 @@ void command_peekinv(Client *c, const Seperator *sep)
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
 			{
-				c->Message((item==0), "TradeSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "TradeSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			else
 			{
-				c->Message((item==0), "TradeSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+				c->Message((item==0), "TradeSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-					((item==0)?"null":item->Name), 0x12);
+					((item==0)?"null":item->Name), 0x12,
+					((item==0)?0:inst->GetCharges()));
 			}
 			
 			if (inst && inst->IsType(ItemClassContainer)) {
@@ -3267,17 +3309,19 @@ void command_peekinv(Client *c, const Seperator *sep)
 					item = (instbag) ? instbag->GetItem() : NULL;
 					if (c->GetClientVersion() >= EQClientSoF)
 					{
-						c->Message((item==0), "   TradeBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   TradeBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:inst->GetCharges()));
 					}
 					else
 					{
-						c->Message((item==0), "   TradeBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c)",
+						c->Message((item==0), "   TradeBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X000000000000000000000000000000000000000%s%c), Charges: %i",
 							Inventory::CalcSlotId(i, j),
 							i, j, ((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-							((item==0)?"null":item->Name), 0x12);
+							((item==0)?"null":item->Name), 0x12,
+							((item==0)?0:inst->GetCharges()));
 					}
 				
 				}
@@ -3288,7 +3332,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	if (!bFound)
 	{
 		c->Message(0, "Usage: #peekinv [worn|cursor|inv|bank|trade|trib|all]");
-		c->Message(0, "  Displays a portion of the targetted user's inventory");
+		c->Message(0, "  Displays a portion of the targeted user's inventory");
 		c->Message(0, "  Caution: 'all' is a lot of information!");
 	}
 }
@@ -3602,21 +3646,67 @@ void command_equipitem(Client *c, const Seperator *sep)
 {
 	uint32 slot_id = atoi(sep->arg[1]);
 	if (sep->IsNumber(1) && (slot_id>=0) && (slot_id<=21)) {
-		const ItemInst* inst = c->GetInv().GetItem(SLOT_CURSOR);
-		if (inst && inst->IsType(ItemClassCommon)) {
+		const ItemInst* from_inst = c->GetInv().GetItem(SLOT_CURSOR);
+		const ItemInst* to_inst = c->GetInv().GetItem(slot_id); // added (desync issue when forcing stack to stack)
+		bool partialmove = false;
+		sint16 movecount;
+
+		if (from_inst && from_inst->IsType(ItemClassCommon)) {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
 			MoveItem_Struct* mi	= (MoveItem_Struct*)outapp->pBuffer;
 			mi->from_slot		= SLOT_CURSOR;
 			mi->to_slot			= slot_id;
-			mi->number_in_stack	= inst->GetCharges();
+			// mi->number_in_stack	= from_inst->GetCharges(); // replaced with con check for stacking
 				
+			// crude stackable check to only 'move' the difference count on client instead of entire stack when applicable
+			if (to_inst && to_inst->IsStackable() &&
+				(to_inst->GetItem()->ID == from_inst->GetItem()->ID) &&
+				(to_inst->GetCharges() < to_inst->GetItem()->StackSize) &&
+				(from_inst->GetCharges() > to_inst->GetItem()->StackSize - to_inst->GetCharges())) {
+					movecount = to_inst->GetItem()->StackSize - to_inst->GetCharges();
+					mi->number_in_stack = (uint32)movecount;
+					partialmove = true;
+			}
+			else
+				mi->number_in_stack = from_inst->GetCharges();
+
 			// Save move changes
-			c->SwapItem(mi);
-			c->FastQueuePacket(&outapp);
-			
+			// Added conditional check to packet send..would have sent change even on a swap failure..whoops!
+
+			if (partialmove) { // remove this con check if someone can figure out removing charges from cursor stack issue below
+				// mi->number_in_stack is always from_inst->GetCharges() when partialmove is false
+				c->Message(13, "Error: Partial stack added to existing stack exceeds allowable stacksize");
+				return;
+			}
+			else if(c->SwapItem(mi)) {
+				c->FastQueuePacket(&outapp);
+
+				// below code has proper logic, but client does not like to have cursor charges changed
+				// (we could delete the cursor item and resend, but issues would arise if there are queued items)
+				//if (partialmove) {
+				//	EQApplicationPacket* outapp2 = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
+				//	DeleteItem_Struct* di	= (DeleteItem_Struct*)outapp2->pBuffer;
+				//	di->from_slot			= SLOT_CURSOR;
+				//	di->to_slot				= 0xFFFFFFFF;
+				//	di->number_in_stack		= 0xFFFFFFFF;
+
+				//	c->Message(0, "Deleting %i charges from stack", movecount); // debug line..delete
+
+				//	for (sint16 deletecount=0; deletecount < movecount; deletecount++)
+						// have to use 'movecount' because mi->number_in_stack is 'ENCODED' at this point (i.e., 99 charges returns 22...)
+				//		c->QueuePacket(outapp2);
+
+				//	safe_delete(outapp2);
+				//}
+			}
+			else {
+				c->Message(13, "Error: Unable to equip current item");
+			}
+			safe_delete(outapp);
+
 			// @merth: also send out a wear change packet?
 		}
-		else if (inst == NULL)
+		else if (from_inst == NULL)
 			c->Message(13, "Error: There is no item on your cursor");
 		else
 			c->Message(13, "Error: Item on your cursor cannot be equipped");
@@ -3729,6 +3819,12 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 			c->Message(0, "Insufficient status to modify player corpse.");
 	}
+	else if (strcasecmp(sep->arg[1], "InspectLoot") == 0) {
+		if (target == 0 || !target->IsCorpse())
+			c->Message(0, "Error: Target must be a corpse.");
+		else
+			target->CastToCorpse()->QueryLoot(c);
+	}
 	else if (strcasecmp(sep->arg[1], "lock") == 0) {
 		if (target == 0 || !target->IsCorpse())
 			c->Message(0, "Error: Target must be a corpse.");
@@ -3779,6 +3875,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		c->Message(0, "  Lock - GM locks the corpse - cannot be looted by non-GM");
 		c->Message(0, "  UnLock");
 		c->Message(0, "  RemoveCash");
+		c->Message(0, "  InspectLoot");
 		c->Message(0, "  [to remove items from corpses, loot them]");
 		c->Message(0, "Lead-GM status required to delete/modify player corpses");
 		c->Message(0, "  DeletePlayerCorpses");
@@ -11559,4 +11656,52 @@ void command_clearquestitems(Client *c, const Seperator *sep)
 	}
 	else
 			c->Message(13,"Pick a NPC target.");
+}
+
+void command_zopp(Client *c, const Seperator *sep)
+{ // - Owner only command..non-targetable to eliminate malicious or mischievious activities.
+	if (!c)
+		return;
+	else if (sep->argnum < 3 || sep->argnum > 4)
+		c->Message(0, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
+	else if (!strcasecmp(sep->arg[1], "trade") == 0 && !strcasecmp(sep->arg[1], "t") == 0 && !strcasecmp(sep->arg[1], "summon") == 0 && !strcasecmp(sep->arg[1], "s") == 0)
+		c->Message(0, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
+	else if (!sep->IsNumber(2) || !sep->IsNumber(3) || (sep->argnum == 4 && !sep->IsNumber(4)))
+		c->Message(0, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
+	else {
+		ItemPacketType packettype;
+
+		if (strcasecmp(sep->arg[1], "trade") == 0 || strcasecmp(sep->arg[1], "t") == 0) {
+			packettype = ItemPacketTrade;
+		}
+		else {
+			packettype = ItemPacketSummonItem;
+		}
+
+		sint16 slotid = atoi(sep->arg[2]);
+		uint32 itemid = atoi(sep->arg[3]);
+		sint16 charges = sep->argnum == 4 ? atoi(sep->arg[4]) : 1; // defaults to 1 charge if not specified
+
+		const Item_Struct* FakeItem = database.GetItem(itemid);
+		
+		if (!FakeItem) {
+			c->Message(13, "Error: Item [%u] is not a valid item id.", itemid);
+			return;
+		}
+				
+		if (database.GetItemStatus(itemid) > c->Admin()) {
+			c->Message(13, "Error: Insufficient status to use this command.");
+			return;
+		}
+
+		if (charges < 0 || charges > FakeItem->StackSize) {
+			c->Message(13, "Warning: The specified charge count does not meet expected criteria!");
+			c->Message(0, "Processing request..results may cause unpredictable behavior.");
+		}
+
+		ItemInst* FakeItemInst = database.CreateItem(FakeItem, charges);
+		c->SendItemPacket(slotid, FakeItemInst, packettype);
+		c->Message(0, "Sending zephyr op packet to client - [%s] %s (%u) with %i %s to slot %i.", packettype==ItemPacketTrade?"Trade":"Summon", FakeItem->Name, itemid, charges, abs(charges==1)?"charge":"charges", slotid);
+		safe_delete(FakeItemInst);
+	}
 }

@@ -3159,8 +3159,15 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 
 	if(attacker){
 		if(attacker->IsClient()){
-			if(!attacker->CastToClient()->GetFeigned())
-				AddToHateList(attacker, 0, damage, true, false, iBuffTic);
+			if(!RuleB(Combat, EXPFromDmgShield)) {
+			// Damage shield damage shouldn't count towards who gets EXP
+				if(!attacker->CastToClient()->GetFeigned() && !FromDamageShield)
+					AddToHateList(attacker, 0, damage, true, false, iBuffTic);
+			}
+			else {
+				if(!attacker->CastToClient()->GetFeigned())
+					AddToHateList(attacker, 0, damage, true, false, iBuffTic);
+			}
 		}
 		else
 			AddToHateList(attacker, 0, damage, true, false, iBuffTic);
