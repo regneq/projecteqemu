@@ -340,6 +340,7 @@ RULE_INT ( Combat, SpecialAttackACBonus, 15) //Percent amount of damage per AC g
 RULE_INT ( Combat, NPCFlurryChance, 20) // Chance for NPC to flurry.
 RULE_BOOL (Combat,TauntOverLevel, 1) //Allows you to taunt NPC's over warriors level.
 RULE_REAL (Combat,TauntSkillFalloff, 0.33)//For every taunt skill point that's not maxed you lose this % chance to taunt.
+RULE_BOOL (Combat,EXPFromDmgShield, false) //Determine if damage from a damage shield counts for EXP gain.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

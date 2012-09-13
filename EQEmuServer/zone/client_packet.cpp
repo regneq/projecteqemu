@@ -3310,7 +3310,59 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 			return;
 		}
 	}
-	SwapItem(mi);
+
+	// Added checks for illegal bagslot swaps..should help with certain cheats (currently checks personal and cursor bag slots.)
+	// - If a player has used an illegal inventory cheat, they can become bugged at some point (especially concerning lore items.)
+	//* Start
+	bool mi_hack = false;
+
+	if (mi->from_slot >= 251 && mi->from_slot <= 340) {
+		if (mi->from_slot > 330)
+			mi_hack = true; // why are we moving from a cursor bagslot when you can't open it?
+		else {			
+			sint16 from_invslot = Inventory::CalcSlotId(mi->from_slot);
+			const ItemInst *from_invslotitem = GetInv().GetItem(from_invslot); 
+
+			if (!from_invslotitem) // trying to move from bag slots when parent inventory slot is empty
+				mi_hack = true;
+			else if (from_invslotitem->GetItem()->ItemClass == 1) { // checking the parent inventory slot for container
+				if ((Inventory::CalcBagIdx(mi->from_slot) + 1) > from_invslotitem->GetItem()->BagSlots)
+					mi_hack = true; // trying to move from slots beyond parent container size
+			}
+			else // trying to move from bag slots when inventory slot item is not a container
+				mi_hack = true;
+		}
+	}
+
+	if (mi->to_slot >= 251 && mi->to_slot <= 340) {
+		if (mi->to_slot > 330)
+			mi_hack = true; // why are we moving to a cursor bagslot when you can't open it?
+		else {
+			sint16 to_invslot = Inventory::CalcSlotId(mi->to_slot);
+			const ItemInst *to_invslotitem = GetInv().GetItem(to_invslot);
+
+			if (!to_invslotitem) // trying to move into bag slots when parent inventory slot is empty
+				mi_hack = true;
+			else if (to_invslotitem->GetItem()->ItemClass == 1) { // checking the parent inventory slot for container
+				if ((Inventory::CalcBagIdx(mi->to_slot) + 1) > to_invslotitem->GetItem()->BagSlots)
+					mi_hack = true; // trying to move into slots beyond parent container size
+			}
+			else // trying to move into bag slots when inventory slot item is not a container
+				mi_hack = true;
+		}
+	}
+
+	if (mi_hack) { // a CSD can also cause this condition, but more likely the use of a cheat
+		Message(13, "Hack detected: Illegal use of inventory bag slots!");
+		// TODO: Decide whether to log player as hacker - currently has no teeth...
+		// Kick();
+		// return;
+	} // End */
+
+	// if this swapitem call fails, then the server and client could be de-sync'd
+	if (!SwapItem(mi) && IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot))
+		Message(0, "Client SwapItem request failure - verify inventory integrity.");
+
 	return;
 }
 
@@ -9674,7 +9726,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 										continue;
 									r->SendRaidCreate(c);
 									r->SendMakeLeaderPacketTo(r->leadername, c);
-									r->AddMember(c, groupFree, false, true);
+									r->AddMember(c, groupFree, true, true, true);
 									r->SendBulkRaid(c);
 									if(r->IsLocked()) {
 										r->SendRaidLockTo(c);

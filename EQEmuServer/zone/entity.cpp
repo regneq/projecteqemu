@@ -1388,8 +1388,12 @@ void EntityList::RemoveFromTargets(Mob* mob, bool RemoveFromXTargets)
 
 		m->RemoveFromHateList(mob);
 
-		if(RemoveFromXTargets && m->IsClient())
-			m->CastToClient()->RemoveXTarget(mob, false);
+		if(RemoveFromXTargets)
+			if(m->IsClient())
+				m->CastToClient()->RemoveXTarget(mob, false);
+			// FadingMemories calls this function passing the client.
+			else if(mob->IsClient())
+				mob->CastToClient()->RemoveXTarget(m, false);
 
 	}	
 }
@@ -3231,10 +3235,10 @@ void EntityList::ClearFeignAggro(Mob* targ)
 			// For client targets if the mob that hated us is 35+ 
 			// there is a 3 outta 5 chance he adds us to feign memory
 			if(targ->IsClient()){
-				if (iterator.GetData()->GetLevel() >= 35){
-					if(MakeRandomInt(1,100)<=60){
-						iterator.GetData()->AddFeignMemory(targ->CastToClient());
-					}
+				if (iterator.GetData()->GetLevel() >= 35 && (MakeRandomInt(1,100)<=60)){
+					iterator.GetData()->AddFeignMemory(targ->CastToClient());
+				} else {
+					targ->CastToClient()->RemoveXTarget(iterator.GetData(), false);
 				}
 			}
 		}
@@ -3249,6 +3253,7 @@ void EntityList::ClearZoneFeignAggro(Client* targ)
 	while(iterator.MoreElements())
 	{
 		iterator.GetData()->RemoveFromFeignMemory(targ);
+		targ->CastToClient()->RemoveXTarget(iterator.GetData(), false);
 		iterator.Advance();
 	}
 }

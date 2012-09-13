@@ -358,7 +358,7 @@ void Client::GoFish()
 			}
 			else
 			{
-				PutItemInInventory(SLOT_CURSOR, *inst);
+				PushItemOnCursor(*inst); // changed from PutItemInInventory(SLOT_CURSOR, *inst); - was additional overhead
 				SendItemPacket(SLOT_CURSOR,inst,ItemPacketSummonItem);
 				if(RuleB(TaskSystem, EnableTaskSystem))
 					UpdateTasksForItem(ActivityFish, food_id);

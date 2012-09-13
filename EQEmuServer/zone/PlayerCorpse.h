@@ -111,11 +111,10 @@ public:
 	inline int GetRezzExp() { return rezzexp; }
 
 protected:
-	void MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
+	std::list<uint32> MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
 
 private:
-	bool		p_PlayerCorpse;
-	bool		pIsChanged;
+	bool		p_PlayerCorpse;	bool		pIsChanged;
 	bool		pLocked;
 	sint32		pkitem;
 	int32		dbid;
