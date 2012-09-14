@@ -2748,13 +2748,19 @@ void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 		}
 		return;
 	}
-
-		bool twinproc = false;
+		/*
+		
 		int twinproc_chance = itembonuses.TwinProc + spellbonuses.TwinProc;
 		if(IsClient())
 			twinproc_chance += aabonuses.TwinProc;
-							
-		if(MakeRandomInt(0,99) < twinproc_chance)
+		*/
+		bool twinproc = false;
+		sint32 twinproc_chance = 0;
+
+		if(IsClient())
+			 twinproc_chance = CastToClient()->GetFocusEffect(focusTwincast, spell_id); 
+	
+		if(twinproc_chance && (MakeRandomInt(0,99) < twinproc_chance))
 			twinproc = true;
 			
 		if (IsBeneficialSpell(spell_id)) {
@@ -3221,30 +3227,24 @@ void Mob::TryApplyEffect(Mob *target, uint32 spell_id)
 void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 {
 	if(!IsValidSpell(spell_id))
-	{
 		return;
-	}
-
-	if (spells[spell_id].mana <= 10)
-	{
-		return;
-	}
 	
-	if(this->IsClient())
+	if(IsClient())
 	{
-		sint32 focus = this->CastToClient()->GetFocusEffect(focusTwincast, spell_id); 
+		sint32 focus = CastToClient()->GetFocusEffect(focusTwincast, spell_id); 
 
 		if (focus > 0)
 		{
 			if(MakeRandomInt(0, 100) <= focus)
 			{
-				this->Message(MT_Spells,"You twincast %s!",spells[spell_id].name);
+				Message(MT_Spells,"You twincast %s!",spells[spell_id].name);
 				SpellFinished(spell_id, target);
 			}
 		}
 	}
 
-	else
+	//Retains function for non clients
+	else if (spellbonuses.FocusEffects[focusTwincast] || itembonuses.FocusEffects[focusTwincast])
 	{
 		uint32 buff_count = GetMaxTotalSlots();
 		for(int i = 0; i < buff_count; i++) 
@@ -3339,22 +3339,33 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 
 sint16 Mob::GetHealRate(int16 spell_id)
 {
-	if (!GetTarget())
-		return 0;
+	Mob* target = GetTarget();
 
 	sint16 heal_rate = 0;
 
-	if (GetTarget()){
-		heal_rate = GetTarget()->itembonuses.HealRate + GetTarget()->spellbonuses.HealRate;
+	if (target){
+		heal_rate = target->itembonuses.HealRate + target->spellbonuses.HealRate;
 			
-		if (GetTarget()->IsClient())
-			heal_rate += GetTarget()->CastToClient()->GetFocusEffect(focusHealRate, spell_id);
+		if (target->IsClient())
+			heal_rate += target->CastToClient()->GetFocusEffect(focusHealRate, spell_id);
 
 		if(heal_rate < -99)
 			heal_rate = -99;
 	}
 
 	return heal_rate;
+}
+
+sint16 Mob::GetCriticalHealRate(int16 spell_id)
+{
+	Mob* target = GetTarget();
+
+	sint16 critical_heal_rate = 0;
+
+	if (target && target->IsClient())
+		critical_heal_rate = target->CastToClient()->GetFocusEffect(focusCriticalHealRate, spell_id);
+	
+	return critical_heal_rate;
 }
 
 bool Mob::TryFadeEffect(int slot)

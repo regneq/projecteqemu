@@ -74,7 +74,7 @@ public:
 		BotfocusImprovedHeal,
 		BotfocusImprovedDamage,
 		BotfocusImprovedDOT,		//i dont know about this...
-		BotfocusImprovedCritical,
+		BotfocusImprovedDamage2,
 		BotfocusImprovedUndeadDamage,
 		BotfocusPetPower,
 		BotfocusResistRate,

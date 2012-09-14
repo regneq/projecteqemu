@@ -1608,11 +1608,6 @@ DELETE FROM aa_effects WHERE aaid=80 AND slot=2;
 DELETE FROM aa_effects WHERE aaid=81 AND slot=2;
 DELETE FROM aa_effects WHERE aaid=82 AND slot=2;
 
-CREATE TEMPORARY TABLE temp_table (
-sof_next_skill INT(11) DEFAULT 0 PRIMARY KEY,
-sof_max_level INT(11) DEFAULT 0
-);
-
 -- Update all sof_max_level by finding the sum of all AA that share the same sof_next_skill
 
 CREATE TEMPORARY TABLE temp_table (

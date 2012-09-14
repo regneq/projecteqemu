@@ -449,13 +449,26 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 		bool equiped = CastToClient()->m_inv.GetItem(14);
 		if(equiped) {
 			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
-			float aaShieldBlockChance = 0.0f;
 			float bonusShieldBlock = 0.0f;
 			if(shield == ItemTypeShield) {
 
 				//Live AA - Shield Block
 				bonusShieldBlock = aabonuses.ShieldBlock + spellbonuses.ShieldBlock + itembonuses.ShieldBlock;
 				RollTable[1] = RollTable[0] + bonusShieldBlock;
+			}
+		}
+	}
+
+	if(damage > 0 && (aabonuses.TwoHandBluntBlock || spellbonuses.TwoHandBluntBlock || itembonuses.TwoHandBluntBlock) 
+		&& (!other->BehindMob(this, other->GetX(), other->GetY()) || bShieldBlockFromRear)) {
+		bool equiped2 = CastToClient()->m_inv.GetItem(13);
+		if(equiped2) {
+			uint8 TwoHandBlunt = CastToClient()->m_inv.GetItem(13)->GetItem()->ItemType;
+			float bonusStaffBlock = 0.0f;
+			if(TwoHandBlunt == ItemType2HB) {
+
+				bonusStaffBlock = aabonuses.TwoHandBluntBlock + spellbonuses.TwoHandBluntBlock + itembonuses.TwoHandBluntBlock;
+				RollTable[1] = RollTable[0] + bonusStaffBlock;
 			}
 		}
 	}

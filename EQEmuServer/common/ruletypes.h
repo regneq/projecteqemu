@@ -272,6 +272,7 @@ RULE_INT ( Spells, MaxCastTimeReduction, 50) //Max percent your spell cast time 
 RULE_INT ( Spells, RootBreakFromSpells, 20) //Chance for root to break when cast on.
 RULE_INT ( Spells, DeathSaveCharismaMod, 3) //Determines how much charisma effects chance of death save firing.
 RULE_INT ( Spells, DivineInterventionHeal, 8000) //Divine intervention heal amount.
+RULE_BOOL( Spells, AdditiveBonusValues, false) //Allow certain bonuses to be calculated by adding together the value from each item, instead of taking the highest value. (ie Add together all Cleave Effects)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

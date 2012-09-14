@@ -266,9 +266,11 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 				heal_amt = value;
 		}
 
-		// Check for buffs that affect the healrate of the target
-		if(this->GetTarget())
+		// Check for buffs that affect the healrate of the target and critical heal rate of target
+		if(GetTarget()){
 			value += value * GetHealRate(spell_id) / 100;
+			chance += GetCriticalHealRate(spell_id);
+		}
 		
 		//Live AA - Healing Gift, Theft of Life
 		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;

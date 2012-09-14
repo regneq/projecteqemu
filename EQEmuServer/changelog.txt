@@ -1,6 +1,18 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/14/2012==
+Kayen: Implemented SE_CriticalHealRate - Focus that increase chance for heals cast on you to critical.
+Kayen: Implemented SE_IncreaseNumHits - Focus that can inceases max number of hits a buff can have before being removed.
+Kayen: Removed SE_Twinproc - This is not an actual spell effect, Twin proc is now correctly implemented as on live using SE_Twincast.
+Kayen: Implemented SE_TwoHandBluntBlock - Chance to block when using two hand blunt weapon (similiar to shield block).
+Kayen: SE_NegateEffect will now negate all AA, item and spell bonuses for the specified effects.
+Kayen: Added support to allow for certain bonuses to now properly be calculated when cast as debuffs (ie decrease chance to critical hit)
+Kayen: Implemented rule to allow certain bonuses to be calculated by adding together the value from each item, instead of taking the highest value. 
+  *Ie. Add together all worn cleave effects, ferocity effects ect.
+
+OPTIONAL SQL: utils/sql/svn/2209_optional_additive_bonus_rule.sql (disabled by default)
+
 ==09/13/2012==
 cavedude: Uleat implemented the following changes:
 
@@ -48,8 +60,8 @@ SK   AA: Soul Abrasion now implemented with bonus SE_ImprovedDamage2.
 *Many fixes to previously implemented AA effects.
 
 REQUIRED SQL: utils/sql/svn/2208_required_aa_updates	
-OPTIONAL SQL: utils/sql/svn/2208_optional_EnableSoulAbrasionAA
 OPTIONAL SQL: utils/sql/svn/2208_optional_aa_stacking_rule.sql (If false will disable AA stacking for all clients)
+OPTIONAL SQL: utils/sql/svn/2208_optional_EnableSoulAbrasionAA
  *If using an older server spell file (pre SOF), will need to run this to correctly populate the 'spellgroups' field.
 
 =======
