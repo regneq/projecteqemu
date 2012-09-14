@@ -416,21 +416,21 @@ typedef enum  {
 //#define SE_Unknown261					261	// not used
 #define SE_RaiseStatCap					262 // implemented
 #define	SE_TradeSkillMastery			263	// implemented - lets you raise more than one tradeskill above master.
-#define SE_HastenedAASkill				264 // not implemented as bonus
+#define SE_HastenedAASkill				264 // not implemented as bonus - Use redux field in aa_actions table for this effect
 #define SE_MasteryofPast				265 // implemented[AA] - Spells less than effect values level can not be fizzled
 #define SE_ExtraAttackChance			266 // implemented  - increase chance to score an extra attack with a 2-Handed Weapon.
 #define SE_PetDiscipline2				267 // *not implemented - /pet focus, /pet no cast
 #define SE_ReduceTradeskillFail			268 // *not implemented? - reduces chance to fail with given tradeskill by a percent chance
 #define SE_MaxBindWound					269	// implemented[AA] - Increase max HP you can bind wound.
-#define SE_BardSongRange				270	// implemented - Sionachie's Crescendo AA 
+#define SE_BardSongRange				270	// implemented[AA] - increase range of beneficial bard songs (Sionachie's Crescendo)
 #define SE_BaseMovementSpeed			271 // implemented[AA] - mods basemove speed, doesn't stack with other move mods
 #define SE_CastingLevel2				272 // implemented
 #define SE_CriticalDoTChance			273	// implemented
 #define SE_CriticalHealChance			274	// implemented
 //#define SE_Unknown275					275	// not used
-#define SE_Ambidexterity				276 // implemented[AA] increase chance to duel weild by adding bonus 'skill'
-#define SE_UnfailingDivinity			277	// *not implemented[AA] ability grants your Death Pact-type spells a second chance to successfully heal their target, also can cause said spells to do a portion of their healing value even on a complete failure.
-#define	SE_FinishingBlow				278 // implemented as bonus[AA] - aa effect (base1 = chance, base2 = damage)
+#define SE_Ambidexterity				276 // implemented[AA] - increase chance to duel weild by adding bonus 'skill'
+#define SE_UnfailingDivinity			277	// implemented[AA] - ability grants your Death Pact-type spells a second chance to successfully heal their target, also can cause said spells to do a portion of their healing value even on a complete failure.
+#define	SE_FinishingBlow				278 // implemented[AA] - chance to do massive damage under 10% HP (base1 = chance, base2 = damage)
 #define SE_Flurry						279	// implemented
 #define SE_PetFlurry					280 // implemented[AA]
 #define SE_FeignedMinion				281	// *not implemented[AA] ability allows you to instruct your pet to feign death via the '/pet feign' command.  value = succeed chance
@@ -449,7 +449,7 @@ typedef enum  {
 #define SE_CriticalSpellChance			294 // implemented
 //#define SE_Unknown295					295	// not used
 #define SE_SpellVulnerability			296	// implemented - increase in incoming spell damage
-#define SE_Empathy						297 // implemented - debuff that adds points damage to spells cast on target.
+#define SE_Empathy						297 // implemented - debuff that adds points damage to spells cast on target (focus effect).
 #define SE_ChangeHeight					298	// implemented
 #define SE_WakeTheDead					299	// implemented
 #define SE_Doppelganger					300	// implemented
@@ -465,11 +465,11 @@ typedef enum  {
 #define SE_ReduceReuseTimer				310 // implemented
 #define SE_CombatSkills					311 // implemented
 #define SE_Sanctuary					312 // *not implemented
-#define SE_ForageAdditionalItems		313	// *not implemented[AA] chance to forage additional items
+#define SE_ForageAdditionalItems		313	// *not implemented[AA] - chance to forage additional items
 #define SE_Invisibility2				314 // implemented - fixed duration invisible
-#define SE_InvisVsUndead2				315 // implemented  - fixed duration ITU
+#define SE_InvisVsUndead2				315 // implemented - fixed duration ITU
 //#define SE_Unknown316					316	// not used
-#define SE_ItemHPRegenCapIncrease		317	// not implemented[AA] increases amount of health regen gained via items
+#define SE_ItemHPRegenCapIncrease		317	// implemented[AA] - increases amount of health regen gained via items
 #define SE_ItemManaRegenCapIncrease		318 // implemented - increases amount of mana regen you can gain via items
 #define SE_CriticalHealOverTime			319 // implemented
 #define SE_ShieldBlock					320	// implemented - Block attacks with shield
@@ -493,7 +493,7 @@ typedef enum  {
 #define SE_SummonAndResAllCorpses		338	// implemented
 #define SE_TriggerOnCast				339	// implemented
 #define SE_SpellTrigger     			340	// implemented - chance to trigger spell
-#define SE_ItemAttackCapIncrease		341	// *not implemented[AA] - increases the maximum amount of attack you can gain from items.
+#define SE_ItemAttackCapIncrease		341	// implemented[AA] - increases the maximum amount of attack you can gain from items.
 #define SE_ImmuneFleeing				342	// implemented - stop mob from fleeing
 #define SE_InterruptCasting				343	// implemented - % chance to interrupt spells being cast every tic. Cacophony (8272)
 #define SE_ChannelChanceItems			344	// implemented[AA] - chance to not have ITEM effects interrupted when you take damage.
@@ -543,11 +543,11 @@ typedef enum  {
 #define SE_SummonCorpseZone				388 // *not implemented - summons a corpse from any zone(nec AA)
 #define SE_Forceful_Rejuv				389 // Refresh spell icons
 #define SE_CastResistRestrict			390 // *not implemented - some sort of restriction of what resist spells you can cast
-//#define SE_Unknown391					391 // not used (Warlord's Fury) likely a focus limit
+//#define SE_Unknown391					391 // not used (Warlord's Fury/Twinproc) likely a focus limit
 #define SE_AdditionalHeal2				392 // implemented - Adds or removes healing from spells
 #define SE_HealRate2					393 // implemented - HealRate with focus restrictions.
 //#define SE_Unknown394					394 // *not implemented - (Diminishing Presence) Adds or removes healing from spells
-#define SE_CriticalHealRate				395 // *not implemented[AA] - Increases chance of having a heal crit when cast on you. [focus limited]
+#define SE_CriticalHealRate				395 // implemented[AA] - Increases chance of having a heal crit when cast on you. [focus limited]
 #define SE_AdditionalHeal				396 // implemented - Adds a direct healing amount to spells
 #define SE_PetMeleeMitigation			397 // *not implemented[AA] - additional mitigation to your pets.
 #define SE_SwarmPetDuration				398 // implemented - Affects the duration of swarm pets
@@ -557,7 +557,7 @@ typedef enum  {
 #define SE_EndDrainWithDmg				402 // implemented - Deals damage for the amount of endurance drained
 #define SE_ReluctantBene				403 // *not implemented - Reluctant Benevolence(21662)
 #define SE_LimitExcludeSkill			404 // implemented - Limit a focus to exclude spells cast using a specific skill.
-#define SE_Twinproc						405 // implemented - Proc twice [THIS IS MADE UP!] 2 Hand Block
+#define SE_TwoHandBluntBlock			405 // implemented - chance to block attacks when using two hand blunt weapons (similiar to shield block)
 #define SE_CastonNumHitFade				406 // implemented - casts a spell when a buff fades due to its numhits being depleted
 //#define SE_Unknown397					407 // *not implemented (Diminished Presence) Triggerable spell effect
 #define SE_LimitHPPercent				408 // implemented - limited to a certain percent of your hp(ie heals up to 50%)
@@ -572,8 +572,8 @@ typedef enum  {
 #define SE_ManaRegen_v2					417 // implemented - New mana regen effect
 #define SE_SkillDamageAmount2			418 // implemented - adds skill damage directly to certain attacks
 #define SE_AddMeleeProc					419 // implemented - Adds a proc
-#define SE_IncreaseNumHits				420 // *not implemented[AA] - [Lasting Bravery] increases number of hits a buff has till fade. (focus)
-//#define SE_Unknown421					421 // not used - Seen in Lasting Bravery likely a focus limit
+//#define SE_Unknown420					420 // *not used
+#define SE_IncreaseNumHits				421 // implemented[AA] - increases number of hits a buff has till fade. (focus)
 //#define SE_Unknown422					422 // not used - Seen in Lasting Bravery likely a focus limit
 //#define SE_Unknown423					423 // not used	- Seen in Lasting Bravery likely a focus limit
 #define SE_GravityEffect				424 // implemented - Pulls/pushes you toward/away the mob at a set pace

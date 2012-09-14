@@ -180,8 +180,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		}
 	}
 
-	if(spells[spell_id].numhits > 0)
-		buffs[buffslot].numhits = spells[spell_id].numhits;
+	if(spells[spell_id].numhits > 0){
+		
+		int numhit = spells[spell_id].numhits;
+		
+		if (caster && caster->IsClient()) 
+			numhit += caster->CastToClient()->GetFocusEffect(focusIncreaseNumHits, spell_id);
+
+		buffs[buffslot].numhits = numhit;
+	}
 
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
@@ -2609,7 +2616,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_SpellTrigger:
 			case SE_ApplyEffect:
 			case SE_Twincast:
-			case SE_Twinproc: 
 			case SE_DelayDeath: 
 			case SE_InterruptCasting:
 			case SE_ImprovedSpellEffect:
@@ -2692,6 +2698,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_UnfailingDivinity:
 			case SE_ChannelChanceSpells:
 			case SE_ChannelChanceItems:
+			case SE_CriticalHealRate:
+			case SE_IncreaseNumHits:
 			{
 				break;
 			}
@@ -4046,6 +4054,14 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 				break;
 			}
 
+			case SE_CriticalHealRate:
+			{
+				if (type == focusCriticalHealRate)
+					value = base1;
+
+				break;
+			}
+
 			case SE_AdditionalHeal:
 			{
 				if(type == focusAdditionalHeal)
@@ -4080,6 +4096,14 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 			case SE_ImprovedDamage2:
 			{
 				if(type == focusImprovedDamage2)
+					value = base1;
+
+				break;
+			}
+
+			case SE_IncreaseNumHits:
+			{
+				if(type == focusIncreaseNumHits)
 					value = base1;
 
 				break;
@@ -4495,6 +4519,14 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 			break;
 		}
 
+		case SE_CriticalHealRate:
+		{
+			if (type == focusCriticalHealRate)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
 		case SE_AdditionalHeal:
 		{
 			if(type == focusAdditionalHeal)
@@ -4529,6 +4561,14 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id, bool
 		case SE_ImprovedDamage2:
 		{
 			if(type == focusImprovedDamage2)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_IncreaseNumHits:
+		{
+			if(type == focusIncreaseNumHits)
 				value = focus_spell.base[i];
 
 			break;

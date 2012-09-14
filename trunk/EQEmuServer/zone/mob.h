@@ -106,6 +106,8 @@ typedef enum {	//focus types
 	focusHealRate,
 	focusAdditionalDamage,
 	focusSpellEffectiveness,
+	focusIncreaseNumHits,
+	focusCriticalHealRate,
 	focusAdditionalHeal2,
 	focusAdditionalHeal,
 } focusType; //Any new FocusType needs to be added to the Mob::IsFocus function
@@ -326,7 +328,7 @@ struct StatBonuses {
 	sint16 	CritDmgMob[HIGHEST_SKILL+2];		// All Skills + -1
 	sint16 	SkillReuseTime[HIGHEST_SKILL+1];	// Reduces skill timers
 	sint16 	SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
-	uint16 	TwinProc;							// Proc twice
+	sint16 	TwoHandBluntBlock;					// chance to block when wielding two hand blunt weapon
 	uint16 	ItemManaRegenCap;					// Increases the amount of mana you have can over the cap(aa effect)
 	sint16 	GravityEffect;						// Indictor of spell effect
 	bool	AntiGate;							// spell effect that prevents gating
@@ -949,6 +951,7 @@ bool logpos;
 	bool TryFadeEffect(int slot);
 	int16 GetSpellEffectResistChance(int16 spell_id);
 	sint16 GetHealRate(int16 spell_id);
+	sint16 GetCriticalHealRate(int16 spell_id);
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
 	sint32 GetAdditionalDamage(Mob *caster, uint32 spell_id, bool use_skill = false, int16 skill=0);
 	sint16 GetSkillDmgTaken(const SkillType skill_used);

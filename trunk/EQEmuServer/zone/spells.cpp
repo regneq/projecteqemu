@@ -1140,14 +1140,6 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 
 	TryTriggerOnCast(spell_id, 0);
 
-	/*
-	if(itembonuses.SpellTriggers[0] || spellbonuses.SpellTriggers[0])
-		TryTriggerOnCast(spell_id, 0);
-
-	if(IsClient() && aabonuses.SpellTriggers[0]) 
-		TryTriggerOnCast(spell_id, 1);
-	*/
-	
 	// we're done casting, now try to apply the spell
 	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot, resist_adjust) )
 	{
