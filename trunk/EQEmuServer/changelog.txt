@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/16/2012==
+Kayen: Implemented SE_HealFromMana changed to SE_HealGroupFromMana - now implemented correctly.
+
 ==09/14/2012==
 Kayen: Implemented SE_CriticalHealRate - Focus that increase chance for heals cast on you to critical.
 Kayen: Implemented SE_IncreaseNumHits - Focus that can inceases max number of hits a buff can have before being removed.

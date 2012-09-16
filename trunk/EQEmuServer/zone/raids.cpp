@@ -461,6 +461,37 @@ int32 Raid::GetTotalRaidDamage(Mob* other)
 	return total;
 }
 
+void Raid::HealGroup(uint32 heal_amt, Mob* caster, int32 gid)
+{
+	if (!caster)
+		return;
+
+	int numMem = 0;
+	unsigned int gi = 0;
+	for(; gi < MAX_RAID_MEMBERS; gi++)
+	{
+		if(members[gi].member){
+			if(members[gi].GroupNumber == gid)
+			{
+				numMem += 1;
+			}
+		}
+	}
+
+	heal_amt /= numMem;
+	for(gi = 0; gi < MAX_RAID_MEMBERS; gi++)
+	{
+		if(members[gi].member){
+			if(members[gi].GroupNumber == gid)
+			{
+				members[gi].member->SetHP(members[gi].member->GetHP() + heal_amt);
+				members[gi].member->SendHPUpdate();
+			}
+		}
+	}
+}
+
+
 void Raid::BalanceHP(sint32 penalty, int32 gid)
 {
 	int dmgtaken = 0, numMem = 0;

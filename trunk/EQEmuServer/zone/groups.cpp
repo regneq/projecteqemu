@@ -1029,6 +1029,32 @@ void Client::LeaveGroup() {
 	isgrouped = false;
 }
 
+void Group::HealGroup(uint32 heal_amt, Mob* caster)
+{
+	if (!caster)
+		return;
+
+	int numMem = 0;
+	unsigned int gi = 0;
+	for(; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			numMem += 1;
+		}
+	}
+
+	heal_amt /= numMem;
+	for(gi = 0; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			//members[gi]->SetHP(members[gi]->GetHP() + heal_amt);
+			members[gi]->HealDamage(heal_amt, caster);
+			members[gi]->SendHPUpdate();
+		}
+	}
+}
+
+
 void Group::BalanceHP(sint32 penalty)
 {
 	int dmgtaken = 0, numMem = 0;
