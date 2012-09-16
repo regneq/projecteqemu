@@ -2336,22 +2336,47 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 			
-			case SE_HealFromMana:
-			{
-				int heal_amount = 0;
-				if(caster) {
-					sint32 mana_to_use = caster->GetMana() - spell.base[i];
-					if(mana_to_use > -1) {
-						caster->SetMana(caster->GetMana() - spell.base[i]);
-						// we get the full amount of the heal, which is broken into 10 mana increments
-						heal_amount = spell.base[i] / 10 * spell.base2[i];
-					}
-					else {
-						heal_amount = GetMana() / 10 * spell.base2[i];
-						caster->SetMana(0);
+			case SE_HealGroupFromMana: {
+				if(!caster)
+					break;
+
+				if(!caster->IsClient())
+					break;
+					
+				uint32 max_mana = spell.base[i];
+				int ratio = spell.base2[i];	
+				uint32 heal_amt = 0;
+				
+				if (caster->GetMana() <= max_mana){
+					heal_amt = ratio*caster->GetMana()/10; 
+					caster->SetMana(0);
+				}
+
+				else {
+					heal_amt = ratio*max_mana/10; 
+					caster->SetMana(caster->GetMana() - max_mana);
+				}
+
+				Raid *r = entity_list.GetRaidByClient(caster->CastToClient());
+				if(r)
+				{
+					int32 gid = 0xFFFFFFFF;
+					gid = r->GetGroup(caster->GetName());
+					if(gid < 11)
+					{
+						r->HealGroup(heal_amt,caster, gid);
+						break;
 					}
 				}
-				HealDamage(heal_amount, caster);
+
+				Group *g = entity_list.GetGroupByClient(caster->CastToClient());
+
+				if(!g){
+					caster->HealDamage(heal_amt);
+					break;
+				}
+
+				g->HealGroup(heal_amt, caster);
 				break;
 			}
 			

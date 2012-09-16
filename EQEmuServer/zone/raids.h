@@ -153,6 +153,7 @@ public:
 	int32	GetTotalRaidDamage(Mob* other);
 	void	BalanceHP(sint32 penalty, int32 gid);
 	void	BalanceMana(sint32 penalty, int32 gid);
+	void	HealGroup(uint32 heal_amt, Mob* caster, int32 gid);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
 	void	GroupBardPulse(Mob* caster, uint16 spellid, int32 gid);
 

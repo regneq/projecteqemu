@@ -552,7 +552,7 @@ typedef enum  {
 #define SE_PetMeleeMitigation			397 // *not implemented[AA] - additional mitigation to your pets.
 #define SE_SwarmPetDuration				398 // implemented - Affects the duration of swarm pets
 #define SE_Twincast						399 // implemented - cast 2 spells for every 1
-#define SE_HealFromMana					400 // implemented - Drains mana and heals for each point of mana drained
+#define SE_HealGroupFromMana			400 // implemented - Drains mana and heals for each point of mana drained
 #define SE_ManaDrainWithDmg				401 // implemented - Deals damage based on the amount of mana drained
 #define SE_EndDrainWithDmg				402 // implemented - Deals damage for the amount of endurance drained
 #define SE_ReluctantBene				403 // *not implemented - Reluctant Benevolence(21662)

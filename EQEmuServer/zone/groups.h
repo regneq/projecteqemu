@@ -88,6 +88,7 @@ public:
 	void	VerifyGroup();
 	void	BalanceHP(sint32 penalty);
 	void	BalanceMana(sint32 penalty);
+	void	HealGroup(uint32 heal_amt, Mob* caster);
 	inline	void SetGroupAAs(GroupLeadershipAA_Struct *From) { memcpy(&LeaderAbilities, From, sizeof(GroupLeadershipAA_Struct)); }
 	inline	void GetGroupAAs(GroupLeadershipAA_Struct *Into) { memcpy(Into, &LeaderAbilities, sizeof(GroupLeadershipAA_Struct)); }
 	void	UpdateGroupAAs();
