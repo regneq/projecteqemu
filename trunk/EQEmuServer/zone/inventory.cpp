@@ -222,6 +222,8 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 				inst->SetCharges(1);
 			if ((inst->GetCharges()>0))
 				inst->SetCharges(inst->GetCharges());
+
+			// Corrected the augment references to reflect augment name/id instead of base item name/id
 			if (aug1) {
 				const Item_Struct* augitem1 = database.GetItem(aug1);
 				if (augitem1) {
@@ -229,7 +231,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 						inst->PutAugment(&database, 0, aug1);
 					}
 					else {
-						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+						Message(0, "You already have a %s (%u) in your inventory - Augment not added!", augitem1->Name, aug1);
 					}
 				}
 			}
@@ -240,7 +242,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 						inst->PutAugment(&database, 1, aug2);
 					}
 					else {
-						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+						Message(0, "You already have a %s (%u) in your inventory - Augment not added!", augitem2->Name, aug2);
 					}
 				}
 			}
@@ -251,7 +253,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 						inst->PutAugment(&database, 2, aug3);
 					}
 					else {
-						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+						Message(0, "You already have a %s (%u) in your inventory - Augment not added!", augitem3->Name, aug3);
 					}
 				}
 			}
@@ -262,7 +264,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 						inst->PutAugment(&database, 3, aug4);
 					}
 					else {
-						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+						Message(0, "You already have a %s (%u) in your inventory - Augment not added!", augitem4->Name, aug4);
 					}
 				}
 			}
@@ -273,7 +275,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 						inst->PutAugment(&database, 4, aug5);
 					}
 					else {
-						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+						Message(0, "You already have a %s (%u) in your inventory - Augment not added!", augitem5->Name, aug5);
 					}
 				}
 			}
@@ -397,9 +399,11 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 		LogFile->write(EQEMuLog::Debug, "DeleteItemInInventory(%i, %i, %s)", slot_id, quantity, (client_update) ? "true":"false");
 	#endif
 
+	// Added 'IsSlotValid(slot_id)' check to both segments of client packet processing.
+	// - cursor queue slots were slipping through and crashing client
 	if(!m_inv[slot_id]) {
 		// Make sure the client deletes anything in this slot to match the server.
-		if(client_update) {
+		if(client_update && IsValidSlot(slot_id)) {
 			EQApplicationPacket* outapp;
 			outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
 			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
@@ -427,23 +431,29 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 		    database.SaveInventory(character_id, inst, slot_id);
 	}
 
-	if(client_update) {
+	if(client_update && IsValidSlot(slot_id)) {
 		EQApplicationPacket* outapp;
 		if(inst) {
-			if(!inst->IsStackable() && !isDeleted) 
+			if(!inst->IsStackable() && !isDeleted)
 				// Non stackable item with charges = Item with clicky spell effect ? Delete a charge.
 				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(MoveItem_Struct));
 			else
 				// Stackable, arrows, etc ? Delete one from the stack
 				outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(MoveItem_Struct));
 
-			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
-			delitem->from_slot			= slot_id;
-			delitem->to_slot			= 0xFFFFFFFF;
-			delitem->number_in_stack	= 0xFFFFFFFF;
-			for(int loop=0;loop<quantity;loop++)
-				QueuePacket(outapp);
-			safe_delete(outapp);
+				DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
+				delitem->from_slot			= slot_id;
+				delitem->to_slot			= 0xFFFFFFFF;
+				delitem->number_in_stack	= 0xFFFFFFFF;
+				for(int loop=0;loop<quantity;loop++)
+					QueuePacket(outapp);
+				safe_delete(outapp);
+
+				if (slot_id == SLOT_CURSOR) {
+					Message(13, "Server Warning! If you just received a MOVE ITEM FAILED IN CLIENT APPLICATION");
+					Message(13, "error message, then you will need to zone or relog to clear this problem.");
+					Message(0, "Do not perform any inventory actions until you do so or permanent item loss is possible.");
+				}
 		}
 		else {
 			outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
@@ -455,7 +465,6 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 			safe_delete(outapp);
 		}
 	}
-
 }
 
 // Puts an item into the person's inventory
@@ -1011,7 +1020,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			move_in->from_slot = dst_slot_check;
 			move_in->to_slot = src_slot_check;
 			move_in->number_in_stack = dst_inst->GetCharges();
-			SwapItem(move_in);
+			if (!SwapItem(move_in)) // shouldn't fail because call wouldn't exist otherwise, but just in case...
+				this->Message(13, "Error: Internal SwapItem call returned a failure!");
 		}
 		Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
@@ -1188,7 +1198,13 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 					mlog(INVENTORY__SLOTS, "Dest (%d) now has %d charges, source (%d) has %d (%d moved)", dst_slot_id, dst_inst->GetCharges(), src_slot_id, src_inst->GetCharges(), usedcharges);
 				}
 			} else {
-				//stack is full, so 
+				//stack is full, so
+
+				// there was no action taken here previously. any moveitem action would cause server to fail swapitem request, but
+				// the calling method still processed a success by continuing on to the end of the procedure. affected methods have
+				// been changed to conditional calls. needed to add this:
+				mlog(INVENTORY__ERROR, "Move from %d to %d with stack size %d. Exceeds dest maximum stack size: %d/%d", src_slot_id, dst_slot_id, move_in->number_in_stack, (src_inst->GetCharges()+dst_inst->GetCharges()), dst_inst->GetItem()->StackSize);
+				return false;
 			}
 		}
 		else {
@@ -1679,7 +1695,7 @@ void Client::CreateBandolier(const EQApplicationPacket *app) {
 	Save();
 }
 
-void	Client::RemoveBandolier(const EQApplicationPacket *app) {
+void Client::RemoveBandolier(const EQApplicationPacket *app) {
 
 	// Delete bandolier with the specified number
 
@@ -1693,7 +1709,7 @@ void	Client::RemoveBandolier(const EQApplicationPacket *app) {
 	Save();
 }
 
-void	Client::SetBandolier(const EQApplicationPacket *app) {
+void Client::SetBandolier(const EQApplicationPacket *app) {
 
 	// Swap the weapons in the given bandolier set into the character's weapon slots and return
 	// any items currently in the weapon slots to inventory.
@@ -1714,7 +1730,28 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 			// Check if the player has the item specified in the bandolier set on them.
 			//
 			slot = m_inv.HasItem(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id, 1, 
-					     invWhereWorn|invWherePersonal|invWhereCursor);
+					     invWhereWorn|invWherePersonal);
+
+			// removed 'invWhereCursor' argument from above and implemented slots 30, 331-340 checks here 
+			if (slot == SLOT_INVALID) {
+				if (m_inv.GetItem(SLOT_CURSOR)) {
+					if (m_inv.GetItem(SLOT_CURSOR)->GetItem()->ID == m_pp.bandoliers[bss->number].items[BandolierSlot].item_id &&
+						m_inv.GetItem(SLOT_CURSOR)->GetCharges() >= 1) // '> 0' the same, but this matches Inventory::_HasItem conditional check
+							slot = SLOT_CURSOR;
+					else if (m_inv.GetItem(SLOT_CURSOR)->GetItem()->ItemClass == 1) {
+						for(sint16 CursorBagSlot = 331; CursorBagSlot <= 340; CursorBagSlot++) {
+							if (m_inv.GetItem(CursorBagSlot)) {
+								if (m_inv.GetItem(CursorBagSlot)->GetItem()->ID == m_pp.bandoliers[bss->number].items[BandolierSlot].item_id &&
+									m_inv.GetItem(CursorBagSlot)->GetCharges() >= 1) { // ditto
+										slot = CursorBagSlot;
+										break;
+								}
+							}
+						}
+					}
+				}
+			}
+
 			// if the player has this item in their inventory,
 			if(slot != SLOT_INVALID) {
 				// Pull the item out of the inventory
@@ -1842,7 +1879,7 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 	//
 	if(ItemToReturn->IsStackable()) {
 
-		for (sint16 i=22; i<=29; i++) {
+		for (sint16 i=22; i<=30; i++) { // changed slot max to 30 from 29. client will stack into slot 30 (bags too) before moving.
 
 			ItemInst* InvItem = m_inv.GetItem(i);
 
@@ -1905,7 +1942,7 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 
 	// We have tried stacking items, now just try and find an empty slot.
 
-	for (sint16 i=22; i<=29; i++) {
+	for (sint16 i=22; i<=30; i++) { // changed slot max to 30 from 29. client will move into slot 30 (bags too) before pushing onto cursor.
 
 		ItemInst* InvItem = m_inv.GetItem(i);
 
