@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/18/2012==
+cavedude: Overhauled loot system. I've outlined the new system on the forums here: http://www.eqemulator.org/forums/showthread.php?t=35770
+
+REQUIRED SQL: utils/sql/svn/2213_loot_changes.sql
+
 ==09/16/2012==
 Kayen: Implemented SE_HealFromMana changed to SE_HealGroupFromMana - now implemented correctly.
 
