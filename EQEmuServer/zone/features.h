@@ -77,9 +77,6 @@ Zone extensions and features
 
 */
 
-//Uncomment this to enable the Winter's Roar pool looting system
-//#define POOLLOOTING
-
 //Uncomment this to scale XP gained from MOBs based on their CON
 //#define CON_XP_SCALING
 

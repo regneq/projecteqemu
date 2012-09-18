@@ -281,7 +281,7 @@ public:
 	bool	GetPoweredPetEntry(const char *pet_type, sint16 petpower, PetRecord *into);
 	bool	GetBasePetItems(sint32 equipmentset, int32 *items);
 	void	AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* itemlist, int32* copper, int32* silver, int32* gold, int32* plat);
-	void	AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemlist);
+	void	AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemlist, int8 droplimit, int8 mindrop);
 	int32	GetMaxNPCSpellsID();
 	DBnpcspells_Struct* GetNPCSpells(int32 iDBSpellsID);
 	
