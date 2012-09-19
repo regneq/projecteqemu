@@ -700,63 +700,54 @@ sint32 Client::GetModCharacterFactionLevel(sint32 faction_id) {
 bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race_mod, uint32 deity_mod, sint32 faction_id) {
 	if (faction_id <= 0 || faction_id > (sint32) max_faction)
 		return false;	
-	uint32 modr_tmp =0;
-	uint32 modd_tmp =0;
-	switch (race_mod) {
-		case 1: modr_tmp = 0;break;
-		case 2: modr_tmp = 1;break;
-		case 3: modr_tmp = 2;break;
-		case 4: modr_tmp = 3;break;
-		case 5: modr_tmp = 4;break;
-		case 6: modr_tmp = 5;break;
-		case 7: modr_tmp = 6;break;
-		case 8: modr_tmp = 7;break;
-		case 9: modr_tmp = 8;break;
-		case 10: modr_tmp = 9;break;
-		case 11: modr_tmp = 10;break;
-		case 12: modr_tmp = 11;break;
-		case 14: modr_tmp = 12;break;
-		case 42: modr_tmp = 13;break;
-		case 75: modr_tmp = 14;break;
-		case 108: modr_tmp = 15;break;
-		case 128: modr_tmp = 16;break;
-		case 130: modr_tmp = 17;break;
-		case 161: modr_tmp = 18;break;
-		case 330: modr_tmp = 19;break;
-		case 367: modr_tmp = 20;break;
-		case 522: modr_tmp = 21;break;
-	}
-	if (deity_mod == 140 || deity_mod == 396) 
-		modd_tmp = 0;
-	else
-		modd_tmp = deity_mod - 200;
-	if (faction_array[faction_id] == 0){
+
+    if (faction_array[faction_id] == 0){
 		return false;
 	}
-	fm->base = faction_array[faction_id]->base;
-	if ((class_mod-1) < (sizeof(faction_array[faction_id]->mod_c) / sizeof(faction_array[faction_id]->mod_c[0])))
-		fm->class_mod = faction_array[faction_id]->mod_c[class_mod-1];
-	else {
-//		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::GetFactionData: class_mod-1[=%i] out of range", class_mod-1);
-		fm->class_mod = 0;
-		//return false;
-	}
-	if ((modr_tmp) < (sizeof(faction_array[faction_id]->mod_r) / sizeof(faction_array[faction_id]->mod_r[0])))
-		fm->race_mod = faction_array[faction_id]->mod_r[modr_tmp];
-	else {
-//		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::GetFactionData: modr_tmp[=%i] out of range (race_mod=%i)", modr_tmp, race_mod);
-		fm->race_mod = 0;
-		//return false;
-	}
-	if ((modd_tmp) < (sizeof(faction_array[faction_id]->mod_d) / sizeof(faction_array[faction_id]->mod_d[0])))
-		fm->deity_mod = faction_array[faction_id]->mod_d[modd_tmp];
-	else {
-//		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::GetFactionData: modd_tmp[=%i] out of range (deity_mod=%i)", modd_tmp, deity_mod);
-		fm->deity_mod = 0;
-		//return false;
-	}
-	if(fm->deity_mod > 1000)
-		fm->deity_mod = 0;
+
+    fm->base = faction_array[faction_id]->base;
+
+    if(class_mod > 0) {
+        char str[32];
+        sprintf(str, "c%u", class_mod);
+
+        std::map<std::string, sint16>::const_iterator iter = faction_array[faction_id]->mods.find(str);
+        if(iter != faction_array[faction_id]->mods.end()) {
+            fm->class_mod = iter->second;
+        } else {
+            fm->class_mod = 0;
+        }
+    } else {
+        fm->class_mod = 0;
+    }
+
+    if(race_mod > 0) {
+        char str[32];
+        sprintf(str, "r%u", race_mod);
+
+        std::map<std::string, sint16>::iterator iter = faction_array[faction_id]->mods.find(str);
+        if(iter != faction_array[faction_id]->mods.end()) {
+            fm->race_mod = iter->second;
+        } else {
+            fm->race_mod = 0;
+        }
+    } else {
+        fm->race_mod = 0;
+    }
+
+    if(deity_mod > 0) {
+        char str[32];
+        sprintf(str, "d%u", deity_mod);
+
+        std::map<std::string, sint16>::iterator iter = faction_array[faction_id]->mods.find(str);
+        if(iter != faction_array[faction_id]->mods.end()) {
+            fm->deity_mod = iter->second;
+        } else {
+            fm->deity_mod = 0;
+        }
+    } else {
+        fm->deity_mod = 0;
+    }
 
 	return true;
 }
@@ -954,7 +945,7 @@ bool ZoneDatabase::LoadFactionData()
 			}
 			mysql_free_result(result);
 			
-			MakeAnyLenString(&query, "SELECT id,name,base,mod_c1,mod_c2,mod_c3,mod_c4,mod_c5,mod_c6,mod_c7,mod_c8,mod_c9,mod_c10,mod_c11,mod_c12,mod_c13,mod_c14,mod_c15,mod_c16,mod_r1,mod_r2,mod_r3,mod_r4,mod_r5,mod_r6,mod_r7,mod_r8,mod_r9,mod_r10,mod_r11,mod_r12,mod_r14,mod_r42,mod_r75,mod_r108,mod_r128,mod_r130,mod_r161,mod_r330,mod_r367,mod_r522,mod_d140,mod_d201,mod_d202,mod_d203,mod_d204,mod_d205,mod_d206,mod_d207,mod_d208,mod_d209,mod_d210,mod_d211,mod_d212,mod_d213,mod_d214,mod_d215,mod_d216 FROM faction_list");
+			MakeAnyLenString(&query, "SELECT id,name,base FROM faction_list");
 			if (RunQuery(query, strlen(query), errbuf, &result))
 			{
 				safe_delete_array(query);
@@ -962,18 +953,21 @@ bool ZoneDatabase::LoadFactionData()
 				{
 					uint32 index = atoi(row[0]);
 					faction_array[index] = new Faction;
-					memset(faction_array[index], 0, sizeof(Faction));
 					strn0cpy(faction_array[index]->name, row[1], 50);					
 					faction_array[index]->base = atoi(row[2]);
-					int16 i;
-					for (i=3;i != 19;i++)
-						faction_array[index]->mod_c[i-3] = atoi(row[i]);
-					for (i=19;i != 41;i++)
-						faction_array[index]->mod_r[i-19] = atoi(row[i]);
-					for (i=41;i != 58;i++)
-						faction_array[index]->mod_d[i-41] = atoi(row[i]);
-					//does this make sense?:
-					//faction_array[atoi(row[0])]->mod_r[20] = atoi(row[55]);
+
+                    char sec_errbuf[MYSQL_ERRMSG_SIZE];
+                    MYSQL_RES *sec_result;
+                    MYSQL_ROW sec_row;
+                    MakeAnyLenString(&query, "SELECT `mod`, `mod_name` FROM `faction_list_mod` WHERE faction_id=%u", index);
+                    if (RunQuery(query, strlen(query), sec_errbuf, &sec_result)) {
+                        while((sec_row = mysql_fetch_row(sec_result)))
+                        {
+                            faction_array[index]->mods[sec_row[1]] = atoi(sec_row[0]);
+                        }
+                        mysql_free_result(sec_result);
+                    }
+                    safe_delete_array(query);
 				}
 				mysql_free_result(result);
 			}
