@@ -21,6 +21,7 @@
 #include "../common/types.h"
 #include "features.h"
 #include <map>
+#include <string>
 
 enum FACTION_VALUE {
 	FACTION_ALLY = 1,
@@ -55,13 +56,10 @@ struct FactionMods
 };
 struct Faction {
 	sint32	id;
-	sint16	mod_c[16];
-	sint16	mod_r[22];
-	sint16	mod_d[17];
+    std::map<std::string, sint16> mods;
 	sint16	base;
 	char	name[50];
 };
-
 typedef map<uint32, sint16> faction_map;
 
 struct NPCFaction    
