@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/20/2012==
+Kayen: AA dbase table fixes - Archery Mastery, Fury of Magic.
+
+REQUIRED SQL: utils/sql/svn/2215_required_aa_updates	
+
 ==09/19/2012==
 KLS: Faction mods (Race, Class, Deity) can now be added on the fly, without adding database columns or editing the code. Source in the database change, run utils/factionmod.pl, and then drop the faction_list table to convert.
 
