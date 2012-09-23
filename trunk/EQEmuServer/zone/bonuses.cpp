@@ -936,6 +936,9 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_UnfailingDivinity:
 				newbon->UnfailingDivinity += base1;
 				break;
+			case SE_CrippBlowChance:
+				newbon->CrippBlowChance += base1;
+				break;
 
 			case SE_SpellOnKill:
 				for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3)
@@ -1564,6 +1567,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 						newbon->CriticalHitChance[HIGHEST_SKILL+1] = effect_value;
 				else if(spells[spell_id].base2[i] != -1 && newbon->CriticalHitChance[spells[spell_id].base2[i]] < effect_value)
 						newbon->CriticalHitChance[spells[spell_id].base2[i]] = effect_value;
+				break;
 			}
 				
 			case SE_CrippBlowChance:
@@ -2262,6 +2266,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			
 			case SE_TwoHandBluntBlock:
 				newbon->TwoHandBluntBlock += effect_value;
+				break;
 
 			case SE_SpellEffectResistChance:
 			{
@@ -2291,6 +2296,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					if(newbon->GiveDoubleRiposte[0] < effect_value)
 						newbon->GiveDoubleRiposte[0] = effect_value;
 				}
+				break;
 			}
 
 			case SE_SlayUndead:

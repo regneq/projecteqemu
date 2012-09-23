@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/23/2012==
+Kayen: Fix for crippling blow chance, other minor fixes related to bonuses.
+
 ==09/20/2012==
 Kayen: AA dbase table fixes - Archery Mastery, Fury of Magic.
 

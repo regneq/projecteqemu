@@ -4223,14 +4223,10 @@ sint16 Mob::GetMeleeMinDamageMod_SE(int16 skill)
 
 sint16 Mob::GetCrippBlowChance()
 {
-	int crip_chance = 0;
+	sint16 crip_chance = 0;
 
-	crip_chance += this->itembonuses.CrippBlowChance + this->spellbonuses.CrippBlowChance + 
-					this->itembonuses.CrippBlowChance + this->spellbonuses.CrippBlowChance;
+	crip_chance += itembonuses.CrippBlowChance + spellbonuses.CrippBlowChance + aabonuses.CrippBlowChance;
 	
-	if(IsClient())
-		crip_chance += this->aabonuses.CrippBlowChance + this->aabonuses.CrippBlowChance;
-					
 	if(crip_chance < 0)
 		crip_chance = 0;
 
