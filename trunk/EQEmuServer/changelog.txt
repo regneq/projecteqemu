@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/27/2012==
+Bad_Captain: Bots- Changed #bot healrotation timer to allow decimal values.
+Bad_Captain: Bots- Rewrote bot AAs to load from DB.
+Bad_Captain: Bots- Synced bot code to client code for aabonuses, attack, spell casting, etc., as the result of the client aabonuses changes.
+
 ==09/23/2012==
 Kayen: Fix for crippling blow chance, other minor fixes related to bonuses.
 

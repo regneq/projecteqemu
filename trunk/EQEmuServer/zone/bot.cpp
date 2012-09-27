@@ -108,6 +108,7 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	_lastTotalPlayTime = totalPlayTime;
 	_startTotalPlayTime = time(&_startTotalPlayTime);
 	_lastZoneId = lastZoneId;
+	berserk = false;
 
 	_baseMR = npcTypeData.MR;
 	_baseCR = npcTypeData.CR;
@@ -181,11 +182,10 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 		_healRotationTargets[i] = 0;	
 	}
 
-	LoadTimers();
-
 	GenerateBaseStats();
-
-	// Load saved buffs
+	
+	LoadTimers();
+	LoadAAs();
 	LoadBuffs();
 
 	CalcBotStats(false);
@@ -278,6 +278,7 @@ void Bot::ChangeBotArcherWeapons(bool isArcher) {
 			BotAddEquipItem(SLOT_SECONDARY, GetBotItemBySlot(SLOT_SECONDARY));
 			//archerbot->SendWearChange(MATERIAL_PRIMARY);
 			//archerbot->SendWearChange(MATERIAL_SECONDARY);
+			SetAttackTimer();
 			Say("My blade is ready.");
 		}
 		else {
@@ -288,6 +289,7 @@ void Bot::ChangeBotArcherWeapons(bool isArcher) {
 			//archerbot->SendBotArcheryWearChange(MATERIAL_PRIMARY, archeryMaterial, archeryColor);
 			BotAddEquipItem(SLOT_AMMO, GetBotItemBySlot(SLOT_AMMO));
 			BotAddEquipItem(SLOT_SECONDARY, GetBotItemBySlot(SLOT_RANGE));
+			SetAttackTimer();
 			Say("My bow is true and ready.");
 		}
 	}
@@ -473,7 +475,6 @@ void Bot::GenerateBaseStats() {
 				Agility += 10;
 				Dexterity += 10;
 				Attack += 12;
-				MagicResist += 2;
 				break;
 			case 2: // Cleric
 				BotSpellID = 701;
@@ -491,7 +492,6 @@ void Bot::GenerateBaseStats() {
 				Charisma += 10;
 				Dexterity += 5;
 				Attack += 17;
-				DiseaseResist += 8;
 				break;
 			case 4: // Ranger
 				BotSpellID = 710;
@@ -500,8 +500,6 @@ void Bot::GenerateBaseStats() {
 				Agility += 10;
 				Wisdom += 15;
 				Attack += 17;
-				FireResist += 4;
-				ColdResist += 4;
 				break;
 			case 5: // Shadowknight
 				BotSpellID = 709;
@@ -510,8 +508,6 @@ void Bot::GenerateBaseStats() {
 				Intelligence += 20;
 				Charisma += 5;
 				Attack += 17;
-				PoisonResist += 4;
-				DiseaseResist += 4;
 				break;
 			case 6: // Druid
 				BotSpellID = 707;
@@ -540,7 +536,6 @@ void Bot::GenerateBaseStats() {
 				Agility += 10;
 				Dexterity += 10;
 				Attack += 12;
-				PoisonResist += 8;
 				break;
 			case 10: // Shaman
 				BotSpellID = 706;
@@ -1347,6 +1342,10 @@ uint16 Bot::GetPrimarySkillValue()
 	return GetSkill(skill);
 }
 
+int16 Bot::MaxSkill(SkillType skillid, int16 class_, int16 level) const {
+	return(database.GetSkillCap(class_, skillid, level));
+}
+
 uint16 Bot::GetTotalATK()
 {
 	int16 AttackRating = 0;
@@ -1429,1987 +1428,688 @@ sint32 Bot::GenerateBaseHitPoints()
 	return new_base_hp;
 }
 
-void Bot::GenerateAABonuses() {
+void Bot::GenerateAABonuses(StatBonuses* newbon) {
 	// General AA bonus
 	uint8 botClass = GetClass();
 	uint8 botLevel = GetLevel();
-	memset(&aabonuses, 0, sizeof(StatBonuses));
+
+	memset(newbon, 0, sizeof(StatBonuses));	//start fresh
 
 	if(botLevel >= 51) {
 		//level 51 = 1 AA level
-
-		aabonuses.STR += GetAA(aaInnateStrength) * 2;		// Innate Strength AAs
-		aabonuses.STA += GetAA(aaInnateStamina) * 2;		// Innate Stamina AAs
-		aabonuses.AGI += GetAA(aaInnateAgility) * 2;		// Innate Agility AAs
-		aabonuses.DEX += GetAA(aaInnateDexterity) * 2;		// Innate Dexterity AA
-		aabonuses.INT += GetAA(aaInnateIntelligence) * 2;	// Innate Intelligence AAs
-		aabonuses.WIS += GetAA(aaInnateWisdom) * 2;			// Innate Wisdom AAs
-
-		//aabonuses.Corrup += GetAA(aaInnateCorrup) * 2;
-		if(botLevel >=65){
-			int botAAlevels = botLevel - 64;
-			if(botAAlevels > 5)
-				botAAlevels = 5;
-
-			aabonuses.Corrup += botAAlevels * 2;	// Innate Corruption Protection AAs
-		}
-
-		//HPRegen
-		aabonuses.HPRegen += GetAA(aaInnateRegeneration) * 1;	// Innate Regeneration, Convalescence, Healthy Aura, Natural Healing, Body and Mind Rejuvenation AAs
-		aabonuses.HPRegen += GetAA(aaBodyAndMindRejuvenation) * 1;	// Body and Mind Rejuvenation AA
-
-		//ManaRegen
-		aabonuses.ManaRegen += GetAA(aaMentalClarity) * 1;		//Mental Clarity
-		aabonuses.ManaRegen += GetAA(aaBodyAndMindRejuvenation) * 1;   // Body and Mind Rejuvenation AA
-
-		//Stat Caps
-		int32 planarPowerLevels = GetAA(aaPlanarPower);
-		aabonuses.STRCapMod += GetAA(aaPlanarPower) * 5;	// Planar Power AAs
-		aabonuses.STACapMod += GetAA(aaPlanarPower) * 5;	
-		aabonuses.AGICapMod += GetAA(aaPlanarPower) * 5;	
-		aabonuses.DEXCapMod += GetAA(aaPlanarPower) * 5;	
-		aabonuses.INTCapMod += GetAA(aaPlanarPower) * 5;	
-		aabonuses.WISCapMod += GetAA(aaPlanarPower) * 5;	
-		aabonuses.CHACapMod += GetAA(aaPlanarPower) * 5;	
-
-		aabonuses.INTCapMod += GetAA(aaInnateEnlightenment) * 10;	// Innate Enlightenment AAs
-		aabonuses.WISCapMod += GetAA(aaInnateEnlightenment) * 10;	
-
-		//Resist Caps
-		aabonuses.FRCapMod += GetAA(aaDiscordantDefiance) * 5;	// Discordant Defiance AAs	
-		aabonuses.CRCapMod += GetAA(aaDiscordantDefiance) * 5;		
-		aabonuses.MRCapMod += GetAA(aaDiscordantDefiance) * 5;	
-		aabonuses.PRCapMod += GetAA(aaDiscordantDefiance) * 5;	
-		aabonuses.DRCapMod += GetAA(aaDiscordantDefiance) * 5;	
-		aabonuses.CorrupCapMod += GetAA(aaDiscordantDefiance) * 5;
-
-		//HP% (MaxHP)
-		switch(GetAA(aaNaturalDurability))
-		{
-			case 1: 
-				aabonuses.MaxHP += 200;	// Natural Durability AA 1
-				break;
-			case 2: 
-				aabonuses.MaxHP += 500;	// Natural Durability AA 2
-				break;
-			case 3: 
-				aabonuses.MaxHP += 1000;	// Natural Durability AA 3
-				break;
-			case 4: 
-			case 5: 
-			case 6: 
-				aabonuses.MaxHP += (1000 + (GetAA(aaNaturalDurability)-3) * 100);	// SoD AA 1,2,3
-				break;
-		}
-		aabonuses.MaxHP += GetAA(aaPhysicalEnhancement) * 200;
-		aabonuses.MaxHP += GetAA(aaPlanarDurability) * 125;
-
-		//HP
-		aabonuses.HP += GetAA(aaSturdiness) * 100;
-
-		//Mana  (SoF)
-		if(botLevel >= 65) {
-			aabonuses.Mana += (int)(((botLevel - 60))/5) > 5 ? 250 : (int)(((botLevel - 60))/5) * 50;  // Mental Stamina AAs	
-			if(botLevel >= 85) {
-				aabonuses.Mana += 250;	// Mental Stamina AAs	
+		
+		int i;
+		int totalAAs = database.CountAAs();
+		uint32 slots = 0;
+		uint32 aa_AA = 0;
+		uint32 aa_value = 0;
+		for (i = 0; i < totalAAs; i++) {	//iterate through all of the client's AAs
+			std::map<uint32, BotAA>::iterator aa = botAAs.find(i);					
+			if(aa != botAAs.end()) { // make sure aa exists or we'll crash zone
+				aa_AA = aa->second.aa_id;	//same as aaid from the aa_effects table
+				aa_value = aa->second.total_levels;	//how many points in it
+				if (aa_AA > 0 || aa_value > 0) {	//do we have the AA? if 1 of the 2 is set, we can assume we do
+					//slots = database.GetTotalAALevels(aa_AA);	//find out how many effects from aa_effects table
+					slots = zone->GetTotalAALevels(aa_AA);	//find out how many effects from aa_effects, which is loaded into memory
+					if (slots > 0)	//and does it have any effects? may be able to put this above, not sure if it runs on each iteration
+						ApplyAABonuses(aa_AA + aa_value -1, slots, newbon);	//add the bonuses
+				}
 			}
 		}
-
-		//Melee Mitigation
-		switch(GetAA(aaCombatStability)){
-			case 1:
-				aabonuses.MeleeMitigation += 0.02;
-				break;
-			case 2:
-				aabonuses.MeleeMitigation += 0.05;
-				break;
-			case 3:
-				aabonuses.MeleeMitigation += 0.10;
-				break;
-			case 4: 
-			case 5: 
-			case 6: 
-			case 7:
-			case 8: 
-				aabonuses.MeleeMitigation += (0.10 + (GetAA(aaCombatStability)-3) * 0.03);	// Innate Defense
-				break;
-			case 9: 
-			case 10: 
-			case 11: 
-			case 12: 
-			case 13:
-				aabonuses.MeleeMitigation += (0.25 + (GetAA(aaCombatStability)-8) * 0.02);	// Defensive Instincts
-				break;
-			case 14: 
-			case 15: 
-			case 16: 
-			case 17: 
-			case 18:
-				aabonuses.MeleeMitigation += (0.35 + (GetAA(aaCombatStability)-13) * 0.02);	// Thick Skin
-				break;
-		}
-		aabonuses.MeleeMitigation += GetAA(aaPhysicalEnhancement) * 0.02;
-
-		//HPRegen Cap (not in aabonuses)
-		if(botLevel >= 71) {
-			//level 71 = 1 AA level
-			uint8 botAAlevels = level - 70;
-			//aabonuses.HPRegenCap += botAAlevels * 1;	// Energetic Attunement AAs	
-		}
-
-		//ManaRegen Cap
-		aabonuses.ItemManaRegenCap += GetAA(aaExpansiveMind);
-
-		//Packrat
-		aabonuses.Packrat += GetAA(aaPackrat);
-		
-		aabonuses.DelayDeath += GetAA(aaDelayDeath) * 50;
 	}
 }
 
-int32 Bot::GetAA(int32 aa_id) const {
-	int maxAAExpansion = RuleI(Bots, BotAAExpansion);
-	int botLevel = GetLevel();
-	int botClass = GetClass();
-	int aaLevel = 0;
-
-	if(botLevel >= 51 && maxAAExpansion > ExpansionNone) {
+void Bot::LoadAAs() {
+	std::string errorMessage;
+	char* Query = 0;
+	int length = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
 	
-		switch(aa_id) {
-			case aaInnateStrength:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Strength - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateStamina:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Stamina - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateAgility:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Agility - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateDexterity:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Dexterity - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateIntelligence:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Intelligence - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateWisdom:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Wisdom - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateCharisma:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Advanced Innate Charisma - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateFireProtection:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Warding of Solusek - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateColdProtection:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Blessing of Eci - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateMagicProtection:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Marrs Protection - PoP Advanced
-					}
-				}
-				break;
-			case aaInnatePoisonProtection:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Shroud of the Faceless - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateDiseaseProtection:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 5;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += 2 * (botLevel - 60) > 10 ? 10 : 2 * (botLevel - 60);  //Bertoxxulous Gift - PoP Advanced
-					}
-				}
-				break;
-			case aaInnateRunSpeed:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionGoD) {
-						aaLevel += 2;  //Swift Journey - GoD AA
-					}
-				}
-				break;
-			case aaInnateRegeneration:
-				if(botLevel >= 51 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-					if(IsWarriorClass() && botLevel >= 55) {
-						aaLevel += 3;   //Natural Healing
-					}
-					if(botLevel >= 61 && maxAAExpansion > ExpansionGoD) {
-						aaLevel += 2;  //Convalescence - GoD AA
-						if(botLevel >= 66 && maxAAExpansion >= ExpansionGoD) {
-							aaLevel += (botLevel - 65) > 5 ? 5 : botLevel - 65;  //Healthy Aura - GoD AA
-							if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-								aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Fast Healing - TSS AA
-								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-									aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AA
-									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-										aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AA
-									}
-								}
-							}
-						}
-					}
-				}
-			break;
-			case aaHealingAdept:
-				if((botClass == BEASTLORD)||(botClass == CLERIC)||(botClass == DRUID)||(botClass == PALADIN)||(botClass == RANGER)||(botClass == SHAMAN) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Advanced Healing Adept - PoP Ability AA
-						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-							aaLevel += (int)(((botLevel - 65)+1)/2) > 3 ? 3 : (int)(((botLevel - 65)+1)/2);  //Healing Adept Mastery - OoW AA
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
-								aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //UF AA
-							}
-						}
-					}
-				}
-				break;
-			case aaHealingGift:
-				if((botClass == BEASTLORD)||(botClass == CLERIC)||(botClass == DRUID)||(botClass == PALADIN)||(botClass == RANGER)||(botClass == SHAMAN) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Advanced Healing Gift - PoP Ability AA
-						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-							aaLevel += (int)(((botLevel - 65)+1)/2) > 3 ? 3 : (int)(((botLevel - 65)+1)/2);  //Healing Gift Mastery - OoW AA
-							if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-								aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);  //Healing Surge - TSS AA
-								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-									aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  //SoF AA
-									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-										aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD AA
-										if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
-											aaLevel += 3;  //UF AA
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaSpellCastingMastery:
-				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-				}
-				else if((botClass == PALADIN || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == BEASTLORD) && botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
-					aaLevel = 3;  //UF AAs
-				}
-				break;
-			case aaSpellCastingReinforcement:
-				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-				}
-				break;
-			case aaMentalClarity:
-				if(!((botClass == WARRIOR)||(botClass == MONK)||(botClass == ROGUE)||(botClass == BERSERKER)) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-						aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //TSS AA
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-							aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AA
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AA
-								if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-									aaLevel += 5;  //UF AA
-								}
-							}
-						}
-					}
-				}
-			break;
-			case aaSpellCastingFury:
-				if(!((botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER)) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;  //spell casting fury
-					
-					if(botClass == WIZARD && botLevel >= 59) {
-						aaLevel += (botLevel - 58) > 3 ? 3 : botLevel - 58;   // spell casting fury mastery - SoL AA
-					}
-				}
-				break;
-			case aaChanellingFocus:
-			break;
-			case aaSpellCastingSubtlety:
-				if((botClass == WIZARD || botClass == NECROMANCER || botClass == MAGICIAN || botClass == ENCHANTER || botClass == CLERIC || botClass == DRUID || botClass == SHAMAN) && botLevel >= 55 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 3;
-					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-						aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);  //TSS AA
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-							aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  //SoF AA
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD AA
-							}
-						}
-					}
-				}
-				else if(botClass == BEASTLORD && botLevel >= 60 && maxAAExpansion >= ExpansionUF) {
-					aaLevel = (botLevel - 59) > 3 ? 3 : botLevel - 59;  //UF AAs
-				}
-				break;
-			case aaSpellCastingExpertise:
-			break;
-			case aaSpellCastingDeftness:
-				if((botClass == WIZARD || botClass == NECROMANCER || botClass == MAGICIAN || botClass == SHADOWKNIGHT) && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-				}
-				break;
-			case aaNaturalDurability:
-				if(botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-					if(botLevel >= 60 && maxAAExpansion >= ExpansionSoD) {
-						aaLevel += 3;  //SoD AA
-					}
-				}
-				break;
-			case aaNaturalHealing:
-				//Innate Regeneration
-			break;
-			case aaCombatFury:
-				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;
-					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Fury of the Ages- PoP Ability AA
-					}
-				}
-				break;
-			case aaFearResistance:
-				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-				}
-				break;
-			case aaFinishingBlow:
-				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 54) > 3 ? 3 : botLevel - 54;  //SoL
-					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;  //Coup de Grace - PoP Ability AA
-						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-							aaLevel += (botLevel - 65) > 3 ? 3 : botLevel - 65;  //Deathblow - OoW AA
-							if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-								aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;  //Mercy Kill - TSS AA
-								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-									aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;  //SoF AA
-									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-										aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;  //SoD AA
-										if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-											aaLevel += 3;  //UF AA
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaCombatStability:
-				//aabonuses
-				if(botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;  //SoL
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Innate Defense - PoP Ability AA
-						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {  
-							aaLevel += (botLevel - 5) > 5 ? 5 : botLevel - 65;   //Defensive Instincts - OoW AA
-							if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-								aaLevel += 5;  //Thick Skin DoDH AA
-								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-									aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs
-									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {  
-										aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;   //SoD AAs
-										if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-											aaLevel += 5;  //UF AAs
-										}
-									}
-								}	
-							}
-						}
-					}		
-				}
-				break;
-			case aaCombatAgility:
-				if(botLevel >= 55 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3; //SoL AA
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Lightning Reflexes - PoP Ability AA
-						if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-							aaLevel += (botLevel - 60) > 5 ? 5 : botLevel - 60;  //Reflexive Mastery - OoW AA
-							if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-								aaLevel += 5;  //Precognition - DoDH AA
-								if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-									aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs
-									if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {  
-										aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;   //SoD AAs
-										if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-											aaLevel += 5;  //UF AAs
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaMassGroupBuff:
-			break;
-			case aaDivineResurrection:
-			break;
-			case aaInnateInvisToUndead:
-			break;
-			case aaCelestialRegeneration:
-			break;
-			case aaBestowDivineAura:
-			break;
-			case aaTurnUndead:
-			break;
-			case aaPurifySoul:
-			break;
-			case aaQuickEvacuation:
-				if((botClass == WIZARD || botClass == DRUID) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaExodus:
-			break;
-			case aaQuickDamage:
-				if((botClass == WIZARD || botClass == MAGICIAN || botClass == DRUID) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaEnhancedRoot:
-				if(botClass == DRUID && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaDireCharm:
-			break;
-			case aaCannibalization:
-			break;
-			case aaQuickBuff:
-				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == BEASTLORD || botClass == RANGER || botClass == ENCHANTER || botClass == PALADIN) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaAlchemyMastery:
-			break;
-			case aaRabidBear:
-			break;
-			case aaManaBurn:
-			break;
-			case aaImprovedFamiliar:
-			break;
-			case aaNexusGate:
-			break;      
-			case aaPermanentIllusion:
-			break;
-			case aaGatherMana:
-			break;
-			case aaMendCompanion:
-			break;
-			case aaQuickSummoning:
-				if(botClass == MAGICIAN && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaFrenziedBurnout:
-			break;
-			case aaElementalFormFire:
-			break;
-			case aaElementalFormWater:
-			break;
-			case aaElementalFormEarth:
-			break;
-			case aaElementalFormAir:
-			break;
-			case aaImprovedReclaimEnergy:
-			break;
-			case aaTurnSummoned:
-			break;
-			case aaElementalPact:
-				if(botClass == MAGICIAN && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaLifeBurn:
-			break;
-			case aaDeadMesmerization:
-			break;
-			case aaFearstorm:
-			break;
-			case aaFleshToBone:
-			break;
-			case aaCallToCorpse:
-			break;
-			case aaDivineStun:
-			break;
-			case aaImprovedLayOnHands:
-			break;
-			case aaSlayUndead:
-				if(botClass == PALADIN && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += 3;   //Vanquish undead - DoDH AA
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);  //TSS AA
-						}
-					}
-				}
-				break;
-			case aaActOfValor:
-			break;
-			case aaHolySteed:
-			break;
-			case aaFearless:
-			break;
-			case aa2HandBash:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaInnateCamouflage:
-			break;
-			case aaAmbidexterity:
-				if((botClass == WARRIOR || botClass == RANGER || botClass == ROGUE || botClass == MONK || botClass == BARD || botClass == BEASTLORD) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaArcheryMastery:
-				if(botClass == RANGER && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaFletchingMastery:
-			break;
-			case aaEndlessQuiver:
-			break;
-			case aaUnholySteed:
-			break;
-			case aaImprovedHarmTouch:
-			break;
-			case aaLeechTouch:
-			break;
-			case aaDeathPeace:
-			break;
-			case aaSoulAbrasion:
-				if(botClass == SHADOWKNIGHT && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaInstrumentMastery:
-				if(botClass == BARD && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-					
-					if(botLevel >= 65) {
-						aaLevel += 1;   // Improved Instrument Mastery AA
-					}
-				}
-				break;
-			case aaJamFest:
-			break;
-			case aaSonicCall:
-			break;
-			case aaCriticalMend:
-			break;
-			case aaPurifyBody:
-			break;
-			case aaChainCombo:
-			break;
-			case aaRapidFeign:
-			break;
-			case aaReturnKick:
-				if(botClass == MONK && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaEscape:
-			break;
-			case aaPoisonMastery:
-			break;
-			case aaDoubleRiposte:
-				if((botClass == WARRIOR || botClass == BERSERKER || botClass == BEASTLORD || botClass == MONK || botClass == PALADIN || botClass == RANGER || botClass == ROGUE || botClass == SHADOWKNIGHT) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;  
-					if(botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
-						aaLevel += (botLevel - 61) > 3 ? 3 : botLevel - 61;   // flash of steel - PoP Ability AA
-					}
-				}
-				break;
-			case aaQuickHide:
-			break;
-			case aaQuickThrow:
-			break;
-			case aaPurgePoison:
-			break;
-			case aaFlurry:
-				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaRampage:
-			break;
-			case aaAreaTaunt:
-			break;
-			case aaWarcry:
-			break;
-			case aaBandageWound:
-			break;
-			case aaSpellCastingReinforcementMastery:
-				if((botClass == WIZARD || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == DRUID || botClass == SHAMAN || botClass == CLERIC || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-				}
-				break;
-			case aaSpellCastingFuryMastery:
-				// spell casting fury
-			break;
-			case aaExtendedNotes:
-				if(botClass == BARD && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-				}
-				break;
-			case aaDragonPunch:
-				if(botClass == MONK && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaStrongRoot:
-			break;
-			case aaSingingMastery:
-				if(botClass == BARD && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = (botLevel - 58) > 3 ? 3 : botLevel - 58;
-					
-					if(botLevel >= 65) {
-						aaLevel += 1;   // Improved Singing Mastery AA
-					}
-				}
-				break;
-			case aaBodyAndMindRejuvenation:
-				if((botClass == BARD || botClass == RANGER || botClass == PALADIN || botClass == SHADOWKNIGHT || botClass == BEASTLORD) && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-			break;
-			case aaPhysicalEnhancement:
-				if(IsWarriorClass() && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaAdvTrapNegotiation:
-			break;
-			case aaAcrobatics:
-			break;
-			case aaScribbleNotes:
-			break;
-			case aaChaoticStab:
-				if(botClass == ROGUE && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 1;
-				}
-				break;
-			case aaPetDiscipline:
-			break;
-			case aaHobbleofSpirits:
-			break;
-			case aaFrenzyofSpirit:
-			break;
-			case aaParagonofSpirit:
-			break;
-			case aaAdvancedInnateStrength:
-				//Innate Strength
-			break;
-			case aaAdvancedInnateStamina:
-				//Innate Stamina
-			break;
-			case aaAdvancedInnateAgility:
-				//Innate Agility
-			break;
-			case aaAdvancedInnateDexterity:
-				//Innate Dexterity
-			break;
-			case aaAdvancedInnateIntelligence:
-				//Innate Intelligence
-			break;
-			case aaAdvancedInnateWisdom:
-				//Innate Wisdom
-			break;
-			case aaAdvancedInnateCharisma:
-				//Innate Charisma
-			break;
-			case aaWardingofSolusek:
-				//Innate Fire Protection
-			break;
-			case aaBlessingofEci:
-				//Innate Cold Protection
-			break;
-			case aaMarrsProtection:
-				//Innate Magic Protection
-			break;
-			case aaShroudofTheFaceless:
-				//Innate Poison Protection
-			break;
-			case aaBertoxxulousGift:
-				//Innate Disease Protection
-			break;
-			case aaNewTanaanCraftingMastery:
-			break;
-			case aaPlanarPower:
-				if(botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;  //PoP Advance
-					if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-						aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;  //Chaotic Potential - OoW
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel = (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Potential of Serpent Spine - TSS
-							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel = (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoD
-							}
-						}
-					}
-				}
-				break;
-			case aaPlanarDurability:
-				if(IsWarriorClass() && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2); 
-				}
-				break;
-			case aaInnateEnlightenment:
-				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == WIZARD) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
-				}
-			break;
-			case aaAdvancedSpellCastingMastery:
-			break;
-			case aaAdvancedHealingAdept:
-				//Healing Adept
-			break;
-			case aaAdvancedHealingGift:
-				//Healing Gift
-			break;
-			case aaCoupdeGrace:
-				//Finishing Blow
-			break;
-			case aaFuryoftheAges:
-				//Combat Fury
-			break;
-			case aaMasteryofthePast:
-			break;
-			case aaLightningReflexes:
-				//Combat Agility
-			break;
-			case aaInnateDefense:
-				//aabonuses
-				//aaCombatStability
-			break;
-			case aaRadiantCure:
-			break;
-			case aaHastenedDivinity:
-			break;
-			case aaHastenedTurning:
-			break;
-			case aaHastenedPurificationofSoul:
-			break;
-			case aaHastenedGathering:
-			break;
-			case aaHastenedRabidity:
-			break;
-			case aaHastenedExodus:
-			break;
-			case aaHastenedRoot:
-			break;
-			case aaHastenedMending:
-			break;
-			case aaHastenedBanishment:
-			break;
-			case aaHastenedInstigation:
-			break;
-			case aaFuriousRampage:
-			break;
-			case aaHastenedPurificationoftheBody:
-			break;
-			case aaHastyExit:
-			break;
-			case aaHastenedPurification:
-			break;
-			case aaFlashofSteel:
-				//double riposte
-			break;
-			case aaDivineArbitration:
-			break;
-			case aaWrathoftheWild:
-			break;
-			case aaVirulentParalysis:
-			break;
-			case aaHarvestofDruzzil:
-			break;
-			case aaEldritchRune:
-			break;
-			case aaServantofRo:
-			break;
-			case aaWaketheDead:
-			break;
-			case aaSuspendedMinion:
-			break;
-			case aaSpiritCall:
-			break;
-			case aaCelestialRenewal:
-			break;
-			case aaAllegiantFamiliar:
-			break;
-			case aaHandofPiety:
-			break;
-			case aaMithanielsBinding:
-			break;
-			case aaMendingoftheTranquil:
-			break;
-			case aaRagingFlurry:
-				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 63 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 62) > 3 ? 3 : botLevel - 62;
-				}
-				break;
-			case aaGuardianoftheForest:
-			break;
-			case aaSpiritoftheWood:
-			break;
-			case aaBestialFrenzy:
-				if(botClass == BEASTLORD && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;   
-				}
-				break;
-			case aaHarmoniousAttack:
-				if(botClass == BARD && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
-				}
-				break;
-			case aaKnightsAdvantage:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-					if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += 3;   //Knights Expertise - DoDH AA
-					} 
-				} 
-				break;  
-			case aaFerocity:
-				if((botClass == WARRIOR || botClass == RANGER || botClass == ROGUE || botClass == MONK || botClass == BERSERKER) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-					if(botLevel >= 70){
-						aaLevel += 3;  //  Relentless Assault
-					}
-				}
-				break;
-			case aaViscidRoots:
-			break;
-			case aaSionachiesCrescendo:
-				if(botClass == BARD && botLevel >= 63 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 62) > 3 ? 3 : botLevel - 62;
-				}
-				break;
-			case aaAyonaesTutelage:
-			break;
-			case aaFeignedMinion:
-			break;
-			case aaUnfailingDivinity:
-			break;
-			case aaAnimationEmpathy:
-			break;
-			case aaRushtoJudgement:
-			break;
-			case aaLivingShield:
-			break;
-			case aaConsumptionoftheSoul:
-				if(botClass == SHADOWKNIGHT && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-				}
-				break;
-			case aaBoastfulBellow:
-			break;
-			case aaFervrentBlessing:
-			break;
-			case aaTouchoftheWicked:
-			break;
-			case aaPunishingBlade:
-				if((botClass == WARRIOR || botClass == RANGER || botClass == MONK || botClass == BERSERKER) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH){
-						aaLevel += 3;  // Wicked Blade
-					}
-				}
-				break;
-			case aaSpeedoftheKnight:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);  //PoP Ability
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH){
-						aaLevel += 3;  // Swift Blade - DoDH
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionTSS){
-							aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);  // Quick Blade - TSS
-						}
-					}
-				}
-				break;
-			case aaShroudofStealth:
-			break;
-			case aaNimbleEvasion:
-			break;
-			case aaTechniqueofMasterWu:
-				if(botClass == MONK && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 60) > 5 ? 5 : botLevel - 60;
-				}
-				break;
-			case aaHostoftheElements:
-			break;
-			case aaCallofXuzl:
-			break;
-			case aaHastenedStealth:
-			break;
-			case aaIngenuity:
-				if((botClass == WARRIOR || botClass == BERSERKER || botClass == ROGUE || botClass == MONK) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-				}
-				break;
-			case aaFleetofFoot:
-				if(botClass == BARD && botLevel >= 62 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 61)+1)/2) > 2 ? 2 : (int)(((botLevel - 61)+1)/2);
-				}
-				break;
-			case aaFadingMemories:
-			break;
-			case aaTacticalMastery:
-				if((botClass == WARRIOR || botClass == BERSERKER) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (botLevel - 60) > 3 ? 3 : botLevel - 60;
-					
-					if(botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
-						aaLevel += (botLevel - 67) > 3 ? 3 : botLevel - 67;  // Overwhelming Attack - OoW AA
+	int maxAAExpansion = RuleI(Bots, BotAAExpansion); 	//get expansion to get AAs up to
+	botAAs.clear();	//start fresh
+
+	if(GetClass() == BERSERKER)
+		length = MakeAnyLenString(&Query, "SELECT skill_id FROM altadv_vars WHERE berserker = 1 AND class_type > 1 AND class_type <= %i AND aa_expansion <= %i ORDER BY skill_id;", GetLevel(), maxAAExpansion);
+	else
+		length = MakeAnyLenString(&Query, "SELECT skill_id FROM altadv_vars WHERE ((classes & ( 1 << %i )) >> %i) = 1 AND class_type > 1 AND class_type <= %i AND aa_expansion <= %i ORDER BY skill_id;", GetClass(), GetClass(), GetLevel(), maxAAExpansion);
+
+	if(!database.RunQuery(Query, length, TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		int totalAAs = database.CountAAs();
+
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			int32 skill_id = 0;
+			skill_id = atoi(DataRow[0]);
+
+			if(skill_id > 0 && skill_id < totalAAs) {
+				SendAA_Struct *sendAA = zone->FindAA(skill_id);
+				
+				if(sendAA) {
+					for(int i=0; i<sendAA->max_level; i++) {
+						//Get AA info & add to list
+						int32 aaid = sendAA->id + i;
+						int8 total_levels = 0;
+						int8 req_level;
+						std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(aaid);
 						
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);   // Overbear - TSS AA
-						}
-					}
-				}
-				else if((botClass == BARD || botClass == BEASTLORD || botClass == MONK || botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 83 && maxAAExpansion >= ExpansionUF) {
-					aaLevel = (botLevel - 82) > 3 ? 3 : botLevel - 82;   //UF AAs
-				}
-				break;
-			case aaTheftofLife:
-				if((botClass == NECROMANCER || botClass == SHADOWKNIGHT) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-					if(botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-						aaLevel += (botLevel - 64) > 3 ? 3 : botLevel - 64;   //Advanced Theft of Life
-						if(botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
-							aaLevel += (botLevel - 67) > 2 ? 2 : botLevel - 67;   // Soul Thief
-						}
-					}
-				}
-				break;
-			case aaFuryofMagic:
-				if((botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == ENCHANTER || botClass == MAGICIAN || botClass == NECROMANCER || botClass == WIZARD) && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-						
-					if(botClass == WIZARD) {
-						aaLevel += (botLevel - 60) > 3 ? 3 : botLevel - 60;   // fury of magic mastery - PoP AA
-					}
-					else {
-						aaLevel += (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);    //fury of magic - PoP AA
-					}
-						
-					if(botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-		
-						if(botClass == WIZARD) {
-							aaLevel += (botLevel - 64) > 3 ? 3 : botLevel - 64;   // advanced fury of magic mastery - GoD AA
-						}
-						else {
-							aaLevel += 3;    //fury of magic mastery - GoD AA
-						}
+						//Get level required for AA
+						if(RequiredLevel != AARequiredLevelAndCost.end())
+							req_level =  RequiredLevel->second.Level;
+						else
+							req_level = (sendAA->class_type + i * sendAA->level_inc);
+
+						if(req_level > GetLevel()) 	
+							break;
 							
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);     //TSS AA
+						//Bot is high enough level for AA
+						std::map<uint32, BotAA>::iterator foundAA = botAAs.find(aaid);
 							
-							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);   //SoF AA  
+						// AA is not already in list
+						if(foundAA == botAAs.end()) {
+							if(sendAA->id == aaid) {
+								BotAA newAA;
 								
-								if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
-									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);   //UF AA
-								}
-							}
-						}	
-					}
-				}
-				else if ((botClass == BEASTLORD || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BARD) && botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-					aaLevel += (int)(((botLevel - 65)+1)/2) > 3 ? 3 : (int)(((botLevel - 65)+1)/2);    //fury of magic - OoW AA
-				}
-				break;
-			case aaFuryofMagicMastery2:
-			break;
-			case aaProjectIllusion:
-			break;
-			case aaHeadshot:
-				if(botClass == RANGER && botLevel >= 60 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = 1;
-					if(botLevel >= 61 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);  //Improved Headshot, etc.
-						
-						if(botLevel >= 67 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 66)+1)/2) > 3 ? 3 : (int)(((botLevel - 66)+1)/2);  // TSS AA
-							
-							if(botLevel >= 73 && maxAAExpansion >= ExpansionSoF) {
-								aaLevel += (int)(((botLevel - 72)+1)/2) > 3 ? 3 : (int)(((botLevel - 72)+1)/2);  // SoF AA
+								newAA.total_levels = 0;
+								newAA.aa_id = aaid;
+								newAA.req_level = req_level;
+								newAA.total_levels += 1;
 								
-								if(botLevel >= 79 && maxAAExpansion >= ExpansionSoD) {
-									aaLevel += (int)(((botLevel - 78)+1)/2) > 3 ? 3 : (int)(((botLevel - 78)+1)/2);  //SoD AAs
-									
-									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-										aaLevel += (int)(((botLevel - 84)+1)/2) > 3 ? 3 : (int)(((botLevel - 84)+1)/2);   //UF AAs
-									}
-								}
+								botAAs[aaid] = newAA;	//add to list
+							}
+							else {
+								//update master AA record with number of levels a bot has in AA, based on level.
+								botAAs[sendAA->id].total_levels+=1;	
 							}
 						}
 					}
 				}
-				break;
-			case aaEntrap:
-			break;
-			case aaUnholyTouch:
-				if(botClass == SHADOWKNIGHT && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = (int)(((botLevel - 60)+1)/2) > 3 ? 3 : (int)(((botLevel - 60)+1)/2);
-				}
-				break;
-			case aaTotalDomination:
-			break;
-			case aaStalwartEndurance:
-			break;
-			case aaQuickSummoning2:
-			break;
-			case aaMentalClarity2:
-			break;
-			case aaInnateRegeneration2:
-			break;
-			case aaManaBurn2:
-			break;
-			case aaExtendedNotes2:
-			break;
-			case aaSionachiesCrescendo2:
-			break;
-			case aaImprovedReclaimEnergy2:
-			break;
-			case aaSwiftJourney:
-				//Innate Run Speed
-			break;
-			case aaConvalescence:
-				//Innate Regeneration
-			break;
-			case aaLastingBreath:
-			break;
-			case aaPackrat:
-				if(botLevel >= 61 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 5;   //GoD AAs
-					if(botLevel >= 65) {
-						aaLevel += 3;   //GoD AAs
-						if(botLevel >= 70 && maxAAExpansion >= ExpansionSoD) {
-							aaLevel += 5;  //SoD AAs
-						}
-					}
-				}
-				break;
-			case aaHeightenedEndurance:
-			break;
-			case aaWeaponAffinity:
-				if(IsWarriorClass() && botLevel >= 55 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 54) > 5 ? 5 : botLevel - 54;
-				}
-				break;
-			case aaSecondaryForte:
-			break;
-			case aaPersistantCasting:
-			break;
-			case aaTuneofPursuance:
-			break;
-			case aaImprovedInstrumentMastery:
-				//instrument mastery
-			break;
-			case aaImprovedSingingMastery:
-				//singing mastery
-			break;
-			case aaExultantBellowing:
-			break;
-			case aaEchoofTaelosia:
-			break;
-			case aaInternalMetronome:
-			break;
-			case aaPiousSupplication:
-			break;
-			case aaBeastialAlignment:
-			break;
-			case aaWrathofXuzl:
-			break;
-			case aaFeralSwipe:
-			break;
-			case aaWardersFury:
-				if(botClass == BEASTLORD && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 5;
-					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-						aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;   
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-							aaLevel += aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel += aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;
-							}
-						}
-					}
-				}
-				break;
-			case aaWardersAlacrity:
-				if(botClass == BEASTLORD && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 5;
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);
-							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);
-								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD AAs
-									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-										aaLevel += 3;  //UF AAs
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaPetAffinity:
-			break;
-			case aaMasteryofthePast2:
-			break;
-			case aaSpellCastingSubtlety2:
-			break;
-			case aaTouchoftheDivine:
-			break;
-			case aaDivineAvatar:
-			break;
-			case aaExquisiteBenediction:
-			break;
-			case aaQuickenedCuring:
-			break;
-			case aaNaturesBoon:
-			break;
-			case aaAdvancedTracking:
-			break;
-			case aaCriticalAffliction:
-			break;
-			case aaFuryofMagicMastery:
-				if(!(botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 3;
-				}
-				break;
-			case aaDoppelganger:
-			break;
-			case aaEnchancedForgetfulness:
-			break;
-			case aaMesmerizationMastery:
-				if(botClass == ENCHANTER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 1;
-				}
-				break;
-			case aaQuickMassGroupBuff:
-			break;
-			case aaSharedHealth:
-			break;
-			case aaElementalFury:
-				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 5;
-					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-						aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-							aaLevel += aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel += aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;
-							}
-						}
-					}
-				}
-				break;
-			case aaElementalAlacrity:
-				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 5;
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);
-							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);
-								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);   //SoD AAs
-									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-										aaLevel += 3;  //UF AAs
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaElementalAgility:
-				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 3;
-				}
-				break;
-			case aaElementalDurability:
-				if(botClass == MAGICIAN && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 3;
-				}
-				break;
-			case aaSinisterStrikes:
-				if((botClass == WARRIOR || botClass == ROGUE || botClass == MONK || botClass == RANGER || botClass == BARD || botClass == BEASTLORD) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 1;
-				}
-				break;
-			case aaStrikethrough:
-				if((botClass == MONK || botClass == ROGUE) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
-				}
-				break;
-			case aaStonewall:
-			break;
-			case aaRapidStrikes:
-				if(botClass == MONK && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
-				}
-				break;
-			case aaKickMastery:
-				if(botClass == MONK && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
-				}
-				break;
-			case aaHightenedAwareness:
-				if(botClass == MONK && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
-				}
-				break;
-			case aaDestructiveForce:
-			break;
-			case aaSwarmofDecay:
-			break;
-			case aaDeathsFury:
-				if((botClass == NECROMANCER || botClass == SHADOWKNIGHT) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
-					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-						aaLevel += (botLevel - 70) > 3 ? 3 : botLevel - 70;
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-							aaLevel += aaLevel += (botLevel - 75) > 3 ? 3 : botLevel - 75;
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel += aaLevel += (botLevel - 80) > 3 ? 3 : botLevel - 80;
-							}
-						}
-					}
-				}
-				break;
-			case aaQuickeningofDeath:
-				if(botClass == NECROMANCER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += (botLevel - 69) > 3 ? 3 : botLevel - 69;
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-							aaLevel += (int)(((botLevel - 70)+1)/2) > 3 ? 3 : (int)(((botLevel - 70)+1)/2);
-							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-								aaLevel += (int)(((botLevel - 75)+1)/2) > 3 ? 3 : (int)(((botLevel - 75)+1)/2);
-								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-									aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //SoD
-									if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-										aaLevel += 3;  //UF
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaAdvancedTheftofLife:
-				// Theft of Life
-			break;
-			case aaTripleBackstab:
-				if(botClass == ROGUE && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
-				}
-				break;
-			case aaHastenedPiety:
-			break;
-			case aaImmobilizingBash:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 3;
-					if(botLevel >= 78 && maxAAExpansion >= ExpansionSoF) {
-						aaLevel += (botLevel - 77) > 3 ? 3 : botLevel - 77;  //SoF
-						if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
-							aaLevel += (int)(((botLevel - 80)+1)/2) > 3 ? 3 : (int)(((botLevel - 80)+1)/2);  //UF
-						}
-					}
-				}
-				break;
-			case aaViciousSmash:
-				if((botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 5;
-					if(botLevel >= 75 && maxAAExpansion >= ExpansionUF) {
-						aaLevel += 5;  //UF
-					}
-				}
-				break;
-			case aaRadiantCure2:
-			break;
-			case aaPurification:
-			break;
-			case aaPrecisionofthePathfinder:
-				if(botClass == RANGER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
-				}
-				break;
-			case aaCoatofThistles:
-				if(botClass == RANGER && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = 3;
-				}
-				break;
-			case aaFlamingArrows:
-			break;
-			case aaFrostArrows:
-			break;
-			case aaSeizedOpportunity:
-			break;
-			case aaTrapCircumvention:
-			break;
-			case aaImprovedHastyExit:
-			break;
-			case aaVirulentVenom:
-			break;
-			case aaImprovedConsumptionofSoul:
-			break;
-			case aaIntenseHatred:
-			break;
-			case aaAdvancedSpiritCall:
-			break;
-			case aaCalloftheAncients:
-			break;
-			case aaSturdiness:
-				if(botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					if(botClass == WARRIOR) {
-						aaLevel = (botLevel - 64) > 5 ? 5 : botLevel - 64;
-					}
-					if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-						aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //General Sturdiness SoF AAs
-						if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-							aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AAs
-							if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-								aaLevel += 5;  //UF AAs
-							}
-						}
-					}
-				}
-			break;
-			case aaWarlordsTenacity:
-			break;
-			case aaStrengthenedStrike:
-				if((botClass == RANGER || botClass == WARRIOR) && botLevel >= 65 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 64) > 3 ? 3 : botLevel - 64;
-				}
-				break;
-			case aaExtendedShielding:
-			break;
-			case aaRosFlamingFamiliar:
-			break;
-			case aaEcisIcyFamiliar:
-			break;
-			case aaDruzzilsMysticalFamiliar:
-			break;
-			case aaAdvancedFuryofMagicMastery:
-				//fury of magic
-			break;
-			case aaWardofDestruction:
-			break;
-			case aaFrenziedDevastation:
-			break;
-			case aaCombatFury2:
-			break;
-			case aaCombatFury3:
-			break;
-			case aaCombatFury4:
-			break;
-			case aaFuryoftheAges2:
-			break;
-			case aaFuryoftheAges3:
-			break;
-			case aaFuryoftheAges4:
-			break;
-			case aaPlanarDurability2:
-			break;
-			case aaInnateEnlightenment2:
-			break;
-			case aaDireCharm2:
-			break;
-			case aaDireCharm3:
-			break;
-			case aaTouchoftheDivine2:
-			break;
-			case aaTouchofDecay:
-			break;
-			case aaCalloftheAncients2:
-			break;
-			case aaImprovedVision:
-			break;
-			case aaEternalBreath:
-			break;
-			case aaBlacksmithingMastery:
-			break;
-			case aaBakingMastery:
-			break;
-			case aaBrewingMastery:
-			break;
-			case aaFletchingMastery2:
-			break;
-			case aaPotteryMastery:
-			break;
-			case aaTailoringMastery:
-			break;
-			case aaSalvage:
-			break;
-			case aaOrigin:
-			break;
-			case aaChaoticPotential:
-			break;
-			case aaDiscordantDefiance:
-				if(botLevel >= 66 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 65) > 10 ? 10 : botLevel - 65;  //GoD AAs
-					if(botLevel >= 80 && maxAAExpansion >= ExpansionSoD) {
-						aaLevel += 5;   //SoD AAs
-					}
-				}
-				break;
-			case aaTrialsofMataMuram:
-			break;
-			case aaMysticalAttuning:
-			break;
-			case aaDelayDeath:
-				if(botLevel >= 66 && maxAAExpansion >= ExpansionOoW) {
-					aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;  //OoW AAs
-					if(botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += 5;   //Prolonged Mortality - DoDH AAs
-						if(botLevel >= 71 && maxAAExpansion >= ExpansionOoW) {
-							aaLevel = (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Death's Door - TSS AAs
-							if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-								aaLevel = (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs
-								if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-									aaLevel = (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AAs
-								}
-							}
-						}
-					}
-				}
-				break;
-			case aaHealthyAura:
-				//Innate Regeneration
-			break;
-			case aaFitness:
-			break;
-			case aaVeteransWrath:
-			break;
-			case aaVeteransWrath2:
-			break;
-			case aaVeteransWrath3:
-			break;
-			case aaVeteransWrath4:
-			break;
-			case aaDeathblow:
-			break;
-			case aaReflexiveMastery:
-				//CombatAgility
-			break;
-			case aaDefensiveInstincts:
-				//Combat Stability
-				break;
-			case aaMnemonicRetention:
-			break;
-			case aaExpansiveMind:
-				if(botLevel >= 66 && maxAAExpansion >= ExpansionGoD) {
-					aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;
-					if(botLevel >= 71 && maxAAExpansion >= ExpansionTSS) {
-						aaLevel += (botLevel - 70) > 5 ? 5 : botLevel - 70;  //Labyrinthine Mind - TSS AAs
-						if(botLevel >= 76 && maxAAExpansion >= ExpansionSoF) {
-							aaLevel += (botLevel - 75) > 5 ? 5 : botLevel - 75;  //SoF AAs	
-							if(botLevel >= 81 && maxAAExpansion >= ExpansionSoD) {
-								aaLevel += (botLevel - 80) > 5 ? 5 : botLevel - 80;  //SoD AAs	
-								if(botLevel >= 85 && maxAAExpansion >= ExpansionUF) {
-									aaLevel += 5;  //UF AAs
-								}
-							}
-						}
-					}
-				}
-			break;
-			case aaSleightofHand:
-			break;
-			case aaSleightofHand2:
-			break;
-			case aaHealingAdeptMastery:
-			break;
-			case aaHealingGiftMastery:
-			break;
-			case aaArcaneTongues:
-			break;
-			case aaMasterofDisguise:
-			break;
-			case aaSlipperyAttacks:
-				if(IsWarriorClass() && botLevel > 65 && maxAAExpansion >= ExpansionOoW) {
-					aaLevel = (botLevel - 65) > 5 ? 5 : botLevel - 65;
-				}
-				break;
-			case aaImprovedCriticalAffliction:
-			break;
-			case aaFortifiedBellowing:
-			break;
-			case aaFuryofMagic2:
-			break;
-			case aaDanceofBlades:
-				if(botClass == BARD && botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
-					aaLevel = 3;
-				}
-				break;
-			case aaShieldofNotes:
-			break;
-			case aaRoarofThunder:
-			break;
-			case aaPersistentMinion:
-			break;
-			case aaPerfectionofSpirit:
-			break;
-			case aaReplentishCompanion:
-			break;
-			case aaAdvancedPetDiscipline:
-			break;
-			case aaThrowingMastery:
-				if(botClass == BERSERKER && botLevel >= 59 && maxAAExpansion >= ExpansionSoL) {
-					aaLevel = 3;
-				}
-				break;
-			case aaBlurofAxes:
-				if(botClass == BERSERKER && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = 3;
-				}
-				break;
-			case aaHastenedWarCry:
-			break;
-			case aaDeadAim:
-				if(botClass == BERSERKER && botLevel >= 61 && maxAAExpansion >= ExpansionPoP) {
-					aaLevel = 3;
-				}
-				break;
-			case aaFrenziedDefense:
-			break;
-			case aaTirelessSprint:
-			break;
-			case aaDesperation:
-			break;
-			case aaUntamedRage:
-			break;
-			case aaEchoingCries:
-			break;
-			case aaViciousFrenzy:
-			break;
-			case aaCrazedOnslaught:
-			break;
-			case aaOverwhelmingAttack:
-			break;
-			case aaFuriousRage:
-			break;
-			case aaBloodPact:
-			break;
-			case aaShieldingResistance:
-			break;
-			case aaHealingBoon:
-			break;
-			case aaResplendentCure:
-			break;
-			case aaCelestialHammer:
-			break;
-			case aaDivineRetribution:
-			break;
-			case aaCelestialRejuvination:
-			break;
-			case aaFerventBenediction:
-			break;
-			case aaSanctuary:
-			break;
-			case aaDestructiveFury:
-				if(!(botClass == WARRIOR || botClass == MONK || botClass == ROGUE || botClass == BERSERKER) && botLevel >= 68 && maxAAExpansion >= ExpansionOoW) {
-					aaLevel = (botLevel - 67) > 3 ? 3 : botLevel - 67;
-					
-					if(botClass == WIZARD && botLevel >= 70 && maxAAExpansion >= ExpansionDoDH) {
-						aaLevel += 3;   // mastery of fury - DoDH AA
-					}
-				}
-				break;
-			case aaDestructiveFury2:
-			break;
-			case aaBoonoftheForest:
-			break;
-			case aaSpiritoftheGrove:
-			break;
-			case aaCalloftheWild:
-			break;
-			case aaSecondaryRecall:
-			break;
-			case aaNaturesBounty:
-			break;
-			case aaStasis:
-			break;
-			case aaColorShock:
-			break;
-			case aaMindOverMatter:
-			break;
-			case aaSoothingWords:
-			break;
-			case aaElementalSwarm:
-			break;
-			case aaHeartofFlames:
-			break;
-			case aaHeartofVapor:
-			break;
-			case aaHeartofIce:
-			break;
-			case aaHeartofStone:
-			break;
-			case aaImitateDeath:
-			break;
-			case aaCripplingStrike:
-			break;
-			case aaStunningKick:
-			break;
-			case aaEyeGouge:
-			break;
-			case aaIronKicks:
-			break;
-			case aaStyleoftheMimic:
-			break;
-			case aaDeathPeace2:
-			break;
-			case aaArmyoftheDead:
-			break;
-			case aaCelestialStun:
-			break;
-			case aaHandofDevotion:
-			break;
-			case aaSteadfastWill:
-			break;
-			case aaShieldBlock:
-				if((botClass == WARRIOR || botClass == PALADIN || botClass == SHADOWKNIGHT) && botLevel >= 67 && maxAAExpansion >= ExpansionOoW) {
-					aaLevel = (botLevel - 66) > 3 ? 3 : botLevel - 66;
-					if(botLevel >= 77 && maxAAExpansion >= ExpansionSoF) {
-						aaLevel += (botLevel - 76) > 3 ? 3 : botLevel - 76;   //SoF AAs
-						if(botLevel >= 81 && maxAAExpansion >= ExpansionUF) {
-							aaLevel += 3;   // UF AAs
-						}
-					}
-				}
-				break;
-			case aaScoutsEfficiency:
-			break;
-			case aaGuardianoftheGlade:
-			break;
-			case aaTrackingMastery:
-			break;
-			case aaFlurryofKnives:
-			break;
-			case aaPrecision:
-			break;
-			case aaNervesofSteel:
-			break;
-			case aaTouchoftheCursed:
-			break;
-			case aaSpiritualCorrosion:
-			break;
-			case aaSoulThief:
-				//Theft of Life
-			break;
-			case aaSpiritualChanneling:
-			break;
-			case aaBoonoftheAncients:
-			break;
-			case aaAncestralAid:
-			break;
-			case aaResoluteDefiance:
-			break;
-			case aaPresstheAttack:
-			break;
-			case aaMindCrash:
-			break;
-			case aaProlongedDestruction:
-			break;
-			case aaRosGreaterFamiliar:
-			break;
-			case aaEcisGreaterFamiliar:
-			break;
-			case aaDruzzilsGreaterFamiliar:
-			break;
-			case aaTeleportBind:
-			break;
-			case aaDevotedFamiliar:
-			break;
-			case aaAuspiceoftheHunter:
-			break;
-			case aaSavageSpirit:
-			break;
-			case aaPresstheAttack2:
-			break;
-			case aaCripplingStrike2:
-			break;
-			case aaStunningKick2:
-			break;
-			case aaEyeGouge2:
-			break;
-	        
-			//Dragons of Norrath
-			//good info here: http://www.eqthieves.com/exp-don-progression.htm and here: http://everquest.allakhazam.com/db/guides.html?guide=811
-			case aaGiftoftheDarkReign:
-			break;
-			case aaTenacityoftheDarkReign:
-			break;
-			case aaEmbraceoftheDarkReign:
-			break;
-			case aaPoweroftheDarkReign:
-			break;
-			case aaFervoroftheDarkReign:
-			break;
-			case aaGiftoftheKeepers:
-			break;
-			case aaValoroftheKeepers:
-			break;
-			case aaEmbraceoftheKeepers:
-			break;
-			case aaPoweroftheKeepers:
-			break;
-			case aaSanctityoftheKeepers:
-			break;
-
-			//Depths of Darkhollow
-
-			//the following 5 look to be used as flags for completion of the Blood Raids for access to the Demiplane of Blood
-			//quest info here: http://everquest.allakhazam.com/db/quest.html?quest=3582
-			//"You must also complete the five Blood Raids in any order: The Council of Nine, Emperor Draygun, Bloodeye, Matriarch Shyra, Sendaii, the Hive Queen"
-			//"The AA's you receive are: Curse of Blood (1/5), Affliction of Blood (2/5), Torment of Blood (3/5), Temptation of Blood (4/5), Invitation of Blood (5/5)."
-			case aaCurseofBlood:
-			break;
-			case aaAfflictionofBlood:
-			break;
-			case aaTormentofBlood:
-			break;
-			case aaTemptationofBlood:
-			break;
-			case aaInvitationofBlood:
-			break;
-
-			case aaTurnUndead2:
-			break;
-			case aaWrackUndead:
-			break;
-			case aaEradicateUndead:
-			break;
-			case aaInnateSeeInvis:
-			break;
-			case aaProlongedMortality:
-			break;
-			case aaPrecognition:
-				//Combat Agility
-			break;
-			case aaThickSkin:
-				//Combat Stability
-				break;
-			case aaSilentCasting:
-			break;
-			case aaSilentCasting2:
-			break;
-			case aaHastenedMindCrash:
-			break;
-			case aaFieldDressing:
-			break;
-			case aaBandageWounds:
-			break;
-			case aaCascadingRage:
-			break;
-			case aaElementalFerocity:
-			break;
-			case aaGiftofMana:
-			break;
-			case aaRuneofShadows:
-			break;
-			case aaChannelingMastery:
-			break;
-			case aaConservation:
-			break;
-			case aaCryofBattle:
-			break;
-			case aaWardofPurity:
-			break;
-			case aaTurnSummoned2:
-			break;
-			case aaWrackSummoned:
-			break;
-			case aaEradicateSummoned:
-			break;
-			case aaWardersSavagery:
-			break;
-			case aaShackleofSpirits:
-			break;
-			case aaHastenedThunder:
-			break;
-			case aaTranslocationalAnchor:
-			break;
-			case aaStealthyGetaway:
-			break;
-			case aaPyromancy:
-			break;
-			case aaMasteryofFury:
-			break;
-			case aaAbundantHealing:
-			break;
-			case aaGreaterAvatar:
-			break;
-			case aaSharedCamouflage:
-			break;
-			case aaConvergenceofSpirits:
-			break;
-			case aaNaturesGuardian:
-			break;
-			case aaEdictofCommand:
-			break;
-			case aaExtendedBurnout:
-			break;
-			case aaGuardianofRo:
-			break;
-			case aaBloodMagic:
-			break;
-			case aaGraverobbing:
-			break;
-			case aaAfflictionMastery:
-			break;
-			case aaGreaterRabidBear:
-			break;
-			case aaAncestralGuard:
-			break;
-			case aaCloakofLight:
-			break;
-			case aaVanquishUndead:
-			break;
-			case aaCloakofShadows:
-			break;
-			case aaWillfulDeath:
-			break;
-			case aaSwiftBlade:
-			break;
-			case aaWickedBlade:
-				//Puniching Blade
-			break;
-			case aaForcedOpening:
-			break;
-			case aaAppraisal:
-			break;
-			case aaPreciseStrikes:
-			break;
-			case aaHastenedDeath:
-			break;
-			case aaUnflinchingResolve:
-			break;
-			case aaWeightlessSteps:
-			break;
-			case aaHastenedBlades:
-			break;
-			case aaImprovedHarmoniousAttack:
-			break;
-			case aaImprovedBestialFrenzy:
-			break;
-			case aaSongofStone:
-			break;
-			case aaDeepSleep:
-			break;
-			case aaCompanionsGift:
-			break;
-			case aaHastenedDefiance:
-			break;
-			case aaDauntlessPerseverance:
-			break;
-			case aaConcentration:
-			break;
-			case aaEnhancedAggression:
-			break;
-			case aaCallofChallenge:
-			break;
-			case aaCacophony:
-			break;
-			case aaImprovedHeadshot:
-				//Headshot
-			break;
-			case aaAnatomy:
-			break;
-			case aaFetterofSpirits:
-			break;
-			case aaTrickShot:
-			break;
-			case aaLightningStrikes:
-			break;
-			case aaRelentlessAssault:
-				// Ferocity
-			break;
-			case aaKnightsExpertise:
-			break;
-			case aaSelosEnduringCadence:
-			break;
-			case aaHarmTouch:
-			break;
-			case aaLayonHands:
-			break;
-			case aaLayonHandsRank16:
-			break;
+			}
 		}
 
+		mysql_free_result(DatasetResult);
 	}
 
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in Bot::LoadAAs()");
+	}
+}
+
+int32 Bot::GetAA(int32 aa_id) {
+
+	std::map<uint32, BotAA >::const_iterator find_iter = botAAs.find(aa_id);
+	int aaLevel = 0;
+	
+	if(find_iter != botAAs.end()) {
+		aaLevel = find_iter->second.total_levels;
+	}
+	
 	return aaLevel;
+}
+
+//current with Client::ApplyAABonuses 9/26/12
+void Bot::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) 
+{
+	if(slots == 0)	//sanity check. why bother if no slots to fill?
+		return;
+
+	//from AA_Ability struct
+	int32 effect = 0;
+	sint32 base1 = 0;
+	sint32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
+	int32 slot = 0;
+
+	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aaid);
+	if(find_iter == aa_effects.end())
+	{
+		return;
+	}
+
+	for (map<uint32, AA_Ability>::const_iterator iter = aa_effects[aaid].begin(); iter != aa_effects[aaid].end(); ++iter) {
+		effect = iter->second.skill_id;
+		base1 = iter->second.base1;
+		base2 = iter->second.base2;
+		slot = iter->second.slot;
+
+		//we default to 0 (SE_CurrentHP) for the effect, so if there aren't any base1/2 values, we'll just skip it
+		if (effect == 0 && base1 == 0 && base2 == 0)
+			continue;
+
+		//IsBlankSpellEffect()
+		if (effect == SE_Blank || (effect == SE_CHA && base1 == 0) || effect == SE_StackingCommand_Block || effect == SE_StackingCommand_Overwrite)
+			continue;
+
+		_log(AA__BONUSES, "Applying Effect %d from AA %u in slot %d (base1: %d, base2: %d) on %s", effect, aaid, slot, base1, base2, this->GetCleanName());
+
+		uint8 focus = IsFocusEffect(0, 0, true,effect);
+		if (focus)
+		{
+			newbon->FocusEffects[focus] = effect;
+			continue;
+		}
+
+		switch (effect)
+		{
+			//Note: AA effects that use accuracy are skill limited, while spell effect is not.
+			case SE_Accuracy:
+				if ((base2 == -1) && (newbon->Accuracy[HIGHEST_SKILL+1] < base1))
+					newbon->Accuracy[HIGHEST_SKILL+1] = base1;
+				else if (newbon->Accuracy[base2] < base1)
+					newbon->Accuracy[base2] += base1;
+				break;
+			case SE_CurrentHP: //regens
+				newbon->HPRegen += base1;
+				break;
+			case SE_CurrentEndurance: 
+				newbon->EnduranceRegen += base1;
+				break;
+			case SE_MovementSpeed:
+				newbon->movementspeed += base1;	//should we let these stack?
+				/*if (base1 > newbon->movementspeed)	//or should we use a total value?
+					newbon->movementspeed = base1;*/
+				break;
+			case SE_STR:
+				newbon->STR += base1;
+				break;
+			case SE_DEX:
+				newbon->DEX += base1;
+				break;
+			case SE_AGI:
+				newbon->AGI += base1;
+				break;
+			case SE_STA:
+				newbon->STA += base1;
+				break;
+			case SE_INT:
+				newbon->INT += base1;
+				break;
+			case SE_WIS:
+				newbon->WIS += base1;
+				break;
+			case SE_CHA:
+				newbon->CHA += base1;
+				break;
+			case SE_WaterBreathing:
+				//handled by client
+				break;
+			case SE_CurrentMana:
+				newbon->ManaRegen += base1;
+				break;
+			case SE_ItemManaRegenCapIncrease:
+				newbon->ItemManaRegenCap += base1;
+				break;
+			case SE_ResistFire:
+				newbon->FR += base1;
+				break;
+			case SE_ResistCold:
+				newbon->CR += base1;
+				break;
+			case SE_ResistPoison:
+				newbon->PR += base1;
+				break;
+			case SE_ResistDisease:
+				newbon->DR += base1;
+				break;
+			case SE_ResistMagic:
+				newbon->MR += base1;
+				break;
+			case SE_ResistCorruption:
+				newbon->Corrup += base1;
+				break;
+			case SE_IncreaseSpellHaste:
+				break;
+			case SE_IncreaseRange:
+				break;
+			case SE_MaxHPChange:
+				newbon->MaxHP += base1;
+				break;
+			case SE_Packrat:
+				newbon->Packrat += base1;
+				break;
+			case SE_TwoHandBash:
+				break;
+			case SE_SetBreathLevel:
+				break;
+			case SE_RaiseStatCap:
+				switch(base2)
+				{
+					//are these #define'd somewhere?
+					case 0: //str
+						newbon->STRCapMod += base1;
+						break;
+					case 1: //sta
+						newbon->STACapMod += base1;
+						break;
+					case 2: //agi
+						newbon->AGICapMod += base1;
+						break;
+					case 3: //dex
+						newbon->DEXCapMod += base1;
+						break;
+					case 4: //wis
+						newbon->WISCapMod += base1;
+						break;
+					case 5: //int
+						newbon->INTCapMod += base1;
+						break;
+					case 6: //cha
+						newbon->CHACapMod += base1;
+						break;
+					case 7: //mr
+						newbon->MRCapMod += base1;
+						break;
+					case 8: //cr
+						newbon->CRCapMod += base1;
+						break;
+					case 9: //fr
+						newbon->FRCapMod += base1;
+						break;
+					case 10: //pr
+						newbon->PRCapMod += base1;
+						break;
+					case 11: //dr
+						newbon->DRCapMod += base1;
+						break;
+					case 12: //corruption
+						newbon->CorrupCapMod += base1;
+						break;
+				}
+				break;
+			case SE_PetDiscipline2:
+				break;
+			case SE_SpellSlotIncrease:
+				break;
+			case SE_MysticalAttune:
+				newbon->BuffSlotIncrease += base1;
+				break;
+			case SE_TotalHP:
+				newbon->HP += base1;
+				break;
+			case SE_StunResist:
+				newbon->StunResist += base1;
+				break;
+			case SE_SpellCritChance:
+				newbon->CriticalSpellChance += base1;
+				break;
+			case SE_SpellCritDmgIncrease:
+				newbon->SpellCritDmgIncrease += base1;
+				break;
+			case SE_DotCritDmgIncrease:
+				newbon->DotCritDmgIncrease += base1;
+				break;
+			case SE_ResistSpellChance:
+				newbon->ResistSpellChance += base1;
+				break;
+			case SE_CriticalHealChance:
+				newbon->CriticalHealChance += base1;
+				break;
+			case SE_CriticalHealOverTime:
+				newbon->CriticalHealOverTime += base1;
+				break;
+			case SE_CriticalDoTChance:
+				newbon->CriticalDoTChance += base1;
+				break;
+			case SE_ReduceSkillTimer:
+				newbon->SkillReuseTime[base2] += base1;
+				break;
+			case SE_Fearless:
+				newbon->Fearless = true;  
+				break;
+			case SE_PersistantCasting:
+				newbon->PersistantCasting += base1;
+				break;
+			case SE_DelayDeath:
+				newbon->DelayDeath += base1;
+				break;
+			case SE_FrontalStunResist:
+				newbon->FrontalStunResist += base1;
+				break;
+			case SE_ImprovedBindWound:
+				newbon->BindWound += base1;
+				break;
+			case SE_MaxBindWound:
+				newbon->MaxBindWound += base1;
+				break;
+			case SE_ExtraAttackChance:
+				newbon->ExtraAttackChance += base1;
+				break;
+			case SE_SeeInvis:
+				newbon->SeeInvis = base1;
+				break;
+			case SE_BaseMovementSpeed:
+				newbon->BaseMovementSpeed += base1; 
+				break;
+			case SE_IncreaseRunSpeedCap:
+				newbon->IncreaseRunSpeedCap += base1;
+				break;
+			case SE_ConsumeProjectile:
+				newbon->ConsumeProjectile += base1;
+				break;
+			case SE_ArcheryDamageModifier:
+				newbon->ArcheryDamageModifier += base1;
+				break;
+			case SE_DamageShield:
+				newbon->DamageShield += base1;
+				break;
+			case SE_CharmBreakChance:
+				newbon->CharmBreakChance += base1;
+				break;
+			case SE_OffhandRiposteFail:
+				newbon->OffhandRiposteFail += base1;
+				break;
+			case SE_ItemAttackCapIncrease:
+				newbon->ItemATKCap += base1;
+				break;
+			case SE_GivePetGroupTarget:
+				newbon->GivePetGroupTarget = true;
+				break;
+			case SE_ItemHPRegenCapIncrease:
+				newbon->ItemHPRegenCap = +base1;
+				break;
+			case SE_Ambidexterity:
+				newbon->Ambidexterity += base1;
+				break;
+			case SE_PetMaxHP:
+				newbon->PetMaxHP += base1;
+				break;
+			case SE_AvoidMeleeChance:
+				newbon->AvoidMeleeChance += base1;
+				break;
+			case SE_CombatStability:
+				newbon->CombatStability += base1;
+				break;
+			case SE_PetCriticalHit:
+				newbon->PetCriticalHit += base1;
+				break;
+			case SE_PetAvoidance:
+				newbon->PetAvoidance += base1;
+				break;
+			case SE_ShieldBlock:
+				newbon->ShieldBlock += base1;
+				break;
+			case SE_SecondaryDmgInc:
+				newbon->SecondaryDmgInc = true;
+				break;
+			case SE_ChangeAggro:
+				newbon->hatemod += base1;
+				break;
+			case SE_EndurancePool:
+				newbon->Endurance += base1;
+				break;
+			case SE_ChannelChanceItems:
+				newbon->ChannelChanceItems += base1;
+				break;
+			case SE_ChannelChanceSpells:
+				newbon->ChannelChanceSpells += base1;
+				break;
+			case SE_DoubleSpecialAttack:
+				newbon->DoubleSpecialAttack += base1;
+				break;
+			case SE_TripleBackstab:
+				newbon->TripleBackstab += base1;
+				break;
+			case SE_FrontalBackstabMinDmg:
+				newbon->FrontalBackstabMinDmg = true;
+				break;
+			case SE_FrontalBackstabChance:
+				newbon->FrontalBackstabChance += base1;
+				break;
+			case SE_BlockBehind:
+				newbon->BlockBehind += base1;
+				break;
+			case SE_StrikeThrough2:
+				newbon->StrikeThrough += base1;
+				break;
+			case SE_DoubleAttackChance:
+				newbon->DoubleAttackChance += base1;
+				break;
+			case SE_GiveDoubleAttack:
+				newbon->GiveDoubleAttack += base1;
+				break;
+			case SE_ProcChance:
+				newbon->ProcChance += base1;
+				break;
+			case SE_RiposteChance:
+				newbon->RiposteChance += base1;
+				break;
+			case SE_Flurry:
+				newbon->FlurryChance += base1;
+				break;
+			case SE_PetFlurry:
+				newbon->PetFlurry = base1;
+				break;
+			case SE_BardSongRange:
+				newbon->SongRange += base1;
+				break;
+			case SE_RootBreakChance:
+				newbon->RootBreakChance += base1;
+				break;
+			case SE_UnfailingDivinity:
+				newbon->UnfailingDivinity += base1;
+				break;
+
+			case SE_SpellOnKill:
+				for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3)
+				{
+					if(!newbon->SpellOnKill[i] || ((newbon->SpellOnKill[i] == base2) && (newbon->SpellOnKill[i+1] < base1)))
+					{
+						//base1 = chance, base2 = SpellID to be triggered,  base3 = min npc level
+						newbon->SpellOnKill[i] = base2;
+						newbon->SpellOnKill[i+1] = base1;
+						
+						if (GetLevel() > 15)
+							newbon->SpellOnKill[i+2] = GetLevel() - 15; //AA specifiy "non-trivial"
+						else
+							newbon->SpellOnKill[i+2] = 0;
+
+						break;
+					}
+				}
+			break;
+				
+			case SE_SpellOnDeath:
+				for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2)
+				{
+					if(!newbon->SpellOnDeath[i])
+					{
+						// base1 = SpellID to be triggered, base2 = chance to fire
+						newbon->SpellOnDeath[i] = base1;
+						newbon->SpellOnDeath[i+1] = base2;
+						break;
+					}
+				}
+			break;
+
+			case SE_TriggerOnCast:
+			
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
+				{
+					if (newbon->SpellTriggers[i] == aaid)
+						break;
+
+					if(!newbon->SpellTriggers[i])
+					{
+						//Save the 'aaid' of each triggerable effect to an array
+						newbon->SpellTriggers[i] = aaid;
+						break;
+					}
+				}
+			break;
+				
+			case SE_CriticalHitChance:
+			{
+				if(base2 == -1)
+					newbon->CriticalHitChance[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->CriticalHitChance[base2] += base1;
+			}
+			break;
+
+			case SE_CriticalDamageMob:
+			{
+				// base1 = effect value, base2 = skill restrictions(-1 for all)
+				if(base2 == -1)
+					newbon->CritDmgMob[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->CritDmgMob[base2] += base1;
+				break;
+			}
+
+			case SE_CriticalSpellChance:
+			{
+				newbon->CriticalSpellChance += base1;
+				
+				if (base2 > 100)
+					newbon->SpellCritDmgIncrease += (base2 - 100);
+				
+				break;
+			}
+
+			case SE_ResistFearChance:
+			{
+				if(base1 == 100) // If we reach 100% in a single spell/item then we should be immune to negative fear resist effects until our immunity is over
+					newbon->Fearless = true;
+					
+				newbon->ResistFearChance += base1; // these should stack
+				break;
+			}
+
+			case SE_SkillDamageAmount:
+			{
+				if(base2 == -1)
+					newbon->SkillDamageAmount[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->SkillDamageAmount[base2] += base1;
+				break;
+			}
+
+			case SE_SpecialAttackKBProc:
+			{
+				//You can only have one of these per client. [AA Dragon Punch]
+				newbon->SpecialAttackKBProc[0] = base1; //Chance base 100 = 25% proc rate
+				newbon->SpecialAttackKBProc[1] = base2; //Skill to KB Proc Off
+				break;
+			}
+
+			case SE_DamageModifier:
+			{
+				if(base2 == -1)
+					newbon->DamageModifier[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->DamageModifier[base2] += base1;
+				break;
+			}
+
+			case SE_SlayUndead:
+			{
+				if(newbon->SlayUndead[1] < base1)
+					newbon->SlayUndead[0] = base1; // Rate
+					newbon->SlayUndead[1] = base2; // Damage Modifier
+				break;
+			}
+
+			case SE_GiveDoubleRiposte:
+			{
+				//0=Regular Riposte 1=Skill Attack Riposte 2=Skill
+				if(base2 == 0){
+					if(newbon->GiveDoubleRiposte[0] < base1)
+						newbon->GiveDoubleRiposte[0] = base1;
+				}
+				//Only for special attacks.
+				else if(base2 > 0 && (newbon->GiveDoubleRiposte[1] < base1)){
+					newbon->GiveDoubleRiposte[1] = base1;
+					newbon->GiveDoubleRiposte[2] = base2;
+				}
+
+				break;
+			}
+
+			//Kayen: Not sure best way to implement this yet.
+			//Physically raises skill cap ie if 55/55 it will raise to 55/60
+			case SE_RaiseSkillCap:
+			{
+				if(newbon->RaiseSkillCap[0] < base1){
+					newbon->RaiseSkillCap[0] = base1; //value
+					newbon->RaiseSkillCap[1] = base2; //skill
+				}
+				break;
+			}
+
+			case SE_MasteryofPast:
+			{
+				if(newbon->MasteryofPast < base1)
+					newbon->MasteryofPast = base1;
+				break;
+			}
+
+			case SE_CastingLevel2:
+			case SE_CastingLevel:
+			{
+				newbon->effective_casting_level += base1;
+				break;
+			}
+
+
+			case SE_DivineSave:
+			{
+				if(newbon->DivineSaveChance[0] < base1)
+				{
+					newbon->DivineSaveChance[0] = base1;
+					newbon->DivineSaveChance[1] = base2;
+				}
+				break;
+			}
+
+			case SE_SpellEffectResistChance:
+			{
+				for(int e = 0; e < MAX_RESISTABLE_EFFECTS*2; e+=2)
+				{
+					if(!newbon->SEResist[e] || ((newbon->SEResist[e] = base2) && (newbon->SEResist[e+1] < base1)) ){
+						newbon->SEResist[e] = base2;
+						newbon->SEResist[e+1] = base1;
+					break;
+					}
+				}
+				break;
+			}
+
+			case SE_MitigateDamageShield:
+			{
+				if (base1 < 0)
+					base1 = base1*(-1);
+
+				newbon->DSMitigationOffHand += base1;
+				break;
+			}
+
+			case SE_FinishingBlow:
+			{
+			
+				//base1 = chance, base2 = damage
+				if (newbon->FinishingBlow[1] < base2){
+					newbon->FinishingBlow[0] = base1;
+					newbon->FinishingBlow[1] = base2;
+				}
+				break;
+			}
+
+			case SE_FinishingBlowLvl:
+			{
+				//base1 = level, base2 = ??? (Set to 200 in AA data, possible proc rate mod?)
+				if (newbon->FinishingBlowLvl[0] < base1){
+					newbon->FinishingBlowLvl[0] = base1;
+					newbon->FinishingBlowLvl[1] = base2;
+				}
+				break;
+			}
+		}
+	}
 }
 
 bool Bot::IsValidRaceClassCombo() {
@@ -4492,7 +3192,6 @@ void Bot::BotRangedAttack(Mob* other) {
 
 	if(!RangeWeapon || !Ammo)
 		return;
-
 	
 	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetCleanName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
 	
@@ -4543,62 +3242,41 @@ void Bot::BotRangedAttack(Mob* other) {
 }
 
 bool Bot::CheckBotDoubleAttack(bool tripleAttack) {
+
+	//Check for bonuses that give you a double attack chance regardless of skill (ie Bestial Frenzy/Harmonious Attack AA)
+	uint16 bonusGiveDA = aabonuses.GiveDoubleAttack + spellbonuses.GiveDoubleAttack + itembonuses.GiveDoubleAttack;
+
 	// If you don't have the double attack skill, return
 	if(!GetSkill(DOUBLE_ATTACK) && !(GetClass() == BARD || GetClass() == BEASTLORD))
 		return false;
 	
 	// You start with no chance of double attacking
-	int chance = 0;
+	float chance = 0.0f;
 	
-	// Used for maxSkill and triple attack calcs
-	int8 classtype = GetClass();
-	
-	// The current skill level
 	uint16 skill = GetSkill(DOUBLE_ATTACK);
 
-	// Discipline bonuses give you 100% chance to double attack
-	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
-	
-	Mob* BotOwner = this->GetBotOwner();
+	sint16 bonusDA = aabonuses.DoubleAttackChance + spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
 
-	// The maximum value for the Class based on the server rule of MaxLevel
-	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead))
-		return false;
-	int16 maxSkill = BotOwner->CastToClient()->MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
+	//Use skill calculations otherwise, if you only have AA applied GiveDoubleAttack chance then use that value as the base.
+	if (skill)
+		chance = (float(skill+GetLevel()) * (float(100.0f+bonusDA+bonusGiveDA) /100.0f)) /500.0f;
+	else 
+		chance = (float(bonusGiveDA) * (float(100.0f+bonusDA)/100.0f) ) /100.0f;
 
-	// AA bonuses for the melee classes
-	int32 aaBonus =
-		GetAA(aaBestialFrenzy) +
-		GetAA(aaHarmoniousAttack) +
-		GetAA(aaKnightsAdvantage)*10 +
-		GetAA(aaFerocity)*10;
-	
-	// Bard Dance of Blades Double Attack bonus is not cumulative
-	if(GetAA(aaDanceofBlades)) {
-		aaBonus += 500;
-	}
-
-	// Half of Double Attack Skill used to check chance for Triple Attack
+	//Live now uses a static Triple Attack skill (lv 46 = 2% lv 60 = 20%) - We do not have this skill on EMU ATM.
+	//A reasonable forumla would then be TA = 20% * chance
+	//AA's can also give triple attack skill over cap. (ie Burst of Power) NOTE: Skill ID in spell data is 76 (Triple Attack)
+	//Kayen: Need to decide if we can implement triple attack skill before working in over the cap effect.
 	if(tripleAttack) {
-		// Only some Double Attack classes get Triple Attack
-		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
-			// We only get half the skill, but should get all the bonuses
-			chance = (skill/2) + buffs + aaBonus;
-		}
-		else {
-			return false;
-		}
-	}
-	else {
-		// This is the actual Double Attack chance
-		chance = skill + buffs + aaBonus;
-	}
-	
-	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.
-	if(chance > MakeRandomInt(0, (maxSkill + itembonuses.DoubleAttackChance + aaBonus)*1.05)) {
-		return true;
+		// Only some Double Attack classes get Triple Attack [This is already checked in client_processes.cpp]
+		sint16 triple_bonus = spellbonuses.TripleAttackChance + itembonuses.TripleAttackChance;
+		chance *= 0.2f; //Baseline chance is 20% of your double attack chance.
+		chance *= float(100.0f+triple_bonus)/100.0f; //Apply modifiers.
 	}
 
+	if((MakeRandomFloat(0, 1) < chance))
+		return true;
+	
 	return false;
 }
 
@@ -4706,6 +3384,40 @@ void Bot::DoMeleeSkillAttackDmg(Mob* other, int16 weapon_damage, SkillType skill
 	if (CanSkillProc && HasSkillProcs()){
 		float chance = 10.0f*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
 		TrySkillProc(other, skillinuse, chance);
+	}
+}
+
+void Bot::ApplySpecialAttackMod(SkillType skill, sint32 &dmg, sint32 &mindmg) {
+
+	int item_slot = -1;
+	//1: Apply bonus from AC (BOOT/SHIELD/HANDS) est. 40AC=6dmg
+	
+	switch (skill){
+
+		case FLYING_KICK:
+		case ROUND_KICK:
+		case KICK:
+			item_slot = SLOT_FEET;
+		break;
+
+		case BASH:	
+			item_slot = SLOT_SECONDARY;
+		break;
+
+		case DRAGON_PUNCH:
+		case EAGLE_STRIKE:
+		case TIGER_CLAW:
+			item_slot = SLOT_HANDS;
+		break;
+	}
+
+	if (item_slot >= 0){
+		const ItemInst* inst = GetBotItem(item_slot);
+		const Item_Struct* botweapon = 0;
+		if(inst)
+			botweapon = inst->GetItem();
+		if(botweapon)
+			dmg += botweapon->AC * (RuleI(Combat, SpecialAttackACBonus))/100;
 	}
 }
 
@@ -5031,7 +3743,7 @@ void Bot::AI_Process() {
 			}
 
 			if(IsBotArcher() && ranged_timer.Check(false)) {
-				if(GetTarget()->GetHPRatio() < 98)
+				if(GetTarget()->GetHPRatio() <= 99.0f)
 					BotRangedAttack(GetTarget());
 			}
 			else if(!IsBotArcher() && (!(IsBotCaster() && GetLevel() > 12)) && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) {
@@ -5069,98 +3781,45 @@ void Bot::AI_Process() {
 						}
 					}
 
-					// Handle Flurrys
-					if((GetAA(aaFlurry) > 0 || spellbonuses.FlurryChance > 0 || itembonuses.FlurryChance > 0)) {
+					//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
+					sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
 
-						int32 flurrychance = (itembonuses.FlurryChance + spellbonuses.FlurryChance) * 10;
-                                        	switch (GetAA(aaFlurry))
-                                        	{
-                                        	case 1:
-                                                	flurrychance += 10;
-                                                	break;
-                                        	case 2:
-                                                	flurrychance += 25;
-                                                	break;
-                                        	case 3:
-                                                	flurrychance += 50;
-                                                	break;
-                                        	}
-
-                                        	if(tripleSuccess) {
-                                                	tripleSuccess = false;
-                                                	switch (GetAA(aaRagingFlurry)) {
-                                                	case 1:
-                                                        	flurrychance += 10;
-                                                        	break;
-                                                	case 2:
-                                                        	flurrychance += 25;
-                                                        	break;
-                                                	case 3:
-                                                        	flurrychance += 50;
-                                                        	break;
-                                                	}
-                                        	}
-
-
-						if(MakeRandomInt(0, 999) < flurrychance) {
+					if (GetTarget() && flurrychance)
+					{
+						if(MakeRandomInt(0, 100) < flurrychance) 
+						{
 							Message_StringID(MT_NPCFlurry, 128);
-							Attack(GetTarget(), SLOT_PRIMARY, true);
-							Attack(GetTarget(), SLOT_PRIMARY, true);
+							Attack(GetTarget(), SLOT_PRIMARY, false);
+							Attack(GetTarget(), SLOT_PRIMARY, false);
 						}
 					}
 
-					if(GetTarget() && GetAA(aaRapidStrikes)) { // Rapid Strikes AA
-						int chance_xhit1 = 0;
-                                        int chance_xhit2 = 0;
-                                        switch (GetAA(aaRapidStrikes))
-                                        {
-                                        	case 1:
-                                                	chance_xhit1 = 10;
-                                                	chance_xhit2 = 2;
-                                                	break;
-                                        	case 2:
-                                                	chance_xhit1 = 12;
-                                                	chance_xhit2 = 4;
-                                                	break;
-                                        	case 3:
-                                                	chance_xhit1 = 14;
-                                                	chance_xhit2 = 6;
-                                                	break;
-                                        	case 4:
-                                                	chance_xhit1 = 16;
-                                                	chance_xhit2 = 8;
-                                                	break;
-                                        	case 5:
-                                                	chance_xhit1 = 20;
-                                                	chance_xhit2 = 10;
-                                                	break;
-                                        	}
+					sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
-						if(MakeRandomInt(1,100) < chance_xhit1)
-							Attack(GetTarget(), SLOT_PRIMARY, true);
-
-						if(GetTarget() && (MakeRandomInt(1,100) < chance_xhit2))
-							Attack(GetTarget(), SLOT_PRIMARY, true);
-					}
-
-					// Handle Punishing Blade and Speed of the Knight and Wicked Blade
-					if(GetTarget() && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
-						if(botLevel >= 61) {
-							ItemInst* weapon = GetBotItem(SLOT_PRIMARY);
-							if(weapon) {
-								if( weapon->GetItem()->ItemType == ItemType2HS ||
-									weapon->GetItem()->ItemType == ItemType2HB ||
-									weapon->GetItem()->ItemType == ItemType2HPierce )
+					if (GetTarget() && ExtraAttackChanceBonus) {
+						ItemInst *wpn = GetBotItem(SLOT_PRIMARY);
+						if(wpn){
+							if(wpn->GetItem()->ItemType == ItemType2HS || 
+								wpn->GetItem()->ItemType == ItemType2HB ||
+								wpn->GetItem()->ItemType == ItemType2HPierce )
+							{
+								if(MakeRandomInt(0, 100) < ExtraAttackChanceBonus)
 								{
-									int extatk = GetAA(aaPunishingBlade)*5;
-										extatk += GetAA(aaSpeedoftheKnight)*5;
-
-									if(MakeRandomInt(0, 100) < extatk) {
-										Attack(GetTarget(), SLOT_PRIMARY, true);
-									}
+									Attack(GetTarget(), SLOT_PRIMARY, false);
 								}
 							}
 						}
+					}
+				}
+
+				if (GetClass() == WARRIOR || GetClass() == BERSERKER) {
+					if(GetHP() > 0 && !berserk && this->GetHPRatio() < 30) {
+						entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_START, GetName());
+						this->berserk = true;
+					}
+					if (berserk && this->GetHPRatio() > 30) {
+						entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_END, GetName());
+						this->berserk = false;
 					}
 				}
 
@@ -5182,21 +3841,25 @@ void Bot::AI_Process() {
 						}
 
 						if(bIsFist || ((weapontype != ItemType2HS) && (weapontype != ItemType2HPierce) && (weapontype != ItemType2HB))) {
-							float DualWieldProbability = (GetSkill(DUAL_WIELD) + botLevel) / 400.0f;
-
-							if(GetAA(aaAmbidexterity))
-								DualWieldProbability += 0.1f;
-
-							//discipline effects:
-							DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
+							float DualWieldProbability = 0.0f;
+				
+							sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+							DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
+							sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+							DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;
 
 							float random = MakeRandomFloat(0, 1);
 
-							if (random < DualWieldProbability) { // Max 78% of DW
-								Attack(GetTarget(), SLOT_SECONDARY);
+							if (random < DualWieldProbability){ // Max 78% of DW
 
-								if(GetTarget() && CanThisClassDoubleAttack() && CheckBotDoubleAttack()) {
-									Attack(GetTarget(), SLOT_SECONDARY);
+								Attack(GetTarget(), SLOT_SECONDARY);	// Single attack with offhand
+
+								ItemInst *wpn = GetBotItem(SLOT_SECONDARY);
+								TryWeaponProc(wpn, GetTarget(), SLOT_SECONDARY);
+					
+								if( CanThisClassDoubleAttack() && CheckBotDoubleAttack()) {
+									if(GetTarget() && GetTarget()->GetHP() > -10)
+										Attack(GetTarget(), SLOT_SECONDARY);	// Single attack with offhand
 								}
 							}
 						}
@@ -5417,7 +4080,7 @@ void Bot::PetAIProcess() {
 					if(!botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY()) && botPet->GetTarget()->IsEnraged())
 						return;
 
-					if(botPet->Attack(GetTarget(), 13))			// try the main hand
+					if(botPet->Attack(GetTarget(), SLOT_PRIMARY))			// try the main hand
 						if (botPet->GetTarget())					// Do we still have a target?
 						{
 							// We're a pet so we re able to dual attack
@@ -7758,10 +6421,14 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 	FaceTarget(GetTarget());
 
 	ItemInst* weapon = NULL;
-	if(Hand == SLOT_PRIMARY)
+	if(Hand == SLOT_PRIMARY) {
 		weapon = GetBotItem(SLOT_PRIMARY);
-	if(Hand == SLOT_SECONDARY)
+		OffHandAtk(false);
+	}
+	if(Hand == SLOT_SECONDARY) {
 		weapon = GetBotItem(SLOT_SECONDARY);
+		OffHandAtk(true);
+	}
 
 	if(weapon != NULL) {
 		if (!weapon->IsWeapon()) {
@@ -7781,6 +6448,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 	
 	/// Now figure out damage
 	int damage = 0;
+	int8 mylevel = GetLevel() ? GetLevel() : 1;
 	int32 hate = 0;
 	if (weapon) hate = weapon->GetItem()->Damage + weapon->GetItem()->ElemDmgAmt;
 	int weapon_damage = GetWeaponDamage(other, weapon, &hate);
@@ -7791,7 +6459,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 	if(weapon_damage > 0){
 		
 		//Berserker Berserk damage bonus
-		if((GetHPRatio() < 30) && (GetClass() == BERSERKER)){
+		if(berserk && (GetClass() == BERSERKER)){
 			int bonus = 3 + GetLevel()/10;		//unverified
 			weapon_damage = weapon_damage * (100+bonus) / 100;
 			mlog(COMBAT__DAMAGE, "Berserker damage bonus increases DMG to %d", weapon_damage);
@@ -7807,30 +6475,49 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
 
 		if(GetLevel() < 10 && max_hit > 20)
-			max_hit = 20;
+			max_hit = (RuleI(Combat, HitCapPre10));
 		else if(GetLevel() < 20 && max_hit > 40)
-			max_hit = 40;
+			max_hit = (RuleI(Combat, HitCapPre20));
 
-		//if mainhand only, get the bonus damage from level
-		if((Hand == SLOT_PRIMARY) && (GetLevel() >= 28) && IsWarriorClass())
+		// ***************************************************************
+		// *** Calculate the damage bonus, if applicable, for this hit ***
+		// ***************************************************************
+
+#ifndef EQEMU_NO_WEAPON_DAMAGE_BONUS
+
+		// If you include the preprocessor directive "#define EQEMU_NO_WEAPON_DAMAGE_BONUS", that indicates that you do not
+		// want damage bonuses added to weapon damage at all. This feature was requested by ChaosSlayer on the EQEmu Forums.
+		//
+		// This is not recommended for normal usage, as the damage bonus represents a non-trivial component of the DPS output
+		// of weapons wielded by higher-level melee characters (especially for two-handed weapons).
+
+		int ucDamageBonus = 0;
+
+		if( Hand == SLOT_PRIMARY && GetLevel() >= 28 && IsWarriorClass() )
 		{
-			int8 ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
+			// Damage bonuses apply only to hits from the main hand (Hand == 13) by characters level 28 and above
+			// who belong to a melee class. If we're here, then all of these conditions apply.
+
+			ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
 
 			min_hit += (int) ucDamageBonus;
 			max_hit += (int) ucDamageBonus;
 			hate += ucDamageBonus;
 		}
+#endif
+		//Live AA - Sinister Strikes *Adds weapon damage bonus to offhand weapon.
+		if (Hand==SLOT_SECONDARY) {
+			if (aabonuses.SecondaryDmgInc || itembonuses.SecondaryDmgInc || spellbonuses.SecondaryDmgInc){
+				
+				ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
 
-		min_hit = min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
-
-		if(Hand == SLOT_SECONDARY) {
-			if(GetAA(aaSinisterStrikes)) { // Sinister Strikes AA
-				int sinisterBonus = MakeRandomInt(5, 10);
-				min_hit += (min_hit * sinisterBonus / 100);
-				max_hit += (max_hit * sinisterBonus / 100);
-				hate += (hate * sinisterBonus / 100);
+				min_hit += (int) ucDamageBonus;
+				max_hit += (int) ucDamageBonus;
+				hate += ucDamageBonus;
 			}
 		}
+
+		min_hit = min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
 
 		if(max_hit < min_hit)
 			max_hit = min_hit;
@@ -7853,6 +6540,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 			other->MeleeMitigation(this, damage, min_hit);
 			if(damage > 0) {
 				ApplyMeleeDamageBonus(skillinuse, damage);
+				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100) + GetSkillDmgAmt(skillinuse);
 				TryCriticalHit(other, skillinuse, damage);
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetCleanName());
 				// now add done damage to the hate list
@@ -7861,6 +6549,41 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 			else
 				other->AddToHateList(this, 0);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
+		}
+
+		//riposte
+		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
+		if (damage == -3)  {
+			if (FromRiposte) return false;
+			else {
+				if (Hand == SLOT_SECONDARY) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
+					//Live AA - SlipperyAttacks 
+					//This spell effect most likely directly modifies the actual riposte chance when using offhand attack.
+					sint16 OffhandRiposteFail = aabonuses.OffhandRiposteFail + itembonuses.OffhandRiposteFail + spellbonuses.OffhandRiposteFail;
+					OffhandRiposteFail *= -1; //Live uses a negative value for this.
+					
+					if (OffhandRiposteFail && 
+						(OffhandRiposteFail > 99 || (MakeRandomInt(0, 100) < OffhandRiposteFail))) {
+						damage = 0; // Counts as a miss
+						slippery_attack = true;
+					} else 
+						DoRiposte(other);
+						if (GetHP() < 0) return false;
+				}
+				else 
+					DoRiposte(other);
+					if (GetHP() < 0) return false;
+			}
+		}
+
+		if (((damage < 0) || slippery_attack) && !FromRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
+			sint16 bonusStrikeThrough = itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aabonuses.StrikeThrough;
+	
+			if(bonusStrikeThrough && (MakeRandomInt(0, 100) < bonusStrikeThrough)) {
+				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
+				Attack(other, Hand, false, true); // Strikethrough only gives another attempted hit
+				return false;
+			}
 		}
 	}
 	else{
@@ -7877,10 +6600,23 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 	//////    Send Attack Damage
 	///////////////////////////////////////////////////////////
 	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
-	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap)) {
+
+	if (GetHP() < 0) return false;
+
+	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap)) 
+	{
+		int lifetap_amt = spellbonuses.MeleeLifetap + itembonuses.MeleeLifetap;
+		if(lifetap_amt > 100)
+			lifetap_amt = 100;
+
+		lifetap_amt = damage * lifetap_amt / 100;
+
 		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
 		//heal self for damage done..
-		HealDamage(damage);
+		HealDamage(lifetap_amt);
+		
+		if (spellbonuses.MeleeLifetap)
+			CheckHitsRemaining(0, false,false, SE_MeleeLifetap);
 	}
 	
 	//break invis when you attack
@@ -7914,97 +6650,630 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough, b
 		safe_delete(outapp);
 	}
 	
-	////////////////////////////////////////////////////////////
-	////////  PROC CODE
-	////////  Kaiyodo - Check for proc on weapon based on DEX
-	///////////////////////////////////////////////////////////
-	if(other->GetHP() > -10 && !FromRiposte && this) {
-		TryWeaponProc(weapon, other);
-	}
+	if(GetTarget())
+		TriggerDefensiveProcs(weapon, other, Hand, damage);
+
+	if (damage > 0)
+		return true;
+
+	else
+		return false;
+}
+
+sint16 Bot::CalcBotAAFocus(BotfocusType type, uint32 aa_ID, int16 spell_id) 
+{
+	const SPDat_Spell_Struct &spell = spells[spell_id];
 	
-	if(weapon_damage > 0){
-		//riposte
-		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
-		if (damage == -3)  {
-			if(FromRiposte) {
-				return false;
-			}
-			else {
-					
-				if ((Hand == SLOT_SECONDARY) && GetAA(aaSlipperyAttacks) > 0) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
-					if (MakeRandomInt(0, 100) < (GetAA(aaSlipperyAttacks) * 20)) {
-						damage = 0; // Counts as a miss
-						slippery_attack = true;
-					}
-					else 
-						DoRiposte(other);
+	sint16 value = 0;
+	int lvlModifier = 100;
+	int spell_level = 0;
+	int lvldiff = 0;
+	bool LimitSpellSkill = false;
+	bool SpellSkill_Found = false;
+	int32 effect = 0;
+	sint32 base1 = 0;
+	sint32 base2 = 0;
+	int32 slot = 0;
+
+	bool LimitFound = false;
+	int FocusCount = 0;
+
+	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aa_ID);
+	if(find_iter == aa_effects.end())
+	{
+		return 0;
+	}
+
+	for (map<uint32, AA_Ability>::const_iterator iter = aa_effects[aa_ID].begin(); iter != aa_effects[aa_ID].end(); ++iter) 
+	{
+		effect = iter->second.skill_id;
+		base1 = iter->second.base1;
+		base2 = iter->second.base2;
+		slot = iter->second.slot;
+		
+		//AA Foci's can contain multiple focus effects within the same AA.
+		//To handle this we will not automatically return zero if a limit is found.
+		//Instead if limit is found and multiple effects, we will reset the limit check
+		//when the next valid focus effect is found.		
+		if (IsFocusEffect(0, 0, true,effect) || (effect == SE_TriggerOnCast)){
+			FocusCount++;
+			//If limit found on prior check next, else end loop.
+			if (FocusCount > 1){
+				if (LimitFound){
+					value = 0;
+					LimitFound = false;
 				}
-				else 
-					DoRiposte(other);
+
+				else{
+					break;
+				}
 			}
 		}
 		
-		int aaStrikethroughBonus = 0;
-			
-		aaStrikethroughBonus += GetAA(aaStrikethrough) * 2;
-		aaStrikethroughBonus += GetAA(aaTacticalMastery) * 2;
 
-		//strikethrough..
-		if ((damage < 0 || slippery_attack) && !FromRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
-			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
-				Attack(other, Hand, true); // Strikethrough only gives another attempted hit
-				return false;
+		switch (effect)
+		{
+			case SE_Blank:
+				break;
+			
+			//Handle Focus Limits
+			case SE_LimitResist:
+				if(base1)
+				{
+					if(spell.resisttype != base1)
+						LimitFound = true;
+				}
+			break;
+			case SE_LimitInstant:
+				if(spell.buffduration)
+					LimitFound = true;
+			break;
+			case SE_LimitMaxLevel:
+				spell_level = spell.classes[(GetClass()%16) - 1];
+				lvldiff = spell_level - base1;
+				//every level over cap reduces the effect by base2 percent unless from a clicky when ItemCastsUseFocus is true
+				if(lvldiff > 0 && (spell_level <= RuleI(Character, MaxLevel) || RuleB(Character, ItemCastsUseFocus) == false))
+				{ 
+					if(base2 > 0)
+					{
+						lvlModifier -= base2*lvldiff;
+						if(lvlModifier < 1)
+							LimitFound = true;
+					}
+					else {	
+						LimitFound = true;
+					}
+				}
+			break;
+			case SE_LimitMinLevel:
+				if((spell.classes[(GetClass()%16) - 1]) < base1)
+					LimitFound = true;
+			break;
+			case SE_LimitCastTime:
+				if (spell.cast_time < base1)
+					LimitFound = true;
+			break;
+			case SE_LimitSpell:
+				// Exclude spell(any but this)
+				if(base1 < 0) {	
+					if (spell_id == (base1*-1))
+						LimitFound = true;
+				} 
+				else {
+				// Include Spell(only this)
+					if (spell_id != base1)
+						LimitFound = true;
+				}
+			break;
+			case SE_LimitMinDur:
+				if (base1 > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration))
+					LimitFound = true;
+			break;
+			case SE_LimitEffect:
+				// Exclude effect(any but this)
+				if(base1 < 0) {
+					if(IsEffectInSpell(spell_id,(base1*-1)))
+						LimitFound = true;
+				}
+				else {
+					// Include effect(only this)
+					if(!IsEffectInSpell(spell_id,base1)) 
+						LimitFound = true;
+				}
+			break;
+			case SE_LimitSpellType:
+				switch(base1)
+				{
+					case 0:
+						if (!IsDetrimentalSpell(spell_id))
+							LimitFound = true;
+						break;
+					case 1:
+						if (!IsBeneficialSpell(spell_id))
+							LimitFound = true;
+						break;
+				}
+			break;
+			
+			case SE_LimitManaCost:
+				if(spell.mana < base1)
+					LimitFound = true;
+			break;
+			
+			case SE_LimitTarget:
+			// Exclude
+			if(base1 < 0){
+				if(-base1 == spell.targettype) 
+					LimitFound = true;
 			}
+			// Include
+			else {
+				if(base1 != spell.targettype)
+					LimitFound = true;
+			}
+			break;
+			
+			case SE_CombatSkills:
+				// 1 is for disciplines only
+				if(base1 == 1 && !IsDiscipline(spell_id))
+					LimitFound = true;
+				// 0 is spells only
+				else if(base1 == 0 && IsDiscipline(spell_id))
+					LimitFound = true;
+			break;
+			
+			case SE_LimitSpellGroup:
+				if(base1 > 0 && base1 != spell.spellgroup)
+					LimitFound = true;
+				else if(base1 < 0 && base1 == spell.spellgroup)
+					LimitFound = true;
+			break;
+			
+			
+			case SE_LimitSpellSkill:
+				LimitSpellSkill = true;
+				if(base1 == spell.skill)
+					SpellSkill_Found = true;
+			break;
+
+			case SE_LimitExcludeSkill:{
+			sint16 spell_skill = spell.skill * -1;
+			if(base1 == spell_skill)
+				LimitFound = true;	
+			break;
+			}
+
+			case SE_LimitClass:
+			//Do not use this limit more then once per spell. If multiple class, treat value like items would.
+			if (!PassLimitClass(base1, GetClass()))
+				LimitFound = true; 
+			break;
+			
+		
+			//Handle Focus Effects
+			case SE_ImprovedDamage:
+				if (type == focusImprovedDamage && base1 > value)
+					value = base1;
+			break;
+			
+			case SE_ImprovedHeal:
+				if (type == focusImprovedHeal && base1 > value) 
+					value = base1;	
+			break;
+				
+			case SE_ReduceManaCost:
+				if (type == focusManaCost ) 
+					value = base1;
+			break;
+
+			case SE_IncreaseSpellHaste:
+				if (type == focusSpellHaste && base1 > value)
+					value = base1;
+				break;
+				
+			case SE_IncreaseSpellDuration:
+				if (type == focusSpellDuration && base1 > value)
+					value = base1;
+				break;
+				
+			case SE_SpellDurationIncByTic:
+				if (type == focusSpellDurByTic && base1 > value)
+					value = base1;
+				break;	
+				
+			case SE_SwarmPetDuration:
+				if (type == focusSwarmPetDuration && base1 > value)
+						value = base1;
+				break;	
+				
+			case SE_IncreaseRange:
+				if (type == focusRange && base1 > value)
+					value = base1;
+				break;
+				
+			case SE_ReduceReagentCost:
+				if (type == focusReagentCost && base1 > value)
+					value = base1;
+				break;
+				
+			case SE_PetPowerIncrease:
+				if (type == focusPetPower && base1 > value)
+					value = base1;
+				break;
+				
+			case SE_SpellResistReduction:
+				if (type == focusResistRate && base1 > value)
+					value = base1;
+				break;
+				
+			case SE_SpellHateMod:
+				if (type == focusSpellHateMod)
+				{
+					if(value != 0)
+					{
+						if(value > 0)
+						{
+							if(base1 > value)
+							{
+								value = base1;
+							}
+						}
+						else
+						{
+							if(base1 < value)
+							{
+								value = base1;
+							}
+						}
+					}
+					else
+						value = base1;
+				}
+				break;
+				
+			case SE_ReduceReuseTimer:
+			{ 
+				if(type == focusReduceRecastTime)
+					value = base1 / 1000;
+					
+				break;
+			}
+
+			case SE_TriggerOnCast:
+			{
+				if(type == focusTriggerOnCast)
+				{
+					if(MakeRandomInt(0, 100) <= base1){
+						value = base2;
+					}
+					
+					else{
+						value = 0;
+						LimitFound = true;
+					}
+				}
+				break;
+			}
+			case SE_SpellVulnerability:
+			{
+				if(type == focusSpellVulnerability)
+				{
+					value = base1;
+				}
+				break;
+			}
+			case SE_BlockNextSpellFocus:
+			{
+				if(type == focusBlockNextSpell)
+				{
+					if(MakeRandomInt(1, 100) <= base1) 
+						value = 1;
+				}
+				break;
+			}
+			case SE_Twincast:
+			{
+				if(type == focusTwincast)
+				{
+					value = base1; 
+				}
+				break;
+			}
+
+			/*
+			case SE_SympatheticProc:
+			{
+				if(type == focusSympatheticProc)
+				{
+					float ProcChance, ProcBonus; 
+					sint16 ProcRateMod = base1; //Baseline is 100 for most Sympathetic foci
+					sint32 cast_time = GetActSpellCasttime(spell_id, spells[spell_id].cast_time);
+					GetSympatheticProcChances(ProcBonus, ProcChance, cast_time, ProcRateMod);
+
+					if(MakeRandomFloat(0, 1) <= ProcChance)
+						value = focus_id;
+					
+					else
+						value = 0;
+				}
+				break;
+			}
+			*/
+			case SE_SpellDamage:
+			{
+				if(type == focusSpellDamage)
+					value = base1;
+
+				break;
+			}
+
+			case SE_FF_Damage_Amount:
+			{
+				if(type == focusFF_Damage_Amount)
+					value = base1;
+
+				break;
+			}
+
+			case SE_Empathy:
+			{
+				if(type == focusAdditionalDamage)
+					value = base1;
+
+				break;
+			}
+
+			case SE_CriticalHealRate:
+			{
+				if (type == focusCriticalHealRate)
+					value = base1;
+
+				break;
+			}
+
+			case SE_AdditionalHeal:
+			{
+				if(type == focusAdditionalHeal)
+					value = base1;
+
+				break;
+			}
+
+			case SE_AdditionalHeal2:
+			{
+				if(type == focusAdditionalHeal2)
+					value = base1;
+
+				break;
+			}
+
+			case SE_HealRate2:
+			{
+				if(type == focusHealRate)
+					value = base1;
+
+				break;
+			}
+
+			case SE_IncreaseSpellPower:
+			{
+				if (type == focusSpellEffectiveness)
+					value = base1;
+
+				break;
+			}
+			case SE_ImprovedDamage2:
+			{
+				if(type == focusImprovedDamage2)
+					value = base1;
+
+				break;
+			}
+
+			case SE_IncreaseNumHits:
+			{
+				if(type == focusIncreaseNumHits)
+					value = base1;
+
+				break;
+			}
+
+	//Check for spell skill limits.
+	if ((LimitSpellSkill) && (!SpellSkill_Found))
+		return 0;
+	
 		}
 	}
-	
-	if(damage > 0) {
-		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
-		TriggerDefensiveProcs(weapon, other, Hand, damage);
-		return true;
+
+	if (LimitFound){
+		return 0;
 	}
-	else {
-		return false;
-	}
+
+	return(value*lvlModifier/100);
 }
 
 sint16 Bot::GetBotFocusEffect(BotfocusType bottype, int16 spell_id) {
-	if (IsBardSong(spell_id))
+	if (IsBardSong(spell_id) && bottype != BotfocusSpellEffectiveness)
 		return 0;
 
-	const Item_Struct* TempItem = 0;
-	const ItemInst* TempInst = 0;
-	sint16 Total = 0;
 	sint16 realTotal = 0;
+	sint16 realTotal2 = 0;
+	sint16 realTotal3 = 0;
+	bool rand_effectiveness = false;
 
-	//item focus
-	for(int x=0; x<=21; ++x) {
-		TempInst = GetBotItem(x);
-		if(TempInst) {
-			TempItem = TempInst->GetItem();
+	//Improved Healing, Damage & Mana Reduction are handled differently in that some are random percentages
+	//In these cases we need to find the most powerful effect, so that each piece of gear wont get its own chance
+	if((bottype == BotfocusManaCost || bottype == BotfocusImprovedHeal || bottype == BotfocusImprovedDamage)
+		&& RuleB(Spells, LiveLikeFocusEffects)) 
+	{
+		rand_effectiveness = true;
+	}
+
+	//Check if item focus effect exists for the client.
+	if (itembonuses.FocusEffects[bottype]){
+
+		const Item_Struct* TempItem = 0;
+		const Item_Struct* UsedItem = 0;
+		const ItemInst* TempInst = 0;
+		int16 UsedFocusID = 0;
+		sint16 Total = 0;
+		sint16 focus_max = 0;
+		sint16 focus_max_real = 0;
+
+		//item focus
+		for(int x=0; x<=21; x++)
+		{
+			TempItem = NULL;
+			ItemInst* ins = GetBotItem(x);
+			if (!ins)
+				continue;
+			TempItem = ins->GetItem();
 			if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
-				Total = CalcBotFocusEffect(bottype, TempItem->Focus.Effect, spell_id);
-				if(Total > realTotal) {
-					realTotal = Total;
+				if(rand_effectiveness) {
+					focus_max = CalcBotFocusEffect(bottype, TempItem->Focus.Effect, spell_id, true);
+					if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+						focus_max_real = focus_max;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					} else if (focus_max < 0 && focus_max < focus_max_real) {
+						focus_max_real = focus_max;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					}
+				}
+				else {
+					Total = CalcBotFocusEffect(bottype, TempItem->Focus.Effect, spell_id);
+					if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					} else if (Total < 0 && Total < realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
+						UsedFocusID = TempItem->Focus.Effect;
+					}
+				}
+			}
+			
+			for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+			{
+				ItemInst *aug = NULL;
+				aug = ins->GetAugment(y);
+				if(aug)
+				{
+					const Item_Struct* TempItemAug = aug->GetItem();
+					if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
+						if(rand_effectiveness) {
+							focus_max = CalcBotFocusEffect(bottype, TempItemAug->Focus.Effect, spell_id, true);
+							if (focus_max > 0 && focus_max_real >= 0 && focus_max > focus_max_real) {
+								focus_max_real = focus_max;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							} else if (focus_max < 0 && focus_max < focus_max_real) {
+								focus_max_real = focus_max;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							}
+						}
+						else {
+							Total = CalcBotFocusEffect(bottype, TempItemAug->Focus.Effect, spell_id);
+							if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+								realTotal = Total;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							} else if (Total < 0 && Total < realTotal) {
+								realTotal = Total;
+								UsedItem = TempItem;
+								UsedFocusID = TempItemAug->Focus.Effect;
+							}
+						}
+					}
 				}
 			}
 		}
+
+		if(UsedItem && rand_effectiveness && focus_max_real != 0)
+			realTotal = CalcBotFocusEffect(bottype, UsedFocusID, spell_id);
 	}
 
-	//Spell Focus
-	sint16 Total2 = 0;
-	sint16 realTotal2 = 0;
+	//Check if spell focus effect exists for the client.
+	if (spellbonuses.FocusEffects[bottype]){
 
-	for (int y = 0; y < BUFF_COUNT; y++) {
-		int16 focusspellid = buffs[y].spellid;
+		//Spell Focus
+		sint16 Total2 = 0;
+		sint16 focus_max2 = 0;
+		sint16 focus_max_real2 = 0;
 		
-		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
-			continue;
+		int buff_tracker = -1;
+		int buff_slot = 0;
+		int16 focusspellid  = 0;
+		int16 focusspell_tracker  = 0;
+		uint32 buff_max = GetMaxTotalSlots();
+		for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
+			focusspellid = buffs[buff_slot].spellid;
+			if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
+				continue;
+			
+			if(rand_effectiveness) {
+				focus_max2 = CalcBotFocusEffect(bottype, focusspellid, spell_id, true);
+				if (focus_max2 > 0 && focus_max_real2 >= 0 && focus_max2 > focus_max_real2) {
+					focus_max_real2 = focus_max2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
+				} else if (focus_max2 < 0 && focus_max2 < focus_max_real2) {
+					focus_max_real2 = focus_max2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
+				}
+			}
+			else {
+				Total2 = CalcBotFocusEffect(bottype, focusspellid, spell_id);
+				if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
+					realTotal2 = Total2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
+				} else if (Total2 < 0 && Total2 < realTotal2) {
+					realTotal2 = Total2;
+					buff_tracker = buff_slot;
+					focusspell_tracker = focusspellid;
+				}
+			}
+		}
+		
+		if(focusspell_tracker && rand_effectiveness && focus_max_real2 != 0)
+			realTotal2 = CalcBotFocusEffect(bottype, focusspell_tracker, spell_id);
+		
+		// For effects like gift of mana that only fire once, save the spellid into an array that consists of all available buff slots.
+		if(buff_tracker >= 0 && buffs[buff_tracker].numhits > 0) {
+			m_spellHitsLeft[buff_tracker] = focusspell_tracker;
+		}
+	}
 
-		Total2 = CalcBotFocusEffect(bottype, focusspellid, spell_id);
-		
-		if(Total2 > realTotal2) {
-			realTotal2 = Total2;
+	// AA Focus
+	if (aabonuses.FocusEffects[bottype]){
+
+		int totalAAs = database.CountAAs();
+		sint16 Total3 = 0;
+		uint32 slots = 0;
+		uint32 aa_AA = 0;
+		uint32 aa_value = 0;
+
+		for (int i = 0; i < totalAAs; i++) {	//iterate through all of the client's AAs
+			std::map<uint32, BotAA>::iterator aa = botAAs.find(i);					
+			if(aa != botAAs.end()) { // make sure aa exists or we'll crash zone
+				aa_AA = aa->second.aa_id;	//same as aaid from the aa_effects table
+				aa_value = aa->second.total_levels;	//how many points in it
+				if (aa_AA < 1 || aa_value < 1) 
+					continue;
+				
+				Total3 = CalcBotAAFocus(bottype, aa_AA, spell_id);
+				if (Total3 > 0 && realTotal3 >= 0 && Total3 > realTotal3) {
+					realTotal3 = Total3;
+				} 
+				else if (Total3 < 0 && Total3 < realTotal3) {
+					realTotal3 = Total3;
+				}
+			}
 		}
 	}
 
@@ -8020,22 +7289,25 @@ sint16 Bot::GetBotFocusEffect(BotfocusType bottype, int16 spell_id) {
 	return realTotal + realTotal2;
 }
 
-sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id) {
+sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id, bool best_focus) {
+	if(!IsValidSpell(focus_id) || !IsValidSpell(spell_id))
+		return 0;
+	
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 
 	sint16 value = 0;
 	int lvlModifier = 100;
+	int spell_level = 0;
+	int lvldiff = 0;
+	bool LimitSpellSkill = false;
+	bool SpellSkill_Found = false;
 
 	for (int i = 0; i < EFFECT_COUNT; i++) {
 		switch (focus_spell.effectid[i]) {
 		case SE_Blank:
 			break;
-
 		//check limits
-
-		//missing limits:
-		//SE_LimitTarget
 
 		case SE_LimitResist:{
 			if(focus_spell.base[i]){
@@ -8044,7 +7316,6 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 			}
 			break;
 		}
-
 		case SE_LimitInstant:{
 			if(spell.buffduration)
 				return(0);
@@ -8052,17 +7323,30 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 		}
 
 		case SE_LimitMaxLevel:{
-			int lvldiff = (spell.classes[(GetClass()%16) - 1]) - focus_spell.base[i];
-
-			if(lvldiff > 0){ //every level over cap reduces the effect by spell.base2[i] percent
-				lvlModifier -= spell.base2[i]*lvldiff;
-				if(lvlModifier < 1)
+			if (IsNPC())
+				break;
+			spell_level = spell.classes[(GetClass()%16) - 1];
+			lvldiff = spell_level - focus_spell.base[i];
+			//every level over cap reduces the effect by focus_spell.base2[i] percent unless from a clicky when ItemCastsUseFocus is true
+			if(lvldiff > 0 && (spell_level <= RuleI(Character, MaxLevel) || RuleB(Character, ItemCastsUseFocus) == false))
+			{
+				if(focus_spell.base2[i] > 0)
+				{
+					lvlModifier -= focus_spell.base2[i]*lvldiff;
+					if(lvlModifier < 1)
+						return 0;
+				}
+				else
+				{
 					return 0;
+				}
 			}
 			break;
 		}
 
 		case SE_LimitMinLevel:
+			if (IsNPC())
+				break;
 			if (spell.classes[(GetClass()%16) - 1] < focus_spell.base[i])
 				return(0);
 			break;
@@ -8095,7 +7379,16 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 				}
 			}
 			else{
-				if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
+				if(focus_spell.base[i] == SE_SummonPet) //summoning haste special case
+				{	//must have one of the three pet effects to qualify
+					if(!IsEffectInSpell(spell_id, SE_SummonPet) &&
+						!IsEffectInSpell(spell_id, SE_NecPet) &&
+						!IsEffectInSpell(spell_id, SE_SummonBSTPet))
+					{
+						return 0;
+					}
+				}
+				else if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
 					return 0;
 				}
 			}
@@ -8118,49 +7411,117 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 			}
 			break;
 
-		//handle effects
+		case SE_LimitManaCost:
+				if(spell.mana < focus_spell.base[i])
+					return 0;
+			break;
+		
+		case SE_LimitTarget:
+			// Exclude
+			if((focus_spell.base[i] < 0) && -focus_spell.base[i] == spell.targettype)
+				return 0;
+			// Include
+			else if (focus_spell.base[i] > 0 && focus_spell.base[i] != spell.targettype)
+				return 0;
 
+			break;
+		
+		case SE_CombatSkills:
+				// 1 is for disciplines only
+				if(focus_spell.base[i] == 1 && !IsDiscipline(spell_id))
+					return 0;
+				// 0 is for spells only
+				else if(focus_spell.base[i] == 0 && IsDiscipline(spell_id))
+					return 0;
+			break;
+		
+		case SE_LimitSpellGroup:
+				if(focus_spell.base[i] > 0 && focus_spell.base[i] != spell.spellgroup)
+					return 0;
+				else if(focus_spell.base[i] < 0 && focus_spell.base[i] == spell.spellgroup)
+					return 0;
+			break;
+
+		case SE_LimitSpellSkill:
+				LimitSpellSkill = true;
+				if(focus_spell.base[i] == spell.skill)
+					SpellSkill_Found = true;
+			break;
+
+		case SE_LimitExcludeSkill:{
+			sint16 spell_skill = spell.skill * -1;
+			if(focus_spell.base[i] == spell_skill)
+				return 0;	
+			break;
+			}
+
+		case SE_LimitClass:
+			//Do not use this limit more then once per spell. If multiple class, treat value like items would.
+			if (!PassLimitClass(focus_spell.base[i], GetClass()))
+				return 0; 
+			break;
+
+		//handle effects
 		case SE_ImprovedDamage:
-			switch (focus_spell.max[i])
-			{
-				case 0:
-					if (bottype == BotfocusImprovedDamage && focus_spell.base[i] > value)
-					{
+		// No Spell used this, its handled by different spell effect IDs.
+			if (bottype == BotfocusImprovedDamage) {
+				// This is used to determine which focus should be used for the random calculation
+				if(best_focus) {
+					// If the spell contains a value in the base2 field then that is the max value
+					if (focus_spell.base2[i] != 0) {
+						value = focus_spell.base2[i];
+					}
+					// If the spell does not contain a base2 value, then its a straight non random value
+					else {
 						value = focus_spell.base[i];
 					}
-					break;
-				case 1:
-					if (bottype == BotfocusImprovedDamage2 && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
-				case 2:
-					if (bottype == BotfocusImprovedUndeadDamage && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
-				case 3:
-					if (bottype == 10 && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
-				default: //Resist stuff
-					if (bottype == (BotfocusType)focus_spell.max[i] && focus_spell.base[i] > value)
-					{
-						value = focus_spell.base[i];
-					}
-					break;
+				}
+				// Actual focus calculation starts here
+				else if (focus_spell.base2[i] == 0 || focus_spell.base[i] == focus_spell.base2[i]) {
+					value = focus_spell.base[i];
+				}
+				else {
+					value = MakeRandomInt(focus_spell.base[i], focus_spell.base2[i]);
+				}
 			}
 			break;
 		case SE_ImprovedHeal:
-			if (bottype == BotfocusImprovedHeal && focus_spell.base[i] > value)
-			{
-				value = focus_spell.base[i];
+			if (bottype == BotfocusImprovedHeal) {
+				if(best_focus) {
+					if (focus_spell.base2[i] != 0) {
+						value = focus_spell.base2[i];
+					}
+					else {
+						value = focus_spell.base[i];
+					}
+				}
+				else if (focus_spell.base2[i] == 0 || focus_spell.base[i] == focus_spell.base2[i]) {
+					value = focus_spell.base[i];
+				}
+				else {
+					value = MakeRandomInt(focus_spell.base[i], focus_spell.base2[i]);
+				}
 			}
 			break;
+		case SE_ReduceManaCost:
+			if (bottype == BotfocusManaCost) {
+				if(best_focus) {
+					if (focus_spell.base2[i] != 0) {
+						value = focus_spell.base2[i];
+					}
+					else {
+						value = focus_spell.base[i];
+					}
+				}
+				else if (focus_spell.base2[i] == 0 || focus_spell.base[i] == focus_spell.base2[i]) {
+					value = focus_spell.base[i];
+				}
+				else {
+					value = MakeRandomInt(focus_spell.base[i], focus_spell.base2[i]);
+				}
+			}
+			break;
+
 		case SE_IncreaseSpellHaste:
 			if (bottype == BotfocusSpellHaste && focus_spell.base[i] > value)
 			{
@@ -8168,11 +7529,23 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 			}
 			break;
 		case SE_IncreaseSpellDuration:
-			if (bottype == BotfocusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
+			if (bottype == BotfocusSpellDuration && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
+		case SE_SpellDurationIncByTic:
+			if (bottype == BotfocusSpellDurByTic && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;	
+		case SE_SwarmPetDuration:
+			if (bottype == BotfocusSwarmPetDuration && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;	
 		case SE_IncreaseRange:
 			if (bottype == BotfocusRange && focus_spell.base[i] > value)
 			{
@@ -8185,18 +7558,183 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 				value = focus_spell.base[i];
 			}
 			break;
-		case SE_ReduceManaCost:
-			if (bottype == BotfocusManaCost && focus_spell.base[i] > value)
-			{
-				value = focus_spell.base[i];
-			}
-			break;
 		case SE_PetPowerIncrease:
 			if (bottype == BotfocusPetPower && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
+		case SE_SpellResistReduction:
+			if (bottype == BotfocusResistRate && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_SpellHateMod:
+			if (bottype == BotfocusSpellHateMod)
+			{
+				if(value != 0)
+				{
+					if(value > 0)
+					{
+						if(focus_spell.base[i] > value)
+						{
+							value = focus_spell.base[i];
+						}
+					}
+					else
+					{
+						if(focus_spell.base[i] < value)
+						{
+							value = focus_spell.base[i];
+						}
+					}
+				}
+				else
+					value = focus_spell.base[i];
+			}
+			break;
+			
+		case SE_ReduceReuseTimer:
+		{ 
+			if(bottype == BotfocusReduceRecastTime)
+				value = focus_spell.base[i] / 1000;
+				
+			break;
+		}
+
+		case SE_TriggerOnCast:
+		{
+			if(bottype == BotfocusTriggerOnCast)
+				
+				if(MakeRandomInt(0, 100) <= focus_spell.base[i])
+					value = focus_spell.base2[i];
+				
+				else
+					value = 0;
+		
+			break;
+		}
+		case SE_SpellVulnerability:
+		{
+			if(bottype == BotfocusSpellVulnerability)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		}
+		case SE_BlockNextSpellFocus:
+		{
+			if(bottype == BotfocusBlockNextSpell)
+			{
+				if(MakeRandomInt(1, 100) <= focus_spell.base[i]) 
+					value = 1;
+			}
+			break;
+		}
+		case SE_Twincast:
+		{
+			if(bottype == BotfocusTwincast)
+			{
+				value = focus_spell.base[i]; 
+			}
+			break;
+		}
+		case SE_SympatheticProc:
+		{
+			if(bottype == BotfocusSympatheticProc)
+			{
+				float ProcChance, ProcBonus; 
+				sint16 ProcRateMod = focus_spell.base[i]; //Baseline is 100 for most Sympathetic foci
+				sint32 cast_time = GetActSpellCasttime(spell_id, spells[spell_id].cast_time);
+				GetSympatheticProcChances(ProcBonus, ProcChance, cast_time, ProcRateMod);
+
+				if(MakeRandomFloat(0, 1) <= ProcChance)
+					value = focus_id;
+				
+				else
+					value = 0;
+			}
+			break;
+		}
+		case SE_SpellDamage:
+		{
+			if(bottype == BotfocusSpellDamage)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_FF_Damage_Amount:
+		{
+			if(bottype == BotfocusFF_Damage_Amount)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_Empathy:
+		{
+			if(bottype == BotfocusAdditionalDamage)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_CriticalHealRate:
+		{
+			if (bottype == BotfocusCriticalHealRate)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_AdditionalHeal:
+		{
+			if(bottype == BotfocusAdditionalHeal)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_AdditionalHeal2:
+		{
+			if(bottype == BotfocusAdditionalHeal2)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_HealRate2:
+		{
+			if(bottype == BotfocusHealRate)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_IncreaseSpellPower:
+		{
+			if (bottype == BotfocusSpellEffectiveness)
+				value = focus_spell.base[i];
+
+			break;
+		}
+		case SE_ImprovedDamage2:
+		{
+			if(bottype == BotfocusImprovedDamage2)
+				value = focus_spell.base[i];
+
+			break;
+		}
+
+		case SE_IncreaseNumHits:
+		{
+			if(bottype == BotfocusIncreaseNumHits)
+				value = focus_spell.base[i];
+
+			break;
+		}
 #if EQDEBUG >= 6
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.
@@ -8205,51 +7743,46 @@ sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell
 #endif
 		}
 	}
+	//Check for spell skill limits.
+	if ((LimitSpellSkill) && (!SpellSkill_Found))
+		return 0;
 
 	return(value*lvlModifier/100);
 }
 
 //proc chance includes proc bonus
-float Bot::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
+float Bot::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed, int16 hand) {
 	int mydex = GetDEX();
 	float AABonus = 0;
 	ProcBonus = 0;
 	ProcChance = 0;
 
-	switch(GetAA(aaWeaponAffinity)) {
-		case 1:
-			AABonus = 0.10;
+	if (aabonuses.ProcChance)
+		AABonus = float(aabonuses.ProcChance) / 100.0f;
+
+	switch(hand){
+		case SLOT_PRIMARY:
+			weapon_speed = attack_timer.GetDuration();
 			break;
-		case 2:
-			AABonus = 0.20;
+		case SLOT_SECONDARY:
+			weapon_speed = attack_dw_timer.GetDuration();
 			break;
-		case 3:
-			AABonus = 0.30;
-			break;
-		case 4:
-			AABonus = 0.40;
-			break;
-		case 5:
-			AABonus = 0.50;
+		case SLOT_RANGE:
+			weapon_speed = ranged_timer.GetDuration();
 			break;
 	}
 
-	float PermaHaste;
-	if(GetHaste() > 0)
-		PermaHaste = 1 / (1 + (float)GetHaste()/100);
-	else if(GetHaste() < 0)
-		PermaHaste = 1 * (1 - (float)GetHaste()/100);
-	else
-		PermaHaste = 1.0f;
+		
+	//calculate the weapon speed in ms, so we can use the rule to compare against.
 
-	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste) / 100);
-
+	if(weapon_speed < RuleI(Combat, MinHastedDelay)) // fast as a client can swing, so should be the floor of the proc chance
+		weapon_speed = RuleI(Combat, MinHastedDelay);
 
 	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
 
 	if(RuleB(Combat, AdjustProcPerMinute) == true)
 	{
-		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 600.0f);
+		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 60000.0f); // compensate for weapon_speed being in ms
 		ProcBonus += float(mydex) * RuleR(Combat, ProcPerMinDexContrib) / 100.0f;
 		ProcChance = ProcChance + (ProcChance * ProcBonus);
 	}
@@ -8263,7 +7796,7 @@ float Bot::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	return ProcChance;
 }
 
-bool Bot::AvoidDamage(Mob* other, sint32 &damage)
+bool Bot::AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte)
 {
 	/* solar: called when a mob is attacked, does the checks to see if it's a hit
 	*  and does other mitigation checks.  'this' is the mob being attacked.
@@ -8301,14 +7834,16 @@ bool Bot::AvoidDamage(Mob* other, sint32 &damage)
 	/////////////////////////////////////////////////////////
 	// riposte
 	/////////////////////////////////////////////////////////
-	if (damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
+	float riposte_chance = 0.0f;
+	if (CanRiposte && damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
+		riposte_chance = (100.0f + (float)defender->GetAABonuses().RiposteChance + (float)defender->GetSpellBonuses().RiposteChance + (float)defender->GetItemBonuses().RiposteChance) / 100.0f;
         skill = GetSkill(RIPOSTE);
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
-			bonus = bonus * (100 + defender->GetSpellBonuses().RiposteChance + defender->GetItemBonuses().RiposteChance) / 100.0f;
-			RollTable[0] = bonus;
+			bonus *= riposte_chance;
+			RollTable[0] = bonus + (itembonuses.HeroicDEX / 25); // 25 heroic = 1%, applies to ripo, parry, block
 		}
 	}
 	
@@ -8317,67 +7852,65 @@ bool Bot::AvoidDamage(Mob* other, sint32 &damage)
 	///////////////////////////////////////////////////////
 
 	bool bBlockFromRear = false;
-	float aaChance = 0;
+	bool bShieldBlockFromRear = false;
+	
+	if (this->IsBot()) {
+		int aaChance = 0;
 
-	// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
-	// from a direction other than the rear is granted.
-	if(GetAA(aaHightenedAwareness))
-	{
-		switch (GetAA(aaHightenedAwareness)) {
-		case 1:
-			aaChance = 8;
-			break;
-		case 2:
-			aaChance = 16;
-			break;
-		case 3:
-			aaChance = 24;
-			break;
-		case 4:
-			aaChance = 32;
-			break;
-		case 5:
-			aaChance = 40;
-			break;
+		// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
+		// from a direction other than the rear is granted.
+
+		//Live AA - HightenedAwareness
+		int BlockBehindChance = aabonuses.BlockBehind + spellbonuses.BlockBehind + itembonuses.BlockBehind;
+
+		if (BlockBehindChance && (BlockBehindChance > MakeRandomInt(1, 100))){
+			bBlockFromRear = true;
+
+			if (spellbonuses.BlockBehind || itembonuses.BlockBehind)
+				bShieldBlockFromRear = true; //This bonus should allow a chance to Shield Block from behind.
 		}
 	}
 
-	if(aaChance > MakeRandomInt(1, 100))
-		bBlockFromRear = true;
-
-	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear))
-	{
+	float block_chance = 0.0f;
+	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
+		block_chance = (100.0f + (float)spellbonuses.IncreaseBlockChance + (float)itembonuses.IncreaseBlockChance) / 100.0f;
 		skill = GetSkill(BLOCKSKILL);
-
-		if(!ghit)
-		{	//if they are not using a garunteed hit discipline
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-			RollTable[1] = RollTable[0] + bonus;
+			RollTable[1] = RollTable[0] + (bonus * block_chance) - riposte_chance;
+			block_chance *= bonus; // set this so we can remove it from the parry calcs
 		}
 	}
-	else
-	{
+	else{
 		RollTable[1] = RollTable[0];
 	}
 
-	if(damage > 0 && GetAA(aaShieldBlock) && (!other->BehindMob(this, other->GetX(), other->GetY())))
-	{
-		bool equiped = m_inv.GetItem(SLOT_SECONDARY);
+	if(damage > 0 && (aabonuses.ShieldBlock || spellbonuses.ShieldBlock || itembonuses.ShieldBlock) 
+		&& (!other->BehindMob(this, other->GetX(), other->GetY()) || bShieldBlockFromRear)) {
+		bool equiped = GetBotItem(SLOT_SECONDARY);
 		if(equiped) {
-			uint8 shield = m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType;
-
+			uint8 shield = GetBotItem(SLOT_SECONDARY)->GetItem()->ItemType;
+			float bonusShieldBlock = 0.0f;
 			if(shield == ItemTypeShield) {
-				switch(GetAA(aaShieldBlock)) {
-					 case 1:
-						RollTable[1] = RollTable[0] + 2.50;
-                        break;
-	                 case 2:
-		                RollTable[1] = RollTable[0] + 5.00;
-			            break;
-				     case 3:
-					    RollTable[1] = RollTable[0] + 10.00;
-						break;
-				}
+
+				//Live AA - Shield Block
+				bonusShieldBlock = aabonuses.ShieldBlock + spellbonuses.ShieldBlock + itembonuses.ShieldBlock;
+				RollTable[1] = RollTable[0] + bonusShieldBlock;
+			}
+		}
+	}
+
+	if(damage > 0 && (aabonuses.TwoHandBluntBlock || spellbonuses.TwoHandBluntBlock || itembonuses.TwoHandBluntBlock)
+		&& (!other->BehindMob(this, other->GetX(), other->GetY()) || bShieldBlockFromRear)) {
+		bool equiped2 = GetBotItem(SLOT_PRIMARY);
+		if(equiped2) {
+			uint8 TwoHandBlunt = GetBotItem(SLOT_PRIMARY)->GetItem()->ItemType;
+			float bonusStaffBlock = 0.0f;
+			if(TwoHandBlunt == ItemType2HB) {
+	
+				bonusStaffBlock = aabonuses.TwoHandBluntBlock + spellbonuses.TwoHandBluntBlock + itembonuses.TwoHandBluntBlock;
+				RollTable[1] = RollTable[0] + bonusStaffBlock;
 			}
 		}
 	}
@@ -8385,39 +7918,39 @@ bool Bot::AvoidDamage(Mob* other, sint32 &damage)
 	//////////////////////////////////////////////////////		
 	// parry
 	//////////////////////////////////////////////////////
+	float parry_chance = 0.0f;
 	if (damage > 0 && CanThisClassParry() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
+		parry_chance = (100.0f + (float)defender->GetSpellBonuses().ParryChance + (float)defender->GetItemBonuses().ParryChance) / 100.0f;
 		skill = GetSkill(PARRY);
-
-		if(!ghit)
-		{	//if they are not using a garunteed hit discipline
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
-			bonus = bonus * (100 + defender->GetSpellBonuses().ParryChance + defender->GetItemBonuses().ParryChance) / 100.0f;
-			RollTable[2] = RollTable[1] + bonus;
+			bonus *= parry_chance;
+			RollTable[2] = RollTable[1] + bonus - block_chance;
 		}
 	}
-	else
-	{
-		RollTable[2] = RollTable[1];
+	else{
+		RollTable[2] = RollTable[1] - block_chance;
 	}
 	
 	////////////////////////////////////////////////////////
 	// dodge
 	////////////////////////////////////////////////////////
+	float dodge_chance = 0.0f;
 	if (damage > 0 && CanThisClassDodge() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
-		skill = GetSkill(DODGE);
-
-		if(!ghit)
-		{	//if they are not using a garunteed hit discipline
+		dodge_chance = (100.0f + (float)defender->GetSpellBonuses().DodgeChance + (float)defender->GetItemBonuses().DodgeChance) / 100.0f;
+        skill = GetSkill(DODGE);
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetAGI()/200);
-			bonus = bonus * (100 + defender->GetSpellBonuses().DodgeChance + defender->GetItemBonuses().DodgeChance) / 100.0f;
-			RollTable[3] = RollTable[2] + bonus;
+			bonus *= dodge_chance;
+			RollTable[3] = RollTable[2] + bonus - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25) - parry_chance; // Remove the dex as it doesnt count for dodge
 		}
 	}
-	else
-	{
-		RollTable[3] = RollTable[2];
+	else{
+		RollTable[3] = RollTable[2] - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25) - parry_chance;
 	}
 
 	if(damage > 0)
@@ -8485,87 +8018,105 @@ void Bot::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	if(damage < 1) //We can't critical hit if we don't hit.
 		return;
 
-	int critChance = RuleI(Combat, MeleeBaseCritChance);
+	float critChance = 0.0f;
 
-	critChance += RuleI(Combat, ClientBaseCritChance);
+	//1: Try Slay Undead 
+	if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
+		
+		sint16 SlayRateBonus = aabonuses.SlayUndead[0] + itembonuses.SlayUndead[0] + spellbonuses.SlayUndead[0];
 
-	uint16 critMod = 200; 
+		if (SlayRateBonus) {
 
-	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65){
-		critChance += 6;
-	}
+			critChance += (float(SlayRateBonus)/100.0f);
+			critChance /= 100.0f;
 
-	if(GetHPRatio() < 30 && GetClass() == BERSERKER) {
-		critChance += RuleI(Combat, BerserkBaseCritChance);
-		critMod = 400;
-	}
-	else if(GetHPRatio() < 30 && GetClass() == WARRIOR) {
-		critChance += RuleI(Combat, WarBerBaseCritChance);
-	}
-
-	// Bot AA's for CombatFury and FuryoftheAges
-	if(GetAA(aaCombatFury)) {
-		critChance += GetAA(aaCombatFury) * 2;
-	}
-
-	int CritBonus = GetCriticalChanceBonus(skill);
-	if(CritBonus > 0) {
-		if(critChance == 0) //If we have a bonus to crit in items or spells but no actual chance to crit
-			critChance = (CritBonus / 100) + 1; //Give them a small one so skills and items appear to have some effect.
-		else
-			critChance += (critChance * CritBonus / 100); //crit chance is a % increase to your reg chance
-	}
-
-	if(GetAA(aaSlayUndead)){
-		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
-			switch(GetAA(aaSlayUndead)){
-			case 1:
-				critMod += 33;
-				break;
-			case 2:
-				critMod += 66;
-				break;
-			case 3:
-				critMod += 100;
-				break;
-			}
-			slayUndeadCrit = true;
-		}
-	}
-
-	if(critChance > 0){
-		if(MakeRandomInt(0, 99) < critChance)
-		{
-			if (slayUndeadCrit)
-			{
-				damage = (damage * (critMod * 2.65)) / 100;
+			if(MakeRandomFloat(0, 1) < critChance){
+				sint16 SlayDmgBonus = aabonuses.SlayUndead[1] + itembonuses.SlayUndead[1] + spellbonuses.SlayUndead[1];
+				damage = (damage*SlayDmgBonus*2.25)/100;
 				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s cleanses %s target!(%d)", GetCleanName(), this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its", damage);
 				return;
 			}
-			////Veteran's Wrath AA
-			////first, find out of we have it (don't multiply by 0 :-\ )
-			int32 AAdmgmod = GetAA(aaVeteransWrath);
-			if (AAdmgmod > 0) {
-				//now, make sure it's not a special attack
-				if (skill == _1H_BLUNT
-					|| skill == _2H_BLUNT
-					|| skill == _1H_SLASHING
-					|| skill == _2H_SLASHING
-					|| skill == PIERCING
-					|| skill == HAND_TO_HAND
-					)
-					critMod += AAdmgmod * 3; //AndMetal: guessing
+		}
+	}	
+
+	//2: Try Melee Critical
+
+	//Base critical rate for all classes is dervived from DEX stat, this rate is then augmented
+	//by item,spell and AA bonuses allowing you a chance to critical hit. If the following rules
+	//are defined you will have an innate chance to hit at Level 1 regardless of bonuses.
+	//Warning: Do not define these rules if you want live like critical hits.
+	critChance += RuleI(Combat, MeleeBaseCritChance); 
+	
+	critChance += RuleI(Combat, ClientBaseCritChance);
+	
+	if(((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12)) 
+	{
+		if((GetHPRatio() < 30) && GetClass() == BERSERKER){
+			critChance += RuleI(Combat, BerserkBaseCritChance);
+			berserk = true;
+		}
+		else
+			critChance += RuleI(Combat, WarBerBaseCritChance);
+	}
+	
+	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65)
+		critChance += 6;
+
+	if(skill == THROWING && GetClass() == ROGUE && GetSkill(THROWING) >= 65)
+		critChance += 6;
+	
+	int CritChanceBonus = GetCriticalChanceBonus(skill);
+
+	if (CritChanceBonus || critChance) {
+
+		//Get Base CritChance from Dex. (200 = ~1.6%, 255 = ~2.0%, 355 = ~2.20%) Fall off rate > 255
+		//http://giline.versus.jp/shiden/su.htm , http://giline.versus.jp/shiden/damage_e.htm
+		if (GetDEX() <= 255)
+			critChance += (float(GetDEX()) / 125.0f); 
+		else if (GetDEX() > 255)
+			critChance += (float(GetDEX()-255)/ 500.0f) + 2.0f;
+		critChance += critChance*(float)CritChanceBonus /100.0f;
+	}
+		
+	if(critChance > 0){
+
+		critChance /= 100;
+
+		if(MakeRandomFloat(0, 1) < critChance)
+		{
+			uint16 critMod = 200;
+			bool crip_success = false;
+			sint16 CripplingBlowChance = GetCrippBlowChance();
+			
+			//Crippling Blow Chance: The percent value of the effect is applied
+			//to the your Chance to Critical. (ie You have 10% chance to critical and you
+			//have a 200% Chance to Critical Blow effect, therefore you have a 20% Chance to Critical Blow.
+			if (CripplingBlowChance){
+				critChance *= float(CripplingBlowChance)/100.0f;
+
+				if(MakeRandomFloat(0, 1) < critChance){
+					critMod = 400;
+					crip_success = true;
+				}
 			}
 
-			damage = (damage * critMod) / 100;
+			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
+			damage = damage * critMod / 100;
 
-			if((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetHPRatio() < 30)
+			if(berserk || crip_success)
 			{
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
+				entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRIPPLING_BLOW, GetCleanName(), itoa(damage));
+				// Crippling blows also have a chance to stun 
+				//Kayen: Crippling Blow would cause a chance to interrupt for npcs < 55, with a staggers message.
+				if (defender->GetLevel() <= 55 && !defender->SpecAttacks[IMMUNE_STUN]){
+					defender->Emote("staggers.");
+					defender->Stun(0); 
+				}
 			}
+
 			else
 			{
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+				entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, CRITICAL_HIT, GetCleanName(), itoa(damage));
 			}
 		}
 	}
@@ -8573,63 +8124,24 @@ void Bot::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 bool Bot::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 {
-	int8 aa_item = GetAA(aaFinishingBlow);
+	if (!defender)
+		return false;
+	
+	if (aabonuses.FinishingBlow[1] && !defender->IsClient() && defender->GetHPRatio() < 10){
 
-	if(aa_item && !defender->IsClient() && defender->GetHPRatio() < 10)
-	{
-		int chance = 0;
-		int levelreq = 0;
-		switch(aa_item)
-		{
-		case 1:
-			chance = 2;
-			levelreq = 50;
-			break;
-		case 2:
-			chance = 5;
-			levelreq = 52;
-			break;
-		case 3:
-			chance = 7;
-			levelreq = 54;
-			break;
-		case 4:
-			chance = 7;
-			levelreq = 55;
-			break;
-		case 5:
-			chance = 7;
-			levelreq = 57;
-			break;
-		case 6:
-			chance = 7;
-			levelreq = 59;
-			break;
-		case 7:
-			chance = 7;
-			levelreq = 61;
-			break;
-		case 8:
-			chance = 7;
-			levelreq = 63;
-			break;
-		case 9:
-			chance = 7;
-			levelreq = 65;
-			break;
-		default:
-			break;
-		}
+		uint32 chance = aabonuses.FinishingBlow[0]/10; //500 = 5% chance.
+		uint32 damage = aabonuses.FinishingBlow[1];
+		uint16 levelreq = aabonuses.FinishingBlowLvl[0];
 
-		if(chance >= MakeRandomInt(0, 100) && defender->GetLevel() <= levelreq){
-			mlog(COMBAT__ATTACKS, "Landed a finishing blow: AA at %d, other level %d", aa_item, defender->GetLevel());
-			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetCleanName());
-			defender->Damage(this, 32000, SPELL_UNKNOWN, skillinuse);
+		if(defender->GetLevel() <= levelreq && (chance >= MakeRandomInt(0, 1000))){
+			mlog(COMBAT__ATTACKS, "Landed a finishing blow: levelreq at %d, other level %d", levelreq , defender->GetLevel());
+			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetName());
+			defender->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
 			return true;
 		}
 		else
 		{
-			mlog(COMBAT__ATTACKS, "FAILED a finishing blow: AA at %d, other level %d", aa_item, defender->GetLevel());
+			mlog(COMBAT__ATTACKS, "FAILED a finishing blow: levelreq  at %d, other level %d", levelreq , defender->GetLevel());
 			return false;
 		}
 	}
@@ -8639,56 +8151,32 @@ bool Bot::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 void Bot::DoRiposte(Mob* defender) {
 	mlog(COMBAT__ATTACKS, "Preforming a riposte");
 
+	if (!defender)
+		return;
+
 	defender->Attack(this, SLOT_PRIMARY, true);
 
 	//double riposte
-	int DoubleRipChance = 0;
-	switch(defender->GetAA(aaDoubleRiposte)) {
-		case 1: 
-			DoubleRipChance = 15;
-			break;
-		case 2:
-			DoubleRipChance = 35;
-			break;
-		case 3:
-			DoubleRipChance = 50;
-			break;
-		case 4: 
-			DoubleRipChance = 60;
-			break;
-		case 5:
-			DoubleRipChance = 70;
-			break;
-		case 6:
-			DoubleRipChance = 80;
-			break;
-	}
+	sint16 DoubleRipChance = defender->GetAABonuses().GiveDoubleRiposte[0] + 
+							 defender->GetSpellBonuses().GiveDoubleRiposte[0] + 
+							 defender->GetItemBonuses().GiveDoubleRiposte[0];
 
-	if(DoubleRipChance >= MakeRandomInt(0, 100)) {
+	if(DoubleRipChance && (DoubleRipChance >= MakeRandomInt(0, 100))) {
 		mlog(COMBAT__ATTACKS, "Preforming a double riposte (%d percent chance)", DoubleRipChance);
 
 		defender->Attack(this, SLOT_PRIMARY, true);
 	}
 
-	if(defender->GetAA(aaReturnKick)){
-		int ReturnKickChance = 0;
-		switch(defender->GetAA(aaReturnKick)){
-			case 1:
-				ReturnKickChance = 25;
-				break;
-			case 2:
-				ReturnKickChance = 35;
-				break;
-			case 3:
-				ReturnKickChance = 50;
-				break;
-		}
+	//Double Riposte effect, allows for a chance to do RIPOSTE with a skill specfic special attack (ie Return Kick).
+	//Coded narrowly: Limit to one per client. Limit AA only. [1 = Skill Attack Chance, 2 = Skill]
+	DoubleRipChance = defender->GetAABonuses().GiveDoubleRiposte[1]; 
 
-		if(ReturnKickChance >= MakeRandomInt(0, 100)) {
-			mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
-			defender->MonkSpecialAttack(this, FLYING_KICK);
-		}
-	}			
+	if(DoubleRipChance && (DoubleRipChance >= MakeRandomInt(0, 100))) {
+		if (defender->GetClass() == MONK)
+			defender->MonkSpecialAttack(this, defender->GetAABonuses().GiveDoubleRiposte[2]);
+		else if (defender->IsBot())
+			defender->CastToClient()->DoClassAttacks(this,defender->GetAABonuses().GiveDoubleRiposte[2], true);
+	}		
 }
 
 void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
@@ -8697,7 +8185,9 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		return;
 
 	Mob* defender = this;
-	float aa_mit = aabonuses.MeleeMitigation;
+	float aa_mit = 0;
+
+	aa_mit = (aabonuses.CombatStability + itembonuses.CombatStability + spellbonuses.CombatStability)/100.0f;
 
 	if(RuleB(Combat, UseIntervalAC))
 	{
@@ -8799,23 +8289,23 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		{
 			float a_diff = (atk_roll - mit_roll);
 			float thac0 = attack_rating * RuleR(Combat, ACthac0Factor);
-			d -= 10.0 * (a_diff / thac0);
 			float thac0cap = ((attacker->GetLevel() * 9) + 20);
 			if(thac0 > thac0cap)
 			{
 				thac0 = thac0cap;
 			}
+            d -= 10.0 * (a_diff / thac0);
 		}
 		else if(mit_roll > atk_roll)
 		{
 			float m_diff = (mit_roll - atk_roll);
 			float thac20 = mitigation_rating * RuleR(Combat, ACthac20Factor);
-			d += 10 * (m_diff / thac20);
 			float thac20cap = ((defender->GetLevel() * 9) + 20);
 			if(thac20 > thac20cap)
 			{
 				thac20 = thac20cap;
 			}
+            d += 10 * (m_diff / thac20);
 		}
 
 		if(d < 0.0)
@@ -8891,7 +8381,7 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", aa_mit, damage);
 }
 
-void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override,int ReuseTime) {
+void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override,int ReuseTime, bool HitChance) {
 	//this really should go through the same code as normal melee damage to
 	//pick up all the special behavior there
 
@@ -8914,18 +8404,23 @@ void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 
 	min_damage += min_damage * GetMeleeMinDamageMod_SE(skill) / 100;
 
-	bool CanRiposte = true;
-	if(skill == THROWING && skill == ARCHERY)
-		CanRiposte = false;
+	if(HitChance && !who->CheckHitChance(this, skill, SLOT_PRIMARY))
+		max_damage = 0;
 
-	who->AvoidDamage(this, max_damage, CanRiposte);
-	who->MeleeMitigation(this, max_damage, min_damage);
+	else{
+		bool CanRiposte = true;
+		if(skill == THROWING && skill == ARCHERY)
+			CanRiposte = false;
+
+		who->AvoidDamage(this, max_damage, CanRiposte);
+		who->MeleeMitigation(this, max_damage, min_damage);
 		
-	if(max_damage > 0) {
-		ApplyMeleeDamageBonus(skill, max_damage); 
-		max_damage += who->GetAdditionalDamage(this, 0, true, skill);
-		max_damage += (itembonuses.HeroicSTR / 10) + (max_damage * who->GetSkillDmgTaken(skill) / 100) + GetSkillDmgAmt(skill);
-		TryCriticalHit(who, skill, max_damage);
+		if(max_damage > 0) {
+			ApplyMeleeDamageBonus(skill, max_damage); 
+			max_damage += who->GetAdditionalDamage(this, 0, true, skill);
+			max_damage += (itembonuses.HeroicSTR / 10) + (max_damage * who->GetSkillDmgTaken(skill) / 100) + GetSkillDmgAmt(skill);
+			TryCriticalHit(who, skill, max_damage);
+		}
 	}
 
 	if(max_damage >= 0) //You should probably get aggro no matter what, but unclear why it was set like this.
@@ -8936,18 +8431,31 @@ void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 	if(!GetTarget())return;
 	if (HasDied())	return;
 
+	//[AA Dragon Punch] value[0] = 100 for 25%, chance value[1] = skill
+	if(aabonuses.SpecialAttackKBProc[0] && aabonuses.SpecialAttackKBProc[1] == skill){
+		int kb_chance = 25;
+		kb_chance += kb_chance*(100-aabonuses.SpecialAttackKBProc[0])/100;
+		
+		if (MakeRandomInt(0, 99) < kb_chance)
+			SpellFinished(904, who, 10, 0, -1, spells[904].ResistDiff);
+			//who->Stun(100); Kayen: This effect does not stun on live, it only moves the NPC.
+	}	
+
 	if (HasSkillProcs()){
 		float chance = (float)ReuseTime*RuleR(Combat, AvgProcsPerMinute)/60000.0f;
 		TrySkillProc(who, skill, chance);
 	}
 	
-	if(max_damage == -3)
+	if(max_damage == -3 && !(who->GetHP() <= 0))
 		DoRiposte(who);	
 }
 
 void Bot::TryBackstab(Mob *other, int ReuseTime) {
 	if(!other)
 		return;
+
+	bool bIsBehind = false;
+	bool bCanFrontalBS = false;
 
 	const ItemInst* inst = GetBotItem(SLOT_PRIMARY);
 	const Item_Struct* botpiercer = NULL;
@@ -8958,56 +8466,26 @@ void Bot::TryBackstab(Mob *other, int ReuseTime) {
 		return;
 	}
 	
-	bool tripleBackstab = false;
-	int tripleChance = 0;
+	//Live AA - Triple Backstab
+	int tripleChance = itembonuses.TripleBackstab + spellbonuses.TripleBackstab + aabonuses.TripleBackstab;
 
-	if (GetAA(aaTripleBackstab) > 0) {
-		switch (GetAA(aaTripleBackstab)) {
-		case 1:
-			tripleChance = 10;
-			break;
-		case 2:
-			tripleChance = 20;
-			break;
-		case 3:
-			tripleChance = 30;
-			break;
-		}
-		if (tripleChance > MakeRandomInt(0, 100)) {
-			tripleBackstab = true;
-		}
+	if (BehindMob(other, GetX(), GetY())) {
+		bIsBehind = true;
+	}
+	else {
+		//Live AA - Seized Opportunity 
+		int FrontalBSChance = itembonuses.FrontalBackstabChance + spellbonuses.FrontalBackstabChance + aabonuses.FrontalBackstabChance; 
+
+		if (FrontalBSChance && (FrontalBSChance > MakeRandomInt(0, 100)))
+			bCanFrontalBS = true;
 	}
 
-	bool seizedOpportunity = false;
-	int seizedChance = 0;
-
-	if (GetAA(aaSeizedOpportunity) > 0) {
-		switch (GetAA(aaSeizedOpportunity)) {
-			case 1:
-				seizedChance = 10;
-				break;
-			case 2:
-				seizedChance = 20;
-				break;
-			case 3:
-				seizedChance = 30;
-				break;
-		}
-		if (seizedChance > MakeRandomInt(0, 100)) {
-			seizedOpportunity = true;
-		}
-	}
-
-	if(BehindMob(other, GetX(), GetY()) || seizedOpportunity) // Player is behind other
-	{
-		if (seizedOpportunity) {
-			Message(0,"%s's fierce attack is executed with such grace, %s did not see it coming!", this->GetCleanName(), other->GetCleanName());
-		}
+	if (bIsBehind || bCanFrontalBS){ // Bot is behind other OR can do Frontal Backstab
 
 		// solar - chance to assassinate
-		float chance = (10.0+(GetDEX()/10)); //18.5% chance at 85 dex 40% chance at 300 dex
+		int chance = 10 + (GetDEX()/10) + (itembonuses.HeroicDEX/10); //18.5% chance at 85 dex 40% chance at 300 dex
 		if(
-			level >= 60 && // player is 60 or higher
+			level >= 60 && // bot is 60 or higher
 			other->GetLevel() <= 45 && // mob 45 or under
 			!other->CastToNPC()->IsEngaged() && // not aggro
 			other->GetHP()<=32000
@@ -9026,32 +8504,28 @@ void Bot::TryBackstab(Mob *other, int ReuseTime) {
 				if(MakeRandomFloat(0, 1) < DoubleAttackProbability)	// Max 62.4 % chance of DA
 				{
 					if(other->GetHP() > 0)
-						RogueBackstab(other);
+						RogueBackstab(other,false,ReuseTime);
 
-					if (tripleBackstab && other->GetHP() > 0) 
-					{
-						RogueBackstab(other, ReuseTime);
-					}
+					if (tripleChance && other->GetHP() > 0 && tripleChance > MakeRandomInt(0, 100)) 
+						RogueBackstab(other,false,ReuseTime);
 				}
 			}
 		}
 	}
-	// Chaotic Stab
-	else if(GetAA(aaChaoticStab) > 0)
-	{
+	//Live AA - Chaotic Backstab
+	else if(aabonuses.FrontalBackstabMinDmg || itembonuses.FrontalBackstabMinDmg || spellbonuses.FrontalBackstabMinDmg) {
+
 		//we can stab from any angle, we do min damage though.
 		RogueBackstab(other, true);
-		float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
-		// Check for double attack with main hand assuming maxed DA Skill (MS)
-		if(MakeRandomFloat(0, 1) < DoubleAttackProbability)
-		{		// Max 62.4 % chance of DA
-			if(other->GetHP() > 0)
-				RogueBackstab(other, true);
+		if (level > 54) {
+			float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
+			// Check for double attack with main hand assuming maxed DA Skill (MS)
+			if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
+				if(other->GetHP() > 0)
+					RogueBackstab(other,true, ReuseTime);
 
-			if (tripleBackstab && other->GetHP() > 0)
-			{
-				RogueBackstab(other, ReuseTime);
-			}
+			if (tripleChance && other->GetHP() > 0 && tripleChance > MakeRandomInt(0, 100))
+					RogueBackstab(other,false,ReuseTime);
 		}
 	}
 	else { //We do a single regular attack if we attack from the front without chaotic stab
@@ -9072,7 +8546,15 @@ void Bot::RogueBackstab(Mob* other, bool min_damage, int ReuseTime)
 	ItemInst* botweaponInst = GetBotItem(SLOT_PRIMARY);
 	if(botweaponInst) {
 		primaryweapondamage = GetWeaponDamage(other, botweaponInst);
-		backstab_dmg = primaryweapondamage;
+		backstab_dmg = botweaponInst->GetItem()->BackstabDmg;
+		for(int i = 0; i < MAX_AUGMENT_SLOTS; ++i)
+		{
+			ItemInst *aug = botweaponInst->GetAugment(i);
+			if(aug)
+			{
+				backstab_dmg += aug->GetItem()->BackstabDmg;
+			}
+		}
 	}
 	else 
 	{
@@ -9144,9 +8626,15 @@ void Bot::RogueAssassinate(Mob* other)
 	DoAnim(animPiercing);	//piercing animation
 }
 
-void Bot::DoClassAttacks(Mob *target) {
-	if(target == NULL)
-		return;	//gotta have a target for all these
+void Bot::DoClassAttacks(Mob *target, bool IsRiposte) {
+	if(!target)
+		return;
+
+	if(spellend_timer.Enabled() || IsFeared() || IsStunned() || IsMezzed() || DivineAura() || GetHP() < 0)
+		return;
+	
+	if(!IsAttackAllowed(target))
+		return;
 
 	bool taunt_time = taunt_timer.Check();
 	bool ca_time = classattack_timer.Check(false);
@@ -9163,7 +8651,7 @@ void Bot::DoClassAttacks(Mob *target) {
 				CastSpell(SPELL_NPC_HARM_TOUCH, target->GetID());
 				knightreuse = HarmTouchReuseTime * 1000;
 				break;
-							   }
+			}
 			case PALADIN: case PALADINGM:{
 				if(GetHPRatio() < 20) {
 					CastSpell(SPELL_LAY_ON_HANDS, GetID());
@@ -9172,7 +8660,7 @@ void Bot::DoClassAttacks(Mob *target) {
 					knightreuse = 2000; //Check again in two seconds.
 				}
 				break;
-						  }
+			}
 		}
 		knightattack_timer.Start(knightreuse); 
 	}
@@ -9182,47 +8670,12 @@ void Bot::DoClassAttacks(Mob *target) {
 
 	//franck-add: EQoffline. Warrior bots must taunt the target.
 	if(taunting && target && target->IsNPC() && taunt_time ) {
-		/*bool isTaunting = false;
-		BotRaids* br = entity_list.GetBotRaidByMob(this);
-		if(br)
-		{
-			if(br->GetBotMainTank())
-			{
-				if(br->GetBotMainTank() == this)
-				{
-					isTaunting = true;
-				}
-			}
-			else if(br->GetBotSecondTank())
-			{
-				if(br->GetBotSecondTank() == this)
-				{
-					isTaunting = true;
-				}
-			}
-			else
-			{
-				if(MakeRandomInt(1, 100) > 50)
-				{
-					isTaunting = true;
-				}
-			}
-		}
-		else
-		{
-			isTaunting = true;
-		}
-
-		if(isTaunting) {
-			Say("Taunting %s", target->GetCleanName());
-			Taunt(target->CastToNPC(), true);
-		}*/
-		
 		//Only taunt if we are not top on target's hate list 
 		//This ensures we have taunt available to regain aggro if needed		
 		if(GetTarget() && GetTarget()->GetHateTop() && GetTarget()->GetHateTop() != this) {
 			Say("Taunting %s", target->GetCleanName());
 			Taunt(target->CastToNPC(), false);
+			taunt_timer.Start(TauntReuseTime * 1000); 
 		}
 	}
 
@@ -9230,212 +8683,237 @@ void Bot::DoClassAttacks(Mob *target) {
 		return;
 
 	float HasteModifier = 0;
-	if(GetHaste() > 0)
+	if(GetHaste() >= 0){
 		HasteModifier = 10000 / (100 + GetHaste());
-	else if(GetHaste() < 0)
+	}
+	else {
 		HasteModifier = (100 - GetHaste());
-	else
-		HasteModifier = 100;
+	}
+	sint32 dmg = 0;
+
+	int16 skill_to_use = -1;
 
 	int level = GetLevel();
 	int reuse = TauntReuseTime * 1000;	//make this very long since if they dont use it once, they prolly never will
 	bool did_attack = false;
-	//class specific stuff...
-	switch(GetClass()) {
-		case ROGUE: case ROGUEGM:
-			if(level >= 10) {
-				TryBackstab(target);
-				reuse = BackstabReuseTime * 1000;
-				did_attack = true;
-			}
-			break;
-		case MONK: case MONKGM: {
-			int8 satype = KICK;
-			if(level > 29) {
-				satype = FLYING_KICK;
-			} else if(level > 24) {
-				satype = DRAGON_PUNCH;
-			} else if(level > 19) {
-				satype = EAGLE_STRIKE;
-			} else if(level > 9) {
-				satype = TIGER_CLAW;
-			} else if(level > 4) {
-				satype = ROUND_KICK;
-			}
-			reuse = MonkSpecialAttack(target, satype);
 
-			int specl = GetAA(aaTechniqueofMasterWu) * 20;
-
-			if(specl == 100 || specl > MakeRandomInt(0,100)) {
-				reuse = MonkSpecialAttack(target, satype);
-				if(20 > MakeRandomInt(0,100)) {
-					reuse = MonkSpecialAttack(target, satype);
-				}
-			}
-
-			reuse *= 1000;
-			did_attack = true;
-			break;
-				   }
-		case WARRIOR: case WARRIORGM:{
-			if(level >= RuleI(Combat, NPCBashKickLevel)){
-				if(MakeRandomInt(0, 100) > 25) //tested on live, warrior mobs both kick and bash, kick about 75% of the time, casting doesn't seem to make a difference.
-				{
-					DoAnim(animKick);
-					sint32 dmg = 0;
-
-					if(GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_FEET)) <= 0){
-						dmg = -5;
-					}
-					else{
-						if(target->CheckHitChance(this, KICK, 0)) {
-							if(RuleB(Combat, UseIntervalAC))
-								dmg = GetKickDamage();
-							else
-								dmg = MakeRandomInt(1, GetKickDamage());
-
-						}
-					}
-
-					reuse = KickReuseTime * 1000;
-					DoSpecialAttackDamage(target, KICK, dmg, 1, -1, reuse);
-					did_attack = true;
-				}
-				else
-				{
-					if((GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN) // Racial Slam
+	switch(GetClass())
+	{
+	case WARRIOR:
+		if(level >= RuleI(Combat, NPCBashKickLevel)){
+			bool canBash = false;
+			if((GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN) // Racial Slam
 						|| (m_inv.GetItem(SLOT_SECONDARY) && m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType == ItemTypeShield)  //Using Shield
 						|| (m_inv.GetItem(SLOT_PRIMARY) && (m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HS 
 							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HB 
 							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HPierce) 
 							&& GetAA(aa2HandBash) >= 1)) {   //Using 2 hand weapon, but has AA 2 Hand Bash
-						DoAnim(animTailRake);
-						sint32 dmg = 0;
-
-						if(GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_SECONDARY)) <= 0 &&
-							GetWeaponDamage(GetTarget(), m_inv.GetItem(SLOT_SHOULDER)) <= 0){
-							dmg = -5;
-						}
-						else{
-							if(target->CheckHitChance(this, BASH, 0)) {
-								if(RuleB(Combat, UseIntervalAC))
-									dmg = GetBashDamage();
-								else
-									dmg = MakeRandomInt(1, GetBashDamage());
-							}
-						}
-
-						reuse = BashReuseTime * 1000;
-						DoSpecialAttackDamage(target, BASH, dmg, 1, -1, reuse);
-						did_attack = true;
-					}
-				}
+				canBash = true;
 			}
-			break;
-					   }
-		case BERSERKER: case BERSERKERGM:
-			{
-				int32 dmg = 1 + (GetSkill(FRENZY) / 100);
 
-				switch (GetAA(aaBlurofAxes)) {
-					case 1:
-						dmg *= 1.15;
-						break;
-					case 2:
-						dmg *= 1.30;
-						break;
-					case 3:
-						dmg *= 1.50;
-						break;
-				}
-
-				switch (GetAA(aaViciousFrenzy)) {
-					case 1:
-						dmg *= 1.05;
-						break;
-					case 2:
-						dmg *= 1.10;
-						break;
-					case 3:
-						dmg *= 1.15;
-						break;
-					case 4:
-						dmg *= 1.20;
-						break;
-					case 5:
-						dmg *= 1.25;
-						break;
-				}
-
-				while(dmg > 0 && target) 
-				{
-					if(Attack(target))
-						dmg--;
-					else
-						dmg = 0;
-				}
-				reuse = FrenzyReuseTime * 1000;
-				did_attack = true;
-				break;
+			if(!canBash || MakeRandomInt(0, 100) > 25) { //tested on live, warrior mobs both kick and bash, kick about 75% of the time, casting doesn't seem to make a difference.
+				skill_to_use = KICK;
 			}
-		case RANGER: case RANGERGM:
-		case BEASTLORD: case BEASTLORDGM: {
-			//kick
-			if(level >= RuleI(Combat, NPCBashKickLevel)){
-				DoAnim(animKick);
-				sint32 dmg = 0;
+			else {
+				skill_to_use = BASH;
+			}
+		}
+	case RANGER:
+	case BEASTLORD:
+		skill_to_use = KICK;
+		break;
+	case BERSERKER:
+		skill_to_use = FRENZY;
+		break;
+	case CLERIC:
+	case SHADOWKNIGHT:
+	case PALADIN:
+		if(level >= RuleI(Combat, NPCBashKickLevel)){
+			if((GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN) // Racial Slam
+						|| (m_inv.GetItem(SLOT_SECONDARY) && m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType == ItemTypeShield)  //Using Shield
+						|| (m_inv.GetItem(SLOT_PRIMARY) && (m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HS 
+							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HB 
+							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HPierce) 
+							&& GetAA(aa2HandBash) >= 1)) {   //Using 2 hand weapon, but has AA 2 Hand Bash
+				skill_to_use = BASH;
+			}
+		}
+		break;
+	case MONK:
+		if(GetLevel() >= 30)
+		{
+			skill_to_use = FLYING_KICK;
+		}
+		else if(GetLevel() >= 25)
+		{
+			skill_to_use = DRAGON_PUNCH;
+		}
+		else if(GetLevel() >= 20)
+		{
+			skill_to_use = EAGLE_STRIKE;
+		}
+		else if(GetLevel() >= 10)
+		{
+			skill_to_use = TIGER_CLAW;
+		}
+		else if(GetLevel() >= 5)
+		{
+			skill_to_use = ROUND_KICK;
+		}
+		else
+		{
+			skill_to_use = KICK;
+		}
+		break;
+	case ROGUE:
+		skill_to_use = BACKSTAB;
+		break;
+	}
+	
+	if(skill_to_use == -1)
+		return;
 
-				if(GetWeaponDamage(target, m_inv.GetItem(SLOT_FEET)) <= 0){
-					dmg = -5;
+
+	if(skill_to_use == BASH) 
+	{
+		if (target!=this) 
+		{
+			DoAnim(animTailRake);
+
+			if(GetWeaponDamage(target, GetBotItem(SLOT_SECONDARY)) <= 0 &&
+				GetWeaponDamage(target, GetBotItem(SLOT_SHOULDER)) <= 0){
+				dmg = -5;
+			}
+			else{
+				if(!target->CheckHitChance(this, BASH, 0)) {
+					dmg = 0;
 				}
 				else{
-					if(target->CheckHitChance(this, KICK, 0)) {
-						if(RuleB(Combat, UseIntervalAC))
-							dmg = GetKickDamage();
-						else
-							dmg = MakeRandomInt(1, GetKickDamage());
-					}
-				}
+					if(RuleB(Combat, UseIntervalAC))
+						dmg = GetBashDamage();
+					else
+						dmg = MakeRandomInt(1, GetBashDamage());
 
-				reuse = KickReuseTime * 1000;
-				DoSpecialAttackDamage(target, KICK, dmg, 1, -1, reuse);
-				did_attack = true;
+				}
 			}
-			break;
-						}
-		case CLERIC: case CLERICGM: //clerics can bash too.
-		case SHADOWKNIGHT: case SHADOWKNIGHTGM:
-		case PALADIN: case PALADINGM:
+
+			reuse = BashReuseTime * 1000;
+			//reuse = (reuse*HasteModifier)/100;
+
+			DoSpecialAttackDamage(target, BASH, dmg, 1,-1,reuse);
+
+			did_attack = true;
+
+			if(reuse > 0 && !IsRiposte)
 			{
-				if(level >= RuleI(Combat, NPCBashKickLevel)){
-					if((GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN) // Racial Slam
-						|| (m_inv.GetItem(SLOT_SECONDARY) && m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType == ItemTypeShield)  //Using Shield
-						|| (m_inv.GetItem(SLOT_PRIMARY) && (m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HS 
-							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HB 
-							|| m_inv.GetItem(SLOT_PRIMARY)->GetItem()->ItemType == ItemType2HPierce) 
-							&& GetAA(aa2HandBash) >= 1)) {   //Using 2 hand weapon, but has AA 2 Hand Bash
-						DoAnim(animTailRake);
-						sint32 dmg = 0;
-
-						if(GetWeaponDamage(target, m_inv.GetItem(SLOT_SECONDARY)) <= 0){	
-							dmg = -5;
-						}
-						else{
-							if(target->CheckHitChance(this, BASH, 0)) {
-								if(RuleB(Combat, UseIntervalAC))
-									dmg = GetBashDamage();
-								else
-									dmg = MakeRandomInt(1, GetBashDamage());
-							}
-						}
-
-						reuse = BashReuseTime * 1000;
-						DoSpecialAttackDamage(target, BASH, dmg, 1, -1, reuse);
-						did_attack = true;
-					}
-				}
-				break;
+				//p_timers.Start(pTimerCombatAbility, reuse);
 			}
+		}
+	}
+
+	if(skill_to_use == FRENZY)
+	{
+		int AtkRounds = 3;
+		int skillmod = 100*GetSkill(FRENZY)/MaxSkill(FRENZY);
+		sint32 max_dmg = (26 +  ((((GetLevel()-6) * 2)*skillmod)/100))  * ((100+RuleI(Combat, FrenzyBonus))/100);
+		sint32 min_dmg = 0;
+		DoAnim(anim2HSlashing); 
+
+		if (GetLevel() < 51)
+			min_dmg = 1;
+		else
+			min_dmg = GetLevel()*8/10;
+
+		if (min_dmg > max_dmg)
+			max_dmg = min_dmg;
+
+		reuse = FrenzyReuseTime * 1000;
+		//reuse = (reuse * HasteModifier)/100;
+
+		did_attack = true;
+	
+		//Live parses show around 55% Triple 35% Double 10% Single, you will always get first hit.
+		while(AtkRounds > 0) {
+	
+			if (GetTarget() && (AtkRounds == 1 || MakeRandomInt(0,100) < 75)){
+				DoSpecialAttackDamage(GetTarget(), FRENZY, max_dmg, min_dmg, max_dmg , reuse, true);
+			}
+			AtkRounds--;
+		}
+
+		if(reuse > 0 && !IsRiposte) {
+			//p_timers.Start(pTimerCombatAbility, reuse);
+		}
+	}
+
+	if(skill_to_use == KICK)
+	{
+		if(target!=this)
+		{
+			DoAnim(animKick);
+
+			if(GetWeaponDamage(target, GetBotItem(SLOT_FEET)) <= 0){
+				dmg = -5;
+			}
+			else{
+				if(!target->CheckHitChance(this, KICK, 0)) {
+					dmg = 0;
+				}
+				else{
+					if(RuleB(Combat, UseIntervalAC))
+						dmg = GetKickDamage();
+					else
+						dmg = MakeRandomInt(1, GetKickDamage());
+				}
+			}
+
+			reuse = KickReuseTime * 1000;
+
+			DoSpecialAttackDamage(target, KICK, dmg, 1,-1, reuse);
+
+			did_attack = true;
+		}
+	}
+
+	if(skill_to_use == FLYING_KICK ||
+		skill_to_use == DRAGON_PUNCH ||
+		skill_to_use == EAGLE_STRIKE ||
+		skill_to_use == TIGER_CLAW ||
+		skill_to_use == ROUND_KICK)
+	{
+		reuse = MonkSpecialAttack(target, skill_to_use) - 1;
+		MonkSpecialAttack(target, skill_to_use);
+
+		//Live AA - Technique of Master Wu
+		uint16 bDoubleSpecialAttack = itembonuses.DoubleSpecialAttack + spellbonuses.DoubleSpecialAttack + aabonuses.DoubleSpecialAttack;
+		if( bDoubleSpecialAttack && (bDoubleSpecialAttack >= 100 || bDoubleSpecialAttack > MakeRandomInt(0,100))) {
+
+			int MonkSPA [5] = { FLYING_KICK, DRAGON_PUNCH, EAGLE_STRIKE, TIGER_CLAW, ROUND_KICK }; 
+			MonkSpecialAttack(target, MonkSPA[MakeRandomInt(0,4)]);
+
+			int TripleChance = 25;
+
+			if (bDoubleSpecialAttack > 100)
+				TripleChance += TripleChance*(100-bDoubleSpecialAttack)/100;
+
+			if(TripleChance > MakeRandomInt(0,100)) {
+				MonkSpecialAttack(target, MonkSPA[MakeRandomInt(0,4)]);
+			}
+		}
+
+		reuse *= 1000;
+		did_attack = true;
+	}
+	
+	if(skill_to_use == BACKSTAB)
+	{
+		reuse = BackstabReuseTime * 1000;
+		did_attack = true;
+
+		if (IsRiposte)
+			reuse=0;
+
+		TryBackstab(target,reuse);
 	}
 
 	classattack_timer.Start(reuse*HasteModifier/100);
@@ -9474,7 +8952,7 @@ bool Bot::TryHeadShot(Mob* defender, SkillType skillInUse) {
 sint32 Bot::CheckAggroAmount(int16 spellid) {
 	sint32 AggroAmount = Mob::CheckAggroAmount(spellid);
 
-	sint32 focusAggro = GetBotFocusEffect(BotfocusHateReduction, spellid);
+	sint32 focusAggro = GetBotFocusEffect(BotfocusSpellHateMod, spellid);
 	AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 
 	return AggroAmount;
@@ -9483,7 +8961,7 @@ sint32 Bot::CheckAggroAmount(int16 spellid) {
 sint32 Bot::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 	sint32 AggroAmount = Mob::CheckHealAggroAmount(spellid, heal_possible);
 
-	sint32 focusAggro = GetBotFocusEffect(BotfocusHateReduction, spellid);
+	sint32 focusAggro = GetBotFocusEffect(BotfocusSpellHateMod, spellid);
 	
 	AggroAmount = (AggroAmount * (100 + focusAggro) / 100);
 
@@ -9964,228 +9442,200 @@ void Bot::SetAttackTimer() {
 	}	
 }
 
+sint32 Bot::Additional_SpellDmg(int16 spell_id, bool bufftick) 
+{
+	sint32 spell_dmg = 0;
+	spell_dmg  += GetBotFocusEffect(BotfocusFF_Damage_Amount, spell_id);
+	spell_dmg  += GetBotFocusEffect(BotfocusSpellDamage, spell_id); 
+
+	//For DOTs you need to apply the damage over the duration of the dot to each tick (this is how live did it)
+	if (bufftick){
+		int duration = CalcBuffDuration(this, this, spell_id);
+		if (duration > 0)
+			return spell_dmg /= duration;
+		else
+			return 0;
+	}
+	return spell_dmg;
+}
+
 sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
+	// Important variables:
+	// value: the actual damage after resists, passed from Mob::SpellEffect
+	// modifier: modifier to damage (from spells & focus effects?)
+	// ratio: % of the modifier to apply (from AAs & natural bonus?)
+	// chance: critital chance %
+
 	sint32 modifier = 100;
-	int8 casterClass = GetClass();
-	int8 casterLevel = GetLevel();
+	sint16 spell_dmg = 0;
 
 	//Dunno if this makes sense:
 	if (spells[spell_id].resisttype > 0)
-		modifier += 5;
+		modifier += GetBotFocusEffect((BotfocusType)(0-spells[spell_id].resisttype), spell_id);
 
 
 	int tt = spells[spell_id].targettype;
 	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
 		//undead/summoned spells
-		modifier += 10;
-	} else {
-		//damage spells.
-		modifier += 5;
+		modifier += GetBotFocusEffect(BotfocusImprovedUndeadDamage, spell_id);
+    } else {
+    	//damage spells.
+		modifier += GetBotFocusEffect(BotfocusImprovedDamage, spell_id);
+		modifier += GetBotFocusEffect(BotfocusSpellEffectiveness, spell_id);
+		modifier += GetBotFocusEffect(BotfocusImprovedDamage2, spell_id);
+	}
+
+	// Need to scale HT damage differently after level 40! It no longer scales by the constant value in the spell file. It scales differently, instead of 10 more damage per level, it does 30 more damage per level. So we multiply the level minus 40 times 20 if they are over level 40.
+	if ( spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH ) {
+		if (this->GetLevel() > 40)
+			value -= (this->GetLevel() - 40) * 20;  
+	}
+
+	//This adds the extra damage from the AA Unholy Touch, 450 per level to the AA Improved Harm TOuch.
+	if (spell_id == SPELL_IMP_HARM_TOUCH) {  //Improved Harm Touch
+			value -= GetAA(aaUnholyTouch) * 450; //Unholy Touch
 	}
 
 	//these spell IDs could be wrong
 	if (spell_id == SPELL_LEECH_TOUCH) {	//leech touch
 		value -= GetAA(aaConsumptionoftheSoul) * 200; //Consumption of the Soul
-	}
-	if (spell_id == SPELL_IMP_HARM_TOUCH) {	//harm touch
-		modifier += 450*GetAA(aaUnholyTouch);
+		value -= GetAA(aaImprovedConsumptionofSoul) * 200; //Improved Consumption of the Soul
 	}
 
 	//spell crits, dont make sense if cast on self.
 	if(tt != ST_Self) {
-		int chance = RuleI(Spells, BaseCritChance) + 1;
+		// item SpellDmg bonus
+		// Formula = SpellDmg * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant cause more dmg than the spell itself.
+		if(this->itembonuses.SpellDmg && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
+			spell_dmg = this->itembonuses.SpellDmg * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+			if(spell_dmg > -value)
+				spell_dmg = -value;
+		}
+		
+		// Spell-based SpellDmg adds directly but it restricted by focuses.
+		spell_dmg += Additional_SpellDmg(spell_id);
+
+		int chance = RuleI(Spells, BaseCritChance);
 		sint32 ratio = RuleI(Spells, BaseCritRatio);
 
-		//here's an idea instead of bloating code with unused cases there's this thing called:
-		//case 'default'
-		switch(casterClass)
-		{
-		case WIZARD:
-			{
-				if (casterLevel >= RuleI(Spells, WizCritLevel)) {
-					chance += RuleI(Spells, WizCritChance);
-					ratio += RuleI(Spells, WizCritRatio);
-				}
-				break;
+		chance += itembonuses.CriticalSpellChance + spellbonuses.CriticalSpellChance + aabonuses.CriticalSpellChance;
+		ratio += itembonuses.SpellCritDmgIncrease + spellbonuses.SpellCritDmgIncrease + aabonuses.SpellCritDmgIncrease;
+		
+		if(GetClass() == WIZARD) {
+			if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
+				chance += RuleI(Spells, WizCritChance);
+				ratio += RuleI(Spells, WizCritRatio);
 			}
-
-		default: 
-			break;
+			if(aabonuses.SpellCritDmgIncrease > 0) // wizards get an additional bonus
+				ratio +=  aabonuses.SpellCritDmgIncrease * 1.5; //108%, 115%, 124%, close to Graffe's 207%, 215%, & 225%
 		}
-
-		if((casterClass == MONK) || (casterClass == ROGUE) || (casterClass == WARRIOR) || (casterClass == BERSERKER)) {
-			ratio += (25 + 25*GetAA(aaIngenuity));
-			chance += GetAA(aaIngenuity);
-		}
-
-		if((casterClass != WARRIOR) && (casterClass != ROGUE) && (casterClass != MONK) && (casterClass != BERSERKER)) {
-
-			switch (GetAA(aaFuryofMagic)) {
-				case 1:
-					chance += 2;
-					break;
-				case 2:
-					chance += 4;
-					break;
-				case 3:
-					chance += 7;
-					break;
-				case 4:    
-					chance += 10;
-					break;
-				case 5:
-				case 6:
-				case 7:
-				case 8:
-				case 9:
-					chance += 10 + (GetAA(aaFuryofMagic) - 4) * 2;
-					break;
-				case 10:
-				case 11:
-				case 12:
-				case 13:
-				case 14:
-				case 15:
-					chance += 20 + (GetAA(aaFuryofMagic) - 9);
-					break;
-			}
-		}
-
+		
+		//Improved Harm Touch is a guaranteed crit if you have at least one level of SCF.
 		if (spell_id == SPELL_IMP_HARM_TOUCH) {
 			if ( (GetAA(aaSpellCastingFury) > 0) && (GetAA(aaUnholyTouch) > 0) )
 				chance = 100;
 		} 
 
+		/*
+		//Handled in aa_effects will focus spells from 'spellgroup=99'. (SK life tap from buff procs)
+		//If you are using an older spell file table (Pre SOF)...
+		//Use SQL optional_EnableSoulAbrasionAA to update your spells table to properly use the effect.
+		//If you do not want to update your table then you may want to enable this.
 		if(tt == ST_Tap) {
-
-			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH) {
+			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH){
 				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 					ratio = 100;
 
-				if(casterClass == SHADOWKNIGHT) {
-					modifier += 100*GetAA(aaSoulAbrasion);
+				switch (GetAA(aaSoulAbrasion))
+				{
+				case 1:
+					modifier += 100;
+					break;
+				case 2:
+					modifier += 200;
+					break;
+				case 3:
+					modifier += 300;
+					break;
 				}
 			}
 		}
-
-		//crit damage modifiers
-		if (casterClass == WIZARD) { //wizards get an additional bonus
-			ratio += 8*GetAA(aaDestructiveFury);
-		}
-		else {
-			ratio += 5*GetAA(aaDestructiveFury);
-		}
+		*/
 
 		if (chance > 0) {
 			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
-			if(MakeRandomInt(1,100) <= chance) {
+			if(MakeRandomInt(0,100) <= chance) {
 				modifier += modifier*ratio/100;
-				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
-				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+				spell_dmg *= 2;
+				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier / 100) - spell_dmg);
+				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), (-value * modifier / 100) + spell_dmg);	
 			} else 
-				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier / 100) - spell_dmg);
 		}
 	}
 
-	return (value * modifier) / 100;
+	return ((value * modifier / 100) - spell_dmg);
+}
+
+sint32 Bot::Additional_Heal(int16 spell_id) 
+{
+	sint32 heal_amt = 0;
+
+	heal_amt  += GetBotFocusEffect(BotfocusAdditionalHeal, spell_id);
+	heal_amt  += GetBotFocusEffect(BotfocusAdditionalHeal2, spell_id);
+
+	if (heal_amt){
+		int duration = CalcBuffDuration(this, this, spell_id);
+		if (duration > 0)
+			return heal_amt /= duration;
+	}
+	
+	return heal_amt;
 }
 
 sint32 Bot::GetActSpellHealing(int16 spell_id, sint32 value) {
 	sint32 modifier = 100;
-
+	sint16 heal_amt = 0;
 	modifier += GetBotFocusEffect(BotfocusImprovedHeal, spell_id);
+	modifier += GetBotFocusEffect(BotfocusSpellEffectiveness, spell_id);
+	heal_amt += Additional_Heal(spell_id);
+	int chance = 0;
 
 	if(spells[spell_id].buffduration < 1) {
 		uint8 botlevel = GetLevel();
 		int8 botclass = GetClass();
-		int chance = 0;
-
-		if((botclass == BEASTLORD)||(botclass == CLERIC)||(botclass == DRUID)||(botclass == PALADIN)||(botclass == RANGER)||(botclass == SHAMAN)) {
-			switch (GetAA(aaHealingAdept)) {
-				case 1:
-					modifier += 2;
-					break;
-				case 2:
-					modifier += 5;
-					break;
-				case 3:
-					modifier += 10;
-					break;
-				case 4:    // Advanced Healing Adept AA
-					modifier += 13;
-					break;
-				case 5:
-					modifier += 16;
-					break;
-				case 6:
-					modifier += 19;
-					break;
-			}
-
-			switch (GetAA(aaHealingGift)) {
-				case 1:
-					chance += 3;
-					break;
-				case 2:
-					chance += 6;
-					break;
-				case 3:
-					chance += 10;
-					break;
-				case 4:    // Advanced Healing Gift AA
-					chance += 12;
-					break;
-				case 5:
-					chance += 14;
-					break;
-				case 6:
-					chance += 16;
-					break;
-			}
+		// Formula = HealAmt * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant heal more than the spell itself.
+		if(this->itembonuses.HealAmt && spells[spell_id].classes[(botclass%16) - 1] >= botlevel - 5) {
+			heal_amt = this->itembonuses.HealAmt * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+			if(heal_amt > value)
+				heal_amt = value;
 		}
 
-		if((botclass == NECROMANCER)||(botclass == SHADOWKNIGHT)) {
-			if(spells[spell_id].targettype == ST_Tap) {
-
-				switch (GetAA(aaTheftofLife)) {
-					case 1:
-						chance += 2;
-						break;
-					case 2:
-						chance += 5;
-						break;
-					case 3:
-						chance += 10;
-						break;
-					case 4:    // Advanced Theft of Life AA
-						chance += 13;
-						break;
-					case 5:
-						chance += 16;
-						break;
-					case 6:    // Soul Thief AA
-						chance += 18;
-						break;
-					case 7:
-						chance += 20;
-						break;
-					case 8:
-						chance += 22;
-						break;
-				}
-			}
+		// Check for buffs that affect the healrate of the target and critical heal rate of target
+		if(GetTarget()) {
+			value += value * GetHealRate(spell_id) / 100;
+			chance += GetCriticalHealRate(spell_id);
 		}
+		
+		//Live AA - Healing Gift, Theft of Life
+		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 
-		if(MakeRandomInt(1,100) < chance) {
-			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
-			return (value * modifier) / 50;
+		if(MakeRandomInt(0,99) < chance) {
+			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier / 50) + heal_amt*2));		
+			return ((value * modifier / 50) + heal_amt*2);
 		}
 		else{
-			return (value * modifier) / 100;
+			return ((value * modifier / 100) + heal_amt);
 		}		
 	}
+	// Hots
+	else {
+		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
+		if(MakeRandomInt(0,99) < chance) 
+			return ((value * modifier / 50) + heal_amt*2);
+	}
 
-	return (value * modifier) / 100;
+	return ((value * modifier / 100) + heal_amt);
 }
 
 sint32 Bot::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
@@ -10196,7 +9646,8 @@ sint32 Bot::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
 	int8 botclass = GetClass();
 
 	if (botlevel >= 51 && casttime >= 3000 && !BeneficialSpell(spell_id) 
-		&& (botclass == SHADOWKNIGHT || botclass == RANGER || botclass == PALADIN || botclass == BEASTLORD ))
+		&& (botclass == SHADOWKNIGHT || botclass == RANGER 
+			|| botclass == PALADIN || botclass == BEASTLORD ))
 		cast_reducer += (GetLevel()-50)*3;
 
 	if((casttime >= 4000) && BeneficialSpell(spell_id) && ((CalcBuffDuration(this,this,spell_id)-1) > 0)) {
@@ -10267,8 +9718,8 @@ sint32 Bot::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
 		}
 	}
 
-	if (cast_reducer > 50)
-		cast_reducer = 50;	//is this just an arbitrary limit?
+	if (cast_reducer > RuleI(Spells, MaxCastTimeReduction))
+		cast_reducer = RuleI(Spells, MaxCastTimeReduction);	
 
 	casttime = (casttime*(100 - cast_reducer)/100);
 
@@ -10276,46 +9727,97 @@ sint32 Bot::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
 }
 
 sint32 Bot::GetActSpellCost(int16 spell_id, sint32 cost) {
-	sint32 Result = 0;
+	// Formula = Unknown exact, based off a random percent chance up to mana cost(after focuses) of the cast spell
+	if(this->itembonuses.Clairvoyance && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5)
+	{
+		sint16 mana_back = this->itembonuses.Clairvoyance * MakeRandomInt(1, 100) / 100;
+		// Doesnt generate mana, so best case is a free spell
+		if(mana_back > cost)
+			mana_back = cost;
+			
+		cost -= mana_back;
+	}
+	
+	// This formula was derived from the following resource:
+	// http://www.eqsummoners.com/eq1/specialization-library.html
+	// WildcardX
+	float PercentManaReduction = 0;
+	float SpecializeSkill = GetSpecializeSkillValue(spell_id);
+	int SuccessChance = MakeRandomInt(0, 100);
 
-	if(GetClass() == WIZARD || GetClass() == ENCHANTER || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == CLERIC || GetClass() == BARD) {
-		// This formula was derived from the following resource:
-		// http://www.eqsummoners.com/eq1/specialization-library.html
-		// WildcardX
-		float PercentManaReduction = 0;
-		float PercentOfMaxSpecializeSkill = 0;
-		float MaxSpecilizationSkillAllowed = GetSkill(spells[spell_id].skill);
-		float SpecializeSkill = GetSpecializeSkillValue(spell_id);
-		int SuccessChance = MakeRandomInt(1, 100);
-
-		if(MaxSpecilizationSkillAllowed > 0)
-			PercentOfMaxSpecializeSkill = SpecializeSkill / MaxSpecilizationSkillAllowed;
-
-		if(SuccessChance <= (PercentOfMaxSpecializeSkill * 100))
-			PercentManaReduction = (SpecializeSkill * .053) - 5.65;
-
-		switch (GetAA(aaSpellCastingMastery)) {
-			case 1:
-				PercentManaReduction += 5;
-				break;
-			case 2:
-				PercentManaReduction += 15;
-				break;
-			case 3:
-				PercentManaReduction += 30;
-				break;
-		}
-
-		PercentManaReduction += GetBotFocusEffect(BotfocusManaCost, spell_id);
-		cost -= (cost * (PercentManaReduction / 100));
+	float bonus = 1.0;
+	switch(GetAA(aaSpellCastingMastery))
+	{
+	case 1:
+		bonus += 0.05;
+		break;
+	case 2:
+		bonus += 0.15;
+		break;
+	case 3:
+		bonus += 0.30;
+		break;
 	}
 
+	bonus += 0.05 * GetAA(aaAdvancedSpellCastingMastery);
+
+	if(SuccessChance <= (SpecializeSkill * 0.3 * bonus))
+	{
+		PercentManaReduction = 1 + 0.05 * SpecializeSkill;
+		switch(GetAA(aaSpellCastingMastery))
+		{
+		case 1:
+			PercentManaReduction += 2.5;
+			break;
+		case 2:
+			PercentManaReduction += 5.0;
+			break;
+		case 3:
+			PercentManaReduction += 10.0;
+			break;
+		}
+
+		switch(GetAA(aaAdvancedSpellCastingMastery))
+		{
+		case 1:
+			PercentManaReduction += 2.5;
+			break;
+		case 2:
+			PercentManaReduction += 5.0;
+			break;
+		case 3:
+			PercentManaReduction += 10.0;
+			break;
+		}
+	}
+
+	sint16 focus_redux = GetBotFocusEffect(BotfocusManaCost, spell_id);
+
+	if(focus_redux > 0)
+	{
+		PercentManaReduction += MakeRandomFloat(1, (double)focus_redux);
+	}
+
+	cost -= (cost * (PercentManaReduction / 100));
+
+	// Gift of Mana - reduces spell cost to 1 mana
+	if(focus_redux >= 100) {
+		uint32 buff_max = GetMaxTotalSlots();
+		for (int buffSlot = 0; buffSlot < buff_max; buffSlot++) {
+			if (buffs[buffSlot].spellid == 0 || buffs[buffSlot].spellid >= SPDAT_RECORDS)
+				continue;
+				
+			if(IsEffectInSpell(buffs[buffSlot].spellid, SE_ReduceManaCost)) {
+				if(CalcFocusEffect(focusManaCost, buffs[buffSlot].spellid, spell_id) == 100)
+					cost = 1;
+			}
+		}
+	}
+	
 	if(cost < 0)
 		cost = 0;
 
-	Result = cost;
-
-	return Result;
+	return cost;
 }
 
 float Bot::GetActSpellRange(int16 spell_id, float range) {
@@ -10341,6 +9843,8 @@ sint32 Bot::GetActSpellDuration(int16 spell_id, sint32 duration) {
 				break;
 			case 3:
 				increase += 30;
+				if (GetAA(aaSpellCastingReinforcementMastery) == 1)
+					increase += 20;
 				break;
 		}
 
@@ -10356,44 +9860,22 @@ sint32 Bot::GetActSpellDuration(int16 spell_id, sint32 duration) {
 }
 
 float Bot::GetAOERange(uint16 spell_id) {
-	float range = 0;
+	float range;
 	
-	range = Mob::GetAOERange(spell_id);
+	range = spells[spell_id].aoerange;
+	if(range == 0)	//for TGB spells, they prolly do not have an aoe range
+		range = spells[spell_id].range;
+	if(range == 0)
+		range = 10;	//something....
 
-	if(spell_id > 0) {
-		float mod = 0;
-		if(IsBardSong(spell_id)) {
-
-			switch (GetAA(aaExtendedNotes)) {
-				case 1:
-					mod += range * 0.10;
-					break;
-				case 2:
-					mod += range * 0.15;
-					break;
-				case 3:
-					mod += range * 0.25;
-					break;
-			}
-
-			switch (GetAA(aaSionachiesCrescendo)) {
-				case 1:
-					mod += range * 0.05;
-					break;
-				case 2:
-					mod += range * 0.10;
-					break;
-				case 3:
-					mod += range * 0.15;
-					break;
-			}
-
-			range += mod;
-		}
-
-		range = GetActSpellRange(spell_id, range);
+	if(IsBardSong(spell_id) && IsBeneficialSpell(spell_id)) {
+		//Live AA - Extended Notes, SionachiesCrescendo
+		float song_bonus = aabonuses.SongRange + spellbonuses.SongRange + itembonuses.SongRange;
+		range += range*song_bonus /100.0f;
 	}
-
+			
+	range = GetActSpellRange(spell_id, range);
+		
 	return range;
 }
 
@@ -10903,7 +10385,8 @@ void Bot::CalcBonuses() {
 	GenerateBaseStats();
 	CalcItemBonuses();
 	CalcSpellBonuses(&spellbonuses);
-	GenerateAABonuses();
+	GenerateAABonuses(&aabonuses);
+	SetAttackTimer();
 	
 	CalcATK();
 	CalcSTR();
@@ -10936,29 +10419,24 @@ sint32 Bot::CalcHPRegenCap(){
 	sint32 hpregen_cap = 0;
 	hpregen_cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25; 	
 
-#if EQDEBUG >= 11
-	LogFile->write(EQEMuLog::Debug, "Bot::CalcHPRegenCap() called for %s - returning %d", GetName(), hpregen_cap);
-#endif
-	return hpregen_cap;
+	hpregen_cap += aabonuses.ItemHPRegenCap + spellbonuses.ItemHPRegenCap + itembonuses.ItemHPRegenCap;
+
+	return (hpregen_cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
 sint32 Bot::CalcManaRegenCap(){
-	int level = GetLevel();
-	sint32 manaregen_cap = 0;
+	sint32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
 	switch(GetCasterClass())
 	{
 		case 'I': 
-			manaregen_cap = RuleI(Character, ItemManaRegenCap) + (itembonuses.HeroicINT / 25);
+			cap += (itembonuses.HeroicINT / 25);
 			break;
 		case 'W': 
-			manaregen_cap = RuleI(Character, ItemManaRegenCap) + (itembonuses.HeroicWIS / 25);
+			cap += (itembonuses.HeroicWIS / 25);
 			break;
 	}
-	manaregen_cap += aabonuses.ItemManaRegenCap;
-#if EQDEBUG >= 11
-	LogFile->write(EQEMuLog::Debug, "Bot::CalcManaRegenCap() called for %s - returning %d", GetName(), manaregen_cap);
-#endif
-	return manaregen_cap;
+
+	return (cap * RuleI(Character, ManaRegenMultiplier) / 100);
 }
 
 // Return max stat value for level
@@ -11209,8 +10687,10 @@ sint16 Bot::CalcCHA() {
 //in Mob::ResistSpell
 sint16	Bot::CalcMR()
 {
-	MR += itembonuses.MR + spellbonuses.MR;
-	MR += (GetAA(aaInnateMagicProtection) + GetAA(aaMarrsProtection))*2;
+	MR += itembonuses.MR + spellbonuses.MR + aabonuses.MR;
+	
+	if(GetClass() == WARRIOR)
+		MR += GetLevel() / 2;
 	
 	if(MR < 1)
 		MR = 1;
@@ -11223,8 +10703,16 @@ sint16	Bot::CalcMR()
 
 sint16	Bot::CalcFR()
 {
-	FR += itembonuses.FR + spellbonuses.FR;
-	FR += (GetAA(aaInnateFireProtection) + GetAA(aaWardingofSolusek))*2;
+	int c = GetClass();
+	if(c == RANGER) {
+		FR += 4;
+		
+		int l = GetLevel();
+		if(l > 49)
+			FR += l - 49;
+	}
+	
+	FR += itembonuses.FR + spellbonuses.FR + aabonuses.FR;
 	
 	if(FR < 1)
 		FR = 1;
@@ -11237,8 +10725,23 @@ sint16	Bot::CalcFR()
 
 sint16	Bot::CalcDR()
 {
-	DR += itembonuses.DR + spellbonuses.DR;
-	DR += (GetAA(aaInnateDiseaseProtection) + GetAA(aaBertoxxulousGift))*2;
+	int c = GetClass();
+	if(c == PALADIN) {
+		DR += 8;
+		
+		int l = GetLevel();
+		if(l > 49)
+			DR += l - 49;
+
+	} else if(c == SHADOWKNIGHT) {
+		DR += 4;
+		
+		int l = GetLevel();
+		if(l > 49)
+			DR += l - 49;
+	}
+	
+	DR += itembonuses.DR + spellbonuses.DR + aabonuses.DR;
 	
 	if(DR < 1)
 		DR = 1;
@@ -11251,8 +10754,23 @@ sint16	Bot::CalcDR()
 
 sint16	Bot::CalcPR()
 {
-	PR += itembonuses.PR + spellbonuses.PR;
-	PR += (GetAA(aaInnatePoisonProtection) + GetAA(aaShroudofTheFaceless))*2;
+	int c = GetClass();
+	if(c == ROGUE) {
+		PR += 8;
+		
+		int l = GetLevel();
+		if(l > 49)
+			PR += l - 49;
+
+	} else if(c == SHADOWKNIGHT) {
+		PR += 4;
+		
+		int l = GetLevel();
+		if(l > 49)
+			PR += l - 49;
+	}
+	
+	PR += itembonuses.PR + spellbonuses.PR + aabonuses.PR;
 	
 	if(PR < 1)
 		PR = 1;
@@ -11265,8 +10783,16 @@ sint16	Bot::CalcPR()
 
 sint16	Bot::CalcCR()
 {
-	CR += itembonuses.CR + spellbonuses.CR;
-	CR += (GetAA(aaInnateColdProtection) + GetAA(aaBlessingofEci))*2;
+	int c = GetClass();
+	if(c == RANGER) {
+		CR += 4;
+		
+		int l = GetLevel();
+		if(l > 49)
+			CR += l - 49;
+	}
+	
+	CR += itembonuses.CR + spellbonuses.CR + aabonuses.CR;
 	
 	if(CR < 1)
 		CR = 1;
@@ -11490,14 +11016,23 @@ sint32 Bot::CalcMaxHP() {
 
 	nd += aabonuses.MaxHP;	//Natural Durability, Physical Enhancement, Planar Durability
 
-	bot_hp = bot_hp * nd / 10000;
-
+	bot_hp = (float)bot_hp * (float)nd / (float)10000; //this is to fix the HP-above-495k issue
 	bot_hp += spellbonuses.HP + aabonuses.HP;
 
 	bot_hp += GroupLeadershipAAHealthEnhancement();
 
 	bot_hp += bot_hp * (spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
 	max_hp = bot_hp;
+
+	if (cur_hp > max_hp)
+		cur_hp = max_hp;
+	
+	int hp_perc_cap = spellbonuses.HPPercCap;
+	if(hp_perc_cap) {
+		int curHP_cap = (max_hp * hp_perc_cap) / 100;
+		if (cur_hp > curHP_cap)
+			cur_hp = curHP_cap;
+	}
 
 	return max_hp;
 }
@@ -16043,10 +15578,15 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 				if(leaderBot) {
 					Mob* target = NULL;
-					int8 timer;
+					int32 timer;
 					bool fastHeals = false;
 
-					timer = atoi(sep->arg[4]);
+					if (!sep->IsNumber(4)) {
+						c->Message(0, "Usage #bot healrotation create <bot healrotation leader name> <timer> <fasthealson | fasthealsoff> [target].");
+						return;
+					}
+
+					timer = (int32)(atof(sep->arg[4]) * 1000);
 
 					if (leaderBot->GetBotOwner() != c) {	
 						c->Message(13, "You must target a bot that you own.");
@@ -16484,7 +16024,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						Bot* tempBot = *botListItr;
 						if(tempBot->GetInHealRotation() && tempBot->GetHealRotationLeader() == tempBot) {
 							//list leaders and number of bots per rotation
-							c->Message(0, "Bot Heal Rotation- Leader: %s, Number of Members: %i", tempBot->GetCleanName(), tempBot->GetNumHealRotationMembers());
+							c->Message(0, "Bot Heal Rotation- Leader: %s, Number of Members: %i, Timer:  %1.1f", tempBot->GetCleanName(), tempBot->GetNumHealRotationMembers(), (float)(tempBot->GetHealRotationTimer()/1000));
 						}
 					}
 				}
@@ -16509,7 +16049,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 						//list leader and number of members
 						c->Message(0, "Bot Heal Rotation- Leader: %s", leaderBot->GetCleanName());
-						c->Message(0, "Bot Heal Rotation- Number of Members: %i", leaderBot->GetNumHealRotationMembers());
+						c->Message(0, "Bot Heal Rotation- Timer:  %1.1f", (float)(leaderBot->GetHealRotationTimer()/1000));
 
 						for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
 							Bot* tempBot = *botListItr;
@@ -17508,7 +17048,7 @@ bool Bot::UseDiscipline(int32 spell_id, int32 target) {
 	return(true);
 }
 
-void Bot::CreateHealRotation( Mob* target, int8 timer ) {
+void Bot::CreateHealRotation( Mob* target, int32 timer ) {
 	SetInHealRotation(true);
 	SetHealRotationActive(false);
 	SetNumHealRotationMembers(GetNumHealRotationMembers()+1);
@@ -17837,7 +17377,7 @@ list<Bot*> Bot::GetBotsInHealRotation(Bot* rotationLeader) {
 
 void Bot::NotifyNextHealRotationMember(bool notifyNow) {
 	//check if we need to notify to start now, or after timer
-	int32 nextHealTime = notifyNow ? Timer::GetCurrentTime() : Timer::GetCurrentTime() + GetHealRotationTimer() * 1000;
+	int32 nextHealTime = notifyNow ? Timer::GetCurrentTime() : Timer::GetCurrentTime() + GetHealRotationTimer();
 
 	Bot* nextMember = GetNextHealRotationMember();
 	if(nextMember && nextMember != this) {

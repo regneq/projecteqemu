@@ -78,16 +78,24 @@ public:
 		BotfocusImprovedUndeadDamage,
 		BotfocusPetPower,
 		BotfocusResistRate,
-		BotfocusHateReduction,
+		BotfocusSpellHateMod,
 		BotfocusTriggerOnCast,
 		BotfocusSpellVulnerability,
 		BotfocusTwincast,
 		BotfocusSympatheticProc,
 		BotfocusSpellDamage,
+		BotfocusFF_Damage_Amount,
 		BotfocusSpellDurByTic,
 		BotfocusSwarmPetDuration,
 		BotfocusReduceRecastTime,
 		BotfocusBlockNextSpell,
+		BotfocusHealRate,
+		BotfocusAdditionalDamage,
+		BotfocusSpellEffectiveness,
+		BotfocusIncreaseNumHits,
+		BotfocusCriticalHealRate,
+		BotfocusAdditionalHeal2,
+		BotfocusAdditionalHeal,
 	};
 
 	typedef enum BotTradeType {	// types of trades a bot can do
@@ -158,8 +166,8 @@ public:
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
 	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
     int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
-	virtual float GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed);
-	virtual bool AvoidDamage(Mob* other, sint32 &damage);
+	virtual float GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed, int16 hand);
+	virtual bool AvoidDamage(Mob* other, sint32 &damage, bool CanRiposte);
 	virtual int GetMonkHandToHandDamage(void);
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
@@ -169,14 +177,17 @@ public:
 	uint16 GetTotalATK();
 	uint16 GetATKRating();
 	uint16 GetPrimarySkillValue();
+	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
+	inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
-	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1, int ReuseTime = 10, bool HitChance=false);
 	virtual void TryBackstab(Mob *other,int ReuseTime = 10);
 	virtual void RogueBackstab(Mob* other, bool min_damage = false, int ReuseTime = 10);
 	virtual void RogueAssassinate(Mob* other);
-	virtual void DoClassAttacks(Mob *target);
+	virtual void DoClassAttacks(Mob *target, bool IsRiposte=false);
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	virtual void DoMeleeSkillAttackDmg(Mob* other, int16 weapon_damage, SkillType skillinuse, sint16 chance_mod=0, sint16 focus=0, bool CanRiposte=false);
+	virtual void ApplySpecialAttackMod(SkillType skill, sint32 &dmg, sint32 &mindmg);
 	bool CanDoSpecialAttack(Mob *other);
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses();
@@ -216,7 +227,7 @@ public:
 	bool HasOrMayGetAggro();
 	void SetDefaultBotStance();
 	void CalcChanceToCast();
-	void CreateHealRotation( Mob* target, int8 timer = 10 );
+	void CreateHealRotation( Mob* target, int32 timer = 10000 );
 	bool AddHealRotationMember( Bot* healer );
 	bool RemoveHealRotationMember( Bot* healer );
 	bool AddHealRotationTarget( Mob* target );
@@ -292,6 +303,8 @@ public:
 
 	// Mob Spell Virtual Override Methods
 	virtual void SpellProcess();
+	sint32 Additional_SpellDmg(int16 spell_id, bool bufftick = false);
+	sint32 Additional_Heal(int16 spell_id);
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
 	virtual sint32 GetActSpellHealing(int16 spell_id, sint32 value);
 	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
@@ -433,7 +446,9 @@ public:
 	bool IsBotWISCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN); }
 	bool CanHeal();
 	int GetRawACNoShield(int &shield_ac);
-	int32 GetAA(int32 aa_id) const;
+	void LoadAAs();
+	int32 GetAA(int32 aa_id);
+	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon);
 	bool GetHasBeenSummoned() { return _hasBeenSummoned; }
 	float GetPreSummonX() { return _preSummonX; }
 	float GetPreSummonY() { return _preSummonY; }
@@ -450,7 +465,7 @@ public:
 	Bot* GetPrevHealRotationMember();
 	int8 GetNumHealRotationMembers () { return _numHealRotationMembers; }
 	int32 GetHealRotationNextHealTime() { return _healRotationNextHeal; }
-	int8 GetHealRotationTimer () { return _healRotationTimer; }
+	int32 GetHealRotationTimer () { return _healRotationTimer; }
 	inline virtual sint16	GetAC()	const { return AC; }
 	inline virtual sint16	GetSTR()	const { return STR; }
 	inline virtual sint16	GetSTA()	const { return STA; }
@@ -530,7 +545,7 @@ public:
 	void SetNextHealRotationMember( Bot* healer );
 	void SetPrevHealRotationMember( Bot* healer );
 	void SetHealRotationNextHealTime( int32 nextHealTime ) { _healRotationNextHeal = nextHealTime; }
-	void SetHealRotationTimer( int8 timer ) { _healRotationTimer = timer; }
+	void SetHealRotationTimer( int32 timer ) { _healRotationTimer = timer; }
 	void SetNumHealRotationMembers( int8 numMembers ) { _numHealRotationMembers = numMembers; }
 
 	// Class Destructors
@@ -543,7 +558,8 @@ protected:
 	virtual void BotRangedAttack(Mob* other);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
 	virtual sint16 GetBotFocusEffect(BotfocusType bottype, int16 spell_id);
-	virtual sint16 CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id);
+	virtual sint16 CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id, bool best_focus=false);
+	virtual sint16 CalcBotAAFocus(BotfocusType type, uint32 aa_ID, int16 spell_id);
 	virtual void PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client);
 	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	virtual float GetMaxMeleeRangeToTarget(Mob* target);
@@ -562,6 +578,7 @@ private:
 	bool _botCharmer;
 	bool _petChooser;
 	int8 _petChooserID;
+	bool berserk;
 	Inventory m_inv;
 	double _lastTotalPlayTime;
 	time_t _startTotalPlayTime;
@@ -593,7 +610,7 @@ private:
 	bool _isHealRotationActive;
 	bool _healRotationUseFastHeals;
 	bool _hasHealedThisCycle;
-	int8 _healRotationTimer;
+	int32 _healRotationTimer;
 	int32 _healRotationNextHeal;
 	//char _healRotationTargets[MaxHealRotationTargets][64];
 	int16 _healRotationTargets[MaxHealRotationTargets];
@@ -601,6 +618,7 @@ private:
 	uint32 _healRotationMemberNext;
 	uint32 _healRotationMemberPrev;
 	int8 _numHealRotationMembers;
+	std::map<uint32, BotAA> botAAs;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
@@ -627,7 +645,7 @@ private:
 	void GenerateAppearance();
 	void GenerateArmorClass();
 	sint32 GenerateBaseHitPoints();
-	void GenerateAABonuses();
+	void GenerateAABonuses(StatBonuses* newbon);
 	sint32 GenerateBaseManaPoints();
 	void GenerateSpecialAttacks();
 	void SetBotID(uint32 botID);
