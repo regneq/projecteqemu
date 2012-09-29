@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/28/2012==
+Sorvani: SE_SummonCorpse will now work in raid groups.
+
 ==09/27/2012==
 Bad_Captain: Bots- Changed #bot healrotation timer to allow decimal values.
 Bad_Captain: Bots- Rewrote bot AAs to load from DB.
