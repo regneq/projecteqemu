@@ -3685,7 +3685,12 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		if(SpecAttacks[UNMEZABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Mez spells.");
 			caster->Message_StringID(MT_Shout, CANNOT_MEZ);
-			AddToHateList(caster);
+			sint32 aggro = CheckAggroAmount(spell_id);
+			if(aggro > 0) {
+				AddToHateList(caster, aggro);
+			} else {
+				AddToHateList(caster, 1);
+			}
 			return true;
 		}
 
@@ -3707,6 +3712,12 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 	{
 		mlog(SPELLS__RESISTS, "We are immune to Slow spells.");
 		caster->Message_StringID(MT_Shout, IMMUNE_ATKSPEED);
+		sint32 aggro = CheckAggroAmount(spell_id);
+		if(aggro > 0) {
+			AddToHateList(caster, aggro);
+		} else {
+			AddToHateList(caster, 1);
+		}
 		return true;
 	}
 
@@ -3717,6 +3728,12 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		if(SpecAttacks[UNFEARABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Fear spells.");
 			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
+			sint32 aggro = CheckAggroAmount(spell_id);
+			if(aggro > 0) {
+				AddToHateList(caster, aggro);
+			} else {
+				AddToHateList(caster, 1);
+			}
 			return true;
 		} else if(IsClient() && caster->IsClient() && (caster->CastToClient()->GetGM() == false))
 		{
@@ -3746,6 +3763,12 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		{
 			mlog(SPELLS__RESISTS, "We are immune to Charm spells.");
 			caster->Message_StringID(MT_Shout, CANNOT_CHARM);
+			sint32 aggro = CheckAggroAmount(spell_id);
+			if(aggro > 0) {
+				AddToHateList(caster, aggro);
+			} else {
+				AddToHateList(caster, 1);
+			}
 			return true;
 		}
 
@@ -3780,6 +3803,12 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		if(SpecAttacks[UNSNAREABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Snare spells.");
 			caster->Message_StringID(MT_Shout, IMMUNE_MOVEMENT);
+			sint32 aggro = CheckAggroAmount(spell_id);
+			if(aggro > 0) {
+				AddToHateList(caster, aggro);
+			} else {
+				AddToHateList(caster, 1);
+			}
 			return true;
 		}
 	}
