@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/03/2012==
+Sorvani: Disabled optimization around the DECODE(OP_CharacterCreate) in all SoF+ patches to force character creation to validate correctly.
+
 ==10/02/2012==
 Sorvani: A NPC that is immune to Mez, Slow, Fear, Charm, or Snare will now generate aggro based on the respective spell's normal aggro.
 
