@@ -2982,7 +2982,7 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-#pragma optimize( "", off )
+#pragma optimize( "", on )
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);
