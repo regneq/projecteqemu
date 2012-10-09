@@ -41,6 +41,8 @@ public:
 	bool	Process();
 	void	ReceiveData(uchar* buf, int len);
 	void	SendCharInfo();
+	void	SendMaxCharCreate(int max_chars);
+	void	SendMembership();
 	void	EnterWorld(bool TryBootup = true);
 	void	ZoneUnavail();
 	void	QueuePacket(const EQApplicationPacket* app, bool ack_req = true);
@@ -85,7 +87,7 @@ private:
 	int32	pwaitingforbootup;
 
 	bool StartInTutorial;
-	bool SoFClient;
+	uint32 ClientVersionBit;
 	bool OPCharCreate(char *name, CharCreate_Struct *cc);
 
 	void SetClassStartingSkills( PlayerProfile_Struct *pp );
@@ -103,6 +105,7 @@ private:
 };
 
 
-bool CheckCharCreateInfo(CharCreate_Struct *cc);
+bool CheckCharCreateInfoSoF(CharCreate_Struct *cc);
+bool CheckCharCreateInfoTitanium(CharCreate_Struct *cc);
 
 #endif

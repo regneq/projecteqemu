@@ -28,7 +28,7 @@
 #include <zlib.h>
 #include <assert.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 	#include <winsock.h>
 	#define snprintf	_snprintf
@@ -63,6 +63,7 @@
 #include "../common/rulesys.h"
 #include "StringIDs.h"
 #include "map.h"
+#include "guild_mgr.h"
 #include <string>
 
 using namespace std;
@@ -271,7 +272,7 @@ bool Client::Process() {
 		if(auto_attack) {
 			if(!IsAIControlled() && !dead
 				&& !(spellend_timer.Enabled() && (spells[casting_spell_id].classes[7] < 1 && spells[casting_spell_id].classes[7] > 65)) 
-				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead
+				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead && !IsMeleeDisabled()
 				)
 				may_use_attacks = true;
 			
@@ -372,11 +373,12 @@ bool Client::Process() {
 
 			if (!CombatRange(auto_attack_target)) 
 			{
-				Message_StringID(13,TARGET_TOO_FAR);
+				//duplicate message not wanting to see it.
+				//Message_StringID(MT_TooFarAway,TARGET_TOO_FAR);
 			}
 			else if (auto_attack_target == this) 
 			{
-				Message_StringID(13,TRY_ATTACKING_SOMEONE);
+				Message_StringID(MT_TooFarAway,TRY_ATTACKING_SOMEONE);
 			}
 			else if (!los_status)
 			{
@@ -421,91 +423,30 @@ bool Client::Process() {
 						Attack(auto_attack_target, 13, false);
 					}
 				}
-				if (auto_attack_target && (GetAA(aaFlurry) > 0 || spellbonuses.FlurryChance > 0 || itembonuses.FlurryChance > 0))
+								
+				//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
+				sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
+
+				if (auto_attack_target && flurrychance)
 				{
-					// Assuming Flurry Chance (X) effects = X%
-					// Can any class flurry with tribute?
-					// Is flurry supposed to have a chance even without a successful triple attack?
-					int32 flurrychance = (itembonuses.FlurryChance + spellbonuses.FlurryChance) * 10; 
-					switch (GetAA(aaFlurry)) 
+					if(MakeRandomInt(0, 100) < flurrychance) 
 					{
-					case 1:
-						flurrychance += 10;
-						break;
-					case 2:
-						flurrychance += 25;
-						break;
-					case 3:
-						flurrychance += 50;
-						break;
-					}
-
-					if(tripleAttackSuccess) {
-						tripleAttackSuccess = false;
-						switch (GetAA(aaRagingFlurry)) {
-						case 1:
-							flurrychance += 10;
-							break;
-						case 2:
-							flurrychance += 25;
-							break;
-						case 3:
-							flurrychance += 50;
-							break;
-						}
-					}
-
-					if(MakeRandomInt(0, 999) < flurrychance) 
-					{
-						Message_StringID(MT_Flurry, 128);
+						Message_StringID(MT_NPCFlurry, 128);
 						Attack(auto_attack_target, 13, false);
 						Attack(auto_attack_target, 13, false);
 					}
 				}
+			
+				sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
-				if (GetTarget() && GetAA(aaRapidStrikes))
-				{
-					int chance_xhit1 = 0;
-					int chance_xhit2 = 0;
-					switch (GetAA(aaRapidStrikes))
-					{
-					case 1:
-						chance_xhit1 = 10;
-						chance_xhit2 = 2;
-						break;
-					case 2:
-						chance_xhit1 = 12;
-						chance_xhit2 = 4;
-						break;
-					case 3:
-						chance_xhit1 = 14;
-						chance_xhit2 = 6;
-						break;
-					case 4:
-						chance_xhit1 = 16;
-						chance_xhit2 = 8;
-						break;
-					case 5:
-						chance_xhit1 = 20;
-						chance_xhit2 = 10;
-						break;
-					}
-					if (MakeRandomInt(1,100) < chance_xhit1)
-						Attack(GetTarget(), 13, false);
-					if (MakeRandomInt(1,100) < chance_xhit2)
-						Attack(GetTarget(), 13, false);
-				}
-				
-				if (auto_attack_target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
+				if (auto_attack_target && ExtraAttackChanceBonus) {
 					ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
 					if(wpn){
 						if(wpn->GetItem()->ItemType == ItemType2HS || 
 							wpn->GetItem()->ItemType == ItemType2HB ||
 							wpn->GetItem()->ItemType == ItemType2HPierce )
 						{
-							int extatk = GetAA(aaPunishingBlade)*5;
-							extatk += GetAA(aaSpeedoftheKnight)*5;
-							if(MakeRandomInt(0, 100) < extatk)
+							if(MakeRandomInt(0, 100) < ExtraAttackChanceBonus)
 							{
 								Attack(auto_attack_target, 13, false);
 							}
@@ -531,23 +472,25 @@ bool Client::Process() {
 		{	
 			// Range check
 			if(!CombatRange(auto_attack_target)) {
-				Message_StringID(13,TARGET_TOO_FAR);
+				// this is a duplicate message don't use it.
+				Message_StringID(MT_TooFarAway,TARGET_TOO_FAR);
 			}
 			// Don't attack yourself
 			else if(auto_attack_target == this) {
-				Message_StringID(13,TRY_ATTACKING_SOMEONE);
+				Message_StringID(MT_TooFarAway,TRY_ATTACKING_SOMEONE);
 			}
 			else if (!los_status)
 			{
 				//you can't see your target	
 			}
 			else if(auto_attack_target->GetHP() > -10) {
-				float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
-				if(GetAA(aaAmbidexterity))
-					DualWieldProbability += 0.1f;
-				//discipline effects:
-				DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
+				float DualWieldProbability = 0.0f;
 				
+				sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+				DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
+				sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+				DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;
+
 				float random = MakeRandomFloat(0, 1);
 				CheckIncreaseSkill(DUAL_WIELD, auto_attack_target, -10);
 				if (random < DualWieldProbability){ // Max 78% of DW
@@ -591,14 +534,6 @@ bool Client::Process() {
 			// see this char disappear after 10-12 seconds of inactivity
 			if (position_timer_counter >= 36) { // Approx. 4 ticks per second
 				entity_list.SendPositionUpdates(this, pLastUpdateWZ, 500, GetTarget(), true);
-			/* if (position_timer_counter >= 3) { // Send every 750ms?
-				//Image (2k5): The trick of stopping MQ map without screwing up client updates, shorter distances, faster updates, however if its an admin we can send further updates
-				if(Admin() > 80)
-					entity_list.SendPositionUpdates(this, pLastUpdateWZ, 450, 0, true);
-				else
-					entity_list.SendPositionUpdates(this, pLastUpdateWZ, 150, 0, true);
-				}
-			*/
 				pLastUpdate = Timer::GetCurrentTime();
 				pLastUpdateWZ = pLastUpdate;
 				position_timer_counter = 0;
@@ -609,6 +544,26 @@ bool Client::Process() {
 			}
 		}
 		
+		if(HasVirus()) {
+			if(ViralTimer.Check()) {
+				viral_timer_counter++;
+				for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2) {
+					if(viral_spells[i])	{
+						if(viral_timer_counter % spells[viral_spells[i]].viral_timer == 0) {
+							SpreadVirus(viral_spells[i], viral_spells[i+1]);
+						}
+					}
+				}
+			}
+			if(viral_timer_counter > 999)
+				viral_timer_counter = 0;
+		}
+		
+		if(spellbonuses.GravityEffect == 1) {
+			if(GravityTimer.Check())
+				DoGravityEffect();
+		}
+
 		if (shield_timer.Check())
 		{
 			if (shield_target)
@@ -665,6 +620,12 @@ bool Client::Process() {
 			if (autosave_timer.Check()) {
 				Save(0);
 			}
+
+			if(m_pp.intoxication > 0)
+			{
+				--m_pp.intoxication;
+				CalcBonuses();
+			}
 		}
 	}
 	
@@ -678,6 +639,7 @@ bool Client::Process() {
 	if (client_state == DISCONNECTED) {
 		OnDisconnect(true);
 		cout << "Client disconnected (cs=d): " << GetName() << endl;
+		database.SetMQDetectionFlag(this->AccountName(), GetName(), "/MQInstantCamp: Possible instant camp disconnect.", zone->GetShortName());
 		return false;
 	}
 	
@@ -688,8 +650,8 @@ bool Client::Process() {
 	}
 	
 	if (client_state != CLIENT_LINKDEAD && !eqs->CheckState(ESTABLISHED)) {
-		cout << "Client linkdead: " << name << endl;
 		OnDisconnect(true);
+		cout << "Client linkdead: " << name << endl;
 
 		if (GetGM()) {
 			return false;
@@ -993,6 +955,15 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 	int8 handychance = 0;
 	for(itr = merlist.begin();itr != merlist.end() && i<numItemSlots;itr++){
 		MerchantList ml = *itr;
+        if(GetLevel() < ml.level_required) {
+            continue;
+        }
+
+        sint32 fac = merch ? merch->GetPrimaryFaction() : 0;
+        if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
+            continue;
+        }
+        
 		handychance = MakeRandomInt(0, merlist.size() + tmp_merlist.size() - 1 );
 		
 		item = database.GetItem(ml.item);
@@ -1131,7 +1102,11 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 		return;
 	}
 
-	if (Action == 1) {
+	if (Action == 1)
+	{
+		// Mark the corpse as rezzed in the database, just in case the corpse has buried, or the zone the 
+		// corpse is in has shutdown since the rez spell was cast.
+		database.MarkCorpseAsRezzed(PendingRezzDBID);
 		_log(SPELLS__REZ, "Player %s got a %i Rezz, spellid %i in zone%i, instance id %i", 
 				  this->name, (int16)spells[SpellID].base[0],
 				  SpellID, ZoneID, InstanceID);
@@ -1142,25 +1117,25 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 		if((SpellEffectDescNum == 82) || (SpellEffectDescNum == 39067)) {
 			SetMana(0);
 			SetHP(GetMaxHP()/5);
-			SpellOnTarget(756,this); // Rezz effects
+			SpellOnTarget(756, this); // Rezz effects
 		}
 		else {
 			SetMana(GetMaxMana());
 			SetHP(GetMaxHP());
 		}
-		
-		if (SpellID != 994) { // Spell 994 is Customer Service 100% Rez.
-			if(SpellID!= 2168) // Spell 2168 is Reanimate 0% Rez.
+		if(spells[SpellID].base[0] < 100 && spells[SpellID].base[0] > 0 && PendingRezzXP > 0) 
+		{
 				SetEXP(((int)(GetEXP()+((float)((PendingRezzXP / 100) * spells[SpellID].base[0])))),
 				       GetAAXP(),true);
 		}
-		else {
+		else if (spells[SpellID].base[0] == 100 && PendingRezzXP > 0) {
 			SetEXP((GetEXP() + PendingRezzXP), GetAAXP(), true);
 		}
 
 		//Was sending the packet back to initiate client zone... 
 		//but that could be abusable, so lets go through proper channels
 		MovePC(ZoneID, InstanceID, x, y, z, GetHeading(), 0, ZoneSolicited);
+		entity_list.RefreshClientXTargets(this);
 	}
 	PendingRezzXP = -1;
 	PendingRezzSpellID = 0;
@@ -1528,7 +1503,8 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 	// solar: now we actually take it from the from bucket.  if there's an error
 	// with the destination slot, they lose their money
 	*from_bucket -= amount_to_take;
-	assert(*from_bucket >= 0);
+	// why are intentionally inducing a crash here rather than letting the code attempt to stumble on?
+	// assert(*from_bucket >= 0);
 
 	if(to_bucket)
 	{
@@ -1666,20 +1642,20 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 	int Cost = 0;
 
 	GMSkillChange_Struct* gmskill = (GMSkillChange_Struct*) app->pBuffer;
-	
+
 	Mob* pTrainer = entity_list.GetMob(gmskill->npcid);
 	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < WARRIORGM || pTrainer->GetClass() > BERSERKERGM)
 		return;
-	
+
 	//you can only use your own trainer, client enforces this, but why trust it
 	int trains_class = pTrainer->GetClass() - (WARRIORGM - WARRIOR);
 	if(GetClass() != trains_class)
 		return;
-	
+
 	//you have to be somewhat close to a trainer to be properly using them
 	if(DistNoRoot(*pTrainer) > USE_NPC_RANGE2)
 		return;
-	
+
 	if (gmskill->skillbank == 0x01)
 	{
 		// languages go here
@@ -1711,7 +1687,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			mlog(CLIENT__ERROR, "Tried to train skill %d, which is not allowed.", skill);
 			return;
 		}
-		
+
 		int16 skilllevel = GetRawSkill(skill);
 		if(skilllevel == 0) {
 			//this is a new skill..
@@ -1738,11 +1714,41 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 					Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
 					return;
 				}
+				break;
+			case SPECIALIZE_ABJURE:
+			case SPECIALIZE_ALTERATION:
+			case SPECIALIZE_CONJURATION:
+			case SPECIALIZE_DIVINATION:
+			case SPECIALIZE_EVOCATION:
+				if(skilllevel >= RuleI(Skills, MaxTrainSpecializations)) {
+					Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					return;
+				}
 			default:
 				break;
 			}
-            		// Client train a valid skill
-	    		//
+			
+			int MaxSkillValue = MaxSkill(skill);
+			if (skilllevel >= MaxSkillValue)
+			{
+				// Don't allow training over max skill level
+				Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+				return;
+			}
+			
+			if(gmskill->skill_id >= SPECIALIZE_ABJURE && gmskill->skill_id <= SPECIALIZE_EVOCATION)
+			{
+				int MaxSpecSkill = GetMaxSkillAfterSpecializationRules(skill, MaxSkillValue);
+				if (skilllevel >= MaxSpecSkill)
+				{
+					// Restrict specialization training to follow the rules
+					Message_StringID(13, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					return;
+				}
+			}
+
+			// Client train a valid skill
+			//
 			int AdjustedSkillLevel = skilllevel - 10;
 
 			if(AdjustedSkillLevel > 0)
@@ -1772,11 +1778,11 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 
 		gmtsc->Cost = Cost;
 
-		strcpy(gmtsc->TrainerName, pTrainer->GetName());
+		strcpy(gmtsc->TrainerName, pTrainer->GetCleanName());
 		QueuePacket(outapp);
 		safe_delete(outapp);
 	}
-	
+
 	if(Cost)
 		TakeMoneyFromPP(Cost);
 
@@ -1791,7 +1797,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 
 	if(st && st->IsCorpse())
 	{
-		st->CastToCorpse()->Summon(this, false);
+		st->CastToCorpse()->Summon(this, false, true);
 	}
 	else
 	{
@@ -1833,7 +1839,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 				//all options have been exhausted
 				//summon our target...
 				if(GetTarget() && GetTarget()->IsCorpse()){
-					GetTarget()->CastToCorpse()->Summon(this, false);
+					GetTarget()->CastToCorpse()->Summon(this, false, true);
 				}
 			}
 		}
@@ -1882,7 +1888,7 @@ void Client::DoEnduranceRegen()
 	if(GetEndurance() >= GetMaxEndurance())
 		return;
 
-	SetEndurance(GetEndurance() + CalcEnduranceRegen());
+	SetEndurance(GetEndurance() + CalcEnduranceRegen() + RestRegenEndurance);
 }
 
 void Client::DoEnduranceUpkeep() {
@@ -1924,7 +1930,7 @@ void Client::CalcRestState() {
 	if(!RuleI(Character, RestRegenPercent))
 		return;
 
-	RestRegenHP = RestRegenMana = 0;
+	RestRegenHP = RestRegenMana = RestRegenEndurance = 0;
 
 	if(AggroCount || !IsSitting())
 		return;
@@ -1944,6 +1950,9 @@ void Client::CalcRestState() {
 	RestRegenHP = (GetMaxHP() * RuleI(Character, RestRegenPercent) / 100);
 
 	RestRegenMana = (GetMaxMana() * RuleI(Character, RestRegenPercent) / 100);
+	
+	if(RuleB(Character, RestRegenEndurance))
+		RestRegenEndurance = (GetMaxEndurance() * RuleI(Character, RestRegenPercent) / 100);
 }
 
 void Client::DoTracking()
@@ -2080,7 +2089,7 @@ void Client::HandleRespawnFromHover(uint32 Option)
 		z_pos = m_pp.binds[0].z;
 
 		ClearHover();
-
+		entity_list.RefreshClientXTargets(this);
 		SendHPUpdate();
 
 	}
@@ -2124,11 +2133,190 @@ void Client::ClearHover()
 	entity_list.QueueClients(this, outapp, false);
 	safe_delete(outapp);
 
-	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_UnderfootAndLater)
 	{
 		EQApplicationPacket *outapp = MakeBuffsPacket(false);
 		CastToClient()->FastQueuePacket(&outapp);
 	}
 
 	dead = false;
+}
+
+void Client::HandleLFGuildResponse(ServerPacket *pack)
+{
+	pack->SetReadPosition(8);
+
+	char Tmp[257];
+
+	pack->ReadString(Tmp);
+
+	pack->ReadSkipBytes(4);
+	uint32 SubType, NumberOfMatches;
+
+	SubType = pack->ReadUInt32();
+
+	switch(SubType)
+	{
+		case QSG_LFGuild_PlayerMatches:
+		{
+			NumberOfMatches = pack->ReadUInt32();
+			uint32 StartOfMatches = pack->GetReadPosition();
+			uint32 i = NumberOfMatches;
+			uint32 PacketSize = 12;
+			while(i > 0)
+			{
+				pack->ReadString(Tmp);
+				PacketSize += strlen(Tmp) + 1;
+				pack->ReadString(Tmp);
+				PacketSize += strlen(Tmp) + 1;
+				PacketSize += 16;
+				pack->ReadSkipBytes(16);
+				--i;
+			}
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, PacketSize);
+			outapp->WriteUInt32(3);
+			outapp->WriteUInt32(0xeb63);	// Don't know the significance of this value.
+			outapp->WriteUInt32(NumberOfMatches);
+			pack->SetReadPosition(StartOfMatches);
+
+			while(NumberOfMatches > 0)
+			{
+				pack->ReadString(Tmp);
+				outapp->WriteString(Tmp);
+				pack->ReadString(Tmp);
+				uint32 Level = pack->ReadUInt32();
+				uint32 Class = pack->ReadUInt32();
+				uint32 AACount = pack->ReadUInt32();
+				uint32 TimeZone = pack->ReadUInt32();
+				outapp->WriteUInt32(Level);
+				outapp->WriteUInt32(Class);
+				outapp->WriteUInt32(AACount);
+				outapp->WriteUInt32(TimeZone);
+				outapp->WriteString(Tmp);
+				--NumberOfMatches;
+			}
+
+			FastQueuePacket(&outapp);
+			break;
+		}
+		case QSG_LFGuild_RequestPlayerInfo:
+		{
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, sizeof(LFGuild_PlayerToggle_Struct));
+			LFGuild_PlayerToggle_Struct *pts = (LFGuild_PlayerToggle_Struct *)outapp->pBuffer;
+
+			pts->Command = 0;
+			pack->ReadString(pts->Comment);
+			pts->TimeZone = pack->ReadUInt32();
+			pts->TimePosted = pack->ReadUInt32();
+			pts->Toggle = pack->ReadUInt32();
+
+			FastQueuePacket(&outapp);
+
+			break;
+		}
+		case QSG_LFGuild_GuildMatches:
+		{
+			NumberOfMatches = pack->ReadUInt32();
+			uint32 StartOfMatches = pack->GetReadPosition();
+			uint32 i = NumberOfMatches;
+			uint32 PacketSize = 12;
+			while(i > 0)
+			{
+				pack->ReadString(Tmp);
+				PacketSize += strlen(Tmp) + 1;
+				pack->ReadSkipBytes(4);
+				pack->ReadString(Tmp);
+				PacketSize += strlen(Tmp) + 1;
+				PacketSize += 4;
+				--i;
+			}
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, PacketSize);
+			outapp->WriteUInt32(4);
+			outapp->WriteUInt32(0xeb63);
+			outapp->WriteUInt32(NumberOfMatches);
+			pack->SetReadPosition(StartOfMatches);
+
+			while(NumberOfMatches > 0)
+			{
+				pack->ReadString(Tmp);
+				uint32 TimeZone = pack->ReadUInt32();
+				outapp->WriteString(Tmp);
+				outapp->WriteUInt32(TimeZone);
+				pack->ReadString(Tmp);
+				outapp->WriteString(Tmp);
+				--NumberOfMatches;
+			}
+			FastQueuePacket(&outapp);
+
+			break;
+		}
+		case QSG_LFGuild_RequestGuildInfo:
+		{
+
+			char Comments[257];
+			uint32 FromLevel, ToLevel, Classes, AACount, TimeZone, TimePosted;
+
+			pack->ReadString(Comments);
+			FromLevel = pack->ReadUInt32();
+			ToLevel = pack->ReadUInt32();
+			Classes = pack->ReadUInt32();
+			AACount = pack->ReadUInt32();
+			TimeZone = pack->ReadUInt32();
+			TimePosted = pack->ReadUInt32();
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, sizeof(LFGuild_GuildToggle_Struct));
+
+			LFGuild_GuildToggle_Struct *gts = (LFGuild_GuildToggle_Struct *)outapp->pBuffer;
+			gts->Command = 1;
+			strcpy(gts->Comment, Comments);	
+			gts->FromLevel = FromLevel;
+			gts->ToLevel = ToLevel;
+			gts->Classes = Classes;
+			gts->AACount = AACount;
+			gts->TimeZone = TimeZone;
+			gts->Toggle = 1;
+			gts->TimePosted = TimePosted;
+			gts->Name[0] = 0;
+
+			FastQueuePacket(&outapp);
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+}
+
+void Client::SendLFGuildStatus()
+{
+	ServerPacket* pack = new ServerPacket(ServerOP_QueryServGeneric, strlen(GetName()) + 17);
+
+	pack->WriteUInt32(zone->GetZoneID());
+	pack->WriteUInt32(zone->GetInstanceID());
+	pack->WriteString(GetName());
+	pack->WriteUInt32(QSG_LFGuild);
+	pack->WriteUInt32(QSG_LFGuild_RequestPlayerInfo);
+
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+
+}
+
+void Client::SendGuildLFGuildStatus()
+{
+	ServerPacket* pack = new ServerPacket(ServerOP_QueryServGeneric, strlen(GetName()) + +strlen(guild_mgr.GetGuildName(GuildID())) + 18);
+
+	pack->WriteUInt32(zone->GetZoneID());
+	pack->WriteUInt32(zone->GetInstanceID());
+	pack->WriteString(GetName());
+	pack->WriteUInt32(QSG_LFGuild);
+	pack->WriteUInt32(QSG_LFGuild_RequestGuildInfo);
+	pack->WriteString(guild_mgr.GetGuildName(GuildID()));
+			
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
 }

@@ -51,6 +51,8 @@ class Client;
 #define CLIENT_TIMEOUT		90000
 #define CLIENT_LD_TIMEOUT	30000 // length of time client stays in zone after LDing
 #define TARGETING_RANGE		200	// range for /assist and /target
+#define XTARGET_HARDCAP		20
+
 extern Zone* zone;
 extern TaskManager *taskmanager;
 
@@ -117,22 +119,15 @@ typedef enum {
 	MQGhost
 } CheatTypes;
 
-#define BIT_Client62	1
-#define BIT_Titanium	2
-#define BIT_SoF		4
-#define BIT_SoD		8
-#define BIT_Live	0x80000000
-#define BIT_SoFAndLater 0xFFFFFFFC
-#define BIT_SoDAndLater	0xFFFFFFF8
-#define BIT_AllClients	0xFFFFFFFF
-
 typedef enum {
 	EQClientUnknown = 0,
 	EQClient62,
 	EQClientTitanium,
 	EQClientSoF,
 	EQClientSoD,
-	EQClientLive = 255
+	EQClientUnderfoot,
+	EQClientHoT,
+	EQClientVoA
 } EQClientVersion;
 
 enum {
@@ -142,7 +137,48 @@ enum {
 	HideCorpseLooted = 3,
 	HideCorpseNPC = 5
 };
+
+typedef enum 
+{
+	Empty = 0,
+	Auto = 1,
+	CurrentTargetPC = 2,
+	CurrentTargetNPC = 3,
+	TargetsTarget = 4,
+	GroupTank = 5,
+	GroupTankTarget = 6,
+	GroupAssist = 7,
+	GroupAssistTarget = 8,
+	Puller = 9,
+	PullerTarget = 10,
+	GroupMarkTarget1 = 11,
+	GroupMarkTarget2 = 12,
+	GroupMarkTarget3 = 13,
+	RaidAssist1 = 14,
+	RaidAssist2 = 15,
+	RaidAssist3 = 16,
+	RaidAssist1Target = 17,
+	RaidAssist2Target = 18,
+	RaidAssist3Target = 19,
+	RaidMarkTarget1 = 20,
+	RaidMarkTarget2 = 21,
+	RaidMarkTarget3 = 22,
+	MyPet = 23,
+	MyPetTarget = 24,
+	MyMercenary = 25,
+	MyMercenaryTarget = 26
+
+} XTargetType;
+
+struct XTarget_Struct
+{
+	XTargetType Type;
+	int16 ID;
+	char Name[65];
+};
 	
+	
+const uint32 POPUPID_UPDATE_SHOWSTATSWINDOW = 1000000;
 
 struct ClientReward
 {
@@ -167,7 +203,7 @@ public:
 	//abstract virtual function implementations requird by base abstract class
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false);
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false, bool IsFromSpell = false);
 	virtual bool HasRaid() { return (GetRaid() ? true : false);  }
 	virtual bool HasGroup() { return (GetGroup() ? true : false); }
 	virtual Raid* GetRaid() { return entity_list.GetRaidByClient(this); }
@@ -237,6 +273,7 @@ public:
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
 	void	LearnRecipe(uint32 recipeID);
+	bool	CanIncreaseTradeskill(SkillType tradeskill);
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 
@@ -266,6 +303,7 @@ public:
 	inline ExtendedProfile_Struct& GetEPP()	{ return m_epp; }
 	inline Inventory& GetInv()				{ return m_inv; }
 	inline const Inventory& GetInv() const	{ return m_inv; }
+	inline PetInfo* GetPetInfo(int16 pet) { return (pet==1)?&m_suspendedminion:&m_petinfo; }
 	bool	CheckAccess(sint16 iDBLevel, sint16 iDefaultLevel);
 
 	void	CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
@@ -291,7 +329,7 @@ public:
 	inline void	SetBaseClass(uint32 i) { m_pp.class_=i; }
 	inline void	SetBaseRace(uint32 i) { m_pp.race=i; }
 	inline void	SetBaseGender(uint32 i) { m_pp.gender=i; }
-	inline  void SetDeity(uint32 i) {m_pp.deity=i;}
+	inline  void SetDeity(uint32 i) {m_pp.deity=i;deity=i;}
 
 	inline int8		GetLevel2()			const { return m_pp.level2; }
 	inline int16	GetBaseRace()		const { return m_pp.race; }
@@ -309,6 +347,7 @@ public:
 	sint32			CalcMaxMana();
 	sint32			CalcBaseMana();
 	const sint32&	SetMana(sint32 amount);
+	sint32 			CalcManaRegenCap();
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
 	void	BulkSendTraderInventory(int32 char_id);
@@ -351,7 +390,7 @@ public:
 	inline virtual sint16	GetPR()	const { return PR; }
 	inline virtual sint16	GetCR()	const { return CR; }
 	inline virtual sint16	GetCorrup()	const { return Corrup; }
-
+	
 	sint16	GetMaxStat() const;
 	sint16	GetMaxResist() const;
 	sint16  GetMaxSTR() const;
@@ -374,7 +413,7 @@ public:
 	inline int8	GetBaseINT()	const { return m_pp.INT; }
 	inline int8	GetBaseAGI()	const { return m_pp.AGI; }
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
-	inline int8	GetBaseCorrup()	const { return 0; } // Need to set this in the pp at some point
+	inline int8	GetBaseCorrup()	const { return 15; } // Same for all
 
 	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
 	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
@@ -389,14 +428,40 @@ public:
 	inline virtual sint16	GetHeroicPR()	const { return itembonuses.HeroicPR; }
 	inline virtual sint16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
 	inline virtual sint16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
-
-	float GetActSpellRange(int16 spell_id, float range);
+	// Mod2
+	inline virtual sint16	GetShielding()		const { return itembonuses.MeleeMitigation; }
+	inline virtual sint16	GetSpellShield()	const { return itembonuses.SpellShield; }
+	inline virtual sint16	GetDoTShield()		const { return itembonuses.DoTShielding; }
+	inline virtual sint16	GetStunResist()		const { return itembonuses.StunResist; }
+	inline virtual sint16	GetStrikeThrough()	const { return itembonuses.StrikeThrough; }
+	inline virtual sint16	GetAvoidance()		const { return itembonuses.AvoidMeleeChance; }
+	inline virtual sint16	GetAccuracy()		const { return itembonuses.HitChance; }
+	inline virtual sint16	GetCombatEffects()	const { return itembonuses.ProcChance; }
+	inline virtual sint16	GetDS()				const { return itembonuses.DamageShield; }
+	// Mod3
+	inline virtual sint16	GetHealAmt()		const { return itembonuses.HealAmt; }
+	inline virtual sint16	GetSpellDmg()		const { return itembonuses.SpellDmg; }
+	inline virtual sint16	GetClair()			const { return itembonuses.Clairvoyance; }
+	inline virtual sint16	GetDSMit()			const { return itembonuses.DSMitigation; }
+	
+	inline virtual sint16	GetSingMod()		const { return itembonuses.singingMod; }
+	inline virtual sint16	GetBrassMod()		const { return itembonuses.brassMod; }
+	inline virtual sint16	GetPercMod()		const { return itembonuses.percussionMod; }
+	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
+	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
+	
+	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath + 11; }
+	
+	sint32 Additional_SpellDmg(int16 spell_id, bool bufftick = false);
+	sint32 Additional_Heal(int16 spell_id);
+	float GetActSpellRange(int16 spell_id, float range, bool IsBard = false);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);
 	sint32 GetActSpellHealing(int16 spell_id, sint32 value);
 	sint32 GetActSpellCost(int16 spell_id, sint32);
 	sint32 GetActSpellDuration(int16 spell_id, sint32);
 	sint32 GetActSpellCasttime(int16 spell_id, sint32);
 	sint32 GetDotFocus(int16 spell_id, sint32 value);
+	sint32 GetActDoTDamage(int16 spell_id, sint32 value);
 	virtual bool CheckFizzle(int16 spell_id);
 	virtual int GetCurrentBuffSlots() const;
 	virtual int GetCurrentSongSlots() const;
@@ -425,6 +490,8 @@ public:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
 	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	sint32	CalcEnduranceRegenCap();	
+	sint32	CalcHPRegenCap();
 	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
 	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
 	void DoEnduranceRegen();	//This Regenerates endurance
@@ -432,14 +499,15 @@ public:
 
 	//This calculates total Attack Rating to match very close to what the client should show
 	uint16 GetTotalATK();
+	uint16 GetATKRating();
 	//This gets the skill value of the item type equiped in the Primary Slot
 	uint16 GetPrimarySkillValue();
 
     bool Flurry();
     bool Rampage();
+	void DurationRampage(int32 duration);
 
 	inline uint32	GetEXP()		const { return m_pp.exp; }
-
 
 	bool	UpdateLDoNPoints(sint32 points, int32 theme);
 	void	SetPVPPoints(uint32 Points) { m_pp.PVPCurrentPoints = Points; }
@@ -454,6 +522,7 @@ public:
 
 	void	AddEXP(uint32 in_add_exp, int8 conlevel = 0xFF, bool resexp = false);
 	void	SetEXP(uint32 set_exp, uint32 set_aaxp, bool resexp=false);
+	void	AddLevelBasedExp(int8 exp_percentage, int8 max_level=0);
 	void	SetLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	AddLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	SendLeadershipEXPUpdate();
@@ -485,6 +554,7 @@ public:
 	void	MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(int32 zoneID, int32 instanceID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void	AssignToInstance(int16 instance_id);
 	void	WhoAll();
 	bool	CheckLoreConflict(const Item_Struct* item);
 	void	ChangeLastName(const char* in_lastname);
@@ -499,9 +569,10 @@ public:
     FACTION_VALUE   GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction, Mob* tnpc);
 	sint32	GetCharacterFactionLevel(sint32 faction_id);
 	sint32  GetModCharacterFactionLevel(sint32 faction_id);
+	bool	HatedByClass(int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction);
 
 	void	SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8 char_race, int8 char_deity);
-	void    SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value);
+	void    SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value, int8 temp);
 	sint16	GetRawItemAC();
 	int16	GetCombinedAC_TEST();
 
@@ -543,10 +614,15 @@ public:
 	void	QuestReadBook(const char* text, int8 type);
 	void	SendClientMoneyUpdate(int8 type,int32 amount);
 	void	SendMoneyUpdate();
-	bool	TakeMoneyFromPP(uint64 copper);
+	bool	TakeMoneyFromPP(uint64 copper, bool updateclient=false);
 	void	AddMoneyToPP(uint64 copper,bool updateclient);
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
+	int64	GetCarriedMoney();
+	int64	GetAllMoney();
+
+	bool	IsDiscovered(int32 itemid);
+	void	DiscoverItem(int32 itemid);
 
 	bool	TGB() const { return tgb; }
 
@@ -570,13 +646,14 @@ public:
 	void    SetLanguageSkill(int langid, int value);
 	void	SetHoTT(int32 mobid);
 	void	ShowSkillsWindow();
+	void	SendStatsWindow(Client* client, bool use_window);
 
 	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
 	inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
 	int8	SkillTrainLevel(SkillType skillid, int16 class_);
 
 	void TradeskillSearchResults(const char *query, unsigned long qlen, unsigned long objtype, unsigned long someid);
-	void SendTradeskillDetails(unsigned long  recipe_id);
+	void SendTradeskillDetails(uint32 recipe_id);
 	bool TradeskillExecute(DBTradeskillRecipe_Struct *spec);
 	void CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill);
 
@@ -620,7 +697,7 @@ public:
 	void SetHorseId(int16 horseid_in);
 	int16 GetHorseId() const { return horseId; }
 
-	void NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntime = 1200);
+	void NPCSpawn(NPC *target_npc, const char *identifier, uint32 extra = 0);
 
 	bool BindWound(Mob* bindmob, bool start, bool fail = false);
 	void SetTradeskillObject(Object* object) { m_tradeskill_object = object; }
@@ -665,11 +742,14 @@ public:
 	int32 GetAA(int32 aa_id) const;
 	bool SetAA(int32 aa_id, int32 new_value);
 	inline uint32 GetAAPointsSpent() { return m_pp.aapoints_spent; }
+	sint16 CalcAAFocusEffect(focusType type, int16 focus_spell, int16 spell_id);
+	sint16 CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id);
 
 	sint16 acmod();
 
 	// Item methods
-	uint32	NukeItem(uint32 itemnum);
+	uint32	NukeItem(uint32 itemnum, uint8 where_to_check = 
+        (invWhereWorn | invWherePersonal | invWhereBank | invWhereSharedBank | invWhereTrading | invWhereCursor));
 	void	SetTint(sint16 slot_id, uint32 color);
 	void	SetTint(sint16 slot_id, Color_Struct& color);
 	void	SetMaterial(sint16 slot_id, uint32 item_id);
@@ -678,11 +758,11 @@ public:
 	uint32	GetAugmentIDAt(sint16 slot_id, uint8 augslot);
 	bool	PutItemInInventory(sint16 slot_id, const ItemInst& inst, bool client_update = false);
 	bool	PushItemOnCursor(const ItemInst& inst, bool client_update = false);
-	void	DeleteItemInInventory(sint16 slot_id, sint8 quantity = 0, bool client_update = false);
+	void	DeleteItemInInventory(sint16 slot_id, sint8 quantity = 0, bool client_update = false, bool update_db = true);
 	bool	SwapItem(MoveItem_Struct* move_in);
 	void	PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data = 0);
 	bool	AutoPutLootInInventory(ItemInst& inst, bool try_worn = false, bool try_cursor = true, ServerLootItem_Struct** bag_item_data = 0);
-	void	SummonItem(uint32 item_id, sint8 charges = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
+	void	SummonItem(uint32 item_id, sint16 charges = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0, bool attuned=false, uint16 to_slot=SLOT_CURSOR);
 	void	SetStats(int8 type,sint16 set_val);
 	void	IncStats(int8 type,sint16 increase_val);
 	void	DropItem(sint16 slot_id);
@@ -718,7 +798,7 @@ public:
 	void    RemoveNoRent();
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other);
-	void	DoClassAttacks(Mob *ca_target);
+	void	DoClassAttacks(Mob *ca_target, int16 skill = -1, bool IsRiposte=false);
 
 	void	SetZoneFlag(uint32 zone_id);
 	void	ClearZoneFlag(uint32 zone_id);
@@ -779,6 +859,7 @@ public:
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
 	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
+	void	SendWindow(int32 PopupID, int32 NegativeID, int32 Buttons, const char *ButtonName0, const char *ButtonName1, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
@@ -937,6 +1018,7 @@ public:
 	void UpdateLDoNWins(int32 t, sint32 n);
 	void UpdateLDoNLosses(int32 t, sint32 n);
 	void CheckLDoNHail(Mob *target);
+	void CheckEmoteHail(Mob *target, const char* message);
 
 	void HandleLDoNOpen(NPC *target);
 	void HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type);
@@ -944,10 +1026,17 @@ public:
 	void HandleLDoNPickLock(NPC *target, int16 skill, int8 type);
 	int	LDoNChest_SkillCheck(NPC *target, int skill);
 
-	void CalcItemScale();
-	bool CalcItemScale(int32 slot_x, int32 slot_y);
+	void MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count=1);
+
+	void CalcItemScale(bool login = false);
+	bool CalcItemScale(int32 slot_x, int32 slot_y, bool login = false);
 	void SummonAndRezzAllCorpses();
+	void SummonAllCorpses(float dest_x, float dest_y, float dest_z, float dest_heading);
+	void DepopAllCorpses();
+	void DepopPlayerCorpse(int32 dbid);
+	void BuryPlayerCorpses();
 	void SuspendMinion();
+	void Doppelganger(int16 spell_id, Mob *target, const char *name_override, int pet_count, int pet_duration);
 	void NotifyNewTitlesAvailable();
 	void Signal(int32 data);
 	Mob *GetBindSightTarget() { return bind_sight_target; }
@@ -973,11 +1062,42 @@ public:
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 	void HandleRespawnFromHover(uint32 Option);
 	bool IsHoveringForRespawn() { return RespawnFromHoverTimer.Enabled(); }
-	void SetPendingRezzData(int XP, int16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
+	void SetPendingRezzData(int XP, int32 DBID, int16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzDBID = DBID; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
 	bool IsRezzPending() { return PendingRezzSpellID > 0; }
 	void ClearHover();
 	inline bool IsBlockedBuff(sint16 SpellID) { return PlayerBlockedBuffs.find(SpellID) != PlayerBlockedBuffs.end(); }
 	inline bool IsBlockedPetBuff(sint16 SpellID) { return PetBlockedBuffs.find(SpellID) != PetBlockedBuffs.end(); }
+	bool IsDraggingCorpse(const char* CorpseName);
+	inline bool IsDraggingCorpse() { return (DraggedCorpses.size() > 0); }
+	void DragCorpses();
+	inline void ClearDraggedCorpses() { DraggedCorpses.clear(); }
+	void SendAltCurrencies();
+	void SetAlternateCurrencyValue(uint32 currency_id, uint32 new_amount);
+	void AddAlternateCurrencyValue(uint32 currency_id, sint32 amount);
+	void SendAlternateCurrencyValues();
+	void SendAlternateCurrencyValue(uint32 currency_id, bool send_if_null = true);
+	uint32 GetAlternateCurrencyValue(uint32 currency_id) const;
+	void OpenLFGuildWindow();
+	void HandleLFGuildResponse(ServerPacket *pack);
+	void SendLFGuildStatus();
+	void SendGuildLFGuildStatus();
+	inline bool XTargettingAvailable() const { return ((ClientVersionBit & BIT_UnderfootAndLater) && RuleB(Character, EnableXTargetting)); }
+	inline uint8 GetMaxXTargets() const { return MaxXTargets; }
+	void SetMaxXTargets(uint8 NewMax);
+	bool IsXTarget(const Mob *m) const;
+	bool IsClientXTarget(const Client *c) const;
+	void UpdateClientXTarget(Client *c);
+	void UpdateXTargetType(XTargetType Type, Mob *m, const char *Name = NULL);
+	void AddAutoXTarget(Mob *m);
+	void RemoveXTarget(Mob *m, bool OnlyAutoSlots);
+	void SendXTargetPacket(uint32 Slot, Mob *m);
+	void RemoveGroupXTargets();
+	void ShowXTargets(Client *c);
+
+	char* GetRacePlural(Client* client);
+	char* GetClassPlural(Client* client);
+
+	bool	StoreTurnInItems(Mob* with);
 
 protected:
 	friend class Mob;
@@ -986,11 +1106,12 @@ protected:
 	int  CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat);
 	void CalcEdibleBonuses(StatBonuses* newbon);
 	void CalcAABonuses(StatBonuses* newbon);
-	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon);
+	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon); 
 	void MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message = true);
 	bool client_data_loaded;
 
 	sint16	GetFocusEffect(focusType type, int16 spell_id);
+	sint16	GetSympatheticFocusEffect(focusType type, int16 spell_id); 
 
 	Mob*	bind_sight_target;
 
@@ -1035,9 +1156,12 @@ private:
 	void	HandleTraderPriceUpdate(const EQApplicationPacket *app);
 
 	sint16    CalcAC();
+	sint16    GetACMit();
+	sint16    GetACAvoid();
 	sint16    CalcATK();
 	int      CalcHaste();
 
+	sint16   CalcAlcoholPhysicalEffect();
 	sint16   CalcSTR();
 	sint16   CalcSTA();
 	sint16   CalcDEX();
@@ -1051,10 +1175,12 @@ private:
 	sint16	CalcDR();
 	sint16	CalcPR();
 	sint16	CalcCR();
+	sint16	CalcCorrup();
 	sint32	CalcMaxHP();
 	sint32	CalcBaseHP();
 	sint32	CalcHPRegen();
 	sint32	CalcManaRegen();
+	sint32	CalcBaseManaRegen();
 	int32	GetClassHPFactor();
 	void DoHPRegen();
 	void DoManaRegen();
@@ -1106,6 +1232,7 @@ private:
 	int16				BoatID;
 	int16				TrackingID;
 	int16				CustomerID;
+	uint32              account_creation;
 	bool	Trader;
 	bool	Buyer;
 	string	BuyerWelcomeMessage;
@@ -1119,6 +1246,8 @@ private:
 	ExtendedProfile_Struct		m_epp;
 	Inventory					m_inv;
 	Object*						m_tradeskill_object;
+	PetInfo						m_petinfo; // current pet data, used while loading from and saving to DB
+	PetInfo						m_suspendedminion; // pet data for our suspended minion.
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);
@@ -1209,6 +1338,7 @@ private:
 
 	unsigned int	RestRegenHP;
 	unsigned int	RestRegenMana;
+	unsigned int	RestRegenEndurance;
 
 	set<uint32> zone_flags;
 
@@ -1231,6 +1361,7 @@ private:
 	bool m_KnockBackExemption;
 	bool m_PortExemption;
 	bool m_SenseExemption;
+    std::map<uint32, uint32> alternate_currency;
 
 	//Connecting debug code.
 	enum { //connecting states, used for debugging only
@@ -1252,11 +1383,18 @@ private:
 	uint8 HideCorpseMode;
 	bool PendingGuildInvitation;
 	int PendingRezzXP;
+	int32 PendingRezzDBID;
 	int16 PendingRezzSpellID;		// Only used for resurrect while hovering.
 	std::string PendingRezzCorpseName;	// Only used for resurrect while hovering.
 
 	std::set<uint32> PlayerBlockedBuffs;
 	std::set<uint32> PetBlockedBuffs;
+	std::list<string> DraggedCorpses;
+
+	uint8 MaxXTargets;
+	bool XTargetAutoAddHaters;
+
+	struct XTarget_Struct XTargets[XTARGET_HARDCAP];
 
 };
 

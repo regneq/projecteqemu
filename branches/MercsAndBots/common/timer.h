@@ -21,7 +21,7 @@
 #include "types.h"
 
 // Disgrace: for windows compile
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include "debug.h"
 	int gettimeofday (timeval *tp, ...);
 #endif

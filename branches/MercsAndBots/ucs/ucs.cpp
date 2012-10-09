@@ -24,9 +24,11 @@
 #include "../common/opcodemgr.h"
 #include "../common/EQStreamFactory.h"
 #include "../common/rulesys.h"
+#include "../common/servertalk.h"
 #include "database.h"
 #include "ucsconfig.h"
 #include "chatchannel.h"
+#include "worldserver.h"
 #include <list>
 #include <signal.h>
 
@@ -47,9 +49,17 @@ string WorldShortName;
 
 RuleManager *rules = new RuleManager();
 
+const ucsconfig *Config;
+
+WorldServer *worldserver = 0;
+
+
 void CatchSignal(int sig_num) {
 
 	RunLoops = false;
+
+	if(worldserver)
+		worldserver->Disconnect();
 }
 
 string GetMailPrefix() {
@@ -64,6 +74,8 @@ int main() {
 	//
 	Timer ChannelListProcessTimer(60000);
 
+	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
+
 	_log(UCS__INIT, "Starting EQEmu Universal Chat Server.");
 
 	if (!ucsconfig::LoadConfig()) {
@@ -73,7 +85,7 @@ int main() {
 		return(1);
 	}
 
-	const ucsconfig *Config=ucsconfig::get();
+	Config = ucsconfig::get();
 
 	if(!load_log_settings(Config->LogSettingsFile.c_str()))
 		_log(UCS__INIT, "Warning: Unable to read %s", Config->LogSettingsFile.c_str());
@@ -132,6 +144,10 @@ int main() {
 		return 0;
 	}
 
+	worldserver = new WorldServer;
+
+	worldserver->Connect();
+
 	while(RunLoops) {
 
 		Timer::SetCurrentTime();
@@ -140,6 +156,12 @@ int main() {
 
 		if(ChannelListProcessTimer.Check())
 			ChannelList->Process();
+
+		if (InterserverTimer.Check()) {
+			if (worldserver->TryReconnect() && (!worldserver->Connected()))
+				worldserver->AsyncConnect();
+		}
+		worldserver->Process();
 
 		timeout_manager.CheckTimeouts();
 
@@ -153,7 +175,7 @@ int main() {
 }
 
 void UpdateWindowTitle(char* iNewTitle) {
-#ifdef WIN32
+#ifdef _WINDOWS
         char tmp[500];
         if (iNewTitle) {
                 snprintf(tmp, sizeof(tmp), "UCS: %s", iNewTitle);

@@ -24,7 +24,7 @@
 #include <iostream>
 using namespace std;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <process.h>
 #else
 #include <pthread.h>
@@ -46,8 +46,9 @@ using namespace std;
 #include "../common/dbasync.h"
 #include "guild_mgr.h"
 #include "raids.h"
+#include "QuestParserCollection.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -494,7 +495,7 @@ void EntityList::MobProcess() {
 			}
 #endif
 			else{
-#ifdef WIN32
+#ifdef _WINDOWS
 					struct in_addr	in;
 					in.s_addr = mob->CastToClient()->GetIP();
 					cout << "Dropping client: Process=false, ip=" << inet_ntoa(in) << ", port=" << mob->CastToClient()->GetPort() << endl;
@@ -598,7 +599,11 @@ void EntityList::AddCorpse(Corpse* corpse, int32 in_id) {
 
 void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	npc->SetID(GetFreeID());
-	parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
+    parse->EventNPC(EVENT_SPAWN, npc, NULL, "", 0);
+
+	int16 emoteid = npc->GetNPCEmoteID();
+	if(emoteid != 0)
+		npc->DoNPCEmote(ONSPAWN,emoteid);
 	
 	if (SendSpawnPacket) {
 		if (dontqueue) { // aka, SEND IT NOW BITCH!
@@ -1110,6 +1115,50 @@ Object* EntityList::GetObjectByID(int16 id)
 	return 0;
 }
 
+Doors* EntityList::GetDoorsByID(int16 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Doors*> iterator(door_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToDoors()->GetEntityID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+Doors* EntityList::GetDoorsByDBID(int32 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Doors*> iterator(door_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToDoors()->GetDoorDBID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 int16 EntityList::GetFreeID()
 {
 	if(last_insert_id > 1500)
@@ -1324,14 +1373,112 @@ void EntityList::ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget)
 	}
 }
 
-void EntityList::RemoveFromTargets(Mob* mob)
+void EntityList::RemoveFromTargets(Mob* mob, bool RemoveFromXTargets)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	
 	iterator.Reset();
-	while(iterator.MoreElements()) {
-		iterator.GetData()->RemoveFromHateList(mob);
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
 		iterator.Advance();
+
+		if(!m)
+			continue;
+
+		m->RemoveFromHateList(mob);
+
+		if(RemoveFromXTargets)
+			if(m->IsClient())
+				m->CastToClient()->RemoveXTarget(mob, false);
+			// FadingMemories calls this function passing the client.
+			else if(mob->IsClient())
+				mob->CastToClient()->RemoveXTarget(m, false);
+
+	}	
+}
+
+void EntityList::RemoveFromXTargets(Mob* mob)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
+		iterator.Advance();
+
+		if(!m)
+			continue;
+
+		if(m->IsClient())
+			m->CastToClient()->RemoveXTarget(mob, false);
+
+	}	
+}
+
+void EntityList::RemoveFromAutoXTargets(Mob* mob)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
+		iterator.Advance();
+
+		if(!m)
+			continue;
+
+		if(m->IsClient())
+			m->CastToClient()->RemoveXTarget(mob, true);
+
+	}	
+}
+
+void EntityList::RefreshAutoXTargets(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *m = iterator.GetData();
+		iterator.Advance();
+
+		if(!m || m->GetHP() <= 0)
+			continue;
+
+		if(m->CheckAggro(c) && !c->IsXTarget(m))
+		{
+			c->AddAutoXTarget(m);
+			break;
+		}
+
+	}	
+}
+
+void EntityList::RefreshClientXTargets(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Client*> iterator(client_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Client *c2 = iterator.GetData();
+		iterator.Advance();
+
+		if(!c2)
+			continue;
+
+		if(c2->IsClientXTarget(c))
+			c2->UpdateClientXTarget(c);
 	}	
 }
 
@@ -1382,6 +1529,28 @@ void EntityList::QueueClientsByTarget(Mob* sender, const EQApplicationPacket* ap
 		
 		if(Send && (c->GetClientVersionBit() & ClientVersionBits))
 			c->QueuePacket(app, ackreq);
+	}	
+}
+
+void EntityList::QueueClientsByXTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender)
+{
+	LinkedListIterator<Client*> iterator(client_list);
+	
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Client *c = iterator.GetData();
+
+		iterator.Advance();
+
+		if(!c || ((c == sender) && !iSendToSender))
+			continue;	
+
+		if(!c->IsXTarget(sender))
+			continue;
+
+		c->QueuePacket(app);
 	}	
 }
 
@@ -1723,7 +1892,7 @@ Corpse* EntityList::GetCorpseByID(int16 id){
 	return 0;
 }
 
-	Corpse* EntityList::GetCorpseByDBID(int32 dbid){
+Corpse* EntityList::GetCorpseByDBID(int32 dbid){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -1756,6 +1925,19 @@ void EntityList::RemoveAllCorpsesByCharID(int32 charid)
 	while(iterator.MoreElements())
 	{
 		if (iterator.GetData()->GetCharID() == charid)
+			iterator.RemoveCurrent();
+		else
+			iterator.Advance();
+	}
+}
+
+void EntityList::RemoveCorpseByDBID(int32 dbid)
+{
+	LinkedListIterator<Corpse*> iterator(corpse_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetDBID() == dbid)
 			iterator.RemoveCurrent();
 		else
 			iterator.Advance();
@@ -2112,59 +2294,6 @@ void EntityList::MessageClose(Mob* sender, bool skipsender, float dist, int32 ty
 	}
 }
 
-#if 0	// solar: old code, see Mob functions: Say, Say_StringID, Shout, Emote
-void EntityList::NPCMessage(Mob* sender, bool skipsender, float dist, int32 type, const char* message, ...) { 
-   va_list argptr; 
-   char buffer[4096]; 
-   char *findzero; 
-    int  stripzero; 
-   va_start(argptr, message); 
-   vsnprintf(buffer, 4095, message, argptr); 
-   va_end(argptr); 
-    findzero = strstr( buffer, "0" ); 
-    stripzero = (int)(findzero - buffer + 2); 
-   if (stripzero > 2 && stripzero<4096) //Incase its not an npc, you dont want to crash the zone 
-      strncpy(buffer + stripzero," ",1); 
-   float dist2 = dist * dist; 
-   char *tmp = new char[strlen(buffer)];
-   memset(tmp,0x0,sizeof(tmp));
-   LinkedListIterator<Client*> iterator(client_list); 
-   if (dist2==0) {
-      iterator.Reset(); 
-      while(iterator.MoreElements()) 
-      {  
-		Client* client = iterator.GetData()->CastToClient(); 
-		client->Message(type, buffer); 
-		iterator.Advance(); 
-      } 
-   } 
-   else { 
-      iterator.Reset(); 
-      while(iterator.MoreElements()) 
-      { 
-         if (iterator.GetData()->DistNoRoot(*sender) <= dist2 && (!skipsender || iterator.GetData() != sender)) { 
-            iterator.GetData()->Message(type, buffer); 
-         } 
-         iterator.Advance(); 
-      } 
-   }
-
-   if (sender->GetTarget() && sender->GetTarget()->IsNPC() && buffer)
-   {
-	   strcpy(tmp,strstr(buffer,"says"));
-	   tmp[strlen(tmp) - 1] = '\0';
-	   while (*tmp)
-	   {
-    	   tmp++;
-		   if (*tmp == '\'') { tmp++; break; }
-	   }
-	   if (tmp)
-		parse->Event(EVENT_SAY, sender->GetTarget()->GetNPCTypeID(), tmp, sender->GetTarget(), sender);
-   }
-
-} 
-#endif
-
 void EntityList::RemoveAllMobs(){
 	LinkedListIterator<Mob*> iterator(mob_list);
 	iterator.Reset();
@@ -2203,7 +2332,30 @@ void EntityList::RemoveAllDoors(){
 	iterator.Reset();
 	while(iterator.MoreElements())
 		iterator.RemoveCurrent();
+	DespawnAllDoors();
 }
+
+void EntityList::DespawnAllDoors(){
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RemoveAllDoors, 0);
+	this->QueueClients(0,outapp);
+	safe_delete(outapp);
+}
+
+void EntityList::RespawnAllDoors(){
+	LinkedListIterator<Client*> iterator(client_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData() != 0)
+		{
+		EQApplicationPacket* outapp = new EQApplicationPacket();
+		MakeDoorSpawnPacket(outapp, iterator.GetData());
+		iterator.GetData()->FastQueuePacket(&outapp);
+		}
+		iterator.Advance();
+	}
+}
+
 void EntityList::RemoveAllCorpses(){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
@@ -2557,15 +2709,17 @@ void EntityList::Depop(bool StartSpawnTimer) {
 	for(; iterator.MoreElements(); iterator.Advance())
 	{
 		NPC *it = iterator.GetData();
-		Mob *own = it->GetOwner();
-		//do not depop player's pets...
-		if(it && own && own->IsClient())
-			continue;
+		if(it) {
+			Mob *own = it->GetOwner();
+			//do not depop player's pets...
+			if(own && own->IsClient())
+				continue;
 
-		if(it->IsFindable())
-			UpdateFindableNPCState(it, true);
+			if(it->IsFindable())
+				UpdateFindableNPCState(it, true);
 
-		it->Depop(StartSpawnTimer);
+			it->Depop(StartSpawnTimer);
+		}
 	}
 }
 
@@ -2647,24 +2801,20 @@ void EntityList::SendPositionUpdates(Client* client, int32 cLastUpdate, float ra
 			ppu = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
 		}
 		mob = iterator.GetData()->CastToMob();
-		if (!mob->IsCorpse() 
-			&& (iterator.GetData() != client)
+		if (mob && !mob->IsCorpse() && (iterator.GetData() != client)
 			&& (mob->IsClient() || iSendEvenIfNotChanged || (mob->LastChange() >= cLastUpdate)) 
-			&& (!iterator.GetData()->IsClient() || !iterator.GetData()->CastToClient()->GMHideMe(client))
-			) {
+			&& (!iterator.GetData()->IsClient() || !iterator.GetData()->CastToClient()->GMHideMe(client))) {
 
-				bool Grouped = client->HasGroup() && mob->IsClient() && (client->GetGroup() == mob->CastToClient()->GetGroup());
+			//bool Grouped = client->HasGroup() && mob->IsClient() && (client->GetGroup() == mob->CastToClient()->GetGroup());
 
-				if (range == 0 || (iterator.GetData() == alwayssend) || Grouped || (mob->DistNoRootNoZ(*client) <= range)) {
-					mob->MakeSpawnUpdate(ppu);
+			//if (range == 0 || (iterator.GetData() == alwayssend) || Grouped || (mob->DistNoRootNoZ(*client) <= range)) {
+			if (range == 0 || (iterator.GetData() == alwayssend) || mob->IsClient() || (mob->DistNoRoot(*client) <= range)) {
+				mob->MakeSpawnUpdate(ppu);
+			}
+			if(mob && mob->IsClient() && mob->GetID()>0) {
+				client->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
 			}
 		}
-		if(mob && mob->IsClient() && mob->GetID()>0)
-/*#ifdef PACKET_UPDATE_MANAGER
-			client->GetUpdateManager()->QueuePacket(outapp, false, mob, mob->DistNoRoot(*client));
-#else*/
-			client->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
-//#endif
 		safe_delete(outapp);
 		outapp = 0;	
 		iterator.Advance();
@@ -2694,7 +2844,7 @@ char* EntityList::MakeNameUnique(char* name) {
 	}
 	for (int i=0; i < 300; i++) {
 		if (!used[i]) {
-			#ifdef WIN32
+			#ifdef _WINDOWS
 			snprintf(name, 64, "%s%03d", name, i);
 			#else
 			//glibc clears destination of snprintf
@@ -3085,10 +3235,10 @@ void EntityList::ClearFeignAggro(Mob* targ)
 			// For client targets if the mob that hated us is 35+ 
 			// there is a 3 outta 5 chance he adds us to feign memory
 			if(targ->IsClient()){
-				if (iterator.GetData()->GetLevel() >= 35){
-					if(MakeRandomInt(1,100)<=60){
-						iterator.GetData()->AddFeignMemory(targ->CastToClient());
-					}
+				if (iterator.GetData()->GetLevel() >= 35 && (MakeRandomInt(1,100)<=60)){
+					iterator.GetData()->AddFeignMemory(targ->CastToClient());
+				} else {
+					targ->CastToClient()->RemoveXTarget(iterator.GetData(), false);
 				}
 			}
 		}
@@ -3103,6 +3253,7 @@ void EntityList::ClearZoneFeignAggro(Client* targ)
 	while(iterator.MoreElements())
 	{
 		iterator.GetData()->RemoveFromFeignMemory(targ);
+		targ->CastToClient()->RemoveXTarget(iterator.GetData(), false);
 		iterator.Advance();
 	}
 }
@@ -3181,7 +3332,7 @@ bool EntityList::MakeTrackPacket(Client* client)
 				track_ent->distance = MobDistance;
 				track_ent->level = cur_entity->GetLevel();
 				track_ent->NPC = !cur_entity->IsClient();
-				if(g && cur_entity->IsClient() && g->IsGroupMember(cur_entity->GetName()))
+				if(g && cur_entity->IsClient() && g->IsGroupMember(cur_entity->CastToMob()))
 					track_ent->GroupMember = 1;
 				else
 					track_ent->GroupMember = 0;
@@ -3470,14 +3621,14 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 		
 		if(old_in && !new_in) {
 			//we were in the proximity, we are no longer, send event exit
-			parse->Event(EVENT_EXIT, d->GetNPCTypeID(), "", d, c);
+            parse->EventNPC(EVENT_EXIT, d, c, "", 0);
 			
 			//Reentrant fix
 			iterator.Reset();
 			skip_ids.push_back(d->GetID());
 		} else if(new_in && !old_in) {
 			//we were not in the proximity, we are now, send enter event
-			parse->Event(EVENT_ENTER, d->GetNPCTypeID(), "", d, c);
+			parse->EventNPC(EVENT_ENTER, d, c, "", 0);
 
 			//Reentrant fix
 			iterator.Reset();
@@ -3505,7 +3656,7 @@ void EntityList::ProcessProximitySay(const char *Message, Client *c, int8 langua
 		   || c->GetZ() < l->min_z || c->GetZ() > l->max_z )
 			continue;
 
-		parse->Event(EVENT_PROXIMITY_SAY, d->GetNPCTypeID(), Message, d, c, language);
+        parse->EventNPC(EVENT_PROXIMITY_SAY, d, c, Message, language);
 	}
 }
 
@@ -3717,6 +3868,8 @@ void EntityList::UpdateHoTT(Mob* target) {
 		if (c->GetTarget() == target) {
 			if (target->GetTarget()) c->SetHoTT(target->GetTarget()->GetID());
 			else c->SetHoTT(0);
+
+			c->UpdateXTargetType(TargetsTarget, target->GetTarget());
 		}
 		iterator.Advance();
 	}
@@ -3956,6 +4109,23 @@ int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float 
 	return 0; // fell through everything, this is bad/incomplete from perl
 }
 
+int16 EntityList::CreateDoor(const char *model, float x, float y, float z, float heading, int8 opentype, int16 size)
+{
+	if(model)
+	{
+			Doors* door = new Doors(model,x,y,z,heading,opentype, size);
+			RemoveAllDoors();
+			zone->LoadZoneDoors(zone->GetShortName(), zone->GetInstanceVersion());
+			entity_list.AddDoor(door);
+			entity_list.RespawnAllDoors();
+
+			if(door)
+				return door->GetEntityID();
+	}
+	return 0; // fell through everything, this is bad/incomplete from perl
+}
+
+
 Mob* EntityList::GetTargetForMez(Mob* caster)
 {
 	if(!caster)
@@ -4015,7 +4185,7 @@ void EntityList::SendZoneAppearance(Client *c)
 				iterator.Advance();
 				continue;
 			}
-			if(cur->GetAppearance() != ANIM_STAND)
+			if(cur->GetAppearance() != eaStanding)
 			{
 				cur->SendAppearancePacket(AT_Anim, cur->GetAppearanceValue(cur->GetAppearance()), false, true, c);
 			}
@@ -4057,6 +4227,31 @@ void EntityList::SendNimbusEffects(Client *c)
 			{
 				cur->SendSpellEffect(cur->GetNimbusEffect3(), 3000, 0, 1, 3000, false, c);
 			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::SendUntargetable(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Mob *cur = iterator.GetData();
+
+		if(cur)
+		{
+			if(cur == c)
+			{
+				iterator.Advance();
+				continue;
+			}
+			if(!cur->IsTargetable()) {
+                cur->SendTargetable(false, c);
+            }
 		}
 		iterator.Advance();
 	}
@@ -4476,6 +4671,19 @@ void EntityList::GetObjectList(list<Object*> &o_list)
 	}
 }
 
+void EntityList::GetDoorsList(list<Doors*> &o_list)
+{
+	o_list.clear();
+	LinkedListIterator<Doors*> iterator(door_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Doors *ent = iterator.GetData();
+		o_list.push_back(ent);
+		iterator.Advance();
+	}
+}
+
 void EntityList::UpdateQGlobal(uint32 qid, QGlobal newGlobal)
 {
 	LinkedListIterator<Mob*> iterator(mob_list); 
@@ -4764,6 +4972,16 @@ void EntityList::AddLootToNPCS(uint32 item_id, uint32 count)
 	safe_delete_array(marked);
 }
 
+void EntityList::CameraEffect(uint32 duration, uint32 intensity) {
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CameraEffect, sizeof(Camera_Struct));
+	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
+	Camera_Struct* cs = (Camera_Struct*) outapp->pBuffer;
+	cs->duration = duration;	// Duration in milliseconds
+	cs->intensity = ((intensity * 6710886) + 1023410176);	// Intensity ranges from 1023410176 to 1090519040, so simplify it from 0 to 10.
+	entity_list.QueueClients(0, outapp);
+	safe_delete(outapp);
+}
+
 
 NPC* EntityList::GetClosestBanker(Mob* sender, uint32 &distance)
 {
@@ -4843,4 +5061,104 @@ Mob* EntityList::GetClosestMobByBodyType(Mob* sender, bodyType BodyType)
 		}
 	}
 	return ClosestMob;
+}
+
+void EntityList::GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height, list<Mob*> &m_list)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *ptr = iterator.GetData();
+		if(ptr == start)
+		{
+			iterator.Advance();
+			continue;
+		}
+		sint32 x_diff = ptr->GetX() - start->GetX();
+		sint32 y_diff = ptr->GetY() - start->GetY();
+		sint32 z_diff = ptr->GetZ() - start->GetZ();
+
+		x_diff *= x_diff;
+		y_diff *= y_diff;
+		z_diff *= z_diff;
+
+		if((x_diff + y_diff) <= (radius * radius))
+		{
+			if(z_diff <= (height * height))
+			{
+				m_list.push_back(ptr);
+			}
+		}
+
+		iterator.Advance();
+	}
+}
+
+Client* EntityList::FindCorpseDragger(const char *CorpseName)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	
+	iterator.Reset(); 
+
+	while(iterator.MoreElements()) 
+	{ 
+		if (iterator.GetData()->IsDraggingCorpse(CorpseName))
+		{
+			return iterator.GetData();
+		}
+		iterator.Advance(); 
+	} 
+	return 0; 
+}
+
+Mob* EntityList::GetTargetForVirus(Mob* spreader)
+{
+	int max_spread_range = RuleI(Spells, VirusSpreadDistance);
+	
+	vector<Mob*> TargetsInRange;
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	
+	iterator.Reset(); 
+	while(iterator.MoreElements())
+	{
+		// Make sure the target is in range, has los and is not the mob doing the spreading
+		if ((iterator.GetData()->GetID() != spreader->GetID()) && 
+			(iterator.GetData()->CalculateDistance(spreader->GetX(), spreader->GetY(), spreader->GetZ()) <= max_spread_range) &&
+			(spreader->CheckLosFN(iterator.GetData())))
+		{
+			// If the spreader is an npc it can only spread to other npc controlled mobs
+			if (spreader->IsNPC() && !spreader->IsPet() && iterator.GetData()->IsNPC()) {
+				TargetsInRange.push_back(iterator.GetData());
+			}
+			// If the spreader is an npc controlled pet it can spread to any other npc or an npc controlled pet
+			else if (spreader->IsNPC() && spreader->IsPet() && spreader->GetOwner()->IsNPC()) {
+				if(iterator.GetData()->IsNPC() && !iterator.GetData()->IsPet()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+				else if(iterator.GetData()->IsNPC() && iterator.GetData()->IsPet() && iterator.GetData()->GetOwner()->IsNPC()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+			}
+			// if the spreader is anything else(bot, pet, etc) then it should spread to everything but non client controlled npcs
+			else if(!spreader->IsNPC() && !iterator.GetData()->IsNPC()) {
+				TargetsInRange.push_back(iterator.GetData());
+			}
+			// if its a pet we need to determine appropriate targets(pet to client, pet to pet, pet to bot, etc)
+			else if (spreader->IsNPC() && spreader->IsPet() && !spreader->GetOwner()->IsNPC()) {
+				if(!iterator.GetData()->IsNPC()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+				else if (iterator.GetData()->IsNPC() && iterator.GetData()->IsPet() && !iterator.GetData()->GetOwner()->IsNPC()) {
+					TargetsInRange.push_back(iterator.GetData());
+				}
+			}
+		}
+		iterator.Advance();
+	}
+
+	if(TargetsInRange.size() == 0)
+		return NULL;
+
+	return TargetsInRange[MakeRandomInt(0, TargetsInRange.size() - 1)];
 }

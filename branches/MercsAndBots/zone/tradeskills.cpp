@@ -32,68 +32,125 @@
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 static const SkillType TradeskillUnknown = _1H_BLUNT; /* an arbitrary non-tradeskill */
 
 void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augment, Object *worldo)
 {
-	if (!user || !in_augment) {
+	if (!user || !in_augment)
+	{
 		LogFile->write(EQEMuLog::Error, "Client or AugmentItem_Struct not set in Object::HandleAugmentation");
 		return;
 	}
 
-	if(!worldo)
+	ItemInst* container = NULL;
+
+	if (worldo)
 	{
-		LogFile->write(EQEMuLog::Error, "Player tried to augment an item without a world object set.");
+		container = worldo->m_inst;
+	} 
+	else
+	{
+		// Check to see if they have an inventory container type 53 that is used for this.
+		Inventory& user_inv = user->GetInv();
+		ItemInst* inst = NULL;
+		
+		inst = user_inv.GetItem(in_augment->container_slot);
+		if (inst)
+		{
+			const Item_Struct* item = inst->GetItem();
+			if (item && inst->IsType(ItemClassContainer) && item->BagType == 53)
+			{
+				// We have found an appropriate inventory augmentation sealer
+				container = inst;
+
+				// Verify that no more than two items are in container to guarantee no inadvertant wipes.
+				uint8 itemsFound = 0;
+				for (uint8 i=0; i<10; i++)
+				{
+					const ItemInst* inst = container->GetItem(i);
+					if (inst)
+					{
+						itemsFound++;
+					}
+				}
+
+				if (itemsFound != 2)
+				{
+					user->Message(13, "Error:  Too many/few items in augmentation container.");
+					return;
+				}
+			}
+		}
+	}
+
+	if(!container)
+	{
+		LogFile->write(EQEMuLog::Error, "Player tried to augment an item without a container set.");
+		user->Message(13, "Error: This item is not a container!");
 		return;
 	}
 	
 	ItemInst *tobe_auged, *auged_with = NULL;
 	sint8 slot=-1;
-	ItemInst* container = worldo->m_inst;
 
-	if (!container) {
-		user->Message(13, "Error: This item is not a container!");
+	// Verify 2 items in the augmentation device
+	if (container->GetItem(0) && container->GetItem(1))
+	{
+		// Verify 1 item is augmentable and the other is not
+		if (container->GetItem(0)->IsAugmentable() && !container->GetItem(1)->IsAugmentable())
+		{
+			tobe_auged = container->GetItem(0);
+			auged_with = container->GetItem(1);
+		}
+		else if (!container->GetItem(0)->IsAugmentable() && container->GetItem(1)->IsAugmentable())
+		{
+			tobe_auged = container->GetItem(1);
+			auged_with = container->GetItem(0);
+		}
+		else
+		{
+			// Either 2 augmentable items found or none found
+			// This should never occur due to client restrictions, but prevent in case of a hack
+			user->Message(13, "Error: Must be 1 augmentable item in the sealer");
+			return;
+		}
+	}
+	else
+	{
+		// This happens if the augment button is clicked more than once quickly while augmenting
+		if (!container->GetItem(0))
+		{
+			user->Message(13, "Error: No item in slot 0 of sealer");
+		}
+		if (!container->GetItem(1))
+		{
+			user->Message(13, "Error: No item in slot 1 of sealer");
+		}
 		return;
 	}
 
-	if (!(tobe_auged = container->GetItem(0))) {
-		user->Message(13, "Error: No item in slot 0 of sealer");
-		return;
-	}
-	if (tobe_auged->IsAugmentable()) {
-		if (!(auged_with=container->GetItem(1))) {;
-			user->Message(13, "Error: No item in slot 1 of sealer");
-			return;
-		}
-	} else {
-		auged_with=tobe_auged;
-		if (!(tobe_auged=container->GetItem(1))) {
-			user->Message(13, "Error: No item in slot 1 of sealer");
-			return;
-		}
-	}
+	bool deleteItems = false;
+
+	ItemInst *itemOneToPush = NULL, *itemTwoToPush = NULL;
 
 	// Adding augment
-	if (in_augment->augment_slot == -1) {
-		if ((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) {
+	if (in_augment->augment_slot == -1)
+	{
+		if (((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) && (tobe_auged->AvailableWearSlot(auged_with->GetItem()->Slots)))
+		{
 			tobe_auged->PutAugment(slot,*auged_with);
-			user->PushItemOnCursor(*tobe_auged,true);
-			container->Clear();
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
-			ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
-			cos->Clear = 1;
-			user->QueuePacket(outapp);
-			safe_delete(outapp);
-			database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
-		} else {
+			itemOneToPush = tobe_auged->Clone();
+			deleteItems = true;
+		}
+		else
+		{
 			user->Message(13, "Error: No available slot for augment");
 		}
-	} else {
+	}
+	else
+	{
 		ItemInst *old_aug=NULL;
 		const uint32 id=auged_with->GetID();
 		if (id==40408 || id==40409 || id==40410)
@@ -101,21 +158,54 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		else
 			old_aug=tobe_auged->RemoveAugment(in_augment->augment_slot);
 
-		user->PushItemOnCursor(*tobe_auged,true);
+		itemOneToPush = tobe_auged->Clone();
 		if (old_aug)
-			user->PushItemOnCursor(*old_aug,true);
-		container->Clear();
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
-		ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
-		cos->Clear = 1;
-		user->QueuePacket(outapp);
-		safe_delete(outapp);
-		database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
+			itemTwoToPush = old_aug->Clone();
+
+		deleteItems = true;
 	}
+
+	if (deleteItems)
+	{
+		if (worldo)
+		{
+			container->Clear();
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
+			ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
+			cos->Clear = 1;
+			user->QueuePacket(outapp);
+			safe_delete(outapp);
+			database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
+		}
+		else
+		{
+			// Delete items in our inventory container... 
+			for (uint8 i=0; i<10; i++)
+			{
+				const ItemInst* inst = container->GetItem(i);
+				if (inst)
+				{
+					user->DeleteItemInInventory(Inventory::CalcSlotId(in_augment->container_slot,i),0,true);
+				}
+			}
+			// Explicitly mark container as cleared.
+			container->Clear();
+		}
+	}
+
+	// Must push items after the items in inventory are deleted - necessary due to lore items...
+	if (itemOneToPush)
+	{
+		user->PushItemOnCursor(*itemOneToPush,true);
+	}
+	if (itemTwoToPush)
+	{
+		user->PushItemOnCursor(*itemTwoToPush,true);
+	}
+
 }
 
 // Perform tradeskill combine
-// complete tradeskill rewrite by father nitwit, 8/2004
 void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Object *worldo)
 {
 	if (!user || !in_combine) {
@@ -160,7 +250,7 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 	
  	DBTradeskillRecipe_Struct spec;
  	if (!database.GetTradeRecipe(container, c_type, some_id, user->CharacterID(), &spec)) {
- 		user->Message_StringID(4,TRADESKILL_NOCOMBINE);
+ 		user->Message_StringID(MT_Emote,TRADESKILL_NOCOMBINE);
  		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
  		user->QueuePacket(outapp);
  		safe_delete(outapp);
@@ -252,12 +342,10 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 		else
 			user->DeleteItemInInventory(in_combine->container_slot, 0, true);
 	}
-#ifdef EMBPERL
 	if (success) 
-		((PerlembParser*)parse)->Event(EVENT_COMBINE_SUCCESS, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
+		parse->EventPlayer(EVENT_COMBINE_SUCCESS, user, spec.name.c_str(), spec.recipe_id);
 	else
-		((PerlembParser*)parse)->Event(EVENT_COMBINE_FAILURE, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
-#endif
+		parse->EventPlayer(EVENT_COMBINE_FAILURE, user, spec.name.c_str(), spec.recipe_id); 
 }
 
 void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac) {
@@ -402,8 +490,17 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 				safe_delete(outapp);
 				return;
 			}
-			
-			user->DeleteItemInInventory(slot, 1, true);
+
+			const ItemInst* inst = user_inv.GetItem(slot);
+
+			if (inst && !inst->IsStackable())
+			{
+				user->DeleteItemInInventory(slot, 0, true);
+			}
+			else
+			{
+				user->DeleteItemInInventory(slot, 1, true);
+			}
 		}
 	}
 	
@@ -432,12 +529,10 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	if(success && spec.replace_container) {
 //		user->DeleteItemInInventory(in_combine->container_slot, 0, true);
 	}
-#ifdef EMBPERL
 	if (success) 
-		((PerlembParser*)parse)->Event(EVENT_COMBINE_SUCCESS, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
+		parse->EventPlayer(EVENT_COMBINE_SUCCESS, user, spec.name.c_str(), spec.recipe_id); 
 	else
-		((PerlembParser*)parse)->Event(EVENT_COMBINE_FAILURE, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
-#endif	
+		parse->EventPlayer(EVENT_COMBINE_FAILURE, user, spec.name.c_str(), spec.recipe_id); 
 }
 
 SkillType Object::TypeToSkill(uint32 type) {
@@ -511,7 +606,6 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
     MYSQL_RES *result;
     MYSQL_ROW row;
     
-//printf("TradeskillSearchResults query ' %s '\n", query);
 	if (!database.RunQuery(query, qlen, errbuf, &result)) {
 		LogFile->write(EQEMuLog::Error, "Error in TradeskillSearchResults query '%s': %s", query, errbuf);
 		return;
@@ -540,7 +634,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		uint32 comp_count = (uint32) atoi(row[3]);
 		uint32 tradeskill = (uint16) atoi(row[5]);
 		
-		// Leere: Skip the recipes that exceed the threshold in skill difference
+		// Skip the recipes that exceed the threshold in skill difference
 		// Recipes that have either been made before or were
 		// explicitly learned are excempt from that limit
 		if (RuleB(Skills, UseLimitTradeskillSearchSkillDiff)) {
@@ -560,7 +654,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		reply->component_count = comp_count;
 		reply->recipe_id = recipe;
 		reply->trivial = trivial;
-		strncpy(reply->recipe_name, name, 63);
+		strn0cpy(reply->recipe_name, name, sizeof(reply->recipe_name));
 		
 		//DumpPacket(outapp);
 		FastQueuePacket(&outapp);
@@ -568,21 +662,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 	mysql_free_result(result);
 }
 
-void Client::SendTradeskillDetails(unsigned long recipe_id) {
-
-//from server in response to a 4 byte OP_RecipeDetails, just the item id
-/*struct RecipeDetails_Struct {
-	unsigned long recipe_id;	//backwards byte order from the Reply
-	//dynamic part...
-	// there are as many as 10 0xFFFFFFFF here in a row..
-	// there are (10 - component count) of them...
-	
-	//then one of these for each component:
-	// unsigned long item_id;	//in backwards byte order
-	// unsigned long icon_id;	//in backwards byte order
-	// NULL terminated name...
-	
-};*/
+void Client::SendTradeskillDetails(uint32 recipe_id) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -620,14 +700,14 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 	char *buf = new char[775];	//dynamic so we can just give it to EQApplicationPacket
 	uint8 r,k;
 	
-	unsigned long *header = (unsigned long *) buf;
+	uint32 *header = (uint32 *) buf;
 	//Hell if I know why this is in the wrong byte order....
 	*header = htonl(recipe_id);
 	
 	char *startblock = buf;
-	startblock += sizeof(unsigned long);
+	startblock += sizeof(uint32);
 	
-	unsigned long *ffff_start = (unsigned long *) startblock;
+	uint32 *ffff_start = (uint32 *) startblock;
 	//fill in the FFFF's as if there were 0 items
 	for(r = 0; r < 10; r++) {
 		*ffff_start = 0xFFFFFFFF;
@@ -636,8 +716,8 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 	char * datastart = (char *) ffff_start;
 	char * cblock = (char *) ffff_start;
 	
-	unsigned long *itemptr;
-	unsigned long *iconptr;
+	uint32 *itemptr;
+	uint32 *iconptr;
 	uint32 len;
 	uint32 datalen = 0;
 	uint8 count = 0;
@@ -666,20 +746,20 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 		
 		//if we get more than 10 items, just start skipping them...
 		for(k = 0; k < num && count < 10; k++) {
-			itemptr = (unsigned long *) cblock;
-			cblock += sizeof(unsigned long);
-			datalen += sizeof(unsigned long);
-			iconptr = (unsigned long *) cblock;
-			cblock += sizeof(unsigned long);
-			datalen += sizeof(unsigned long);
+			itemptr = (uint32 *) cblock;
+			cblock += sizeof(uint32);
+			datalen += sizeof(uint32);
+			iconptr = (uint32 *) cblock;
+			cblock += sizeof(uint32);
+			datalen += sizeof(uint32);
 			
 			*itemptr = item;
 			*iconptr = icon;
 			strncpy(cblock, name, len);
-			
+
 			cblock[len] = '\0';	//just making sure.
 			cblock += len + 1;	//get the null
-			datalen += len + 1;	//gte the null
+			datalen += len + 1;	//get the null
 			count++;
 		}
 		
@@ -687,11 +767,11 @@ void Client::SendTradeskillDetails(unsigned long recipe_id) {
 	mysql_free_result(result);
 	
 	//now move the item data over top of the FFFFs
-	uint8 dist = sizeof(unsigned long) * (10 - count);
+	uint8 dist = sizeof(uint32) * (10 - count);
 	startblock += dist;
 	memmove(startblock, datastart, datalen);
 	
-	uint32 total = sizeof(unsigned long) + dist + datalen;
+	uint32 total = sizeof(uint32) + dist + datalen;
 	
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RecipeDetails);
 	outapp->size = total;
@@ -786,7 +866,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		// above critical still stands.
 		// Mastery modifier is: 10%/25%/50% for rank one/two/three
 		chance = 95.0f + (float(user_skill - spec->trivial) / 40.0f);
-		Message_StringID(4, TRADESKILL_TRIVIAL);
+		Message_StringID(MT_Emote, TRADESKILL_TRIVIAL);
 	} else if(chance < 5) {
 		// Minimum chance is always 5
 		chance = 5;
@@ -915,6 +995,20 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			break;
 		}
 	}
+	
+	if (spec->tradeskill == RESEARCH) {
+		switch(GetAA(aaArcaneTongues)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
 
 	if (((spec->tradeskill==75) || GetGM() || (chance > res)) || MakeRandomInt(0, 99) < AAChance){
 		success_modifier = 1;
@@ -946,7 +1040,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		if(over_trivial < 0)
 			CheckIncreaseTradeskill(bonusstat, stat_modifier, skillup_modifier, success_modifier, spec->tradeskill);
 		
-		Message_StringID(4,TRADESKILL_FAILED);
+		Message_StringID(MT_Emote,TRADESKILL_FAILED);
 
 		_log(TRADESKILLS__TRACE, "Tradeskill failed");
             if (this->GetGroup())
@@ -967,11 +1061,10 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill)
 {
 	uint16 current_raw_skill = GetRawSkill(tradeskill);
-	int maxskill = MaxSkill(tradeskill);
 
-	if(current_raw_skill >= maxskill)
+	if(!CanIncreaseTradeskill(tradeskill))
 		return;	//not allowed to go higher.
-	
+
 	float chance_stage2 = 0;
 
 	//A successfull combine doubles the stage1 chance for an skillup
@@ -983,7 +1076,7 @@ void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, flo
 	//formula instead of tweaking the below one.
 	if (chance_stage1 > MakeRandomFloat(0, 99)) {
 		if (current_raw_skill < 15) {
-			// Allways succeed
+			//Always succeed
 			chance_stage2 = 100;
 		} else if (current_raw_skill < 175) {
 			//From skill 16 to 174 your chance of success falls linearly from 92% to 13%.
@@ -1007,7 +1100,6 @@ void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, flo
 	_log(TRADESKILLS__TRACE, "...Stage2 chance was: %f percent. 0 percent means stage1 failed",  chance_stage2);
 }
 
-
 bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint32 some_id, 
 	uint32 char_id, DBTradeskillRecipe_Struct *spec)
 {
@@ -1015,7 +1107,7 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
     MYSQL_RES *result;
     MYSQL_ROW row;
     char *query = 0;
-	char buf2[2048];
+	char buf2[4096];
 	
 	uint32 sum = 0;
 	uint32 count = 0;
@@ -1061,7 +1153,6 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		return(false);	//no items == no recipe
 	}
 
-
 	qlen = MakeAnyLenString(&query, "SELECT tre.recipe_id "
 	" FROM tradeskill_recipe_entries AS tre"
 	" WHERE ( tre.item_id IN(%s) AND tre.componentcount>0 )"
@@ -1087,16 +1178,18 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		pos = buf2;
 		for (i = 0; i < qcount; i++) {
 			row = mysql_fetch_row(result);
-			uint32 recipeid = (uint32) atoi(row[0]);
+			uint32 recipeid = (uint32)atoi(row[0]);
 			if(first) {
 				pos += snprintf(pos, 19, "%u", recipeid);
 				first = false;
 			} else {
 				pos += snprintf(pos, 19, ",%u", recipeid);
 			}
-			//length sanity check on buf2
-			if(pos > (buf2 + 2020))
+			//length limit on buf2
+			if(i == 214) { //Maximum number of recipe matches (19 * 215 = 4096)
+				LogFile->write(EQEMuLog::Error, "GetTradeRecipe warning: Too many matches. Unable to search all recipe entries. Searched %u of %u possible entries.", i + 1, qcount);
 				break;
+			}
 		}
 		
 		qlen = MakeAnyLenString(&query, "SELECT tre.recipe_id"
@@ -1115,30 +1208,25 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 	
 		qcount = mysql_num_rows(result);
 	}
-//updated this section to fix the tradeskill bug of multiple recipies, but different containers.
-	/*
-	if (qcount != 1) {
-		if(qcount > 1) {
-			LogFile->write(EQEMuLog::Error, "Combine error: Recipe is not unique!");
-		
-		
-		}
-		//else, just not found i guess..
-		return(false);
-	}*/
 	
 	if(qcount < 1)
 		return(false);
-	
 	
 	if(qcount > 1)
 	{
 		//The recipe is not unique, so we need to compare the container were using.
 
-		if(!container->GetItem()) 
-			return false;
-		
-		uint32 containerId = container->GetID();
+		uint32 containerId = 0;
+
+		if(some_id) { //Standard container
+			containerId = some_id;
+		}
+		else if(c_type) { //World container
+			containerId = c_type;
+		}
+		else { //Invalid container
+			return(false);
+		}
 
 		qlen = MakeAnyLenString(&query,"SELECT tre.recipe_id FROM tradeskill_recipe_entries as tre WHERE tre.recipe_id IN (%s)"
 		" AND tre.item_id = %u;",buf2,containerId);
@@ -1151,17 +1239,17 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		}
 		safe_delete_array(query);
 
-		
 		uint32 resultRowTotal = mysql_num_rows(result); 
 		
-		//If all the recipes were correct, but no container type matched, drop out.
-		if(resultRowTotal == 0 || resultRowTotal > 1){
-			LogFile->write(EQEMuLog::Error, "Combine error: Recipe is not unique OR incorrect container is being used!");
+		if(resultRowTotal == 0) { //Recipe contents matched more than 1 recipe, but not in this container
+			LogFile->write(EQEMuLog::Error, "Combine error: Incorrect container is being used!");
 			return(false);
 		}
-	
+		if(resultRowTotal > 1) { //Recipe contents matched more than 1 recipe in this container
+			LogFile->write(EQEMuLog::Error, "Combine error: Recipe is not unique! %u matches found for container %u. Continuing with first recipe match.", resultRowTotal, containerId);
+		}
 	}
-	
+
 	row = mysql_fetch_row(result);
 	uint32 recipe_id = (uint32)atoi(row[0]);
 	mysql_free_result(result);
@@ -1203,7 +1291,6 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 
 	return(GetTradeRecipe(recipe_id, c_type, some_id, char_id, spec));
 }
-	
 
 bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id, 
 	uint32 char_id, DBTradeskillRecipe_Struct *spec)
@@ -1288,20 +1375,11 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	spec->onsuccess.clear();
 	for(r = 0; r < qcount; r++) {
 		row = mysql_fetch_row(result);
-		/*if(r == 0) {
-			*product1_id	= (uint32)atoi(row[0]);
-			*productcount	= (uint32)atoi(row[1]);
-		} else if(r == 1) {
-			*product2_id	= (uint32)atoi(row[0]);
-		} else {
-			LogFile->write(EQEMuLog::Warning, "Warning: recipe returned more than 2 products, not yet supported.");
-		}*/
 		uint32 item = (uint32)atoi(row[0]);
 		uint8 num = (uint8) atoi(row[1]);
-		spec->onsuccess.push_back(pair<uint32,uint8>::pair(item, num));
+		spec->onsuccess.push_back(pair<uint32,uint8>(item, num));
 	}
 	mysql_free_result(result);
-	
 	
 	//Pull the on-fail items...
 	qlen = MakeAnyLenString(&query, "SELECT item_id,failcount FROM tradeskill_recipe_entries"
@@ -1314,14 +1392,9 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 		uint8 r;
 		for(r = 0; r < qcount; r++) {
 			row = mysql_fetch_row(result);
-			/*if(r == 0) {
-				*failproduct_id	= (uint32)atoi(row[0]);
-			} else {
-				LogFile->write(EQEMuLog::Warning, "Warning: recipe returned more than 1 fail product, not yet supported.");
-			}*/
 			uint32 item = (uint32)atoi(row[0]);
 			uint8 num = (uint8) atoi(row[1]);
-			spec->onfail.push_back(pair<uint32,uint8>::pair(item, num));
+			spec->onfail.push_back(pair<uint32,uint8>(item, num));
 		}
 		mysql_free_result(result);
 	}
@@ -1346,7 +1419,6 @@ void ZoneDatabase::UpdateRecipeMadecount(uint32 recipe_id, uint32 char_id, uint3
 	}
 	safe_delete_array(query);
 }
-
 
 void Client::LearnRecipe(uint32 recipeID)
 {
@@ -1399,4 +1471,44 @@ void Client::LearnRecipe(uint32 recipeID)
 	
 	mysql_free_result(result);
 	
+}
+
+bool Client::CanIncreaseTradeskill(SkillType tradeskill) {
+	uint32 rawskill = GetRawSkill(tradeskill);
+	int16 maxskill = MaxSkill(tradeskill);
+
+	if (rawskill >= maxskill) //Max skill sanity check
+		return false;
+
+	uint8 Baking    = (GetRawSkill(BAKING) > 200) ? 1 : 0;
+	uint8 Smithing  = (GetRawSkill(BLACKSMITHING) > 200) ? 1 : 0;
+	uint8 Brewing   = (GetRawSkill(BREWING) > 200) ? 1 : 0;
+	uint8 Fletching = (GetRawSkill(FLETCHING) > 200) ? 1 : 0;
+	uint8 Jewelry   = (GetRawSkill(JEWELRY_MAKING) > 200) ? 1 : 0;
+	uint8 Pottery   = (GetRawSkill(POTTERY) > 200) ? 1 : 0;
+	uint8 Tailoring = (GetRawSkill(TAILORING) > 200) ? 1 : 0;
+	uint8 SkillTotal = Baking + Smithing + Brewing + Fletching + Jewelry + Pottery + Tailoring; //Tradeskills above 200
+	int32 aaLevel  = GetAA(aaNewTanaanCraftingMastery); //New Tanaan AA: Each level allows an additional tradeskill above 200 (first one is free)
+	
+	switch (tradeskill) {
+		case BAKING:
+		case BLACKSMITHING:
+		case BREWING:
+		case FLETCHING:
+		case JEWELRY_MAKING:
+		case POTTERY:
+		case TAILORING:
+			if (aaLevel == 6)
+				break; //Maxed AA
+			if (SkillTotal == 0)
+				break; //First tradeskill freebie
+			if ((SkillTotal == (aaLevel + 1)) && (rawskill > 200))
+				break; //One of the tradeskills already allowed to go over 200
+			if ((SkillTotal >= (aaLevel + 1)) && (rawskill >= 200))
+				return false; //One or more tradeskills already at or beyond limit
+				break;
+		default:
+			break; //Other skills unchecked and ability to increase assumed true
+	}
+	return true;
 }

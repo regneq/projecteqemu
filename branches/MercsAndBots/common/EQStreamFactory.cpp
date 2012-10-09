@@ -1,6 +1,6 @@
 #include "debug.h"
 #include "EQStreamFactory.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <winsock.h>
 	#include <process.h>
 	#include <io.h>
@@ -66,7 +66,7 @@ void EQStreamFactory::Close()
 {
 	Stop();
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	closesocket(sock);
 #else
 	close(sock);
@@ -98,7 +98,7 @@ struct sockaddr_in address;
 		sock=-1;
 		return false;
 	}
-	#ifdef WIN32
+	#ifdef _WINDOWS
 		unsigned long nonblock = 1;
 		ioctlsocket(sock, FIONBIO, &nonblock);
 	#else
@@ -107,7 +107,7 @@ struct sockaddr_in address;
 	//moved these because on windows the output was delayed and causing the console window to look bad
 	//cout << "Starting factory Reader" << endl;
 	//cout << "Starting factory Writer" << endl;
-	#ifdef WIN32
+	#ifdef _WINDOWS
 		_beginthread(EQStreamFactoryReaderLoop,0, this);
 		_beginthread(EQStreamFactoryWriterLoop,0, this);
 	#else
@@ -176,7 +176,7 @@ timeval sleep_time;
 			break;		//somebody closed us while we were sleeping.
 		
 		if (FD_ISSET(sock,&readset)) {
-#ifdef WIN32
+#ifdef _WINDOWS
 			if ((length=recvfrom(sock,(char*)buffer,sizeof(buffer),0,(struct sockaddr*)&from,(int *)&socklen)) < 2)
 #else
 			if ((length=recvfrom(sock,buffer,2048,0,(struct sockaddr *)&from,(socklen_t *)&socklen)) < 2)

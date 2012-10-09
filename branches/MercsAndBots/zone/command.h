@@ -304,10 +304,25 @@ void command_netstats(Client *c, const Seperator *sep);
 void command_object(Client* c, const Seperator *sep);
 void command_raidloot(Client* c, const Seperator *sep);
 void command_globalview(Client* c, const Seperator *sep);
+void command_emoteview(Client* c, const Seperator *sep);
+void command_reloademote(Client* c, const Seperator *sep);
+void command_emotesearch(Client* c, const Seperator *sep);
 void command_distance(Client *c, const Seperator *sep);
 void command_cvs(Client *c, const Seperator *sep);
 void command_max_all_skills(Client *c, const Seperator *sep);
 void command_showbonusstats(Client *c, const Seperator *sep);
+void command_reloadallrules(Client *c, const Seperator *sep);
+void command_reloadworldrules(Client *c, const Seperator *sep);
+void command_camerashake(Client *c, const Seperator *sep);
+void command_disarmtrap(Client *c, const Seperator *sep);
+void command_sensetrap(Client *c, const Seperator *sep);
+void command_picklock(Client *c, const Seperator *sep);
+void command_qtest(Client *c, const Seperator *sep);
+void command_mysql(Client *c, const Seperator *sep);
+void command_xtargets(Client *c, const Seperator *sep);
+void command_printquestitems(Client *c, const Seperator *sep);
+void command_clearquestitems(Client *c, const Seperator *sep);
+void command_zopp(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);

@@ -19,14 +19,14 @@
 #include "debug.h"
 #include "Condition.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #else
 #include <pthread.h>
 #include <sys/time.h>
 #include <errno.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WINDOWS
 
 
 Condition::Condition() 

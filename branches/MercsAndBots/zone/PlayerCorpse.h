@@ -41,7 +41,7 @@ public:
 	//abstract virtual function implementations requird by base abstract class
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) { return; }
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) { return; }
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = true) { return false; }
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = true, bool IsFromSpell = false) { return false; }
 	virtual bool HasRaid() { return false; }
 	virtual bool HasGroup() { return false; }
 	virtual Raid* GetRaid() { return 0; }
@@ -58,17 +58,19 @@ public:
 	int32	GetCharID()			{ return charid; }
 	int32	SetCharID(int32 iCharID) { if (IsPlayerCorpse()) { return (charid=iCharID); } return 0xFFFFFFFF; };
 	int32	GetDecayTime()		{ if (!corpse_decay_timer.Enabled()) return 0xFFFFFFFF; else return corpse_decay_timer.GetRemainingTime(); }
+	int32	GetResTime()		{ if (!corpse_res_timer.Enabled()) return 0; else return corpse_res_timer.GetRemainingTime(); }
 	void	CalcCorpseName();
 	inline void		Lock()			{ pLocked = true; }
 	inline void		UnLock()		{ pLocked = false; }
 	inline bool		IsLocked()		{ return pLocked; }
 	inline void		ResetLooter()	{ BeingLootedBy = 0xFFFFFFFF; }
+	inline bool		IsBeingLooted() { return (BeingLootedBy != 0xFFFFFFFF); }
 	inline int32	GetDBID()		{ return dbid; }
 	inline char*	GetOwnerName()	{ return orgname;}
 
 	void	SetDecayTimer(int32 decaytime);
 	bool	IsEmpty() const;
-	void	AddItem(uint32 itemnum, int8 charges, sint16 slot = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
+	void	AddItem(uint32 itemnum, int16 charges, sint16 slot = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	uint32	GetWornItem(sint16 equipSlot) const;
 	ServerLootItem_Struct* GetItem(int16 lootslot, ServerLootItem_Struct** bag_item_data = 0);
 	void	RemoveItem(int16 lootslot);
@@ -78,7 +80,8 @@ public:
 	void	QueryLoot(Client* to);
 	int32	CountItems();
 	void	Delete();
-	virtual void	Depop(bool StartSpawnTimer = true);
+	void	Bury();
+	virtual void	Depop();
 	virtual void    DepopCorpse();
 
 	uint32	GetCopper()		{ return copper; }
@@ -90,7 +93,7 @@ public:
 	void	MakeLootRequestPackets(Client* client, const EQApplicationPacket* app);
 	void	LootItem(Client* client, const EQApplicationPacket* app);
 	void	EndLoot(Client* client, const EQApplicationPacket* app);
-	void	Summon(Client* client, bool spell);
+	bool	Summon(Client* client, bool spell, bool CheckDistance);
 	void	CastRezz(int16 spellid, Mob* Caster);
 	void	CompleteRezz();
 	void	SetPKItem(sint32 id) { pkitem = id; }
@@ -108,11 +111,10 @@ public:
 	inline int GetRezzExp() { return rezzexp; }
 
 protected:
-	void MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
+	std::list<uint32> MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
 
 private:
-	bool		p_PlayerCorpse;
-	bool		pIsChanged;
+	bool		p_PlayerCorpse;	bool		pIsChanged;
 	bool		pLocked;
 	sint32		pkitem;
 	int32		dbid;
@@ -126,9 +128,11 @@ private:
 	int32		BeingLootedBy;
 	int32		rezzexp;
 	bool		rez;
+	bool		can_rez;
 	bool		become_npc;
 	int			looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
 	Timer		corpse_decay_timer;
+	Timer		corpse_res_timer;
 	Timer		corpse_delay_timer;
 	Timer		corpse_graveyard_timer;
 	Timer		loot_cooldown_timer;

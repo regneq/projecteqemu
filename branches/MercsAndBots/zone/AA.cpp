@@ -46,8 +46,10 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemulator.net)
 AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
 map<int32,SendAA_Struct*>aas_send;
 std::map<uint32, std::map<uint32, AA_Ability> > aa_effects;	//stores the effects from the aa_effects table in memory
+std::map<uint32, AALevelCost_Struct> AARequiredLevelAndCost;
 
 /*
+
 
 Schema:
 
@@ -96,7 +98,7 @@ int Client::GetAATimerID(aaID activate)
 
 	if(!aa2)
 	{
-		for(int i = 1;i < 5; ++i)
+		for(int i = 1;i < MAX_AA_ACTION_RANKS; ++i)
 		{
 			int a = activate - i;
 
@@ -144,7 +146,7 @@ int Client::CalcAAReuseTimer(const AA_DBAction *caa) {
 void Client::ActivateAA(aaID activate){
 	if(activate < 0 || activate >= aaHighestID)
 		return;
-	if(IsStunned() || IsFeared() || IsMezzed() || IsSitting() || GetFeigned())
+	if(IsStunned() || IsFeared() || IsMezzed() || IsSilenced() || IsPet() || IsSitting() || GetFeigned())
 		return;
 
 	int AATimerID = GetAATimerID(activate);
@@ -158,7 +160,7 @@ void Client::ActivateAA(aaID activate){
 		if(!aa2){
 			int i;
 			int a;
-			for(i=1;i<5;i++){
+			for(i=1;i<MAX_AA_ACTION_RANKS;i++){
 				a = activate - i;
 				if(a <= 0)
 					break;
@@ -177,32 +179,40 @@ void Client::ActivateAA(aaID activate){
 	if (activate_val == 0){
 		return;
 	}
+
+	if(aa2)
+	{
+		if(aa2->account_time_required)
+		{
+			if((Timer::GetTimeSeconds() + account_creation) < aa2->account_time_required)
+			{
+				return;
+			}
+		}
+	}
 	
 	if(!p_timers.Expired(&database, AATimerID + pTimerAAStart)) 
 	{
-		char aastr[10];
-		char aa_hr[10];
-		char aa_min[10];
-		char aa_sec[10];
-		memset(aastr, 0, 10);
-		memset(aa_hr, 0, 10);
-		memset(aa_min, 0, 10);
-		memset(aa_sec, 0, 10);
-
 		uint32 aaremain = p_timers.GetRemainingTime(AATimerID + pTimerAAStart);
 		uint32 aaremain_hr = aaremain / (60 * 60);
 		uint32 aaremain_min = (aaremain / 60) % 60;
 		uint32 aaremain_sec = aaremain % 60;
 
-		sprintf(aastr, "%d", activate);
-		sprintf(aa_hr, "%d", aaremain_hr);
-		sprintf(aa_min, "%d", aaremain_min);
-		sprintf(aa_sec, "%d", aaremain_sec);
-
-		if (aaremain_hr >= 1)	//1 hour or more
-			Message_StringID(13, AA_REUSE_MSG, aastr, aa_hr, aa_min, aa_sec);	//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
-		else	//less than an hour
-			Message_StringID(13, AA_REUSE_MSG2, aastr, aa_min, aa_sec);	//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
+        if(aa2) {
+            if (aaremain_hr >= 1)	//1 hour or more
+		    	Message(13, "You can use the ability %s again in %u hour(s) %u minute(s) %u seconds", 
+                aa2->name, aaremain_hr, aaremain_min, aaremain_sec); 
+	    	else	//less than an hour
+	    		Message(13, "You can use the ability %s again in %u minute(s) %u seconds", 
+                aa2->name, aaremain_min, aaremain_sec); 
+        } else {
+            if (aaremain_hr >= 1)	//1 hour or more
+		    	Message(13, "You can use this ability again in %u hour(s) %u minute(s) %u seconds", 
+                aaremain_hr, aaremain_min, aaremain_sec); 
+	    	else	//less than an hour
+	    		Message(13, "You can use this ability again in %u minute(s) %u seconds", 
+                aaremain_min, aaremain_sec); 
+        }
 		return;
 	}
 	
@@ -225,21 +235,14 @@ void Client::ActivateAA(aaID activate){
 	//figure out our target
 	switch(caa->target) {
 		case aaTargetUser:
-			target_id = GetID();
-			break;
-		case aaTargetCurrent:
-			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
-				return;
-			}
-			target_id = GetTarget()->GetID();
-			break;
 		case aaTargetGroup:
 			target_id = GetID();
 			break;
+		case aaTargetCurrent:
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
+				Message_StringID(MT_DefaultText, AA_NO_TARGET);	//You must first select a target for this ability!
+				p_timers.Clear(&database, AATimerID + pTimerAAStart);
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -278,6 +281,7 @@ void Client::ActivateAA(aaID activate){
 	
 	//cast the spell, if we have one
 	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) {
+
 		if(caa->reuse_time > 0)
 		{
 			int32 timer_base = CalcAAReuseTimer(caa);
@@ -294,6 +298,17 @@ void Client::ActivateAA(aaID activate){
 			if(!CastSpell(caa->spell_id, target_id))
 				return;
 		}
+	}
+	// Check if AA is expendable
+	if (aas_send[activate - activate_val]->special_category == 7)
+	{
+		// Add the AA cost to the extended profile to track overall total
+		m_epp.expended_aa += aas_send[activate]->cost;
+		SetAA(activate, 0);
+		
+		Save();
+		SendAA(activate);
+		SendAATable();
 	}
 }
 
@@ -326,7 +341,7 @@ void Client::HandleAAAction(aaID activate) {
 			
 		case aaActionMassBuff:
 			EnableAAEffect(aaEffectMassGroupBuff, 3600); 
-			Message_StringID(10, MGB_STRING);	//The next group buff you cast will hit all targets in range.
+			Message_StringID(MT_Disciplines, MGB_STRING);	//The next group buff you cast will hit all targets in range.
 			break;
 		
 		case aaActionFlamingArrows:
@@ -467,6 +482,11 @@ void Client::HandleAAAction(aaID activate) {
 			EnableAAEffect(aaEffectLeechTouch, 1000);
 			break;
 
+		case aaActionFadingMemories:
+			entity_list.RemoveFromTargets(this);
+			SetInvisible(1);
+			break;
+			
 		default:
 			LogFile->write(EQEMuLog::Error, "Unknown AA nonspell action type %d", caa->action);
 			return;
@@ -474,25 +494,17 @@ void Client::HandleAAAction(aaID activate) {
 	
 	
 	int16 target_id = 0;
-	
 	//figure out our target
 	switch(target) {
 		case aaTargetUser:
-			target_id = GetID();
-			break;
-		case aaTargetCurrent:
-			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
-				return;
-			}
-			target_id = GetTarget()->GetID();
-			break;
 		case aaTargetGroup:
 			target_id = GetID();
 			break;
+		case aaTargetCurrent:
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
+				Message_StringID(MT_DefaultText, AA_NO_TARGET);	//You must first select a target for this ability!
+				p_timers.Clear(&database, timer_id + pTimerAAEffectStart);
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -548,6 +560,10 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 			pet.duration = spells[spell_id].max[x];
 		}
 	}
+	
+	if(IsClient())
+		pet.duration += (CastToClient()->GetFocusEffect(focusSwarmPetDuration, spell_id) / 1000);
+	
 	pet.npc_id = record.npc_type;
 
 	NPCType *made_npc = NULL;
@@ -613,6 +629,7 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
 		}
 
+		//removing this prevents the pet from attacking
 		npca->GetSwarmInfo()->owner_id = GetID();
 
 		//give the pets somebody to "love"
@@ -625,13 +642,99 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 		if(npc_dup != NULL)
 			npca->GiveNPCTypeData(npc_dup);
 		
-		entity_list.AddNPC(npca);
+		entity_list.AddNPC(npca, true, true);
 		summon_count--;
 	}
 
 	//the target of these swarm pets will take offense to being cast on...
 	if(targ != NULL)
 		targ->AddToHateList(this, 1, 0);
+}
+
+void Mob::TypesTemporaryPets(int32 typesid, Mob *targ, const char *name_override, uint32 duration_override, bool followme) {
+			
+	AA_SwarmPet pet;
+	pet.count = 1;
+	pet.duration = 1;
+		
+	pet.npc_id = typesid;
+
+	NPCType *made_npc = NULL;
+	
+	const NPCType *npc_type = database.GetNPCType(typesid);
+	if(npc_type == NULL) {
+		//log write
+		LogFile->write(EQEMuLog::Error, "Unknown npc type for swarm pet type id: %d", typesid);
+		Message(0,"Unable to find pet!");
+		return;
+	}
+	
+	if(name_override != NULL) {
+		//we have to make a custom NPC type for this name change
+		made_npc = new NPCType; 
+		memcpy(made_npc, npc_type, sizeof(NPCType));
+		strcpy(made_npc->name, name_override);
+		npc_type = made_npc;
+	}
+	
+	int summon_count = 0;
+	summon_count = pet.count;
+	
+	if(summon_count > MAX_SWARM_PETS)
+		summon_count = MAX_SWARM_PETS;
+	
+	static const float swarm_pet_x[MAX_SWARM_PETS] = { 	5, -5, 5, -5, 
+														10, -10, 10, -10,
+														8, -8, 8, -8 };
+	static const float swarm_pet_y[MAX_SWARM_PETS] = { 	5, 5, -5, -5, 
+														10, 10, -10, -10,
+														8, 8, -8, -8 };
+	TempPets(true);
+
+	while(summon_count > 0) {
+		int pet_duration = pet.duration;
+		if(duration_override > 0)
+			pet_duration = duration_override;
+		
+		//this is a little messy, but the only way to do it right
+		//it would be possible to optimize out this copy for the last pet, but oh well
+		NPCType *npc_dup = NULL;
+		if(made_npc != NULL) {
+			npc_dup = new NPCType;
+			memcpy(npc_dup, made_npc, sizeof(NPCType));
+		}
+		
+		NPC* npca = new NPC(
+				(npc_dup!=NULL)?npc_dup:npc_type,	//make sure we give the NPC the correct data pointer
+				0, 
+				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
+				GetZ(), GetHeading(), FlyMode3);
+
+		if(!npca->GetSwarmInfo()){
+			AA_SwarmPetInfo* nSI = new AA_SwarmPetInfo;
+			npca->SetSwarmInfo(nSI);
+			npca->GetSwarmInfo()->duration = new Timer(pet_duration*1000);
+		}
+		else{
+			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
+		}
+
+		//removing this prevents the pet from attacking
+		npca->GetSwarmInfo()->owner_id = GetID();
+
+		//give the pets somebody to "love"
+		if(targ != NULL){
+			npca->AddToHateList(targ, 1000, 1000);
+			npca->GetSwarmInfo()->target = targ->GetID();
+		}
+		
+		//we allocated a new NPC type object, give the NPC ownership of that memory
+		if(npc_dup != NULL)
+			npca->GiveNPCTypeData(npc_dup);
+		
+		entity_list.AddNPC(npca, true, true);
+		summon_count--;
+	}
 }
 
 void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
@@ -809,7 +912,7 @@ void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 		sitem = CorpseToUse->GetWornItem(x);
 		if(sitem){
 			const Item_Struct * itm = database.GetItem(sitem);
-			npca->AddLootDrop(itm, &npca->itemlist, 1, true, true);
+			npca->AddLootDrop(itm, &npca->itemlist, 1, 1, 127, true, true);
 		}
 	}
 
@@ -817,7 +920,7 @@ void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 	if(make_npc != NULL)
 		npca->GiveNPCTypeData(make_npc);
 
-	entity_list.AddNPC(npca);
+	entity_list.AddNPC(npca, true, true);
 
 	//the target of these swarm pets will take offense to being cast on...
 	if(target != NULL)
@@ -877,7 +980,8 @@ void Client::SendAAStats() {
 	safe_delete(outapp);
 }
 
-void Client::BuyAA(AA_Action* action){
+void Client::BuyAA(AA_Action* action)
+{
 	mlog(AA__MESSAGE, "Starting to buy AA %d", action->ability);
 		
 	//find the AA information from the database
@@ -886,7 +990,7 @@ void Client::BuyAA(AA_Action* action){
 		//hunt for a lower level...
 		int i;
 		int a;
-		for(i=1;i<15;i++){
+		for(i=1;i<MAX_AA_ACTION_RANKS;i++){
 			a = action->ability - i;
 			if(a <= 0)
 				break;
@@ -899,14 +1003,37 @@ void Client::BuyAA(AA_Action* action){
 	if(aa2 == NULL)
 		return;	//invalid ability...
 	
+	if(aa2->special_category == 1 || aa2->special_category == 2)
+		return; // Not purchasable progression style AAs
+		
+	if(aa2->special_category == 8 && aa2->cost == 0)
+		return; // Not purchasable racial AAs(set a cost to make them purchasable)
+
 	int32 cur_level = GetAA(aa2->id);
 	if((aa2->id + cur_level) != action->ability) { //got invalid AA
 		mlog(AA__ERROR, "Unable to find or match AA %d (found %d + lvl %d)", action->ability, aa2->id, cur_level);
 		return;
 	}
 	
-	int real_cost = aa2->cost + (aa2->cost_inc * cur_level);
+	if(aa2->account_time_required)
+	{
+		if((Timer::GetTimeSeconds() - account_creation) < aa2->account_time_required)
+		{
+			return;
+		}
+	}
+
+	int real_cost;
 	
+	std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(action->ability);
+
+	if(RequiredLevel != AARequiredLevelAndCost.end())
+	{
+		real_cost = RequiredLevel->second.Cost;
+	}
+	else
+		real_cost = aa2->cost + (aa2->cost_inc * cur_level);
+
 	if(m_pp.aapoints >= real_cost && cur_level < aa2->max_level) {
 		SetAA(aa2->id, cur_level+1);
 
@@ -915,8 +1042,14 @@ void Client::BuyAA(AA_Action* action){
 		m_pp.aapoints -= real_cost;
 
 		Save();
+		if ((RuleB(AA, Stacking) && (GetClientVersionBit() >= 4) && (aa2->hotkey_sid == 4294967295))
+			&& ((aa2->max_level == (cur_level+1)) && aa2->sof_next_id)){
+			SendAA(aa2->id);
+			SendAA(aa2->sof_next_id);
+		}
+		else 
+			SendAA(aa2->id);
 
-		SendAA(aa2->id);
 		SendAATable();
 
 		//we are building these messages ourself instead of using the stringID to work around patch discrepencies
@@ -924,7 +1057,7 @@ void Client::BuyAA(AA_Action* action){
 		if(cur_level<1)
 			Message(15,"You have gained the ability \"%s\" at a cost of %d ability %s.", aa2->name, real_cost, (real_cost>1)?"points":"point");
 		else
-			Message(15,"You have improved %s %d at a cost of %d ability %s.", aa2->name, cur_level, real_cost, (real_cost>1)?"points":"point");
+			Message(15,"You have improved %s %d at a cost of %d ability %s.", aa2->name, cur_level+1, real_cost, (real_cost>1)?"points":"point");
 
 		
 		SendAAStats();
@@ -1002,6 +1135,7 @@ void Client::SendPreviousAA(int32 id, int seq){
 	outapp->pBuffer=(uchar*)saa;
 	value--;
 	memcpy(saa,saa2,size);
+
 	if(value>0){
 		if(saa->spellid==0)
 			saa->spellid=0xFFFFFFFF;
@@ -1017,14 +1151,21 @@ void Client::SendPreviousAA(int32 id, int seq){
 			saa->cost2 += saa->cost + (saa->cost_inc * i);
 		}
 	}
+
 	database.FillAAEffects(saa);
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
 
 void Client::SendAA(int32 id, int seq) {
+
 	uint32 value=0;
 	SendAA_Struct* saa2 = NULL;
+	SendAA_Struct* qaa = NULL;
+	SendAA_Struct* saa_pp = NULL;
+	bool IsBaseLevel = true;
+	bool aa_stack = false;
+	
 	if(id==0)
 		saa2 = zone->GetAABySequence(seq);
 	else
@@ -1036,6 +1177,111 @@ void Client::SendAA(int32 id, int seq) {
 	if(!(classes & (1 << GetClass())) && (GetClass()!=BERSERKER || saa2->berserker==0)){
 		return;
 	}
+
+	if(saa2->account_time_required)
+	{
+		if((Timer::GetTimeSeconds() - account_creation) < saa2->account_time_required)
+		{
+			return;
+		}
+	}
+
+	// Hide Quest/Progression AAs unless player has been granted the first level using $client->IncrementAA(skill_id).
+	if (saa2->special_category == 1 || saa2->special_category == 2 ) {
+		if(GetAA(saa2->id) == 0)
+			return;
+		// For Quest line AA(demiplane AEs) where only 1 is visible at a time, check to make sure only the highest level obtained is shown
+		if(saa2->aa_expansion > 0) {
+			qaa = zone->FindAA(saa2->id+1);
+			if(qaa && (saa2->aa_expansion == qaa->aa_expansion) && GetAA(qaa->id) > 0)
+				return;
+		}
+	}
+
+/*	Beginning of Shroud AAs, these categories are for Passive and Active Shroud AAs
+	Eventually with a toggle we could have it show player list or shroud list
+	if (saa2->special_category == 3 || saa2->special_category == 4)
+		return;
+*/	
+	// Check for racial/Drakkin blood line AAs
+	if (saa2->special_category == 8)
+	{
+		int32 client_race = this->GetBaseRace();
+		
+		// Drakkin Bloodlines
+		if (saa2->aa_expansion > 522) 
+		{	
+			if (client_race != 522)
+				return; // Check for Drakkin Race
+			
+			int heritage = this->GetDrakkinHeritage() + 523; // 523 = Drakkin Race(522) + Bloodline
+			
+			if (heritage != saa2->aa_expansion)
+				return;
+		}
+		// Racial AAs
+		else if (client_race != saa2->aa_expansion)
+		{
+			return;
+		}
+	}
+	
+	/*
+	AA stacking on SoF+ clients.
+	
+	Note: There were many ways to achieve this effect - The method used proved to be the most straight forward and consistent.
+	Stacking does not currently work ideally for AA's that use hotkeys, therefore they will be excluded at this time.
+	
+	TODO: Problem with AA hotkeys - When you reach max rank of an AA tier (ie 5/5), it automatically displays the next AA in 
+	the series and you can not transfer the hotkey to the next AA series. To the best of the my ability and through many
+	different variations of coding I could not find an ideal solution to this issue.
+	
+	How stacking works:
+	Utilizes two new fields: sof_next_id (which is the next id in the series), sof_current_level (ranks the AA's as the current level)
+	1) If no AA's purchased only display the base levels of each AA series.
+	2) When you purchase an AA and its rank is maxed it sends the packet for the completed AA, and the packet
+	   for the next aa in the series. The previous tier is removed from your window, and the new AA is displayed.	
+	3) When you zone/buy your player profile will be checked and determine what AA can be displayed base on what you have already.
+	*/
+	
+	if (RuleB(AA, Stacking) && (GetClientVersionBit() >= 4) && (saa2->hotkey_sid == 4294967295))
+		aa_stack = true;
+
+	if (aa_stack){
+		uint32 aa_AA = 0;
+		uint32 aa_value = 0;
+		for (int i = 0; i < MAX_PP_AA_ARRAY; i++) {	
+			if (aa[i]) {	
+				aa_AA = aa[i]->AA;
+				aa_value = aa[i]->value;
+				
+				if (aa_AA){
+		
+					if (aa_value > 0)
+						aa_AA -= aa_value-1;
+
+					saa_pp = zone->FindAA(aa_AA);
+
+					if (saa_pp){
+
+						if (saa_pp->sof_next_skill == saa2->sof_next_skill){
+							
+							if (saa_pp->id == saa2->id)
+								break; //You already have this in the player profile.
+							else if ((saa_pp->sof_current_level <  saa2->sof_current_level) && (aa_value < saa_pp->max_level))
+								return; //DISABLE DISPLAY HIGHER - You have not reached max level yet of your current AA.
+							else if ((saa_pp->sof_current_level <  saa2->sof_current_level) && (aa_value == saa_pp->max_level) && (saa_pp->sof_next_id == saa2->id))
+								IsBaseLevel = false; //ALLOW DISPLAY HIGHER
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//Hide higher tiers of multi tiered AA's if the base level is not fully purchased.
+	if (aa_stack && IsBaseLevel && saa2->sof_current_level > 0)
+		return;
 	
 	int size=sizeof(SendAA_Struct)+sizeof(AA_Ability)*saa2->total_abilities;
 	uchar* buffer = new uchar[size];
@@ -1047,26 +1293,57 @@ void Client::SendAA(int32 id, int seq) {
 	
 	value=GetAA(saa->id);
 	int32 orig_val = value;
-	bool dump = false;
-	if(value){
-		dump = true;
+
+	if(value && saa->id){
+
 		if(value < saa->max_level){
 			saa->id+=value;
 			saa->next_id=saa->id+1;
 			value++;
 		}
+
+		else if (aa_stack && saa->sof_next_id){
+			saa->id+=value-1;
+			saa->next_id=saa->sof_next_id;
+		
+			//Prevent removal of previous AA from window if next AA belongs to a higher client version.
+			SendAA_Struct* saa_next = NULL;
+			saa_next = zone->FindAA(saa->sof_next_id);
+			if (saa_next && 
+			   (((GetClientVersionBit() == 4) && (saa_next->clientver > 4))
+			   || ((GetClientVersionBit() == 8) && (saa_next->clientver > 5))
+			   || ((GetClientVersionBit() == 16) && (saa_next->clientver > 6)))){
+				saa->next_id=0xFFFFFFFF;
+			}
+		}
+
 		else{
 			saa->id+=value-1;
 			saa->next_id=0xFFFFFFFF;
 		}
+
+		int32 current_level_mod = 0;
+		if (aa_stack)
+			current_level_mod = saa->sof_current_level;
+		
 		saa->last_id=saa->id-1;
-		saa->current_level=value;
+		saa->current_level=value+(current_level_mod);
 		saa->cost = saa2->cost + (saa2->cost_inc*(value-1));
 		saa->cost2 = 0;
 		for(int i=0;i<value;i++){
 			saa->cost2 += saa2->cost + (saa2->cost_inc * i);
 		}
+		saa->class_type = saa2->class_type + (saa2->level_inc*(value-1));
 	}
+	
+	if (aa_stack){
+
+		if (saa->sof_current_level > 1 && value == 0)
+			saa->current_level = saa->sof_current_level+1;
+		
+		saa->max_level = saa->sof_max_level;
+	}
+	
 	database.FillAAEffects(saa);
 
 	if(value > 0)
@@ -1076,14 +1353,24 @@ void Client::SendAA(int32 id, int seq) {
 		if(caa && caa->reuse_time > 0)
 			saa->spell_refresh = CalcAAReuseTimer(caa);
 	}
+	
+	//You can now use the level_inc field in the altadv_vars table to accomplish this, though still needed
+	//for special cases like LOH/HT due to inability to implement correct stacking of AA's that use hotkeys.
+	std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(saa->id);
+
+	if(RequiredLevel != AARequiredLevelAndCost.end())
+	{
+		saa->class_type = RequiredLevel->second.Level;
+		saa->cost = RequiredLevel->second.Cost;
+	}
+	
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendAATable);
 	outapp->size=size;
 	outapp->pBuffer=(uchar*)saa;
 	if(id==0 && value && (orig_val < saa->max_level)) //send previous AA only on zone in
 		SendPreviousAA(id, seq);
-	//if(dump)
-		//DumpPacket(outapp);
+	
 	QueuePacket(outapp);
 	safe_delete(outapp);
 	//will outapp delete the buffer for us even though it didnt make it?  --- Yes, it should
@@ -1111,12 +1398,18 @@ bool Client::SetAA(int32 aa_id, int32 new_value) {
 	for(cur=0;cur < MAX_PP_AA_ARRAY;cur++){
 		if((aa[cur]->value > 1) && ((aa[cur]->AA - aa[cur]->value + 1)== aa_id)){
 			aa[cur]->value = new_value;
-			aa[cur]->AA++;
+			if(new_value > 0)
+				aa[cur]->AA++;
+			else
+				aa[cur]->AA = 0;
 			return true;
 		}
 		else if((aa[cur]->value == 1) && (aa[cur]->AA == aa_id)){
 			aa[cur]->value = new_value;
-			aa[cur]->AA++;
+			if(new_value > 0)
+				aa[cur]->AA++;
+			else
+				aa[cur]->AA = 0;
 			return true;
 		}
 		else if(aa[cur]->AA==0){ //end of list
@@ -1313,7 +1606,7 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 				Inspector->Message(0, "%s", spells[buffs[i].spellid].name);
 			else
 			{
-				if (buffs[i].durationformula == DF_Permanent)
+				if (spells[buffs[i].spellid].buffdurationformula == DF_Permanent)
 					Inspector->Message(0, "%s (Permanent)", spells[buffs[i].spellid].name);
 				else {
 					char *TempString = NULL;
@@ -1487,9 +1780,9 @@ void ZoneDatabase::LoadAAs(SendAA_Struct **load){
 	if(!load)
 		return;
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT skill_id from altadv_vars order by skill_id"), errbuf, &result)) {
 		int skill=0,ndx=0;
 		while((row = mysql_fetch_row(result))!=NULL) {
@@ -1502,6 +1795,24 @@ void ZoneDatabase::LoadAAs(SendAA_Struct **load){
 	} else {
 		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadAAs query '%s': %s", query, errbuf);		
 	}
+	safe_delete_array(query);
+
+	AARequiredLevelAndCost.clear();
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT skill_id, level, cost from aa_required_level_cost order by skill_id"), errbuf, &result))
+	{
+		AALevelCost_Struct aalcs;
+		while((row = mysql_fetch_row(result))!=NULL)
+		{
+			aalcs.Level = atoi(row[1]);
+			aalcs.Cost = atoi(row[2]);
+			AARequiredLevelAndCost[atoi(row[0])] = aalcs;
+		}		
+		mysql_free_result(result);
+	}
+	else
+		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadAAs query '%s': %s", query, errbuf);
+
 	safe_delete_array(query);
 }
 
@@ -1556,7 +1867,11 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				"a.sof_cost_inc, "
 				"a.sof_max_level, "
 				"a.sof_next_skill, "
-				"a.clientver "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 3 = SoF
+				"a.clientver, "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 4 = SoF 5 = SOD 6 = UF
+				"a.account_time_required, "
+				"a.sof_current_level,"
+				"a.sof_next_id, "
+				"a.level_inc "
 			" FROM altadv_vars a WHERE skill_id=%i", skill_id), errbuf, &result)) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) == 1) {
@@ -1607,6 +1922,11 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				sendaa->sof_max_level = atoul(row[21]);
 				sendaa->sof_next_skill = atoul(row[22]);
 				sendaa->clientver = atoul(row[23]);
+				sendaa->account_time_required = atoul(row[24]);
+				//Internal use only - not sent to client
+				sendaa->sof_current_level = atoul(row[25]);
+				sendaa->sof_next_id = atoul(row[26]);
+				sendaa->level_inc = atoul(row[27]);
 			}
 			mysql_free_result(result);
 		} else {
@@ -2349,3 +2669,11 @@ and I am not sure that it is all in the DB yet.
 			Message(0,"Sorry Frenzied Devastation not working YET");
 			break;
 */
+
+void Client::DurationRampage(int32 duration)
+{
+	if(duration) {
+		m_epp.aa_effects |= 1 << (aaEffectRampage-1);
+		p_timers.Start(pTimerAAEffectStart + aaEffectRampage, duration);
+	}
+}

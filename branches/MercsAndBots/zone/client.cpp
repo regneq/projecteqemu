@@ -27,7 +27,7 @@ using namespace std;
 #include <math.h>
 
 // Disgrace: for windows compile
-#ifdef WIN32
+#ifdef _WINDOWS
 #define abs64 _abs64
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
@@ -62,16 +62,14 @@ extern bool spells_loaded;
 #include "../common/guilds.h"
 #include "../common/breakdowns.h"
 #include "../common/rulesys.h"
+#include "../common/MiscFunctions.h"
 #include "forage.h"
 #include "command.h"
 #include "StringIDs.h"
 #include "NpcAI.h"
 #include "client_logs.h"
 #include "guild_mgr.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 
 extern EntityList entity_list;
@@ -137,7 +135,6 @@ Client::Client(EQStreamInterface* ieqs)
 	0,
 	0,
 	0,	// qglobal
-	0,	// slow_mitigation
 	0,	// maxlevel
 	0	// scalerate
 
@@ -247,6 +244,7 @@ Client::Client(EQStreamInterface* ieqs)
 	m_tradeskill_object = NULL;
 	delaytimer = false;
 	PendingRezzXP = -1;
+	PendingRezzDBID = 0;
 	PendingRezzSpellID = 0;
 	numclients++;
 	// emuerror;
@@ -278,6 +276,7 @@ Client::Client(EQStreamInterface* ieqs)
 	AggroCount = 0;
 	RestRegenHP = 0;
 	RestRegenMana = 0;
+	RestRegenEndurance = 0;
 	XPRate = 100;
 	cur_end = 0;
 
@@ -316,6 +315,15 @@ Client::Client(EQStreamInterface* ieqs)
 	adv_requested_theme = 0;
 	adv_requested_id = 0;
 	adv_requested_member_count = 0;
+
+	for(int i = 0; i < XTARGET_HARDCAP; ++i)
+	{
+		XTargets[i].Type = Auto;
+		XTargets[i].ID = 0;
+		XTargets[i].Name[0] = 0;
+	}
+	MaxXTargets = 5;	
+	XTargetAutoAddHaters = true;
 }
 
 Client::~Client() {
@@ -490,23 +498,46 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.guildrank=guildrank;
 	m_pp.heading = heading;
 	
+	// Akkadius (Uleat): Temp Hack for signed values until we get the root of the problem changed over to signed...
+	if (m_pp.copper < 0) { m_pp.copper = 0; }
+	if (m_pp.silver < 0) { m_pp.silver = 0; }
+	if (m_pp.gold < 0) { m_pp.gold = 0; }
+	if (m_pp.platinum < 0) { m_pp.platinum = 0; }
+	if (m_pp.copper_bank < 0) { m_pp.copper_bank = 0; }
+	if (m_pp.silver_bank < 0) { m_pp.silver_bank = 0; }
+	if (m_pp.gold_bank < 0) { m_pp.gold_bank = 0; }
+	if (m_pp.platinum_bank < 0) { m_pp.platinum_bank = 0; }
+
+
 	int spentpoints=0;
 	for(int a=0;a < MAX_PP_AA_ARRAY;a++) {
 		int32 points = aa[a]->value;
-		if(points > 20) //sanity check if you want an aa to have over 20 ranks you'll need to up this.
+		if(points > HIGHEST_AA_VALUE) // Unifying this 
 		{
-			aa[a]->value = 20;
-			points = 20;
+			aa[a]->value = HIGHEST_AA_VALUE;
+			points = HIGHEST_AA_VALUE;
 		}
-		if (points > 0) {
+		if (points > 0)
+		{
 			SendAA_Struct* curAA = zone->FindAA(aa[a]->AA-aa[a]->value+1);
-			if(curAA) {
+			if(curAA)
+			{
 				for (int rank=0; rank<points; rank++) 
-					spentpoints += (curAA->cost + (curAA->cost_inc * rank));
+				{
+					std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(aa[a]->AA-aa[a]->value + 1 + rank);
+
+					if(RequiredLevel != AARequiredLevelAndCost.end())
+					{
+						spentpoints +=  RequiredLevel->second.Cost;
+					}
+					else
+						spentpoints += (curAA->cost + (curAA->cost_inc * rank));
+				}
 			}
 		}
 	}
-	m_pp.aapoints_spent = spentpoints;
+
+	m_pp.aapoints_spent = spentpoints + m_epp.expended_aa;
 
 	if (GetHP() <= 0) {
 		m_pp.cur_hp = GetMaxHP();
@@ -517,50 +548,7 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
-	uint32 buff_count = GetMaxBuffSlots();
-	for (int i=0; i < buff_count; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			m_pp.buffs[i].spellid = buffs[i].spellid;
-			m_pp.buffs[i].slotid = 2;	//this is obviously not really 'slot id'
-			m_pp.buffs[i].duration = buffs[i].ticsremaining;
-			m_pp.buffs[i].level = buffs[i].casterlevel;
-			m_pp.buffs[i].bard_modifier = 10;
-			m_pp.buffs[i].effect = 0;
-			m_pp.buffs[i].persistant_buff = buffs[i].persistant_buff;
-			m_pp.buffs[i].reserved = 0;
-			//temp hack, just put some number in here to make the client think its a real player ID
-			m_pp.buffs[i].player_id = 0x2211;
-			if(IsRuneSpell(buffs[i].spellid) || IsMagicRuneSpell(buffs[i].spellid)) {
-				if(IsRuneSpell(buffs[i].spellid))
-					m_pp.buffs[i].dmg_shield_remaining = buffs[i].melee_rune;
-				else
-					m_pp.buffs[i].dmg_shield_remaining = buffs[i].magic_rune;
-			}
-			else
-				m_pp.buffs[i].dmg_shield_remaining = 0;
-
-			if(IsDeathSaveSpell(buffs[i].spellid)) {
-				m_pp.buffs[i].effect = buffs[i].deathSaveSuccessChance;
-				m_pp.buffs[i].reserved = buffs[i].casterAARank;
-			}
-			else {
-				m_pp.buffs[i].effect = 0;
-				m_pp.buffs[i].reserved = 0;
-			}
-		}
-		else {
-			m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-			m_pp.buffs[i].slotid = 0;
-			m_pp.buffs[i].duration = 0;
-			m_pp.buffs[i].level = 0;
-			m_pp.buffs[i].bard_modifier = 0;
-			m_pp.buffs[i].effect = 0;
-			m_pp.buffs[i].persistant_buff = 0;
-			m_pp.buffs[i].reserved = 0;
-			m_pp.buffs[i].player_id = 0;
-			m_pp.buffs[i].dmg_shield_remaining = 0;
-		}
-	}
+	database.SaveBuffs(this);
 
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
@@ -573,14 +561,15 @@ bool Client::Save(int8 iCommitNow) {
 
 	if (GetPet() && !GetPet()->IsFamiliar() && GetPet()->CastToNPC()->GetPetSpellID() && !dead) {
 		NPC *pet = GetPet()->CastToNPC();
-		m_epp.pet_id = pet->CastToNPC()->GetPetSpellID();
-		m_epp.pet_hp = pet->GetHP();
-		m_epp.pet_mana = pet->GetMana();
-		pet->GetPetState(m_epp.pet_buffs, m_epp.pet_items, m_epp.pet_name);
+		m_petinfo.SpellID = pet->CastToNPC()->GetPetSpellID();
+		m_petinfo.HP = pet->GetHP();
+		m_petinfo.Mana = pet->GetMana();
+		pet->GetPetState(m_petinfo.Buffs, m_petinfo.Items, m_petinfo.Name);
+		m_petinfo.petpower = pet->GetPetPower();
 	} else {
-		m_epp.pet_id = 0;
-		m_epp.pet_hp = 0;
+		memset(&m_petinfo, 0, sizeof(struct PetInfo));
 	}
+	database.SavePetInfo(this);
 
 	if(tribute_timer.Enabled()) {
 		m_pp.tribute_time_remaining = tribute_timer.GetRemainingTime();
@@ -602,7 +591,7 @@ bool Client::Save(int8 iCommitNow) {
 		workpt.w2_3() = GetID();
 		workpt.b1() = DBA_b1_Entity_Client_Save;
 		DBAsyncWork* dbaw = new DBAsyncWork(&database, &MTdbafq, workpt, DBAsync::Write, 0xFFFFFFFF);
-		dbaw->AddQuery(iCommitNow == 0 ? true : false, &query, database.SetPlayerProfile_MQ(&query, account_id, character_id, &m_pp, &m_inv, &m_epp), false);
+		dbaw->AddQuery(iCommitNow == 0 ? true : false, &query, database.SetPlayerProfile_MQ(&query, account_id, character_id, &m_pp, &m_inv, &m_epp, 0, 0, MaxXTargets), false);
 		if (iCommitNow == 0){
 			pQueuedSaveWorkID = dbasync->AddWork(&dbaw, 2500);
 		}
@@ -613,7 +602,7 @@ bool Client::Save(int8 iCommitNow) {
 		safe_delete_array(query);
 		return true;
 	}
-	else if (database.SetPlayerProfile(account_id, character_id, &m_pp, &m_inv, &m_epp)) {
+	else if (database.SetPlayerProfile(account_id, character_id, &m_pp, &m_inv, &m_epp, 0, 0, MaxXTargets)) {
 		SaveBackup();
 	}
 	else {
@@ -815,7 +804,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	{
 	case 0: { // GuildChat
 		if (!IsInAGuild())
-			Message_StringID(0, GUILD_NOT_MEMBER2);	//You are not a member of any guild.
+			Message_StringID(MT_DefaultText, GUILD_NOT_MEMBER2);	//You are not a member of any guild.
 		else if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_SPEAK))
 			Message(0, "Error: You dont have permission to speak to the guild.");
 		else if (!worldserver.SendChannelMessage(this, targetname, chan_num, GuildID(), language, message))
@@ -1003,6 +992,10 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 
 		printf("Message: %s\n",message);
 		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+        if(parse->PlayerHasQuestSub("EVENT_SAY")) 
+        {
+            parse->EventPlayer(EVENT_SAY, this, message, language);
+        }
 
 		if (sender != this)
 			break;
@@ -1013,24 +1006,15 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		if (GetTarget() != 0 && GetTarget()->IsNPC()) {
 			if(!GetTarget()->CastToNPC()->IsEngaged()) {
 				CheckLDoNHail(GetTarget());
+				CheckEmoteHail(GetTarget(),message);
 
-#ifdef EMBPERL
-				if(((PerlembParser *)parse)->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_SAY")){
-#endif
+				if(parse->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_SAY")){
 					if (DistNoRootNoZ(*GetTarget()) <= 200) {
 						if(GetTarget()->CastToNPC()->IsMoving() && !GetTarget()->CastToNPC()->IsOnHatelist(GetTarget()))
 							GetTarget()->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
-						parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
-					#ifdef IPC
-						if(GetTarget()->CastToNPC()->IsInteractive()) {
-							GetTarget()->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
-						}
-					#endif
-						//parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, target->CastToNPC(), this);
+                        parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, message, language);
 					}
-#ifdef EMBPERL
 				}	
-#endif
 
 				if (RuleB(TaskSystem, EnableTaskSystem) && DistNoRootNoZ(*GetTarget()) <= 200) {
 
@@ -1046,18 +1030,34 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 				}
 			}
 			else {
-#ifdef EMBPERL
-				if(((PerlembParser *)parse)->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
-#endif
+				if(parse->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
 					if (DistNoRootNoZ(*GetTarget()) <= 200) {
-						parse->Event(EVENT_AGGRO_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
+                        parse->EventNPC(EVENT_AGGRO_SAY, GetTarget()->CastToNPC(), this, message, language);
 					}
-#ifdef EMBPERL
 				}	
-#endif
 			}
 
 		}
+		break;
+	}
+	case 20:
+	{
+		// UCS Relay for Underfoot and later.
+		if(!worldserver.SendChannelMessage(this, 0, chan_num, 0, language, message))
+			Message(0, "Error: World server disconnected");
+		break;
+	}
+	case 22:
+	{
+		// Emotes for Underfoot and later.
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Emote, 4 + strlen(message) + strlen(GetName()) + 2);
+		Emote_Struct* es = (Emote_Struct*)outapp->pBuffer;
+		char *Buffer = (char *)es;
+		Buffer += 4;
+		snprintf(Buffer, sizeof(Emote_Struct) - 4, "%s %s", GetName(), message);
+		entity_list.QueueCloseClients(this, outapp, true, 100,0,true,FILTER_SOCIALS);
+		safe_delete(outapp);
+
 		break;
 	}
 	default: {
@@ -1127,9 +1127,6 @@ void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num,
 }
 
 void Client::Message(uint32 type, const char* message, ...) {
-	va_list argptr;
-	char *buffer = new char[4096];
-
 	if (GetFilter(FilterSpellDamage) == FilterHide && type == MT_NonMelee)
 		return;
 	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
@@ -1137,6 +1134,8 @@ void Client::Message(uint32 type, const char* message, ...) {
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
 		return;
 
+    va_list argptr;
+    char *buffer = new char[4096];
 	va_start(argptr, message);
 	vsnprintf(buffer, 4096, message, argptr);
 	va_end(argptr);
@@ -1760,6 +1759,7 @@ void Client::SendManaUpdate()
 	mus->max_mana = GetMaxMana();
 	mus->spawn_id = GetID();
 	QueuePacket(mana_app);
+	entity_list.QueueClientsByXTarget(this, mana_app, false);
 	safe_delete(mana_app);
 }
 
@@ -1772,6 +1772,7 @@ void Client::SendEnduranceUpdate()
 	eus->max_end = GetMaxEndurance();
 	eus->spawn_id = GetID();
 	QueuePacket(end_app);
+	entity_list.QueueClientsByXTarget(this, end_app, false);
 	safe_delete(end_app);
 }
 
@@ -1898,10 +1899,7 @@ void Client::Stand() {
 
 void Client::ChangeLastName(const char* in_lastname) {
 	memset(m_pp.last_name, 0, sizeof(m_pp.last_name));
-	if (strlen(in_lastname) >= sizeof(m_pp.last_name))
-		strncpy(m_pp.last_name, in_lastname, sizeof(m_pp.last_name) - 1);
-	else
-		strcpy(m_pp.last_name, in_lastname);
+	strn0cpy(m_pp.last_name, in_lastname, sizeof(m_pp.last_name));
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));
 	GMLastName_Struct* gmn = (GMLastName_Struct*)outapp->pBuffer;
 	strcpy(gmn->name, name);
@@ -1937,9 +1935,9 @@ bool Client::ChangeFirstName(const char* in_firstname, const char* gmname)
 	// send name update packet
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMNameChange, sizeof(GMName_Struct));
 	GMName_Struct* gmn=(GMName_Struct*)outapp->pBuffer;
-	strncpy(gmn->gmname,gmname,64);
-	strncpy(gmn->oldname,GetName(),64);
-	strncpy(gmn->newname,in_firstname,64);
+	strn0cpy(gmn->gmname,gmname,64);
+	strn0cpy(gmn->oldname,GetName(),64);
+	strn0cpy(gmn->newname,in_firstname,64);
 	gmn->unknown[0] = 1;
 	gmn->unknown[1] = 1;
 	gmn->unknown[2] = 1;
@@ -1980,7 +1978,18 @@ void Client::ReadBook(BookRequest_Struct *book) {
 
 		BookText_Struct *out = (BookText_Struct *) outapp->pBuffer;
 		out->window = book->window;
-		out->type = book->type;
+		if(GetClientVersion() >= EQClientSoF)
+		{
+			const ItemInst *inst = m_inv[book->invslot];
+			if(inst)
+				out->type = inst->GetItem()->Book;
+			else
+				out->type = book->type;
+		}
+		else
+		{
+			out->type = book->type;
+		}
 		out->invslot = book->invslot;
 		memcpy(out->booktext, booktxt2.c_str(), length);
 
@@ -2014,7 +2023,7 @@ void Client::SendClientMoneyUpdate(int8 type,int32 amount){
 	safe_delete(outapp);
 }
 
-bool Client::TakeMoneyFromPP(uint64 copper){
+bool Client::TakeMoneyFromPP(uint64 copper, bool updateclient) {
 	sint64 copperpp,silver,gold,platinum;
 	copperpp = m_pp.copper;
 	silver = static_cast<sint64>(m_pp.silver) * 10;
@@ -2039,6 +2048,8 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 		else
 		{
 			m_pp.copper = copperpp;
+			if(updateclient)
+				SendMoneyUpdate();
 			Save();
 			return true;
 		}
@@ -2052,6 +2063,8 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 		{
 			m_pp.silver = silver/10;
 			m_pp.copper += (silver-(m_pp.silver*10));
+			if(updateclient)
+				SendMoneyUpdate();
 			Save();
 			return true;
 		}
@@ -2070,6 +2083,8 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 			m_pp.silver += silvertest;
 			int64 coppertest = (gold-(static_cast<int64>(m_pp.gold)*100+silvertest*10));
 			m_pp.copper += coppertest;
+			if(updateclient)
+				SendMoneyUpdate();
 			Save();
 			return true;
 		}
@@ -2081,24 +2096,31 @@ bool Client::TakeMoneyFromPP(uint64 copper){
 		m_pp.platinum = platinum/1000;
 		int64 goldtest = (platinum-(static_cast<int64>(m_pp.platinum)*1000))/100;
 		m_pp.gold += goldtest;
-		int32 silvertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100))/10;
+		int64 silvertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100))/10;
 		m_pp.silver += silvertest;
 		int64 coppertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100+silvertest*10));
 		m_pp.copper = coppertest;
+		if(updateclient)
+			SendMoneyUpdate();
 		RecalcWeight();
 		Save();
 		return true;
 	}
 }
 
-void Client::AddMoneyToPP(uint64 copper,bool updateclient){
+void Client::AddMoneyToPP(uint64 copper, bool updateclient){
 	uint64 tmp;
 	uint64 tmp2;
 	tmp = copper;
 
 	// Add Amount of Platinum
 	tmp2 = tmp/1000;
-	m_pp.platinum = m_pp.platinum + tmp2;
+    sint32 new_val = m_pp.platinum + tmp2;
+    if(new_val < 0) {
+        m_pp.platinum = 0;
+    } else {
+	    m_pp.platinum = m_pp.platinum + tmp2;
+    }
 	tmp-=tmp2*1000;
 
     //if (updateclient)
@@ -2106,15 +2128,25 @@ void Client::AddMoneyToPP(uint64 copper,bool updateclient){
 
 	// Add Amount of Gold
 	tmp2 = tmp/100;
-	m_pp.gold = m_pp.gold + tmp2;
+    new_val = m_pp.gold + tmp2;
+    if(new_val < 0) {
+        m_pp.gold = 0;
+    } else {
+	    m_pp.gold = m_pp.gold + tmp2;
+    }
 	tmp-=tmp2*100;
 	//if (updateclient)
     //  SendClientMoneyUpdate(2,tmp2);
 
 	// Add Amount of Silver
 	tmp2 = tmp/10;
-	tmp-=tmp2*10;
-	m_pp.silver = m_pp.silver + tmp2;
+    new_val = m_pp.silver + tmp2;
+    if(new_val < 0) {
+        m_pp.silver = 0;
+    } else {
+	    m_pp.silver = m_pp.silver + tmp2;
+    }
+    tmp-=tmp2*10;
     //if (updateclient)
 	//	SendClientMoneyUpdate(1,tmp2);
 
@@ -2122,7 +2154,12 @@ void Client::AddMoneyToPP(uint64 copper,bool updateclient){
 	//tmp	= tmp - (tmp2* 10);
     //if (updateclient)
 	//	SendClientMoneyUpdate(0,tmp);
-	m_pp.copper = m_pp.copper + tmp;
+    new_val = m_pp.copper + tmp2;
+    if(new_val < 0) {
+        m_pp.copper = 0;
+    } else {
+	    m_pp.copper = m_pp.copper + tmp2;
+    }
 
 
 	//send them all at once, since the above code stopped working.
@@ -2137,10 +2174,22 @@ void Client::AddMoneyToPP(uint64 copper,bool updateclient){
 }
 
 void Client::AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, bool updateclient){
-	m_pp.platinum += platinum;
-	m_pp.gold += gold;
-	m_pp.silver += silver;
-	m_pp.copper += copper;
+    
+    sint32 new_value = m_pp.platinum + platinum;
+    if(new_value >= 0 && new_value > m_pp.platinum)    
+        m_pp.platinum += platinum;
+
+    new_value = m_pp.gold + gold;
+    if(new_value >= 0 && new_value > m_pp.gold)    
+        m_pp.gold += gold;
+
+    new_value = m_pp.silver + silver;
+    if(new_value >= 0 && new_value > m_pp.silver)    
+        m_pp.silver += silver;
+
+    new_value = m_pp.copper + copper;
+    if(new_value >= 0 && new_value > m_pp.copper)    
+        m_pp.copper += copper;
 
 	if(updateclient)
 		SendMoneyUpdate();
@@ -2175,6 +2224,32 @@ bool Client::HasMoney(uint64 Copper) {
 		return true;
 
 	return false;
+}
+
+int64 Client::GetCarriedMoney() {
+
+	return ((static_cast<int64>(m_pp.copper) +
+	   (static_cast<int64>(m_pp.silver) * 10) +
+	   (static_cast<int64>(m_pp.gold) * 100) +
+	   (static_cast<int64>(m_pp.platinum) * 1000)));
+}
+
+int64 Client::GetAllMoney() {
+
+	return (
+	   (static_cast<int64>(m_pp.copper) +
+	   (static_cast<int64>(m_pp.silver) * 10) +
+	   (static_cast<int64>(m_pp.gold) * 100) +
+	   (static_cast<int64>(m_pp.platinum) * 1000) +
+	   (static_cast<int64>(m_pp.copper_bank) +
+	   (static_cast<int64>(m_pp.silver_bank) * 10) +
+	   (static_cast<int64>(m_pp.gold_bank) * 100) +
+	   (static_cast<int64>(m_pp.platinum_bank) * 1000) +
+	   (static_cast<int64>(m_pp.copper_cursor) +
+	   (static_cast<int64>(m_pp.silver_cursor) * 10) +
+	   (static_cast<int64>(m_pp.gold_cursor) * 100) +
+	   (static_cast<int64>(m_pp.platinum_cursor) * 1000) +
+	   (static_cast<int64>(m_pp.platinum_shared) * 1000)))));
 }
 
 bool Client::CheckIncreaseSkill(SkillType skillid, Mob *against_who, int chancemodi) {
@@ -2336,6 +2411,19 @@ int16 Client::GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSk
 
 		}
 	}
+	// This should possibly be handled by bonuses rather than here.
+	switch(skillid)
+	{
+		case TRACKING:
+		{
+			Result += ((GetAA(aaAdvancedTracking) * 10) + (GetAA(aaTuneofPursuance) * 10));
+			break;
+		}
+
+		default:
+			break;
+	}
+
 	return Result;
 }
 
@@ -2343,7 +2431,7 @@ void Client::SetPVP(bool toggle) {
 	m_pp.pvp = toggle ? 1 : 0;
 
 	if(GetPVP())
-		this->Message_StringID(13,PVP_ON);
+		this->Message_StringID(MT_Shout,PVP_ON);
 	else
 		Message(13, "You no longer follow the ways of discord.");
 
@@ -2549,10 +2637,12 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 					bind_out->type = 0;
 					CheckIncreaseSkill(BIND_WOUND, NULL, 5);
 
-					int max_percent = 50 + 10 * GetAA(aaFirstAid);
+					int maxHPBonus = spellbonuses.MaxBindWound + itembonuses.MaxBindWound + aabonuses.MaxBindWound;
+
+					int max_percent = 50 + 10 * maxHPBonus;
 
 					if(GetClass() == MONK && GetSkill(BIND_WOUND) > 200) {
-						max_percent = 70 + 10 * GetAA(aaFirstAid);
+						max_percent = 70 + 10 * maxHPBonus;
 					}
 
 					int max_hp = bindmob->GetMaxHP()*max_percent/100;
@@ -2570,19 +2660,10 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 						}
 
 						//Implementation of aaMithanielsBinding is a guess (the multiplier)
-						switch (GetAA(aaBandageWound))
-						{
-							case 1:
-								bindhps = bindhps * (110 + 20*GetAA(aaMithanielsBinding)) / 100;
-								break;
-							case 2:
-								bindhps = bindhps * (125 + 20*GetAA(aaMithanielsBinding)) / 100;
-								break;
-							case 3:
-								bindhps = bindhps * (150 + 20*GetAA(aaMithanielsBinding)) / 100;
-								break;
-						}
+						int bindBonus = spellbonuses.BindWound + itembonuses.BindWound + aabonuses.BindWound;
 
+						bindhps += bindhps*bindBonus / 100;
+							
 						//if the bind takes them above the max bindable
 						//cap it at that value. Dont know if live does it this way
 						//but it makes sense to me.
@@ -2738,6 +2819,12 @@ void Client::ServerFilter(SetServerFilter_Struct* filter){
 // this version is for messages with no parameters
 void Client::Message_StringID(int32 type, int32 string_id, int32 distance)
 {
+	if (GetFilter(FilterSpellDamage) == FilterHide && type == MT_NonMelee)
+		return;
+	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
+		return;
+	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
+		return;
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SimpleMessage,12);
 	SimpleMessage_Struct* sms = (SimpleMessage_Struct*)outapp->pBuffer;
 	sms->color=type;
@@ -2763,6 +2850,15 @@ void Client::Message_StringID(int32 type, int32 string_id,  const char* message1
 	const char* message5,const char* message6,const char* message7,
 	const char* message8,const char* message9, int32 distance)
 {
+	if (GetFilter(FilterSpellDamage) == FilterHide && type == MT_NonMelee)
+		return;
+	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
+		return;
+	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
+		return;
+	if (GetFilter(FilterDamageShields) == FilterHide && type == MT_DS)
+		return;
+
 	int i, argcount, length;
 	char *bufptr;
 	const char *message_arg[9] = {0};
@@ -2871,7 +2967,7 @@ void Client::SetLanguageSkill(int langid, int value)
 	{
 		m_pp.languages[langid] = value;
 
-		Message_StringID( 270, 449 );
+		Message_StringID( MT_Skills, LANG_SKILL_IMPROVED );
 	}
 }
 
@@ -2977,7 +3073,7 @@ float Client::CalcPriceMod(Mob* other, bool reverse)
 	if (other)
 	{
 		int factionlvl = GetFactionLevel(CharacterID(), other->CastToNPC()->GetNPCTypeID(), GetRace(), GetClass(), GetDeity(), other->CastToNPC()->GetPrimaryFaction(), other);
-		if (factionlvl > 5) // Apprehensive or worse.
+		if (factionlvl >= FACTION_APPREHENSIVE) // Apprehensive or worse.
 		{
 			if (GetCHA() > 103) 
 			{
@@ -2992,7 +3088,7 @@ float Client::CalcPriceMod(Mob* other, bool reverse)
 					chaformula = 1*(RuleI(Merchant, PricePenaltyPct));
 			}
 		}
-		if (factionlvl <= 5) // Indifferent or better.
+		if (factionlvl <= FACTION_INDIFFERENT) // Indifferent or better.
 		{
 			if (GetCHA() > 75) 
 			{
@@ -3041,118 +3137,118 @@ void Client::Insight(int32 t_id)
 	char hitpoints[64];
 	char resists[320];
 	char dmg[64];
-	memset(hitpoints,64,0);
-	memset(resists,320,0);
-	memset(dmg,64,0);
+	memset(hitpoints,0,sizeof(hitpoints));
+	memset(resists,0,sizeof(resists));
+	memset(dmg,0,sizeof(dmg));
 	//Start with HP blah
 	int avg_hp = GetLevelHP(who->GetLevel());
 	int cur_hp = who->GetHP();
 	if (cur_hp == avg_hp)
 	{
-		strncpy(hitpoints,"averagely tough",32);
+		strn0cpy(hitpoints,"averagely tough",32);
 	}
 	else if (cur_hp >= avg_hp*5)
 	{
-		strncpy(hitpoints,"extremely tough",32);
+		strn0cpy(hitpoints,"extremely tough",32);
 	}
 	else if (cur_hp >= avg_hp*4)
 	{
-		strncpy(hitpoints,"exceptionally tough",32);
+		strn0cpy(hitpoints,"exceptionally tough",32);
 	}
 	else if (cur_hp >= avg_hp*3)
 	{
-		strncpy(hitpoints,"very tough",32);
+		strn0cpy(hitpoints,"very tough",32);
 	}
 	else if (cur_hp >= avg_hp*2)
 	{
-		strncpy(hitpoints,"quite tough",32);
+		strn0cpy(hitpoints,"quite tough",32);
 	}
 	else if (cur_hp >= avg_hp*1.25)
 	{
-		strncpy(hitpoints,"rather tough",32);
+		strn0cpy(hitpoints,"rather tough",32);
 	}
 	else if (cur_hp > avg_hp)
 	{
-		strncpy(hitpoints,"slightly tough",32);
+		strn0cpy(hitpoints,"slightly tough",32);
 	}
 	else if (cur_hp <= avg_hp*0.20)
 	{
-		strncpy(hitpoints,"extremely frail",32);
+		strn0cpy(hitpoints,"extremely frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.25)
 	{
-		strncpy(hitpoints,"exceptionally frail",32);
+		strn0cpy(hitpoints,"exceptionally frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.33)
 	{
-		strncpy(hitpoints,"very frail",32);
+		strn0cpy(hitpoints,"very frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.50)
 	{
-		strncpy(hitpoints,"quite frail",32);
+		strn0cpy(hitpoints,"quite frail",32);
 	}
 	else if (cur_hp <= avg_hp*0.75)
 	{
-		strncpy(hitpoints,"rather frail",32);
+		strn0cpy(hitpoints,"rather frail",32);
 	}
 	else if (cur_hp < avg_hp)
 	{
-		strncpy(hitpoints,"slightly frail",32);
+		strn0cpy(hitpoints,"slightly frail",32);
 	}
 
 	int avg_dmg = who->CastToNPC()->GetMaxDamage(who->GetLevel());
 	int cur_dmg = who->CastToNPC()->GetMaxDMG();
 	if (cur_dmg == avg_dmg)
 	{
-		strncpy(dmg,"averagely strong",32);
+		strn0cpy(dmg,"averagely strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*4)
 	{
-		strncpy(dmg,"extremely strong",32);
+		strn0cpy(dmg,"extremely strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*3)
 	{
-		strncpy(dmg,"exceptionally strong",32);
+		strn0cpy(dmg,"exceptionally strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*2)
 	{
-		strncpy(dmg,"very strong",32);
+		strn0cpy(dmg,"very strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*1.25)
 	{
-		strncpy(dmg,"quite strong",32);
+		strn0cpy(dmg,"quite strong",32);
 	}
 	else if (cur_dmg >= avg_dmg*1.10)
 	{
-		strncpy(dmg,"rather strong",32);
+		strn0cpy(dmg,"rather strong",32);
 	}
 	else if (cur_dmg > avg_dmg)
 	{
-		strncpy(dmg,"slightly strong",32);
+		strn0cpy(dmg,"slightly strong",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.20)
 	{
-		strncpy(dmg,"extremely weak",32);
+		strn0cpy(dmg,"extremely weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.25)
 	{
-		strncpy(dmg,"exceptionally weak",32);
+		strn0cpy(dmg,"exceptionally weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.33)
 	{
-		strncpy(dmg,"very weak",32);
+		strn0cpy(dmg,"very weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.50)
 	{
-		strncpy(dmg,"quite weak",32);
+		strn0cpy(dmg,"quite weak",32);
 	}
 	else if (cur_dmg <= avg_dmg*0.75)
 	{
-		strncpy(dmg,"rather weak",32);
+		strn0cpy(dmg,"rather weak",32);
 	}
 	else if (cur_dmg < avg_dmg)
 	{
-		strncpy(dmg,"slightly weak",32);
+		strn0cpy(dmg,"slightly weak",32);
 	}
 
 	//Resists
@@ -3602,11 +3698,79 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 		olms->Duration = 0xffffffff;
 
 	olms->PopupID = PopupID;
-	olms->unknown4236 = 0x00000000;
-	olms->unknown4240 = 0xffffffff;
+	olms->NegativeID = 0;
 
+	sprintf(olms->ButtonName0, "%s", "Yes");
+	sprintf(olms->ButtonName1, "%s", "No");
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+void Client::SendWindow(int32 PopupID, int32 NegativeID, int32 Buttons, const char *ButtonName0, const char *ButtonName1, int32 Duration, int title_type, Client* target, const char *Title, const char *Text, ...) {
+	va_list argptr;
+	char buffer[4096];
+
+	va_start(argptr, Text);
+	vsnprintf(buffer, sizeof(buffer), Text, argptr);
+	va_end(argptr);
+
+	size_t len = strlen(buffer);
+
+	EQApplicationPacket* app = new EQApplicationPacket(OP_OnLevelMessage, sizeof(OnLevelMessage_Struct));
+	OnLevelMessage_Struct* olms=(OnLevelMessage_Struct*)app->pBuffer;
+	
+	if(strlen(Text) > (sizeof(olms->Text)-1))
+		return;
+
+	if(!target) 
+		title_type = 0;
+		
+	switch (title_type)
+	{
+		case 1: {
+			char name[64] = "";
+			strcpy(name, target->GetName());
+			if(target->GetLastName()) {
+				char last_name[64] = "";
+				strcpy(last_name, target->GetLastName());
+				strcat(name, " ");
+				strcat(name, last_name);
+			}
+			strcpy(olms->Title, name);
+			break;
+		}
+		case 2: {
+			if(target->GuildID()) {
+				char *guild_name = (char*)guild_mgr.GetGuildName(target->GuildID());
+				strcpy(olms->Title, guild_name);
+			}
+			else {
+				strcpy(olms->Title, "No Guild");
+			}
+			break;
+		}
+		default: {
+			strcpy(olms->Title, Title);
+			break;
+		}
+	}
+	
+	memcpy(olms->Text, buffer, len+1);
+
+	olms->Buttons = Buttons;
+
+	sprintf(olms->ButtonName0, "%s", ButtonName0);
+	sprintf(olms->ButtonName1, "%s", ButtonName1);
+
+	if(Duration > 0)
+		olms->Duration = Duration * 1000;
+	else
+		olms->Duration = 0xffffffff;
+	
+	olms->PopupID = PopupID;
+	olms->NegativeID = NegativeID;
+	
+	FastQueuePacket(&app);
 }
 
 void Client::KeyRingLoad()
@@ -3681,6 +3845,46 @@ void Client::KeyRingList()
 			Message(4,item->Name);
 		}
 	}
+}
+
+bool Client::IsDiscovered(int32 itemid) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	
+	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM discovered_items WHERE item_id = '%lu'", itemid), errbuf, &result))
+	{
+		row = mysql_fetch_row(result);
+		if (atoi(row[0]))
+		{
+			mysql_free_result(result);
+			safe_delete_array(query);
+			return true;
+		}
+	}
+	else
+	{
+		cerr << "Error in IsDiscovered query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+	safe_delete_array(query);
+	return false;
+}
+
+void Client::DiscoverItem(int32 itemid) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO discovered_items SET item_id=%lu, char_name='%s', discovered_date=UNIX_TIMESTAMP(), account_status=%i", itemid, GetName(), Admin()), errbuf, &result))
+	{
+		mysql_free_result(result);
+	}
+	safe_delete_array(query);
+
+	parse->EventPlayer(EVENT_DISCOVER_ITEM, this, "", itemid);
 }
 
 void Client::UpdateLFP() {
@@ -3786,20 +3990,32 @@ uint16 Client::GetPrimarySkillValue()
 uint16 Client::GetTotalATK()
 {
 	int16 AttackRating = 0;
-	int16 WornCap = GetATKBonus();
-
-	if(WornCap > 250)
-		WornCap = 250;
+	int16 WornCap = itembonuses.ATK;
 
 	if(IsClient()) {
 		AttackRating = ((WornCap * 1.342) + (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69));
+		AttackRating += aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 
 		if (AttackRating < 10)
 			AttackRating = 10;
 	}
 	else
 		AttackRating = GetATK();
+		
+	AttackRating += spellbonuses.ATK;
 
+	return AttackRating;
+}
+
+uint16 Client::GetATKRating()
+{
+	int16 AttackRating = 0;
+	if(IsClient()) {
+		AttackRating = (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69);
+
+		if (AttackRating < 10)
+			AttackRating = 10;
+	}
 	return AttackRating;
 }
 
@@ -3899,10 +4115,10 @@ void Client::IncrementAggroCount() {
 	// rest state regen is stopped, and for SoF, it sends the opcode to show the crossed swords in-combat indicator.
 	//
 	//
+	AggroCount++;
+
 	if(!RuleI(Character, RestRegenPercent))
 		return;
-
-	AggroCount++;
 
 	// If we already had aggro before this method was called, the combat indicator should already be up for SoF clients,
 	// so we don't need to send it again.
@@ -3927,14 +4143,15 @@ void Client::DecrementAggroCount() {
 	// It checks whether any other mob is aggro on the player, and if not, starts the rest timer.
 	// For SoF, the opcode to start the rest state countdown timer in the UI is sent.
 	//
-	if(!RuleI(Character, RestRegenPercent))
-		return;
 	
 	// If we didn't have aggro before, this method should not have been called.
 	if(!AggroCount)
 		return;
 
 	AggroCount--;
+
+	if(!RuleI(Character, RestRegenPercent))
+		return;
 
 	// Something else is still aggro on us, can't rest yet.
 	if(AggroCount) return;
@@ -4086,7 +4303,7 @@ void Client::HandleLDoNOpen(NPC *target)
 			if(target->GetLDoNTrapSpellID() != 0)
 			{
 				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
-				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0);
+				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0, -1, spells[target->GetLDoNTrapSpellID()].ResistDiff);
 				target->SetLDoNTrapSpellID(0);
 				target->SetLDoNTrapped(false);
 				target->SetLDoNTrapDetected(false);
@@ -4208,7 +4425,7 @@ void Client::HandleLDoNDisarm(NPC *target, int16 skill, int8 type)
 				break;
 			case -1:
 				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
-				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0);
+				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0, -1, spells[target->GetLDoNTrapSpellID()].ResistDiff);
 				target->SetLDoNTrapSpellID(0);
 				target->SetLDoNTrapped(false);
 				target->SetLDoNTrapDetected(false);
@@ -4227,7 +4444,7 @@ void Client::HandleLDoNPickLock(NPC *target, int16 skill, int8 type)
 			if(target->IsLDoNTrapped())
 			{
 				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
-				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0);
+				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0, -1, spells[target->GetLDoNTrapSpellID()].ResistDiff);
 				target->SetLDoNTrapSpellID(0);
 				target->SetLDoNTrapped(false);
 				target->SetLDoNTrapDetected(false);
@@ -4325,6 +4542,75 @@ void Client::SummonAndRezzAllCorpses()
 		SetEXP(GetEXP() + RezzExp, GetAAXP(), true);
 
 	Message(clientMessageYellow, "All your corpses have been summoned to your feet and have received a 100% resurrection.");
+}
+
+void Client::SummonAllCorpses(float dest_x, float dest_y, float dest_z, float dest_heading)
+{
+
+	if(dest_x == 0 && dest_y == 0 && dest_z == 0 && dest_heading == 0)
+	{
+		dest_x = GetX(); dest_y = GetY(); dest_z = GetZ(); dest_heading = GetHeading();
+	}
+
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
+
+	ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct*)Pack->pBuffer;
+
+	sdapcs->CharacterID = CharacterID();
+	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveAllCorpsesByCharID(CharacterID());
+
+	int CorpseCount = database.SummonAllPlayerCorpses(CharacterID(), zone->GetZoneID(), zone->GetInstanceID(),
+								  dest_x, dest_y, dest_z, dest_heading);
+	if(CorpseCount <= 0)
+	{
+		return;
+	}
+}
+
+void Client::DepopAllCorpses()
+{
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
+
+	ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct*)Pack->pBuffer;
+
+	sdapcs->CharacterID = CharacterID();
+	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveAllCorpsesByCharID(CharacterID());
+}
+
+void Client::DepopPlayerCorpse(int32 dbid)
+{
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopPlayerCorpse, sizeof(ServerDepopPlayerCorpse_Struct));
+
+	ServerDepopPlayerCorpse_Struct *sdpcs = (ServerDepopPlayerCorpse_Struct*)Pack->pBuffer;
+
+	sdpcs->DBID = dbid;
+	sdpcs->ZoneID = zone->GetZoneID();
+	sdpcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveCorpseByDBID(dbid);
+}
+
+void Client::BuryPlayerCorpses()
+{
+	database.BuryAllPlayerCorpses(CharacterID());
 }
 
 void Client::NotifyNewTitlesAvailable()
@@ -4578,12 +4864,10 @@ void Client::SetPortExemption(bool v)
 
 void Client::Signal(int32 data)
 {
-#ifdef EMBPERL
 	char buf[32];
 	snprintf(buf, 31, "%d", data);
 	buf[31] = '\0';
-	((PerlembParser *)parse)->Event(EVENT_SIGNAL, 0, buf, (NPC*)NULL, this);
-#endif
+    parse->EventPlayer(EVENT_SIGNAL, this, buf, 0);
 }
 
 const bool Client::IsMQExemptedArea(int32 zoneID, float x, float y, float z) const
@@ -5076,9 +5360,10 @@ void Client::SuspendMinion()
 	
 	if(!CurrentPet)
 	{
-		if(m_pp.SuspendedMinion.SpellID > 0)
+		if(m_suspendedminion.SpellID > 0)
 		{
-			MakePet(m_pp.SuspendedMinion.SpellID, spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
+			MakePoweredPet(m_suspendedminion.SpellID, spells[m_suspendedminion.SpellID].teleport_zone,
+				m_suspendedminion.petpower, m_suspendedminion.Name);
 
 			CurrentPet = GetPet()->CastToNPC();
 
@@ -5090,19 +5375,19 @@ void Client::SuspendMinion()
 
 			if(AALevel >= 2)
 			{
-				CurrentPet->SetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items);
+				CurrentPet->SetPetState(m_suspendedminion.Buffs, m_suspendedminion.Items);
 
 				CurrentPet->SendPetBuffsToClient();
 			}
 			CurrentPet->CalcBonuses();
 
-			CurrentPet->SetHP(m_pp.SuspendedMinion.HP);
+			CurrentPet->SetHP(m_suspendedminion.HP);
 
-			CurrentPet->SetMana(m_pp.SuspendedMinion.Mana);
+			CurrentPet->SetMana(m_suspendedminion.Mana);
 
 			Message_StringID(clientMessageTell, SUSPEND_MINION_UNSUSPEND, CurrentPet->GetCleanName());
 			
-			memset(&m_pp.SuspendedMinion, 0, sizeof(SuspendedMinion_Struct));
+			memset(&m_suspendedminion, 0, sizeof(struct PetInfo));
 		}
 		else
 			return;
@@ -5114,7 +5399,7 @@ void Client::SuspendMinion()
 
 		if(SpellID)
 		{
-			if(m_pp.SuspendedMinion.SpellID > 0)
+			if(m_suspendedminion.SpellID > 0)
 			{
 				Message_StringID(clientMessageError,ONLY_ONE_PET);
 
@@ -5132,14 +5417,17 @@ void Client::SuspendMinion()
 			}
 			else
 			{
-				m_pp.SuspendedMinion.SpellID = SpellID;
+				m_suspendedminion.SpellID = SpellID;
 
-				m_pp.SuspendedMinion.HP = CurrentPet->GetHP();;
+				m_suspendedminion.HP = CurrentPet->GetHP();;
 
-				m_pp.SuspendedMinion.Mana = CurrentPet->GetMana();
+				m_suspendedminion.Mana = CurrentPet->GetMana();
+				m_suspendedminion.petpower = CurrentPet->GetPetPower();
 
 				if(AALevel >= 2)
-					CurrentPet->GetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items, m_pp.SuspendedMinion.Name);
+					CurrentPet->GetPetState(m_suspendedminion.Buffs, m_suspendedminion.Items, m_suspendedminion.Name);
+				else
+					strn0cpy(m_suspendedminion.Name, CurrentPet->GetName(), 64); // Name stays even at rank 1
 
 				Message_StringID(clientMessageTell, SUSPEND_MINION_SUSPEND, CurrentPet->GetCleanName());
 
@@ -5221,6 +5509,7 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 		//Need to add the player inspect notes code here at some point...
 
 		requester->QueuePacket(outapp); // Send answer to requester
+        safe_delete(outapp);
 	}
 }
 
@@ -5312,7 +5601,7 @@ void Client::SendAdventureError(const char *error)
 {
 	size_t error_size = strlen(error);
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (error_size + 2));
-	strncpy((char*)outapp->pBuffer, error, error_size);
+	strn0cpy((char*)outapp->pBuffer, error, error_size);
 	FastQueuePacket(&outapp);
 }
 
@@ -5368,7 +5657,7 @@ void Client::NewAdventure(int id, int theme, const char *text, int member_count,
 {
 	size_t text_size = strlen(text);
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureDetails, text_size + 2);
-	strncpy((char*)outapp->pBuffer, text, text_size);
+	strn0cpy((char*)outapp->pBuffer, text, text_size);
 	FastQueuePacket(&outapp);
 
 	adv_requested_id = id;
@@ -5514,6 +5803,49 @@ void Client::CheckLDoNHail(Mob *target)
 		" I'll stay close behind you!");
 }
 
+void Client::CheckEmoteHail(Mob *target, const char* message)
+{
+	if(
+		(message[0] != 'H'	&&
+		message[0] != 'h')	||
+		message[1] != 'a'	|| 
+		message[2] != 'i'	|| 
+		message[3] != 'l'){
+		return;
+	}
+
+	if(!target || !target->IsNPC())
+	{
+		return;
+	}
+
+	if(target->GetOwnerID() != 0)
+	{
+		return;
+	}
+	int16 emoteid = target->CastToNPC()->GetNPCEmoteID();
+	if(emoteid != 0)
+		target->CastToNPC()->DoNPCEmote(HAILED,emoteid);
+}
+
+void Client::MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count)
+{
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_DzCompass, sizeof(ExpeditionInfo_Struct) + sizeof(ExpeditionCompassEntry_Struct) * count);
+	ExpeditionCompass_Struct *ecs = (ExpeditionCompass_Struct*)outapp->pBuffer;
+	//ecs->clientid = GetID();
+	ecs->count = count;
+
+	if (count) {
+		ecs->entries[0].x = in_x;
+		ecs->entries[0].y = in_y;
+		ecs->entries[0].z = in_z;
+	}
+
+	FastQueuePacket(&outapp);
+	safe_delete(outapp);
+}
+
 void Client::SendZonePoints()
 {
 	int count = 0;
@@ -5587,7 +5919,7 @@ void Client::LocateCorpse()
 		Message_StringID(clientMessageError, SENSE_CORPSE_NOT_NAME);
 }
 
-void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntime)
+void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 extra)
 {
 	if (!target_npc || !identifier)
 		return;
@@ -5599,10 +5931,12 @@ void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntim
 	}
 
 	if (id == "create") {
-		database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
+		// extra tries to create the npc_type ID within the range for the current zone (zone_id * 1000)
+		database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), extra);
 	}
 	else if (id == "add") {
-		database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), respawntime);
+		// extra sets the respawn timer for add
+		database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), extra);
 	}
 	else if (id == "update") {
 		database.NPCSpawnDB(2, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
@@ -5617,5 +5951,1074 @@ void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntim
 	}
 	else {
 		return;
+	}
+}
+
+bool Client::IsDraggingCorpse(const char *CorpseName)
+{
+	for(std::list<string>::iterator Iterator = DraggedCorpses.begin(); Iterator != DraggedCorpses.end(); ++Iterator)
+	{
+		if(!strcasecmp((*Iterator).c_str(), CorpseName))
+			return true;
+	}
+
+	return false;
+}
+
+void Client::DragCorpses()
+{
+	for(std::list<string>::iterator Iterator = DraggedCorpses.begin(); Iterator != DraggedCorpses.end(); ++Iterator)
+	{
+		Mob* corpse = entity_list.GetMob((*Iterator).c_str());
+		
+		if(corpse && corpse->IsPlayerCorpse() && (DistNoRootNoZ(*corpse) <= RuleR(Character, DragCorpseDistance)))
+			continue;
+
+		if(!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted() || !corpse->CastToCorpse()->Summon(this, false, false))
+		{
+			Message_StringID(MT_DefaultText, CORPSEDRAG_STOP);
+			Iterator = DraggedCorpses.erase(Iterator);
+		}
+	}
+}
+void Client::Doppelganger(int16 spell_id, Mob *target, const char *name_override, int pet_count, int pet_duration)
+{
+	if(!target || !IsValidSpell(spell_id) || this->GetID() == target->GetID())
+		return;
+	
+	PetRecord record;
+	if(!database.GetPetEntry(spells[spell_id].teleport_zone, &record))
+	{
+		LogFile->write(EQEMuLog::Error, "Unknown doppelganger spell id: %d, check pets table", spell_id);
+		Message(13, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
+		return;
+	}
+	
+	AA_SwarmPet pet;
+	pet.count = pet_count;
+	pet.duration = pet_duration;
+	pet.npc_id = record.npc_type;
+
+	NPCType *made_npc = NULL;
+	
+	const NPCType *npc_type = database.GetNPCType(pet.npc_id);
+	if(npc_type == NULL) {
+		LogFile->write(EQEMuLog::Error, "Unknown npc type for doppelganger spell id: %d", spell_id);
+		Message(0,"Unable to find pet!");
+		return;
+	}
+	// make a custom NPC type for this
+	made_npc = new NPCType; 
+	memcpy(made_npc, npc_type, sizeof(NPCType));
+	
+	strcpy(made_npc->name, name_override);
+	made_npc->level = GetLevel(); 
+	made_npc->race = GetRace();
+	made_npc->gender = GetGender();
+	made_npc->size = GetSize();
+	made_npc->AC = GetAC();
+	made_npc->STR = GetSTR();
+	made_npc->STA = GetSTA();
+	made_npc->DEX = GetDEX();
+	made_npc->AGI = GetAGI();
+	made_npc->MR = GetMR();
+	made_npc->FR = GetFR();
+	made_npc->CR = GetCR();
+	made_npc->DR = GetDR();
+	made_npc->PR = GetPR();
+	made_npc->Corrup = GetCorrup();
+	// looks
+	made_npc->texture = GetEquipmentMaterial(1);
+	made_npc->helmtexture = GetEquipmentMaterial(0);
+	made_npc->haircolor = GetHairColor();
+	made_npc->beardcolor = GetBeardColor();
+	made_npc->eyecolor1 = GetEyeColor1();
+	made_npc->eyecolor2 = GetEyeColor2();
+	made_npc->hairstyle = GetHairStyle();
+	made_npc->luclinface = GetLuclinFace();
+	made_npc->beard = GetBeard();
+	made_npc->drakkin_heritage = GetDrakkinHeritage();
+	made_npc->drakkin_tattoo = GetDrakkinTattoo();
+	made_npc->drakkin_details = GetDrakkinDetails();
+	made_npc->d_meele_texture1 = GetEquipmentMaterial(7);
+	made_npc->d_meele_texture2 = GetEquipmentMaterial(8);
+	for (int i = 0; i < MAX_MATERIALS; i++)	{
+		made_npc->armor_tint[i] = GetEquipmentColor(i);
+	}
+	made_npc->loottable_id = 0;
+		
+	npc_type = made_npc;
+		
+	int summon_count = 0;
+	summon_count = pet.count;
+	
+	if(summon_count > MAX_SWARM_PETS)
+		summon_count = MAX_SWARM_PETS;
+	
+	static const float swarm_pet_x[MAX_SWARM_PETS] = { 	5, -5, 5, -5, 10, -10, 10, -10, 8, -8, 8, -8 };
+	static const float swarm_pet_y[MAX_SWARM_PETS] = { 	5, 5, -5, -5, 10, 10, -10, -10, 8, 8, -8, -8 };
+	TempPets(true);
+	
+	while(summon_count > 0) {
+		NPCType *npc_dup = NULL;
+		if(made_npc != NULL) {
+			npc_dup = new NPCType;
+			memcpy(npc_dup, made_npc, sizeof(NPCType));
+		}
+		
+		NPC* npca = new NPC(
+				(npc_dup!=NULL)?npc_dup:npc_type,	//make sure we give the NPC the correct data pointer
+				0, 
+				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
+				GetZ(), GetHeading(), FlyMode3);
+
+		if(!npca->GetSwarmInfo()){
+			AA_SwarmPetInfo* nSI = new AA_SwarmPetInfo;
+			npca->SetSwarmInfo(nSI);
+			npca->GetSwarmInfo()->duration = new Timer(pet_duration*1000);
+		}
+		else{
+			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
+		}
+
+		npca->GetSwarmInfo()->owner_id = GetID();
+
+		// Give the pets alittle more agro than the caster and then agro them on the target
+		target->AddToHateList(npca, (target->GetHateAmount(this) + 100), (target->GetDamageAmount(this) + 100));
+		npca->AddToHateList(target, 1000, 1000);
+		npca->GetSwarmInfo()->target = target->GetID();
+		
+		//we allocated a new NPC type object, give the NPC ownership of that memory
+		if(npc_dup != NULL)
+			npca->GiveNPCTypeData(npc_dup);
+		
+		entity_list.AddNPC(npca);
+		summon_count--;
+	}
+}
+
+void Client::AssignToInstance(int16 instance_id)
+{
+	database.AddClientToInstance(instance_id, CharacterID());
+}
+
+void Client::SendStatsWindow(Client* client, bool use_window)
+{
+	// Define the types of page breaks we need
+	std::string indP = "&nbsp;";
+	std::string indS = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	std::string indM = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	std::string indL = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	std::string div = " | ";
+	
+	std::string color_red = "<c \"#993333\">";
+	std::string color_blue = "<c \"#9999FF\">";
+	std::string color_green =  "<c \"#33FF99\">";
+	std::string bright_green =  "<c \"#7CFC00\">";
+	std::string bright_red =  "<c \"#FF0000\">";
+	std::string heroic_color = "<c \"#d6b228\"> +";
+	
+	// Set Class 
+	std::string class_Name = itoa(GetClass());
+	std::string class_List[] = { "WAR", "CLR", "PAL", "RNG", "SK", "DRU", "MNK", "BRD", "ROG", "SHM", "NEC", "WIZ", "MAG", "ENC", "BST", "BER" };
+	
+	if(GetClass() < 17 && GetClass() > 0) { class_Name = class_List[GetClass()-1]; }
+	
+	// Race
+	std::string race_Name = itoa(GetRace());
+	switch(GetRace()) 
+	{
+		case 1: race_Name = "Human";		break;
+		case 2:	race_Name = "Barbarian";	break;
+		case 3:	race_Name = "Erudite";		break;
+		case 4:	race_Name = "Wood Elf";		break;
+		case 5:	race_Name = "High Elf";		break;
+		case 6:	race_Name = "Dark Elf";		break;
+		case 7:	race_Name = "Half Elf";		break;
+		case 8:	race_Name = "Dwarf";		break;
+		case 9:	race_Name = "Troll";		break;
+		case 10: race_Name = "Ogre";		break;
+		case 11: race_Name = "Halfing";		break;
+		case 12: race_Name = "Gnome";		break;
+		case 128: race_Name = "Iksar";		break;
+		case 130: race_Name = "Vah Shir";	break;
+		case 330: race_Name = "Froglok";	break;
+		case 522: race_Name = "Drakkin";	break;
+		default: break;
+	}
+  /*##########################################################
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	  H/M/E String
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+	##########################################################*/
+	std::string HME_row = "";
+  //Loop Variables
+  /*===========================*/
+	std::string 	cur_field = "";
+	std::string 	total_field = "";
+	std::string 	cur_name = "";
+	std::string		cur_spacing = "";
+	std::string		cur_color = "";
+
+	int 			hme_rows = 3; // Rows in display
+	int				max_HME_value_len = 9; // 9 digits in the displayed value
+
+	for(int hme_row_counter = 0; hme_row_counter < hme_rows; hme_row_counter++) 
+	{
+		switch(hme_row_counter) {
+			case 0: {
+				cur_name = " H: ";
+				cur_field = itoa(GetHP());
+				total_field = itoa(GetMaxHP());
+				break;
+			}
+			case 1: {
+				if(CalcMaxMana() > 0) {
+					cur_name = " M: ";
+					cur_field = itoa(GetMana());
+					total_field = itoa(CalcMaxMana());
+				}
+				else { continue; }
+				
+				break;
+			}
+			case 2: {
+				cur_name = " E: ";
+				cur_field = itoa(GetEndurance());
+				total_field = itoa(GetMaxEndurance());
+				break;
+			}
+			default: { break; }
+		}
+		if(cur_field.compare(total_field) == 0) { cur_color = bright_green; }
+		else { cur_color = bright_red; }
+		
+		cur_spacing.clear();
+		for(int a = cur_field.size(); a < max_HME_value_len; a++) { cur_spacing += " ."; }
+		
+		HME_row += indM + cur_name + cur_spacing + cur_color + cur_field + "</c> / " + total_field + "<br>";
+	}
+  /*##########################################################
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	  Regen String
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+	##########################################################*/
+	std::string regen_string;
+  //Loop Variables
+  /*===========================*/
+	std::string		regen_row_header = "";
+	std::string		regen_row_color = "";
+  	std::string 	base_regen_field = "";
+	std::string 	base_regen_spacing = "";
+	std::string 	item_regen_field = "";
+	std::string 	item_regen_spacing = "";
+	std::string 	cap_regen_field = "";
+	std::string 	cap_regen_spacing = "";
+	std::string 	spell_regen_field = "";
+	std::string 	spell_regen_spacing = "";
+	std::string 	aa_regen_field = "";
+	std::string		aa_regen_spacing = "";
+	std::string 	total_regen_field = "";
+	int 	regen_rows = 3; // Number of rows
+	int		max_regen_value_len = 5; // 5 digits in the displayed value(larger values will not get cut off, this is just a baseline)
+
+	for(int regen_row_counter = 0; regen_row_counter < regen_rows; regen_row_counter++) 
+	{
+		switch(regen_row_counter)
+		{
+			case 0: {
+				regen_row_header = "H: ";
+				regen_row_color = color_red;
+								
+				base_regen_field = itoa(LevelRegen());
+				item_regen_field = itoa(itembonuses.HPRegen);
+				cap_regen_field = itoa(CalcHPRegenCap());
+				spell_regen_field = itoa(spellbonuses.HPRegen);
+				aa_regen_field = itoa(aabonuses.HPRegen);
+				total_regen_field = itoa(CalcHPRegen());
+				break;
+			}
+			case 1: {
+				if(CalcMaxMana() > 0) {
+					regen_row_header = "M: ";
+					regen_row_color = color_blue;
+					
+					base_regen_field = itoa(CalcBaseManaRegen());
+					item_regen_field = itoa(itembonuses.ManaRegen);
+					cap_regen_field = itoa(CalcManaRegenCap());
+					spell_regen_field = itoa(spellbonuses.ManaRegen);
+					aa_regen_field = itoa(aabonuses.ManaRegen);
+					total_regen_field = itoa(CalcManaRegen());
+				}
+				else { continue; }
+				break;
+			}
+			case 2: {
+				regen_row_header = "E: ";
+				regen_row_color = color_green;
+				
+				base_regen_field = itoa(((GetLevel() * 4 / 10) + 2));
+				item_regen_field = itoa(itembonuses.EnduranceRegen);
+				cap_regen_field = itoa(CalcEnduranceRegenCap());
+				spell_regen_field = itoa(spellbonuses.EnduranceRegen);
+				aa_regen_field = itoa(aabonuses.EnduranceRegen);
+				total_regen_field = itoa(CalcEnduranceRegen());
+				break;
+			}
+			default: { break; }
+		}
+		
+		base_regen_spacing.clear();
+		item_regen_spacing.clear();
+		cap_regen_spacing.clear();
+		spell_regen_spacing.clear();
+		aa_regen_spacing.clear();
+
+		for(int b = base_regen_field.size(); b < max_regen_value_len; b++) { base_regen_spacing += " ."; }
+		for(int b = item_regen_field.size(); b < max_regen_value_len; b++) { item_regen_spacing += " ."; }
+		for(int b = cap_regen_field.size(); b < max_regen_value_len; b++) { cap_regen_spacing += " ."; }
+		for(int b = spell_regen_field.size(); b < max_regen_value_len; b++) { spell_regen_spacing += " ."; } 
+		for(int b = aa_regen_field.size(); b < max_regen_value_len; b++) { aa_regen_spacing += " ."; }
+		
+		regen_string += indS + regen_row_color + regen_row_header + base_regen_spacing + base_regen_field;
+		regen_string += div + item_regen_spacing + item_regen_field + " (" + cap_regen_field;
+		regen_string += ") " + cap_regen_spacing + div + spell_regen_spacing + spell_regen_field;
+		regen_string += div + aa_regen_spacing + aa_regen_field + div + total_regen_field + "</c><br>";
+	}
+  /*##########################################################
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	  Stat String
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+	##########################################################*/
+	std::string stat_field = "";
+  //Loop Variables
+  /*===========================*/
+  //first field(stat)
+	std::string		a_stat = "";;
+	std::string 	a_stat_name = "";
+	std::string 	a_stat_spacing = "";
+  //second field(heroic stat)
+	std::string 	h_stat = "";
+	std::string 	h_stat_spacing = "";
+  //third field(resist)
+	std::string 	a_resist = "";
+	std::string 	a_resist_name = "";
+	std::string 	a_resist_spacing = "";
+  //fourth field(heroic resist)
+	std::string 	h_resist_field = "";
+	
+	int 			stat_rows = 7; // Number of rows
+	int				max_stat_value_len = 3; // 3 digits in the displayed value
+
+	for(int stat_row_counter = 0; stat_row_counter < stat_rows; stat_row_counter++) 
+	{
+		switch(stat_row_counter) {
+			case 0: {
+				a_stat_name = " STR: ";
+				a_resist_name = "MR: ";
+				a_stat = itoa(GetSTR());
+				h_stat = itoa(GetHeroicSTR());
+				a_resist = itoa(GetMR());
+				h_resist_field = itoa(GetHeroicMR());
+				break;
+			}
+			case 1: {
+				a_stat_name = " STA: ";
+				a_resist_name = "CR: ";
+				a_stat = itoa(GetSTA());
+				h_stat = itoa(GetHeroicSTA());
+				a_resist = itoa(GetCR());
+				h_resist_field = itoa(GetHeroicCR());
+				break;
+			}
+			case 2: {
+				a_stat_name = " AGI : ";
+				a_resist_name = "FR: ";
+				a_stat = itoa(GetAGI());
+				h_stat = itoa(GetHeroicAGI());
+				a_resist = itoa(GetFR());
+				h_resist_field = itoa(GetHeroicFR());
+				break;
+			}
+			case 3: {
+				a_stat_name = " DEX: ";
+				a_resist_name = "PR: ";
+				a_stat = itoa(GetDEX());
+				h_stat = itoa(GetHeroicDEX());
+				a_resist = itoa(GetPR());
+				h_resist_field = itoa(GetHeroicPR());
+				break;
+			}
+			case 4: {
+				a_stat_name = " INT : ";
+				a_resist_name = "DR: ";
+				a_stat = itoa(GetINT());
+				h_stat = itoa(GetHeroicINT());
+				a_resist = itoa(GetDR());
+				h_resist_field = itoa(GetHeroicDR());
+				break;
+			}
+			case 5: {
+				a_stat_name = " WIS: ";
+				a_resist_name = "Cp: ";
+				a_stat = itoa(GetWIS());
+				h_stat = itoa(GetHeroicWIS());
+				a_resist = itoa(GetCorrup());
+				h_resist_field = itoa(GetHeroicCorrup());
+				break;
+			}
+			case 6: {
+				a_stat_name = " CHA: ";
+				a_stat = itoa(GetCHA());
+				h_stat = itoa(GetHeroicCHA());
+				break;
+			}
+			default: { break; }
+		}
+		
+		a_stat_spacing.clear();
+		h_stat_spacing.clear();
+		a_resist_spacing.clear();
+		
+		for(int a = a_stat.size(); a < max_stat_value_len; a++) { a_stat_spacing += " . "; }
+		for(int h = h_stat.size(); h < 20; h++) { h_stat_spacing += " . "; }
+		for(int h = a_resist.size(); h < max_stat_value_len; h++) { a_resist_spacing += " . "; }
+		
+		stat_field += indP + a_stat_name + a_stat_spacing + a_stat + heroic_color + h_stat + "</c>";  
+		if(stat_row_counter < 6) {
+			stat_field += h_stat_spacing + a_resist_name + a_resist_spacing + a_resist + heroic_color + h_resist_field + "</c><br>"; 
+		}
+	}
+  /*##########################################################
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	  Mod2 String
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+	##########################################################*/
+	std::string mod2_field = "";
+  //Loop Variables
+  /*===========================*/
+	std::string		mod2a = "";
+	std::string 	mod2a_name = "";
+	std::string 	mod2a_spacing = "";
+	std::string		mod2a_cap = "";
+	std::string		mod_row_spacing = "";
+	std::string		mod2b = "";
+	std::string 	mod2b_name = "";
+	std::string 	mod2b_spacing = "";
+	std::string		mod2b_cap = "";
+	int				mod2a_space_count;
+	int				mod2b_space_count;
+	
+	int 	mod2_rows = 4;
+	int		max_mod2_value_len = 3; // 3 digits in the displayed value
+
+	for(int mod2_row_counter = 0; mod2_row_counter < mod2_rows; mod2_row_counter++) 
+	{
+		switch (mod2_row_counter)
+		{
+			case 0: {
+				mod2a_name = "Avoidance: ";
+				mod2b_name = "Combat Effects: ";
+				mod2a = itoa(GetAvoidance());
+				mod2a_cap = itoa(RuleI(Character, ItemAvoidanceCap));
+				mod2b = itoa(GetCombatEffects());
+				mod2b_cap = itoa(RuleI(Character, ItemCombatEffectsCap));
+				mod2a_space_count = 2;
+				mod2b_space_count = 0;
+				break;
+			}
+			case 1: {
+				mod2a_name = "Accuracy: ";
+				mod2b_name = "Strike Through: ";
+				mod2a = itoa(GetAccuracy());
+				mod2a_cap = itoa(RuleI(Character, ItemAccuracyCap));
+				mod2b = itoa(GetStrikeThrough());
+				mod2b_cap = itoa(RuleI(Character, ItemStrikethroughCap));
+				mod2a_space_count = 3;
+				mod2b_space_count = 1;
+				break;
+			}
+			case 2: {
+				mod2a_name = "Shielding: ";
+				mod2b_name = "Spell Shielding: ";
+				mod2a = itoa(GetShielding());
+				mod2a_cap = itoa(RuleI(Character, ItemShieldingCap));
+				mod2b = itoa(GetSpellShield());
+				mod2b_cap = itoa(RuleI(Character, ItemSpellShieldingCap));
+				mod2a_space_count = 2;
+				mod2b_space_count = 1;
+				break;
+			}
+			case 3: {
+				mod2a_name = "Stun Resist: ";
+				mod2b_name = "DoT Shielding: ";
+				mod2a = itoa(GetStunResist());
+				mod2a_cap = itoa(RuleI(Character, ItemStunResistCap));
+				mod2b = itoa(GetDoTShield());
+				mod2b_cap = itoa(RuleI(Character, ItemDoTShieldingCap));
+				mod2a_space_count = 0;
+				mod2b_space_count = 2;
+				break;
+			}
+		}
+		
+		mod2a_spacing.clear();
+		mod_row_spacing.clear();
+		mod2b_spacing.clear();
+		
+		for(int a = mod2a.size(); a < (max_mod2_value_len + mod2a_space_count); a++) { mod2a_spacing += " . "; }
+		for(int a = mod2a_cap.size(); a < 6 ; a++) { mod_row_spacing += " . "; }
+		for(int a = mod2b.size(); a < (max_mod2_value_len + mod2b_space_count); a++) { mod2b_spacing += " . "; }
+	
+		mod2_field += indP + mod2a_name + mod2a_spacing + mod2a + " / " + mod2a_cap + mod_row_spacing;
+		mod2_field += mod2b_name + mod2b_spacing + mod2b + " / " + mod2b_cap + "<br>";
+	}
+	
+	uint32 rune_number = 0;
+	uint32 magic_rune_number = 0;
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int i=0; i < buff_count; i++) {
+		if (buffs[i].spellid != SPELL_UNKNOWN) {
+			if ((HasRune() || HasPartialMeleeRune()) && buffs[i].melee_rune > 0) { rune_number += buffs[i].melee_rune; }
+
+			if ((HasSpellRune() || HasPartialSpellRune()) && buffs[i].magic_rune > 0) { magic_rune_number += buffs[i].magic_rune; }
+		}
+	}
+	
+	int shield_ac = 0;
+	GetRawACNoShield(shield_ac);
+	
+	std::string skill_list[] = { 
+		"1H Blunt","1H Slashing","2H Blunt","2H Slashing","Abjuration","Alteration","Apply Poison","Archery","Backstab","Bind Wound","Bash","Block","Brass Instruments","Channeling","Conjuration",
+		"Defense","Disarm","Disarm Traps","Divination","Dodge","Double Attack","Dragon Punch","Dual Wield","Eagle Strike","Evocation","Feign Death","Flying Kick","Forage","Hand To Hand","Hide","Kick",
+		"Meditate","Mend","Offense","Parry","Pick Lock","Piercing","Riposte","Round Kick","Safe Fall","Sense Heading","Singing","Sneak","Specialize Abjuration","Specialize Alteration","Specialize Conjuration",
+		"Specialize Divination","Specialize Evocation","Pick Pockets","Stringed_Instruments","Swimming","Throwing","Tiger Claw","Tracking","Wind Instruments","Fishing","Make Poison","Tinkering","Research","Alchemy",
+		"Baking","Tailoring","Sense Traps","Blacksmithing","Fletching","Brewing","Alcohol_Tolerance","Begging","Jewelry Making","Pottery","Percussion Instruments","Intimidation","Berserking","Taunt","Frenzy" 
+	};
+	
+	std::string skill_mods = "";
+	for(int j = 0; j <= HIGHEST_SKILL; j++) {
+		if(itembonuses.skillmod[j] > 0)
+			skill_mods += indP + skill_list[j] + " : +" + itoa(itembonuses.skillmod[j]) + "%<br>";
+		else if(itembonuses.skillmod[j] < 0)
+			skill_mods += indP + skill_list[j] + " : -" + itoa(itembonuses.skillmod[j]) + "%<br>";
+	}
+	
+	std::string skill_dmgs = "";
+	for(int j = 0; j <= HIGHEST_SKILL; j++) {
+		if((itembonuses.SkillDamageAmount[j] + spellbonuses.SkillDamageAmount[j]) > 0)
+			skill_dmgs += indP + skill_list[j] + " : +" + itoa(itembonuses.SkillDamageAmount[j] + spellbonuses.SkillDamageAmount[j]) + "<br>";
+		else if((itembonuses.SkillDamageAmount[j] + spellbonuses.SkillDamageAmount[j]) < 0)
+			skill_dmgs += indP + skill_list[j] + " : -" + itoa(itembonuses.SkillDamageAmount[j] + spellbonuses.SkillDamageAmount[j]) + "<br>";
+	}
+	
+	std::string faction_item_string = "";
+	char faction_buf[256];
+	
+	for(std::map <uint32, sint32>::iterator iter = item_faction_bonuses.begin();
+		iter != item_faction_bonuses.end();
+		iter++)
+	{
+		memset(&faction_buf, 0, sizeof(faction_buf));
+		
+		if(!database.GetFactionName((sint32)((*iter).first), faction_buf, sizeof(faction_buf)))
+			strcpy(faction_buf, "Not in DB");
+		
+		if((*iter).second > 0) {
+			faction_item_string += indP + faction_buf + " : +" + itoa((*iter).second) + "<br>";
+		}
+		else if((*iter).second < 0) {
+			faction_item_string += indP + faction_buf + " : -" + itoa((*iter).second) + "<br>";
+		}
+	}
+	
+	std::string bard_info = "";
+	if(GetClass() == BARD) {
+		bard_info = indP + "Singing: " + itoa(GetSingMod()) + "<br>" +
+					indP + "Brass: " + itoa(GetBrassMod()) + "<br>" +
+					indP + "String: " + itoa(GetStringMod()) + "<br>" +
+					indP + "Percussion: " + itoa(GetPercMod()) + "<br>" +
+					indP + "Wind: " + itoa(GetWindMod()) + "<br>";
+	}
+	
+	std::string final_stats = "" +
+	/*	C/L/R	*/	indP + "Class: " + class_Name + indS + "Level: " + itoa(GetLevel()) + indS + "Race: " + race_Name + "<br>" +
+	/*	Runes	*/	indP + "Rune: " + itoa(rune_number) + indL + indS + "Spell Rune: " + itoa(magic_rune_number) + "<br>" +
+	/*	HP/M/E	*/	HME_row + 
+	/*	DS		*/	indP + "DS: " + itoa(itembonuses.DamageShield + spellbonuses.DamageShield*-1) + " (Spell: " + itoa(spellbonuses.DamageShield*-1) + " + Item: " + itoa(itembonuses.DamageShield) + " / " + itoa(RuleI(Character, ItemDamageShieldCap)) + ")<br>" +
+	/*	Atk		*/	indP + "<c \"#CCFF00\">ATK: " + itoa(GetTotalATK()) + "</c><br>" +
+	/*	Atk2	*/	indP + "- Base: " + itoa(GetATKRating()) + " | Item: " + itoa(itembonuses.ATK) + " (" + itoa(RuleI(Character, ItemATKCap)) + ")~Used: " + itoa((itembonuses.ATK * 1.342)) + " | Spell: " + itoa(spellbonuses.ATK) + "<br>" +
+	/*	AC		*/	indP + "<c \"#CCFF00\">AC: " + itoa(CalcAC()) + "</c><br>" +
+	/*	AC2		*/	indP + "- Mit: " + itoa(GetACMit()) + " | Avoid: " + itoa(GetACAvoid()) + " | Spell: " + itoa(spellbonuses.AC) + " | Shield: " + itoa(shield_ac) + "<br>" +
+	/*	Haste	*/	indP + "<c \"#CCFF00\">Haste: " + itoa(GetHaste()) + "</c><br>" +
+	/*	Haste2	*/	indP + " - Item: " + itoa(itembonuses.haste) + " + Spell: " + itoa(spellbonuses.haste + spellbonuses.hastetype2) + " (Cap: " + itoa(RuleI(Character, HasteCap)) + ") | Over: " + itoa(spellbonuses.hastetype3 + ExtraHaste) + "<br><br>" +
+	/* RegenLbl	*/	indL + indS + "Regen<br>" + indS + indP + indP + " Base | Items (Cap) " + indP + " | Spell | A.A.s | Total<br>" +
+	/*	Regen	*/	regen_string + "<br>" +
+	/*	Stats	*/	stat_field + "<br><br>" +
+	/*	Mod2s	*/	mod2_field + "<br>" +
+	/*	HealAmt	*/	indP + "Heal Amount: " + itoa(GetHealAmt()) + " / " + itoa(RuleI(Character, ItemHealAmtCap)) + "<br>" +
+	/*	SpellDmg*/	indP + "Spell Dmg: " + itoa(GetSpellDmg()) + " / " + itoa(RuleI(Character, ItemSpellDmgCap)) + "<br>" +
+	/*	Clair	*/	indP + "Clairvoyance: " + itoa(GetClair()) + " / " + itoa(RuleI(Character, ItemClairvoyanceCap)) + "<br>" +
+	/*	DSMit	*/	indP + "Dmg Shld Mit: " + itoa(GetDSMit()) + " / " + itoa(RuleI(Character, ItemDSMitigationCap)) + "<br><br>";
+	if(GetClass() == BARD) 
+		final_stats += bard_info + "<br>";
+	if(skill_mods.size() > 0) 
+		final_stats += skill_mods + "<br>";
+	if(skill_dmgs.size() > 0)
+		final_stats += skill_dmgs + "<br>";
+	if(faction_item_string.size() > 0)
+		final_stats += faction_item_string;
+	
+				
+	if(use_window) {
+		if(final_stats.size() < 4096)
+		{
+			uint32 Buttons = (client->GetClientVersion() < EQClientSoD) ? 0 : 1;
+			client->SendWindow(0, POPUPID_UPDATE_SHOWSTATSWINDOW, Buttons, "Cancel", "Update", 0, 1, this, "", "%s", final_stats.c_str());
+			goto Extra_Info;
+		}
+		else {
+			client->Message(15, "The window has exceeded its character limit, displaying stats to chat window:");
+		}
+	}
+
+	client->Message(15, "~~~~~ %s %s ~~~~~", GetCleanName(), GetLastName());
+	client->Message(0, " Level: %i Class: %i Race: %i DS: %i/%i Size: %1.1f  Weight: %.1f/%d  ", GetLevel(), GetClass(), GetRace(), GetDS(), RuleI(Character, ItemDamageShieldCap), GetSize(), (float)CalcCurrentWeight() / 10.0f, GetSTR());
+	client->Message(0, " HP: %i/%i  HP Regen: %i/%i",GetHP(), GetMaxHP(), CalcHPRegen(), CalcHPRegenCap());
+	client->Message(0, " AC: %i ( Mit.: %i + Avoid.: %i + Spell: %i ) | Shield AC: %i", CalcAC(), GetACMit(), GetACAvoid(), spellbonuses.AC, shield_ac);
+	if(CalcMaxMana() > 0) 
+		client->Message(0, " Mana: %i/%i  Mana Regen: %i/%i", GetMana(), GetMaxMana(), CalcManaRegen(), CalcManaRegenCap());
+	client->Message(0, " End.: %i/%i  End. Regen: %i/%i",GetEndurance(), GetMaxEndurance(), CalcEnduranceRegen(), CalcEnduranceRegenCap());
+	client->Message(0, " ATK: %i  Worn/Spell ATK %i/%i  Server Side ATK: %i", GetTotalATK(), RuleI(Character, ItemATKCap), GetATKBonus(), GetATK());
+	client->Message(0, " Haste: %i / %i (Item: %i + Spell: %i + Over: %i)", GetHaste(), RuleI(Character, HasteCap), itembonuses.haste, spellbonuses.haste + spellbonuses.hastetype2, spellbonuses.hastetype3 + ExtraHaste);
+	client->Message(0, " STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
+	client->Message(0, " hSTR: %i  hSTA: %i  hDEX: %i  hAGI: %i  hINT: %i  hWIS: %i  hCHA: %i", GetHeroicSTR(), GetHeroicSTA(), GetHeroicDEX(), GetHeroicAGI(), GetHeroicINT(), GetHeroicWIS(), GetHeroicCHA());
+	client->Message(0, " MR: %i  PR: %i  FR: %i  CR: %i  DR: %i Corruption: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR(), GetCorrup());
+	client->Message(0, " hMR: %i  hPR: %i  hFR: %i  hCR: %i  hDR: %i hCorruption: %i", GetHeroicMR(), GetHeroicPR(), GetHeroicFR(), GetHeroicCR(), GetHeroicDR(), GetHeroicCorrup());
+	client->Message(0, " Shielding: %i  Spell Shield: %i  DoT Shielding: %i Stun Resist: %i  Strikethrough: %i  Avoidance: %i  Accuracy: %i  Combat Effects: %i", GetShielding(), GetSpellShield(), GetDoTShield(), GetStunResist(), GetStrikeThrough(), GetAvoidance(), GetAccuracy(), GetCombatEffects());
+	client->Message(0, " Heal Amt.: %i  Spell Dmg.: %i  Clairvoyance: %i DS Mitigation: %i", GetHealAmt(), GetSpellDmg(), GetClair(), GetDSMit());
+	if(GetClass() == BARD)
+		client->Message(0, " Singing: %i  Brass: %i  String: %i Percussion: %i Wind: %i", GetSingMod(), GetBrassMod(), GetStringMod(), GetPercMod(), GetWindMod());
+
+	Extra_Info:
+	
+	client->Message(0, " BaseRace: %i  Gender: %i  BaseGender: %i Texture: %i  HelmTexture: %i", GetBaseRace(), GetGender(), GetBaseGender(), GetTexture(), GetHelmTexture());
+	if (client->Admin() >= 100) {
+		client->Message(0, "  CharID: %i  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", CharacterID(), GetID(), GetPetID(), GetOwnerID(), IsAIControlled(), targeted);
+	}
+}
+
+void Client::SendAltCurrencies() {
+    if(GetClientVersion() >= EQClientSoF) {
+        uint32 count = zone->AlternateCurrencies.size();
+        if(count == 0) {
+            return;
+        }
+
+        EQApplicationPacket *outapp = new EQApplicationPacket(OP_AltCurrency, 
+            sizeof(AltCurrencyPopulate_Struct) + sizeof(AltCurrencyPopulateEntry_Struct) * count);
+        AltCurrencyPopulate_Struct *altc = (AltCurrencyPopulate_Struct*)outapp->pBuffer;
+        altc->opcode = ALT_CURRENCY_OP_POPULATE;
+        altc->count = count;
+
+        uint32 i = 0;
+        list<AltCurrencyDefinition_Struct>::iterator iter = zone->AlternateCurrencies.begin();
+        while(iter != zone->AlternateCurrencies.end()) {
+            const Item_Struct* item = database.GetItem((*iter).item_id);
+            altc->entries[i].currency_number = (*iter).id;
+            altc->entries[i].unknown00 = 1;
+            altc->entries[i].currency_number2 = (*iter).id;
+            altc->entries[i].item_id = (*iter).item_id;
+            if(item) {
+                altc->entries[i].item_icon = item->Icon;
+                altc->entries[i].stack_size = item->StackSize;
+            } else {
+                altc->entries[i].item_icon = 1000;
+                altc->entries[i].stack_size = 1000;
+            }
+            i++;
+            iter++;
+        }
+
+        FastQueuePacket(&outapp);
+    }
+}
+
+void Client::SetAlternateCurrencyValue(uint32 currency_id, uint32 new_amount)
+{
+    alternate_currency[currency_id] = new_amount;
+    database.UpdateAltCurrencyValue(CharacterID(), currency_id, new_amount);
+    SendAlternateCurrencyValue(currency_id);
+}
+
+void Client::AddAlternateCurrencyValue(uint32 currency_id, sint32 amount)
+{
+    if(amount == 0) {
+        return;
+    }
+
+    int new_value = 0;
+    std::map<uint32, uint32>::iterator iter = alternate_currency.find(currency_id);
+    if(iter == alternate_currency.end()) {
+        new_value = amount;
+    } else {
+        new_value = (*iter).second + amount;
+    }
+
+    if(new_value < 0) {
+        alternate_currency[currency_id] = 0;
+        database.UpdateAltCurrencyValue(CharacterID(), currency_id, 0);
+    } else {
+        alternate_currency[currency_id] = new_value;
+        database.UpdateAltCurrencyValue(CharacterID(), currency_id, new_value);
+    }
+    SendAlternateCurrencyValue(currency_id);
+}
+
+void Client::SendAlternateCurrencyValues()
+{
+    list<AltCurrencyDefinition_Struct>::iterator iter = zone->AlternateCurrencies.begin();
+    while(iter != zone->AlternateCurrencies.end()) {
+        SendAlternateCurrencyValue((*iter).id, false);
+        iter++;
+    }
+}
+
+void Client::SendAlternateCurrencyValue(uint32 currency_id, bool send_if_null)
+{
+    uint32 value = GetAlternateCurrencyValue(currency_id);
+    if(value > 0 || (value == 0 && send_if_null)) {
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_AltCurrency, sizeof(AltCurrencyUpdate_Struct));
+        AltCurrencyUpdate_Struct *update = (AltCurrencyUpdate_Struct*)outapp->pBuffer;
+        update->opcode = 7;
+        strcpy(update->name, GetName());
+        update->currency_number = currency_id;
+        update->amount = value;
+        update->unknown072 = 1;
+        FastQueuePacket(&outapp);
+    }
+}
+
+uint32 Client::GetAlternateCurrencyValue(uint32 currency_id) const
+{
+    std::map<uint32, uint32>::const_iterator iter = alternate_currency.find(currency_id);
+    if(iter == alternate_currency.end()) {
+        return 0;
+    } else {
+        return (*iter).second;
+    }
+}
+
+void Client::OpenLFGuildWindow()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, 8);
+	
+	outapp->WriteUInt32(6);
+
+	FastQueuePacket(&outapp);
+}
+
+bool Client::IsXTarget(const Mob *m) const
+{
+	if(!XTargettingAvailable() || !m || (m->GetID() == 0))
+		return false;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(XTargets[i].ID == m->GetID())
+			return true;
+	}
+	return false;
+}
+
+bool Client::IsClientXTarget(const Client *c) const
+{
+	if(!XTargettingAvailable() || !c)
+		return false;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(!strcasecmp(XTargets[i].Name, c->GetName()))
+			return true;
+	}
+	return false;
+}
+
+
+void Client::UpdateClientXTarget(Client *c)
+{
+	if(!XTargettingAvailable() || !c)
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(!strcasecmp(XTargets[i].Name, c->GetName()))
+		{
+			XTargets[i].ID = c->GetID();
+			SendXTargetPacket(i, c);
+		}
+	}
+}
+
+void Client::AddAutoXTarget(Mob *m)
+{
+	if(!XTargettingAvailable() || !XTargetAutoAddHaters)
+		return;
+
+	if(IsXTarget(m))
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if((XTargets[i].Type == Auto) && (XTargets[i].ID == 0))
+		{
+			XTargets[i].ID = m->GetID();
+			SendXTargetPacket(i, m);
+			break;
+		}
+	}
+}
+
+void Client::RemoveXTarget(Mob *m, bool OnlyAutoSlots)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	bool HadFreeAutoSlotsBefore = false;
+
+	int FreedAutoSlots = 0;
+
+	if(m->GetID() == 0)
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(OnlyAutoSlots && (XTargets[i].Type !=Auto))
+			continue;
+
+		if(XTargets[i].ID == m->GetID())
+		{
+			if(XTargets[i].Type == CurrentTargetNPC)
+				XTargets[i].Type = Auto;
+
+			if(XTargets[i].Type == Auto)
+				++FreedAutoSlots;
+
+			XTargets[i].ID = 0;
+
+			SendXTargetPacket(i, NULL);
+		}
+		else
+		{
+			if((XTargets[i].Type == Auto) && (XTargets[i].ID == 0))
+				HadFreeAutoSlotsBefore = true;
+		}
+	}
+	// If there are more mobs aggro on us than we had auto-hate slots, add one of those haters into the slot(s) we just freed up.
+	if(!HadFreeAutoSlotsBefore && FreedAutoSlots)
+		entity_list.RefreshAutoXTargets(this);
+}
+
+void Client::UpdateXTargetType(XTargetType Type, Mob *m, const char *Name)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if(XTargets[i].Type == Type)
+		{
+			if(m)
+				XTargets[i].ID = m->GetID();
+			else
+				XTargets[i].ID = 0;
+
+			if(Name)
+				strncpy(XTargets[i].Name, Name, 64);
+
+			SendXTargetPacket(i, m);
+		}
+	}
+}
+
+void Client::SendXTargetPacket(uint32 Slot, Mob *m)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	uint32 PacketSize = 18;
+
+	if(m)
+		PacketSize += strlen(m->GetCleanName());
+	else
+	{
+		PacketSize += strlen(XTargets[Slot].Name);
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_XTargetResponse, PacketSize);
+	outapp->WriteUInt32(GetMaxXTargets());
+	outapp->WriteUInt32(1);
+	outapp->WriteUInt32(Slot);
+	if(m)
+	{
+		outapp->WriteUInt8(1);
+	}
+	else
+	{
+		if(strlen(XTargets[Slot].Name) && ((XTargets[Slot].Type == CurrentTargetPC) ||
+		  (XTargets[Slot].Type == GroupTank) ||
+		  (XTargets[Slot].Type == GroupAssist) ||
+		  (XTargets[Slot].Type == Puller) ||
+		  (XTargets[Slot].Type == RaidAssist1) ||
+		  (XTargets[Slot].Type == RaidAssist2) ||
+		  (XTargets[Slot].Type == RaidAssist3)))
+		{
+			outapp->WriteUInt8(2);
+		}
+		else
+		{
+			outapp->WriteUInt8(0);
+		}
+	}
+	outapp->WriteUInt32(XTargets[Slot].ID);
+	outapp->WriteString(m ? m->GetCleanName() : XTargets[Slot].Name);
+	FastQueuePacket(&outapp);
+}
+
+void Client::RemoveGroupXTargets()
+{
+	if(!XTargettingAvailable())
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+	{
+		if((XTargets[i].Type == GroupTank) ||
+		  (XTargets[i].Type == GroupAssist) ||
+		  (XTargets[i].Type == Puller) ||
+		  (XTargets[i].Type == RaidAssist1) ||
+		  (XTargets[i].Type == RaidAssist2) ||
+		  (XTargets[i].Type == RaidAssist3) ||
+		  (XTargets[i].Type == GroupMarkTarget1) ||
+		  (XTargets[i].Type == GroupMarkTarget2) ||
+		  (XTargets[i].Type == GroupMarkTarget3))
+		{
+			XTargets[i].ID = 0;
+			XTargets[i].Name[0] = 0;
+			SendXTargetPacket(i, NULL);
+		}
+	}
+}
+
+void Client::ShowXTargets(Client *c)
+{
+	if(!c)
+		return;
+
+	for(int i = 0; i < GetMaxXTargets(); ++i)
+		c->Message(0, "Xtarget Slot: %i, Type: %2i, ID: %4i, Name: %s", i, XTargets[i].Type, XTargets[i].ID, XTargets[i].Name);
+}
+
+void Client::SetMaxXTargets(uint8 NewMax)
+{
+	if(!XTargettingAvailable())
+		return;
+
+	if(NewMax > XTARGET_HARDCAP)
+		return;
+
+	MaxXTargets = NewMax;
+
+	Save(0);
+
+	for(int i = MaxXTargets; i < XTARGET_HARDCAP; ++i)
+	{
+		XTargets[i].Type = Auto;
+		XTargets[i].ID = 0;
+		XTargets[i].Name[0] = 0;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_XTargetResponse, 8);
+	outapp->WriteUInt32(GetMaxXTargets());
+	outapp->WriteUInt32(0);
+	FastQueuePacket(&outapp);
+}
+
+char* Client::GetRacePlural(Client* client) {
+
+	switch (client->CastToMob()->GetRace()) {
+		case HUMAN:
+			return "Humans"; break;
+		case BARBARIAN:
+			return "Barbarians"; break;
+		case ERUDITE:
+			return "Erudites"; break;
+		case WOOD_ELF:
+			return "Wood Elves"; break;
+		case HIGH_ELF:
+			return "High Elves"; break;
+		case DARK_ELF:
+			return "Dark Elves"; break;
+		case HALF_ELF:
+			return "Half Elves"; break;
+		case DWARF:
+			return "Dwarves"; break;
+		case TROLL:
+			return "Trolls"; break;
+		case OGRE:
+			return "Ogres"; break;
+		case HALFLING:
+			return "Halflings"; break;
+		case GNOME:
+			return "Gnomes"; break;
+		case IKSAR:
+			return "Iksar"; break;
+		case VAHSHIR:
+			return "Vah Shir"; break;
+		case FROGLOK:
+			return "Frogloks"; break;
+		case DRAKKIN:
+			return "Drakkin"; break;
+		default:
+			return "Races"; break;
+	}
+}
+
+char* Client::GetClassPlural(Client* client) {
+
+	switch (client->CastToMob()->GetClass()) {
+		case WARRIOR:
+			return "Warriors"; break;
+		case CLERIC:
+			return "Clerics"; break;
+		case PALADIN:
+			return "Paladins"; break;
+		case RANGER:
+			return "Rangers"; break;
+		case SHADOWKNIGHT:
+			return "Shadowknights"; break;
+		case DRUID:
+			return "Druids"; break;
+		case MONK:
+			return "Monks"; break;
+		case BARD:
+			return "Bards"; break;
+		case ROGUE:
+			return "Rogues"; break;
+		case SHAMAN:
+			return "Shamen"; break;
+		case NECROMANCER:
+			return "Necromancers"; break;
+		case WIZARD:
+			return "Wizards"; break;
+		case MAGICIAN:
+			return "Magicians"; break;
+		case ENCHANTER:
+			return "Enchanters"; break;
+		case BEASTLORD:
+			return "Beastlords"; break;
+		case BERSERKER:
+			return "Berserkers"; break;
+		default:
+			return "Classes"; break;
 	}
 }

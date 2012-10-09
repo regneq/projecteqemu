@@ -26,6 +26,8 @@ BasePacket::BasePacket(const unsigned char *buf, uint32 len)
 {
 	this->pBuffer=NULL;
 	this->size=0;
+	this->_wpos = 0;
+	this->_rpos = 0;
 	if (len>0) {
 		this->size=len;
 		pBuffer= new unsigned char[len];
@@ -94,6 +96,18 @@ void BasePacket::DumpRaw(FILE *to) const
 	fprintf(to, "\n");
 }
 
+void BasePacket::ReadString(char *str, uint32 Offset, uint32 MaxLength) const
+{
+	uint32 i = 0, j = Offset;
+
+	do
+	{
+		str[i++] = pBuffer[j++];
+	}
+	while((j < size) && (i < MaxLength) && (str[i - 1] != 0));
+
+	str[i - 1] = '\0';
+}	
 
 void DumpPacketHex(const BasePacket* app)
 {

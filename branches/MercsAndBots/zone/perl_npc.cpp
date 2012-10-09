@@ -94,13 +94,13 @@ XS(XS_NPC_AddItem); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_AddItem)
 {
 	dXSARGS;
-	if (items < 3 || items > 4)
-		Perl_croak(aTHX_ "Usage: NPC::AddItem(THIS, itemid, charges, slot= 0)");
+	if (items < 2 || items > 4)
+		Perl_croak(aTHX_ "Usage: NPC::AddItem(THIS, itemid, charges = 0, equipitem = true)");
 	{
 		NPC *		THIS;
 		int32		itemid = (int32)SvUV(ST(1));
-		int8		charges = (int8)SvUV(ST(2));
-		int8		slot;
+		int16		charges = 0;
+		bool		equipitem = true;
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -111,13 +111,12 @@ XS(XS_NPC_AddItem)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if (items < 4)
-			slot = 0;
-		else {
-			slot = (int8)SvUV(ST(3));
-		}
+		if (items > 2)
+			charges = (int16)SvUV(ST(2));
+		if (items > 3)
+			equipitem = (bool)SvTRUE(ST(3));
 
-		THIS->AddItem(itemid, charges, slot);
+		THIS->AddItem(itemid, charges, equipitem);
 	}
 	XSRETURN_EMPTY;
 }
@@ -814,7 +813,7 @@ XS(XS_NPC_GetMaxDMG)
 		Perl_croak(aTHX_ "Usage: NPC::GetMaxDMG(THIS)");
 	{
 		NPC *		THIS;
-		int16		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -831,6 +830,33 @@ XS(XS_NPC_GetMaxDMG)
 	}
 	XSRETURN(1);
 }
+
+XS(XS_NPC_GetMinDMG); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetMinDMG)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetMinDMG(THIS)");
+	{
+		NPC *        THIS;
+		int32        RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetMinDMG();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 
 XS(XS_NPC_IsAnimal); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_IsAnimal)
@@ -1866,6 +1892,186 @@ XS(XS_NPC_ModifyNPCStat)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_NPC_AddSpellToNPCList); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_AddSpellToNPCList)
+{
+	dXSARGS;
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: NPC::AddAISpell(THIS, priority, spell_id, type, mana_cost, recast_delay, resist_adjust)");
+	{
+		NPC * THIS;
+		int	priority = (int)SvIV(ST(1));
+		int	spell_id = (int)SvIV(ST(2));
+		int	type = (int)SvIV(ST(3));
+		int	mana_cost = (int)SvIV(ST(4));
+		int	recast_delay = (int)SvIV(ST(5));
+		int	resist_adjust = (int)SvIV(ST(6));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->AddSpellToNPCList(priority, spell_id, type, mana_cost, recast_delay, resist_adjust);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_RemoveSpellFromNPCList); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_RemoveSpellFromNPCList)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::RemoveAISpell(THIS, spell_id)");
+	{
+		NPC * THIS;
+		int	spell_id = (int)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->RemoveSpellFromNPCList(spell_id);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_SetSpellFocusDMG); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetSpellFocusDMG)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetSpellFocusDMG(THIS, NewSpellFocusDMG)");
+	{
+		NPC *		THIS;
+		sint32		NewSpellFocusDMG = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSpellFocusDMG(NewSpellFocusDMG);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_SetSpellFocusHeal); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetSpellFocusHeal)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetSpellFocusHeal(THIS, NewSpellFocusHeal)");
+	{
+		NPC *		THIS;
+		sint32		NewSpellFocusHeal = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSpellFocusHeal(NewSpellFocusHeal);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_GetSlowMitigation); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSlowMitigation)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSlowMitigation(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSlowMitigation();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetAttackSpeed); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetAttackSpeed)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetAttackSpeed(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetAttackSpeed();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetAccuracyRating); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetAccuracyRating)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetAccuracyRating(THIS)");
+	{
+		NPC *		THIS;
+		sint32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetAccuracyRating();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1889,7 +2095,7 @@ XS(boot_NPC)
 
 		newXSproto(strcpy(buf, "SignalNPC"), XS_NPC_SignalNPC, file, "$$");
 		newXSproto(strcpy(buf, "CheckNPCFactionAlly"), XS_NPC_CheckNPCFactionAlly, file, "$$");
-		newXSproto(strcpy(buf, "AddItem"), XS_NPC_AddItem, file, "$$$;$");
+		newXSproto(strcpy(buf, "AddItem"), XS_NPC_AddItem, file, "$$;$$");
 		newXSproto(strcpy(buf, "AddLootTable"), XS_NPC_AddLootTable, file, "$");
 		newXSproto(strcpy(buf, "RemoveItem"), XS_NPC_RemoveItem, file, "$$;$$");
 		newXSproto(strcpy(buf, "ClearItemList"), XS_NPC_ClearItemList, file, "$");
@@ -1917,6 +2123,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "IsOnHatelist"), XS_NPC_IsOnHatelist, file, "$$");
 		newXSproto(strcpy(buf, "SetNPCFactionID"), XS_NPC_SetNPCFactionID, file, "$$");
 		newXSproto(strcpy(buf, "GetMaxDMG"), XS_NPC_GetMaxDMG, file, "$");
+		newXSproto(strcpy(buf, "GetMinDMG"), XS_NPC_GetMinDMG, file, "$");
 		newXSproto(strcpy(buf, "IsAnimal"), XS_NPC_IsAnimal, file, "$");
 		newXSproto(strcpy(buf, "GetPetSpellID"), XS_NPC_GetPetSpellID, file, "$");
 		newXSproto(strcpy(buf, "SetPetSpellID"), XS_NPC_SetPetSpellID, file, "$$");
@@ -1956,6 +2163,13 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "GetSwarmTarget"), XS_NPC_GetSwarmTarget, file, "$");
 		newXSproto(strcpy(buf, "SetSwarmTarget"), XS_NPC_SetSwarmTarget, file, "$$");
 		newXSproto(strcpy(buf, "ModifyNPCStat"), XS_NPC_ModifyNPCStat, file, "$$$");
+		newXSproto(strcpy(buf, "AddAISpell"), XS_NPC_AddSpellToNPCList, file, "$$$$$$$");
+		newXSproto(strcpy(buf, "RemoveAISpell"), XS_NPC_RemoveSpellFromNPCList, file, "$$");
+		newXSproto(strcpy(buf, "SetSpellFocusDMG"), XS_NPC_SetSpellFocusDMG, file, "$$");
+		newXSproto(strcpy(buf, "SetSpellFocusHeal"), XS_NPC_SetSpellFocusHeal, file, "$$");
+		newXSproto(strcpy(buf, "GetSlowMitigation"), XS_NPC_GetAttackSpeed, file, "$");
+		newXSproto(strcpy(buf, "GetAttackSpeed"), XS_NPC_GetSlowMitigation, file, "$");
+		newXSproto(strcpy(buf, "GetAccuracyRating"), XS_NPC_GetAccuracyRating, file, "$");
 	XSRETURN_YES;
 }
 

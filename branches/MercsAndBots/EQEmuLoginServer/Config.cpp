@@ -19,7 +19,7 @@
 #include "Config.h"
 #include "ErrorLog.h"
 
-extern ErrorLog *log;
+extern ErrorLog *server_log;
 /**
  * Retrieves the variable we want from our title or theme
  * First gets the map from the title
@@ -48,7 +48,7 @@ void Config::Parse(const char *file_name)
 {
 	if(file_name == NULL)
 	{
-		log->Log(log_error, "Config::Parse(), file_name passed was null.");
+		server_log->Log(log_error, "Config::Parse(), file_name passed was null.");
 		return;
 	}
 
@@ -71,7 +71,7 @@ void Config::Parse(const char *file_name)
 				iter++;
 				if(iter == tokens.end())
 				{
-					log->Log(log_error, "Config::Parse(), EOF before title done parsing.");
+					server_log->Log(log_error, "Config::Parse(), EOF before title done parsing.");
 					fclose(input);
 					vars.clear();
 					return;
@@ -104,7 +104,7 @@ void Config::Parse(const char *file_name)
 				mode++;
 				if((*iter).compare("=") != 0)
 				{
-					log->Log(log_error, "Config::Parse(), invalid parse token where = should be.");
+					server_log->Log(log_error, "Config::Parse(), invalid parse token where = should be.");
 					fclose(input);
 					vars.clear();
 					return;
@@ -133,7 +133,7 @@ void Config::Parse(const char *file_name)
 	}
 	else
 	{
-		log->Log(log_error, "Config::Parse(), file was unable to be opened for parsing.");
+		server_log->Log(log_error, "Config::Parse(), file was unable to be opened for parsing.");
 	}
 }
 

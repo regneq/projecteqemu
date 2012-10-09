@@ -36,7 +36,7 @@ public:
 		float x, float y, float z, float heading, 
 		int32 respawn, int32 variance, 
 		int32 timeleft = 0, int32 grid = 0,
-		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0, bool in_enabled = true);
+		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0, bool in_enabled = true, EmuAppearance anim = eaStanding);
 	~Spawn2();
 
 	void	LoadGrid();
@@ -47,6 +47,7 @@ public:
 	void	Reset();
 	void	Depop();
 	void	Repop(int32 delay = 0);
+	void	ForceDespawn();
 
 	void	DeathReset(); //resets the spawn in the case the npc dies, also updates db if needed
 
@@ -75,6 +76,7 @@ protected:
 	Timer	timer;
 private:
 	int32	resetTimer();
+	int32	despawnTimer(int32 despawn_timer);
 
 	int32	spawngroup_id_;
 	int32	currentnpcid;
@@ -88,6 +90,8 @@ private:
 	uint16	condition_id;
 	sint16	condition_min_value;
 	bool enabled;
+    EmuAppearance anim;
+	bool IsDespawned;
 };
 
 class SpawnCondition {

@@ -34,6 +34,10 @@
 
 // Return max stat value for level
 sint16 Client::GetMaxStat() const {
+
+	if((RuleI(Character, StatCap)) > 0)
+		return (RuleI(Character, StatCap));
+
 	int level = GetLevel();
 	
 	sint16 base = 0;
@@ -214,19 +218,23 @@ sint32 Client::LevelRegen()
 
 sint32 Client::CalcHPRegen() {
 	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
-	//AAs
-	regen += GetAA(aaInnateRegeneration)
-		//+ GetAA(aaInnateRegeneration2) //not currently in the AA table anymore, so why bother?
-		+ GetAA(aaNaturalHealing)
-		+ GetAA(aaBodyAndMindRejuvenation)
-		+ GetAA(aaConvalescence)
-		+ GetAA(aaHealthyAura)
-		+ GroupLeadershipAAHealthRegeneration();
-	regen = (regen * RuleI(Character, HPRegenMultiplier)) / 100;
-	return regen;
+
+	regen += aabonuses.HPRegen + GroupLeadershipAAHealthRegeneration();
+
+	return (regen * RuleI(Character, HPRegenMultiplier) / 100);
 }
+
+sint32 Client::CalcHPRegenCap()
+{
+	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
+
+	cap += aabonuses.ItemHPRegenCap + spellbonuses.ItemHPRegenCap + itembonuses.ItemHPRegenCap;
+	
+	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
+}
+
 sint32 Client::CalcMaxHP() {
-	int32 nd = 10000;
+	float nd = 10000;
 	max_hp = (CalcBaseHP() + itembonuses.HP);
 
 	//The AA desc clearly says it only applies to base hp..
@@ -235,25 +243,23 @@ sint32 Client::CalcMaxHP() {
 	//the aa description
 	nd += aabonuses.MaxHP;	//Natural Durability, Physical Enhancement, Planar Durability
 
-	max_hp = max_hp * nd / 10000;
+	max_hp = (float)max_hp * (float)nd / (float)10000; //this is to fix the HP-above-495k issue
 	max_hp += spellbonuses.HP + aabonuses.HP;
 
 	max_hp += GroupLeadershipAAHealthEnhancement();
 	
-	int slot = GetBuffSlotFromType(SE_MaxHPChange);
-	if(slot >= 0)
-	{
-		for(int i = 0; i < EFFECT_COUNT; i++)
-		{
-			if (spells[buffs[slot].spellid].effectid[i] == SE_MaxHPChange)
-			{
-				max_hp += max_hp * spells[buffs[slot].spellid].base[i] / 10000;
-			}
-		}
-	}
-
+	max_hp += max_hp * (spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
+	
 	if (cur_hp > max_hp)
 		cur_hp = max_hp;
+	
+	int hp_perc_cap = spellbonuses.HPPercCap;
+	if(hp_perc_cap) {
+		int curHP_cap = (max_hp * hp_perc_cap) / 100;
+		if (cur_hp > curHP_cap)
+			cur_hp = curHP_cap;
+	}
+	
 	return max_hp;
 }
 
@@ -847,8 +853,7 @@ sint16 Client::acmod() {
 sint16 Client::CalcAC() {
 
 	// new formula
-	int avoidance = 0;
-	avoidance = (acmod() + ((GetSkill(DEFENSE)*16)/9));
+	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
 	if (avoidance < 0)
 		avoidance = 0;
 
@@ -856,12 +861,12 @@ sint16 Client::CalcAC() {
 	if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
 		//something is wrong with this, naked casters have the wrong natural AC
 //		mitigation = (spellbonuses.AC/3) + (GetSkill(DEFENSE)/2) + (itembonuses.AC+1);
-		mitigation = GetSkill(DEFENSE)/4 + (itembonuses.AC+1);
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/4 + (itembonuses.AC+1);
 		//this might be off by 4..
 		mitigation -= 4;
 	} else {
 //		mitigation = (spellbonuses.AC/4) + (GetSkill(DEFENSE)/3) + ((itembonuses.AC*4)/3);
-		mitigation = GetSkill(DEFENSE)/3 + ((itembonuses.AC*4)/3);
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/3 + ((itembonuses.AC*4)/3);
 		if(m_pp.class_ == MONK)
 			mitigation += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
 	}
@@ -879,11 +884,56 @@ sint16 Client::CalcAC() {
 			displayed += iksarlevel * 12 / 10;
 	}
 	
+	// Shield AC bonus for HeroicSTR
+	if(itembonuses.HeroicSTR) {
+		bool equiped = CastToClient()->m_inv.GetItem(14);
+		if(equiped) {
+			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
+			if(shield == ItemTypeShield) 
+				displayed += itembonuses.HeroicSTR/2;
+		}
+	}
+	
 	//spell AC bonuses are added directly to natural total
 	displayed += spellbonuses.AC;
 	
 	AC = displayed;
 	return(AC);
+}
+
+sint16 Client::GetACMit() {
+
+	int mitigation = 0;
+	if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/4 + (itembonuses.AC+1);
+		mitigation -= 4;
+	} 
+	else {
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/3 + ((itembonuses.AC*4)/3);
+		if(m_pp.class_ == MONK)
+			mitigation += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
+	}
+	
+	// Shield AC bonus for HeroicSTR
+	if(itembonuses.HeroicSTR) {
+		bool equiped = CastToClient()->m_inv.GetItem(14);
+		if(equiped) {
+			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
+			if(shield == ItemTypeShield) 
+				mitigation += itembonuses.HeroicSTR/2;
+		}
+	}
+
+	return(mitigation*1000/847);
+}
+
+sint16 Client::GetACAvoid() {
+
+	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
+	if (avoidance < 0)
+		avoidance = 0;
+		
+	return(avoidance*1000/847);
 }
 
 sint32 Client::CalcMaxMana()
@@ -905,9 +955,21 @@ sint32 Client::CalcMaxMana()
 			break;
 		}
 	}
+	if (max_mana < 0) {
+		max_mana = 0;
+	}
+	
 	if (cur_mana > max_mana) {
 		cur_mana = max_mana;
 	}
+	
+	int mana_perc_cap = spellbonuses.ManaPercCap;
+	if(mana_perc_cap) {
+		int curMana_cap = (max_mana * mana_perc_cap) / 100;
+		if (cur_mana > curMana_cap)
+			cur_mana = curMana_cap;
+	}
+	
 #if EQDEBUG >= 11
 	LogFile->write(EQEMuLog::Debug, "Client::CalcMaxMana() called for %s - returning %d", GetName(), max_mana);
 #endif
@@ -1029,10 +1091,31 @@ sint32 Client::CalcBaseMana()
 	return max_m;
 }
 
-sint32 Client::CalcManaRegen() {
+sint32 Client::CalcBaseManaRegen() 
+{
 	uint8 clevel = GetLevel();
 	sint32 regen = 0;
-	if (IsSitting() || (GetHorseId() != 0)) {		//this should be changed so we dont med while camping, etc...
+	if (IsSitting() || (GetHorseId() != 0)) 
+	{
+		if(HasSkill(MEDITATE))
+			regen = (((GetSkill(MEDITATE) / 10) + (clevel - (clevel / 4))) / 4) + 4;
+		else
+			regen = 2;
+	}
+	else {
+		regen = 2;
+	}
+	return regen;
+}
+
+sint32 Client::CalcManaRegen() 
+{
+	uint8 clevel = GetLevel();
+	sint32 regen = 0;
+	//this should be changed so we dont med while camping, etc...
+	if (IsSitting() || (GetHorseId() != 0)) 
+	{
+		BuffFadeBySitModifier();
 		if(HasSkill(MEDITATE)) {
 			this->medding = true;
 			regen = (((GetSkill(MEDITATE) / 10) + (clevel - (clevel / 4))) / 4) + 4;
@@ -1040,20 +1123,35 @@ sint32 Client::CalcManaRegen() {
 			CheckIncreaseSkill(MEDITATE, NULL, -5);
 		}
 		else
-			regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
+			regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 	}
 	else {
 		this->medding = false;
-		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
+		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
+	}
+	
+	//AAs
+	regen += aabonuses.ManaRegen;
+
+	return (regen * RuleI(Character, ManaRegenMultiplier) / 100);
+}
+
+sint32 Client::CalcManaRegenCap()
+{
+	sint32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
+	switch(GetCasterClass())
+	{
+		case 'I': 
+			cap += (itembonuses.HeroicINT / 25);
+			break;
+		case 'W': 
+			cap += (itembonuses.HeroicWIS / 25);
+			break;
 	}
 
-	//AAs
-	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
-
-	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
-
-	return regen;
+	return (cap * RuleI(Character, ManaRegenMultiplier) / 100);
 }
+
 uint32 Client::CalcCurrentWeight() {
 
 	const Item_Struct* TempItem = 0;
@@ -1117,8 +1215,16 @@ uint32 Client::CalcCurrentWeight() {
 	return Total;
 }
 
+sint16 Client::CalcAlcoholPhysicalEffect()
+{
+	if(m_pp.intoxication <= 55)
+		return 0;
+
+	return (m_pp.intoxication - 40) / 16;
+}
+
 sint16 Client::CalcSTR() {
-	sint16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR;
+	sint16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect();
 	
 	sint16 mod = aabonuses.STR;
 	
@@ -1137,7 +1243,7 @@ sint16 Client::CalcSTR() {
 }
 
 sint16 Client::CalcSTA() {
-	sint16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA;
+	sint16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA + CalcAlcoholPhysicalEffect();;
 	
 	sint16 mod = aabonuses.STA;
 	
@@ -1156,7 +1262,7 @@ sint16 Client::CalcSTA() {
 }
 
 sint16 Client::CalcAGI() {
-	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI;
+	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI - CalcAlcoholPhysicalEffect();;
 	sint16 mod = aabonuses.AGI;
 
 	if(val>255 && GetLevel() <= 60)
@@ -1184,7 +1290,7 @@ sint16 Client::CalcAGI() {
 }
 
 sint16 Client::CalcDEX() {
-	sint16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX;
+	sint16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX - CalcAlcoholPhysicalEffect();;
 	
 	sint16 mod = aabonuses.DEX;
 	
@@ -1204,13 +1310,23 @@ sint16 Client::CalcDEX() {
 
 sint16 Client::CalcINT() {
 	sint16 val = m_pp.INT + itembonuses.INT + spellbonuses.INT;
-	
+
 	sint16 mod = aabonuses.INT;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
 	INT = val + mod;
 	
+	if(m_pp.intoxication)
+	{
+		sint16 AlcINT  = INT - (sint16)((float)m_pp.intoxication / 200.0f * (float)INT) - 1;
+
+		if((AlcINT < (int)(0.2 * INT)))
+			INT = (int)(0.2f * (float)INT);
+		else
+			INT = AlcINT;
+	}
+
 	if(INT < 1)
 		INT = 1;
 
@@ -1229,7 +1345,17 @@ sint16 Client::CalcWIS() {
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
 	WIS = val + mod;
-	
+
+	if(m_pp.intoxication)
+	{
+		sint16 AlcWIS  = WIS - (sint16)((float)m_pp.intoxication / 200.0f * (float)WIS) - 1;
+
+		if((AlcWIS < (int)(0.2 * WIS)))
+			WIS = (int)(0.2f * (float)WIS);
+		else
+			WIS = AlcWIS;
+	}
+
 	if(WIS < 1)
 		WIS = 1;
 
@@ -1281,14 +1407,21 @@ int Client::CalcHaste() {
 	} else if(level < 60) {
 		cap = 94;
 	} else {
-		cap = 100;
+		cap = RuleI(Character, HasteCap);
 	}
 	
-
 	if(h > cap) h = cap;
 
 	h += spellbonuses.hastetype3;
 	h += ExtraHaste;	//GM granted haste.
+
+	if (spellbonuses.inhibitmelee){
+		if (h >= 0)
+			h -= spellbonuses.inhibitmelee; 
+	
+		else 
+			h -=((100+h)*spellbonuses.inhibitmelee/100);
+	}
 	
 	Haste = h;
 	return(Haste); 
@@ -1353,8 +1486,7 @@ sint16	Client::CalcMR()
 			MR = 20;
 	}
 	
-	MR += itembonuses.MR + spellbonuses.MR;
-	MR += (GetAA(aaInnateMagicProtection) + GetAA(aaMarrsProtection))*2;
+	MR += itembonuses.MR + spellbonuses.MR + aabonuses.MR;
 	
 	if(GetClass() == WARRIOR)
 		MR += GetLevel() / 2;
@@ -1433,8 +1565,7 @@ sint16	Client::CalcFR()
 			FR += l - 49;
 	}
 	
-	FR += itembonuses.FR + spellbonuses.FR;
-	FR += (GetAA(aaInnateFireProtection) + GetAA(aaWardingofSolusek))*2;
+	FR += itembonuses.FR + spellbonuses.FR + aabonuses.FR;
 	
 	if(FR < 1)
 		FR = 1;
@@ -1517,8 +1648,7 @@ sint16	Client::CalcDR()
 			DR += l - 49;
 	}
 	
-	DR += itembonuses.DR + spellbonuses.DR;
-	DR += (GetAA(aaInnateDiseaseProtection) + GetAA(aaBertoxxulousGift))*2;
+	DR += itembonuses.DR + spellbonuses.DR + aabonuses.DR;
 	
 	if(DR < 1)
 		DR = 1;
@@ -1601,8 +1731,7 @@ sint16	Client::CalcPR()
 			PR += l - 49;
 	}
 	
-	PR += itembonuses.PR + spellbonuses.PR;
-	PR += (GetAA(aaInnatePoisonProtection) + GetAA(aaShroudofTheFaceless))*2;
+	PR += itembonuses.PR + spellbonuses.PR + aabonuses.PR;
 	
 	if(PR < 1)
 		PR = 1;
@@ -1678,8 +1807,7 @@ sint16	Client::CalcCR()
 			CR += l - 49;
 	}
 	
-	CR += itembonuses.CR + spellbonuses.CR;
-	CR += (GetAA(aaInnateColdProtection) + GetAA(aaBlessingofEci))*2;
+	CR += itembonuses.CR + spellbonuses.CR + aabonuses.CR;
 	
 	if(CR < 1)
 		CR = 1;
@@ -1690,8 +1818,18 @@ sint16	Client::CalcCR()
 	return(CR);
 }
 
+sint16	Client::CalcCorrup()
+{
+	Corrup = GetBaseCorrup() + itembonuses.Corrup + spellbonuses.Corrup + aabonuses.Corrup;
+	
+	if(Corrup > GetMaxCorrup())
+		Corrup = GetMaxCorrup();
+
+	return(Corrup);
+}
+
 sint16 Client::CalcATK() {
-	ATK = itembonuses.ATK + spellbonuses.ATK + GroupLeadershipAAOffenseEnhancement();
+	ATK = itembonuses.ATK + spellbonuses.ATK + aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
 }
 
@@ -1786,27 +1924,21 @@ void Client::CalcMaxEndurance()
 {
 	max_end = CalcBaseEndurance() + spellbonuses.Endurance + itembonuses.Endurance;
 	
-	int slot = GetBuffSlotFromType(SE_EndurancePool);
-	if(slot >= 0)
-	{
-		for(int i = 0; i < EFFECT_COUNT; i++)
-		{
-			if (spells[buffs[slot].spellid].effectid[i] == SE_EndurancePool)
-			{
-				max_end += spells[buffs[slot].spellid].base[i];
-			}
-		}
-	}
-	
-	if (cur_end > max_end) {
-		cur_end = max_end;
-	}
 	if (max_end < 0) {
 		max_end = 0;
 	}
+		
+	if (cur_end > max_end) {
+		cur_end = max_end;
+	}
 	
+	int end_perc_cap = spellbonuses.EndPercCap;
+	if(end_perc_cap) {
+		int curEnd_cap = (max_end * end_perc_cap) / 100;
+		if (cur_end > curEnd_cap)
+			cur_end = curEnd_cap;
+	}
 }
-
 
 sint32 Client::CalcBaseEndurance()
 {
@@ -1882,9 +2014,15 @@ sint32 Client::CalcBaseEndurance()
 
 sint32 Client::CalcEnduranceRegen() {
 	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
-	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
-	regen = (regen * RuleI(Character, EnduranceRegenMultiplier)) / 100;
-	return regen;
+	regen += aabonuses.EnduranceRegen + spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
+
+	return (regen * RuleI(Character, EnduranceRegenMultiplier) / 100);
+}
+
+sint32 Client::CalcEnduranceRegenCap() {
+	int cap = (RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25);
+		
+	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
 int Client::GetRawACNoShield(int &shield_ac) const
@@ -1898,6 +2036,14 @@ int Client::GetRawACNoShield(int &shield_ac) const
 		{
 			ac -= inst->GetItem()->AC;
 			shield_ac = inst->GetItem()->AC;
+			for(uint8 i = 0; i < MAX_AUGMENT_SLOTS; i++)
+			{
+				if(inst->GetAugment(i))
+				{
+					ac -= inst->GetAugment(i)->GetItem()->AC;
+					shield_ac += inst->GetAugment(i)->GetItem()->AC;
+				}
+			}
 		}
 	}
 	return ac;

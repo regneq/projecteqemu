@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <windows.h>
 	#include <winsock.h>
 	int gettimeofday (timeval *tp, ...);

@@ -21,10 +21,8 @@
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
+#include "QuestParserCollection.h"
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
 
 static uint32 MaxBankedGroupLeadershipPoints(int Level)
 {
@@ -370,10 +368,7 @@ void Client::SetLevel(int8 set_level, bool command)
                 m_pp.level2 = set_level;
         }
         if(set_level > m_pp.level) {
-
-#ifdef EMBPERL
-                ((PerlembParser*)parse)->Event(EVENT_LEVEL_UP, 0, "", (NPC*)NULL, this);
-#endif
+            parse->EventPlayer(EVENT_LEVEL_UP, this, "", 0);
         }
 
         m_pp.level = set_level;
@@ -457,16 +452,26 @@ uint32 Client::GetEXPForLevel(int16 check_level)
 	return(uint32(base * mod));
 }
 
+void Client::AddLevelBasedExp(int8 exp_percentage, int8 max_level) {
+
+	if (exp_percentage > 100)
+	{
+		exp_percentage = 100;
+	}
+
+	if (!max_level || GetLevel() < max_level)
+	{
+		max_level = GetLevel();
+	}
+
+	uint32 newexp = GetEXP() + ((GetEXPForLevel(max_level + 1) - GetEXPForLevel(max_level)) * exp_percentage / 100);
+
+	SetEXP(newexp, GetAAXP());
+}
+
 void Group::SplitExp(uint32 exp, Mob* other) {
 	if( other->CastToNPC()->MerchantType != 0 ) // Ensure NPC isn't a merchant
 	  return;
-
-#ifdef EQBOTS
-
-	if(other->GetOwner() && other->GetOwner()->IsBot()) // Ensure owner isn't a bot
-		return;
-
-#endif //EQBOTS
 
 	if(other->GetOwner() && other->GetOwner()->IsClient()) // Ensure owner isn't pc
 		return;
@@ -555,7 +560,7 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 	if (membercount == 0) 
 		return; 
 
-	for (unsigned int x = 0; x < MAX_GROUP_MEMBERS; x++)  {
+	for (unsigned int x = 0; x < MAX_RAID_MEMBERS; x++)  {
 		if (members[x].member != NULL) // If Group Member is Client
 		{
 			Client *cmember = members[x].member;

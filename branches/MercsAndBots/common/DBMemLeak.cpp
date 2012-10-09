@@ -8,7 +8,7 @@
 
 #include <crtdbg.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #define strncasecmp	_strnicmp
 #define strcasecmp	_stricmp

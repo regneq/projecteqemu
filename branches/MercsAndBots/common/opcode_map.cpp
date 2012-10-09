@@ -305,4 +305,5 @@ void load_opcode_names()
 	opcode_map[0x02d6]="LiveOP_EnduranceUpdate";
 	opcode_map[0x2ac1]="LiveOP_MobManaUpdate";
 	opcode_map[0x6c5f]="LiveOP_MobEnduranceUpdate";
+	opcode_map[0x73a8]="LiveOP_SendMaxCharacters";
 }

@@ -115,7 +115,11 @@ protected:
 
 	int		m_activeRuleset;
 	std::string m_activeName;
-	int 	m_RuleIntValues [_IntRuleCount ];
+#ifdef WIN64
+	int32 	m_RuleIntValues [_IntRuleCount ];
+#else
+	int m_RuleIntValues [_IntRuleCount ];
+#endif
 	float	m_RuleRealValues[_RealRuleCount];
 	bool	m_RuleBoolValues[_BoolRuleCount];
 

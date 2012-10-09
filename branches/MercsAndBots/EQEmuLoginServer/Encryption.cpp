@@ -19,13 +19,13 @@
 #include "Encryption.h"
 #include "ErrorLog.h"
 
-extern ErrorLog *log;
+extern ErrorLog *server_log;
 
 bool Encryption::LoadCrypto(string name)
 {
 	if(!Load(name.c_str()))
 	{
-		log->Log(log_error, "Failed to load %s from the operating system.", name.c_str());
+		server_log->Log(log_error, "Failed to load %s from the operating system.", name.c_str());
 		return false;
 	}
 	else
@@ -33,21 +33,21 @@ bool Encryption::LoadCrypto(string name)
 		encrypt_func = (DLLFUNC_Encrypt)GetSym("Encrypt");
 		if(encrypt_func == NULL)
 		{
-			log->Log(log_error, "Failed to attach Encrypt.");
+			server_log->Log(log_error, "Failed to attach Encrypt.");
 			Unload();
 			return false;
 		}
 		decrypt_func = (DLLFUNC_DecryptUsernamePassword)GetSym("DecryptUsernamePassword");
 		if(decrypt_func == NULL)
 		{
-			log->Log(log_error, "Failed to attach DecryptUsernamePassword.");
+			server_log->Log(log_error, "Failed to attach DecryptUsernamePassword.");
 			Unload();
 			return false;
 		}
 		delete_func = (DLLFUNC_HeapDelete)GetSym("_HeapDeleteCharBuffer");
 		if(delete_func == NULL)
 		{
-			log->Log(log_error, "Failed to attach _HeapDeleteCharBuffer.");
+			server_log->Log(log_error, "Failed to attach _HeapDeleteCharBuffer.");
 			Unload();
 			return false;
 		}

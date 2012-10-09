@@ -72,6 +72,11 @@ public:
 	bool	SetTributeFlag(int32 charid, bool enabled);
 	bool	SetPublicNote(int32 charid, const char *note);
 	
+    //bugs
+    int  CountBugs();
+    vector<string> ListBugs(uint32 offset);	//returns an array of zone_refs (opaque)
+	map<string,string> GetBugDetails(const char *id);
+    void ResolveBug(const char *id);
 	
 //END PERL EXPORT
 

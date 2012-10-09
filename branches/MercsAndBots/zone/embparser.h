@@ -10,6 +10,8 @@
 #include "parser.h"
 #include "embperl.h"
 #include "features.h"
+#include "QuestParserCollection.h"
+#include "QuestInterface.h"
 
 #include <string>
 #include <map>
@@ -20,8 +22,10 @@ class Seperator;
 
 typedef enum {
 	questDefault = 1,
+	questDefaultByZone,
 	questByName,
 	questTemplate,
+	questTemplateByID,
 	questByID
 } questMode;
 
@@ -36,7 +40,8 @@ typedef enum {
 typedef enum {
 	pQuestLoaded = 1,
 	pQuestUnloaded,
-	pQuestEventCast	// player.pl loaded, has an EVENT_CAST sub
+	pQuestEventCast,	// player.pl loaded, has an EVENT_CAST sub
+    pQuestReadyToLoad
 } playerQuestMode;
 
 typedef enum {
@@ -54,6 +59,7 @@ struct EventRecord {
 	ItemInst* iteminst;
 	Mob* mob;
 	int32 extradata;
+	bool global;
 };
 
 class PerlembParser : public Parser
@@ -65,6 +71,7 @@ protected:
 	//if they do not have a quest or the default.
 	map<int32, questMode> hasQuests;	//npcid -> questMode
 	map<std::string, playerQuestMode> playerQuestLoaded; //zone shortname -> playerQuestMode
+    playerQuestMode globalPlayerQuestLoaded;
 	map<std::string, itemQuestMode> itemQuestLoaded;		// package name - > itemQuestMode
 	map<uint32, spellQuestMode> spellQuestLoaded;
 
@@ -73,8 +80,8 @@ protected:
 	
 	void HandleQueue();
 
-	void EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata);
-	
+	void EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata, bool global = false);
+
 	Embperl * perl;
 	//export a symbol table of sorts
 	virtual void map_funs();
@@ -84,11 +91,27 @@ public:
 	Embperl * getperl(void) { return perl; };
 	//todo, consider making the following two methods static (need to check for perl!=null, first, then)
 	bool isloaded(const char *packagename) const;
-//	bool isdefault(const char *packagename) const { return perl->geti(std::string("$").append(packagename).append("::isdefault").c_str()); }
-	void Event(QuestEventID event, int32 itemid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
-	void Event(QuestEventID event, int32 itemid, const char * data, ItemInst* iteminst, Mob* mob, int32 extradata = 0);
-	int LoadScript(int npcid, const char * zone, Mob* activater=0);
+
+    //interface stuff
+    virtual void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data);
+    virtual void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
+    virtual void EventGlobalPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
+    virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data);
+    virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data);
+
+    virtual bool HasQuestSub(int32 npcid, const char *subname);
+	virtual bool PlayerHasQuestSub(const char *subname);
+    virtual bool GlobalPlayerHasQuestSub(const char *subname);
+	virtual bool SpellHasQuestSub(uint32 spell_id, const char *subname);
+	virtual bool ItemHasQuestSub(ItemInst *itm, const char *subname);
+
+    virtual void ReloadQuests(bool with_timers = false);
+    virtual void AddVar(std::string name, std::string val) { Parser::AddVar(name, val); };
+    virtual uint32 GetIdentifier() { return 0xf8b05c11; }
+
+    int LoadScript(int npcid, const char * zone, Mob* activater=0);
 	int LoadPlayerScript(const char *zone);
+    int LoadGlobalPlayerScript();
 	int LoadItemScript(ItemInst* iteminst, string packagename, itemQuestMode Qtype);
 	int LoadSpellScript(uint32 id);
 	
@@ -109,14 +132,9 @@ public:
 	//call the appropriate perl handler. afterwards, parse and dispatch the command queue
 	//SendCommands("qst1234", "EVENT_SAY") would trigger sub EVENT_SAY() from the qst1234.pl file
 	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst);
-	virtual void ReloadQuests();
 	
 	int	HasQuestFile(int32 npcid);
-	
-	bool HasQuestSub(int32 npcid, const char *subname);
-	bool PlayerHasQuestSub(const char *subname);
-	bool SpellHasQuestSub(uint32 spell_id, const char *subname);
-	
+
 #ifdef EMBPERL_COMMANDS
 	void ExecCommand(Client *c, Seperator *sep);
 #endif

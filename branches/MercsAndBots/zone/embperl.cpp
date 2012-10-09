@@ -17,13 +17,10 @@ Eglin
 #include "embperl.h"
 #include "embxs.h"
 #include "features.h"
-
-//#pragma message("You may want to ensure that you add perl\\lib\\CORE to your include path")
-//#pragma message("You may want to ensure that your build settings look like `perl -MExtUtils::Embed -e ccopts -e ldopts`")
-//link against your Perl Lib
-//#pragma comment(lib, "perl56.lib")
-#ifdef WIN32
-#pragma comment(lib, "perl510.lib")
+#if _MSC_VER >= 1600
+#ifndef GvCV_set
+#define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
+#endif
 #endif
 
 #ifdef EMBPERL_XS
@@ -39,6 +36,7 @@ EXTERN_C XS(boot_Raid);
 EXTERN_C XS(boot_QuestItem);
 EXTERN_C XS(boot_HateEntry);
 EXTERN_C XS(boot_Object);
+EXTERN_C XS(boot_Doors);
 EXTERN_C XS(boot_PerlPacket);
 /*XS(XS_Client_new);
 //XS(XS_Mob_new);
@@ -90,6 +88,7 @@ EXTERN_C void xs_init(pTHX)
 	newXS(strcpy(buf, "QuestItem::boot_QuestItem"), boot_QuestItem, file);
 	newXS(strcpy(buf, "HateEntry::boot_HateEntry"), boot_HateEntry, file);
 	newXS(strcpy(buf, "Object::boot_Object"), boot_Object, file);
+	newXS(strcpy(buf, "Doors::boot_Doors"), boot_Doors, file);
 ;
 #endif
 #endif
@@ -145,10 +144,18 @@ void Embperl::DoInit() {
 	eval_pv("sub my_sleep {}",TRUE);
 	if(gv_stashpv("CORE::GLOBAL", FALSE)) {
 		GV *exitgp = gv_fetchpv("CORE::GLOBAL::exit", TRUE, SVt_PVCV);
+		#if _MSC_VER >= 1600
+		GvCV_set(exitgp, perl_get_cv("my_exit", TRUE));	//dies on error
+		#else
 		GvCV(exitgp) = perl_get_cv("my_exit", TRUE);	//dies on error
+		#endif
 		GvIMPORTED_CV_on(exitgp);
 		GV *sleepgp = gv_fetchpv("CORE::GLOBAL::sleep", TRUE, SVt_PVCV);
+		#if _MSC_VER >= 1600
+		GvCV_set(sleepgp, perl_get_cv("my_sleep", TRUE));	//dies on error
+		#else
 		GvCV(sleepgp) = perl_get_cv("my_sleep", TRUE);	//dies on error
+		#endif
 		GvIMPORTED_CV_on(sleepgp);
 	}
 
@@ -252,17 +259,12 @@ Embperl::~Embperl()
 {
 	in_use = true;
 #ifdef EMBPERL_IO_CAPTURE
-	//removed to try to stop perl from exploding on reload, we'll see
-/*	eval_pv(
+	eval_pv(
 		"package quest;"
-		"	untie *STDOUT;"
-		"	untie *STDERR;"
-  	,FALSE);
-*/
+		"	if(tied *STDOUT) { untie(*STDOUT); }"
+		"	if(tied *STDERR) { untie(*STDERR); }"
+		,FALSE);
 #endif
-//I am commenting this out in the veign hope that it will help with crashes
-//under the assumption that we are not leaking a ton of memory and that this
-//will not be a regular part of a production server's activity, only when debugging
 	perl_free(my_perl);
 }
 

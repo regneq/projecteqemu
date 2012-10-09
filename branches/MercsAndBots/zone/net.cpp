@@ -33,7 +33,7 @@ using namespace std;
 		#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 	#endif
 using namespace std;
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <conio.h>
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
@@ -85,6 +85,7 @@ extern volatile bool ZoneLoaded;
 #include "../common/EQStreamIdent.h"
 #include "../common/patches/patches.h"
 #include "../common/rulesys.h"
+#include "../common/MiscFunctions.h"
 
 #include "masterentity.h"
 #include "worldserver.h"
@@ -100,6 +101,7 @@ extern volatile bool ZoneLoaded;
 #include "titles.h"
 #include "guild_mgr.h"
 #include "tasks.h"
+#include "QuestParserCollection.h"
 
 TimeoutManager          timeout_manager;
 NetConnection		net;
@@ -119,6 +121,7 @@ DBAsyncFinishedQueue MTdbafq;
 DBAsync *dbasync = NULL;
 RuleManager *rules = new RuleManager();
 TaskManager *taskmanager = 0;
+QuestParserCollection *parse = 0;
 
 bool zoneprocess;
 
@@ -140,7 +143,7 @@ bool zoneprocess;
 
 #endif
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <process.h>
 #else
 #include <pthread.h>
@@ -324,30 +327,13 @@ int main(int argc, char** argv) {
 		taskmanager->LoadTasks();
 	}
 
-#ifdef EMBPERL
-#ifdef EMBPERL_XS
-	_log(ZONE__INIT, "Loading embedded perl XS");
- 	AutoDelete<PerlXSParser> ADparse;
-	try {
-		ADparse.init((PerlXSParser **)(&parse), new PerlXSParser);
-	}
-#else //old EMBPERL
-	_log(ZONE__INIT, "Loading embedded perl");
-	AutoDelete<PerlembParser> ADparse;
-	try {
-		ADparse.init((PerlembParser **)(&parse), new PerlembParser);
-	}
-#endif
-	catch(const char *err)
-	{//this should never happen, so if it does, it is something really serious (like a bad perl install), so we'll shutdown.
-		_log(ZONE__INIT_ERR, "Fatal error initializing perl: %s", err);
-		ADparse.ReallyClearIt();
-		return EXIT_FAILURE;
-	}
-#else	//old .qst
-	AutoDelete<Parser> ADparse(&parse, new Parser);
-#endif //EMBPERL
-	
+    parse = new QuestParserCollection();
+    PerlXSParser *pxs = new PerlXSParser();
+    Parser *ps = new Parser();
+    parse->RegisterQuestInterface(pxs, "pl");
+    //parse->RegisterQuestInterface(ps, "qst");
+
+
 	//now we have our parser, load the quests
 	_log(ZONE__INIT, "Loading quests");
 	parse->ReloadQuests();
@@ -390,7 +376,7 @@ int main(int argc, char** argv) {
 	_log(COMMON__THREADS, "Main thread running with thread id %d", pthread_self());
 #endif
 	
-	Timer quest_timers(1000);	//highest resolution quest timer is 1 second
+	Timer quest_timers(100);
 	UpdateWindowTitle();
 	bool worldwasconnected = worldserver.Connected();
 	EQStream* eqss;
@@ -592,6 +578,10 @@ int main(int argc, char** argv) {
 		}	//end extra profiler block
 		Sleep(ZoneTimerResolution);
 	}
+
+    safe_delete(parse);
+    safe_delete(pxs);
+    safe_delete(ps);
 	
 #ifdef CATCH_CRASH
 	if (error)
@@ -601,7 +591,7 @@ int main(int argc, char** argv) {
 	}
 	catch(...){}
 	if (error){
-#ifdef WIN32		
+#ifdef _WINDOWS		
 		ExitProcess(error);
 #else	
 		entity_list.Clear();
@@ -627,9 +617,6 @@ int main(int argc, char** argv) {
 #endif
 	safe_delete(taskmanager);
 	command_deinit();
-//	Needed if REUSE_ZLIB is defined in packet_functions.h
-//	DeflatePacket(NULL, 0, NULL, 0);
-//	InflatePacket(NULL, 0, NULL, 0, false);
 	
 	CheckEQEMuErrorAndPause();
 	_log(ZONE__INIT, "Proper zone shutdown complete.");
@@ -637,7 +624,7 @@ int main(int argc, char** argv) {
 }
 
 void CatchSignal(int sig_num) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	_log(ZONE__INIT, "Recieved signal: %i", sig_num);
 #else
 	_log(ZONE__INIT, "Recieved signal: %i in thread %d", sig_num, pthread_self());
@@ -1007,9 +994,8 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].TargetAnim=atoi(sep.arg[121]);
 		sp[tempid].TravelType=atoi(sep.arg[122]);
 		sp[tempid].SpellAffectIndex=atoi(sep.arg[123]);
-
-		for(y = 0; y < 2;y++)
-			sp[tempid].spacing124[y]=atoi(sep.arg[124+y]);
+		sp[tempid].disallow_sit = atoi(sep.arg[124]);
+		sp[tempid].spacing125=atoi(sep.arg[125]);
 
 		for (y = 0; y < 16; y++)
 			sp[tempid].deities[y]=atoi(sep.arg[126+y]);
@@ -1043,9 +1029,10 @@ This is hanging on freebsd for me, not sure why...
 
 		sp[tempid].EndurCost=atoi(sep.arg[166]);
 		sp[tempid].EndurTimerIndex=atoi(sep.arg[167]);
+        sp[tempid].IsDisciplineBuff=atoi(sep.arg[168]);
 
-		for(y = 0; y < 5;y++)
-			sp[tempid].spacing168[y]=atoi(sep.arg[168+y]);
+		for(y = 0; y < 4;y++)
+			sp[tempid].spacing169[y]=atoi(sep.arg[169+y]);
 
 		sp[tempid].HateAdded=atoi(sep.arg[173]);
 		sp[tempid].EndurUpkeep=atoi(sep.arg[174]);
@@ -1063,7 +1050,16 @@ This is hanging on freebsd for me, not sure why...
 
 		sp[tempid].can_mgb=atoi(sep.arg[185]);
 		sp[tempid].dispel_flag = atoi(sep.arg[186]);
+		sp[tempid].MinResist = atoi(sep.arg[189]);
+		sp[tempid].MaxResist = atoi(sep.arg[190]);
+		sp[tempid].viral_targets = atoi(sep.arg[191]);
+		sp[tempid].viral_timer = atoi(sep.arg[192]);
 		sp[tempid].NimbusEffect = atoi(sep.arg[193]);
+		sp[tempid].directional_start = (float)atoi(sep.arg[194]);
+		sp[tempid].directional_end = (float)atoi(sep.arg[195]);
+		sp[tempid].spellgroup=atoi(row[207]);
+		sp[tempid].field209=atoi(row[209]);
+        sp[tempid].CastRestriction = atoi(sep.arg[211]);
 		sp[tempid].AllowRest = atoi(sep.arg[212]);
 	
 		// May crash zone
@@ -1126,22 +1122,14 @@ This is hanging on freebsd for me, not sure why...
 
 			counter++;
 			// String fields
-			strncpy(sp[tempid].name, row[1], sizeof(sp[tempid].name));
-                        sp[tempid].name[sizeof(sp[tempid].name)-1] = '\0';
-			strncpy(sp[tempid].player_1, row[2], sizeof(sp[tempid].player_1));
-                        sp[tempid].player_1[sizeof(sp[tempid].player_1)-1] = '\0';
-			strncpy(sp[tempid].teleport_zone, row[3], sizeof(sp[tempid].teleport_zone));
-                        sp[tempid].teleport_zone[sizeof(sp[tempid].teleport_zone)-1] = '\0';
-			strncpy(sp[tempid].you_cast,  row[4], sizeof(sp[tempid].you_cast));
-                        sp[tempid].you_cast[sizeof(sp[tempid].you_cast)-1] = '\0';
-			strncpy(sp[tempid].other_casts, row[5], sizeof(sp[tempid].other_casts));
-                        sp[tempid].other_casts[sizeof(sp[tempid].other_casts)-1] = '\0';
-			strncpy(sp[tempid].cast_on_you, row[6], sizeof(sp[tempid].cast_on_you));
-                        sp[tempid].cast_on_you[sizeof(sp[tempid].cast_on_you)-1] = '\0';
-			strncpy(sp[tempid].cast_on_other, row[7], sizeof(sp[tempid].cast_on_other));
-                        sp[tempid].cast_on_other[sizeof(sp[tempid].cast_on_other)-1] = '\0';
-			strncpy(sp[tempid].spell_fades, row[8], sizeof(sp[tempid].spell_fades));
-                        sp[tempid].spell_fades[sizeof(sp[tempid].spell_fades)-1] = '\0';
+			strn0cpy(sp[tempid].name, row[1], sizeof(sp[tempid].name));
+			strn0cpy(sp[tempid].player_1, row[2], sizeof(sp[tempid].player_1));
+			strn0cpy(sp[tempid].teleport_zone, row[3], sizeof(sp[tempid].teleport_zone));
+			strn0cpy(sp[tempid].you_cast,  row[4], sizeof(sp[tempid].you_cast));
+			strn0cpy(sp[tempid].other_casts, row[5], sizeof(sp[tempid].other_casts));
+			strn0cpy(sp[tempid].cast_on_you, row[6], sizeof(sp[tempid].cast_on_you));
+			strn0cpy(sp[tempid].cast_on_other, row[7], sizeof(sp[tempid].cast_on_other));
+			strn0cpy(sp[tempid].spell_fades, row[8], sizeof(sp[tempid].spell_fades));
 
 			// Numeric fields (everything else)
 			sp[tempid].range=atof(row[9]);
@@ -1205,9 +1193,8 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].TargetAnim=atoi(row[121]);
 			sp[tempid].TravelType=atoi(row[122]);
 			sp[tempid].SpellAffectIndex=atoi(row[123]);
-
-			for(y = 0; y < 2;y++)
-				sp[tempid].spacing124[y]=atoi(row[124+y]);
+			sp[tempid].disallow_sit=atoi(row[124]);
+			sp[tempid].spacing125=atoi(row[125]);
 
 			for (y = 0; y < 16; y++)
 				sp[tempid].deities[y]=atoi(row[126+y]);
@@ -1241,9 +1228,10 @@ This is hanging on freebsd for me, not sure why...
 
 			sp[tempid].EndurCost=atoi(row[166]);
 			sp[tempid].EndurTimerIndex=atoi(row[167]);
+            sp[tempid].IsDisciplineBuff=atoi(row[168]);
 
-			for(y = 0; y < 5;y++)
-				sp[tempid].spacing168[y]=atoi(row[168+y]);
+			for(y = 0; y < 4; y++)
+				sp[tempid].spacing169[y]=atoi(row[169+y]);
 
 			sp[tempid].HateAdded=atoi(row[173]);
 			sp[tempid].EndurUpkeep=atoi(row[174]);
@@ -1261,7 +1249,16 @@ This is hanging on freebsd for me, not sure why...
 
 			sp[tempid].can_mgb=atoi(row[185]);
 			sp[tempid].dispel_flag = atoi(row[186]);
+			sp[tempid].MinResist = atoi(row[189]);
+			sp[tempid].MaxResist = atoi(row[190]);
+			sp[tempid].viral_targets = atoi(row[191]);
+			sp[tempid].viral_timer = atoi(row[192]);
 			sp[tempid].NimbusEffect = atoi(row[193]);
+			sp[tempid].directional_start = (float)atoi(row[194]);
+			sp[tempid].directional_end = (float)atoi(row[195]);
+			sp[tempid].spellgroup=atoi(row[207]);
+			sp[tempid].field209=atoi(row[209]);
+            sp[tempid].CastRestriction = atoi(row[211]);
 			sp[tempid].AllowRest = atoi(row[212]);
 
 			// May crash zone
@@ -1300,7 +1297,7 @@ This is hanging on freebsd for me, not sure why...
 #endif	//from just above GetMaxSpellID(): #if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 
 void UpdateWindowTitle(char* iNewTitle) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	char tmp[500];
 	if (iNewTitle) {
 		snprintf(tmp, sizeof(tmp), "%i: %s", ZoneConfig::get()->ZonePort, iNewTitle);

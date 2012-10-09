@@ -101,7 +101,7 @@ void CRC32::SetEQChecksum(uchar* in_data, int32 in_length)
     memcpy(in_data, (char*)&check, 4);
 }
 
-#ifndef WIN32
+#ifndef _WINDOWS
 #warning "Comment out i386 define if your arch isn't x86"
 #endif
 //#if !defined(i386)
@@ -116,7 +116,7 @@ void CRC32::SetEQChecksum(uchar* in_data, int32 in_length)
    systems do work with the assembly code below. We #undef i386 to be on the safe
    side if we are compiling 64bit. */
 
-#ifdef __x86_64__
+#if defined __x86_64__ || defined WIN64
 #undef i386
 #endif
 

@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 #else
 	#include <sys/socket.h>
@@ -29,7 +29,7 @@ BaseTCPServer::BaseTCPServer(int16 in_port) {
 	pPort = in_port;
 	sock = 0;
 	pRunLoop = true;
-#ifdef WIN32
+#ifdef _WINDOWS
 	_beginthread(BaseTCPServer::TCPServerLoop, 0, this);
 #else
 	pthread_t thread;
@@ -63,7 +63,7 @@ bool BaseTCPServer::RunLoop() {
 }
 
 ThreadReturnType BaseTCPServer::TCPServerLoop(void* tmp) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 #endif
 	if (tmp == 0) {
@@ -109,7 +109,7 @@ void BaseTCPServer::ListenNewConnections() {
 		return;
 
 	// Check for pending connects
-#ifdef WIN32
+#ifdef _WINDOWS
 	unsigned long nonblocking = 1;
 	while ((tmpsock = accept(sock, (struct sockaddr*) &from, (int *) &fromlen)) != INVALID_SOCKET) {
 		ioctlsocket (tmpsock, FIONBIO, &nonblocking);
@@ -144,7 +144,7 @@ bool BaseTCPServer::Open(int16 in_port, char* errbuf) {
 		pPort = in_port;
 	}
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	SOCKADDR_IN address;
 	unsigned long nonblocking = 1;
 #else
@@ -174,7 +174,7 @@ bool BaseTCPServer::Open(int16 in_port, char* errbuf) {
 
 
 	if (bind(sock, (struct sockaddr *) &address, sizeof(address)) < 0) {
-#ifdef WIN32
+#ifdef _WINDOWS
 		closesocket(sock);
 #else
 		close(sock);
@@ -187,14 +187,14 @@ bool BaseTCPServer::Open(int16 in_port, char* errbuf) {
 
 	int bufsize = 64 * 1024; // 64kbyte recieve buffer, up from default of 8k
 	setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char*) &bufsize, sizeof(bufsize));
-#ifdef WIN32
+#ifdef _WINDOWS
 	ioctlsocket (sock, FIONBIO, &nonblocking);
 #else
 	fcntl(sock, F_SETFL, O_NONBLOCK);
 #endif
 
 	if (listen(sock, SOMAXCONN) == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WINDOWS
 		closesocket(sock);
 		if (errbuf)
 			snprintf(errbuf, TCPServer_ErrorBufferSize, "listen() failed, Error: %d", WSAGetLastError());
@@ -215,7 +215,7 @@ void BaseTCPServer::Close() {
 	
 	LockMutex lock(&MSock);
 	if (sock) {
-#ifdef WIN32
+#ifdef _WINDOWS
 		closesocket(sock);
 #else
 		close(sock);

@@ -33,7 +33,7 @@ public:
 	//abstract virtual function implementations requird by base abstract class
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) { return; }
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) { return; }
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false) { return false; }
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false, bool IsFromSpell = false) { return false; }
 	virtual bool HasRaid() { return false; }
 	virtual bool HasGroup() { return false; }
 	virtual Raid* GetRaid() { return 0; }
@@ -42,13 +42,14 @@ public:
 	bool	IsBeacon()			const { return true; }
 	bool	Process();
 	virtual void	Depop(bool not_used = true)	{ remove_me = true; }
-	void AELocationSpell(Mob *caster, int16 cast_spell_id);
+	void AELocationSpell(Mob *caster, int16 cast_spell_id, sint16 resist_adjust);
 
 protected:
 	Timer remove_timer;
 	bool remove_me;
 
 	int16 spell_id;
+	sint16 resist_adjust;
 	int spell_iterations;
 	Timer spell_timer;
 

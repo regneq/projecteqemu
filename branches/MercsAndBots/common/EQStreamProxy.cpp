@@ -93,40 +93,9 @@ void EQStreamProxy::RemoveData() {
 }
 
 bool EQStreamProxy::CheckState(EQStreamState state) {
-	return(m_stream->CheckState(state));
+	if(m_stream)
+		return(m_stream->CheckState(state));
+
+	return false;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

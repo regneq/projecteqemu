@@ -33,6 +33,7 @@ typedef enum {
 	EVENT_PROXIMITY_SAY,
 	EVENT_CAST,
 	EVENT_SCALE_CALC,
+    EVENT_ITEM_ENTERZONE,
 	EVENT_TARGET_CHANGE,	//target selected, target changed, or target removed
 	EVENT_HATE_LIST,
 	EVENT_SPELL_EFFECT_CLIENT,
@@ -43,6 +44,15 @@ typedef enum {
 	EVENT_COMBINE_SUCCESS, //PC successfully combined a recipe
 	EVENT_COMBINE_FAILURE, //PC failed to combine a recipe
 	EVENT_ITEM_CLICK,	//SoF+ Item Right Clicked from worn or main/top inventory slot
+	EVENT_ITEM_CLICK_CAST,
+	EVENT_GROUP_CHANGE,
+	EVENT_FORAGE_SUCCESS,
+	EVENT_FORAGE_FAILURE,
+	EVENT_FISH_START,
+	EVENT_FISH_SUCCESS,
+	EVENT_FISH_FAILURE,
+	EVENT_CLICK_OBJECT,
+	EVENT_DISCOVER_ITEM,
 	
 	_LargestEventID
 } QuestEventID;

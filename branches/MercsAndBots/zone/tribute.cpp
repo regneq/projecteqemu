@@ -26,7 +26,7 @@
 
 using namespace std;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #include <winsock.h>
 #include <process.h>

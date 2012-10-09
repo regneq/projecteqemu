@@ -71,6 +71,7 @@ public:
 	const char *GetRankName(uint32 guild_id, uint8 rank) const;
 	const char *GetGuildName(uint32 guild_id) const;
 	bool	GetGuildNameByID(int32 guild_id, std::string &into) const;
+	uint32	GetGuildIDByName(const char *GuildName);
 	bool	IsGuildLeader(uint32 guild_id, uint32 char_id) const;
 	uint8	GetDisplayedRank(uint32 guild_id, uint8 rank, uint32 char_id) const;
 	bool	CheckGMStatus(uint32 guild_id, uint8 status) const;
@@ -85,6 +86,7 @@ public:
 	uint8 *MakeGuildList(const char *head_name, uint32 &length) const;	//make a guild list packet, returns ownership of the buffer.
 	
 	static const char *const GuildActionNames[_MaxGuildAction];
+	uint32	DoesAccountContainAGuildLeader(int32 AccountID);
 	
 protected:
 	//the methods which must be defined by base classes.

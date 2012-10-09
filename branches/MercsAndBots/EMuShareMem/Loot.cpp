@@ -12,7 +12,7 @@ MMFLoot_Struct* MMFLootData_Writable = 0;
 int32* LootTable;
 int32* LootDrop;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define exportfunc extern "C" __declspec(dllexport)
 #else
 	#define exportfunc extern "C"

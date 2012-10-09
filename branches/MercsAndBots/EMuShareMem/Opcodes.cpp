@@ -1,6 +1,6 @@
 #include "../common/debug.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"

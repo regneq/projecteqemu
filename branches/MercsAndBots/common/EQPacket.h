@@ -67,13 +67,14 @@ class EQProtocolPacket : public BasePacket {
 	friend class EQStream;
 	friend class EQStreamPair;
 public:
-	EQProtocolPacket(uint16 op, const unsigned char *buf, uint32 len) : BasePacket(buf,len), opcode(op) { } 
+	EQProtocolPacket(uint16 op, const unsigned char *buf, uint32 len) : BasePacket(buf,len), opcode(op) { acked = false; } 
 //	EQProtocolPacket(const unsigned char *buf, uint32 len);
 	bool combine(const EQProtocolPacket *rhs);
 	uint32 serialize (unsigned char *dest) const;
 	EQProtocolPacket *Copy() { return new EQProtocolPacket(opcode,pBuffer,size); }
 	EQRawApplicationPacket *MakeAppPacket() const;
 	
+	bool acked;
 	
 	virtual void build_raw_header_dump(char *buffer, uint16 seq=0xffff) const;
 	virtual void build_header_dump(char *buffer) const;

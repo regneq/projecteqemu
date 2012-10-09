@@ -1,5 +1,1585 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==09/23/2012==
+Kayen: Fix for crippling blow chance, other minor fixes related to bonuses.
+
+==09/20/2012==
+Kayen: AA dbase table fixes - Archery Mastery, Fury of Magic.
+
+REQUIRED SQL: utils/sql/svn/2215_required_aa_updates	
+
+==09/19/2012==
+KLS: Faction mods (Race, Class, Deity) can now be added on the fly, without adding database columns or editing the code. Source in the database change, run utils/factionmod.pl, and then drop the faction_list table to convert.
+
+REQUIRED SQL: utils/sql/svn/2214_faction_list_mod.sql
+
+==09/18/2012==
+cavedude: Overhauled loot system. I've outlined the new system on the forums here: http://www.eqemulator.org/forums/showthread.php?t=35770
+
+REQUIRED SQL: utils/sql/svn/2213_loot_changes.sql
+
+==09/16/2012==
+Kayen: Implemented SE_HealFromMana changed to SE_HealGroupFromMana - now implemented correctly.
+
+==09/14/2012==
+Kayen: Implemented SE_CriticalHealRate - Focus that increase chance for heals cast on you to critical.
+Kayen: Implemented SE_IncreaseNumHits - Focus that can inceases max number of hits a buff can have before being removed.
+Kayen: Removed SE_Twinproc - This is not an actual spell effect, Twin proc is now correctly implemented as on live using SE_Twincast.
+Kayen: Implemented SE_TwoHandBluntBlock - Chance to block when using two hand blunt weapon (similiar to shield block).
+Kayen: SE_NegateEffect will now negate all AA, item and spell bonuses for the specified effects.
+Kayen: Added support to allow for certain bonuses to now properly be calculated when cast as debuffs (ie decrease chance to critical hit)
+Kayen: Implemented rule to allow certain bonuses to be calculated by adding together the value from each item, instead of taking the highest value. 
+  *Ie. Add together all worn cleave effects, ferocity effects ect.
+
+OPTIONAL SQL: utils/sql/svn/2209_optional_additive_bonus_rule.sql (disabled by default)
+
+==09/13/2012==
+cavedude: Uleat implemented the following changes:
+
+The bandolier function should no longer CAUSE desyncs. Its use can still be affected by previous issues, just like any manual swap. Message cues have been temporarily added to certain procedures to indicate to the player that a possible desync condition exists and that they should zone or relog to correct the situation immediately.
+
+The chance of player corpses becoming bugged should now be minimal. Corpse processing was changed to better emulate client behavior when 'RespawnFromHover' is set to true or false. Message cues and #commands were added to help determine whether a corpse is bugged. (Previously, queued cursor items were sent to the corpse..but, the packet builder did not include the 8000-series of items when a player looted their corpse.)
+
+Tweaked several areas where item swaps were not handled properly, or at all, and the client-server inventories became desyncronized. Additional areas are still suspect for causing desync's. (A 'ResyncInventory' method is in-work to eliminate the need for item deletion...)
+
+Client::SummonItem now limits the size of a summoned stack to the value of stacksize in the database. If you are using script to summon stacks greater than item->stacksize, this action was/is incorrect and you will need to modify your 'quest' to summon multiple stacks.
+
+
+command changes:
+	#equipitem - modified partial stack movements..if a partial stack would be left on cursor, the action now fails.
+	#corpse - added subcommand 'InspectLoot'..works for client and npc corpses..additional information with client.
+	#peekinv - added stack size(charges) to report and modified the cursor depth reporting of bag slots.
+	#zopp - new command for troubleshooting..forces a client 'trade' or 'summon' to desync the client inventory.
+
+references:
+	http://www.eqemulator.org/forums/showthread.php?t=35604 - CSD Support Patch
+	http://www.eqemulator.org/forums/showthread.php?t=35629 - CSD Bugged Corpse Patch
+	http://www.eqemulator.org/forums/showthread.php?t=35699 - CSD Bandolier Patch
+	
+cavedude: (demonstar55) Damage shields by default will no longer count towards EXP gain. (Rule also added to change this behaviour.)
+cavedude: (demonstar55) Extended targets should now clear when aggro is lost using skills.
+cavedude: (demonstar55) AAs with shorter reuse timers should now reset if the cast failed (interrupted.)
+KLS: Fixed a cause of raids disbanding on zoning.
+
+OPTIONAL SQL: INSERT INTO `rule_values` VALUES (1, 'Combat:EXPFromDmgShield', 'false', 'Determine if damage from a damage shield counts for EXP gain.');
+
+==09/12/2012==
+Kayen: Implemented NPC Special Attack 'i'. Immune to Taunt.
+Kayen: Implemented: SOF+ live like stacking of AA's that belong to the same series in the AA window (Expection: AA's that use hot keys).
+Kayen: Implemented SE_SpellEffectResistChance - Increase chance to resist specific spell effects ie. Charm
+Kayen: Revision to how AA focus effects are handled to correclty utilize live AA data.
+Kayen: Almost all 'General' and most 'Archetype' AA's implemented through Underfoot.
+Kayen: aaID data (AA.h) updated through VoA expansion.
+
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: Spell Casting Subtlety now implemented with bonus SE_ChangeAggro
+MISC AA: Many AA that are spell focus effects now implemented using live data.
+MISC AA: Finishing Blow ect, will now implemented using bonus, SE_FinishingBlow and SE_FinishingBlowLvl.
+ENC  AA: Total Domination now implemented with bonus SE_CharmBreakChance.
+SK   AA: Soul Abrasion now implemented with bonus SE_ImprovedDamage2.
+*Many fixes to previously implemented AA effects.
+
+REQUIRED SQL: utils/sql/svn/2208_required_aa_updates	
+OPTIONAL SQL: utils/sql/svn/2208_optional_aa_stacking_rule.sql (If false will disable AA stacking for all clients)
+OPTIONAL SQL: utils/sql/svn/2208_optional_EnableSoulAbrasionAA
+ *If using an older server spell file (pre SOF), will need to run this to correctly populate the 'spellgroups' field.
+
+=======
+==09/07/2012==
+Bad_Captain: Bots- Fixed an issue where bots couldn't have spells with target type of ST_GroupClientAndPet cast on them.
+Bad_Captain: Bots- Added #bot healrotations command. Please see forums for more information.
+
+==09/04/2012==
+cavedude: Added NPC:UseMultiQuest rule to turn multiquest support on or off.
+
+OPTIONAL SQL: INSERT INTO `rule_values` VALUES (1, 'NPC:UseMultiQuest', 'false', 'If true, NPC will remember items handed to them for classic multiquest support.');
+
+==09/03/2012==
+Akkadius: First set of efforts to clean up Windows compiling. See:
+	http://www.eqemulator.org/forums/showthread.php?p=212217#post212217
+	- Cleaned up x64 compiles, x86 compiles coming right up
+	- Removed pragma comments and forced them to be used under 'Additional Dependencies' (Windows)
+Akkadius: Fixed-up Release & Debug 32-bit compiles
+Akkadius: Uploading includes and libraries for both x64 and x86 so that VS2010 can automatically reference those libraries and requires no configuration
+Akkadius: All project types have had includes and libraries linked to the appropriate machine type
+Akkadius: Most project types have been set to /MP (Multiprocessor compile) and Warning Level 1 to filter most of the garbage
+Akkadius: Got the rest of the VS2010 compiles working on a fresh SVN:
+		Debug x64|x64 = Debug x64|x64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		DebugBots x64|x64 = DebugBots x64|x64
+		DebugBots|Win32 = DebugBots|Win32
+		Release x64|x64 = Release x64|x64
+		Release|Win32 = Release|Win32
+		ReleaseBots x64|x64 = ReleaseBots x64|x64
+		ReleaseBots|Win32 = ReleaseBots|Win32
+		ReleaseBots|x64 = ReleaseBots|x64
+
+==09/02/2012==
+cavedude: (image) Added Classic Multiquest support.
+cavedude: Added quest::clearhandin and #clearquestitems so that multiquest can co-exist with out current system without issues.
+
+REQUIRED plugin: utils/defaults/plugins/check_handin.pl (Or use PEQ quests repo)
+
+==08/27/2012==
+Akkadius: (Uleat) Temporary dupe fix until we can iron this out the way it should be (Not use signed ints in the blob). This should trap a majority of it to client saves.
+Akkadius: Account shared platinum field type change (signed to unsigned) to no longer allow negative values...
+
+REQUIRED SQL: utils/sql/svn/2195_required_sharedplatupdates.sql
+
+==08/17/2012==
+Kayen: Taunt skill updated to work consistent with live.
+  *You can now taunt NPC's over the users level. (RULE: TauntOverLevel)
+  *Taunt success chance should be accurate to live. Penalty of not being at max skill lv can be adjusted with (RULE: Combat:TauntSkillFalloff)
+  *Live messages for taunt success and failure are now implemented. (Note: Only NPC races that can 'talk' will say the success message).
+Bad_Captain: Bots- Fixed an issue when with bot spell timers that could lead to a crash.
+Kayen: Fixed SQL files from rev2185+ that were not saved as .sql 
+
+OPTIONAL SQL: utils/sql/svn/2189_optional_taunt_rules 
+OPTIONAL SQL: utils/sql/svn/2185_optional_NPCFlurryChance_rule (run this again)
+  
+==08/16/2012==
+Kayen: Complete revision of the Death Save and Divine Save effects and related bonuses to be consistent with live.
+  *Death Save (Death Pact/DI) will no longer fire on death. It should only fire when less 15% HP but not killed.
+  *Death Save chance is determined soley by charisma of client with the buff. (RULE: DeathSaveCharismaMod)
+  *Divine Intervention baseline is now correctly set to 8000HP (from 50k) (RULE: DivineInterventionHeal)
+  *AA Touch of the Divine provides upon failure of first Death Save, a second roll and if successful will
+   do a portion of the original heal value. (Ie DI=8000HP with ToTD-3(60%) your heal will be 8000*0.6 = 4800HP)
+  *Implemented functionality for later expansion Death Save effects (Divine Intercession ect)
+   These can add heal value to the base heal which is limited by level (ie Heal 10,0000+8000 if client less then level 80)
+   
+  *Divine Save (AA Unfailing Divinity) only fire upon death of client with this effect and is independent of Death Save effect.
+  *Increased ranks of AA only increase the chance of firing upon death. Heal value does NOT increase with rank.
+  *Upon firing you will still recieve the Divine Aura like buff, which now also correctly removes all determental effects.
+Kayen: Implemented: SE_Purify - Removes determental buffs. Value determines how many buffs are removed.
+Kayen: Added RULE MaxCastTimeReduction - Max percent your spell cast time can be reduced by spell haste(is/was 50%).
+
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: Internal Metronome/Channeling Focus now implemented with bonus, SE_ChannelChanceSpells.
+MISC AA: Concentration now correctly implemented with bonus, SE_ChannelChanceItems.
+MISC AA: Pet Affinity now implemented with bonus, SE_GivePetGroupTarget.
+MISC AA: Spell Casting Expertise, Mastery of the Past ect will prevent fizzles from spells under certain level, SE_MasteryofPast.
+BRD  AA: Extended Notes/Sionachie's Crescendo will increase ranage of songs with bonus, SE_SongRange.
+BRD	 AA: Jam Fest now implemented with bonus, SE_CastingLevel2.
+CLR  AA: Unfailing Divinity now implemented with bonus SE_Unfailing Divinity.
+CLR  AA: Touch of the Divine now implemented with bonus SE_DivineSave.
+DRU  AA: Enchanted root/Viscid Root (was implemented completely wrong), now uses bonus SE_RootBreakChance.
+  *If a root is cast on the target and target has this AA it will decrease the chance for that root to break
+   from any damage spells. The damage spells can be cast by any one, not just the client with the bonus.
+   Added RULE: RootBreakFromSpells - Baseline is/was set at 20% chance from nukes.
+
+
+REQUIRED SQL: utils/sql/svn/2188_required_aa_updates	
+OPTIONAL SQL: utils/sql/svn/2188_optional_miscspelleffect_rules
+
+==08/13/2012==
+Kayen: Update to how chance to hit bonuses are applied.
+  *Accuracy spell effect will now stack with Hit Chance spell effect. (Accuracy/15 = 1% chance to hit).
+  *Skill specific Hit Chance effects should stack correctly now.
+  *Accuracy/Hit Chance effects that DECREASE your chance to hit will now function.
+Kayen: Minor update to duel wield, chance bonuses will be correctly applied to baseline dw chance.
+Kayen: Implemented Perl MOB Quest Object SetFlurryChance(value) (ie 50 = 50% chance for NPC flurry if special atk "F")
+Kayen: Implemented Perl MOB Quest Object GetFlurryChance(value) returns flurry chance.
+Kayen: Added rule to adjust server wide flurry chance (Default = 20%) *Perl object will override this.
+	
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: Dead Aim, Precision of the Hunter, Scout's Efficiency will now calculate from bonus SE_Accuracy.
+MISC AA: Combat Agility line will now calculate from bonus SE_AvoidMeleeChance. (Now implemented through SoD) 
+MISC AA: Combat Stability line will now calculate from bonus SE_CombatStability. (Now implemented through SoD)
+MISC AA: Double Riposte, Return Kick now calculated from bonus SE_GiveDoubleRiposte. (New AA's implemented that use this)
+MISC AA: Natural Durability, should be working correctly now from bonus SE_MaxHP.
+MISC AA: Ambidexterity will now apply properly to increase chance to duel wield from bonus SE_Ambidexterity.
+MISC AA: Flurry,Rapid Strikes will now properly be applied from bonus SE_Flurry. (New AA's implemented that use this)
+MISC AA: Pet AA's that give flurry chance will now be applied by bonus, SE_PetFlurry.
+MAG  AA: Elemental Agility was incorrectly giving melee mitigation instead of avoidance, to now use SE_PetAvoidance.
+MAG  AA: Elemental Durability will now add to pet max hp with bonus, SE_PetMaxHP.
+
+REQUIRED SQL: utils/sql/svn/2185_required_aa_updates	
+OPTIONAL SQL: utils/sql/svn/2185_optional_NPCFlurryChance_rule
+
+==08/12/2012==
+Bad_Captain: Fixed an issue when using bots where you would not get xp when your pet did most of the damage and you are not grouped.
+Bad_Captain: Added rule to enable receiving xp from bots not in your group. Defaults to false. 
+
+OPTIONAL SQL: utils/sql/svn/2183_optional_bot_xp_rule.sql 
+
+==08/08/2012==
+Kayen: Updates to critical hit calcuations to be consistent with live. 
+  *Baseline critical rate is determined by DEX stat (255 dex = 2%),this baseline is then modified by item,spell and AA critical chance bonuses. 
+  *Pet critical baseline is determined by the rate from AA effects that give pets the ability to critical. (Can not crit w/o this effect)
+Kayen: Slay Undead effect will now be working consistent with live. 
+  *Slay rate is no longer effected by critical hit rate, it uses it's own predetermined rates from the spell effect data. 
+  *Damage modification will now be much closer to that of lives utilizing the spell effects damage modifier. 
+  *Example(AA Slay Undead I - Rate: 225 (2.25%) Damage Mod: 680%)
+  *Note that that spell effects using Slay Undead (Holyforge) will stack with AA and increase the damage and the rate.
+Kayen: Crippling Blow's derived from spell effects will now be calculated consistent with live. 
+  *Cippling blow chance is determined by modifying your critical hit chance. 
+  *Example (Savage Onslaught - 200% chance to crippling blow) If you have a base chance to critical hit of 10% 
+   and you score a critical hit, you will then have a 20% chance to crippling blow.
+Kayen: Fixed effect for AA 'War Cry' will now provide group fear immunity for duration.
+Kayen: Few new AA's added including shaman Ancestral Aid and Spirit Channeling.
+   
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: 'Combat Fury', 'Fury of the Ages' will now calculate from bonus SE_CriticalHitChance. 
+MISC AA: 'Veteran's Wrath' will now calculate from bonus SE_CriticalDmgMod.
+MISC AA: All AA that give pet criticals will be calculated from SE_PetCriticalHit.
+PAL AA: 'Slay Undead', 'Vanquish Undead' will now calculate from bonus SE_SlayUndead. (Holyforge now works correctly)
+
+REQUIRED SQL: utils/sql/svn/2178_required_aa_updates
+
+==08/06/2012==
+Kayen: Fixes to rev2176 - Double Attack, EndlessQuiver, Run Speed.
+REQUIRED SQL: utils/sql/svn/2176_required_aa_updates will need to be applied again for Run Speed fix.
+
+==08/05/2012==  
+Kayen: Complete revision of how double attack chance is calculate to be consistent with live.
+Kayen: Berserker 'Frenzy' skill attack will now function as it does on live. Gives a chance for 1-3 attacks using frenzy skill specific damage.
+*Note: This will be a considerable nerf to bersekers because it was previously coded to give actual melee rounds using weapon damage.
+Kayen: Implemented a few miscellaneous new AA's, mostly from DODH. (These will show in OoW Window in Titanium)
+Kayen: Added almost all remaining spell effects into spdat.h (~90% defined).
+Kayen: Alternate Advancement Update: In the process of coverting most of the hard coded AA data out of the source and into the 'aa_effects' table
+using live data. These effects are then reimplemented using the bonus system in the broadest possible way, most of these effects will
+also be useable as regular spell/item effects. This will allow developers in the future to adjust,implement and customize AA effects 
+without requiring source changes. Beware in doing this, many AA effects that were previously either implemented incorrectly or with values 
+not consistent with live data will be adjusted to be as accurate as possible.
+
+Following AA effects are now implemented as bonuses: You must update your 'aa_effects' table with 'required_aa_updates.sql' for these to work.
+MISC AA: All innate run speed AA's have been converted to use bonus SE_BaseMovementSpeed. 
+MISC AA: All bind wound related AA have been converted to use bonuses, SE_ImprovedBindWound, SE_MaxBindWound.
+MISC AA: Shield Block will now be calculated using bonuses, SE_ShieldBlock.
+MISC AA: Sinister Strike will now correctly allow your off hand weapon to recieve a weapon damage bonus, SE_SecondaryDmgInc.
+MISC AA: Strengthened Strike/Vicious Smash/Kick Mastery will now accurately to live add skill damage to respective special abilities.
+MISC AA: StrikeThrough, Tactical Mastery - will now be calculated from bonus, SE_Strikethrough2.
+MISC AA: Ferocity, Knight's Advantage ect - will now be calculated from bonus SE_DoubleAttackChance.
+MISC AA: Harmonious Attacks, Bestial Frenzy - will allow double attack chance using bonus SE_GiveDoubleAttack (any class can be given this) 
+MISC AA: Weapon Affinity, will now use SE_ProcChance.
+MISC AA: PunishingBlade, SpeedoftheKnight will now allow an extra 2 Handed attack using bonus, SE_ExtraAttackChance.
+BRD  AA: Fleet of Foot will now correctly allow bards to run over the speed cap using, SE_IncreaseRunSpeedCap.
+WAR  AA: Previously non functional 'Stalwart Endurance' and 'Dauntless Preservence' now working using bonus, SE_FrontalStunResist
+MNK  AA: HightenedAwareness - Implemented using bonus, SE_BlockBehind.
+MNK  AA: Technique of Master Wu - Will now correclty use a random monk special attack, chance for double/triple attack as SE_DoubleSpecialAttack.
+MNK  AA: Dragon Punch - Implemented as now using bonus SE_SpecialAttackKBProc, (base1 = 100 [25% proc chance at 100] base2 = skill)
+RNG  AA: Endless Quiver - Implemented as SE_ConsumeProjectile which gives a percent chance NOT to consume an arrow. (EQ base1 = 100)
+RNG  AA: Archery Mastery- Implemented as SE_ArcheryDamageModifier which gives a percent increase to archery attacks.
+BER  AA: Throwing Mastery - Implemented using SE_DamageModifier.
+BER  AA: Blur of Axes, Vicious Frenzy - will now correctly add skill damage to 'Frenzy' skill attacks.
+ROG  AA: Triple Backstab, SiezedOpportunity, Chaotic Stab - as bonus, SE_TripleBackstab, SE_FrontalBackstabChance,SE_FrontalBackstabMinDmg. 
+
+REQUIRED SQL: utils/sql/svn/2176_required_aa_updates
+Optional SQL: utils/sql/svn/2176_optional_FrenzyBonus_rule
+Optional SQL: utils/sql/svn/2176_optional_aa_expansion_sof_fix (Allow AA to show proper expansion in SOF+ clients)
+
+
+==08/01/2012==  
+Bad_Captain: Fixed bot compile issue introduced in Rev 2171.
+Bad_Captain: Integrated Kayen's skill attack code with bots' code, as well as other changes from Rev 2171.
+
+==07/31/2012==
+Akkadius: (KLS) Fix for global_player.pl synchronization. There was an issue where certain subroutines were not passing as global
+
+==07/26/2012==  
+Kayen: Fixed: SE_ImmuneFleeing - Will now disable fleeing if used after mob begins to run, will not effect fleeing from fear.
+Kayen: Implemented Perl MOB Quest Object SetDisableMelee(1=Disabled) - Prevents the ability to auto attack.  
+Kayen: Implemented Perl MOB Quest Object IsMeleeDisabled()
+Sorvani: corrected build name for queryserv project in all the various build types.
+ 
+==07/24/2012==  
+Kayen: Implemented: SE_HundredHands (incorrectly marked as already implemented) - Increases/Decrease actual weapon delay by % of value.
+Kayen: Implemented: Missing modifications from the Archery/Throw damage pathways.
+	*SkillAmount/SkillDamageTaken mods, ability to Block/Dodge/Parry ranged attacks (Can not riposte), other new focus/mod effects.
+Kayen: Fixed: aaThrowingMastery will no longer be applied 2x per throw.	
+Kayen: Implemented: Damage bonus to skill attacks from specific armor slot AC (ie KICK from BOOT AC) can adjust with rule 'SpecialAttackACBonus'
+Kayen: SE_MinDamageModifier should now apply to skill specific effects and to special attacks.
+Kayen: Implemented: Complete revision of SE_SkillAttack. (+ required various fixes/adjustments to functions related to special attacks)
+	*This spell effect performs a physical attack from a specific skill with a set weapon damage value and chance to hit modifier.
+	*Attacks will now calculate correctly and use their actual respected pathways utilizing all skill specific mods/bonus.
+Kayen: Implemented Perl MOB Quest Object DoMeleeSkillAttackDmg(target, weapon_damage, skill, chance_mod, focus, CanRiposte) 
+Kayen: Implemented Perl MOB Quest Object DoArcheryAttackDmg(target,NULL,NULL, weapon_damage, chance_mod, focus)  
+Kayen: Implemented Perl MOB Quest Object DoThrowingAttackDmg(target,NULL,NULL, weapon_damage, chance_mod, focus)		
+
+Optional SQL: utils/sql/svn/2171_optional_SpecialAttackACBonus_rule
+	
+==07/18/2012==
+Kayen: Implemented NPC Special Attack 'K'. Immune to Dispell.
+Kayen: Fixed SE_RangedProc to be applied after zoning, calculate proc rate correctly, utilize numhits.
+Kayen: Fixed a bug that would cause NPC procrates to be incorrectly effected by equipped weapon delay.
+Kayen: Modified functions related to obtaining proc chance to no longer recalculate the 'attack rate' every swing.
+Instead it will use the already calculated attack timer values. (Not implement for BOTs, but should be no compile problems).
+Kayen: Fixed for buff issue with rev2167.
+
+==07/16/2012==
+Kayen: Implemented: SE_SpellProcChance, SE_CharmBreakChance, SE_BalanceMana, SE_DotCritDmgIncrease, SE_TripleAttackChance, SE_Taunt
+			SE_BardSongRange, SE_ACv2, SE_ManaRegen_v2,	SE_SpellCriticalFocus, SE_AdditionalHeal2, SE_HealRate2,
+			SE_CriticalHealOverTime2, SE_CriticalHealChance2, SE_SkillDamageAmount2, SE_LimitSpellSkill, SE_LimitClass
+			SE_LimitExcludeSkill, SE_ShieldBlock, SE_BlockBehind
+Kayen: Implemented: SE_Empathy - A focus limited debuff which causes (spells/skill attacks) cast on target to do +X amount more damage.
+			*This spell effect is often limited using SE_LimitSpellSkill. 
+			*(Ie. If empathy value is 1000 and limited to evocation, all nukes on target using evoc. will get +1000 damage)
+Kayen: Implemented: SE_SpellPowerIncrease - Can be used to apply a worn/buff focus effect with limits for...
+			1) Additional bard instrument modifiers.
+			2) Healing/Damage focus to bard songs. (Note: This is only effect that can do this).
+			3) Increase effectiviess of casted/disc Skill Attacks.
+			4) General use stackable Healing/Damage focus.
+			5) Increase the value of melee runes by focus amount.
+Kayen: SE_HPtoMana will no longer drain your HP before the spell is finished casting. Effect now handled as a bonus using best value.	
+Kayen: SE_SpellVulunerability will now correctly calculate and apply the highest value if target has mulitple effects.				
+Kayen: Fixed an issue where DOTs cast by an NPC on another NPC would not generate hate per tick. Improved how we calc damage from DOTs.		
+Kayen: SE_BlockSpellEffect was implemented incorrectly and has been revised to SE_NegateSpellEffect.
+		*It is not meant to block buffs, rather it negates the specific spell bonuses or effects from buffs you already have.
+		*Currently functional with any effect that is handled under bonuses, and focus effects.
+Kayen: Vastly improved how we handle melee/spell runes/partial mitigation runes ect. Should be significantly more efficient.
+		*Melee/Spell Mitigation runes and ManaAbsorbPercentDamage effects will now use the best mitigation value if multiple effects.
+Kayen: Improved the process we use to get spell/item focus effects. An initial check if the client has a specific focusType
+is done while checking for item/spell bonuses. GetFocusEffect will no longer check all inventory and buff slots every cast for the 
+focusType if that focusType doesn't exist on the client. This should improve performance since these checks are done 10-20x per cast/proc.
+
+==07/15/2012==
+Secrets: Fixed an issue with saylinks above 255 characters. If you do want to use saylinks above 255 characters, it is reccomended you adjust the varchar field in the saylinks table to a "TEXT" field, which supports up to 65535 characters.
+
+==07/13/2012==
+Bad_Captain: Fixed another bug that allowed pets to steal xp when using bots.
+Bad_Captain: Bots: Persisting spell & discipline timers.
+Bad_Captain: Bots: Bot pets will no longer continuously try to get behind a mob if they are tanking.
+Bad_Captain: Bots: Fixed potential duplicate lore item bug when trading with bots. 
+Bad_Captain: Bots: Fixed bot compile issue from Rev 2160.
+Bad_Captain: Bots: Fixed multiple issues with #bot spawn and #bot botgroup load (c0ncrete).
+Bad_Captain: Bots: Implemented new #bot defensive command for Warriors and Knights. Includes most of the code required to implement disciplines for bots. Requires disc AI & disc lists.
+
+Required SQL: utils/sql/svn/2164_require_bots_bottimers.sql
+
+==07/09/2012==
+Kayen: Fixed issue causing npc special attacks (kick/bash ect) to do extra damage.
+Kayen: Fixed major crash bug with rev2159.
+cavedude: AFTERDEATH npc_emote will now use emoteid instead of npcid.
+
+==07/08/2012==
+Kayen: Implemented: SE_SkillProc, SE_SkillProc2 which can be limited by SE_LimitToSkill - Procs an effect when a specific skill is used
+       *Functional with all melee skills, special attacks, backstab, taunt, dodge,block,parry,riposte.
+Kayen: Added checks to attack process to prevent mob from performing certain actions after being killed (riposte, defensive proc ect).
+Kayen: Fixed bug where if client had delay death effect NPC would not be able to attack them if HP < -11, clients without delay death will now bleed again.
+Kayen: Implemented: SE_CastingLevel2, SE_ReduceHate
+Kayen: Fix to bug where some spell procs and defensive procs were not loading after zoning.
+Kayen: Updated spdat.h with many new live spell effects that were previously 'unused'.
+
+==07/05/2012==
+Kayen: Implemented: SE_Manaburn: Drains mana for damage/heal at a defined ratio up to a defined maximum amount of mana.
+Kayen: Implemented: SE_CastonNumHitFade: Casts a spell when a buff fades due to its numhits being depleted.	
+Kayen: Implemented: support for all remaining live spell effects that use 'numhits'.
+	   Significantly optimized how all spell effects that utilize 'numhits' are handled throughout the source. 
+Kayen: Fixed: SE_DefensiveProc - Proc rate will now be calculated similiar to live.  *Spell specific rate modifcations will now work.
+Kayen: Added Rule: Combat:AvgDefProcsPerMinute (Default = 2.0) Determine defensive procs per minute.
+Kayen: Added Rule: Combat:DefProcPerMinAgiContrib (Default = 0.075) Determines how much agility effects proc rate.
+
+Optional SQL: utils/sql/svn/2159_optional_defensiveproc_rules
+
+==06/29/2012==
+Kayen: Implemented Perl NPC Quest Object GetSlowMitigation() 
+Kayen: Implemented Perl NPC Quest Object GetAttackSpeed() 
+Kayen: Implemented Perl NPC Quest Object GetAccuracyRating() 
+Kayen: Fixed: Slow Mitigation (was not loading from dbase),optimized its application in source and added lives slow mitigation messages.
+		Slow mitigation Messages: 'slighty' 0.00 - 0.25 'partial' 0.25-0.75 'mostly' 0.75-1
+Kayen: Implemented: SE_AttackSpeed4: 'Inhibit Melee' effect works different then regular haste/slow effect
+		1) If target is hasted (or no haste) Inhibit Melee will decrease attack speed by the Inhibit Melee value.
+		2) If target is slowed Inhibit Melee is applied as a percent change to remaining attack speed after regular slow.
+		ie. You cast 75% Slow (25 attack speed remains) then apply 25% Inhibit melee (18.75 attack speed remains): Final slow 81.75%
+Kayen: Added Rule: Spells:CharismaEffectiveness (Default = 10) Deterimes how much resist modification charisma applies to charm/pacify checks (10 CHA = -1 resist mod).
+Kayen: Added Rule: Spells:CharmBreakCheckChance (Default = 25) Determines percent chance for a charm break check to occur each buff tick.
+Kayen: Reworked code to that handles charm breaks/lull to be accurate to live and more functional in general.
+		1) Each charm buff tick there is a default 25% [Rule.CharmBreakCheckChance] chance to trigger a spell resistance check.
+		2) Spell resistance check then adds an additional bonus resist modification based casters Charisma at a default 
+		   ratio of 10 CHA per -1 resist mod [Rule.CharismaEffectiveness]
+		3) If resisted (ie Charm is to break) Total Domination AA is then applied to give another chance to maintain the charm.
+Kayen: Implemented: SE_AdditionalHeal:  Focus Effect that adds an additional heal amount to the casted spell.
+Kayen: Implemented: SE_CastOnCure: Casts a spell on cured target.
+Kayen: Implemented: SE_CastOnCurer: Casts a spell on the curer of the target.
+Kayen: Modified: Mob::TryFadeEffect	to avoid interaction wtih Twinproc effect.	
+cavedude: (Uleat) Multiple changes and additions to doors, per the forums.
+
+Optional SQL: utils/sql/svn/2156_optional_charm_break_rule.sql
+
+==06/25/2012==
+Trevius: Reviewed and Committed the below by Kayen:
+Kayen: Added Rule: AvgSpellProcsPerMinute (Default = 6.0) Determines proc rate of spells applied from sympathetic focus effect
+Kayen: Added Rule: ResistFalloff (Default = 67) Max that level that will adjust our resist chance based on level modifiers
+Kayen: Adjusted Mob::TrySpellOnKill()
+		- Will now check AA, Items and Buffs for SE_SpellOnKill (Same logic problem as TrySpellOnDeath)
+		- Level of the npc you killed and the spell_id used to kill it now both passed into the function.
+		- SE_TrySpellOnKill will now correctly check if there is a min level of the npc required for the spell effect to work (max value in spelldat)
+Kayen: Implemented: SE_SpellOnKill2: For deterimental spells where landing the kill gives x% chance to give a buff.
+Kayen: Sympathetic proc now calculates chance to proc a sympathetic spell accurately like live using Procs per minute.
+Kayen: Adjusted Mob::TrySpellOnDeath() - Now checks all avialable effects and trys to use each one.
+Kayen: Fixed SE_TargetsTarget - Target's Target must be in CombatRange to recieve the effect (Verified from live)
+Kayen: Fixed TryApplyEffect - No longer incorrectly lands on the target's target's taget. (Example of spells that use this are Shaman Mending Couterbias)
+Kayen: Adjusted Twincast to now select the buff with the highest chance to Twincast and use that, it will also stack with item focus and AA (when implemented).
+Kayen: Removed the mana cost portion from twin casting a spell.
+Kayen: Fix for SE_SympatheticProc - The focus effect now checks all items/buffs for the focus effect and adds all returned proc spellid's to a list from which one is randomly selected.
+Kayen: Implemented SE_FF_Damage_Amount - Focus/Buff that adds damage to the casted spell. Usually found on spell group limited augments and stackable with SE_SpellDamage.
+Kayen: Adjusted SE_SpellDamage to be handled properly as a focus effect.
+Kayen: Extra damage from Focuses is now calculated correctly for DoTs
+Kayen: Implemented Perl NPC Quest Object SetSpellFocusDMG(focus amount) - Focus all npc direct/dot damage spells by value
+Kayen: Implemented Perl NPC Quest Object SetSpellFocusHeal(focus amount) - Focus all npc healing spells by value 
+Kayen: Implemented Perl Mob Quest Object ModSkillDmgTaken(skill_num,value) - Set a weakness/bonus of weapon attacks to a Mob 
+		- Example: mob can be set to take 5% more damage from blunt weapons - ModSkillDmgTaken(0,5)
+		- Stacks with spell/item bonuses - Setting skill to -1 will effect all skills
+Kayen: Implemented Perl Mob Quest Object GetModSkillDmgTaken(skill_num) - Returns only the quest skill mod for specified skill
+Kayen: Implemented Perl Mob Quest Object GetSkillDmgTaken(skill_num) - Returns the total skill damage taken mod for the specified skill (item+spell+quest_mod value)
+Kayen: Implemented Perl Mob Quest Object SetAllowBeneficial(false) - Allow a specific Mob to be healed/buffed by a client
+Kayen: Implemented Perl Mob Quest Object GetAllowBeneficial() - Returns SetAllowBeneficial flag
+Kayen: Implemented Perl Mob Quest Object IsBeneficialAllowed(target) - Returns if target can have beneficial spells cast on them
+Kayen: Implemented Perl Mob Quest Object ModVulnerability(resist type, value) - Set Spell Vulnerability of mob by resist type(0-9) ALL = -1
+		- Example: mob can be set to take 5% more damage from Fire spells (2,5);
+		- Applied effect will stack with spell buff effects.
+		- If a resist type SPECIFIC and a resist type ALL mod are applied to the same MOB, the SPECIFIC value will be used if spell cast on MOB is the same resist type.
+Kayen: Implemented Perl Mob Quest Object GetModVulnerability(resist type) - Return the quest applied value for each resist (ALL = -1) 
+
+Optional SQL: utils/sql/svn/2154_optional_rule_spell_procs_resists_falloff.sql
+
+==06/22/2012==
+Secrets: (demonstar55) Spells now display to all clients and can be filtered as such.
+Secrets: Damage Shields now go to the proper filter, and do not show the non-melee damage to everyone.
+
+==06/03/2012==
+Akkadius: Added the ability to run a dual-stack global_player.pl with the existing player.pl that will run locally in quests/zone/player.pl or quests/templates/player.pl
+	- This allows the player.pl to be ran globally without interference of a local script (quests/zone/player.pl OR quests/templates/player.pl)
+	- 'global_player.pl' simply needs to be added to quests/templates/global_player.pl to be parsed otherwise it will not be loaded
+	- 'global_player.pl' parses after the local player.pl
+	- 'global_player.pl' parses all of the same events a regular player.pl does and will work with any new subroutines added to it in the future
+	- Thanks Derision for being a pair of eyes on a part of the diff for this
+
+==06/02/2012==
+cavedude: Exported quest::addldonwin(wins, theme); and quest::addldonloss(losses, theme);
+
+==05/30/2012==
+Bad_Captain: Fixed bug that allowed pets to steal xp when using bots.
+Bad_Captain: Bots: Fixed bug that allowed bots to sometimes cast HoT buffs during combat instead of HoT heals.
+Bad_Captain: Bots: Tweaked bard casting chances to restore twisting of multiple songs.
+Bad_Captain: Bots: Implemented Shaman cannibalization during combat.
+
+==05/13/2012==
+cavedude: Corrected the text merchants give when they refuse to sell to you.
+cavedude: The graveyard timer will now resume when a dynamic GY zone boots, instead of resetting.
+cavedude: When a corpse is moved to the graveyard, it will no longer attempt to use an instanced version of the zone.
+cavedude: Added the ability to load NPC emotes from the DB. Wiki entry for this will be at http://www.eqemulator.net/wiki/wikka.php?wakka=NPCEmotes when I write it up.
+
+REQUIRED SQL: utils/sql/svn/2142_emotes.sql
+
+==05/06/2012==
+Akkadius: Added the ability to load a default.pl script underneath quests/templates
+
+==05/05/2012==
+Derision: Fixed reference to freed memory in Mob::BardPulse, plus a couple of minor memory leaks in  Load/SavePetInfo
+==05/01/2012==
+Derision: Corpses no longer appear in Extended Target Auto slots.
+
+==04/30/2012==
+Derision: Fixed some minor bugs with Extended Targeting (if the tank/assist/puller had a target before you allocated an XT slot to that function, you would not see the target unti they changed target).
+
+==04/29/2012==
+Derision: UF+: Support for the Extended Target window (aside from the Raid target types).
+Derision: Fixed Extended Target bugs where CurrentTargetPC targets were incorrectly cleared when leaving a group, and a CurrentTargetPC wasn't updating when they zoned in.
+
+REQUIRED SQL: utils/sql/svn/2136_extended_targets.sql
+
+Note: Default number of Extended Targets is 5. This is stored as a column in character_
+GMs can increase a players slots by targetting them and typing #xtargets <n> where n is between 5 and 20.
+
+==04/22/2012==
+Trevius: VoA - The AA Window now populated AAs.  AA hotkeys can be created, but purchasing still needs work.
+
+==04/21/2012==
+sorvani: Bard AE DoTs should now be affected by mods correctly.
+
+==04/19/2012==
+cavedude: quest::buryplayercorpse will now despawn corpses in zones other than the client's current location, preventing dupes. 
+cavedude: Added quest::summonallplayercorpses (same syntax as quest::summonburriedplayercorpse) which will depop and summon all of the player's corpses, buried or not.
+cavedude: Fixed a bug that caused some summoned corpses to use a static 5 minute decay timer.
+cavedude: Changed player_corpses_backup schema to match player_corpses. If the rule is enabled, corpse backups will now be created for players that are high enough level to drop items to their corpses.
+cavedude: Added a rule to determine whether or not to remove player corpse backups older than 2 weeks.
+cavedude: #corpse now has options to depop a single player corpse, or every corpse belonging to a single player. 
+cavedude: You can now specify if a faction hit is temporary (is removed when player camps/zones) or whether or not to display the faction hit to the player in-game.
+If temp in npc_faction_entries is set to:
+0 (Default): Faction is permanent, player recieves a message. (Same functionality as we had previously.)
+1: Faction is temporary, player does not recieve a message.
+2: Faction is temporary, player recieves a message.
+3: Faction is permanent, but player does not recieve a message.
+cavedude: Added an optional argument to quest::faction to utilize the functionality and values listed above.
+cavedude: Added minlevel and maxlevel to lootdrop_entries. The player credited with the kill (most hate) has their level checked against both columns, and if they are lower than the specified minlevel, or higer than the max, that item entry if it exists is removed from the NPC before it becomes a corpse. 
+cavedude: You can now specify if a NPC automatically repops (rerolls against their spawngroup) or depops after the reverse spawn timer is up.
+If despawn in spawngroup is set to:
+0 (Default): Do not depop or repop, no depop timer is set. (Same functionality as we had previously.)
+1: Despawn the current NPC and repop the spawngroup after the associated spawn2 timer is up (including variance.)
+2. Repop, after the value specified in despawn_timer is up (also uses spawn2 variance.)
+3: Depop the NPC after the spawn2 timer is up + variance.
+4. Depop the NPC after despawn_timer is up + variance.
+Example: Setting despawn to 1 will despawn the NPC and immediately respawn the spawngroup after it has been up for the length of its spawn2 timer + variance.
+Example: Setting despawn to 4 and despawn_timer to 3600 will depop the NPC after it has been up for an hour + variance. It then will respawn after its normal respawn timer is up.
+cavedude: Fixed a crash in groups.cpp.
+
+Required SQL: utils/sql/svn/2133_required_faction_loot_despawn.sql (Backup your data first!)
+
+==04/17/2012==
+Bad_Captain: Bots: Added Bot Group Messages and #bot groupmessages command to turn them on or off per bot or for all bots.
+Bad_Captain: Bots: Fixed bugs that allowed more bots to be spawned than specified in the Bots:SpawnBotCount rule, fixed bug that allowed more bots to be created than specified in the Bots:CreateBotCount rule, and fixed slow buffing bug.
+Bad_Captain: Bots: Various spell ai tweaks (including HoT spells should no longer block other heals from being cast in certain situations and hybrids should use less mana by healing less often).
+Bad_Captain: Bots: Removed client xp gain from bots outside the player's group.
+
+
+==04/14/2012==
+Trevius: Fixed inspect for SoF+ clients, which was broken by Rev2128.
+
+==04/15/2012==
+Derision: Added support for the 'Looking For Guild' window.
+
+Required SQL: utils/sql/svn/2129_required_lfguild.sql
+
+IMPORTANT NOTE:
+
+To use this feature, you must be running the querserv process. If you are not running queryserv, LFGuild will not work, but your server will
+run normally in all other respects.
+
+Underfoot users can bring up the LFGuild Window by pressing the EQ buton and selecting Players/Looking For Guild.
+
+I think all other clients can only access the feature by clicking on the notice boards in the Guild Lobby. To allow them to do this, you must
+add the following to the SUB EVENT_CLICKDOOR of your guildlobby/player.pl
+
+if(($doorid >= 5) && ($doorid <= 38))
+{
+	$client->OpenLFGuildWindow();
+}
+
+==04/14/2012==
+Trevius: VoA - Corrected a few alignment issues with the item struct and it should be fully aligned now.
+Trevius: VoA - Identified a few new item fields including: Prestige, SkillModMax, SkillModExtra, and Power
+Trevius: VoA - #summonitem and functions that summon items such as quests are now fixed.
+Trevius: VoA - Identified multiple Membership fields, which corrects multiple issues such as limited inventory slots, assigned AA limit, level limit, shared bank, and more.
+Trevius: Added packet length verification to all packet handling that was missing it.
+
+==04/13/2012==
+Secrets: VoA - Character Creation is now functional. Fixed creation request struct (opcodes were right), and membership is now sent (characters can now be created!)
+Secrets: VoA - Membership levels are now sent to the client via the SendMembership opcode. Hardcoded to be like older clients for now. Might need bag slots looked into; upon applying this, bag slots & items went missing.
+Secrets: Updated #race command to support races up to 714 (as per the 4/12/2012 client)
+Trevius: VoA - Items now display food/drink correctly and consuming them is now functional.
+Trevius: VoA - Items no longer display UKNOWN SKILL for skill mods on some items that don't have skill mods set.
+Trevius: VoA - Items no longer display Prestige on them.
+Trevius: VoA - Buying from merchants is now functional, though selling to merchants is not yet.
+Trevius: VoA - Disabled the Guild Member List temporarily to prevent guilded characters from crashing.
+
+==04/12/2012==
+Trevius: VoA - Casting Spells and Click Effects on items is now functional.
+
+==04/11/2012==
+Trevius: VoA - Corrected the Player Profile which should now be perfectly aligned.
+Trevius: VoA - More Opcode and Struct corrections/adjustments.
+
+==04/09/2012==
+Trevius: VoA - Identified/corrected some more opcodes and packet structures.
+Trevius: VoA - Merchants now display items for sale, but purchasing is not yet functional.
+Trevius: VoA - Added new packet for setting the max number of characters allowed to be created on an account (10 for now).
+
+==04/08/2012==
+Trevius: VoA - Identified/corrected some more opcodes.
+Trevius: VoA - Items can now be moved around through all slots.
+Trevius: VoA - Updated structs that use inventory slots to use the new format.  Still need to verify some of the struct changes.
+
+==04/07/2012==
+Trevius: Initial addition of the VoA (March 21 2012) client. To enable, you must uncomment the VoA lines in /common/patches.
+Trevius: Many of the core systems are basically functional, but this client is still in an early development phase and not recommended for normal players yet.
+Trevius: Non-Player Race spawns will cause the client to crash, so it is recommended to test it in an empty zone.
+Trevius: Also, items in the bank will cause it to crash, but normal inventory seems to work fine so far.
+Trevius: You cannot create a character on this client yet, so you must use an existing character.
+Derision: VOA: Fixed zoning. Adjusted spawn encoding.
+
+==04/02/2012==
+JJ: Removed additional library and include directories from windows projects as they were not standard locations for all.
+
+==03/29/2012==
+Sorvani: Resurrections effects will again be applied to characters who are in a zone where combat is not allowed (GL, PoK etc) when they receive a rez.
+
+==03/19/2012==
+Bad_Captain: Bots: A few fixed for #bot stance command 
+
+==03/19/2012==
+Bad_Captain: Bots: Implemented bot stances. See forum post. 
+
+Required SQL:
+utils/sql/svn/2107_required_bot_stances.sql
+
+==03/2/2012==
+Bad_Captain: Fixed potential crash in group roles code when a group member is removed.
+
+==02/28/2012==
+Sorvani: Added check for ST_AEBard song before sending spell SPELL_NO_HOLD
+Bad_Captain: Implemented Group Roles via UI (SoD+)- Set group roles, maintains across zones, save/load grouprole sets (load doesn't appear to work on UF- may be a client bug as client doesn't send request to the server for saved group roles as SoD client does)
+Bad_Captain: Fixed FindType to allow for spell effects > 127. Observed by bots trying to cure corruption (effectid 369) when client has a mount (summonhorse effectid 113: 369-128-128=113).
+Bad_Captain: Bots- fixed bot summoning of client corpses, fixed ability to spawn more bots than allowed via server rule (#bot botgroup load was not checking for SpawnBotCount rule), fixed bot issue with receiving buff with Group with Pets target type.
+
+Required SQL:
+utils/sql/svn/2104_required_group_roles.sql
+
+==02/11/2012==
+Secrets: Fixed two more hanging issues introduced regardless of the item discovery feature was on or off.
+Secrets: Fixed a hanging issue introduced regardless of the item discovery feature was on or off. Keep in mind the item discovery feature still takes a reasonable amount of time to work, and this will be fixed in a future update.
+Secrets: Added OP_IncreaseStats for use with the #incstats command (and other things, in due time!)
+Secrets: Added QueryServ to the VS2008 project in preparation of moving eventlog, hackers, discovered items, and other non-essential database tasks over to it.
+
+==02/03/2012==
+Trevius: Added accout_status field to the discovered_items table to make it easier to remove accidental GM item discovery from the table.
+
+Required SQL:
+utils/sql/sv/2099_required_discovered_items_account_status.sql
+
+==01/28/2012==
+Trevius: The version field in the zone_points table can now be set to -1 if you want all versions of the zone to inherit the same zone points.
+Trevius: Added extra option to the "#npcspawn create" command that will try to create the npc_type ID within the standard range for the current zone (zone_id * 1000). Usage: "#npcspawn create 1"
+
+Required SQL:
+utils/sql/sv/2098_required_zonepoint_version_changes.sql
+
+==01/14/2012==
+Trevius: Added Grid ID to the #npstats command output.
+
+==01/06/2012==
+Trevius: Increased MAX_ITEM_ID to 200000 to match the new item ID max.  This is only used for Min Status on items.
+
+==01/02/2012==
+Trevius: Fix for loading buffs on suspended pets.
+
+==12/12/2011==
+Trevius: Pets set to a petpower of -1 in the pets table will scale stats to the petpower like they used to.
+
+==12/11/2011==
+Bad_Captain: Fixed hatelist/aggro bug I introduced in rev 2087 causing NPCs to attack the closest client instead of the top of their hatelist.
+Bad_Captain: Updated some live opcodes for EQExtractor.
+
+==12/06/2011==
+Leere: Added IsFromSpell to Attack() to allow its use from spell effects. This allows the Rampage AA to actually hit mobs again.
+Leere: Added a rule for the minium hasted delay that can be reached for weapons. Default set to 400 based on best guesses from the Moss-Covered Twig tests posted on the net.
+Congdar: (ptarp)compile warnings in windows
+Bad_Captain: Fixed Enchanter's Mezmerization AA - it was extending buffs 35%, now extends mez spells by 1 tick / rank.
+Bad_Captain: Fixed NPC aabonuses issue(s) - NPCs were trying to access nonexistent aabonuses within combat code (hatemod as an example)
+Bad_Captain: Temporary Fix on crash due to non-player spell proc from Monster Summoning Pets until I can figure out the cause.
+Bad_Captain: Bot changes / fixes including maintaining HP & Mana after camp/zone/death, ability to maintain aggro over clients, taunting toggle command (#bot taunting [on|off]), delay death AA, and others. Please see http://www.eqemulator.org/forums/showthread.php?p=205139#post205139 for all Bot changes.
+
+Required SQL: 2087_required_bots_hp_and_mana_and_spell_updates.sql
+
+==12/05/2011==
+Trevius: Crash fix for trying to zone into a flagged zone without having the flag.
+
+==12/04/2011==
+Secrets: Added QueryServ for VS2010 x86/x64. QueryServ allows queries to be sent to it for use on an external database, through the means of packets.
+Currently, the only thing it logs is a #command input, but that will be expanded onto soon. A suggestion for our developers would be to move any statistic logging stuff (hackers table, eventlog, etc) over to it eventually
+to save processing power on the main executable's machine. This will allow for things like discovered items to work a bit more better resource-wise.
+Akkadius: Added #advnpcspawn setversion (version#) - This will change the instance version in which the targeted NPC resides in
+Akkadius: Added #npcedit setanimation (stand, sit, crouch, dead, loot (0-4)) so that setting animations are much easier. This also makes animations much more reliable setting them with the spawn packet rather than through Perl.
+Akkadius: Added /MP switch to VS2008 so that it will compile with multiple processors
+Akkadius: Fixed compiles for VS2008 from the Queryserv commit
+Secrets: Added #qtest <string>, which will populate the remote database through QueryServ with information as a test only. Requires 255 status by default.
+Trevius: LDoN points are now capped at 2,000,000,000 instead of ~16,000, and no longer roll back to 0 if they exceed the cap limit.
+
+Reccomended SQL: (ON QueryServ's database, NOT the main db) utils/sql/queryserver/2079_queryserver.sql
+
+
+==12/01/2011==
+Secrets: v90 toolset bugs reported on forums. In order to use Perl 5.14, you MUST upgrade to VS2010 (preferrably ultimate), if you do not have vs2010, it will default to Perl 5.10 and you will be unable to use the much more stable Perl 5.14, an upgrade is reccomended.
+Secrets: Fixed Windows x64 rulesys bug where it would store them as an x64 version of an int (long long) and mess up the ordering of pointers, resulting in certain rules not loading properly.
+NOTE: For those having issues compiling vs2010, there will be a guide up shortly to help you set up your dev environment. In the meantime, make sure your "Additional Include" and "Additional Library" paths
+are correct and pointing at the right location. Failure to do so will result in mysql header/lib and perl header/lib issues. If you are looking for zlib x64, it's in SVN. 
+
+==11/30/2011==
+Secrets: Implemented Visual Studio 11 and Visual Studio 10 project/sln files.
+Secrets: Added x64 configuration settings to VS11 and VS10 project files/SLN files. 
+Secrets: Changed WIN32 define to _WINDOWS across the board. In the case where WIN32 is needed over WIN64 (ie; assembly references) there is still WIN32 defines and a new WIN64 define.
+Secrets: Upgraded ActiveState Perl lib define to 5.14 -- others still work but it is strongly reccomended to use 5.14 as it contains less memory leaks.
+Secrets: Added Zlib 1.2.3 x64 to the SVN for use with the windows solution files.
+Secrets: Fixed vs2008 project files to reflect the new _WINDOWS define
+Secrets: Perl 5.14 Compile Fix
+
+NOTE: Since VS11 is in beta, I only set up the debug options. You should use Vs2010 Ultimate to compile in x64 mode.
+NOTE2: Perl 5.14 is stable, but if you absolutely need to use 5.10, ctrl f search for "perl514.lib" and replace it with "perl510.lib"
+NOTE3: A forum post will be made for help with compiling Windows x64 on EQEmulator.org, it is an experimental feature but has less issues than x64 linux, imo.
+
+==11/28/2011==
+Leere: Fixed a problem with no drop items inside of bags when trading with NPCs. Pets retain buff based procs through zoning now.
+
+==11/26/2011==
+Leere: NPCs now have the ability to ignore level limits for stuns. This ability can be turned off via rule. Also added a rule for what the base stun immunity level is for spells with a max level of 0.
+Leere: NPCs (and thus pets) are now able to equip items in non-visble slots. They will also look inside of bags that are traded to them for those items.
+The pets table was expanded. It can now map to several npc IDs for the same pet type string, based on pet power. (This has replaced the old approach of letting pet power be a direct boost to NPC stats. The intention is to now have distinct npc_type table entries for the various pet power levels that a pet supports.) Pet naming and pet control was likewise moved out of code logic and to the pets table. (The default pet control is now petFamiliar rather than petOther.) Pets can now have items already equipped when summoned. The equipment sets used for that can be shared between pets and also be nested up to a depth of 5.
+Pets are no longer stored as part of the profile blobs.
+Pets (charmed and summoned) belonging to clients should no longer attempt to assist other NPCs if they hear a call for help.
+
+Required SQL:
+utils/sql/sv/2069_required_pets.sql
+
+==11/21/2011==
+Akkadius: Implemented NPC Special Attack 'Z'. This will keep clients from being able to attack an NPC altogether similar to live.
+
+==11/17/2011==
+Congdar: Fix charms Platinum Disc and Gold Pin. You'll need updated items\CHRMGold.pl and \items\CHRMPlatinum.pl once pushed to the quest repository.
+
+==11/17/2011==
+Lerxst: Fixed crash when calculating random focus effect from an augment when the base item had no focus effect.
+Also added some bulletproofing in case that isn't the only place an invalid spell id might be passed.
+
+==11/16/2011==
+Akkadius: Added the ability to specify doors/objects/ground spawns to load for all versions of the same zone regardless by setting the value to -1. 
+This reduces serious redundancy of copying the same data over and over for instances.
+
+Required SQL:
+utils/sql/svn/2062_required_version_changes.sql
+
+==11/15/2011==
+Trevius: Potential zone crash fix for Discovered Items pointed out by Congdar.
+
+==11/09/2011==
+Trevius: Fixes for issues caused by the extra SoF+ item click checks.
+
+==11/05/2011==
+Trevius: Added extra checks for SoF+ item clicks.
+
+==11/01/2011==
+Trevius: Added Discovered Items table to track who discovered an item for the first time and when.
+Trevius: Added new EVENT_DISCOVER_ITEM player event.  It exports the item id to the $itemid variable.
+Trevius: Added Rule Character:EnableDiscoveredItems to make item discovery tracking optional.
+
+Required SQL:
+utils/sql/svn/2057_required_discovered_items.sql
+
+Optional SQL:
+utils/sql/svn/2058_optional_rule_discovered_items.sql
+
+==10/31/2011==
+Leere: Changed raid leadership ability costs to match client expectations.
+Leere: All stuns should now treat a max level of 0 as meaning level 55.
+
+==10/24/2011==
+Akkadius: Mysql CLI changes
+Akkadius: Preliminary work to some future additions, added int32 Database::GetGuildDBIDByCharID(int32 char_id)
+
+==10/23/2011==
+Akkadius: Another memory leak in parser.cpp, NewEventList never deallocated
+Akkadius: Reduced code checking redundancy in several places regarding functions that reference ExecWeaponProc, only valid invalid spells are checked and logged.
+Akkadius: (Lerxst/Akkadius) Approximately 8 memory leak fixes based on findings from 'cppcheck', some found in loot, popup windows and a few other places.
+Akkadius: (Lerxst) Various quest object fixes, sanity checks and initiator adjustments
+Akkadius: (Lerxst) Minor trading code adjustments
+Akkadius: (Lerxst) Logic fixes with bot code
+Sorvani: Critical hit filter should work again.
+Secrets: Reverted my changes.
+
+==10/22/2011==
+Derision: Underfoot: Extended Buffs should now last the correct time without needing to zone.
+
+==10/21/2011==
+Derision: Fixed rez bug.
+Akkadius: Fixed a spell crash that has been reported on The Hidden Forest with TryFadeEffect
+Akkadius: Fixed a spell crash with ExecWeaponProc when a spell or weapon procs a spell that does not exist, you can catch the invalid spells in your spells log if you have them enabled
+
+==10/20/2011==
+Trevius: Fix for Perl Doors GetID() command.
+Akkadius: Mysql #command CLI - Fixed an issue where the query string was being escaped
+Akkadius: Mysql #command CLI - Added switches -s and -h. Switch -s providing space between the select lines in a query, -h highlighting every other row to be more readable
+
+==10/19/2011==
+KLS: (lerxst2112) Client::Message memory leak
+Trevius: Potential crash fix for MoveTo() being used on an NPC that has a grid with wandertype 3.
+
+==10/14/2011==
+Leere: More than 6 members of a raid can now receive raid experience.
+Sorvani: Added AE Rampage message and filter
+
+==10/11/2011==
+KLS: Added Ebon/Radiant crystal reclaim for the clients I have.(Titanium/SoD/Underfoot)
+KLS: Seperated buffs from the player profile.
+KLS: Seperated buffs allowed me to fix the counters on buffs for the newer clients across zone lines, as well as melee and magic runes are no longer limited to 65k as they are no longer uint16s.
+KLS: Added ability to save variables to items. Via $client->SetCustomItemData(13, "SomeVariable", 1024); #give our mainhand some variable.
+KLS: Added ability to retrieve items from the inventory in perl with $client->GetItemInInventory(slot_id);
+KLS: Fixed Item::IsAugmentable() to return correctly if the first augment slot is not used.
+KLS: Updated for latest code and readded Derisions' cross-zone /inviting.  I've been testing it for a while now and can't find any real issues with it so I readded it.
+KLS: Added class and race combo's into the database so they can be potentially changed; only SoF+ clients will correctly display this.
+KLS: Fixed a bug in WorldDatabase::GetCharSelectInfo.
+KLS: Changed internal faction values to go in order this change will break some quests in the short term but should be more intuitive in the long run.
+KLS: Changed player.pl loading slightly: it will now look for player quests in the following order: .\quests\{zone}\player_v{instance_version}.pl, .\quests\{zone}\player.pl, .\quests\templates\player.pl
+KLS: CanClassX functions are no longer hardcoded, they will now check the skillcaps data instead.
+KLS: EntityVariables are now identified with a string instead of an int ex: $npc->SetEntityVariable("SomeId", 5), this shouldn't break any existing quests.
+KLS: Fixed an issue where bard songs could get stuck in the *on* position even if the bard had turned singing off.
+KLS: Fixed an issue where merchants would load and send items more than once in cases where npcs had merchants that shared merchant_ids in a zone.
+
+==10/09/2011==
+Akkadius: Fixed an optional argument in client 'NukeItem'
+Akkadius: Added two #npcedit commands; armortint_id and alt_currency_id
+Akkadius: Exported $client->GetAggroCount();, this will get how many NPC's are aggroed on the client. This can also be used to determine when in combat.
+Akkadius: Mysql ingame basic CLI to run select queries or execute queries from in-game, default account access 250, be careful when using this.
+Akkadius: (Lerxst) Added a crash fix for spells that do not find a valid item in the database SE_SummonItem
+
+Optional SQL:
+utils/sql/svn/2023_optional_mysqlcli.sql
+
+==10/01/2011==
+Trevius: Added Destructible Objects for Underfoot.
+
+==09/25/2011==
+Derision: Implemented Tune Of Pursuance AA.
+
+==09/24/2011==
+JJ: Added hacker entry for possible instant camp disconnects.
+
+==09/23/2011==
+Trevius: Destructible Objects now change damage states as they reach 75%, 50%, 25% and 0%.
+Trevius: Added Perl Mob quest object SendUntargetable(to_client, in) to toggle the ability to be targeted.
+
+==09/22/2011==
+Trevius: Initial implementation of Destructible Objects (SoD only for now).  Most of the work was done by Derision.
+To Create a Destructible Object, use the 'lastname' field in npc_types to set the model (ie. DEST_DEV_TENT1), and add "o" in the 'npcspecialatks' field.
+
+==09/21/2011==
+Leere: Damage shields should no longer break root spells.
+
+==09/20/2011==
+Trevius: New rule added to allow a cap for GM skill training on specializations (default is 50).
+Trevius: #maxskills will now only set specializations to 50 each to prevent them from all resetting to 1.
+Trevius: GM Trainers will no longer allow training more than 1 (or 2 if you have the AA) specializations above 50.
+Bad_Captain: Added rule for Bot AAs by expansion, bot bash fix (bots with bask/slam skill could bash regardless of weapon(s) or shield), various bot AA fixes, added a few bot AAs
+
+
+Optional SQL:
+utils/sql/svn/2015_optional_specialization_training_rule.sql
+utils/sql/svn/2016_optional_rule_bot_aa_expansion.sql
+
+==09/12/2011==
+Leere: (Tabasco) Added a deque for signals received by an NPC.
+Sorvani: Various message type fixes, most notably NPC Flurry/Enrage/Rampage and Pet Flurry/Rampage.
+
+==09/05/2011==
+Akkadius: (Akkadius/Lerxst) Fixed Beastlord 1.5 and 2.0 pet clickies.
+
+==09/03/2011==
+KLS: Added working Alternate Currency system for SoD and SoF(Untested but hopefully works).
+KLS: Added two fields to merchantlist that allows one to filter which items are offered to players by minimum faction and minimum level.
+KLS: Max stacks on items increased from 254 to 32767.
+Akkadius: Modified items id cap to 200,000
+Akkadius: Changed Perl Client Object 'NukeItem' to use the new fields implemented by KLS's Alternate Currency revision:
+$client->NukeItem(itemnum, [where_to_check, 1 = invWhereWorn, 2= invWherePersonal, 4 = invWhereBank, 8 = invWhereSharedBank, 16 = invWhereTrading, 32 = invWhereCursor]); Ex: $client->NukeItem(1001, 2);
+Akkadius: (Lerxst) Fixed Enduring Breath bot code, adjusted level requirements and added Beastlord class case.
+
+Required SQL: utils/sql/svn/2004_charges_alt_currency.sql
+
+==09/01/2011==
+Derision: Spell resist messages now use the same MT as fizzles (for chat filter purposes).
+
+==08/28/2011==
+Bad_Captain: Rewrote Bot AAs to use aabonuses and GetAA(). Also added a few AAs.
+Bad_Captain: Fixed Bot chance to hit. (they never missed with their primary weapon attacks, and only missed ~5% with their offhand)
+Bad_Captain: Added WipeHateList to bot group attack, bot group follow, and bot group guard to allow target switching and keeps bots and their pets from attacking their target when you no longer want them to. (suggested by Criimson)
+
+==08/23/2011==
+Trevius: Exported to Perl Mob: SetDeltas(delta_x, delta_y, delta_z, delta_h), SetLD(value), SetTargetDestSteps(target_steps).
+Trevius: (SuperUserJD) SpellOnTarget fix for casting beneficial spells on group members while in a raid.
+
+==08/21/2011==
+Derision: Added rule to prevent looting corpses when a player has an item on the cursor (to prevent item loss using Loot All).
+Derision: Alcohol intoxication is maintained across zoning (can be turned off with a rule).
+Derision: Intoxication level affects STR/STA/DEX/AGI/WIS/INT.
+Derision: Added 'Update' button to #showstats window for SoD+ clients.
+
+Optional SQL: utils/sql/svn/1998_optional_intoxication_and_looting_rules.sql
+
+==08/18/2011==
+Leere: Removed lore item from the restrictions for pick pocket.
+
+==08/13/2011==
+Derision: Player pets will now show their owners name. UF users can turn this off in options.
+Derision: SoD/UF: Beneficial Pet Buffs can be clicked off in the Pet Window.
+Derision: Underfoot: Can now click off buffs in the short buff box. Removed registraion of HoT in patches.cpp
+
+==08/12/2011==
+Bad_Captain: Fixed double class / race stats for bots.
+
+==08/09/2011==
+Derision: Underfoot: OP_ClearSurname
+
+==08/05/2011==
+Akkadius: Corrected a grammatical error with training disciplines.
+
+==08/04/2011==
+Bad_Captain: Updated Bot::MeleeMitigation to match mob version.
+
+==08/02/2011==
+Trevius: (Akkadius) Exported Freeze() and UnFreeze() to Perl Client.
+
+==07/27/2011==
+Caryatis: Added Special Attack 'p' (Makes mob immune to pacify)
+Caryatis: Added Special Attack 'j' (Tether - returns mob to spawn point if its distance away from spawn point is greater than its aggro range)
+Caryatis: Added Special Attack 'J' (Leash - same as Tether except heals mob to full, strips all buffs and wipes the hatelist as well)
+Caryatis: Fixed TGB(if you cast a group buff with a corpse or an npc thats not a client's pet as target, it will use your group instead)
+
+==07/26/2011==
+Congdar: redo world container check
+
+==07/24/2011==
+Caryatis: Added support for higher level invis and see invis(eg Ethereal Invisibility & Skylight Sagacity)
+Congdar: update check to world containers
+
+==07/23/2011==
+Congdar: (Criimson)Bot dyes (and tweaks)
+Congdar: (lerxst2112)Bot dyes (and tweaks)
+Bad_Captain: Fixed Bot GetAC() and GetATK() to work with #ShowStats
+
+==07/22/2011==
+Congdar: update check for Lore
+
+==07/17/2011==
+Congdar: (pfyon, Criimson)Various bot tweaks
+Caryatis: Updated My/Showstats window.
+        
+Required SQL: 
+utils/sql/svn/1974_required_bot_spells_update
+
+==07/16/2011==
+Trevius: Exported AssignToInstance(instance_id) to Perl Client.
+
+==07/14/2011==
+Caryatis: Implemented the Extra Skill Damage itembonus(+bash, +kick dmg)
+
+Optional SQL:
+utils/sql/svn/1972_optional_extradmg_item_cap.sql
+
+==07/14/2011==
+Leere: Fix for reading books in SoF and later clients.
+
+==07/13/2011==
+Derision: OP_DisciplineUpdate for SoF and Underfoot (expanded Disc struct in UF player profile, added encode for Disc update).
+
+==07/12/2011==
+Caryatis: Added Perl Object: $mob->SetBodyType(bodytype).
+Caryatis: Fixed issue with swarm(and wake the dead) pets where they would not despawn if they spawned as the target died.
+Caryatis: Changed when mobs enrage to 9%(from 14%) to match live, with a rule to customize the value if wanted.
+Caryatis: Added rule to allow matching of new live rules for enrage(it was removed from all non player-pet npcs).
+
+Optional SQL:
+utils/sql/svn/1968_optional_enrage_rules.sql
+
+==07/11/2011==
+erde: FreeBSD compile fix for Rev1963 (no strncpy in FreeBSD).
+
+==07/10/2011==
+Derision: Underfoot - Support for /emote
+Derision: Underfoot - Support for Guild Creation via new window in Underfoot.
+Derision: SoD+ - Changing group leader should update Group Leadership AA to that of the new leader.
+Caryatis: Live like focus effect behaviour added(Improved Damage, Healing and Reduce Manacost focus effects will now be random if the spell contains both a min(effect_base_value) and max value(effect_limit_value)
+
+Optional SQL:
+
+utils/sql/svn/1962_optional_guild_creation_window_rules.sql
+utils/sql/svn/1963_optional_rule_live_like_focuses.sql
+
+==07/09/2011==
+Derision: Underfoot - Instrument modifiers / AAs should now improve runspeed.
+
+==07/06/2011==
+Trevius: Fix for EVENT_ITEM_CLICK_CAST bugging Titanium clients.
+
+==07/05/2011==
+Trevius: Fix for EVENT_ITEM_CLICK_CAST for SoF+ clients.
+Trevius: (Akkadius) Added new rule Console:SessionTimeOut for adjusting console session timeout.
+
+Optional SQL: utils/sql/svn/1960_optional_console_timeout_rule.sql
+
+==07/02/2011==
+JJ: Split wander type 4 to allow depop with/without spawn timer. Type 4 is with, type 6 is without.
+
+==06/26/2011==
+JJ: Added functions to count all corpses, get corpse ids, and allow checking of items on player corpses
+
+==06/25/2011==
+JJ: (Leere) Fix for bards in reagent code
+
+==06/24/2011==
+KLS: Dest zone would buffer overflow if it was >= 16 characters, fixed.
+KLS: Comment clean up + added EntityList::FindDoor($doorid) to perlXS
+KLS: Fixed the PerlXS export for GetDoorByID and GetDoorByDBID
+Sorvani: Added door object perl functions GetKeyItem(), SetKeyItem([value]), GetNoKeyring(), SetNoKeyring([value]). Example Usage: my$doorobj = $entity_list->FindDoor(6); $doorbj->SetKeyItem(10615); $doorbj->SetNoKeyring(1);
+JJ: (Akkadius) Exported some task functions to perl.
+
+==06/23/2011==
+JJ: (Sorvani) Stop forcing client to tutorial when button not selected.
+
+==06/22/2011==
+Trevius: Added new Perl Mob quest object RemoveNimbusEffect(effectid) for removing permanent nimbus particle effects.
+JJ: EVENT_CLICKDOOR now passes the zone version to perl.
+
+==06/20/2011==
+JJ: Added message to client when using #instance destroy command.
+JJ: Altered doors index to include version to help bring door ids below 256 in zones with multiple versions. Required SQL provided.
+
+Required SQL: utils/sql/svn/1946_doors.sql
+
+==06/19/2011==
+JJ: (Leere) Fixed reagent consumption oddities
+
+==06/18/2011==
+JJ: Depop with spawntimer reset option now works properly. Default use is changed to false.
+KLS: Added some minor stuff
+KLS: Added animation field to spawn2 that will control what the spawned npc will do at their guard point. 0 = eaStanding, etc etc
+KLS: Tweaked books in SoF+ as they weren't displaying right; it may still not be perfect though I haven't tested it with every book in the game. Required SQL Provided.
+
+==06/17/2011==
+KLS: Lowered resolution on QuestTimer process timer to actually allow you to use sub 1 second times.
+KLS: Added quest::settimerMS(timer, duration) to allow timers not in integer second intervals.
+JJ: Moved ENTERZONE event for items to execute before SCALE_CALC.
+
+==06/15/2011==
+Secrets: Modified the pound command #reloadstatic to respawn doors after it despawns them.
+Secrets: Made the default door dest zone be "NONE" for quest::createdoor's constructor
+Secrets: Added potential fix for UCS assertion error under windows after being up for so long.
+
+==06/14/2011==
+Secrets: Opcode to remove all doors.
+Secrets: Perl door support.
+Secrets: Perl objects added for Doors since first PerlDoors commit: SetSize, GetSize, SetIncline, GetIncline, GetOpenType, SetOpenType
+Secrets: Added quest::createdoor(model, x, y, z, h, [opentype], [size]) . This spawns a door similar to quest::creategroundobjectfrommodel, and can be manipulated in the same way as other doors. To save it, get the door object using $entity_list->GetDoorByID(id), as it returns an entity ID (and preliminary DBID/DoorID is stored on the object itself) upon creation of the door. otherwise the door is temporary, and does not save the stored DBID.  $doorobj->CreateDatabaseEntry() saves it and its temporary DBID + DoorID.
+Secrets: Added door object perl functions GetLockpick() and SetLockpick([value]).
+
+==06/10/2011==
+JJ: Added more tables to remove entries from when deleting character.
+
+==06/06/2011==
+Secrets: Adjusted the default value for Character:SkillCapMaxLevel. It now defaults to 75 because PEQ only has skillcaps up to 75, and if the level is higher than 75 it will always return 0, breaking skills. (layer 8 issue fix)
+Secrets: Made stat cap adjustable via rules, Character:StatCap. The client won't be in sync but that's what #mystats is for. 0 = feature disabled, defaults to 0.
+
+==06/05/2011==
+Derision: Fixed /yell
+
+==06/04/2011==
+Secrets: Fixed pet HP resetting if the pet is above 32k when zoning.
+Secrets: Fixed player HP rollover bug (~495k hitpoints, rarely encountered) with AAs by temporarily casting it as a float.
+	 NOTE: the client only displays 10 million hitpoints in titanium. Keep that in mind when designing items. Only issue is displaying them, unlike the rollover bug you won't die and it will show on show/mystats.
+Secrets: Fixed damage on weapons above 255. They only display on SoF+ clients, and Titanium will simply show a cosmetic issue (an incorrect value). You can set an item to any value up to the max for an uint32 and it will work.
+Secrets: Added rules for the low-level damage cap. There is a rule for the pre-10 cap, and one for the pre-20 cap. Defaults to 20 and 40 respectively.
+
+REQUIRED: You will have to recompile sharedmem with this update. Items will fail to load otherwise.
+
+==05/31/2011==
+Trevius: Added EVENT_CLICK_OBJECT to player quest events.  It exports variable $objectid which holds the entity id of the clicked object.
+
+==05/29/2011==
+Secrets: (Akkadius) Added quest::createguild(name, leader) for creating a brand new guild.
+
+==05/28/2011==
+Trevius: Added quest::getguildnamebyid(guild_id) for getting a guild name from the guild ID.
+
+==05/25/2011==
+JJ: Implemented Arcane Tongues research AA. Chance for research success increases for each rank (10, 25, 50).
+JJ: Implemented New Tanaan Crafting Mastery tradeskill AA. Each rank allows an additional tradeskill above 200.
+Note: For servers with players who have tradeskills already above the limit without previously purchasing these AAs will freeze the chance to increase until they purchase the proper amount of NTCM AAs.
+
+==05/24/2011==
+KLS: Changed Mob::NPCSpecialAttacks(atk, perm) to Mob::NPCSpecialAttacks(atk, perm, [reset = 1], [remove = 0]).  
+This should allow one to add and remove flags individually without having to reset everything each time. 
+ex: 
+$npc->NPCSpecialAttacks(RQ, 0); //would enable the npc to rampage and quad.
+$npc->NPCSpecialAttacks(S, 0, 0); //Would enable the NPC to summon as well as rampage and quad by telling it to set S but don't reset the earlier flags.
+
+ex:
+$npc->NPCSpecialAttacks(RQS, 0); //would enable the npc to rampage, quad and summon.
+$npc->NPCSpecialAttacks(S, 0, 0, 1); //Would enable the NPC rampage and quad by telling it to set S but don't reset the earlier flags and also remove the flag being set.
+
+==05/23/2011==
+JJ: (Akkadius) Fixed camera shake usage output.
+
+==05/22/2011==
+KLS and Co: 
+-All liquid should count for skill ups.
+-Finished unified quest interface... this is fairly large and will probably have a few problems here and there; report them to me and ill fix them asap.  
+The goal behind the system is to allow more than one scripting system to work at a time (though with limited interaction due to pre-existing implementation limitation).  
+This was a feature requested by the Dalaya community as they plan to merge back to the eqemu codebase and clients but are stuck with an old parser and thousands of files 
+that can't be realistically rewritten in a short time frame.
+
+==05/20/2011==
+JJ: Doubled buffer for tradeskill search when using experiment mode. Outputs message in error log when matches exceed buffer.
+
+==05/17/2011==
+JJ: Changed tradeskills to distinguish world containers in multiple recipe matches. Split invalid container vs. non-unique recipe error log entries. Allowed server to select first match for duplicate recipe contents.
+
+==05/16/2011==
+JJ: (Zothen) UCS message logic fix.
+JJ: (Zothen) Learning basics clean name fix.
+
+==05/09/2011==
+KLS: (lerxst2112) *nix compile fix.
+KLS: Added #picklock #sensetrap and #disarmtrap for LDoN traps since they still don't work quite right on the newer clients because we don't implement destructable objects yet.
+
+==05/08/2011==
+Congdar: (Timothy_nonax) Add Bot Command ( #bot pull )
+
+==05/03/2011==
+Trevius: (Vaion) Fix for focus effect decay over max level.
+Trevius: (Zothen) Crash fix for UCS.
+Trevius: Rule added for Skill Caps Max Level to resolve issues with servers that have Chars over level 75 after Rev1875.
+
+Optional SQL: utils/sql/svn/1889_optional_skill_cap_rule.sql
+
+==05/02/2011==
+Secrets: Added OP_CameraEffect for Titanium.
+Secrets: Added commands: #reloadallrules, #reloadrulesworld, and #camerashake. These default to 
+Secrets: Added optional "global" flag as item 5 in the $mob->CameraEffect() quest object. This does #camerashake, but in quest form.
+Secrets: #reloadallrules reloads rules in every single zone plus world. #reloadrulesworld reloads the rules in world only.
+Secrets: #camerashake shakes the camera in every zone with required args intensity and duration.
+
+==04/24/2011==
+Trevius: Added new Perl Mob quest objects GetItemHPBonuses() and GetSpellHPBonuses().
+
+==04/17/2011==
+Secrets: Converted PVP flags to be a variable, as there are other PVP rulesets embedded in the client. These will need code support to work properly. (IsAttackAllowed specifically.)
+Secrets: Enabled Firiona Vie ruleset as an option. This disables OOC, makes languages hard to understand between races (somehow), and disables no-drop. If set to 2, this rule will only affect GMs, allowing players to be traded no-drop items from GMs. Player-to-Player trades are still considered active hacks, and are still detected.
+Secrets: Made a rule to toggle the GM Petition Window in titanium. You will need the guide petition files for that client, and it still needs code support to work. (find these yourself.)
+Secrets: Added expansion settings to the rule_values table instead of the variables. The PVP settings will also be here now, too. (See Optional SQL with this update.)
+Secrets: Fixed an issue pointed out by Trevius in the previous commit.
+
+Optional SQL: utils/sql/svn/1885_optional_rules_fv_pvp_expansions.sql
+
+
+==04/13/2011==
+BadCaptain: Bot spell update- Group Heals, debuff spells, spell recast timers, healing AI tweaked, bot bards can now have more than one song active
+Optional SQL: utils/sql/svn/1884_optional_bot_spells_update.sql
+
+==04/12/2011==
+Trevius: The mana regen portion of bard songs is no longer affected by instrument mods.
+Trevius: (scruffy) Identified opcodes for /zone and petition queue on Titanium.
+
+==04/06/2011==
+Derision: Underfoot: Corrected OP_CompletedTasks.
+
+==03/30/2011==
+Trevius: Implemented spell formulas 1001 to 1998.  They subtract/add values by increasing amounts each tick based on the formula - 1000 value.
+
+==03/23/2011==
+JJ: (Danyelle) Face fix for Iksar Beastlord pet.
+
+==03/21/2011==
+JJ: (Jaekob/Danyelle) Texture fix for Iksar Beastlord pet.
+
+==03/11/2011==
+Trevius: Skill caps now use the MaxLevel rule for deciding max level of skill caps instead of being hard capped at level 75.
+Trevius: All spells can be blocked in a zone by setting a spell id of 0 in the blocked_spells table.
+Trevius: If a zone has all spells blocked by setting spell id 0 in blocked_spells, any additional spells added for that zone will become exceptions and be allowed.
+Trevius: Reverted Sorvani's swarm pet change from Rev1872 due to some bugs it caused for normal pets.
+
+==02/24/2011==
+Trevius: Power Source slot can now be augmented.
+Trevius: Corrected spell formula 122 (Splurt) and implemented the reverse splurt (Ex. Corath Venom) where damage reduces each tic.
+
+==02/22/2011==
+gaeorn: (sorvani) fix to make swarm pets not be targetable as NPCs
+
+==02/19/2011==
+Trevius: Added variable export $slotid to EVENT_ITEM_CLICK and EVENT_ITEM_CLICK_CAST, which exports the slot id of the item that triggered the event.
+
+==02/18/2011==
+Trevius: Fixed a potential crash in TrySpellOnKill().
+Derision: Underfoot: Bard instrument modifiers now show (as focus effects) in the item stats window.
+Derision: Allowed fishing in 'VWater' (Region type 7) on the basis this is the only type of water in Sleeper and you can apparently fish there.
+
+==02/17/2011==
+Derision: Fixed bug in GetZoneForage where generally only the first three zone specific items could actually be foraged.
+gaeorn: (sorvani) fix for bard pacify songs
+
+==02/13/2011==
+Trevius: Finalized implementation of Item Faction Mods.  The bonuses now remove if the item is unequiped.
+Trevius: Added Rule Character::ItemCastsUseFocus - If true, this allows item clickies to use focuses that have limited max levels on them
+Derision: Handle Spell duration formula 15 (for Distillate of Skinspikes).
+
+Optional SQL:
+utils/sql/svn/1859_optional_item_casts_use_focus_rule.sql
+
+==02/11/2011==
+Trevius: Implemented item faction modifier stats (i.e. factionmod1, factionamt1).
+Trevius: Added Power Source slot to item stat (charm) scaling.
+Derision: SoD+: Fixed bug when looting items from last two inventory slots (commonly seen when using Loot All).
+gaeorn: only send hp/mana/endurance updates to group members when in raid instead of entire raid
+
+==02/10/2011==
+JJ: (c0ncrete) Fixed shared bank database query to match schema.
+
+==02/08/2011==
+Trevius: Replaced most uses of strncpy with strn0cpy for consistency and stability.
+Trevius: Increased zone name loading to 32 characters for doors.
+
+Required SQL:
+utils/sql/svn/1847_required_doors_dest_zone_size_32.sql
+
+==02/07/2011==
+Derision: SoD/UF: /makeleader and changing Group Leader via Roles works.
+Derision: If the leader of a group of exactly 3 members quits, leadership should now be transferred to another member.
+
+==01/30/2011==
+Caryatis: Stability fixes for Mystats window.
+
+==01/26/2011==
+Derision: Support for door opentype 57 (instant intra-zone portals which don't require the client to click, such as in the bazaar).
+
+Note: For opentype 57, the client automatically sends the click when the player moves onto the portal.
+
+Optional SQL, to set the bazaar portal discs to type 57 (they are type 58 in the PEQ database, but collects show they should be type 57):
+
+update doors set opentype = 57 where zone = 'bazaar' and name = 'PORTAL_DISC';
+
+==01/24/2011==
+Trevius: Exported GetFreeSpellBookSlot(start_slot=0) and GetSpellBookSlotBySpellID(spell_id) to Perl Client.
+Trevius: Fix for potential crash with EVENT_ITEM_CLICK.
+Trevius: (Secrets) Identified OP_SpellEffect for Titanium.
+Congdar: bad_captain: more Bot Updates / Fixes V 2.0
+
+==01/22/2011==
+Congdar: fix stack buffer overflow
+
+==01/20/2011==
+Congdar: bad_captain: Bot Updates / Fixes V 2.0
+
+==01/18/2011==
+Trevius: Changed Perl NPC AddItem(itemid, charges, slot = 0) to AddItem(itemid, charges = 0, equipitem = true) since slot was unused anyway.
+Trevius: Added equipitem option to quest::addloot(item_id, charges = 0, equipitem = true).
+
+==01/16/2011==
+Caryatis: Fix for Phantom line of discs not working.
+Caryatis: Fix for buffdurationformula 5(0 value results in a 3 tick spell, was set to 1 tick).
+Caryatis: Fix for discs(and AAs) setting a reuse timer if used while not able to(ie stunned)
+Caryatis: Implemented SE_VoiceGraft
+Caryatis: Added scaling for pet focus items based on the pet power in the spell file.
+
+==01/15/2011==
+Caryatis: Fix for fear effects not fading when the buff does, also added check so that a negative recast is not set with SE_ReduceReuse
+
+==01/14/2011==
+Trevius: (l0stmancd) Fix for invalid slot move warnings on SoF+ clients.
+Trevius: (l0stmancd) Fix for potential item loss issue while using an inventory augmentation sealer.
+Trevius: Adjustment to the augmentation code logic to remove potential issues.
+Trevius: Added updateclient option to Perl Client TakeMoneyFromPP(copper, updateclient=false).
+Derision: UF: Translated command code for /pet hold
+Caryatis: Implemented SE_ReduceReuseTimer(epic 1.5/2.0 focuses, sof type3), SE_BlockNextSpellFocus(chance to block next spell matching focus)
+Caryatis: Implemented SE_SetBodyType, SE_SpellOnDeath, SE_BlockSpellEffect, SE_Leap, SE_ImmuneFleeing, SE_AddMeleeProc
+Caryatis: Delay Death AA is now functional(optional sql).
+
+Optional SQL:
+utils/sql/svn/1823_optional_delay_death.sql
+
+==01/13/2011==
+JJ: (Leere) Exported quest::LearnRecipe(recipe_id) to PERL
+
+==01/12/2011==
+gaeorn: possible fix for some short duration buffs (bard songs) fading one tick early
+Caryatis: Changed SE_NoCombatSkills to SE_CombatSkills(0 = spells only, 1 = discs only)
+Caryatis: Implemented SE_SpellDurationIncByTic(formerly SE_FocusCombatDurationMod), it adds tics to spells/discs
+Caryatis: Added support for Special Attack 'Y'(Ranged Attack), so when an NPC can't reach or summon his target, he will use range if able to
+Caryatis: Implemented SE_Forceful_Rejuv(refreshes spell gems), SE_HealFromMana, SE_ManaDrainWithDmg, SE_EndDrainWithDmg
+Caryatis: Implemented SE_LimitHPPercent, SE_LimitManaPercent, SE_LimitEndPercent(limit you to a certain % while you have the buff)
+Caryatis: Implemented SE_SwarmPetDuration(swarm pet focus)
+Caryatis: Res Timer changes have been reverted temporarily.
+
+Optional SQL:
+utils/sql/svn/1817_optional_npc_archery_bonus_rule.sql
+
+==01/11/2011==
+gaeorn: fixed lull max level check to account for no max level
+Caryatis: Change to Doppelganger NPCID due to PEQ's next rev already using the IDs.
+Trevius: Added quest::stopalltimers() to allow stopping all current timers on an NPC at one time.
+Trevius: Added option to stop all timers when using #reloadquest by adding any argument after the command (ie. "#reloadquest 1"). Also added new #rq alias for the command.
+
+Required SQL:
+utils/sql/svn/1813_required_doppelganger_npcid_change.sql
+
+==01/09/2011==
+Caryatis: Viral spells are now supported(field191 determines how many targets it will spread to and field 192 determines how often(in seconds)).
+Caryatis: Lull spells will now only work on the levels they were intended to.
+Caryatis: Corpses now have a res timer(like live). You may res a corpse as many times as you want however you will only recieve exp for the first.
+
+Optional SQL:
+utils/sql/svn/1809_optional_rules.sql
+
+==01/08/2011==
+Caryatis: Implemented Target's Target(target type 46). Places effect on your target's target(ie cast with mob as target but spell lands on mob's target)
+
+==01/05/2011==
+Trevius: Changed xpreward field in the tasks table to be signed so it can display negative values for the level based experience rewards.
+Trevius: Tasks now show item links in Task Rewards correctly for all clients.
+Trevius: Tasks now reward any set Experience and/or Coin even if the rewardmethod is set to 2 (perl quest).
+Caryatis: Mobs now summon starting at 97%, not 94%(like live).
+Caryatis: Charmed pets can no longer summon mobs from out of their LoS while charmed.
+Caryatis: All fixed duration charm spells now have fixed duration instead of only 2 that were supported.
+Caryatis: SpinStun effects now work on mobs up to the max level that the spell denotes(previously limited to 55 regardless of spell info)
+Caryatis: SpinStun durations have been changed to be pulled from the effect_value, instead of buff duration(which stopped alot from working), also spins mobs now
+Caryatis: Implemented SE_Fearless(Valiant Companion), SE_AntiGate(Translocational Anchor), SE_DispelBeneficial(various spells and clicks)
+Caryatis: Implemented SE_IncreaseBlockChance, SE_CurrentEnduranceOnce, SE_CurrentManaOnce, SE_AEMelee(duration rampage)
+Caryatis: Persistent Casting AA is now functional(required sql)
+Caryatis: Rampage(-) and Destructive Force(+) have changed, the duration on both has been altered based on the live spell info(required sql)
+Caryatis: Flurry will no longer hit the highest on hatelist, it will hit the mobs current target like live(fixes rooted flurrying mobs).
+Caryatis: Updated spdat.h with current status of all spell effects
+Caryatis: Reorganized spell_effects.cpp to remove alot of the clutter of effects handled elsewhere
+
+Required SQL:
+utils/sql/svn/1803_required_tasks_xpreward_signed.sql
+utils/sql/svn/1804_required_ae_melee_updates.sql
+
+==01/04/2011==
+Trevius: (l0stmancd) BagType 53 can now be used as an Augmentation Sealer from inventory.
+Caryatis: Implemented SE_Doppelganger(Doppelganger AA is now functional)
+
+Required SQL:
+utils/sql/svn/1802_required_doppelganger.sql
+
+==01/03/2011==
+Caryatis: Implemented SE_GravityEffect(424)
+Caryatis: Added rule for endurance to be included in rest regeneration
+
+Optional SQL:
+utils/sql/svn/1799_optional_rest_regen_endurance_rule.sql
+
+==01/01/2011==
+Derision: UF: Tweaked Arrow_Struct and implemented new OPCode for changing player size.
+
+==12/31/2010==
+Derision: UF: Fix for extended duration buffs not reporting correctly after first tic.
+
+==12/30/2010==
+Derision: Added a new table aa_required_level_cost to allow specifying a required level and cost for each rank of an AA.
+Derision: Implemented spell formulas required by AA versions of Harm Touch/Lay on Hands.
+Caryatis: ShowStatWindow was changed to ShowWindow and had some features added
+Caryatis: title_type = 0 for custom titles, 1 for first and last name and 2 for guild titles
+Caryatis: Implemented a limit on how low a weapon speed can be when procs are calculated to reflect the innate swing speed limit
+
+Required SQL:
+
+utils/sql/svn/1790_required_aa_required_level_cost.sql
+
+If there is no entry in this new table for a given rank of an AA, then the level (class_type) and cost_inc
+from altadv_vars will be used as normal.
+
+==12/28/2010==
+Derision: /corpsedrag & /corpsedrop. Optional SQL: utils/sql/svn/1784_optional_corpsedrag_rules.sql
+
+==12/25/2010==
+Derision: Underfoot: Correct OP_SwapSpell
+Derision: SoD/Underfoot: List of traders in /bazaar dropdown now works.
+Derision: Implemented Advanced Tracking AA.
+
+==12/24/2010==
+Trevius: (Orkim) Zone Short Name restriction fixes.
+
+==12/21/2010==
+Derision: HoT: OP_SendFindableNPCs
+gaeorn: bugfix for quest::movegrp to work with raids. no really, its fixed this time
+
+==12/15/2010==
+Trevius: Added an extra check for buffs while zoning to make sure it is a valid spell being applied.
+Derision: Underfoot - Fix for /dismount not dispelling horse and Group Leadership fixes (opcode changes).
+Congdar: fix for bot trading exploits
+
+==12/13/2010==
+gaeorn: fixed underfoot to properly handle new packet struct for LoadSpellSet_Struct
+Derision: Underfoot - UCS should now retain /announce setting properly.
+
+==12/11/2010==
+gaeorn: bugfix for quest::movegrp to work with raids
+Derision: UCS Support for Underfoot and later clients
+Congdar: bot item trading fixes for lore, dual wield, augmenting, inspecting
+
+==12/10/2010==
+gaeorn: fixed quest::movegrp to work with raids
+gaeorn: fixed casting group spells in a raid
+gaeorn: (vanicae) code support for tactical mastery warrior aa
+gaeorn: (vanicae) code support for touch of the divine cleric aa
+gaeorn: (vanicae) item loot messages when in a raid
+gaeorn: (Wolftousen) fixed spawn variance
+
+==12/09/2010==
+Derision: Updated HoT opcodes following patch.
+
+==12/07/2010==
+Trevius: Resolved a potential zone crash with memorizing spells.
+Trevius: Added $item1_charges, and $item1_attuned exports for all 4 turn in slots item1-item4 for EVENT_ITEM.
+Trevius: Fixed GetMinDMG() so it should work now.
+
+==12/03/2010==
+Caryatis: Fix for SpellResistChance effect.
+
+Required SQL:
+utils/sql/svn/1755_required_sql_fear_resist_aas.sql
+
+==12/01/2010==
+Caryatis: Fix for Reflect Spells and Healing Adept AAs
+Caryatis: Showstats has been updated.
+
+Required SQL:
+utils/sql/svn/1754_required_sql_healing_adept_aa_fix.sql
+
+Optional SQL:
+utils/sql/svn/1753_optional_haste_cap_rule.sql
+
+==11/30/2010==
+Trevius: SoF+ - Stacked Potions will no longer show a factor of how many you have remaining in the potion belt.
+Trevius: Increased the max spell ID allowed in the spell book from 20000 to 50000.
+Derision: Underfoot. Corrected PP for LDoN points, Tribute and Leadership AA.  Corrected offset comments/unknown names.
+
+==11/27/2010==
+Derision: Renamed Live patch to Underfoot.
+Derision: Added basic support for current live patch (HoT).
+Caryatis: Reverted Bot changes due to crash issues
+Caryatis: Reverted physical resist changes until we can find a more live-like solution
+Caryatis: Gender Illusions are now functional
+Caryatis: Implemented SE_Twinproc and Reflect spells
+
+Note:
+
+HoT support is limited to being able to enter a zone with spawns and items.
+Combat, spells, moving items around, basically anything other than zoning, spawns, initial inventory load and movement will NOT work.
+Note ZoneUnavailable is not implemented, so let at least one dynamic zone finish booting before attempting to enter.
+This support is mainly to allow people to admire HoT zones, full playable HoT support is not planned at this time.
+
+Optional SQL for zone and zonepoint table (thanks to robregen for the collects):
+
+utils/sql/svn/1747_optional_HoT_zone_and_zonepoints.sql
+
+For spawns etc, go to the PEQ logs repo for data collected by robregen.
+
+Optional SQL: 
+
+utils/sql/svn/1750_optional_sql_reflect_rule.sql
+
+==11/24/2010==
+Trevius: The Rule, NPC:ReturnNonQuestNoDropItems, will now also return items that have been Attuned to a character as well as normal NO DROP items if set to true.
+Trevius: Fixed an issue with tradeskill auto-combines.
+Caryatis: Fix for SpellResistChance, Hit-limited focus effects(eg Gift of Mana) & SpellDamageShield(no longer will trigger on beneficial spells).
+Caryatis: Showstats window will not show mana fields if the class does not use mana(to preserve the already shaky alignment).
+Caryatis: (bad_captain) Removed the level bonus granted to standing mana regen, it was not like live and diminished the need to sit or use a horse considerably.
+Caryatis: (bad_captain) Bots have been updated, see forums for complete details(new command: #bot showstats).
+Caryatis: (Secrets) Haste values can exceed 127%(ie Can o' Whoop Ass).
+
+Optional SQL: 
+utils/sql/svn/1746_optional_sql_bot_manaregen
+
+==11/22/2010==
+JJ: Updated waypoint handling to properly account for aggro and quest engagements. NPCs will no longer skip waypoints when distracted from their grid path when resuming wandering.
+
+==11/21/2010==
+Caryatis: Implemented SE_SkillDamageAmount & SE_Amnesia(silence vs disciplines), SE_CripplingBlow
+Caryatis: Updated Silence so that is no longer prevents the use of disciplines(like live)
+
+==11/20/2010==
+Caryatis: Fix for discs being resisted too much, beneficial spells and resurrection effects will no longer be resistable.
+Caryatis: Fix for CriticalHitChance being calculated incorrectly, leading to massively increased crit rates.
+Caryatis: Fix for Healrate effect
+Caryatis: Implemented ManaAbsorbPercentDamage, ReduceSkillTimer, HpToMana and LimitSpellGroup effects.
+Caryatis: Updated DamageModifier effect to be more robust.
+
+Required SQL: 
+utils/sql/svn/1737_required_sql_rule_and_aa_update
+
+Optional SQL: 
+utils/sql/svn/1736_optional_sql_feral_swipe
+
+==11/14/2010==
+Derision: Underfoot: Buff removal should now work correctly.
+Derision: Underfoot: Fixed Pet Buff window.
+Trevius: Fixed quest::setnextinchpevent().
+Trevius: Added Player EVENT_GROUP_CHANGE that exports variables $grouped and $raided when changes in group or raid status are made
+Trevius: Added Perl Client MarkCompassLoc(x, y, z) and ClearCompassMark().
+Trevius: Minor rewrite to EVENT_HP again to use less variables.
+
+==11/13/2010==
+Derision: Corrected OP_Track for Underfoot/June 8 2010 Client.
+Derision: Corrected FindPersonRequest_Struct for Underfoot/June 8 2010 Client.
+Derision: Buying AAs seems to work better now for Underfoot/June 8 2010 Client.
+Derision: Most Pet commands should now work for Underfoot/June 8 2010 Client.
+Caryatis: Corruption resist is now fully functional
+Caryatis: Showstats has been updated.
+Caryatis: Implemented SpellOnKill and CriticalDamageMob effects.
+Caryatis: Fix for CriticalSpellChance
+
+Required SQL:
+utils/sql/svn/1723_required_sql_corruption.sql
+
+Optional SQL:
+utils/sql/svn/1723_optional_sql_new_stats_window_rule.sql
+
+==11/12/2010
+Caryatis: Implemented CriticalSpellChance, SpellCritChance, SpellcritDmgIncrease, CriticalHealChance, CriticalHealOverTime, CriticalDoTChance, SpellResistChance.
+Caryatis: Migrated some AAs to the bonus system
+Caryatis: Fading Memories is fixed(uses mana, cant use without mana, makes you invis and can use while singing.)
+Caryatis: Support for new types of AAs: Expendable, Quest, Racial/Bloodlines.
+Caryatis: New client object: IncrementAA(skill_id) and GetAALevel(skill_id)
+
+Required SQL:
+utils/sql/svn/1720_required_sql_AA_effects_update.sql
+
+Optional SQL:
+utils/sql/svn/1720_optional_sql_AAs.sql
+
+==11/10/2010==
+Caryatis: Added support for HealAmt, SpellDmg, Clairvoyance, DS Mitigation, SE_SpellDamageShield, SE_SpellDamage
+Caryatis: Heroics fully supported now(points in brackets are how many Heroics to achieve a gain)
+Caryatis: hInt = For int-based casters, increases mana pool, mana regen(25), and the maximum amount of mana regen a character can have(25).
+Caryatis: hWis = For wis-based casters, increases mana pool, mana regen(25), and the maximum amount of mana regen a character can have(25).
+Caryatis: hStr = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases damage done by melee attacks(10) and improves the bonus granted to armor class while using a shield(2).
+Caryatis: hSta = Increases hit point pool, hit point regen(25), and the maximum amount of hit point regen a character can have(25). Also increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25).
+Caryatis: hAgi = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases the chance to dodge an attack(25), grants a bonus to defense skill(10).
+Caryatis: hDex = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases damage done by ranged attacks(1), improves chance to successfully assassinate or headshot(10), and improves the chance to riposte, block, and parry incoming attacks(25).
+Caryatis: hCha = Improves reaction rolls with some NPCs(25) and increases the amount of faction you gain or lose when faction is adjusted(5). 
+Caryatis: AA Focus revamped to support new effects
+Caryatis: Disciplines will no longer be dispelled
+
+Optional SQL:
+utils/sql/svn/1719_optional_triggerOnCastAAs.sql
+
+==11/09/2010==
+Caryatis: Implemented MaxHPChange, SkillDmgTaken, Endurance Pool and Stun Resist.
+
+Optional SQL: 
+utils/sql/svn/1717_optional_rule_bash_stun_chance.sql
+
+==11/07/2010==
+Congdar: Fixed OP_InterruptCast for newer clients(SoF, SoD, Live). You'll now see Npc's and other players cast interrupted message properly.
+
+==11/06/2010==
+Trevius: Fixed an issue with EVENT_HP that was sending $hpevent with a value of -1 in certain cases.
+
+==11/04/2010==
+Trevius: Added new Perl Client GetAAExp() quest object.
+Trevius: Corrected the level based Experience quest command and task reward functionality to not affect AA Experience.
+
+==10/30/2010==
+KLS: Added NPC::AddAISpell() and NPC::RemoveAISpell() to perl NPC object.
+KLS: Added field to limit AAs based on account creation time.
+KLS: Implemented fade on meditate field for spells like the higher yaulp spells (it will fade just before a regen tic).
+JJ: Cleaned up Win32 build locations, moved eqlaunch into build folder, and set project dependencies to guarantee build order in Windows.
+
+==10/16/2010==
+Trevius: Added optional slot_id field to Client SummonItem(item_id, charges, attune, aug1, aug2, aug3, aug4, aug5, slot_id) - Default is slot 30 (cursor).
+
+==10/16/2010==
+Trevius: Added Perl Item IsAttuned() and GetCharges() quest commands.
+Trevius: Added Attune and Aug fields to Client SummonItem(item_id, charges, attune, aug1, aug2, aug3, aug4, aug5)
+
+==10/15/2010==
+Trevius: NPCs can now load a default.pl file from the /quests/zone_short_name/ of the zone they are in.
+
+==10/14/2010==
+Trevius: Added Race 502 Boats to be a controllable boat race.
+
+==10/10/2010==
+Trevius: Added Perl Client AddLevelBasedExp(exp_percentage, max_level=0) command to add experience as a percentage of the client's current level up to the max level entered.
+Trevius: Level based experience percentage rewards for tasks can now be set using a negative value of the max level * 100 + experience percent (IE. -510 for 10% exp up to level 5).
+
+==10/09/2010==
+Trevius: Object model names can now use up to 32 characters.
+Trevius: Zone short names can now use up to 32 characters.
+Trevius: Added extra checks before AIYellForHelp call is made to prevent potential issues.
+Secrets: Added Perl Client GetIP() and NPC GetMinDMG() commands.
+KLS: Adjust procs: only check once per round now instead of once per hit, this will result in lower proc rates especially for dual wielding classes but this is how it should behave. Adjust your proc per minute rule up if you desire higher proc rates under this change.
+KLS: Directional Cone Spells; still needs a little work as it isn't 100% accurate but it works enough that there's no point in me sitting on it.
+
+Required SQL:
+utils/sql/svn/1696_modify_zone_and_object_tables.sql
+
 ==10/03/2010==
 Derision: Fixed bug in SoD+ tracking.
 JJ: Removed redundant namespace usage.

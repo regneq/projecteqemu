@@ -11,12 +11,12 @@ SF= ../common/timer.o ../common/packet_dump.o ../common/races.o ../common/unix.o
    ../common/EQEmuConfig.o WorldConfig.o ../common/XMLParser.o ../common/tinyxml/tinystr.o \
    ../common/tinyxml/tinyxml.o ../common/tinyxml/tinyxmlerror.o ../common/tinyxml/tinyxmlparser.o \
    ../common/BasePacket.o ../common/shareddb.o worlddb.o EQW.o HTTPRequest.o \
-   EQWHTTPHandler.o EQWParser.o perl_EQW.o perl_HTTPRequest.o clientlist.o \
+   EQWHTTPHandler.o EQWParser.o perl_EQW.o perl_HTTPRequest.o clientlist.o ucs.o\
    zonelist.o cliententry.o LauncherList.o LauncherLink.o lfplist.o Adventure.o AdventureManager.o \
    ../common/EQStreamIdent.o ../common/StructStrategy.o LoginServerList.o \
    ../common/EQStreamProxy.o ../common/patches/patches.o \
-   ../common/patches/Client62.o ../common/patches/Titanium.o ../common/patches/Live.o \
-   ../common/patches/Anniversary.o ../common/patches/SoF.o ../common/patches/SoD.o \
+   ../common/patches/Client62.o ../common/patches/Titanium.o ../common/patches/Anniversary.o ../common/patches/SoF.o \
+   ../common/patches/SoD.o ../common/patches/Underfoot.o ../common/patches/HoT.o ../common/patches/VoA.o \
    ../common/EQDB.o ../common/perl_EQDB.o EQLConfig.o perl_EQLConfig.o \
    ../common/EQDBRes.o ../common/perl_EQDBRes.o ../common/EmuTCPServer.o \
    ../common/TCPServer.o ../common/EmuTCPConnection.o \
@@ -25,7 +25,7 @@ SF= ../common/timer.o ../common/packet_dump.o ../common/races.o ../common/unix.o
    ../common/SocketLib/HttpdForm.o ../common/SocketLib/HttpdSocket.o \
    ../common/SocketLib/MemFile.o ../common/SocketLib/Mime.o \
    ../common/SocketLib/Parse.o ../common/SocketLib/Utility.o \
-   ../common/guild_base.o wguild_mgr.o .obj/rulesys.o
+   ../common/guild_base.o wguild_mgr.o .obj/rulesys.o queryserv.o
 
 all: $(APP)
 
@@ -33,7 +33,7 @@ $(APP): $(SF)
 	$(LINKER) $(LINKOUT)$@ $^ $(LINKOPTS) 
 
 clean:
-	rm -f $(SF) $(APP)
+	rm -f .depend $(SF) $(APP)
 
 %.o: %.cpp
 	$(CC) $(NOLINK) $(COPTS) $< $(OUT)$@

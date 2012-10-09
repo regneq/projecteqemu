@@ -38,13 +38,16 @@ using namespace std;
 #include "../common/files.h"
 #include "../common/opcodemgr.h"
 #include "../common/rulesys.h"
+#include "../common/ruletypes.h"
 #include "WorldConfig.h"
 #include "zoneserver.h"
 #include "zonelist.h"
 #include "clientlist.h"
 #include "LauncherList.h"
+#include "ucs.h"
+#include "queryserv.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -58,13 +61,15 @@ extern uint32	numzones;
 extern LoginServerList loginserverlist;
 extern ClientList client_list;
 extern LauncherList launcher_list;
+extern UCSConnection UCSLink;
+extern QueryServConnection QSLink;
 extern volatile bool	RunLoops;
 
 ConsoleList console_list;
 
 Console::Console(EmuTCPConnection* itcpc)
 : WorldTCPConnection(),
-  timeout_timer(CONSOLE_TIMEOUT),
+  timeout_timer(RuleI(Console, SessionTimeOut)),
   prompt_timer(1000)
 {
 	tcpc = itcpc;
@@ -211,6 +216,7 @@ void Console::SendMessage(int8 newline, const char* message, ...) {
 bool Console::Process() {
 	if (state == CONSOLE_STATE_CLOSED)
 		return false;
+
 	if (!tcpc->Connected()) {
 		struct in_addr  in;
 		in.s_addr = GetIP();
@@ -245,6 +251,17 @@ bool Console::Process() {
 		} else if(tcpc->GetPacketMode() == EmuTCPConnection::packetModeLauncher) {
 			_log(WORLD__CONSOLE,"New launcher from %s:%d", inet_ntoa(in), GetPort());
 			launcher_list.Add(tcpc);
+			tcpc = 0;
+		} else if(tcpc->GetPacketMode() == EmuTCPConnection::packetModeUCS)
+		{
+			_log(WORLD__CONSOLE,"New UCS Connection from %s:%d", inet_ntoa(in), GetPort());
+			UCSLink.SetConnection(tcpc);
+			tcpc = 0;
+		}
+			else if(tcpc->GetPacketMode() == EmuTCPConnection::packetModeQueryServ)
+		{
+			_log(WORLD__CONSOLE,"New QS Connection from %s:%d", inet_ntoa(in), GetPort());
+			QSLink.SetConnection(tcpc);
 			tcpc = 0;
 		} else {
 			_log(WORLD__CONSOLE,"Unsupported packet mode from %s:%d", inet_ntoa(in), GetPort());
@@ -727,7 +744,7 @@ void Console::ProcessCommand(const char* command) {
 			}
 			else if (strcasecmp(sep.arg[0], "serverinfo") == 0 && admin >= 200) {
 				if (strcasecmp(sep.arg[1], "os") == 0)	{
-				#ifdef WIN32
+				#ifdef _WINDOWS
 					GetOS();
 					char intbuffer [sizeof(unsigned long)];
 					SendMessage(1, "Operating system information.");
@@ -751,7 +768,7 @@ void Console::ProcessCommand(const char* command) {
 				client_list.SendCLEList(admin, 0, this, sep.argplus[1]);
 			}
 			else if (strcasecmp(sep.arg[0], "LSReconnect") == 0 && admin >= 100) {
-				#ifdef WIN32
+				#ifdef _WINDOWS
 					_beginthread(AutoInitLoginServer, 0, NULL);
 				#else
 					pthread_t thread;

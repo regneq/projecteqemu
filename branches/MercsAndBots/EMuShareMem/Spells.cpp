@@ -1,5 +1,5 @@
 #include "../common/debug.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"
@@ -17,7 +17,7 @@ MMF SpellsMMF;
 const MMFSpells_Struct* MMFSpellsData = 0;
 MMFSpells_Struct* MMFSpellsData_Writable = 0;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 extern "C" __declspec(dllexport) bool DLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, sint32* oSPDAT_RECORDS, int32 iSPDat_Struct_Size) {
 	return pDLLLoadSPDat(cbFileLoadSPDat, oSpellsPointer, oSPDAT_RECORDS, iSPDat_Struct_Size);
 };

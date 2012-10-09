@@ -28,6 +28,7 @@
 #include "../common/ZoneNumbers.h"
 #include "../common/moremath.h"
 #include "../common/guilds.h"
+#include "../common/MiscFunctions.h"
 #include "guild_mgr.h"
 #include "StringIDs.h"
 #include "NpcAI.h"
@@ -51,7 +52,7 @@ void Client::SendGuildMOTD(bool GetGuildMOTDReply) {
 
 	GuildMOTD_Struct *motd = (GuildMOTD_Struct *) outapp->pBuffer;
 	motd->unknown0 = 0;
-	strncpy(motd->name, m_pp.name, 64);
+	strn0cpy(motd->name, m_pp.name, 64);
 	
 	if(IsInAGuild()) {
 		if(!guild_mgr.GetGuildMOTD(GuildID(), motd->motd, motd->setby_name)) {

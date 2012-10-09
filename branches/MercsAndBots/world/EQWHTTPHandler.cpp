@@ -192,6 +192,7 @@ void EQWHTTPHandler::SendPage(const std::string &file) {
 			SendBuf(buffer, len);
 	}
 	delete[] buffer;
+    fclose(f);
 #ifdef EMBPERL
 	if(process) {
 		//convert the base form into a useful perl exportable form
@@ -311,7 +312,7 @@ bool EQWHTTPServer::Start(uint16 port, const char *mime_file) {
 	
 	/*
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 	_beginthread(ThreadProc, 0, this);
 #else
 	pthread_create(&m_thread, NULL, ThreadProc, this);

@@ -4,6 +4,7 @@
 #include "../common/EMuShareMem.h"
 #include "../common/classes.h"
 #include "../common/rulesys.h"
+#include "../common/seperator.h"
 #include "MiscFunctions.h"
 #include "eq_packet_structs.h"
 #include "guilds.h"
@@ -193,7 +194,7 @@ bool SharedDatabase::VerifyInventory(uint32 account_id, sint16 slot_id, const It
 		if(inst->GetCharges() >= 0)
 			expect_charges = inst->GetCharges();
 		else
-			expect_charges = 255;
+			expect_charges = 0x7FFF;
 		
 		if(id == inst->GetItem()->ID && charges == expect_charges)
 			found = true;
@@ -233,8 +234,8 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if (ret && Inventory::SupportsContainers(slot_id)) {
 				safe_delete_array(query);
 				sint16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
-				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM sharedbank WHERE charid=%i AND slotid>=%i AND slotid<%i",
-					char_id, base_slot_id, (base_slot_id+10)), errbuf);
+				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM sharedbank WHERE acctid=%i AND slotid>=%i AND slotid<%i",
+					account_id, base_slot_id, (base_slot_id+10)), errbuf);
 			}
 			
 			// @merth: need to delete augments here
@@ -246,15 +247,16 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if(inst->GetCharges() >= 0)
 				charges = inst->GetCharges();
 			else
-				charges = 255;
+				charges = 0x7FFF;
 
 			uint32 len_query =  MakeAnyLenString(&query, 
 				"REPLACE INTO sharedbank "
-				"	(acctid,slotid,itemid,charges,"
+				"	(acctid,slotid,itemid,charges,custom_data,"
 				"	augslot1,augslot2,augslot3,augslot4,augslot5)"
-				" VALUES(%lu,%lu,%lu,%lu,"
+				" VALUES(%lu,%lu,%lu,%lu,'%s',"
 				"	%lu,%lu,%lu,%lu,%lu)",
-				(unsigned long)account_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges ,
+				(unsigned long)account_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges,
+                inst->GetCustomDataString().c_str(),
 				(unsigned long)augslot[0],(unsigned long)augslot[1],(unsigned long)augslot[2],(unsigned long)augslot[3],(unsigned long)augslot[4]);
 
 			
@@ -282,15 +284,16 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if(inst->GetCharges() >= 0)
 				charges = inst->GetCharges();
 			else
-				charges = 255;
+				charges = 0x7FFF;
 			// Update/Insert item
 			uint32 len_query = MakeAnyLenString(&query, 
 				"REPLACE INTO inventory "
-				"	(charid,slotid,itemid,charges,instnodrop,color,"
+				"	(charid,slotid,itemid,charges,instnodrop,custom_data,color,"
 				"	augslot1,augslot2,augslot3,augslot4,augslot5)"
-				" VALUES(%lu,%lu,%lu,%lu,%lu,%lu,"
+				" VALUES(%lu,%lu,%lu,%lu,%lu,'%s',%lu,"
 				"	%lu,%lu,%lu,%lu,%lu)",
-				(unsigned long)char_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges, (unsigned long)(inst->IsInstNoDrop() ? 1:0),(unsigned long)inst->GetColor(),
+				(unsigned long)char_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges, 
+                (unsigned long)(inst->IsInstNoDrop() ? 1:0),inst->GetCustomDataString().c_str(),(unsigned long)inst->GetColor(),
 				(unsigned long)augslot[0],(unsigned long)augslot[1],(unsigned long)augslot[2],(unsigned long)augslot[3],(unsigned long)augslot[4] );
 			
 			ret = RunQuery(query, len_query, errbuf);
@@ -418,13 +421,13 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 	
 	if (is_charid) {
 		len_query = MakeAnyLenString(&query,
-			"SELECT sb.slotid,sb.itemid,sb.charges,sb.augslot1,sb.augslot2,sb.augslot3,sb.augslot4,sb.augslot5 from sharedbank sb "
+			"SELECT sb.slotid,sb.itemid,sb.charges,sb.augslot1,sb.augslot2,sb.augslot3,sb.augslot4,sb.augslot5,sb.custom_data from sharedbank sb "
 			"INNER JOIN character_ ch ON ch.account_id=sb.acctid "
 			"WHERE ch.id=%i", id);
 	}
 	else {
 		len_query = MakeAnyLenString(&query,
-			"SELECT slotid,itemid,charges,augslot1,augslot2,augslot3,augslot4,augslot5 from sharedbank WHERE acctid=%i", id);
+			"SELECT slotid,itemid,charges,augslot1,augslot2,augslot3,augslot4,augslot5,custom_data from sharedbank WHERE acctid=%i", id);
 	}
 	
 	if (RunQuery(query, len_query, errbuf, &result)) {
@@ -451,7 +454,33 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 						}
 					}
 				}
-				put_slot_id = inv->PutItem(slot_id, *inst);
+                if(row[8]) {
+                    std::string data_str(row[8]);
+                    std::string id;
+                    std::string value;
+                    bool use_id = true;
+
+                    for(int i = 0; i < data_str.length(); ++i) {
+                        if(data_str[i] == '^') {
+                            if(!use_id) {
+                                inst->SetCustomData(id, value);
+                                id.clear();
+                                value.clear();
+                            }
+                            use_id = !use_id;
+                        }
+                        else {
+                            char v = data_str[i];
+                            if(use_id) {
+                                id.push_back(v);
+                            } else {
+                                value.push_back(v);
+                            }
+                        }
+                    }
+                }
+                
+                put_slot_id = inv->PutItem(slot_id, *inst);
 				safe_delete(inst);
 				
 				// Save ptr to item in inventory
@@ -493,7 +522,8 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 	bool ret = false;
 	
 	// Retrieve character inventory
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,instnodrop FROM inventory WHERE charid=%i ORDER BY slotid", char_id), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,"
+        "instnodrop,custom_data FROM inventory WHERE charid=%i ORDER BY slotid", char_id), errbuf, &result)) {
 
 		while ((row = mysql_fetch_row(result))) {	
 			sint16 slot_id	= atoi(row[0]);
@@ -515,11 +545,37 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 				
 				ItemInst* inst = CreateBaseItem(item, charges);
 				
+                if(row[10]) {
+                    std::string data_str(row[10]);
+                    std::string id;
+                    std::string value;
+                    bool use_id = true;
+
+                    for(int i = 0; i < data_str.length(); ++i) {
+                        if(data_str[i] == '^') {
+                            if(!use_id) {
+                                inst->SetCustomData(id, value);
+                                id.clear();
+                                value.clear();
+                            }
+                            use_id = !use_id;
+                        }
+                        else {
+                            char v = data_str[i];
+                            if(use_id) {
+                                id.push_back(v);
+                            } else {
+                                value.push_back(v);
+                            }
+                        }
+                    }
+                }
+
 				if (instnodrop || (slot_id >= 0 && slot_id <= 21 && inst->GetItem()->Attuneable))
 						inst->SetInstNoDrop(true);
 				if (color > 0)
 					inst->SetColor(color);
-				if(charges==255)
+				if(charges==0x7FFF)
 					inst->SetCharges(-1);
 				else
 					inst->SetCharges(charges);
@@ -575,7 +631,9 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 	bool ret = false;
 	
 	// Retrieve character inventory
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,instnodrop FROM inventory INNER JOIN character_ ch ON ch.id=charid WHERE ch.name='%s' AND ch.account_id=%i ORDER BY slotid", name, account_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT slotid,itemid,charges,color,augslot1,augslot2,augslot3,augslot4,augslot5,"
+        "instnodrop,custom_data FROM inventory INNER JOIN character_ ch ON ch.id=charid WHERE ch.name='%s' AND ch.account_id=%i ORDER BY slotid", 
+        name, account_id), errbuf, &result))
 	{
 		while ((row = mysql_fetch_row(result))) {
 			sint16 slot_id	= atoi(row[0]);
@@ -596,6 +654,32 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 
 			ItemInst* inst = CreateBaseItem(item, charges);			
 			inst->SetInstNoDrop(instnodrop);
+
+            if(row[10]) {
+                std::string data_str(row[10]);
+                std::string id;
+                std::string value;
+                bool use_id = true;
+    
+                for(int i = 0; i < data_str.length(); ++i) {
+                    if(data_str[i] == '^') {
+                        if(!use_id) {
+                            inst->SetCustomData(id, value);
+                            id.clear();
+                            value.clear();
+                        }
+                        use_id = !use_id;
+                    }
+                    else {
+                        char v = data_str[i];
+                        if(use_id) {
+                            id.push_back(v);
+                        } else {
+                            value.push_back(v);
+                        }
+                    }
+                }
+            }
 
 			if (color > 0)
 				inst->SetColor(color);
@@ -829,7 +913,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.ElemDmgType = (uint8)atoi(row[ItemField::elemdmgtype]);
 			item.ElemDmgAmt = (uint8)atoi(row[ItemField::elemdmgamt]);
 			item.Range = (uint8)atoi(row[ItemField::range]);
-			item.Damage = (uint8)atoi(row[ItemField::damage]);
+			item.Damage = (uint32)atoi(row[ItemField::damage]);
 			item.Color = (uint32)atoul(row[ItemField::color]);
 			item.Classes = (uint32)atoul(row[ItemField::classes]);
 			item.Races = (uint32)atoul(row[ItemField::races]);
@@ -916,7 +1000,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.PointType = (uint32)atoul(row[ItemField::pointtype]);
 			item.PotionBelt = (atoi(row[ItemField::potionbelt])==0) ? false : true;
 			item.PotionBeltSlots = (atoi(row[ItemField::potionbeltslots])==0) ? false : true;
-			item.StackSize = (uint8)atoi(row[ItemField::stacksize]);
+			item.StackSize = (uint16)atoi(row[ItemField::stacksize]);
             item.NoTransfer = disableNoTransfer ? false : (atoi(row[ItemField::notransfer])==0) ? false : true;
 			item.Stackable = (atoi(row[ItemField::stackable])==0) ? false : true;
 			//item.Unk134 = (uint32)atoul(row[ItemField::UNK134]);
@@ -941,6 +1025,10 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Scroll.Type = (uint8)atoul(row[ItemField::scrolltype]);
 			item.Scroll.Level = (uint8)atoul(row[ItemField::scrolllevel]);
 			item.Scroll.Level2 = (uint8)atoul(row[ItemField::scrolllevel2]);
+			item.Bard.Effect = (uint16)atoul(row[ItemField::bardeffect]);
+			item.Bard.Type = (uint8)atoul(row[ItemField::bardtype]);
+			item.Bard.Level = (uint8)atoul(row[ItemField::bardlevel]);
+			item.Bard.Level2 = (uint8)atoul(row[ItemField::bardlevel2]);
 			item.QuestItemFlag = (atoi(row[ItemField::questitemflag])==0) ? false : true;
 			item.SVCorruption = (sint32)atoi(row[ItemField::svcorruption]);
 			item.Purity = (uint32)atoul(row[ItemField::purity]);
@@ -1107,7 +1195,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 				safe_delete_array(query);
 				return false;
 			}
-			if (RunQuery(query, MakeAnyLenString(&query, "SELECT npc_faction_id, faction_id, value, npc_value FROM npc_faction_entries order by npc_faction_id"), errbuf, &result)) {
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT npc_faction_id, faction_id, value, npc_value, temp FROM npc_faction_entries order by npc_faction_id"), errbuf, &result)) {
 				safe_delete_array(query);
 				sint8 i = 0;
 				int32 curflid = 0;
@@ -1115,15 +1203,17 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 				uint32 tmpfactionid[MAX_NPC_FACTIONS];
 				sint32 tmpfactionvalue[MAX_NPC_FACTIONS];
 				sint8 tmpfactionnpcvalue[MAX_NPC_FACTIONS];
+				int8 tmpfactiontemp[MAX_NPC_FACTIONS];
 
 				memset(tmpfactionid, 0, sizeof(tmpfactionid));
 				memset(tmpfactionvalue, 0, sizeof(tmpfactionvalue));
 				memset(tmpfactionnpcvalue, 0, sizeof(tmpfactionnpcvalue));
+				memset(tmpfactiontemp, 0, sizeof(tmpfactiontemp));
 				
 				while((row = mysql_fetch_row(result))) {
 					tmpflid = atoi(row[0]);
 					if (curflid != tmpflid && curflid != 0) {
-						if (!EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue)) {
+						if (!EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue, tmpfactiontemp)) {
 							mysql_free_result(result);
 							cout << "Error: SharedDatabase::DBLoadNPCFactionLists: !EMuShareMemDLL.NPCFactionList.cbSetFaction" << endl;
 							return false;
@@ -1131,12 +1221,14 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 						memset(tmpfactionid, 0, sizeof(tmpfactionid));
 						memset(tmpfactionvalue, 0, sizeof(tmpfactionvalue));
 						memset(tmpfactionnpcvalue, 0, sizeof(tmpfactionnpcvalue));
+						memset(tmpfactiontemp, 0, sizeof(tmpfactiontemp));
 						i = 0;
 					}
 					curflid = tmpflid;
 					tmpfactionid[i] = atoi(row[1]);
 					tmpfactionvalue[i] = atoi(row[2]);
 					tmpfactionnpcvalue[i] = atoi(row[3]);
+					tmpfactiontemp[i] = atoi(row[4]);
 					i++;
 					if (i >= MAX_NPC_FACTIONS) {
 						cerr << "Error in DBLoadNPCFactionLists: More than MAX_NPC_FACTIONS factions returned, flid=" << tmpflid << endl;
@@ -1145,7 +1237,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 					Sleep(0);
 				}
 				if (tmpflid) {
-					EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue);
+					EMuShareMemDLL.NPCFactionList.cbSetFaction(curflid, tmpfactionid, tmpfactionvalue, tmpfactionnpcvalue, tmpfactiontemp);
 				}
 
 				mysql_free_result(result);
@@ -1226,14 +1318,14 @@ bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfil
 	return ret;
 }
 
-bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance) {
+bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets) {
 	_CP(Database_SetPlayerProfile);
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	int32 affected_rows = 0;
 	bool ret = false;
     
-	if (RunQuery(query, SetPlayerProfile_MQ(&query, account_id, charid, pp, inv, ext, current_zone, current_instance), errbuf, 0, &affected_rows)) {
+	if (RunQuery(query, SetPlayerProfile_MQ(&query, account_id, charid, pp, inv, ext, current_zone, current_instance, MaxXTargets), errbuf, 0, &affected_rows)) {
 		ret = (affected_rows != 0);
 	}
 	
@@ -1246,8 +1338,8 @@ bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerPr
 }
 
 // Generate SQL for updating player profile
-int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance) {
-    *query = new char[376 + sizeof(PlayerProfile_Struct)*2 + sizeof(ExtendedProfile_Struct)*2 + 4];
+int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets) {
+    *query = new char[396 + sizeof(PlayerProfile_Struct)*2 + sizeof(ExtendedProfile_Struct)*2 + 4];
 	char* end = *query;
 	if (!current_zone)
 		current_zone = pp->zone_id;
@@ -1262,7 +1354,7 @@ int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint3
 	end += DoEscapeString(end, (char*)pp, sizeof(PlayerProfile_Struct));
 	end += sprintf(end,"\', extprofile=\'");
 	end += DoEscapeString(end, (char*)ext, sizeof(ExtendedProfile_Struct));
-    end += sprintf(end,"\',class=%d,level=%d WHERE id=%u", pp->class_, pp->level, charid);
+    end += sprintf(end,"\',class=%d,level=%d,xtargets=%u WHERE id=%u", pp->class_, pp->level, MaxXTargets, charid);
 	
 	return (int32) (end - (*query));
 }
@@ -1423,17 +1515,6 @@ bool SharedDatabase::GetCommandSettings(map<string,uint8> &commands) {
 	return false;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 bool SharedDatabase::extDBLoadSkillCaps() {
 	return s_usedb->DBLoadSkillCaps();
 }
@@ -1489,8 +1570,12 @@ bool SharedDatabase::DBLoadSkillCaps() {
 uint16 SharedDatabase::GetSkillCap(int8 Class_, SkillType Skill, int8 Level) {
 	if(Class_ == 0)
 		return(0);
-	if(Level > SKILL_MAX_LEVEL){
-		return EMuShareMemDLL.SkillCaps.GetSkillCap(Class_-1, Skill, SKILL_MAX_LEVEL);
+	int SkillMaxLevel = RuleI(Character, SkillCapMaxLevel);
+	if (SkillMaxLevel < 1) {
+		SkillMaxLevel = RuleI(Character, MaxLevel);
+	}
+	if(Level > SkillMaxLevel){
+		return EMuShareMemDLL.SkillCaps.GetSkillCap(Class_-1, Skill, SkillMaxLevel);
 	}
 	else{
 		return EMuShareMemDLL.SkillCaps.GetSkillCap(Class_-1, Skill, Level);
@@ -1502,8 +1587,12 @@ uint8 SharedDatabase::GetTrainLevel(int8 Class_, SkillType Skill, int8 Level) {
 		return(0);
 
 	uint8 ret = 0;
-	if(Level > SKILL_MAX_LEVEL){
-		ret = EMuShareMemDLL.SkillCaps.GetTrainLevel(Class_-1, Skill, SKILL_MAX_LEVEL);
+	int SkillMaxLevel = RuleI(Character, SkillCapMaxLevel);
+	if (SkillMaxLevel < 1) {
+		SkillMaxLevel = RuleI(Character, MaxLevel);
+	}
+	if(Level > SkillMaxLevel) {
+		ret = EMuShareMemDLL.SkillCaps.GetTrainLevel(Class_-1, Skill, SkillMaxLevel);
 	}
 	else
 	{

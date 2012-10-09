@@ -172,7 +172,6 @@ int GetArgs(char * string)
 #endif // 0
 }
 
-Parser* parse = 0;
 Client* gClient = 0;
 
 int32 Line_Number = 0;

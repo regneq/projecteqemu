@@ -33,7 +33,7 @@ using namespace std;
 	#define MSG_NOSIGNAL 0
 #endif
 
-#ifdef WIN32
+#ifdef _WINDOWS
 InitWinsock winsock;
 #endif
 
@@ -135,7 +135,7 @@ bool TCPConnection::GetSockName(char *host, uint16 *port)
 
 	struct sockaddr_in local;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	int addrlen;
 #else
 #ifdef FREEBSD
@@ -145,7 +145,7 @@ bool TCPConnection::GetSockName(char *host, uint16 *port)
 #endif
 #endif
 	addrlen=sizeof(struct sockaddr_in);
-#ifdef WIN32
+#ifdef _WINDOWS
 	if (!getsockname(connection_socket,(struct sockaddr *)&local,&addrlen)) {
 #else
 	if (!getsockname(connection_socket,(struct sockaddr *)&local,(socklen_t *)&addrlen)) {
@@ -305,7 +305,7 @@ void TCPConnection::FinishDisconnect() {
 		pState = TCPS_Closing;
 		shutdown(connection_socket, 0x01);
 		shutdown(connection_socket, 0x00);
-#ifdef WIN32
+#ifdef _WINDOWS
 		closesocket(connection_socket);
 #else
 		close(connection_socket);
@@ -390,7 +390,7 @@ void TCPConnection::AsyncConnect(int32 irIP, int16 irPort) {
 	MAsyncConnect.unlock();
 	if (!pRunLoop) {
 		pRunLoop = true;
-#ifdef WIN32
+#ifdef _WINDOWS
 		_beginthread(TCPConnectionLoop, 0, this);
 #else
 		pthread_t thread;
@@ -406,7 +406,7 @@ bool TCPConnection::Connect(const char* irAddress, int16 irPort, char* errbuf) {
 	int32 tmpIP = ResolveIP(irAddress);
 	if (!tmpIP) {
 		if (errbuf) {
-#ifdef WIN32
+#ifdef _WINDOWS
 			snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::Connect(): Couldnt resolve hostname. Error: %i", WSAGetLastError());
 #else
 			snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::Connect(): Couldnt resolve hostname. Error #%i: %s", errno, strerror(errno));
@@ -437,7 +437,7 @@ bool TCPConnection::ConnectIP(int32 in_ip, int16 in_port, char* errbuf) {
 	MState.unlock();
 	if (!pRunLoop) {
 		pRunLoop = true;
-#ifdef WIN32
+#ifdef _WINDOWS
 		_beginthread(TCPConnectionLoop, 0, this);
 #else
 		pthread_t thread;
@@ -450,7 +450,7 @@ bool TCPConnection::ConnectIP(int32 in_ip, int16 in_port, char* errbuf) {
 //    struct in_addr	in;
 
 	if ((connection_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET || connection_socket == 0) {
-#ifdef WIN32
+#ifdef _WINDOWS
 		if (errbuf)
 			snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::Connect(): Allocating socket failed. Error: %i", WSAGetLastError());
 #else
@@ -466,7 +466,7 @@ bool TCPConnection::ConnectIP(int32 in_ip, int16 in_port, char* errbuf) {
 	server_sin.sin_port = htons(in_port);
 
 	// Establish a connection to the server socket.
-#ifdef WIN32
+#ifdef _WINDOWS
 	if (connect(connection_socket, (PSOCKADDR) &server_sin, sizeof (server_sin)) == SOCKET_ERROR) {
 		if (errbuf)
 			snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::Connect(): connect() failed. Error: %i", WSAGetLastError());
@@ -489,7 +489,7 @@ bool TCPConnection::ConnectIP(int32 in_ip, int16 in_port, char* errbuf) {
 #endif
 	int bufsize = 64 * 1024; // 64kbyte recieve buffer, up from default of 8k
 	setsockopt(connection_socket, SOL_SOCKET, SO_RCVBUF, (char*) &bufsize, sizeof(bufsize));
-#ifdef WIN32
+#ifdef _WINDOWS
 	unsigned long nonblocking = 1;
 	ioctlsocket(connection_socket, FIONBIO, &nonblocking);
 #else
@@ -652,7 +652,7 @@ bool TCPConnection::RecvData(char* errbuf) {
 			return false;
     }
 	else if (status == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WINDOWS
 		if (!(WSAGetLastError() == WSAEWOULDBLOCK)) {
 			if (errbuf)
 				snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::RecvData(): Error: %i", WSAGetLastError());
@@ -826,7 +826,7 @@ bool TCPConnection::SendData(bool &sent_something, char* errbuf) {
 	sint32 size = 0;
 	int status = 0;
 	if (ServerSendQueuePop(&data, &size)) {
-#ifdef WIN32
+#ifdef _WINDOWS
 		status = send(connection_socket, (const char *) data, size, 0);
 #else
 		status = send(connection_socket, data, size, MSG_NOSIGNAL);
@@ -873,14 +873,14 @@ bool TCPConnection::SendData(bool &sent_something, char* errbuf) {
 
 		safe_delete_array(data);
 		if (status == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
 #else
 			if (errno != EWOULDBLOCK)
 #endif
 			{
 				if (errbuf) {
-#ifdef WIN32
+#ifdef _WINDOWS
 					snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::SendData(): send(): Errorcode: %i", WSAGetLastError());
 #else
 					snprintf(errbuf, TCPConnection_ErrorBufferSize, "TCPConnection::SendData(): send(): Errorcode: %s", strerror(errno));
@@ -901,7 +901,7 @@ bool TCPConnection::SendData(bool &sent_something, char* errbuf) {
 }
 
 ThreadReturnType TCPConnection::TCPConnectionLoop(void* tmp) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 #endif
 	if (tmp == 0) {

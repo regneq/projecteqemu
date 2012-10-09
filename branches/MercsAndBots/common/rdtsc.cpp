@@ -20,7 +20,7 @@
 #include "types.h"
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <sys/timeb.h>
 	#include "../common/timer.h"
 #else
@@ -64,7 +64,7 @@ RDTSC_Timer::RDTSC_Timer(bool start_it) {
 sint64 RDTSC_Timer::rdtsc() {
 	sint64 res;
 #ifdef USE_RDTSC
-
+#ifndef WIN64
 #ifdef WIN32
 	//untested!
 	unsigned long highw, loww;
@@ -88,6 +88,7 @@ sint64 RDTSC_Timer::rdtsc() {
 	gettimeofday(&t, NULL);
 	res = ((sint64)t.tv_sec) * 1000 + t.tv_usec;
 #endif
+#endif
 	return(res);
 }
 
@@ -102,7 +103,7 @@ void RDTSC_Timer::init() {
 		before = rdtsc();
 		
 		//sleep a know duration to figure out clock rate
-#ifdef WIN32
+#ifdef _WINDOWS
 		Sleep(SLEEP_TIME);
 #else
 		usleep(SLEEP_TIME * 1000);	//ms * 1000

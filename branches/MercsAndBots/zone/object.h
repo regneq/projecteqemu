@@ -197,9 +197,9 @@ public:
 	void SetModelName(const char* modelname);
 	const char* GetModelName();
 
-	const char* GetEntityVariable(int32 id);
-	void SetEntityVariable(int32 id, const char *m_var);
-	bool EntityVariableExists(int32 id);
+	const char* GetEntityVariable(const char *id);
+	void SetEntityVariable(const char *id, const char *m_var);
+	bool EntityVariableExists(const char *id);
 
 protected:
 	void	ResetState();	// Set state back to original
@@ -219,7 +219,7 @@ protected:
 	float			m_heading;
 	bool			m_ground_spawn;
 
-	std::map<int32, std::string> o_EntityVariables;
+	std::map<std::string, std::string> o_EntityVariables;
 	
 	Client *user;
 	Client *last_user;

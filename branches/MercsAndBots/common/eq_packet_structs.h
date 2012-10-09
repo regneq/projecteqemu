@@ -316,6 +316,25 @@ union
 /*0384*/ uint8  lfg;            // 0=off, 1=lfg on
 /*0385*/
 
+	bool DestructibleObject;	// Only used to flag as a destrible object
+	char DestructibleModel[64];	// Model of the Destructible Object - Required - Seen "DEST_TNT_G"
+	char DestructibleName2[64];	// Secondary name - Not Required - Seen "a_tent"
+	char DestructibleString[64];	// Unknown - Not Required - Seen "ZoneActor_01186"
+	uint32 DestructibleAppearance;	// Damage Appearance
+	uint32 DestructibleUnk1;
+	uint32 DestructibleID1;
+	uint32 DestructibleID2;
+	uint32 DestructibleID3;
+	uint32 DestructibleID4;
+	uint32 DestructibleUnk2;
+	uint32 DestructibleUnk3;
+	uint32 DestructibleUnk4;
+	uint32 DestructibleUnk5;
+	uint32 DestructibleUnk6;
+	uint32 DestructibleUnk7;
+	uint8 DestructibleUnk8;
+	uint32 DestructibleUnk9;
+
 };
 
 /*
@@ -492,10 +511,7 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining;
-//these last four bytes are really the caster's global player ID for wearoff
-/*014*/ int8	persistant_buff;	//prolly not real, used for perm illusions
-/*015*/ int8	reserved;		//proll not real, reserved will use for something else later
+/*012*/	int32   counters;
 /*016*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
 /*020*/
 };
@@ -514,6 +530,14 @@ struct SpellBuffFade_Struct {
 /*028*/	uint32 bufffade;
 /*032*/
 };
+
+// Underfoot & later struct.
+struct BuffRemoveRequest_Struct
+{
+/*00*/ uint32 SlotID;
+/*04*/ uint32 EntityID;
+/*08*/
+ };
 
 struct PetBuff_Struct {
 /*000*/ uint32 petid;
@@ -535,6 +559,13 @@ struct BlockedBuffs_Struct
 /*84*/ uint8 Pet;
 /*85*/ uint8 Initialise;
 /*86*/ uint16 Flags;
+};
+
+struct RemoveNimbusEffect_Struct
+{
+/*00*/ uint32 spawnid;			// Spawn ID
+/*04*/ sint32 nimbus_effect;	// Nimbus Effect Number
+/*08*/
 };
 
 struct ItemNamePacket_Struct {
@@ -747,12 +778,13 @@ struct BindStruct {
 
 struct SuspendedMinion_Struct
 {
-	uint16			SpellID;
-	uint32			HP;
-	uint32			Mana;
-	SpellBuff_Struct	Buffs[BUFF_COUNT];
-	uint32			Items[MAX_MATERIALS];
-	char			Name[64];
+	/*000*/	uint16	SpellID;
+	/*002*/	uint32	HP;
+	/*006*/	uint32	Mana;
+	/*010*/	SpellBuff_Struct	Buffs[BUFF_COUNT];
+	/*510*/	uint32	Items[MAX_MATERIALS];
+	/*546*/	char	Name[64];
+	/*610*/
 };
 
 
@@ -858,149 +890,149 @@ struct PlayerProfile_Struct
 /*0312*/	uint32				item_material[MAX_MATERIALS];	// Item texture/material of worn/held items
 /*0348*/	uint8				unknown0348[44];
 /*0392*/	Color_Struct		item_tint[MAX_MATERIALS];
-/*0464*/	AA_Array			aa_array[MAX_PP_AA_ARRAY];
-/*2384*/	float				unknown2384;		//seen ~128, ~47
-/*2388*/	char				servername[32];		// length probably not right
-/*2420*/	char				title[32];			// length might be wrong
-/*2452*/	char				suffix[32];			// length might be wrong
-/*2484*/	uint32				guildid2;			//
-/*2488*/	uint32				exp;				// Current Experience
-/*2492*/	uint32				unknown2492;
-/*2496*/	uint32				points;				// Unspent Practice points
-/*2500*/	uint32				mana;				// current mana
-/*2504*/	uint32				cur_hp;				// current hp
-/*2508*/	uint32				unknown2508;		// 0x05
-/*2512*/	uint32				STR;				// Strength
-/*2516*/	uint32				STA;				// Stamina
-/*2520*/	uint32				CHA;				// Charisma
-/*2524*/	uint32				DEX;				// Dexterity
-/*2528*/	uint32				INT;				// Intelligence
-/*2532*/	uint32				AGI;				// Agility
-/*2536*/	uint32				WIS;				// Wisdom
-/*2540*/	uint8				face;				// Player face
-/*2541*/	uint8				unknown2541[47];	// ?
-/*2588*/	uint8				languages[MAX_PP_LANGUAGE];
-/*2616*/	uint8				unknown2616[4];
-/*2620*/	int32				spell_book[MAX_PP_SPELLBOOK];
-/*4540*/	uint8				unknown4540[128];	// Was [428] all 0xff
-/*4668*/	int32				mem_spells[MAX_PP_MEMSPELL];
-/*4704*/	uint8				unknown4704[32];	//
-/*4736*/	float				y;					// Player y position
-/*4740*/	float				x;					// Player x position
-/*4744*/	float				z;					// Player z position
-/*4748*/	float				heading;			// Direction player is facing
-/*4752*/	uint8				unknown4752[4];		//
-/*4756*/	sint32				platinum;			// Platinum Pieces on player
-/*4760*/	sint32				gold;				// Gold Pieces on player
-/*4764*/	sint32				silver;				// Silver Pieces on player
-/*4768*/	sint32				copper;				// Copper Pieces on player
-/*4772*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*4776*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*4780*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*4784*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*4788*/	sint32				platinum_cursor;	// Platinum on cursor
-/*4792*/	sint32				gold_cursor;		// Gold on cursor
-/*4796*/	sint32				silver_cursor;		// Silver on cursor
-/*4800*/	sint32				copper_cursor;		// Copper on cursor
-/*4804*/	sint32				platinum_shared;	// Platinum shared between characters
-/*4808*/	uint8				unknown4808[24];	// @bp unknown skills?
-/*4832*/	uint32				skills[MAX_PP_SKILL];
-/*5132*/	uint8				unknown5132[284];	// @bp unknown skills?
-/*5416*/	int32				pvp2;				//
-/*5420*/	int32				unknown5420;		//
-/*5424*/	int32				pvptype;			//
-/*5428*/	int32				unknown5428;		//
-/*5432*/	uint32				ability_down;		// Guessing
-/*5436*/	uint8				unknown5436[8];		//
-/*5444*/	uint32				autosplit;			//not used right now
-/*5448*/	uint8				unknown5448[8];
-/*5456*/	int32				zone_change_count;	// Number of times user has zoned in their career (guessing)
-/*5460*/	uint8				unknown5460[16];	//
-/*5476*/	uint32				drakkin_heritage;	//
-/*5480*/	uint32				drakkin_tattoo;		//
-/*5484*/	uint32				drakkin_details;	//
-/*5488*/	int32				expansions;			// expansion setting, bit field of expansions avaliable
-/*5492*/	sint32				toxicity;			//from drinking potions, seems to increase by 3 each time you drink
-/*5496*/	char				unknown5496[16];	//
-/*5512*/	sint32				hunger_level;
-/*5516*/	sint32				thirst_level;
-/*5520*/	int32				ability_up;
-/*5524*/	char				unknown5524[16];
-/*5540*/	uint16				zone_id;			// Current zone of the player
-/*5542*/	uint16				zoneInstance;		// Instance ID
-/*5544*/	SpellBuff_Struct	buffs[BUFF_COUNT];	// Buffs currently on the player
-/*6044*/	char 				groupMembers[6][64];//
-/*6428*/	char				unknown6428[656];
-/*7084*/	uint32				entityid;
-/*7088*/	uint32				leadAAActive;
-/*7092*/	uint32				unknown7092;
-/*7096*/	sint32				ldon_points_guk;	//client uses these as signed
-/*7100*/	sint32				ldon_points_mir;
-/*7104*/	sint32				ldon_points_mmc;
-/*7108*/	sint32				ldon_points_ruj;
-/*7112*/	sint32				ldon_points_tak;
-/*7116*/	sint32				ldon_points_available;
-/*7120*/	sint32				ldon_wins_guk;
-/*7124*/	sint32				ldon_wins_mir;
-/*7128*/	sint32				ldon_wins_mmc;
-/*7132*/	sint32				ldon_wins_ruj;
-/*7136*/	sint32				ldon_wins_tak;
-/*7140*/	sint32				ldon_losses_guk;
-/*7144*/	sint32				ldon_losses_mir;
-/*7148*/	sint32				ldon_losses_mmc;
-/*7152*/	sint32				ldon_losses_ruj;
-/*7156*/	sint32				ldon_losses_tak;
-/*7160*/	uint8				unknown7160[72];
-/*7232*/	uint32				tribute_time_remaining;	//in miliseconds
-/*7236*/	uint32				showhelm;
-/*7240*/	uint32				career_tribute_points;
-/*7244*/	uint32				unknown7244;
-/*7248*/	uint32				tribute_points;
-/*7252*/	uint32				unknown7252;
-/*7256*/	uint32				tribute_active;		//1=active
-/*7260*/	Tribute_Struct		tributes[MAX_PLAYER_TRIBUTES];
-/*7300*/	Disciplines_Struct	disciplines;
-/*7700*/	uint32				recastTimers[MAX_RECAST_TYPES];	// Timers (GMT of last use)
-/*7780*/	char				unknown7780[160];
-/*7940*/	uint32				endurance;
-/*7944*/	uint32				group_leadership_exp;	//0-1000
-/*7948*/	uint32				raid_leadership_exp;	//0-2000
-/*7952*/	uint32				group_leadership_points;
-/*7956*/	uint32				raid_leadership_points;
-/*7960*/	LeadershipAA_Struct	leader_abilities;
-/*8088*/	uint8				unknown8088[132];
-/*8220*/	uint32				air_remaining;
-/*8224*/	uint32				PVPKills;
-/*8228*/	uint32				PVPDeaths;
-/*8232*/	uint32				PVPCurrentPoints;
-/*8236*/	uint32				PVPCareerPoints;
-/*8240*/	uint32				PVPBestKillStreak;
-/*8244*/	uint32				PVPWorstDeathStreak;
-/*8248*/	uint32				PVPCurrentKillStreak;
-/*8252*/	PVPStatsEntry_Struct	PVPLastKill;
-/*8340*/	PVPStatsEntry_Struct	PVPLastDeath;
-/*8428*/	uint32				PVPNumberOfKillsInLast24Hours;
-/*8432*/	PVPStatsEntry_Struct	PVPRecentKills[50];
-/*12832*/	uint32				aapoints_spent;
-/*12836*/	uint32				expAA;
-/*12840*/	uint32				aapoints;			//avaliable, unspent
-/*12844*/	uint8				unknown12844[36];
-/*12880*/	Bandolier_Struct	bandoliers[MAX_PLAYER_BANDOLIER];
-/*14160*/	uint8				unknown14160[4506];
-/*18666*/	SuspendedMinion_Struct	SuspendedMinion;
-/*19276*/	uint32				timeentitledonaccount;
-/*19280*/	PotionBelt_Struct	potionbelt;			//there should be 3 more of these
-/*19568*/	uint8				unknown19568[8];
-/*19576*/	uint32				currentRadCrystals; // Current count of radiant crystals
-/*19580*/	uint32				careerRadCrystals;	// Total count of radiant crystals ever
-/*19584*/	uint32				currentEbonCrystals;// Current count of ebon crystals
-/*19588*/	uint32				careerEbonCrystals;	// Total count of ebon crystals ever
-/*19592*/	uint8				groupAutoconsent;	// 0=off, 1=on
-/*19593*/	uint8				raidAutoconsent;	// 0=off, 1=on
-/*19594*/	uint8				guildAutoconsent;	// 0=off, 1=on
-/*19595*/	uint8				unknown19595[5];	// ***Placeholder (6/29/2005)
-/*19600*/	uint32				RestTimer;
-/*19604*/
+/*0428*/	AA_Array			aa_array[MAX_PP_AA_ARRAY];
+/*2348*/	float				unknown2384;		//seen ~128, ~47
+/*2352*/	char				servername[32];		// length probably not right
+/*2384*/	char				title[32];			// length might be wrong
+/*2416*/	char				suffix[32];			// length might be wrong
+/*2448*/	uint32				guildid2;			//
+/*2452*/	uint32				exp;				// Current Experience
+/*2456*/	uint32				unknown2492;
+/*2460*/	uint32				points;				// Unspent Practice points
+/*2464*/	uint32				mana;				// current mana
+/*2468*/	uint32				cur_hp;				// current hp
+/*2472*/	uint32				unknown2508;		// 0x05
+/*2476*/	uint32				STR;				// Strength
+/*2480*/	uint32				STA;				// Stamina
+/*2484*/	uint32				CHA;				// Charisma
+/*2488*/	uint32				DEX;				// Dexterity
+/*2492*/	uint32				INT;				// Intelligence
+/*2496*/	uint32				AGI;				// Agility
+/*2500*/	uint32				WIS;				// Wisdom
+/*2504*/	uint8				face;				// Player face
+/*2505*/	uint8				unknown2541[47];	// ?
+/*2552*/	uint8				languages[MAX_PP_LANGUAGE];
+/*2580*/	uint8				unknown2616[4];
+/*2584*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*4504*/	uint8				unknown4540[128];	// Was [428] all 0xff
+/*4632*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*4668*/	uint8				unknown4704[32];	//
+/*4700*/	float				y;					// Player y position
+/*4704*/	float				x;					// Player x position
+/*4708*/	float				z;					// Player z position
+/*4712*/	float				heading;			// Direction player is facing
+/*4716*/	uint8				unknown4752[4];		//
+/*4720*/	sint32				platinum;			// Platinum Pieces on player
+/*4724*/	sint32				gold;				// Gold Pieces on player
+/*4728*/	sint32				silver;				// Silver Pieces on player
+/*4732*/	sint32				copper;				// Copper Pieces on player
+/*4736*/	sint32				platinum_bank;		// Platinum Pieces in Bank
+/*4740*/	sint32				gold_bank;			// Gold Pieces in Bank
+/*4744*/	sint32				silver_bank;		// Silver Pieces in Bank
+/*4748*/	sint32				copper_bank;		// Copper Pieces in Bank
+/*4752*/	sint32				platinum_cursor;	// Platinum on cursor
+/*4756*/	sint32				gold_cursor;		// Gold on cursor
+/*4760*/	sint32				silver_cursor;		// Silver on cursor
+/*4764*/	sint32				copper_cursor;		// Copper on cursor
+/*4768*/	sint32				platinum_shared;	// Platinum shared between characters
+/*4772*/	uint8				unknown4808[24];	// @bp unknown skills?
+/*4796*/	uint32				skills[MAX_PP_SKILL];
+/*5096*/	uint8				unknown5132[284];	// @bp unknown skills?
+/*5380*/	int32				pvp2;				//
+/*5384*/	int32				unknown5420;		//
+/*5388*/	int32				pvptype;			//
+/*5392*/	int32				unknown5428;		//
+/*5396*/	uint32				ability_down;		// Guessing
+/*5400*/	uint8				unknown5436[8];		//
+/*5408*/	uint32				autosplit;			//not used right now
+/*5412*/	uint8				unknown5448[8];
+/*5420*/	int32				zone_change_count;	// Number of times user has zoned in their career (guessing)
+/*5424*/	uint8				unknown5460[16];	//
+/*5440*/	uint32				drakkin_heritage;	//
+/*5444*/	uint32				drakkin_tattoo;		//
+/*5448*/	uint32				drakkin_details;	//
+/*5452*/	int32				expansions;			// expansion setting, bit field of expansions avaliable
+/*5456*/	sint32				toxicity;			//from drinking potions, seems to increase by 3 each time you drink
+/*5460*/	char				unknown5496[16];	//
+/*5476*/	sint32				hunger_level;
+/*5480*/	sint32				thirst_level;
+/*5484*/	int32				ability_up;
+/*5488*/	char				unknown5524[16];
+/*5504*/	uint16				zone_id;			// Current zone of the player
+/*5506*/	uint16				zoneInstance;		// Instance ID
+/*5508*/	SpellBuff_Struct	buffs[BUFF_COUNT];	// Buffs currently on the player
+/*6008*/	char 				groupMembers[6][64];//
+/*6392*/	char				unknown6428[656];
+/*7048*/	uint32				entityid;
+/*7052*/	uint32				leadAAActive;
+/*7056*/	uint32				unknown7092;
+/*7060*/	sint32				ldon_points_guk;	//client uses these as signed
+/*7064*/	sint32				ldon_points_mir;
+/*7068*/	sint32				ldon_points_mmc;
+/*7072*/	sint32				ldon_points_ruj;
+/*7076*/	sint32				ldon_points_tak;
+/*7080*/	sint32				ldon_points_available;
+/*7084*/	sint32				ldon_wins_guk;
+/*7088*/	sint32				ldon_wins_mir;
+/*7092*/	sint32				ldon_wins_mmc;
+/*7096*/	sint32				ldon_wins_ruj;
+/*7100*/	sint32				ldon_wins_tak;
+/*7104*/	sint32				ldon_losses_guk;
+/*7108*/	sint32				ldon_losses_mir;
+/*7112*/	sint32				ldon_losses_mmc;
+/*7116*/	sint32				ldon_losses_ruj;
+/*7120*/	sint32				ldon_losses_tak;
+/*7124*/	uint8				unknown7160[72];
+/*7196*/	uint32				tribute_time_remaining;	//in miliseconds
+/*7200*/	uint32				showhelm;
+/*7204*/	uint32				career_tribute_points;
+/*7208*/	uint32				unknown7244;
+/*7212*/	uint32				tribute_points;
+/*7216*/	uint32				unknown7252;
+/*7220*/	uint32				tribute_active;		//1=active
+/*7224*/	Tribute_Struct		tributes[MAX_PLAYER_TRIBUTES];
+/*7264*/	Disciplines_Struct	disciplines;
+/*7664*/	uint32				recastTimers[MAX_RECAST_TYPES];	// Timers (GMT of last use)
+/*7744*/	char				unknown7780[160];
+/*7904*/	uint32				endurance;
+/*7908*/	uint32				group_leadership_exp;	//0-1000
+/*7912*/	uint32				raid_leadership_exp;	//0-2000
+/*7916*/	uint32				group_leadership_points;
+/*7920*/	uint32				raid_leadership_points;
+/*7924*/	LeadershipAA_Struct	leader_abilities;
+/*8052*/	uint8				unknown8088[132];
+/*8184*/	uint32				air_remaining;
+/*8188*/	uint32				PVPKills;
+/*8192*/	uint32				PVPDeaths;
+/*8196*/	uint32				PVPCurrentPoints;
+/*8200*/	uint32				PVPCareerPoints;
+/*8204*/	uint32				PVPBestKillStreak;
+/*8208*/	uint32				PVPWorstDeathStreak;
+/*8212*/	uint32				PVPCurrentKillStreak;
+/*8216*/	PVPStatsEntry_Struct	PVPLastKill;
+/*8304*/	PVPStatsEntry_Struct	PVPLastDeath;
+/*8392*/	uint32				PVPNumberOfKillsInLast24Hours;
+/*8396*/	PVPStatsEntry_Struct	PVPRecentKills[50];
+/*12796*/	uint32				aapoints_spent;
+/*12800*/	uint32				expAA;
+/*12804*/	uint32				aapoints;			//avaliable, unspent
+/*12808*/	uint8				unknown12844[36];
+/*12844*/	Bandolier_Struct	bandoliers[MAX_PLAYER_BANDOLIER];
+/*14124*/	uint8				unknown14160[4506];
+/*18630*/	SuspendedMinion_Struct	SuspendedMinion; // No longer in use
+/*19240*/	uint32				timeentitledonaccount;
+/*19244*/	PotionBelt_Struct	potionbelt;			//there should be 3 more of these
+/*19532*/	uint8				unknown19568[8];
+/*19540*/	uint32				currentRadCrystals; // Current count of radiant crystals
+/*19544*/	uint32				careerRadCrystals;	// Total count of radiant crystals ever
+/*19548*/	uint32				currentEbonCrystals;// Current count of ebon crystals
+/*19552*/	uint32				careerEbonCrystals;	// Total count of ebon crystals ever
+/*19556*/	uint8				groupAutoconsent;	// 0=off, 1=on
+/*19557*/	uint8				raidAutoconsent;	// 0=off, 1=on
+/*19558*/	uint8				guildAutoconsent;	// 0=off, 1=on
+/*19559*/	uint8				unknown19595[5];	// ***Placeholder (6/29/2005)
+/*19564*/	uint32				RestTimer;
+/*19568*/
 };
 
 
@@ -1560,17 +1592,16 @@ struct GuildCommand_Struct {
 	int32 officer;
 };
 
-// 4244 bytes. Is not really an 'OnLevelMessage', it causes a popup box to display in the client
-// Text looks like HTML.
-struct OnLevelMessage_Struct {
-/*0000*/       char    Title[128];
-/*0128*/       char    Text[4096];
-/*4224*/       uint32  Buttons;
-/*4228*/       uint32  Duration;
-/*4232*/       uint32  PopupID;
-/*4236*/       uint32  unknown4236;
-/*4240*/       uint32  unknown4240;
-/*4244*/
+struct OnLevelMessage_Struct
+{
+	char    Title[128];
+	char    Text[4096];
+	uint32  Buttons;
+	uint32  Duration;
+	uint32  PopupID;
+	uint32	NegativeID;
+	char	ButtonName0[25];
+	char	ButtonName1[25];
 };
 
 struct PopupResponse_Struct {
@@ -2377,10 +2408,7 @@ struct Object_Struct {
 /*32*/	float	z;					// z coord
 /*36*/	float	x;					// x coord
 /*40*/	float	y;					// y coord
-/*44*/	char	object_name[20];	// Name of object, usually something like IT63_ACTORDEF
-/*64*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-/*68*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-/*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+/*44*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF
 /*76*/	uint32	unknown076;			//
 /*80*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
 /*84*/	uint32	unknown084;			//set to 0xFF
@@ -2964,9 +2992,13 @@ struct GetItems_Struct{
 	sint32	Charges[80];
 };
 
-struct BecomeTrader_Struct{
-	int32 ID;
-	int32 Code;
+struct BecomeTrader_Struct
+{
+/*000*/	int32 ID;
+/*004*/	int32 Code;
+/*008*/	char  Name[64];
+/*072*/	int32 Unknown072;	// Observed 0x33,0x91 etc on zone-in, 0x00 when sent for a new trader after zone-in
+/*076*/
 };
 
 struct Trader_ShowItems_Struct{
@@ -3374,6 +3406,9 @@ struct MerchantList{
 	uint32	id;
 	uint32	slot;
 	uint32	item;
+    sint16  faction_required;
+    sint8   level_required;
+    uint16  alt_currency_cost;    
 };
 struct TempMerchantList{
 	uint32	npcid;
@@ -3383,6 +3418,17 @@ struct TempMerchantList{
 	uint32	origslot;
 };
 
+struct AltCurrencyDefinition_Struct {
+    uint32 id;
+    uint32 item_id;
+};
+
+struct NPC_Emote_Struct {
+	int32	emoteid;
+	int8	event_;
+	int8	type;
+	char	text[515];
+};
 
 struct FindPerson_Point {
 	float y;
@@ -3941,6 +3987,9 @@ struct SendAA_Struct {
 /* EMU additions for internal use */
 	char name[128];
 	sint16 cost_inc;
+	int32 sof_current_level;
+	int32 sof_next_id;
+	int8 level_inc;
 
 /*0000*/	int32 id;
 /*0004*/	int32 unknown004;
@@ -3973,8 +4022,9 @@ struct SendAA_Struct {
 /*0104*/	int32 sof_max_level;
 /*0108*/	int32 sof_next_skill;
 /*0112*/	int32 clientver;
-/*0116*/	int32 total_abilities;
-/*0120*/	AA_Ability abilities[0];
+/*0016*/	int32 account_time_required;
+/*0120*/	int32 total_abilities;
+/*0124*/	AA_Ability abilities[0];
 };
 
 struct AA_Action {
@@ -4124,7 +4174,7 @@ struct ItemVerifyReply_Struct {
 #if 0
 struct spawnShroudSelf
 {
-/*00000*/ uint32_t spawnId;            // Spawn Id of you
+/*00000*/ uint32 spawnId;            // Spawn Id of you
 /*00004*/ Spawn_Struct spawn;           // Updated spawnStruct for you
 //this is a sub-struct of PlayerProfile, which we havent broken out yet.
 /*00586*/ playerProfileStruct profile; // Character profile for shrouded char
@@ -4501,6 +4551,221 @@ struct ExpeditionLockoutList_Struct
 struct ExpeditionLeaderSet_Struct
 {
 /*000*/ char leader_name[64];
+};
+
+struct CorpseDrag_Struct
+{
+/*000*/ char CorpseName[64];
+/*064*/ char DraggerName[64];
+/*128*/ uint8 Unknown128[24];
+/*152*/
+};
+
+struct ChangeSize_Struct
+{
+/*00*/ uint32 EntityID;
+/*04*/ float Size;
+/*08*/ uint32 Unknown08;	// Observed 0
+/*12*/ float Unknown12;		// Observed 1.0f
+/*16*/
+};
+
+// New OpCode/Struct for SoD+
+struct GroupMakeLeader_Struct
+{
+/*000*/ uint32 Unknown000;
+/*004*/ char CurrentLeader[64];
+/*068*/ char NewLeader[64];
+/*132*/ char Unknown072[324];
+/*456*/
+};
+
+//One packet i didn't include here is the alt currency merchant window.
+//it works much like the adventure merchant window
+//it is formated like: dbstringid|1|dbstringid|count
+//ex for a blank crowns window you would send:
+//999999|1|999999|0
+//any items come after in much the same way adventure merchant items do except there is no theme included
+#define ALT_CURRENCY_OP_POPULATE 8
+#define ALT_CURRENCY_OP_UPDATE 7
+    
+//Server -> Client
+//Populates the initial Alternate Currency Window
+struct AltCurrencyPopulateEntry_Struct
+{
+/*000*/ uint32 currency_number; //corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
+/*004*/ uint32 unknown00; //always 1
+/*008*/ uint32 currency_number2; //always same as currency number
+/*012*/ uint32 item_id; //appears to be the item id
+/*016*/ uint32 item_icon; //actual icon
+/*020*/ uint32 stack_size; //most are set to 1000, the stack size for the item; should match db i think or there will be problems.
+};
+
+struct AltCurrencyPopulate_Struct {
+/*000*/ uint32 opcode; //8 for populate
+/*004*/ uint32 count; //number of entries
+/*008*/ AltCurrencyPopulateEntry_Struct entries[0];
+};
+
+//Server -> Client
+//Updates the value of a specific Alternate Currency
+struct AltCurrencyUpdate_Struct {
+/*000*/ uint32 opcode; //7 for update
+/*004*/ char name[64]; //name of client (who knows why just do it)
+/*068*/ uint32 currency_number; //matches currency_number from populate entry
+/*072*/ uint32 unknown072; //always 1
+/*076*/ uint32 amount; //new amount
+/*080*/ uint32 unknown080; //seen 0
+/*084*/ uint32 unknown084; //seen 0
+};
+
+//Client -> Server 
+//When an item is selected while the alt currency merchant window is open
+struct AltCurrencySelectItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*008*/ uint32 unknown008;
+/*012*/ uint32 unknown012;
+/*016*/ uint32 unknown016;
+/*020*/ uint32 unknown020;
+/*024*/ uint32 unknown024;
+/*028*/ uint32 unknown028;
+/*032*/ uint32 unknown032;
+/*036*/ uint32 unknown036;
+/*040*/ uint32 unknown040;
+/*044*/ uint32 unknown044;
+/*048*/ uint32 unknown048;
+/*052*/ uint32 unknown052;
+/*056*/ uint32 unknown056;
+/*060*/ uint32 unknown060;
+/*064*/ uint32 unknown064;
+/*068*/ uint32 unknown068;
+/*072*/ uint32 unknown072;
+/*076*/ uint32 unknown076;
+};
+
+//Server -> Client
+//As setup it makes it so that item can't be sold to the merchant.
+//eg: "I will give you no doubloons for a cloth cap."
+//Probably also sends amounts somewhere
+struct AltCurrencySelectItemReply_Struct {
+/*000*/ uint32 unknown000; 
+/*004*/ uint8  unknown004; //0xff
+/*005*/ uint8  unknown005; //0xff
+/*006*/ uint8  unknown006; //0xff
+/*007*/ uint8  unknown007; //0xff
+/*008*/ char   item_name[64];
+/*072*/ uint32 unknown074;
+/*076*/ uint32 cost;
+/*080*/ uint32 unknown080;
+/*084*/ uint32 unknown084;
+};
+
+//Client -> Server
+//Requests purchase of a specific item from the vendor
+struct AltCurrencyPurchaseItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 item_id;
+/*008*/ uint32 unknown008; //1
+};
+
+//Client -> Server
+//Reclaims / Create currency button pushed.
+struct AltCurrencyReclaim_Struct {
+/*000*/ uint32 currency_id;
+/*004*/ uint32 unknown004;
+/*008*/ uint32 count;
+/*012*/ uint32 reclaim_flag; //1 = this is reclaim
+};
+
+struct AltCurrencySellItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*008*/ uint32 charges;
+/*012*/ uint32 cost;
+};
+
+struct Untargetable_Struct {
+/*000*/	uint32 id;
+/*004*/	uint32 targetable_flag; //0 = not targetable, 1 or higher = targetable
+/*008*/
+};
+
+struct CrystalReclaim_Struct {
+/**/ uint32 type;
+/**/ uint32 amount;
+};
+
+struct LFGuild_SearchPlayer_Struct
+{
+/*00*/	uint32	Command;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	FromLevel;
+/*12*/	uint32	ToLevel;
+/*16*/	uint32	MinAA;
+/*20*/	uint32	TimeZone;
+/*24*/	uint32	Classes;
+};
+
+struct LFGuild_SearchGuild_Struct
+{
+/*00*/	uint32	Command;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Level;
+/*12*/	uint32	AAPoints;
+/*16*/	uint32	TimeZone;
+/*20*/	uint32	Class;
+/*24*/
+};
+
+struct LFGuild_PlayerToggle_Struct
+{
+/*000*/ uint32	Command;
+/*004*/ uint8	Unknown004[68];
+/*072*/ char	Comment[256];
+/*328*/ uint8	Unknown328[268];
+/*596*/ uint32	TimeZone;
+/*600*/ uint8	Toggle;
+/*601*/ uint8	Unknown601[7];
+/*608*/ uint32	TimePosted;
+/*612*/ uint8	Unknown612[12];
+/*624*/
+};
+
+struct LFGuild_GuildToggle_Struct
+{
+/*000*/ uint32	Command;
+/*004*/ uint8	Unknown004[8];
+/*012*/ char	Comment[256];
+/*268*/ uint8	Unknown268[256];
+/*524*/ uint32	FromLevel;
+/*528*/ uint32	 ToLevel;
+/*532*/ uint32	Classes;
+/*536*/ uint32	AACount;
+/*540*/ uint32	TimeZone;
+/*544*/ uint8	Toggle;
+/*545*/ uint8	Unknown545[3];
+/*548*/ uint32	TimePosted;
+/*552*/ char	Name[64];
+/*616*/
+};
+
+struct MaxCharacters_Struct
+{
+/*000*/ uint32 max_chars;	// Seen 4 on Silver Account (4 characters max)
+/*004*/ uint32 unknown004;	// Seen 0
+/*008*/ uint32 unknown008;	// Seen 0
+};
+
+struct Membership_Struct
+{
+/*000*/ uint32 membership;	// Seen 2 on Gold Account
+/*004*/ uint32 races;	// Seen ff ff 01 00
+/*008*/ uint32 classes;	// Seen ff ff 01 01
+/*012*/ uint32 entrysize; // Seen 15 00 00 00
+/*016*/ sint32 entries[21]; //Varies. Seen ff ff ff ff, and 01 00 00 00
+/*104*/ uint32 exit_url_length;	// Length of the exit_url string (0 for none)
+/*108*/ // char exit_url[0];	// URL that will open when EQ is exited
 };
 
 //old structures live here:

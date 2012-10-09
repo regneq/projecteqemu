@@ -32,7 +32,7 @@
 #define SPAWNS_PER_POINT_DATARATE 10
 #define MAX_SPAWNS_PER_PACKET	100
 
-//#ifdef WIN32
+//#ifdef _WINDOWS
 	class	EQApplicationPacket;
 //#else
 //	struct	EQApplicationPacket;
@@ -81,7 +81,7 @@ public:
 
 	virtual bool Process()  { return false; }
 	virtual bool Save() { return true; }
-	virtual void Depop(bool StartSpawnTimer = true) {}
+	virtual void Depop(bool StartSpawnTimer = false) {}
 
 	Client* CastToClient();
 	NPC*    CastToNPC();
@@ -102,7 +102,7 @@ public:
 	const Trap*	CastToTrap() const;
 	const Beacon*	CastToBeacon() const;
 
-	inline const int16& GetID()	{ return id; }
+	inline const int16& GetID() const{ return id; }
 	virtual const char* GetName() { return ""; }
 	virtual void DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) { pDBAsyncWorkID = 0; }
 	bool CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk=1);
@@ -131,6 +131,7 @@ public:
 	inline Mob*	GetMobID(int16 id) { return(GetMob(id)); }	//for perl
 	Mob*	GetMob(const char* name);
 	Mob*	GetMobByNpcTypeID(int32 get_id);
+	Mob*	GetTargetForVirus(Mob* spreader);
 	NPC*	GetNPCByID(int16 id);
 	NPC*	GetNPCByNPCTypeID(int32 npc_id);
 	Client* GetClientByName(const char *name); 
@@ -153,9 +154,15 @@ public:
 	Corpse* GetCorpseByID(int16 id);
 	Corpse* GetCorpseByDBID(int32 dbid);
 	Corpse* GetCorpseByName(const char* name);
+
+	Client* FindCorpseDragger(const char *CorpseName);
+
 	Object*	GetObjectByID(int16 id);
 	Object*	GetObjectByDBID(int32 id);
+	Doors*	GetDoorsByID(int16 id);
+	Doors*	GetDoorsByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);
+	void RemoveCorpseByDBID(int32 dbid);
 	int RezzAllCorpsesByCharID(int32 charid);
 	bool IsMobInZone(Mob *who);
 	void ClearClientPetitionQueue();
@@ -216,6 +223,8 @@ public:
 	void	RemoveAllGroups();
 	void	RemoveAllCorpses();
 	void	RemoveAllDoors();
+	void	DespawnAllDoors();
+	void	RespawnAllDoors();
 	void	RemoveAllTraps();
 	void	RemoveAllObjects();
 	void	RemoveAllLocalities();
@@ -251,12 +260,15 @@ public:
 	void    SendZoneObjects(Client* client);
 	void	SendZoneAppearance(Client *c);
 	void	SendNimbusEffects(Client *c);
+    void    SendUntargetable(Client *c);
 	void	DuelMessage(Mob* winner, Mob* loser, bool flee);
 	void    QuestJournalledSayClose(Mob *sender, Client *QuestIntiator, float dist, const char* mobname, const char* message);
 	void	GroupMessage(int32 gid, const char *from, const char *message);
 	void	ExpeditionWarning(uint32 minutes_left);
 
-	void    RemoveFromTargets(Mob* mob);
+	void    RemoveFromTargets(Mob* mob, bool RemoveFromXTargets = false);
+	void    RemoveFromXTargets(Mob* mob);
+	void    RemoveFromAutoXTargets(Mob* mob);
     void    ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget);
 	void	QueueCloseClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, float dist=200, Mob* SkipThisMob = 0, bool ackreq = true,eqFilterType filter=FilterNone);
 	void    QueueClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
@@ -266,12 +278,13 @@ public:
 	void	QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true, Mob* SkipThisMob = 0, bool ackreq = true,
 				     bool HoTT = true, uint32 ClientVersionBits = 0xFFFFFFFF);
 
+	void	QueueClientsByXTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true);
 	void	QueueToGroupsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void    QueueManaged(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
 
-	void	AEAttack(Mob *attacker, float dist, int Hand = 13, int count = 0);
+	void	AEAttack(Mob *attacker, float dist, int Hand = 13, int count = 0, bool IsFromSpell = false);
 	void	AETaunt(Client *caster, float range = 0);
-	void	AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
+	void	AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true, sint16 resist_adjust = 0);
 	void	MassGroupBuff(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
 	void	AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
 	
@@ -339,6 +352,7 @@ public:
 
 	Corpse* GetClosestCorpse(Mob* sender, const char *Name);
 	NPC* GetClosestBanker(Mob* sender, uint32 &distance);
+	void	CameraEffect(uint32 duration, uint32 intensity);
 	Mob*	GetClosestMobByBodyType(Mob* sender, bodyType BodyType);
 	void	ForceGroupUpdate(int32 gid);
 	void	SendGroupLeave(int32 gid, const char *name);
@@ -349,6 +363,7 @@ public:
 
 	int16	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	int16	CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type = 0x00, int32 decay_time = 0);
+	int16	CreateDoor(const char *model, float x, float y, float z, float heading, int8 type = 0, int16 size = 100);
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 	void	UnMarkNPC(int16 ID);
 
@@ -365,13 +380,18 @@ public:
 	void GetClientList(list<Client*> &c_list);
 	void GetCorpseList(list<Corpse*> &c_list);
 	void GetObjectList(list<Object*> &o_list);
+	void GetDoorsList(list<Doors*> &d_list);
+	void GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height, list<Mob*> &m_list);
 
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 
 	int16   GetFreeID();
+	void RefreshAutoXTargets(Client *c);
+	void RefreshClientXTargets(Client *c);
+
 protected:
 	friend class Zone;
-	void	Depop(bool StartSpawnTimer = true);
+	void	Depop(bool StartSpawnTimer = false);
 
 private:
 	void	AddToSpawnQueue(int16 entityid, NewSpawn_Struct** app);
