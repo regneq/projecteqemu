@@ -58,6 +58,7 @@
 #define ONLY_ON_CORPSES				221		//This spell only works on corpses.
 #define CANT_DRAIN_SELF				224		//You can't drain yourself!
 #define CORPSE_NOT_VALID			230		//This corpse is not valid.
+#define CORPSE_TOO_OLD				231		//This player cannot be resurrected. The corpse is too old.
 #define CAST_OUTDOORS				234		//You can only cast this spell in the outdoors.
 #define SPELL_RECAST				236		//Spell recast time not yet met.
 #define SPELL_RECOVERY				237		//Spell recovery time not yet met.
@@ -70,7 +71,7 @@
 #define ONLY_ONE_PET				246		//You cannot have more than one pet at a time.
 #define CANNOT_CHARM_YET			248		//Your target is too high of a level for your charm spell.
 #define CANNOT_AFFECT_NPC			251		//That spell can not affect this target NPC.
-#define SUSPEND_MINION_HAS_AGGRO       256             //Your pet is the focus of something's attention.
+#define SUSPEND_MINION_HAS_AGGRO	256		//Your pet is the focus of something's attention.
 #define NO_PET						255		//You do not have a pet.
 #define CORPSE_CANT_SENSE			262		//You cannot sense any corpses for this PC in this zone.
 #define SPELL_NO_HOLD				263		//Your spell did not take hold.
@@ -127,6 +128,7 @@
 #define LOSE_LEVEL					442		//You LOST a level! You are now level %1!
 #define GAIN_ABILITY_POINT			446		//You have gained an ability point!  You now have %1 ability point%2.
 #define GAIN_LEVEL					447		//You have gained a level! Welcome to level %1!
+#define LANG_SKILL_IMPROVED			449		//Your language skills have improved.
 #define OTHER_LOOTED_MESSAGE		466		//--%1 has looted a %2--
 #define LOOTED_MESSAGE				467		//--You have looted a %1--
 #define FACTION_WORST				469		//Your faction standing with %1 could not possibly get any worse.
@@ -140,12 +142,15 @@
 #define PVP_ON						552		//You are now player kill and follow the ways of Discord.
 #define GENERIC_STRINGID_SAY		554		//%1 says '%T2'
 #define CANNOT_WAKE					555		//%1 tells you, 'I am unable to wake %2, master.'
+#define GUILD_NAME_IN_USE			711	//You cannot create a guild with that name, that guild already exists on this server.
 #define GM_GAINXP					1002	//[GM] You have gained %1 AXP and %2 EXP (%3).
 #define FINISHING_BLOW				1009	//%1 scores a Finishing Blow!!
 #define ASSASSINATES				1016	//%1 ASSASSINATES their victim!!
+#define CRIPPLING_BLOW				1021	//%1 lands a Crippling Blow!(%2)
 #define CRITICAL_HIT				1023	//%1 scores a critical hit! (%2)
 #define RESISTS_URGE				1025	//%1 resists their urge to flee.
 #define BERSERK_START				1027	//%1 goes into a berserker frenzy!
+#define DEATH_PACT					1028	//%1's death pact has been benevolently fulfilled!
 #define DIVINE_INTERVENTION			1029	//%1 has been rescued by divine intervention!
 #define BERSERK_END					1030	//%1 is no longer berserk.
 #define GATES						1031	//%1 Gates.
@@ -153,10 +158,15 @@
 #define OTHER_REGAIN_CAST			1033	//%1 regains concentration and continues casting.
 #define GENERIC_SHOUT				1034	//%1 shouts '%2'
 #define GENERIC_EMOTE				1036	//%1 %2
+#define NPC_ENRAGE_START			1042	//%1 has become ENRAGED.
+#define NPC_ENRAGE_END				1043	//%1 is no longer enraged.
+#define NPC_RAMPAGE					1044	//%1 goes on a RAMPAGE!
+#define NPC_FLURRY					1045	//%1 executes a FLURRY of attacks on %2!
 #define DISCIPLINE_FEARLESS			1076	//%1 becomes fearless.
 #define DUEL_FINISHED				1088	//dont know text
 #define EATING_MESSAGE				1091	//Chomp, chomp, chomp...  %1 takes a bite from a %2.
 #define DRINKING_MESSAGE			1093	//Glug, glug, glug...  %1 takes a drink from a %2.
+#define SUCCESSFUL_TAUNT            1095    //I'll teach you to interfere with me %3. 
 #define PET_SIT_STRING				1130	//Changing position, Master.
 #define PET_CALMING					1131	//Sorry, Master..calming down.
 #define PET_FOLLOWING				1132	//Following you, Master.
@@ -181,12 +191,12 @@
 #define DUEL_ACCEPTED				1384	//%1 has already accepted a duel with someone else.
 #define DUEL_CONSIDERING			1385	//%1 is considering a duel with someone else.
 #define PLAYER_REGAIN				1394	//You have control of yourself again.
-#define REZZ_ALREADY_PENDING			1379	//You were unable to restore the corpse to life, but you may have success with a later attempt.
+#define REZZ_ALREADY_PENDING		1379	//You were unable to restore the corpse to life, but you may have success with a later attempt.
 #define IN_USE						1406	//Someone else is using that.  Try again later.
 #define DUEL_FLED					1408	//%1 has defeated %2 in a duel to the death! %3 has fled like a cowardly dog!
-#define MEMBER_OF_YOUR_GUILD			1429
-#define OFFICER_OF_YOUR_GUILD			1430
-#define LEADER_OF_YOUR_GUILD			1431
+#define MEMBER_OF_YOUR_GUILD		1429
+#define OFFICER_OF_YOUR_GUILD		1430
+#define LEADER_OF_YOUR_GUILD		1431
 #define RECEIVED_PLATINUM			1452	//You receive %1 Platinum from %2.
 #define RECEIVED_GOLD				1453	//You receive %1 Gold from %2.
 #define RECEIVED_SILVER				1454	//You receive %1 Silver from %2.
@@ -198,22 +208,31 @@
 #define SENSE_CORPSE_DIRECTION		1563	//You sense a corpse in this direction.
 #define SUSPEND_MINION_UNSUSPEND	3267	//%1 tells you, 'I live again...'
 #define SUSPEND_MINION_SUSPEND		3268	//%1 tells you, 'By your command, master.'
-#define ONLY_SUMMONED_PETS		3269	//3269 This effect only works with summoned pets.
+#define ONLY_SUMMONED_PETS			3269	//3269 This effect only works with summoned pets.
 #define SUSPEND_MINION_FIGHTING		3270    //Your pet must be at peace, first.
 #define TRADESKILL_MISSING_ITEM		3455	//You are missing a %1.
 #define TRADESKILL_MISSING_COMPONENTS	3456	//Sorry, but you don't have everything you need for this recipe in your general inventory.
 #define TRADESKILL_LEARN_RECIPE		3457	//You have learned the recipe %1!
+#define CORPSEDRAG_LIMIT		4061	//You are already dragging as much as you can!
+#define CORPSEDRAG_ALREADY		4062	//You are already dragging %1.
+#define CORPSEDRAG_SOMEONE_ELSE		4063	//Someone else is dragging %1.
+#define CORPSEDRAG_BEGIN		4064	//You begin to drag %1.
+#define CORPSEDRAG_STOPALL		4065	//You stop dragging the corpses.
+#define CORPSEDRAG_STOP			4066	//You stop dragging the corpse.
 #define WHOALL_NO_RESULTS			5029	//There are no players in EverQuest that match those who filters.
 #define PETITION_NO_DELETE			5053	//You do not have a petition in the queue.
 #define PETITION_DELETED			5054	//Your petition was successfully deleted.
 #define GAIN_RAIDEXP				5085	//You gained raid experience!
 #define ADVENTURE_COMPLETE			5147	//You received %1 points for successfully completing the adventure.
 #define PET_ATTACKING				5501	//%1 tells you, 'Attacking %2 Master.'
+#define FATAL_BOW_SHOT				5745	//%1 performs a FATAL BOW SHOT!!
+#define MELEE_SILENCE				5806	//You *CANNOT* use this melee ability, you are suffering from amnesia!
 #define DISCIPLINE_REUSE_MSG		5807	//You can use the ability %1 again in %2 hour(s) %3 minute(s) %4 seconds.
 #define DISCIPLINE_REUSE_MSG2		5808	//You can use the ability %1 again in %2 minute(s) %3 seconds.
+#define FAILED_TAUNT                5811    //You have failed to taunt your target.
 #define AA_NO_TARGET				5825	//You must first select a target for this ability!
 #define GUILD_BANK_CANNOT_DEPOSIT	6097	// Cannot deposit this item.  Containers must be empty, and only one of each LORE and no NO TRADE or TEMPORARY items may be deposited.
-#define GUILD_BANK_FULL			6098	// There is no more room in the Guild Bank.
+#define GUILD_BANK_FULL				6098	// There is no more room in the Guild Bank.
 #define GUILD_BANK_TRANSFERRED		6100	// '%1' transferred to Guild Bank from Deposits.
 #define GUILD_BANK_EMPTY_HANDS		6108	// You must empty your hands to withdraw from the Guild Bank.
 #define GENERIC_STRING				6688	//%1  (used to any basic message)
@@ -249,8 +268,11 @@
 #define YOU_HEAL					9068	//You have healed %1 for %2 points of damage.
 #define OTHER_HIT_DOT				9072	//%1 has taken %2 damage from your %3.
 #define HIT_NON_MELEE				9073	//%1 hit %2 for %3 points of non-melee damage.
+#define SHAKE_OFF_STUN				9077
 #define STRIKETHROUGH_STRING		9078	//You strike through your opponent's defenses!
+#define SPELL_REFLECT				9082	//%1's spell has been reflected by %2.
 #define NEW_SPELLS_AVAIL			9149	//You have new spells available to you.  Check the merchants near your guild master.
+#define AE_RAMPAGE					11015	//%1 goes on a WILD RAMPAGE!
 #define FACE_ACCEPTED				12028	//Facial features accepted.
 #define SPELL_LEVEL_TO_LOW			12048	//You will have to achieve level %1 before you can scribe the %2.
 #define ATTACKFAILED				12158	//%1 try to %2 %3, but %4!
@@ -267,11 +289,11 @@
 #define LEADER_OF_X_GUILD			12258
 #define NOT_IN_A_GUILD				12259
 #define TARGET_PLAYER_FOR_GUILD_STATUS		12260
-#define GROUP_INVITEE_NOT_FOUND			12268	//You must target a player or use /invite <name> to invite someone to your group.
+#define GROUP_INVITEE_NOT_FOUND		12268	//You must target a player or use /invite <name> to invite someone to your group.
 #define GROUP_INVITEE_SELF			12270	//12270 You cannot invite yourself.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.
 #define ALREADY_CASTING				12442	//You are already casting a spell!
-#define SENSE_CORPSE_NOT_NAME			12446	//You don't sense any corpses of that name.
+#define SENSE_CORPSE_NOT_NAME		12446	//You don't sense any corpses of that name.
 #define SENSE_CORPSE_NONE			12447	//You don't sense any corpses.
 #define NOT_HOLDING_ITEM			12452	//You are not holding an item!
 #define SENSE_UNDEAD				12471	//You sense undead in this direction.
@@ -282,7 +304,7 @@
 #define INTERRUPT_SPELL_OTHER		12478	//%1's casting is interrupted!
 #define YOU_HIT_NONMELEE			12481	//You were hit by non-melee for %1 damage.
 #define TRACK_LOST_TARGET			12681	//You have lost your tracking target.
-#define TRACK_STRAIGHT_AHEAD			12676
+#define TRACK_STRAIGHT_AHEAD		12676
 #define TRACK_AHEAD_AND_TO			12677
 #define TRACK_TO_THE				12678
 #define TRACK_BEHIND_AND_TO			12679
@@ -299,6 +321,7 @@
 #define SURNAME_EXISTS				12939	//You already have a surname.  Operation failed.
 #define SURNAME_LEVEL				12940	//You can only submit a surname upon reaching the 20th level.  Operation failed.
 #define SURNAME_TOO_LONG			12942	//Surname must be less than 20 characters in length.
+#define REPORT_ONCE					12945	//You may only submit a report once per time that you zone. Thank you.
 #define NOW_INVISIBLE				12950	//%1 is now Invisible.
 #define NOW_VISIBLE					12951	//%1 is now Visible.
 #define GUILD_NOT_MEMBER2			12966	//You are not in a guild.

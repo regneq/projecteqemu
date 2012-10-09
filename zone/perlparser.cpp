@@ -95,6 +95,9 @@ void PerlXSParser::map_funs() {
 	"package Object;"
 	"&boot_Object;"	// load quest Object XS
 
+	"package Doors;"
+	"&boot_Doors;"	// load quest Doors XS
+
 #endif
 	"package main;"
 	"}"
@@ -508,13 +511,19 @@ XS(XS__addloot);
 XS(XS__addloot)
 {
 	dXSARGS;
+	if(items < 1 || items > 3)
+		Perl_croak(aTHX_ "Usage: addloot(item_id, charges = 0, equipitem = true)");
 
-	if(items == 1)
-		quest_manager.addloot(SvIV(ST(0)));
-	else if(items == 2)
-		quest_manager.addloot(SvIV(ST(0)), SvIV(ST(1)));
-	else
-		Perl_croak(aTHX_ "Usage: addloot(item_id, charges = 0)");
+	int32	itemid = (int32)SvUV(ST(0));
+	int16	charges = 0;
+	bool	equipitem = true;
+
+	if (items > 1)
+		charges = (int16)SvUV(ST(1));
+	if (items > 2)
+		equipitem = (bool)SvTRUE(ST(2));
+
+	quest_manager.addloot(itemid, charges, equipitem);
 
 	XSRETURN_EMPTY;
 }
@@ -548,6 +557,21 @@ XS(XS__settimer)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__settimerMS);
+XS(XS__settimerMS)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: settimerMS(timer_name, milliseconds)");
+
+	char *		timer_name = (char *)SvPV_nolen(ST(0));
+	int	milliseconds = (int)SvIV(ST(1));
+
+	quest_manager.settimerMS(timer_name, milliseconds);
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__stoptimer);
 XS(XS__stoptimer)
 {
@@ -558,6 +582,18 @@ XS(XS__stoptimer)
 	char *		timer_name = (char *)SvPV_nolen(ST(0));
 
 	quest_manager.stoptimer(timer_name);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__stopalltimers);
+XS(XS__stopalltimers)
+{
+	dXSARGS;
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: stopalltimers()");
+
+	quest_manager.stopalltimers();
 
 	XSRETURN_EMPTY;
 }
@@ -1176,13 +1212,19 @@ XS(XS__faction);
 XS(XS__faction)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: faction(faction_id, faction_value)");
+	if (items < 2 || items > 3)
+		Perl_croak(aTHX_ "Usage: faction(faction_id, faction_value, temp)");
 
 	int	faction_id = (int)SvIV(ST(0));
 	int	faction_value = (int)SvIV(ST(1));
+	int temp;
 
-	quest_manager.faction(faction_id, faction_value);
+	if(items == 2)
+		temp = 0;
+	else
+		temp = (int)SvIV(ST(2));
+
+	quest_manager.faction(faction_id, faction_value, temp);
 
 	XSRETURN_EMPTY;
 }
@@ -1212,6 +1254,21 @@ XS(XS__setguild)
 	int	new_rank = (int)SvIV(ST(1));
 
 	quest_manager.setguild(new_guild_id, new_rank);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__createguild);
+XS(XS__createguild)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: createguild(guild_name, leader)");
+
+		char *	guild_name = (char *)SvPV_nolen(ST(0));
+		char *	leader = (char *)SvPV_nolen(ST(1));		
+
+	quest_manager.CreateGuild(guild_name, leader);
 
 	XSRETURN_EMPTY;
 }
@@ -1458,6 +1515,36 @@ XS(XS__addldonpoints)
 	unsigned long		theme = (unsigned long)SvUV(ST(1));
 
 	quest_manager.addldonpoints(points, theme);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__addldonwin);
+XS(XS__addldonwin)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: addldonwin(wins, theme)");
+
+	long	wins = (long)SvIV(ST(0));
+	unsigned long		theme = (unsigned long)SvUV(ST(1));
+
+	quest_manager.addldonwin(wins, theme);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__addldonloss);
+XS(XS__addldonloss)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: addldonloss(losses, theme)");
+
+	long	losses = (long)SvIV(ST(0));
+	unsigned long		theme = (unsigned long)SvUV(ST(1));
+
+	quest_manager.addldonloss(losses, theme);
 
 	XSRETURN_EMPTY;
 }
@@ -1773,6 +1860,27 @@ XS(XS__summonburriedplayercorpse)
     XSRETURN(1);
 }
 
+XS(XS__summonallplayercorpses);
+XS(XS__summonallplayercorpses)
+{
+    dXSARGS;
+    if (items != 5)
+        Perl_croak(aTHX_ "Usage: summonallplayercorpses(char_id,dest_x,dest_y,dest_z,dest_heading)");
+
+    bool RETVAL;
+    int32    char_id = (int)SvIV(ST(0));
+    float    dest_x = (float)SvIV(ST(1));
+    float    dest_y = (float)SvIV(ST(2));
+    float    dest_z = (float)SvIV(ST(3));
+    float    dest_heading = (float)SvIV(ST(4));
+
+    RETVAL = quest_manager.summonallplayercorpses(char_id, dest_x, dest_y, dest_z, dest_heading);
+
+    ST(0) = boolSV(RETVAL);
+    sv_2mortal(ST(0));
+    XSRETURN(1);
+}
+
 XS(XS__getplayerburriedcorpsecount);
 XS(XS__getplayerburriedcorpsecount)
 {
@@ -1813,26 +1921,64 @@ XS(XS__forcedooropen);
 XS(XS__forcedooropen)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: forcedooropen(doorid)");
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: forcedooropen(doorid [, altmode=0])");
 
+	if (items == 1)
+	{
 	int32	did = (int)SvIV(ST(0));
 
-	quest_manager.forcedooropen(did);
+	quest_manager.forcedooropen(did, false);
 
 	XSRETURN_EMPTY;
+	}
+	else
+	{
+	int32	did = (int)SvIV(ST(0));
+	bool	am = (int)SvIV(ST(1)) == 0?false:true;
+
+	quest_manager.forcedooropen(did, am);
+
+	XSRETURN_EMPTY;
+	}
 }
 
 XS(XS__forcedoorclose);
 XS(XS__forcedoorclose)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: forcedoorclose(doorid)");
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: forcedoorclose(doorid [, altmode=0])");
+
+	if (items == 1)
+	{
+	int32	did = (int)SvIV(ST(0));
+
+	quest_manager.forcedoorclose(did, false);
+
+	XSRETURN_EMPTY;
+	}
+	else
+	{
+	int32	did = (int)SvIV(ST(0));
+	bool	am = (int)SvIV(ST(1)) == 0?false:true;
+
+	quest_manager.forcedoorclose(did, am);
+
+	XSRETURN_EMPTY;
+	}
+}
+
+XS(XS__toggledoorstate);
+XS(XS__toggledoorstate)
+{
+	dXSARGS;
+	if (items !=1)
+			Perl_croak(aTHX_ "Usage: toggledoorstate(doorid)");
 
 	int32	did = (int)SvIV(ST(0));
 
-	quest_manager.forcedoorclose(did);
+	quest_manager.toggledoorstate(did);
 
 	XSRETURN_EMPTY;
 }
@@ -2635,6 +2781,32 @@ XS(XS__CreateGroundObjectFromModel)
 	XSRETURN_IV(id);
 }
 
+XS(XS__CreateDoor);
+XS(XS__CreateDoor)
+{
+	dXSARGS;
+	if (items < 5 || items > 7)
+		Perl_croak(aTHX_ "Usage: createdoor(modelname, x, y, z, heading, [type], [size])");
+
+	char *		modelname = (char *)SvPV_nolen(ST(0));
+	float x = (float)SvNV(ST(1));
+	float y = (float)SvNV(ST(2));
+	float z = (float)SvNV(ST(3));
+	float heading = (float)SvNV(ST(4));
+	int32 type = 58;
+	int32 size = 100;
+	uint16 id = 0;
+
+	if (items > 5)
+		type = (int32)SvIV(ST(5));
+
+	if (items > 6)
+		size = (int32)SvIV(ST(6));
+
+	id = quest_manager.CreateDoor(modelname, x, y, z, heading, type, size);
+	XSRETURN_IV(id);
+}
+
 XS(XS__ModifyNPCStat);
 XS(XS__ModifyNPCStat)
 {
@@ -2856,21 +3028,40 @@ XS(XS__FlagInstanceByRaidLeader) {
 XS(XS__saylink);
 XS(XS__saylink) {
 	dXSARGS;
-	if (items != 1 && items != 2 && items != 3)
+	if (items < 1 || items > 3)
 		Perl_croak(aTHX_ "Usage: saylink(phrase,[silent?],[linkname])");
 	dXSTARG;
 
 	Const_char * RETVAL;
 	char text[250];
 	char text2[250];
+    bool silent = false;
 	strcpy(text,(char *)SvPV_nolen(ST(0)));
-	bool silent = ((int)SvIV(ST(1))) == 0?false:true;
+    if(items >= 2) {
+	    silent = ((int)SvIV(ST(1))) == 0 ? false : true;
+    }
 	if (items == 3)
 		strcpy(text2,(char *)SvPV_nolen(ST(2)));
 	else
 		strcpy(text2,text);
 
 	RETVAL = quest_manager.saylink(text, silent, text2);
+	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	XSRETURN(1);
+}
+
+XS(XS__getguildnamebyid);
+XS(XS__getguildnamebyid) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: getguildnamebyid(guild_id)");
+	dXSTARG;
+
+	Const_char * RETVAL;
+	uint32 guild_id = (int)SvUV(ST(0));
+
+	RETVAL = quest_manager.getguildnamebyid(guild_id);
+
 	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
 	XSRETURN(1);
 }
@@ -3072,6 +3263,129 @@ XS(XS__voicetell)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__LearnRecipe);
+XS(XS__LearnRecipe)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: LearnRecipe(recipe_id)");
+
+    uint32 recipe_id = (uint32)SvIV(ST(0));
+
+    quest_manager.LearnRecipe(recipe_id);
+
+    XSRETURN_EMPTY;
+}
+
+XS(XS__SendMail);
+XS(XS__SendMail)
+{
+    dXSARGS;
+    if (items != 4)
+        Perl_croak(aTHX_ "Usage: SendMail(to, from, subject, message)");
+
+    char *to = (char *)SvPV_nolen(ST(0));
+    char *from = (char *)SvPV_nolen(ST(1));
+    char *subject = (char *)SvPV_nolen(ST(2));
+    char *message = (char *)SvPV_nolen(ST(3));
+
+    quest_manager.SendMail(to, from, subject, message);
+
+    XSRETURN_EMPTY;
+}
+
+XS(XS__GetZoneID);
+XS(XS__GetZoneID)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: GetZoneID(zone)");
+
+    char *zone = (char *)SvPV_nolen(ST(0));
+    sint32 id = quest_manager.GetZoneID(zone);
+    
+    XSRETURN_IV(id);
+}
+
+XS(XS__GetZoneLongName);
+XS(XS__GetZoneLongName)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: GetZoneLongName(zone)");
+    dXSTARG;
+    char *zone = (char *)SvPV_nolen(ST(0));
+    Const_char* RETVAL = quest_manager.GetZoneLongName(zone);
+    
+    sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	XSRETURN(1);
+}
+
+XS(XS__GetTimeSeconds);
+XS(XS__GetTimeSeconds)
+{
+    dXSARGS;
+    if (items != 0)
+        Perl_croak(aTHX_ "Usage: GetTimeSeconds()");
+
+	uint32		seconds = 0;
+    dXSTARG;
+
+    seconds = Timer::GetTimeSeconds();
+	XSRETURN_UV(seconds);
+}
+
+XS(XS__handleturnin); // prototype to pass -Wmissing-prototypes
+XS(XS__handleturnin) {
+	dXSARGS;
+	
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: handleturnin(itemid, itemcharges)");
+	int	itemid = (int)SvIV(ST(0));
+	int	charges = (int)SvIV(ST(1));
+
+	bool returnVal = quest_manager.TurnInItem(itemid,charges);
+	
+	ST(0) = boolSV(returnVal);
+	sv_2mortal(ST(0));
+	XSRETURN(1);
+}
+
+XS(XS__completehandin); // prototype to pass -Wmissing-prototypes
+XS(XS__completehandin) {
+	dXSARGS;
+	
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: completehandin()");
+
+	quest_manager.CompleteHandIn();
+	
+	XSRETURN_EMPTY;
+}
+
+XS(XS__resethandin); // prototype to pass -Wmissing-prototypes
+XS(XS__resethandin) {
+	dXSARGS;
+	
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: resethandin()");
+
+	quest_manager.ResetHandIn();
+	
+	XSRETURN_EMPTY;
+}
+
+XS(XS__clearhandin); // prototype to pass -Wmissing-prototypes
+XS(XS__clearhandin) {
+	dXSARGS;
+	
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: clearhandin()");
+
+	quest_manager.ClearHandIn();
+	
+	XSRETURN_EMPTY;
+}
 
 /*
 This is the callback perl will look for to setup the
@@ -3111,7 +3425,9 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "addloot"), XS__addloot, file);
 		newXS(strcpy(buf, "zone"), XS__zone, file);
 		newXS(strcpy(buf, "settimer"), XS__settimer, file);
+        newXS(strcpy(buf, "settimerMS"), XS__settimerMS, file);
 		newXS(strcpy(buf, "stoptimer"), XS__stoptimer, file);
+		newXS(strcpy(buf, "stopalltimers"), XS__stopalltimers, file);
 		newXS(strcpy(buf, "emote"), XS__emote, file);
 		newXS(strcpy(buf, "shout"), XS__shout, file);
 		newXS(strcpy(buf, "shout2"), XS__shout2, file);
@@ -3153,6 +3469,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "faction"), XS__faction, file);
 		newXS(strcpy(buf, "setsky"), XS__setsky, file);
 		newXS(strcpy(buf, "setguild"), XS__setguild, file);
+		newXS(strcpy(buf, "createguild"), XS__createguild, file);
 		newXS(strcpy(buf, "settime"), XS__settime, file);
 		newXS(strcpy(buf, "itemlink"), XS__itemlink, file);
 		newXS(strcpy(buf, "signal"), XS__signal, file);
@@ -3168,8 +3485,10 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "moveto"), XS__moveto, file);
 		newXS(strcpy(buf, "resume"), XS__resume, file);
 		newXS(strcpy(buf, "addldonpoints"), XS__addldonpoints, file);
+		newXS(strcpy(buf, "addldonwin"), XS__addldonpoints, file);
+		newXS(strcpy(buf, "addldonloss"), XS__addldonpoints, file);
 		newXS(strcpy(buf, "setnexthpevent"), XS__setnexthpevent, file);
-		newXS(strcpy(buf, "setnextinchpevent"), XS__setnexthpevent, file);
+		newXS(strcpy(buf, "setnextinchpevent"), XS__setnextinchpevent, file);
 		newXS(strcpy(buf, "sethp"), XS__sethp, file);
 		newXS(strcpy(buf, "respawn"), XS__respawn, file);
 		newXS(strcpy(buf, "getItemName"), XS_qc_getItemName, file);
@@ -3187,10 +3506,12 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "set_zone_flag"), XS__set_zone_flag, file);
 		newXS(strcpy(buf, "clear_zone_flag"), XS__clear_zone_flag, file);
 		newXS(strcpy(buf, "summonburriedplayercorpse"), XS__summonburriedplayercorpse, file);
+		newXS(strcpy(buf, "summonallplayercorpses"), XS__summonallplayercorpses, file);
 		newXS(strcpy(buf, "getplayerburriedcorpsecount"), XS__getplayerburriedcorpsecount, file);
 		newXS(strcpy(buf, "buryplayercorpse"), XS__buryplayercorpse, file);
 		newXS(strcpy(buf, "forcedooropen"), XS__forcedooropen, file);
 		newXS(strcpy(buf, "forcedoorclose"), XS__forcedoorclose, file);
+		newXS(strcpy(buf, "toggledoorstate"), XS__toggledoorstate, file);
 		newXS(strcpy(buf, "isdooropen"), XS__isdooropen, file);
 		newXS(strcpy(buf, "depopall"), XS__depopall, file);
 		newXS(strcpy(buf, "depopzone"), XS__depopzone, file);
@@ -3243,6 +3564,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 		newXS(strcpy(buf, "creategroundobjectfrommodel"), XS__CreateGroundObjectFromModel, file);
+		newXS(strcpy(buf, "createdoor"), XS__CreateDoor, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
 		newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
 		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);
@@ -3250,6 +3572,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
 		newXS(strcpy(buf, "varlink"), XS__varlink, file);
 		newXS(strcpy(buf, "saylink"), XS__saylink, file);
+		newXS(strcpy(buf, "getguildnamebyid"), XS__getguildnamebyid, file);
 		newXS(strcpy(buf, "CreateInstance"), XS__CreateInstance, file);
 		newXS(strcpy(buf, "DestroyInstance"), XS__DestroyInstance, file);
 		newXS(strcpy(buf, "GetInstanceID"), XS__GetInstanceID, file);
@@ -3272,6 +3595,15 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "removetitle"), XS__removetitle, file);
 		newXS(strcpy(buf, "wearchange"), XS__wearchange, file);
 		newXS(strcpy(buf, "voicetell"), XS__voicetell, file);
+        newXS(strcpy(buf, "LearnRecipe"), XS__LearnRecipe, file);
+        newXS(strcpy(buf, "SendMail"), XS__SendMail, file);
+        newXS(strcpy(buf, "GetZoneID"), XS__GetZoneID, file);
+        newXS(strcpy(buf, "GetZoneLongName"), XS__GetZoneLongName, file);
+        newXS(strcpy(buf, "GetTimeSeconds"), XS__GetTimeSeconds, file);
+		newXS(strcpy(buf, "handleturnin"), XS__handleturnin, file);
+        newXS(strcpy(buf, "completehandin"), XS__completehandin, file);
+        newXS(strcpy(buf, "resethandin"), XS__resethandin, file);
+		newXS(strcpy(buf, "clearhandin"), XS__clearhandin, file);
 	XSRETURN_YES;
 }
 

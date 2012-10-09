@@ -67,7 +67,7 @@ public:
 	/**
 	 * Updates the ip address of the world with account id = id
 	 */
-	virtual void UpdateWorldRegistration(unsigned int id, string ip_address) { }
+	virtual void UpdateWorldRegistration(unsigned int id, string long_name, string ip_address) { }
 
 	/**
 	 * Creates new world registration for unregistered servers and returns new id

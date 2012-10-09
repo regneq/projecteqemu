@@ -40,13 +40,14 @@ public:
 	void Process();
 
 	void ClearTimers(Mob *who);
+	void ClearAllTimers();
 
 	//quest perl functions
 	void echo(int colour, const char *str);
 	void say(const char *str);
 	void say(const char *str, int8 language);
 	void me(const char *str);
-	void summonitem(int32 itemid, uint8 charges = 0);
+	void summonitem(int32 itemid, uint16 charges = 0);
 	//getZoneID(const char *short_name)
 	void write(const char *file, const char *str);
 	int16 spawn2(int npc_type, int grid, int unused, float x, float y, float z, float heading);
@@ -58,10 +59,12 @@ public:
 	void incstat(int stat, int value); //old setstat command
 	void castspell(int spell_id, int target_id);
 	void selfcast(int spell_id);
-	void addloot(int item_id, int charges = 0);
+	void addloot(int item_id, int charges = 0, bool equipitem = true);
 	void Zone(const char *zone_name);
 	void settimer(const char *timer_name, int seconds);
+    void settimerMS(const char *timer_name, int milliseconds);
 	void stoptimer(const char *timer_name);
+	void stopalltimers();
 	void emote(const char *str);
 	void shout(const char *str);
 	void shout2(const char *str);
@@ -107,9 +110,10 @@ public:
 	void attacknpc(int npc_entity_id);
 	void attacknpctype(int npc_type_id);
 	void save();
-	void faction(int faction_id, int faction_value);
+	void faction(int faction_id, int faction_value, int temp);
 	void setsky(uint8 new_sky);
 	void setguild(int32 new_guild_id, int8 new_rank);
+	void CreateGuild(const char *guild_name, const char *leader);
 	void settime(int8 new_hour, int8 new_min);
 	void itemlink(int item_id);
 	void signal(int npc_id, int wait_ms = 0);
@@ -125,6 +129,8 @@ public:
 	void moveto(float x, float y, float z, float h, bool saveguardspot);
 	void resume();
 	void addldonpoints(sint32 points, int32 theme);
+	void addldonwin(sint32 wins, int32 theme);
+	void addldonloss(sint32 losses, int32 theme);
 	void setnexthpevent(int at);
 	void setnextinchpevent(int at);
 	void respawn(int npc_type, int grid);
@@ -142,14 +148,15 @@ public:
 	void clear_zone_flag(int zone_id);
 	void sethp(int hpperc);
 	bool summonburriedplayercorpse(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading);
+	bool summonallplayercorpses(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading);
 	int32 getplayerburriedcorpsecount(int32 char_id);
 	bool buryplayercorpse(int32 char_id);
-	void forcedooropen(int32 doorid);
-	void forcedoorclose(int32 doorid);
+	void forcedooropen(int32 doorid, bool altmode);
+	void forcedoorclose(int32 doorid, bool altmode);
+	void toggledoorstate(int32 doorid);
 	bool isdooropen(int32 doorid);
 	void npcrace(int race_id);
-	void npcgender(int gender_id);
-	void npcsize(int newsize);
+	void npcgender(int gender_id);	void npcsize(int newsize);
 	void npctexture(int newtexture);
 	void playerrace(int race_id);
 	void playergender(int gender_id);
@@ -199,24 +206,30 @@ public:
 	void MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity = 0);
 	int32 MerchantCountItem(int32 NPCid, int32 itemid);
 
-	int16 CreateInstance(const char *zone, int16 version, int32 duration);
+	int16 CreateInstance(const char *zone, sint16 version, int32 duration);
 	void DestroyInstance(int16 instance_id);
-	int16 GetInstanceID(const char *zone, int16 version);
+	int16 GetInstanceID(const char *zone, sint16 version);
 	void AssignToInstance(int16 instance_id);
 	void AssignGroupToInstance(int16 instance_id);
 	void AssignRaidToInstance(int16 instance_id);
 	void MovePCInstance(int zone_id, int instance_id, float x, float y, float z, float heading);
-	void FlagInstanceByGroupLeader(int32 zone, int16 version);
-	void FlagInstanceByRaidLeader(int32 zone, int16 version);
+	void FlagInstanceByGroupLeader(int32 zone, sint16 version);
+	void FlagInstanceByRaidLeader(int32 zone, sint16 version);
 
 	const char* varlink(char* perltext, int item_id);
 	const char* saylink(char* Phrase, bool silent, char* LinkName);
+	const char* getguildnamebyid(int guild_id);
 	void SetRunning(bool val);
 	bool IsRunning();
 	void FlyMode(int8 flymode);
 	uint8 FactionValue();
 	void wearchange(int8 slot, int16 texture);
 	void voicetell(char *str, int macronum, int racenum, int gendernum);
+    void LearnRecipe(uint32 recipe_id);
+    void SendMail(const char *to, const char *from, const char *subject, const char *message);
+	int16 CreateDoor( const char* model, float x, float y, float z, float heading, int8 opentype, int16 size);
+    sint32 GetZoneID(const char *zone);
+    const char *GetZoneLongName(const char *zone);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
@@ -226,6 +239,11 @@ public:
 	inline Mob *GetOwner() const { return(owner); }
 	inline ItemInst *GetQuestItem() const {return questitem; }
 	inline bool ProximitySayInUse() { return HaveProximitySays; }
+
+	bool TurnInItem(int32 itm, int charges);
+	void CompleteHandIn();
+	void ResetHandIn();
+	void ClearHandIn();
 
 #ifdef BOTS
 	int createbotcount();

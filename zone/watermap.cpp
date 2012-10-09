@@ -24,7 +24,8 @@
 
 #include "../common/files.h"
 #include "watermap.h"
-#ifdef WIN32
+#include "../common/MiscFunctions.h"
+#ifdef _WINDOWS
 #define snprintf        _snprintf
 #endif
 
@@ -92,6 +93,13 @@ bool WaterMap::InWater(float y, float x, float z) const {
 	return(BSPReturnRegionType(1, y, x, z) == RegionTypeWater);
 }
 
+bool WaterMap::InVWater(float y, float x, float z) const {
+	if(BSP_Root == NULL) {
+		return false;
+	}
+	return(BSPReturnRegionType(1, y, x, z) == RegionTypeVWater);
+}
+
 bool WaterMap::InLava(float y, float x, float z) const {
 	if(BSP_Root == NULL) {
 		return false;
@@ -114,8 +122,7 @@ WaterMap* WaterMap::LoadWaterMapfile(const char* in_zonename, const char *direct
 
 	//have to convert to lower because the short names im getting
 	//are not all lower anymore, copy since strlwr edits the str.
-	strncpy(zBuf, in_zonename, 64);
-	zBuf[63] = '\0';
+	strn0cpy(zBuf, in_zonename, 64);
 
 	if(directory == NULL)
 		directory = MAP_DIR;

@@ -24,6 +24,7 @@ class NPC;
 //#include "spawn.h"
 
 #include <list>
+#include <deque>
 using namespace std;
 
 #include "spawn2.h"
@@ -32,9 +33,19 @@ using namespace std;
 #include "QGlobals.h"
 #include "../common/rulesys.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define  M_PI	3.141592
 #endif
+
+#define LEAVECOMBAT 0
+#define ENTERCOMBAT 1
+#define	ONDEATH		2
+#define	AFTERDEATH	3
+#define HAILED		4
+#define	KILLEDPC	5
+#define	KILLEDNPC	6
+#define	ONSPAWN		7
+#define	ONDESPAWN	8
 
 typedef struct {
 	float min_x;
@@ -53,6 +64,7 @@ struct AISpells_Struct {
 	int32	time_cancast;	// when we can cast this spell next
 	sint32	recast_delay;
 	sint16	priority;
+	sint16  resist_adjust;
 };
 
 class NPC : public Mob
@@ -68,7 +80,7 @@ public:
 	//abstract virtual function implementations requird by base abstract class
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false);
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false, bool IsFromSpell = false);
 	virtual bool HasRaid() { return false; }
 	virtual bool HasGroup() { return false; }
 	virtual Raid* GetRaid() { return 0; }
@@ -93,7 +105,15 @@ public:
 	void CalcNPCResists();
 	void CalcNPCRegen();
 	void CalcNPCDamage();
-	
+
+
+	sint32 GetActSpellDamage(int16 spell_id, sint32 value); 
+	sint32 GetActSpellHealing(int16 spell_id, sint32 value); 
+	inline void SetSpellFocusDMG(sint32 NewSpellFocusDMG) {SpellFocusDMG = NewSpellFocusDMG;} 
+	inline void SetSpellFocusHeal(sint32 NewSpellFocusHeal) {SpellFocusHeal = NewSpellFocusHeal;} 
+	sint32 SpellFocusDMG; 
+	sint32 SpellFocusHeal; 
+
 	virtual void SetTarget(Mob* mob);
 	virtual uint16 GetSkill(SkillType skill_num) const { if (skill_num <= HIGHEST_SKILL) { return skills[skill_num]; } return 0; }
 
@@ -111,9 +131,8 @@ public:
 
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other) { }
+    sint32 GetNumberOfAttacks() const { return attack_count; }
 
-	//void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	bool	DatabaseCastAccepted(int spell_id);
 	bool	IsFactionListAlly(uint32 other_faction);
 	FACTION_VALUE CheckNPCFactionAlly(sint32 other_faction);
@@ -129,22 +148,13 @@ public:
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
-	void	AddItem(const Item_Struct* item, int8 charges, int8 slot = 0);
-	void	AddItem(int32 itemid, int8 charges, int8 slot = 0);
+	void	AddItem(const Item_Struct* item, int16 charges, bool equipitem = true);
+	void	AddItem(int32 itemid, int16 charges, bool equipitem = true);
 	void	AddLootTable();
-/*
-	void	NPCSpecialAttacks(const char* parse, int permtag);
-	void	NPCDatabaseSpells(const char* parse);
-	void	NPCUnharmSpell(int spell_id);
-	void	CheckFriendlySpellStatus();
 
-	void	CheckEnemySpellStatus();
-	void	NPCHarmSpell(int target,int type);
-	void    HateSummon();
-*/	
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
 	void    RemoveItem(uint32 item_id, int16 quantity = 0, int16 slot = 0);
-//	bool	AddNPCSpells(int32 iDBSpellsID, AISpells_Struct* AIspells);
+	void	CheckMinMaxLevel(Mob *them);
 	void	ClearItemList();
 	ServerLootItem_Struct*	GetItem(int slot_id);
 	void	AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum);
@@ -154,7 +164,6 @@ public:
 	int32	CountLoot();
 	void	DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPCLootindex);
 	inline int32	GetLoottableID()	const { return loottable_id; }
-//	void	SetPetType(int16 in_type)	{ typeofpet = in_type; } // put this here because only NPCs can be anything but charmed pets
 
 	inline uint32	GetCopper()		const { return copper; }
 	inline uint32	GetSilver()		const { return silver; }
@@ -167,7 +176,7 @@ public:
 	inline void	SetPlatinum(uint32 amt)		{ platinum = amt; }
 
 
-
+    virtual sint32 CalcMaxMana();
 	void SetGrid(sint32 grid_){ grid=grid_; }
 	void SetSp2(int32 sg2){ spawn_group=sg2; }
 	void SetWaypointMax(int16 wp_){ wp_m=wp_; }
@@ -185,6 +194,9 @@ public:
 	float GetGuardPointX()	const { return guard_x; }
 	float GetGuardPointY()	const { return guard_y; }
 	float GetGuardPointZ()	const { return guard_z; }
+    float GetGuardPointH()	const { return guard_heading; }
+    EmuAppearance GetGuardPointAnim() const { return guard_anim; }
+    void SaveGuardPointAnim(EmuAppearance anim) { guard_anim = anim; }
 
 	void SetFlyMode(int8 FlyMode){ flymode=FlyMode; }
 	int32 GetFlyMode() const { return flymode; }
@@ -195,14 +207,14 @@ public:
 	void SetSecSkill(int8 skill_type)	{ sec_melee_type = skill_type; }
 
 	uint32	MerchantType;
-	void	Depop(bool StartSpawnTimer = true);
+	void	Depop(bool StartSpawnTimer = false);
 	void	Stun(int duration);
 	void	UnStun();
 	int32	GetSwarmOwner();
 	int32	GetSwarmTarget();
 	void	SetSwarmTarget(int target_id = 0);
 	
-	inline void SignalNPC(int _signal_id) { signaled = true; signal_id = _signal_id; }
+	void	SignalNPC(int _signal_id);
 	
 	inline sint32	GetNPCFactionID()	const { return npc_faction_id; }
 	inline sint32			GetPrimaryFaction()	const { return primary_faction; }
@@ -213,7 +225,10 @@ public:
 
 	float   org_x, org_y, org_z, org_heading;
 	
-	int16	GetMaxDMG() const {return max_dmg;}
+	int32	GetMaxDMG() const {return max_dmg;}
+	int32	GetMinDMG() const {return min_dmg;}
+	float	GetSlowMitigation() const {return slow_mitigation;}
+	float	GetAttackSpeed() const {return attack_speed;}
 	bool	IsAnimal() const { return(bodytype == BT_Animal); }
 	int16   GetPetSpellID() const {return pet_spell_id;}
 	void    SetPetSpellID(int16 amt) {pet_spell_id = amt;}
@@ -221,7 +236,7 @@ public:
 	void    SetTaunting(bool tog) {taunting = tog;}
 	void	PickPocket(Client* thief);
 	void	StartSwarmTimer(int32 duration) { swarm_timer.Start(duration); }
-	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint8 charges, bool equipit, bool wearchange = false);
+	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint16 charges, int8 minlevel, int8 maxlevel, bool equipit, bool wearchange = false);
 	virtual void DoClassAttacks(Mob *target);
 	void	CheckSignal();
 	
@@ -229,11 +244,10 @@ public:
 	int                 GetMaxWp() const { return max_wp; }
 	void				DisplayWaypointInfo(Client *to);
 	void				CalculateNewWaypoint();
-//	int8				CalculateHeadingToNextWaypoint();
-//	float				CalculateDistanceToNextWaypoint();
 	void				AssignWaypoints(sint32 grid);
 	void				SetWaypointPause();
 	void				UpdateWaypoint(int wp_index);
+
 	// quest wandering commands
 	void				StopWandering();
 	void				ResumeWandering();
@@ -259,7 +273,7 @@ public:
 	inline const int32 GetNPCSpellsID()	const { return npc_spells_id; }
 	
 	ItemList	itemlist; //kathgar - why is this public?  Doing other things or I would check the code
-	
+
 	NPCProximity* proximity;
 	Spawn2*	respawn2;
 	QGlobalCache *GetQGlobals() { return qGlobals; }
@@ -298,6 +312,8 @@ public:
 
 	//The corpse we make can only be looted by people who got credit for the kill
 	const bool HasPrivateCorpse() const { return NPCTypedata->private_corpse; }
+    const bool IsUnderwaterOnly() const { return NPCTypedata->underwater; }
+	const int32 GetNPCEmoteID() const { return NPCTypedata->emoteid; }
 	const char* GetRawNPCTypeName() const { return NPCTypedata->name; }
 
 	bool GetDepop() { return p_depop; }
@@ -305,6 +321,121 @@ public:
 	void NPCSlotTexture(int8 slot, int16 texture);	// Sets new material values for slots
 
 	uint32 GetAdventureTemplate() const { return adventure_template_id; }
+	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay, sint16 iResistAdjust);
+	void RemoveSpellFromNPCList(sint16 spell_id);
+    Timer *GetRefaceTimer() const { return reface_timer; }
+    const uint32 GetAltCurrencyType() const { return NPCTypedata->alt_currency_type; }
+
+	NPC_Emote_Struct* GetNPCEmote(int16 emoteid, int8 event_);
+	void DoNPCEmote(int8 event_, int16 emoteid);
+	bool CanTalk();
+
+	void AddQuestItem(ItemInst* inst) { questItems.Insert(inst); }
+
+	void ClearQuestLists()
+	{
+		ClearQuestItems(true);
+		ClearQuestDeleteItems(true);
+	}
+
+	void ResetQuestDeleteList()
+	{
+		ClearQuestDeleteItems(true);
+	}
+	
+	
+	void ClearQuestItems(bool delete_=false)
+	{
+		LinkedListIterator<ItemInst*> iterator(questItems);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			ItemInst* inst = iterator.GetData();
+			iterator.RemoveCurrent(delete_);
+		}
+
+		questItems.Clear();
+	}
+
+	void ClearQuestDeleteItems(bool delete_=false)
+	{
+		LinkedListIterator<ItemInst*> iterator(questDeletionItems);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			ItemInst* inst = iterator.GetData();
+			iterator.RemoveCurrent(delete_);
+		}
+
+		questDeletionItems.Clear();
+	}
+	
+	ItemInst* FindQuestItemByID(int32 itmID, int charges, bool flagItemForDeletion=false)
+	{
+		LinkedListIterator<ItemInst*> iterator(questItems);
+		iterator.Reset();
+		int totalCharges = 0;
+		while(iterator.MoreElements())
+		{
+			if ( iterator.GetData()->GetItem()->ID == itmID )
+			{
+				totalCharges += 1;
+
+				if ( flagItemForDeletion )
+					questDeletionItems.Insert(iterator.GetData()->Clone());
+				if ( charges > totalCharges )
+				{
+					iterator.Advance();
+					continue;
+				}
+
+				return iterator.GetData();
+			}
+			iterator.Advance();
+		}
+		return NULL;
+	}
+
+	bool DoesQuestItemExist(int32 itmID, int charges, bool flagItemForDeletion=false) { 	
+		ItemInst* inst = FindQuestItemByID(itmID,charges,flagItemForDeletion);
+		if ( inst != NULL )
+		{
+			return true;
+		}
+		else
+			return false;
+	}
+
+	void ClearQuestItem(ItemInst* inst, bool delete_=true)
+	{
+		LinkedListIterator<ItemInst*> iterator(questItems);
+		iterator.Reset();
+
+		while(iterator.MoreElements())
+		{
+			if ( iterator.GetData ()->GetItem()->ID == inst->GetItem()->ID )
+			{
+				iterator.RemoveCurrent(delete_);
+				break;
+			}
+			iterator.Advance();
+		}
+	}
+
+	void RemoveQuestDeleteItems()
+	{
+		LinkedListIterator<ItemInst*> iterator(questDeletionItems);
+		iterator.Reset();
+		while(iterator.MoreElements())
+		{
+			ClearQuestItem(iterator.GetData(),true);
+			iterator.RemoveCurrent(true);
+		}
+
+		questDeletionItems.Clear();
+	}
+
+	void PrintOutQuestItems(Client* c);
 
 protected:
 	
@@ -334,6 +465,7 @@ protected:
 	bool	combat_event;	//true if we are in combat, false otherwise
     Timer	sendhpupdate_timer;
 	Timer	enraged_timer;
+    Timer *reface_timer;
 
 	int32	npc_spells_id;
 	int8	casting_spell_AIindex;
@@ -341,7 +473,6 @@ protected:
 	int32*	pDontCastBefore_casting_spell;
 	std::vector<AISpells_Struct> AIspells;
 	bool HasAISpell;
-	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	
@@ -349,7 +480,9 @@ protected:
 	int32	max_dmg;
 	int32	min_dmg;
 	sint32	accuracy_rating;
-	
+	sint16  attack_count;
+    uint32  npc_mana;
+
 	//pet crap:
 	int16	pet_spell_id;
 	bool	taunting;
@@ -357,8 +490,7 @@ protected:
 	
 	bool npc_aggro;
 	
-	int		signal_id;
-	bool	signaled;	// used by quest signal() command
+	deque<int> signal_q;
 	
 	//waypoint crap:
 	vector<wplist> Waypoints;
@@ -367,6 +499,7 @@ protected:
 	int save_wp;
     float guard_x, guard_y, guard_z, guard_heading;
 	float guard_x_saved, guard_y_saved, guard_z_saved, guard_heading_saved;
+    EmuAppearance guard_anim;
 	float roambox_max_x;
 	float roambox_max_y;
 	float roambox_min_x;
@@ -377,7 +510,7 @@ protected:
 	int32 roambox_delay;
 	
 	int16   skills[HIGHEST_SKILL+1];
-	int32   equipment[MAX_MATERIALS];	//this is an array of item IDs
+	int32   equipment[MAX_WORN_INVENTORY];	//this is an array of item IDs
 	int16	d_meele_texture1;			//this is an item Material value
 	int16	d_meele_texture2;			//this is an item Material value (offhand)
 	int8	prim_melee_type;			//Sets the Primary Weapon attack message and animation
@@ -392,6 +525,9 @@ protected:
 	bool ldon_trap_detected;
 	QGlobalCache *qGlobals;
 	uint32 adventure_template_id;
+
+	LinkedList<ItemInst*> questItems;
+	LinkedList<ItemInst*> questDeletionItems;
 
 private:
 	int32	loottable_id;

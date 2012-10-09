@@ -29,6 +29,8 @@
 
 #define MAX_MARKED_NPCS 3
 
+enum { RoleAssist = 1, RoleTank = 2, RolePuller = 4 };
+
 class GroupIDConsumer {
 public:
 	GroupIDConsumer() { id = 0; }
@@ -49,7 +51,8 @@ public:
 	Group(int32 gid);
 	~Group();
 	
-	bool	AddMember(Mob* newmember);
+	bool	AddMember(Mob* newmember, const char* NewMemberName = NULL, int32 CharacterID = 0);
+	void	AddMember(const char* NewMemberName);
 	void	SendUpdate(int32 type,Mob* member);
 	void	SendLeadershipAAUpdate();
 	void	SendWorldGroup(int32 zone_id,Mob* zoningmember);
@@ -84,23 +87,40 @@ public:
 	bool	LearnMembers();
 	void	VerifyGroup();
 	void	BalanceHP(sint32 penalty);
+	void	BalanceMana(sint32 penalty);
+	void	HealGroup(uint32 heal_amt, Mob* caster);
 	inline	void SetGroupAAs(GroupLeadershipAA_Struct *From) { memcpy(&LeaderAbilities, From, sizeof(GroupLeadershipAA_Struct)); }
 	inline	void GetGroupAAs(GroupLeadershipAA_Struct *Into) { memcpy(Into, &LeaderAbilities, sizeof(GroupLeadershipAA_Struct)); }
 	void	UpdateGroupAAs();
 	void	SaveGroupLeaderAA();
 	void	MarkNPC(Mob* Target, int Number);
-	void	DelegateMainAssist(const char *NewMainAssistName);
-	void	UnDelegateMainAssist(const char *OldMainAssistName);
-	bool	IsMainAssist(Client *c);
+	void	DelegateMainTank(const char *NewMainAssistName, uint8 toggle = 0);
+	void	DelegateMainAssist(const char *NewMainAssistName, uint8 toggle = 0);
+	void	DelegatePuller(const char *NewMainAssistName, uint8 toggle = 0);
+	void	UnDelegateMainTank(const char *OldMainAssistName, uint8 toggle = 0);
+	void	UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle = 0);
+	void	UnDelegatePuller(const char *OldMainAssistName, uint8 toggle = 0);
 	bool	IsNPCMarker(Client *c);
-	void	SetGroupTarget(int EntityID);
-	void	NotifyTarget(Client *c);
+	void	SetGroupAssistTarget(Mob *m);
+	void	SetGroupTankTarget(Mob *m);
+	void	SetGroupPullerTarget(Mob *m);
+	bool	HasRole(Mob *m, uint8 Role);
+	void	NotifyAssistTarget(Client *c);
+	void	NotifyTankTarget(Client *c);
+	void	NotifyPullerTarget(Client *c);
 	void	DelegateMarkNPC(const char *NewNPCMarkerName);
 	void	UnDelegateMarkNPC(const char *OldNPCMarkerName);
-	void	NotifyMainAssist(Client *c);
+	void	NotifyMainTank(Client *c, uint8 toggle = 0);
+	void	NotifyMainAssist(Client *c, uint8 toggle = 0);
+	void	NotifyPuller(Client *c, uint8 toggle = 0);
 	void	NotifyMarkNPC(Client *c);
 	inline	uint32 GetNPCMarkerID() { return NPCMarkerID; }
-	inline	void SetMainAssist(char *NewMainAssistName) { MainAssistName = NewMainAssistName; }
+	void	SetMainTank(const char *NewMainTankName);
+	void	SetMainAssist(const char *NewMainAssistName);
+	void	SetPuller(const char *NewPullerName);
+	const char *GetMainTankName() { return MainTankName.c_str(); }
+	const char *GetMainAssistName() { return MainAssistName.c_str(); }
+	const char *GetPullerName() { return PullerName.c_str(); }
 	void	SetNPCMarker(const char *NewNPCMarkerName);
 	void	UnMarkNPC(int16 ID);
 	void	SendMarkedNPCsToMember(Client *c, bool Clear = false);
@@ -109,19 +129,25 @@ public:
 	void	QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void	ChangeLeader(Mob* newleader);
 	const char *GetClientNameByIndex(uint8 index);
+	void UpdateXTargetMarkedNPC(uint32 Number, Mob *m);
 	
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];
+	uint8	MemberRoles[MAX_GROUP_MEMBERS];
 	bool	disbandcheck;
 	bool	castspell;
 
 private:
 	Mob*	leader;
 	GroupLeadershipAA_Struct LeaderAbilities;
+	string	MainTankName;
 	string	MainAssistName;
+	string	PullerName;
 	string	NPCMarkerName;
 	int16	NPCMarkerID;
-	int16	TargetID;
+	int16	AssistTargetID;
+	int16	TankTargetID;
+	int16	PullerTargetID;
 	int16	MarkedNPCs[MAX_MARKED_NPCS];
 
 };

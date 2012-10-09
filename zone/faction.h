@@ -21,6 +21,7 @@
 #include "../common/types.h"
 #include "features.h"
 #include <map>
+#include <string>
 
 enum FACTION_VALUE {
 	FACTION_ALLY = 1,
@@ -30,10 +31,10 @@ enum FACTION_VALUE {
 	
     FACTION_INDIFFERENT = 5,
     
-    FACTION_APPREHENSIVE = 9,
-    FACTION_DUBIOUS = 8,
-    FACTION_THREATENLY = 7,
-    FACTION_SCOWLS = 6
+    FACTION_APPREHENSIVE = 6,
+    FACTION_DUBIOUS = 7,
+    FACTION_THREATENLY = 8,
+    FACTION_SCOWLS = 9
 };
 
 struct NPCFactionList {
@@ -43,6 +44,7 @@ struct NPCFactionList {
 	uint32	factionid[MAX_NPC_FACTIONS];
 	sint32	factionvalue[MAX_NPC_FACTIONS];
 	sint8	factionnpcvalue[MAX_NPC_FACTIONS];
+	int8	factiontemp[MAX_NPC_FACTIONS];
 };
 
 struct FactionMods
@@ -54,13 +56,10 @@ struct FactionMods
 };
 struct Faction {
 	sint32	id;
-	sint16	mod_c[16];
-	sint16	mod_r[22];
-	sint16	mod_d[17];
+    std::map<std::string, sint16> mods;
 	sint16	base;
 	char	name[50];
 };
-
 typedef map<uint32, sint16> faction_map;
 
 struct NPCFaction    
@@ -68,10 +67,11 @@ struct NPCFaction
 uint32 factionID;
 sint32 value_mod;
 sint8 npc_value;
+int8 temp;
 //bool primary;    
 }; 
 
 const char *FactionValueToString(FACTION_VALUE fv);
-char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue);
+char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue, int8 temp);
 FACTION_VALUE CalculateFaction(FactionMods* fm, sint32 tmpCharacter_value);
 #endif

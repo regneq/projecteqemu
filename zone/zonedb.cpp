@@ -342,7 +342,7 @@ void ZoneDatabase::UpdateBug(PetitionBug_Struct* bug){
 }
 
 
-bool ZoneDatabase::GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin, char* account_name, int32* lsaccountid, int8* gmspeed, bool* revoked,bool* gmhideme) {
+bool ZoneDatabase::GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin, char* account_name, int32* lsaccountid, int8* gmspeed, bool* revoked,bool* gmhideme, uint32* account_creation) {
     MYSQL_ROW row;
 	if (mysql_num_rows(result) == 1) {
 		row = mysql_fetch_row(result);
@@ -365,6 +365,9 @@ bool ZoneDatabase::GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admi
 			*revoked = atoi(row[4]);
 		if(gmhideme)
 			*gmhideme = atoi(row[5]);
+		if(account_creation)
+			*account_creation = atoul(row[6]);
+
 		return true;
 	}
 	else {
@@ -444,14 +447,14 @@ void ZoneDatabase::GetEventLogs(const char* name,char* target,int32 account_id,i
 			if(count > 255)
 				break;
 			cel->eld[count].id = atoi(row[0]);
-			strncpy(cel->eld[count].accountname,row[1],64);
+			strn0cpy(cel->eld[count].accountname,row[1],64);
 			cel->eld[count].account_id = atoi(row[2]);
 			cel->eld[count].status = atoi(row[3]);
-			strncpy(cel->eld[count].charactername,row[4],64);
-			strncpy(cel->eld[count].targetname,row[5],64);
+			strn0cpy(cel->eld[count].charactername,row[4],64);
+			strn0cpy(cel->eld[count].targetname,row[5],64);
 			sprintf(cel->eld[count].timestamp,"%s",row[6]);
-			strncpy(cel->eld[count].descriptiontype,row[7],64);
-			strncpy(cel->eld[count].details,row[8],128);
+			strn0cpy(cel->eld[count].descriptiontype,row[7],64);
+			strn0cpy(cel->eld[count].details,row[8],128);
 			cel->eventid = eventid;
 			count++;
 			cel->count = count;
@@ -830,7 +833,7 @@ void ZoneDatabase::UpdateBuyLine(uint32 CharID, uint32 BuySlot, uint32 Quantity)
 bool ZoneDatabase::GetCharacterInfoForLogin(const char* name, uint32* character_id, 
 char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, 
 uint32* pplen, uint32* guilddbid, int8* guildrank, 
-int8 *class_, int8 *level, bool *LFP, bool *LFG) {
+int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
 	_CP(Database_GetCharacterInfoForLogin);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -843,14 +846,14 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 	
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
-		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
-		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
 	if (RunQuery(query, querylen, errbuf, &result)) {
-		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG);
+		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG, NumXTargets);
 		mysql_free_result(result);
 	}
 	else {
@@ -868,7 +871,7 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result, 
 	int32* character_id, char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, 
 	ExtendedProfile_Struct *ext, uint32* pplen, uint32* guilddbid, int8* guildrank, 
-	int8 *class_, int8 *level, bool *LFP, bool *LFG) {
+	int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
 	_CP(Database_GetCharacterInfoForLogin_result);
 	
     MYSQL_ROW row;
@@ -937,6 +940,12 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 		
 		if(LFG)
 			*LFG = atoi(row[12]);
+
+		if(NumXTargets)
+		{
+			*NumXTargets = atoi(row[14]);
+		}
+
 		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF
 		for(int i = 0; i<9; i++)
 			if(pp->item_tint[i].rgb.use_tint == 1)
@@ -1029,12 +1038,14 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
             "npc_types.race,"
 			"npc_types.class,"
 			"npc_types.hp,"
+            "npc_types.mana,"
             "npc_types.gender,"
 			"npc_types.texture,"
 			"npc_types.helmtexture,"
             "npc_types.size,"
 			"npc_types.loottable_id,"
             "npc_types.merchant_id,"
+            "npc_types.alt_currency_id,"
 			"npc_types.adventure_template_id,"
 			"npc_types.trap_template,"
 			"npc_types.attack_speed,"
@@ -1050,8 +1061,10 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.DR,"
 			"npc_types.FR,"
 			"npc_types.PR,"
+			"npc_types.Corrup,"
             "npc_types.mindmg,"
             "npc_types.maxdmg,"
+            "npc_types.attack_count,"
 			"npc_types.npcspecialattks,"
             "npc_types.npc_spells_id,"
 			"npc_types.d_meele_texture1,"
@@ -1095,7 +1108,9 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.maxlevel,"
 			"npc_types.scalerate,"
 			"npc_types.private_corpse,"
-			"npc_types.unique_spawn_by_name";
+            "npc_types.unique_spawn_by_name,"
+            "npc_types.underwater,"
+			"npc_types.emoteid";
 
 		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
@@ -1109,19 +1124,21 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				int r = 0;
 				tmpNPCType->npc_id = atoi(row[r++]);
 				
-				strncpy(tmpNPCType->name, row[r++], 50);
+				strn0cpy(tmpNPCType->name, row[r++], 50);
 
 				tmpNPCType->level = atoi(row[r++]);
 				tmpNPCType->race = atoi(row[r++]);
 				tmpNPCType->class_ = atoi(row[r++]);
 				tmpNPCType->max_hp = atoi(row[r++]);
 				tmpNPCType->cur_hp = tmpNPCType->max_hp;
+                tmpNPCType->Mana = atoi(row[r++]);
 				tmpNPCType->gender = atoi(row[r++]);
 				tmpNPCType->texture = atoi(row[r++]);
 				tmpNPCType->helmtexture = atoi(row[r++]);
 				tmpNPCType->size = atof(row[r++]);
 				tmpNPCType->loottable_id = atoi(row[r++]);
 				tmpNPCType->merchanttype = atoi(row[r++]);
+                tmpNPCType->alt_currency_type = atoi(row[r++]);
 				tmpNPCType->adventure_template = atoi(row[r++]);
 				tmpNPCType->trap_template = atoi(row[r++]);
 				tmpNPCType->attack_speed = atof(row[r++]);
@@ -1137,8 +1154,10 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->DR = atoi(row[r++]);
 				tmpNPCType->FR = atoi(row[r++]);
 				tmpNPCType->PR = atoi(row[r++]);
+				tmpNPCType->Corrup = atoi(row[r++]);
 				tmpNPCType->min_dmg = atoi(row[r++]);
 				tmpNPCType->max_dmg = atoi(row[r++]);
+                tmpNPCType->attack_count = atoi(row[r++]);
 				strcpy(tmpNPCType->npc_attacks,row[r++]);
 				tmpNPCType->npc_spells_id = atoi(row[r++]);
 				tmpNPCType->d_meele_texture1 = atoi(row[r++]);
@@ -1246,10 +1265,10 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 					}
 				}
 
-				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Set see_invis flag
+				tmpNPCType->see_invis = atoi(row[r++]);
 				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag
 				if (row[r] != NULL)
-					strncpy(tmpNPCType->lastname, row[r], 32);
+					strn0cpy(tmpNPCType->lastname, row[r], 32);
 				r++;
 				
 				tmpNPCType->qglobal = atoi(row[r++])==0?false:true;	// qglobal
@@ -1260,11 +1279,13 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->see_improved_hide = atoi(row[r++])==0?false:true;
 				tmpNPCType->ATK = atoi(row[r++]);
 				tmpNPCType->accuracy_rating = atoi(row[r++]);
-				tmpNPCType->slow_mitigation = atoi(row[r++]);
+				tmpNPCType->slow_mitigation = atof(row[r++]);
 				tmpNPCType->maxlevel = atoi(row[r++]);
 				tmpNPCType->scalerate = atoi(row[r++]);
 				tmpNPCType->private_corpse = atoi(row[r++]) == 1 ? true : false;
 				tmpNPCType->unique_spawn_by_name = atoi(row[r++]) == 1 ? true : false;
+                tmpNPCType->underwater = atoi(row[r++]) == 1 ? true : false;
+				tmpNPCType->emoteid = atoi(row[r++]);
 
 				// If NPC with duplicate NPC id already in table,
 				// free item we attempted to add.
@@ -1611,7 +1632,7 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 	MYSQL_ROW row;
 
 	strcpy(gu->yourname, c->GetName());
-	GetGroupLeadershipInfo(g->GetID(), gu->leadersname, NULL, NULL, &gu->leader_aas);
+	GetGroupLeadershipInfo(g->GetID(), gu->leadersname, NULL, NULL, NULL, NULL, &gu->leader_aas);
 	gu->NPCMarkerID = g->GetNPCMarkerID();
 
 	int index = 0;
@@ -1634,9 +1655,18 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 
 	c->QueuePacket(outapp);
 	safe_delete(outapp);
-	//g->NotifyMainAssist(c);
-	//g->NotifyMarkNPC(c);
-	g->NotifyTarget(c);
+	
+	if(c->GetClientVersion() >= EQClientSoD) {
+		g->NotifyMainTank(c, 1);
+		g->NotifyPuller(c, 1);
+	}
+
+	g->NotifyMainAssist(c, 1);
+
+	g->NotifyMarkNPC(c);
+	g->NotifyAssistTarget(c);
+	g->NotifyTankTarget(c);
+	g->NotifyPullerTarget(c);
 	g->SendMarkedNPCsToMember(c);
 
 }
@@ -1733,8 +1763,7 @@ bool ZoneDatabase::LoadBlockedSpells(sint32 blockedSpellsCount, ZoneSpellsBlocke
 				into[r].xdiff = atof(row[6]);
 				into[r].ydiff = atof(row[7]);
 				into[r].zdiff = atof(row[8]);
-				strncpy(into[r].message, row[9], 255);
-				into[r].message[255] = '\0';
+				strn0cpy(into[r].message, row[9], 255);
 			}
 		}
 		mysql_free_result(result);
@@ -1859,4 +1888,407 @@ void ZoneDatabase::QGlobalPurge()
 	database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP()"), 
 		errbuf);
 	safe_delete_array(query);
+}
+
+void ZoneDatabase::InsertDoor(uint32 ddoordbid, int16 ddoorid, const char* ddoor_name, float dxpos, float dypos, float dzpos, float dheading, int8 dopentype, uint16 dguildid, int32 dlockpick, int32 dkeyitem, int8 ddoor_param, int8 dinvert, int dincline, uint16 dsize){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	int32 maxid;
+	if (!RunQuery(query, MakeAnyLenString(&query, "replace into doors (id, doorid,zone,name,pos_x,pos_y,pos_z,heading,opentype,guild,lockpick,keyitem,door_param,invert_state,incline,size) values('%i','%i','%s','%s','%f','%f','%f','%f','%i','%i','%i', '%i','%i','%i','%i','%i')", ddoordbid ,ddoorid ,zone->GetShortName(), ddoor_name, dxpos, dypos, dzpos, dheading, dopentype, dguildid, dlockpick, dkeyitem, ddoor_param, dinvert, dincline, dsize), errbuf))	{
+		cerr << "Error in InsertDoor" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+}
+
+void ZoneDatabase::LoadAltCurrencyValues(uint32 char_id, std::map<uint32, uint32> &currency) {
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT currency_id, amount FROM character_alt_currency where char_id='%u'", char_id), errbuf, &result)) {
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result)))
+		{
+			currency[atoi(row[0])] = atoi(row[1]);
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadAltCurrencyValues query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+	}
+}
+
+void ZoneDatabase::UpdateAltCurrencyValue(uint32 char_id, uint32 currency_id, uint32 value) {
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	database.RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO character_alt_currency (char_id, currency_id, amount)"
+        " VALUES('%u', '%u', '%u')", char_id, currency_id, value), 
+		errbuf);
+	safe_delete_array(query);
+}
+
+void ZoneDatabase::SaveBuffs(Client *c) {
+    char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+
+    database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_buffs` WHERE `character_id`='%u'", c->CharacterID()), 
+		errbuf);
+
+    uint32 buff_count = c->GetMaxBuffSlots();
+    Buffs_Struct *buffs = c->GetBuffs();
+    for (int i = 0; i < buff_count; i++) {
+        if(buffs[i].spellid != SPELL_UNKNOWN) {
+            if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `character_buffs` (character_id, slot_id, spell_id, "
+                "caster_level, caster_name, ticsremaining, counters, numhits, melee_rune, magic_rune, persistent, death_save_chance, "
+                "death_save_aa_chance) VALUES('%u', '%u', '%u', '%u', '%s', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
+                c->CharacterID(), i, buffs[i].spellid, buffs[i].casterlevel, buffs[i].caster_name, buffs[i].ticsremaining,
+                buffs[i].counters, buffs[i].numhits, buffs[i].melee_rune, buffs[i].magic_rune, buffs[i].persistant_buff,
+                buffs[i].deathSaveSuccessChance, buffs[i].deathsaveCasterAARank), 
+		        errbuf)) {
+                LogFile->write(EQEMuLog::Error, "Error in SaveBuffs query '%s': %s", query, errbuf);
+            }
+        }
+    }
+    safe_delete_array(query);
+}
+
+void ZoneDatabase::LoadBuffs(Client *c) {
+    Buffs_Struct *buffs = c->GetBuffs();
+    uint32 max_slots = c->GetMaxBuffSlots();
+    for(int i = 0; i < max_slots; ++i) {
+        buffs[i].spellid = SPELL_UNKNOWN;
+    }
+
+
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+    if (RunQuery(query, MakeAnyLenString(&query, "SELECT spell_id, slot_id, caster_level, caster_name, ticsremaining, counters, "
+        "numhits, melee_rune, magic_rune, persistent, death_save_chance, death_save_aa_chance FROM `character_buffs` WHERE "
+        "`character_id`='%u'", 
+        c->CharacterID()), errbuf, &result)) 
+    {
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result)))
+		{
+            uint32 slot_id = atoul(row[1]);
+            if(slot_id >= c->GetMaxBuffSlots()) {
+                continue;
+            }
+
+			uint32 spell_id = atoul(row[0]);
+            if(!IsValidSpell(spell_id)) {
+                continue;
+            }
+
+            Client *caster = entity_list.GetClientByName(row[3]);
+            uint32 caster_level = atoi(row[2]);
+            uint32 ticsremaining = atoul(row[4]);
+            uint32 counters = atoul(row[5]);
+            uint32 numhits = atoul(row[6]);
+            uint32 melee_rune = atoul(row[7]);
+            uint32 magic_rune = atoul(row[8]);
+            uint8 persistent = atoul(row[9]);
+            uint32 death_save_chance = atoul(row[10]);
+            uint32 death_save_aa_chance = atoul(row[11]);
+
+            buffs[slot_id].spellid = spell_id;
+            buffs[slot_id].casterlevel = caster_level;
+            if(caster) {
+                buffs[slot_id].casterid = caster->GetID();
+                strcpy(buffs[slot_id].caster_name, caster->GetName());
+                buffs[slot_id].client = true;
+            } else {
+                buffs[slot_id].casterid = 0;
+                strcpy(buffs[slot_id].caster_name, "");
+                buffs[slot_id].client = false;
+            }
+
+            buffs[slot_id].ticsremaining = ticsremaining;
+            buffs[slot_id].counters = counters;
+            buffs[slot_id].numhits = numhits;
+            buffs[slot_id].melee_rune = melee_rune;
+            buffs[slot_id].magic_rune = magic_rune;
+            buffs[slot_id].persistant_buff = persistent ? true : false;
+            buffs[slot_id].deathSaveSuccessChance = death_save_chance;
+            buffs[slot_id].deathsaveCasterAARank = death_save_aa_chance;
+            buffs[slot_id].UpdateClient = false;
+            if(IsRuneSpell(spell_id)) {
+                c->SetHasRune(true);
+            }
+            else if(IsMagicRuneSpell(spell_id)) {
+                c->SetHasSpellRune(true);
+            } 
+           
+			/*
+            if(IsDeathSaveSpell(spell_id)) {
+                c->SetDeathSaveChance(true);
+            }
+			*/
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadBuffs query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+        return;
+	}
+
+    max_slots = c->GetMaxBuffSlots();
+    for(int i = 0; i < max_slots; ++i) {
+        if(!IsValidSpell(buffs[i].spellid)) {
+            continue;
+        }
+
+        for(int j = 0; j < 12; ++j) {
+            bool cont = false;
+            switch(spells[buffs[i].spellid].effectid[j]) {
+            case SE_Charm:
+                buffs[i].spellid = SPELL_UNKNOWN;
+                cont = true;
+                break;
+            case SE_Illusion:
+                if(!buffs[i].persistant_buff) {
+                    buffs[i].spellid = SPELL_UNKNOWN;
+                    cont = true;
+                }
+                break;
+            }
+
+            if(cont) {
+                break;
+            }
+        }
+    }
+}
+
+void ZoneDatabase::SavePetInfo(Client *c) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	int i = 0;
+	PetInfo *petinfo = c->GetPetInfo(0);
+	PetInfo *suspended = c->GetPetInfo(1);
+
+	if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_buffs` WHERE `char_id`=%u", c->CharacterID()), 
+		errbuf)) {
+		safe_delete_array(query);
+		return;
+	}
+	safe_delete_array(query);
+	if (!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `character_pet_inventory` WHERE `char_id`=%u", c->CharacterID()), 
+		errbuf)) {
+		safe_delete_array(query);
+		// error report
+		return;
+	}
+	safe_delete_array(query);
+
+	if(!database.RunQuery(query, MakeAnyLenString(&query,
+		"INSERT INTO `character_pet_info` (`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`) "
+		"values (%u, 0, '%s', %i, %u, %u, %u) "
+		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%i, `spell_id`=%u, `hp`=%u, `mana`=%u",
+		c->CharacterID(), petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana,
+		petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana),
+		errbuf)) 
+	{
+		safe_delete_array(query);
+		return;
+	}
+	safe_delete_array(query);
+
+	for(i=0; i<BUFF_COUNT; i++) {
+		if (petinfo->Buffs[i].spellid != SPELL_UNKNOWN && petinfo->Buffs[i].spellid != 0) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
+				"`ticsremaining`, `counters`) values "
+				"(%u, 0, %u, %u, %u, %u, %d)",
+				c->CharacterID(), i, petinfo->Buffs[i].spellid, petinfo->Buffs[i].level, petinfo->Buffs[i].duration, 
+				petinfo->Buffs[i].counters),
+				errbuf);
+			safe_delete_array(query);
+		}
+		if (suspended->Buffs[i].spellid != SPELL_UNKNOWN && suspended->Buffs[i].spellid != 0) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
+				"`ticsremaining`, `counters`) values "
+				"(%u, 1, %u, %u, %u, %u, %d)",
+				c->CharacterID(), i, suspended->Buffs[i].spellid, suspended->Buffs[i].level, suspended->Buffs[i].duration, 
+				suspended->Buffs[i].counters),
+				errbuf);
+			safe_delete_array(query);
+		}
+	}
+
+	for(i=0; i<MAX_WORN_INVENTORY; i++) {
+		if(petinfo->Items[i]) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_inventory` (`char_id`, `pet`, `slot`, `item_id`) values (%u, 0, %u, %u)",
+				c->CharacterID(), i, petinfo->Items[i]), errbuf);
+			// should check for errors
+			safe_delete_array(query);
+		}
+	}
+
+	
+	if(!database.RunQuery(query, MakeAnyLenString(&query,
+		"INSERT INTO `character_pet_info` (`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`) "
+		"values (%u, 1, '%s', %u, %u, %u, %u) "
+		"ON DUPLICATE KEY UPDATE `petname`='%s', `petpower`=%i, `spell_id`=%u, `hp`=%u, `mana`=%u",
+		c->CharacterID(), suspended->Name, suspended->petpower, suspended->SpellID, suspended->HP, suspended->Mana,
+		suspended->Name, suspended->petpower, suspended->SpellID, suspended->HP, suspended->Mana),
+		errbuf)) 
+	{
+		safe_delete_array(query);
+		return;
+	}
+	safe_delete_array(query);
+
+	for(i=0; i<MAX_WORN_INVENTORY; i++) {
+		if(suspended->Items[i]) {
+			database.RunQuery(query, MakeAnyLenString(&query,
+				"INSERT INTO `character_pet_inventory` (`char_id`, `pet`, `slot`, `item_id`) values (%u, 1, %u, %u)",
+				c->CharacterID(), i, suspended->Items[i]), errbuf);
+			// should check for errors
+			safe_delete_array(query);
+		}
+	}
+
+}
+
+void ZoneDatabase::RemoveTempFactions(Client *c){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+
+	if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM faction_values WHERE temp = 1 AND char_id=%u", c->CharacterID()), errbuf)) {
+		cerr << "Error in RemoveTempFactions query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+}
+
+void ZoneDatabase::LoadPetInfo(Client *c) {
+	// Load current pet and suspended pet
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+	PetInfo *petinfo = c->GetPetInfo(0);
+	PetInfo *suspended = c->GetPetInfo(1);
+	PetInfo *pi;
+	int16 pet;
+
+	memset(petinfo, 0, sizeof(PetInfo));
+	memset(suspended, 0, sizeof(PetInfo));
+
+	if(database.RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana` from `character_pet_info` where `char_id`=%u",
+		c->CharacterID()), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result))) {
+			pet = atoi(row[0]);
+			if (pet == 0)
+				pi = petinfo;
+			else if (pet == 1)
+				pi = suspended;
+			else
+				continue;
+
+			strncpy(pi->Name,row[1],64);
+			pi->petpower = atoi(row[2]);
+			pi->SpellID = atoi(row[3]);
+			pi->HP = atoul(row[4]);
+			pi->Mana = atoul(row[5]);
+		}
+		mysql_free_result(result);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+
+
+    if (RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT `pet`, `slot`, `spell_id`, `caster_level`, `castername`, "
+		"`ticsremaining`, `counters` FROM `character_pet_buffs` "
+		"WHERE `char_id`=%u", 
+        c->CharacterID()), errbuf, &result)) 
+    {
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result)))
+		{
+			pet = atoi(row[0]);
+			if (pet == 0)
+				pi = petinfo;
+			else if (pet == 1)
+				pi = suspended;
+			else
+				continue;
+
+			uint32 slot_id = atoul(row[1]);
+			if(slot_id >= BUFF_COUNT) {
+				continue;
+			}
+
+			uint32 spell_id = atoul(row[2]);
+			if(!IsValidSpell(spell_id)) {
+				continue;
+			}
+			uint32 caster_level = atoi(row[3]);
+			int caster_id = 0;
+			// The castername field is currently unused
+			//Client *caster = entity_list.GetClientByName(row[4]);
+			//if (caster) { caster_id = caster->GetID(); }
+			uint32 ticsremaining = atoul(row[5]);
+			uint32 counters = atoul(row[6]);
+
+			pi->Buffs[slot_id].spellid = spell_id;
+			pi->Buffs[slot_id].level = caster_level;
+			pi->Buffs[slot_id].player_id = caster_id;
+			pi->Buffs[slot_id].slotid = 2;	// Always 2 in buffs struct for real buffs
+
+			pi->Buffs[slot_id].duration = ticsremaining;
+			pi->Buffs[slot_id].counters = counters;
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+        return;
+	}
+
+	if (database.RunQuery(query, MakeAnyLenString(&query,
+		"SELECT `pet`, `slot`, `item_id` FROM `character_pet_inventory` WHERE `char_id`=%u",
+		c->CharacterID()), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result))) {
+			pet = atoi(row[0]);
+			if (pet == 0)
+				pi = petinfo;
+			else if (pet == 1)
+				pi = suspended;
+			else
+				continue;
+
+			int slot = atoi(row[1]);
+			if (slot < 0 || slot > MAX_WORN_INVENTORY)
+				continue;
+
+			pi->Items[slot] = atoul(row[2]);
+		}
+		mysql_free_result(result);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in LoadPetInfo query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+        	return;
+	}
+
 }

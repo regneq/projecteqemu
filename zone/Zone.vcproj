@@ -43,9 +43,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5"
+				PreprocessorDefinitions="_WINDOWS;EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\..\Build\ZonePerl/Zone.pch"
@@ -135,7 +136,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,CATCH_CRASH,_WIN32_WINNT=0x0400,NDEBUG,ZONESERVER,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5"
+				PreprocessorDefinitions="_WINDOWS;EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,CATCH_CRASH,_WIN32_WINNT=0x0400,NDEBUG,ZONESERVER,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -163,7 +164,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib zlib.lib mysqlclient.lib advapi32.lib shell32.lib"
+				AdditionalDependencies="perl512.lib odbc32.lib odbccp32.lib wsock32.lib zlib.lib mysqlclient.lib advapi32.lib shell32.lib"
 				OutputFile=".\../Build/Zone.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -188,6 +189,7 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				OutputFile=".\../Build/Zone/Zone.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -229,7 +231,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;CATCH_CRASH;_WIN32_WINNT=0x0400;NDEBUG;ZONESERVER;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;BOTS;GROUP_ADV_USE_VIEW"
+				PreprocessorDefinitions="_WINDOWS;EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;CATCH_CRASH;_WIN32_WINNT=0x0400;NDEBUG;ZONESERVER;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;BOTS;GROUP_ADV_USE_VIEW"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -323,7 +325,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;BOTS"
+				PreprocessorDefinitions="_WINDOWS;EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;BOTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\..\Build\ZonePerl/Zone.pch"
@@ -520,10 +522,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\merc.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\mob.cpp"
 				>
 			</File>
@@ -553,6 +551,10 @@
 			</File>
 			<File
 				RelativePath=".\perl_client.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\perl_doors.cpp"
 				>
 			</File>
 			<File
@@ -625,6 +627,10 @@
 			</File>
 			<File
 				RelativePath=".\questmgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\QuestParserCollection.cpp"
 				>
 			</File>
 			<File
@@ -798,10 +804,6 @@
 			</File>
 			<File
 				RelativePath=".\masterentity.h"
-				>
-			</File>
-			<File
-				RelativePath=".\merc.h"
 				>
 			</File>
 			<File
@@ -1097,7 +1099,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\Live.cpp"
+				RelativePath="..\common\patches\HoT.cpp"
 				>
 			</File>
 			<File
@@ -1114,6 +1116,14 @@
 			</File>
 			<File
 				RelativePath="..\common\patches\Titanium.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\patches\Underfoot.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\patches\VoA.cpp"
 				>
 			</File>
 		</Filter>

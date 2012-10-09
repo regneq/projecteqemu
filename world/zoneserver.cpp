@@ -29,10 +29,13 @@
 #include "../common/guilds.h"
 #include "../common/packet_dump.h"
 #include "../common/misc.h"
+#include "../common/MiscFunctions.h"
 #include "cliententry.h"
 #include "wguild_mgr.h"
 #include "lfplist.h"
 #include "AdventureManager.h"
+#include "ucs.h"
+#include "queryserv.h"
 
 extern ClientList client_list;
 extern GroupLFPList LFPGroupList;
@@ -41,6 +44,8 @@ extern ConsoleList console_list;
 extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
 extern AdventureManager adventure_manager;
+extern UCSConnection UCSLink;
+extern QueryServConnection QSLink;
 
 ZoneServer::ZoneServer(EmuTCPConnection* itcpc) 
 : WorldTCPConnection(), tcpc(itcpc), ls_zboot(5000) {
@@ -88,13 +93,11 @@ bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 
 	if (zn)
 	{
-		strncpy(zone_name, zn, sizeof(zone_name));
-                zone_name[sizeof(zone_name)-1] = '\0';
+		strn0cpy(zone_name, zn, sizeof(zone_name));
 		if( database.GetZoneLongName( (char*)zone_name, &longname, NULL, NULL, NULL, NULL, NULL, NULL ) )
 		{
-			strncpy(long_name, longname, sizeof(long_name));
-                	long_name[sizeof(long_name)-1] = '\0';
-			safe_delete( longname );
+			strn0cpy(long_name, longname, sizeof(long_name));
+			safe_delete_array( longname );
 		}
 		else
 			strcpy(long_name, "");
@@ -226,17 +229,42 @@ bool ZoneServer::Process() {
 			}
 			break;
 		}
-		/*
-		case ServerOP_SendGroup: {
-			SendGroup_Struct* sgs=(SendGroup_Struct*)pack->pBuffer;
-			ZoneServer* zs=zoneserver_list.FindByZoneID(sgs->zoneid);
-			if(!zs)
-				zlog(WORLD__ZONE,"Could not find zone id: %i running to transfer group to!",sgs->zoneid);
-			else{
-				zs->SendPacket(pack);
-			}
+		case ServerOP_GroupInvite: {
+			if(pack->size != sizeof(GroupInvite_Struct))
+				break;
+
+			GroupInvite_Struct* gis = (GroupInvite_Struct*) pack->pBuffer;
+
+			client_list.SendPacket(gis->invitee_name, pack);
 			break;
-		}*/
+		}
+		case ServerOP_GroupFollow: {
+			if(pack->size != sizeof(ServerGroupFollow_Struct))
+				break;
+
+			ServerGroupFollow_Struct *sgfs = (ServerGroupFollow_Struct *) pack->pBuffer;
+
+			client_list.SendPacket(sgfs->gf.name1, pack);
+			break;
+		}
+		case ServerOP_GroupFollowAck: {
+			if(pack->size != sizeof(ServerGroupFollowAck_Struct))
+				break;
+
+			ServerGroupFollowAck_Struct *sgfas = (ServerGroupFollowAck_Struct *) pack->pBuffer;
+
+			client_list.SendPacket(sgfas->Name, pack);
+			break;
+		}
+		case ServerOP_GroupCancelInvite: {
+			if(pack->size != sizeof(GroupCancel_Struct))
+				break;
+
+			GroupCancel_Struct *gcs = (GroupCancel_Struct *) pack->pBuffer;
+
+			client_list.SendPacket(gcs->name1, pack);
+			break;
+		}
 		case ServerOP_GroupIDReq: {
 			SendGroupIDs();
 			break;
@@ -398,6 +426,11 @@ bool ZoneServer::Process() {
 		}
 		case ServerOP_ChannelMessage: {
 			ServerChannelMessage_Struct* scm = (ServerChannelMessage_Struct*) pack->pBuffer;
+			if(scm->chan_num == 20)
+			{
+				UCSLink.SendMessage(scm->from, scm->message);
+				break;
+			}
 			if (scm->chan_num == 7 || scm->chan_num == 14) {
 				if (scm->deliverto[0] == '*') {
 					Console* con = 0;
@@ -757,6 +790,22 @@ bool ZoneServer::Process() {
 		{
 			ServerRequestClientVersionSummary_Struct *srcvss = (ServerRequestClientVersionSummary_Struct*) pack->pBuffer;
 			client_list.SendClientVersionSummary(srcvss->Name);
+			break;
+		}
+		case ServerOP_ReloadRules:
+		{
+			zoneserver_list.SendPacket(pack);
+			rules->LoadRules(&database, "default");
+			break;
+		}
+		case ServerOP_ReloadRulesWorld:
+		{
+			rules->LoadRules(&database, "default");
+			break;
+		}
+		case ServerOP_CameraShake:
+		{
+			zoneserver_list.SendPacket(pack);
 			break;
 		}
 		case ServerOP_FriendsWho: {
@@ -1210,7 +1259,21 @@ bool ZoneServer::Process() {
 			break;
 		}
 
+		case ServerOP_UCSMailMessage: 
+		{
+			UCSLink.SendPacket(pack);
+			break;
+		}
+
+		case ServerOP_QueryServGeneric:
+		case ServerOP_Speech: 
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
+
 		case ServerOP_DepopAllPlayersCorpses:
+		case ServerOP_DepopPlayerCorpse:
 		case ServerOP_ReloadTitles:
 		case ServerOP_SpawnStatusChange:
 		case ServerOP_ReloadTasks:

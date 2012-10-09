@@ -1,7 +1,7 @@
 #ifndef SHAREDDB_H_
 #define SHAREDDB_H_
 
-#define MAX_ITEM_ID				125000
+#define MAX_ITEM_ID				200000
 
 #include "database.h"
 #include "skills.h"
@@ -35,8 +35,8 @@ public:
 	int8	GetGMSpeed(int32 account_id);
 	bool	SetHideMe(int32 account_id, int8 hideme);
 	bool	GetPlayerProfile(uint32 account_id, char* name, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, char* current_zone = 0, uint32 *current_instance = 0);
-	bool	SetPlayerProfile(uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone = 0, uint32 current_instance = 0);
-	int32	SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone = 0, uint32 current_instance = 0);
+	bool	SetPlayerProfile(uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets);
+	int32	SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets);
 	sint32	DeleteStalePlayerCorpses();
 	sint32	DeleteStalePlayerBackups();
 

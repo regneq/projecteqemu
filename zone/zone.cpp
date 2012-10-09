@@ -25,7 +25,7 @@ using namespace std;
 #include <time.h>
 #include <math.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <process.h>
 #define	 snprintf	_snprintf
 #define  vsnprintf	_vsnprintf
@@ -46,6 +46,7 @@ using namespace std;
 #include "../common/packet_dump_file.h"
 #include "../common/EQStreamFactory.h"
 #include "../common/EQStream.h"
+#include "../common/MiscFunctions.h"
 #include "ZoneConfig.h"
 #include "../common/breakdowns.h"
 #include "map.h"
@@ -59,8 +60,9 @@ using namespace std;
 #include "client_logs.h"
 #include "../common/rulesys.h"
 #include "guild_mgr.h"
+#include "QuestParserCollection.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #define strncasecmp	_strnicmp
 #define strcasecmp  _stricmp
@@ -77,10 +79,12 @@ Mutex MZoneShutdown;
 extern bool staticzone;
 Zone* zone = 0;
 volatile bool ZoneLoaded = false;
-extern Parser* parse;
+extern QuestParserCollection* parse;
 extern DBAsyncFinishedQueue MTdbafq;
 extern DBAsync *dbasync;
 void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result);
+
+
 
 bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	_ZP(Zone_Bootup);
@@ -183,8 +187,8 @@ bool Zone::LoadZoneObjects() {
 	
 	uint32 len_query = MakeAnyLenString(&query, "SELECT "
 		"id,zoneid,xpos,ypos,zpos,heading,itemid,charges,objectname,type,icon,"
-		"unknown08,unknown10,unknown20,unknown24,unknown60,unknown64,unknown68,"
-		"unknown72,unknown76 from object where zoneid=%i and version=%u", zoneid, instanceversion);
+		"unknown08,unknown10,unknown20,unknown24,unknown76"
+		" from object where zoneid=%i and (version=%u or version=-1)", zoneid, instanceversion);
 	
 	if (database.RunQuery(query, len_query, errbuf, &result)) {
 		safe_delete_array(query);
@@ -200,7 +204,7 @@ bool Zone::LoadZoneObjects() {
 					Door d;
 					memset(&d, 0, sizeof(d));
 
-					strncpy(d.zone_name, shortname, sizeof(d.zone_name));
+					strn0cpy(d.zone_name, shortname, sizeof(d.zone_name));
 					d.db_id = 1000000000 + atoi(row[0]); // Out of range of normal use for doors.id
 					d.door_id = -1; // Client doesn't care if these are all the same door_id
 					d.pos_x = atof(row[2]); // xpos
@@ -208,7 +212,7 @@ bool Zone::LoadZoneObjects() {
 					d.pos_z = atof(row[4]); // zpos
 					d.heading = atof(row[5]); // heading
 
-					strncpy(d.door_name, row[8], sizeof(d.door_name)); // objectname
+					strn0cpy(d.door_name, row[8], sizeof(d.door_name)); // objectname
 					// Strip trailing "_ACTORDEF" if present. Client won't accept it for doors.
 					int len = strlen(d.door_name);
 					if ((len > 9) && (memcmp(&d.door_name[len - 9], "_ACTORDEF", 10) == 0))
@@ -248,7 +252,7 @@ bool Zone::LoadZoneObjects() {
 			uint32 type = 0;
 			uint32 itemid = 0;
 			uint32 idx = 0;
-			sint8 charges = 0;
+			sint16 charges = 0;
 			
 			id							= (uint32)atoi(row[idx++]);
 			data.zone_id				= atoi(row[idx++]);
@@ -257,7 +261,7 @@ bool Zone::LoadZoneObjects() {
 			data.z						= atof(row[idx++]);
 			data.heading				= atof(row[idx++]);
 			itemid						= (uint32)atoi(row[idx++]);
-			charges						= (sint8)atoi(row[idx++]);
+			charges						= (sint16)atoi(row[idx++]);
 			strcpy(data.object_name, row[idx++]);
 			type						= (int8)atoi(row[idx++]);
 			icon						= (uint32)atoi(row[idx++]);
@@ -268,11 +272,6 @@ bool Zone::LoadZoneObjects() {
 			data.unknown008[1]			= (uint32)atoi(row[idx++]);
 			data.unknown020				= (uint32)atoi(row[idx++]);
 			data.unknown024				= (uint32)atoi(row[idx++]);
-//			data.unknown060				= (uint32)atoi(row[idx++]);
-															idx++;
-			data.unknown064				= (uint32)atoi(row[idx++]);
-			data.unknown068				= (uint32)atoi(row[idx++]);
-			data.unknown072				= (uint32)atoi(row[idx++]);
 			data.unknown076				= (uint32)atoi(row[idx++]);
 			data.unknown084				= 0;
 			
@@ -410,7 +409,7 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 	}
 	if(freeslot){
 		if(charges<0) //sanity check only, shouldnt happen
-			charges = 255;
+			charges = 0x7FFF;
 		database.SaveMerchantTemp(npcid, freeslot, item, charges);
 		tmp_merlist = tmpmerchanttable[npcid];
 		TempMerchantList ml2;
@@ -526,12 +525,15 @@ void Zone::LoadNewMerchantData(uint32 merchantid){
     MYSQL_RES *result;
     MYSQL_ROW row;
 	std::list<MerchantList> merlist;
-	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT item, slot FROM merchantlist WHERE merchantid=%d", merchantid), errbuf, &result)) {
+	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT item, slot, faction_required, level_required, alt_currency_cost FROM merchantlist WHERE merchantid=%d", merchantid), errbuf, &result)) {
 		while((row = mysql_fetch_row(result))) {
 			MerchantList ml;
 			ml.id = merchantid;
 			ml.item = atoul(row[0]);
 			ml.slot = atoul(row[1]);
+            ml.faction_required = atoul(row[2]);
+            ml.level_required = atoul(row[3]);
+            ml.alt_currency_cost = atoul(row[3]);            
 			merlist.push_back(ml);
 		}
 		merchanttable[merchantid] = merlist;
@@ -558,12 +560,28 @@ void Zone::LoadMerchantData_result(MYSQL_RES* result) {
 			}
 			npcid = ml.id;
 		}
+
+        std::list<MerchantList>::iterator iter = cur->second.begin();
+        bool found = false;
+        while(iter != cur->second.end()) {
+            if((*iter).item == ml.id) {
+                found = true;
+                break;
+            }
+            iter++;
+        }
+
+        if(found) {
+            continue;
+        }
+
 		ml.slot = atoul(row[1]);
 		ml.item = atoul(row[2]);
+        ml.faction_required = atoul(row[3]);
+        ml.level_required = atoul(row[4]);
+        ml.alt_currency_cost = atoul(row[5]);        
 		cur->second.push_back(ml);
 	}
-	//mysql_free_result(result);
-//	LogFile->write(EQEMuLog::Status, "Finished Loading Merchant Lists...");
 }
 
 void Zone::GetMerchantDataForZoneLoad(){
@@ -575,7 +593,7 @@ void Zone::GetMerchantDataForZoneLoad(){
 	workpt.b1() = DBA_b1_Zone_MerchantLists;
 	DBAsyncWork* dbaw = new DBAsyncWork(&database, &MTdbafq, workpt, DBAsync::Read);
 	dbaw->AddQuery(1, &query, MakeAnyLenString(&query, 
-		"select ml.merchantid,ml.slot,ml.item "
+		"select ml.merchantid,ml.slot,ml.item,ml.faction_required,ml.level_required,ml.alt_currency_cost "
 		"from merchantlist ml, npc_types nt, spawnentry se, spawn2 s2 "
 		"where nt.merchant_id=ml.merchantid and nt.id=se.npcid "
 		"and se.spawngroupid=s2.spawngroupid and s2.zone='%s' and s2.version=%u "
@@ -711,10 +729,11 @@ void Zone::Shutdown(bool quite)
 	zone->ResetAuth();
 	safe_delete(zone);
 	dbasync->CommitWrites();
+    if(parse) { parse->ReloadQuests(true); }
 	UpdateWindowTitle();
 }
 
-void Zone::LoadZoneDoors(const char* zone, int16 version)
+void Zone::LoadZoneDoors(const char* zone, sint16 version)
 {
 	LogFile->write(EQEMuLog::Status, "Loading doors for %s ...", zone);
 	
@@ -853,6 +872,7 @@ Zone::~Zone() {
 	safe_delete_array(short_name);
 	safe_delete_array(long_name);
 	safe_delete(Weather_Timer);
+	NPCEmoteList.Clear();
 	zone_point_list.Clear();
 	entity_list.Clear();
 	ClearBlockedSpells();
@@ -948,7 +968,8 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadLDoNTraps();
 	zone->LoadLDoNTrapEntries();
 	zone->LoadVeteranRewards();
-
+    zone->LoadAlternateCurrencies();
+	zone->LoadNPCEmotes(&NPCEmoteList);
 
 	//Load AA information
 	adverrornum = 500;
@@ -978,9 +999,7 @@ bool Zone::Init(bool iStaticZone) {
 			rules->LoadRules(&database, r_name.c_str());
 		}
 	}
-	
-	parse->ClearCache();
-	
+		
 	LogFile->write(EQEMuLog::Status, "Loading timezone data...");
 	zone->zone_time.setEQTimeZone(database.GetZoneTZ(zoneid, GetInstanceVersion()));
 	
@@ -1019,7 +1038,12 @@ void Zone::ReloadStaticData() {
 	
 	entity_list.RemoveAllDoors();
 	zone->LoadZoneDoors(zone->GetShortName(), zone->GetInstanceVersion());
+	entity_list.RespawnAllDoors();
+
 	zone->LoadVeteranRewards();
+    zone->LoadAlternateCurrencies();
+	NPCEmoteList.Clear();
+	zone->LoadNPCEmotes(&NPCEmoteList);
 	
 	//load the zone config file.
 	if (!LoadZoneCFG(zone->GetShortName(), zone->GetInstanceVersion(), true)) // try loading the zone name...
@@ -1061,7 +1085,7 @@ bool Zone::LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDe
 	//overwrite with our internal variables
 	strcpy(newzone_data.zone_short_name, GetShortName());
 	strcpy(newzone_data.zone_long_name, GetLongName());
-	strcpy(newzone_data.zone_short_name2,GetShortName());
+	strcpy(newzone_data.zone_short_name2, GetShortName());
 	
 	LogFile->write(EQEMuLog::Status, "Successfully loaded Zone Config.");
 	return true;
@@ -1497,7 +1521,7 @@ bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,
 	MakeAnyLenString(&query, "SELECT x, y, z, target_x, target_y, "
 		"target_z, target_zone_id, heading, target_heading, number, "
 		"target_instance, client_version_mask FROM zone_points "
-		"WHERE zone='%s' AND version=%i order by number", zonename, version);
+		"WHERE zone='%s' AND (version=%i OR version=-1) order by number", zonename, version);
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -2044,30 +2068,68 @@ void Zone::ClearBlockedSpells()
 
 bool Zone::IsSpellBlocked(int32 spell_id, float nx, float ny, float nz)
 {
-	if(blocked_spells){
-		for(int x = 0; x < totalBS; x++)
+	if (blocked_spells)
+	{
+		bool exception = false;
+		bool block_all = false;
+		for (int x = 0; x < totalBS; x++)
 		{
-			if(spell_id != blocked_spells[x].spellid)
-				continue;
+			if (blocked_spells[x].spellid == spell_id)
+			{
+				exception = true;
+			}
+				
+			if (blocked_spells[x].spellid == 0)
+			{
+				block_all = true;
+			}	
+		}
 
-			switch(blocked_spells[x].type){
-				case 1:{
+		for (int x = 0; x < totalBS; x++)
+		{
+			// If spellid is 0, block all spells in the zone
+			if (block_all)
+			{
+				// If the same zone has entries other than spellid 0, they act as exceptions and are allowed
+				if (exception)
+				{
+					return false;
+				}
+				else
+				{
 					return true;
-					break;
+				}
+			}
+			else
+			{
+				if (spell_id != blocked_spells[x].spellid)
+				{
+					continue;
 				}
 
-				case 2:{
-					if((( nx >= (blocked_spells[x].x-blocked_spells[x].xdiff)) && (nx <= (blocked_spells[x].x+blocked_spells[x].xdiff))) &&
-						(( ny >= (blocked_spells[x].y-blocked_spells[x].ydiff)) && (ny <= (blocked_spells[x].y+blocked_spells[x].ydiff))) &&
-						(( nz >= (blocked_spells[x].z-blocked_spells[x].zdiff)) && (nz <= (blocked_spells[x].z+blocked_spells[x].zdiff))))
+				switch (blocked_spells[x].type)
+				{
+					case 1:
 					{
 						return true;
+						break;
 					}
-					break;
+					case 2:
+					{
+						if ((( nx >= (blocked_spells[x].x-blocked_spells[x].xdiff)) && (nx <= (blocked_spells[x].x+blocked_spells[x].xdiff))) &&
+							(( ny >= (blocked_spells[x].y-blocked_spells[x].ydiff)) && (ny <= (blocked_spells[x].y+blocked_spells[x].ydiff))) &&
+							(( nz >= (blocked_spells[x].z-blocked_spells[x].zdiff)) && (nz <= (blocked_spells[x].z+blocked_spells[x].zdiff))))
+						{
+							return true;
+						}
+						break;
+					}
+					default:
+					{
+						continue;
+						break;
+					}
 				}
-				default:
-					continue;
-					break;
 			}
 		}
 	}
@@ -2076,19 +2138,22 @@ bool Zone::IsSpellBlocked(int32 spell_id, float nx, float ny, float nz)
 
 const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz)
 {
-	if(blocked_spells){
+	if(blocked_spells)
+	{
 		for(int x = 0; x < totalBS; x++)
 		{
-			if(spell_id != blocked_spells[x].spellid)
+			if(spell_id != blocked_spells[x].spellid && blocked_spells[x].spellid != 0)
 				continue;
 
-			switch(blocked_spells[x].type){
-				case 1:{
+			switch(blocked_spells[x].type)
+			{
+				case 1:
+				{
 					return blocked_spells[x].message;
 					break;
 				}
-
-				case 2:{
+				case 2:
+				{
 					if((( nx > (blocked_spells[x].x-blocked_spells[x].xdiff)) && (nx < (blocked_spells[x].x+blocked_spells[x].xdiff))) &&
 						(( ny > (blocked_spells[x].y-blocked_spells[x].ydiff)) && (ny < (blocked_spells[x].y+blocked_spells[x].ydiff))) &&
 						(( nz > (blocked_spells[x].z-blocked_spells[x].zdiff)) && (nz < (blocked_spells[x].z+blocked_spells[x].zdiff))))
@@ -2098,8 +2163,10 @@ const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, flo
 					break;
 				}
 				default:
+				{
 					continue;
 					break;
+				}
 			}
 		}
 	}
@@ -2253,6 +2320,35 @@ void Zone::LoadVeteranRewards()
 	}
 }
 
+void Zone::LoadAlternateCurrencies()
+{
+	AlternateCurrencies.clear();
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	AltCurrencyDefinition_Struct current_currency;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, item_id from alternate_currency"),
+		errbuf,&result)) 
+	{
+		while((row = mysql_fetch_row(result))) 
+		{
+            current_currency.id = atoi(row[0]);
+            current_currency.item_id = atoi(row[1]);
+            AlternateCurrencies.push_back(current_currency);
+		}
+
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAlternateCurrencies: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+	}
+}
+
 void Zone::UpdateQGlobal(uint32 qid, QGlobal newGlobal)
 {
 	if(newGlobal.npc_id != 0)
@@ -2364,4 +2460,33 @@ void Zone::DoAdventureActions()
 		did_adventure_actions = true;
 	}
 
+}
+
+void Zone::LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	NPCEmoteList->Clear();
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT emoteid, event_, type, text FROM npc_emotes"), errbuf, &result)) 
+	{
+		while((row = mysql_fetch_row(result))) 
+		{
+			NPC_Emote_Struct* nes = new NPC_Emote_Struct;
+			nes->emoteid = atoi(row[0]);
+			nes->event_ = atoi(row[1]);
+			nes->type = atoi(row[2]);
+			strn0cpy(nes->text, row[3], sizeof(nes->text));
+			NPCEmoteList->Insert(nes);
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadNPCEmotes: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+	}
 }

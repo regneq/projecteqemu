@@ -7,7 +7,7 @@
   -Quagmire
 */
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <winsock2.h>
 #include <windows.h>
 #else

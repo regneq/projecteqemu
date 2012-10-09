@@ -40,7 +40,7 @@ public:
 class SpawnGroup
 {
 public:
-	SpawnGroup(uint32 in_id, char* name, int in_group_spawn_limit, float dist, float maxx, float minx, float maxy, float miny, int delay_in );
+	SpawnGroup(uint32 in_id, char* name, int in_group_spawn_limit, float dist, float maxx, float minx, float maxy, float miny, int delay_in, int despawn_in, int32 despawn_timer_in );
 	~SpawnGroup();
 	uint32 GetNPCType();
 	void AddSpawnEntry( SpawnEntry* newEntry );
@@ -48,6 +48,8 @@ public:
       float roamdist;
       float roambox[4];
 	int delay;
+	int despawn;
+	int32 despawn_timer;
 private:
 	char name_[120];
     list<SpawnEntry*> list_;

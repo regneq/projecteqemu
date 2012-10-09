@@ -27,13 +27,14 @@
 #include "../common/logsys.h"
 #include "worlddb.h"
 
-
 using namespace std;
 
-//link against your Perl Lib
-#ifdef WIN32
-#pragma comment(lib, "perl510.lib")
+#if _MSC_VER >= 1600
+#ifndef GvCV_set
+#define GvCV_set(gv,cv)   (GvCV(gv) = (cv))
 #endif
+#endif
+
 
 XS(XS_EQWIO_PRINT);
 
@@ -102,10 +103,18 @@ void EQWParser::DoInit() {
 	eval_pv("sub my_sleep {}",TRUE);
 	if(gv_stashpv("CORE::GLOBAL", FALSE)) {
 		GV *exitgp = gv_fetchpv("CORE::GLOBAL::exit", TRUE, SVt_PVCV);
+		#if _MSC_VER >= 1600
+		GvCV_set(exitgp, perl_get_cv("my_exit", TRUE));	//dies on error
+		#else
 		GvCV(exitgp) = perl_get_cv("my_exit", TRUE);	//dies on error
+		#endif
 		GvIMPORTED_CV_on(exitgp);
 		GV *sleepgp = gv_fetchpv("CORE::GLOBAL::sleep", TRUE, SVt_PVCV);
+		#if _MSC_VER >= 1600 
+		GvCV_set(sleepgp, perl_get_cv("my_sleep", TRUE));	//dies on error
+		#else
 		GvCV(sleepgp) = perl_get_cv("my_sleep", TRUE);	//dies on error
+		#endif
 		GvIMPORTED_CV_on(sleepgp);
 	}
 	

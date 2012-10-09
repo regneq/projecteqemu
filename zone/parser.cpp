@@ -940,7 +940,7 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 		quest_manager.flagcheck(atoi(arglist[0]), atoi(arglist[1]));
 	}*/
 	else if (!strcmp(command,"faction")) {
-		quest_manager.faction(atoi(arglist[0]), atoi(arglist[1]));
+		quest_manager.faction(atoi(arglist[0]), atoi(arglist[1]), atoi(arglist[2]));
 	}
 	else if (!strcmp(command,"setsky")) {
 		quest_manager.setsky(atoi(arglist[0]));
@@ -1070,7 +1070,7 @@ int Parser::LoadScript(int npcid, const char * zone, Mob* activater)
 	{
 		getline(file,line);
 		string::iterator iterator = line.begin();
-		while (*iterator)
+        while (*iterator)
 		{
 			if (iterator[0] == '/' && iterator[1] == '/') break;
 			if (!ignore && *iterator == '/' && iterator[1] == '*') { ignore++; iterator++; iterator++; }
@@ -1098,7 +1098,10 @@ int Parser::LoadScript(int npcid, const char * zone, Mob* activater)
 				{
 				buffer.replace(buffer.length()-1,buffer.length(),"");
 				int heh = ParseCommands(buffer,line_num,0,0,0,0,filename);
-				if (!heh) return 0;
+				if (!heh){
+					safe_delete_array(NewEventList);
+					return 0;
+				}
 				event1->command = buffer;
 				buffer="";
 				NewEventList->Event.push_back(event1);
@@ -1690,7 +1693,7 @@ int Parser::ParseCommands(string text, int line, int justcheck, int32 npcid, Mob
 	return 1;
 }
 
-void Parser::ReloadQuests() {
+void Parser::ReloadQuests(bool with_timers) {
 	ClearCache();
 }
 

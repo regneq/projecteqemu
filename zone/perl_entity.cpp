@@ -388,7 +388,86 @@ XS(XS_EntityList_GetObjectByID)
 	}
 	XSRETURN(1);
 }
+XS(XS_EntityList_GetDoorsByDBID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EntityList_GetDoorsByDBID)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EntityList::GetDoorsByDBID(THIS, id)");
+	{
+		EntityList *		THIS;
+		Doors *		RETVAL;
+		int32		id = (int32)SvUV(ST(1));
 
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetDoorsByDBID(id);
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Doors", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_EntityList_GetDoorsByID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EntityList_GetDoorsByID)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EntityList::GetDoorsByID(THIS, id)");
+	{
+		EntityList *		THIS;
+		Doors *		RETVAL;
+		int32		id = (int32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetDoorsByID(id);
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Doors", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_EntityList_FindDoor); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EntityList_FindDoor)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EntityList::FindDoor(THIS, id)");
+	{
+		EntityList *		THIS;
+		Doors *		RETVAL;
+		int32		id = (int32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->FindDoor(id);
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Doors", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
 
 XS(XS_EntityList_GetGroupByMob); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EntityList_GetGroupByMob)
@@ -1929,6 +2008,43 @@ XS(XS_EntityList_GetObjectList)
 	XSRETURN(num_objects);
 }
 
+XS(XS_EntityList_GetDoorsList); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EntityList_GetDoorsList)
+{
+	dXSARGS;
+	int num_objects = 0;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: EntityList::GetDoorsList(THIS)");
+	{
+		EntityList *THIS;
+
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		std::list<Doors*> door_list;
+		entity_list.GetDoorsList(door_list);
+		std::list<Doors*>::iterator iter = door_list.begin();
+
+		while(iter != door_list.end())
+		{
+			Doors *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "Doors", (void*)entry);
+			XPUSHs(ST(0));
+			num_objects++;
+			iter++;
+		}
+	}
+	XSRETURN(num_objects);
+}
+
 XS(XS_EntityList_SignalAllClients); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EntityList_SignalAllClients)
 {
@@ -1988,6 +2104,9 @@ XS(boot_EntityList)
 		newXSproto(strcpy(buf, "GetClientByWID"), XS_EntityList_GetClientByWID, file, "$$");
 		newXSproto(strcpy(buf, "GetObjectByID"), XS_EntityList_GetObjectByID, file, "$");
 		newXSproto(strcpy(buf, "GetObjectByDBID"), XS_EntityList_GetObjectByDBID, file, "$");
+		newXSproto(strcpy(buf, "GetDoorsByID"), XS_EntityList_GetDoorsByID, file, "$$");
+		newXSproto(strcpy(buf, "GetDoorsByDBID"), XS_EntityList_GetDoorsByDBID, file, "$$");
+		newXSproto(strcpy(buf, "FindDoor"), XS_EntityList_FindDoor, file, "$$");
 		newXSproto(strcpy(buf, "GetGroupByMob"), XS_EntityList_GetGroupByMob, file, "$$");
 		newXSproto(strcpy(buf, "GetGroupByClient"), XS_EntityList_GetGroupByClient, file, "$$");
 		newXSproto(strcpy(buf, "GetGroupByID"), XS_EntityList_GetGroupByID, file, "$$");
@@ -2040,6 +2159,7 @@ XS(boot_EntityList)
 		newXSproto(strcpy(buf, "GetNPCList"), XS_EntityList_GetNPCList, file, "$");
 		newXSproto(strcpy(buf, "GetCorpseList"), XS_EntityList_GetCorpseList, file, "$");
 		newXSproto(strcpy(buf, "GetObjectList"), XS_EntityList_GetObjectList, file, "$");
+		newXSproto(strcpy(buf, "GetDoorsList"), XS_EntityList_GetDoorsList, file, "$");
 		newXSproto(strcpy(buf, "SignalAllClients"), XS_EntityList_SignalAllClients, file, "$$");
 	XSRETURN_YES;
 }

@@ -211,7 +211,7 @@ void LauncherLink::StartZone(const char *short_name) {
 	ServerPacket* pack = new ServerPacket(ServerOP_LauncherZoneRequest, sizeof(LauncherZoneRequest));
 	LauncherZoneRequest* s = (LauncherZoneRequest *) pack->pBuffer;
 	
-	strn0cpy(s->short_name, short_name, 16);
+	strn0cpy(s->short_name, short_name, 32);
 	s->command = ZR_Start;
 	
 	SendPacket(pack);
@@ -222,7 +222,7 @@ void LauncherLink::RestartZone(const char *short_name) {
 	ServerPacket* pack = new ServerPacket(ServerOP_LauncherZoneRequest, sizeof(LauncherZoneRequest));
 	LauncherZoneRequest* s = (LauncherZoneRequest *) pack->pBuffer;
 	
-	strn0cpy(s->short_name, short_name, 16);
+	strn0cpy(s->short_name, short_name, 32);
 	s->command = ZR_Restart;
 	
 	SendPacket(pack);
@@ -233,7 +233,7 @@ void LauncherLink::StopZone(const char *short_name) {
 	ServerPacket* pack = new ServerPacket(ServerOP_LauncherZoneRequest, sizeof(LauncherZoneRequest));
 	LauncherZoneRequest* s = (LauncherZoneRequest *) pack->pBuffer;
 	
-	strn0cpy(s->short_name, short_name, 16);
+	strn0cpy(s->short_name, short_name, 32);
 	s->command = ZR_Stop;
 	
 	SendPacket(pack);

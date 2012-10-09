@@ -17,12 +17,13 @@ Copyright (C) 2001-2008 EQEMu Development Team (http://eqemulator.net)
 	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "../common/debug.h"
 #include "tasks.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define strcasecmp _stricmp
 #endif
 
@@ -30,10 +31,7 @@ Copyright (C) 2001-2008 EQEMu Development Team (http://eqemulator.net)
 #include "../common/rulesys.h"
 #include "masterentity.h"
 #include "features.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 
 TaskManager::TaskManager() {
@@ -1866,15 +1864,13 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 			  Task->Activity[ActivityID].GoalCount,
 			  ActivityID);
 
-#ifdef EMBPERL
 		if(Task->Activity[ActivityID].GoalMethod != METHODQUEST)
 		{
 			char buf[24];
 			snprintf(buf, 23, "%d %d", ActiveTasks[TaskIndex].TaskID, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID);
 			buf[23] = '\0';
-			((PerlembParser*)parse)->Event(EVENT_TASK_STAGE_COMPLETE, 0, buf, (NPC*)NULL, c);
+            parse->EventPlayer(EVENT_TASK_STAGE_COMPLETE, c, buf, 0);
 		}
-#endif
 
 		// Flag the activity as complete
 		ActiveTasks[TaskIndex].Activity[ActivityID].State = ActivityCompleted;
@@ -1896,7 +1892,9 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 			taskmanager->SaveClientState(c, this);
 			//c->SendTaskComplete(TaskIndex);
 			c->CancelTask(TaskIndex);
-			if(Task->RewardMethod != METHODQUEST) RewardTask(c, Task);
+			//if(Task->RewardMethod != METHODQUEST) RewardTask(c, Task);
+			// If Experience and/or cash rewards are set, reward them from the task even if RewardMethod is METHODQUEST
+			RewardTask(c, Task);
 			//RemoveTask(c, TaskIndex);
 		}
 
@@ -1917,6 +1915,7 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 	switch(Task->RewardMethod) {
 
 		case METHODSINGLEID:
+		{
 			if(Task->RewardID) {
 				c->SummonItem(Task->RewardID);
 				Item = database.GetItem(Task->RewardID);
@@ -1924,8 +1923,9 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 					c->Message(15, "You receive %s as a reward.", Item->Name);
 			}
 			break;
-
+		}
 		case METHODLIST: 
+		{
 			RewardList = taskmanager->GoalListManager.GetListContents(Task->RewardID);
 			for(unsigned int i=0; i<RewardList.size(); i++) {
 				c->SummonItem(RewardList[i]);
@@ -1934,9 +1934,12 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 					c->Message(15, "You receive %s as a reward.", Item->Name);
 			}
 			break;
-
+		}
 		default:
+		{
+			// Nothing special done for METHODQUEST
 			break;
+		}
 	}
 	if(Task->CashReward) {
 		int Plat, Gold, Silver, Copper;
@@ -1991,8 +1994,19 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 		CashMessage += " pieces.";
 		c->Message(15,CashMessage.c_str());
 	}
-	if(Task->XPReward)
-		c->AddEXP(Task->XPReward); 
+	sint32 EXPReward = Task->XPReward;
+	if(EXPReward > 0) {
+		c->AddEXP(EXPReward);
+	}
+	if(EXPReward < 0) {
+		uint32 PosReward = EXPReward * -1;
+		// Minimal Level Based Exp Reward Setting is 101 (1% exp at level 1)
+		if (PosReward > 100 && PosReward < 25700) {
+			uint8 MaxLevel = PosReward / 100;
+			uint8 ExpPercent = PosReward - (MaxLevel * 100);
+			c->AddLevelBasedExp(ExpPercent, MaxLevel);
+		}
+	}
 
 	c->SendSound();
 }
@@ -2702,22 +2716,22 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 				switch(c->GetClientVersion()) {
 
-					case EQClientSoF:
-					case EQClientSoD:
-					{
-						MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
-								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
-						break;
-					}
 					case EQClient62:
 					{
 						MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 						break;
 					}
-					default:
+					case EQClientTitanium:
 					{
 						MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
+								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+						break;
+					}
+					default:
+					{
+						// All clients after Titanium
+						MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 					}
 				}
@@ -2730,21 +2744,24 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 					switch(c->GetClientVersion()) {
 
-						case EQClientSoF:
-
-							MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
-									 0x12, ItemID, Item->Name ,0x12);
-							break;
-
 						case EQClient62:
-
+						{
 							MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
 									 0x12, ItemID, Item->Name,0x12);
 							break;
-
-						default:
+						}
+						case EQClientTitanium:
+						{
 							MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
 									 0x12, ItemID, Item->Name ,0x12);
+							break;
+						}
+						default:
+						{
+							// All clients after Titanium
+							MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
+									 0x12, ItemID, Item->Name ,0x12);
+						}
 					}
 				}
 			}
@@ -2996,7 +3013,7 @@ void ClientTaskState::AcceptNewTask(Client *c, int TaskID, int NPCID) {
 		return;
 	}
 	taskmanager->SaveClientState(c, this);
-	parse->Event(EVENT_TASKACCEPTED, npc->GetNPCTypeID(), buf, npc, c);
+    parse->EventNPC(EVENT_TASKACCEPTED, npc, c, buf, 0);
 	safe_delete_array(buf);
 
 }

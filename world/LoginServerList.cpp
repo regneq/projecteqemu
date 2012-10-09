@@ -68,7 +68,7 @@ bool LoginServerList::Process() {
 	return true;
 }
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	void AutoInitLoginServer(void *tmp) {
 #else
 	void *AutoInitLoginServer(void *tmp) {

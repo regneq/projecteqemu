@@ -46,6 +46,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;EMUSHAREMEM_EXPORTS"
 				BasicRuntimeChecks="3"
@@ -171,12 +172,12 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="false"
-				ProgramDatabaseFile=".\../Build/EMuShareMem.pdb"
+				ProgramDatabaseFile=".\../Build/EMuShareMem/EMuShareMem.pdb"
 				GenerateMapFile="false"
-				MapFileName="../Build/EMuShareMem.map"
+				MapFileName="../Build/EMuShareMem/EMuShareMem.map"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\../Build/EMuShareMem.lib"
+				ImportLibrary=".\../Build/EMuShareMem/EMuShareMem.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -189,6 +190,7 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				OutputFile=".\../Build/EMuShareMem/EMuShareMem.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

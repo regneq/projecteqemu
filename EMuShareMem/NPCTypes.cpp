@@ -1,6 +1,6 @@
 #include "../common/debug.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"
@@ -17,7 +17,7 @@ MMF NPCTypesMMF;
 const MMFNPCTypes_Struct* MMFNPCTypesData = 0;
 MMFNPCTypes_Struct* MMFNPCTypesData_Writable = 0;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 extern "C" __declspec(dllexport) const NPCType* GetNPCType(uint32 id) {
 	return pGetNPCType(id);
 };

@@ -30,7 +30,7 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-float Client::GetActSpellRange(int16 spell_id, float range)
+float Client::GetActSpellRange(int16 spell_id, float range, bool IsBard)
 {
 	float extrange = 100;
 
@@ -39,21 +39,51 @@ float Client::GetActSpellRange(int16 spell_id, float range)
 	return (range * extrange) / 100;
 }
 
+
+sint32 Client::Additional_SpellDmg(int16 spell_id, bool bufftick) 
+{
+	sint32 spell_dmg = 0;
+	spell_dmg  += GetFocusEffect(focusFF_Damage_Amount, spell_id);
+	spell_dmg  += GetFocusEffect(focusSpellDamage, spell_id); 
+
+	//For DOTs you need to apply the damage over the duration of the dot to each tick (this is how live did it)
+	if (bufftick){
+		int duration = CalcBuffDuration(this, this, spell_id);
+		if (duration > 0)
+			return spell_dmg /= duration;
+		else
+			return 0;
+	}
+	return spell_dmg;
+}
+
+//Scale all NPC spell Damage via $npc->SetSpellFocusDMG(value)
+//Direct Damage is checked in Mob::SpellEffect [spell_effects.cpp]
+//DoT Damage is checked in Mob::DoBuffTic [spell_effects.cpp] (This was added for npcs in that routine)
+sint32 NPC::GetActSpellDamage(int16 spell_id, sint32 value) {
+	
+	sint32 modifier = 100;
+
+	modifier += SpellFocusDMG;
+
+	return (value * modifier / 100);
+}
+
 sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	// Important variables:
 	// value: the actual damage after resists, passed from Mob::SpellEffect
 	// modifier: modifier to damage (from spells & focus effects?)
 	// ratio: % of the modifier to apply (from AAs & natural bonus?)
 	// chance: critital chance %
-	//all of the ordering and stacking in here might be wrong, but I dont care right now.
-	
 	
 	sint32 modifier = 100;
-	
+	sint16 spell_dmg = 0;
+
+
 	//Dunno if this makes sense:
 	if (spells[spell_id].resisttype > 0)
 		modifier += GetFocusEffect((focusType)(0-spells[spell_id].resisttype), spell_id);
-	
+		
 	
 	int tt = spells[spell_id].targettype;
 	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
@@ -62,6 +92,8 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
     } else {
     	//damage spells.
 		modifier += GetFocusEffect(focusImprovedDamage, spell_id);
+		modifier += GetFocusEffect(focusSpellEffectiveness, spell_id);
+		modifier += GetFocusEffect(focusImprovedDamage2, spell_id);
 	}
 	
 	// Need to scale HT damage differently after level 40! It no longer scales by the constant value in the spell file. It scales differently, instead of 10 more damage per level, it does 30 more damage per level. So we multiply the level minus 40 times 20 if they are over level 40.
@@ -83,39 +115,30 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 
 	//spell crits, dont make sense if cast on self.
 	if(tt != ST_Self) {
+		// item SpellDmg bonus
+		// Formula = SpellDmg * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant cause more dmg than the spell itself.
+		if(this->itembonuses.SpellDmg && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
+			spell_dmg = this->itembonuses.SpellDmg * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+			if(spell_dmg > -value)
+				spell_dmg = -value;
+		}
+		
+		// Spell-based SpellDmg adds directly but it restricted by focuses.
+		spell_dmg += Additional_SpellDmg(spell_id);
+
 		int chance = RuleI(Spells, BaseCritChance);
 		sint32 ratio = RuleI(Spells, BaseCritRatio);
 
-		//here's an idea instead of bloating code with unused cases there's this thing called:
-		//case 'default'
-		switch(GetClass())
-		{
-			case WIZARD:
-			{
-				if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
-					chance += RuleI(Spells, WizCritChance);
-					ratio += RuleI(Spells, WizCritRatio);
-				}
-				break;
-			}
+		chance += itembonuses.CriticalSpellChance + spellbonuses.CriticalSpellChance + aabonuses.CriticalSpellChance;
+		ratio += itembonuses.SpellCritDmgIncrease + spellbonuses.SpellCritDmgIncrease + aabonuses.SpellCritDmgIncrease;
 
-			default: 
-				break;
-		}
-		
-		//Normal EQ: no class that has ingenuity has reg spell crit AAs too but people
-		//are free to customize so lets make sure they don't stack oddly.
-		//afaik all ranks provide a 100% bonus in damage on critical
-		switch(GetAA(aaIngenuity))
-		{
-		case 1:
-		case 2:
-		case 3: 
-			if(ratio < 100)
-				ratio = 100;
-			break;
-		default:
-			break;
+		if(GetClass() == WIZARD) {
+			if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
+				chance += RuleI(Spells, WizCritChance);
+				ratio += RuleI(Spells, WizCritRatio);
+			}
+			if(aabonuses.SpellCritDmgIncrease > 0) // wizards get an additional bonus
+				ratio +=  aabonuses.SpellCritDmgIncrease * 1.5; //108%, 115%, 124%, close to Graffe's 207%, 215%, & 225%
 		}
 		
 		//Improved Harm Touch is a guaranteed crit if you have at least one level of SCF.
@@ -124,51 +147,17 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 				chance = 100;
 		} 
 
-		switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
-		{
-			case 1:
-				chance += 2;
-				break;
-			case 2:
-				chance += 4; //some reports between 4.5% & 5%, AA description indicates 4%
-				break;
-			case 3:
-				chance += 7;
-				break;
-		}		
-
-		switch (GetAA(aaSpellCastingFuryMastery)) //ratio should carry over from Spell Casting Fury, which is 100% for all ranks
-		{
-		case 1:
-			chance += 3; //10%, Graffe = 9%?
-			break;
-		case 2:
-			chance += 5; //12%, Graffe = 11%?
-			break;
-		case 3:
-			chance += 7; //14%, Graffe = 13%?
-			break;
-		}
-
-		chance += GetAA(aaFuryofMagic) * 2;  //doesn't look like this is used
-		chance += GetAA(aaFuryofMagicMastery) * 2; //doesn't look like this is used
-		chance += GetAA(aaFuryofMagicMastery2) * 2;	//this is the current one used in DB; 16%, 18%, 20%; Graffe guesses 18-19% max
-		chance += GetAA(aaAdvancedFuryofMagicMastery) * 2; //guessing, not much data on it
-
-			
-		if(ratio > 100)		//chance increase and ratio are made up, not confirmed
-			ratio = 100;	
-
-		// Anything that will boost the crit ratio to more than 2x (AA's for example) MUST be after this line, not before	
-
-
+		/*
+		//Handled in aa_effects will focus spells from 'spellgroup=99'. (SK life tap from buff procs)
+		//If you are using an older spell file table (Pre SOF)...
+		//Use SQL optional_EnableSoulAbrasionAA to update your spells table to properly use the effect.
+		//If you do not want to update your table then you may want to enable this.
 		if(tt == ST_Tap) {
-			
 			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH){
 				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 					ratio = 100;
 
-				switch (GetAA(aaSoulAbrasion)) //Soul Abrasion
+				switch (GetAA(aaSoulAbrasion))
 				{
 				case 1:
 					modifier += 100;
@@ -182,136 +171,140 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 				}
 			}
 		}
-		
-		chance += GetAA(aaIngenuity); //nothing stating it's DD only, so we'll apply to all damage spells
-		
-		chance += GetFocusEffect(focusImprovedCritical, spell_id);
-
-		//crit damage modifiers
-		if (GetClass() == WIZARD) { //wizards get an additional bonus
-			ratio += GetAA(aaDestructiveFury) * 8; //108%, 116%, 124%, close to Graffe's 207%, 215%, & 225%
-		} else {
-			switch (GetAA(aaDestructiveFury)) //not quite linear
-			{
-				case 1:
-					ratio += 4; //104%, Graffe = 103%
-					break;
-				case 2:
-					ratio += 8; //108%, Graffe = 107%
-					break;
-				case 3:
-					ratio += 16; //116%, Graffe = 115%
-			}
-		}
+		*/
 		
 		if (chance > 0) {
 			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
 			if(MakeRandomInt(0,100) <= chance) {
 				modifier += modifier*ratio/100;
-				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
-				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+				spell_dmg *= 2;
+				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier / 100) - spell_dmg);
+				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), (-value * modifier / 100) + spell_dmg);	
 			} else 
-				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier / 100) - spell_dmg);
 		}
 	}
 	
-	return (value * modifier) / 100;
+	return ((value * modifier / 100) - spell_dmg);
+}
+
+sint32 Client::GetActDoTDamage(int16 spell_id, sint32 value) {
+
+	sint32 modifier = 100;
+	sint16 spell_dmg = 0;
+	sint16 critChance = 0;
+	sint32 ratio = 0;
+
+	modifier += GetFocusEffect(focusImprovedDamage, spell_id);
+	critChance += itembonuses.CriticalDoTChance + spellbonuses.CriticalDoTChance + aabonuses.CriticalDoTChance;
+	ratio += itembonuses.DotCritDmgIncrease + spellbonuses.DotCritDmgIncrease + aabonuses.DotCritDmgIncrease;
+	spell_dmg += Additional_SpellDmg(spell_id,true);
+	
+	// since DOTs are the Necromancer forte, give an innate bonus (Kayen: Is this a real bonus?)
+	// however, no chance to crit unless they've trained atleast one level in the AA first
+	if (GetClass() == NECROMANCER && critChance > 0)
+		critChance += 5;
+	
+	if (critChance > 0){
+		if (MakeRandomInt(0, 99) < critChance){
+			modifier += modifier*ratio/100;
+			return (((value*modifier/100)-spell_dmg)*2);
+		}
+	}
+	
+	return ((value*modifier/100)-spell_dmg);
+
+}
+
+//Scale all NPC spell healing via SetSpellFocusHeal(value)
+sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
+
+	sint32 modifier = 100;
+	modifier += SpellFocusHeal;
+	
+		// Check for buffs that affect the healrate of the target
+		if(this->GetTarget())
+		{
+			value += value * GetHealRate(spell_id) / 100; 
+		}
+
+	return (value * modifier / 100);
+}
+
+sint32 Client::Additional_Heal(int16 spell_id) 
+{
+	sint32 heal_amt = 0;
+
+	heal_amt  += GetFocusEffect(focusAdditionalHeal, spell_id);
+	heal_amt  += GetFocusEffect(focusAdditionalHeal2, spell_id);
+
+	if (heal_amt){
+		int duration = CalcBuffDuration(this, this, spell_id);
+		if (duration > 0)
+			return heal_amt /= duration;
+	}
+	
+	return heal_amt;
 }
 
 sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
+
 	sint32 modifier = 100;
-
+	sint16 heal_amt = 0;
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
-						
-	if(spells[spell_id].buffduration < 1) {
-		//non-dot
-		switch(GetAA(aaHealingAdept)) {
-		case 1:
-			modifier += 2;
-			break;
-		case 2:
-			modifier += 5;
-			break;
-		case 3:
-			modifier += 10;
-			break;
+	modifier += GetFocusEffect(focusSpellEffectiveness, spell_id);
+	heal_amt += Additional_Heal(spell_id);
+	int chance = 0;
+	
+	// Instant Heals					
+	if(spells[spell_id].buffduration < 1) 
+	{
+		// Formula = HealAmt * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant heal more than the spell itself.
+		if(this->itembonuses.HealAmt && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
+			heal_amt = this->itembonuses.HealAmt * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+			if(heal_amt > value)
+				heal_amt = value;
 		}
-		
-		switch(GetAA(aaAdvancedHealingAdept)) {
-		case 1:
-			modifier += 3;
-			break;
-		case 2:
-			modifier += 6;
-			break;
-		case 3:
-			modifier += 9;
-			break;
-		}
-		
-		int chance = 0;
-		switch(GetAA(aaHealingGift)) {
-		case 1:
-			chance = 3;
-			break;
-		case 2:
-			chance = 6;
-			break;
-		case 3:
-			chance = 10;
-			break;
-		}
-		chance += GetAA(aaAdvancedHealingGift) * 2;
 
-   if(spells[spell_id].targettype == ST_Tap) {
-   switch(GetAA(aaTheftofLife)) {
-      case 1:
-         chance += 2;
-         break;
-      case 2:
-         chance += 5;
-         break;
-      case 3:
-         chance += 10;
-         break;
-      }
-
-      switch(GetAA(aaAdvancedTheftofLife)) {
-      case 1:
-         chance += 3;
-         break;
-      case 2:
-         chance += 6;
-         break;
-      }
-   
-      switch(GetAA(aaSoulThief)) {
-      case 1:
-         chance += 2;
-         break;
-      case 2:
-         chance += 4;
-         break;
-      case 3:
-         chance += 6;
-         break;
-      }
-   }
+		// Check for buffs that affect the healrate of the target and critical heal rate of target
+		if(GetTarget()){
+			value += value * GetHealRate(spell_id) / 100;
+			chance += GetCriticalHealRate(spell_id);
+		}
 		
-		if(MakeRandomInt(0,100) < chance) {
-			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
-			return (value * modifier) / 50;
+		//Live AA - Healing Gift, Theft of Life
+		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
+		
+		if(MakeRandomInt(0,99) < chance) {
+			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier / 50) + heal_amt*2));		
+			return ((value * modifier / 50) + heal_amt*2);
 		}
 		else{
-			return (value * modifier) / 100;
+			return ((value * modifier / 100) + heal_amt);
 		}		
 	}
-					
-	return (value * modifier) / 100;
+	// Hots
+	else {
+		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
+		if(MakeRandomInt(0,99) < chance) 
+			return ((value * modifier / 50) + heal_amt*2);
+	}
+	return ((value * modifier / 100) + heal_amt);
 }
 
 sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 {
+	// Formula = Unknown exact, based off a random percent chance up to mana cost(after focuses) of the cast spell
+	if(this->itembonuses.Clairvoyance && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5)
+	{
+		sint16 mana_back = this->itembonuses.Clairvoyance * MakeRandomInt(1, 100) / 100;
+		// Doesnt generate mana, so best case is a free spell
+		if(mana_back > cost)
+			mana_back = cost;
+			
+		cost -= mana_back;
+	}
+	
 	// This formula was derived from the following resource:
 	// http://www.eqsummoners.com/eq1/specialization-library.html
 	// WildcardX
@@ -374,6 +367,20 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 
 	cost -= (cost * (PercentManaReduction / 100));
 
+	// Gift of Mana - reduces spell cost to 1 mana
+	if(focus_redux >= 100) {
+		uint32 buff_max = GetMaxTotalSlots();
+		for (int buffSlot = 0; buffSlot < buff_max; buffSlot++) {
+			if (buffs[buffSlot].spellid == 0 || buffs[buffSlot].spellid >= SPDAT_RECORDS)
+				continue;
+				
+			if(IsEffectInSpell(buffs[buffSlot].spellid, SE_ReduceManaCost)) {
+				if(CalcFocusEffect(focusManaCost, buffs[buffSlot].spellid, spell_id) == 100)
+					cost = 1;
+			}
+		}
+	}
+	
 	if(cost < 0)
 		cost = 0;
 
@@ -384,6 +391,8 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 {
 	int increase = 100;
 	increase += GetFocusEffect(focusSpellDuration, spell_id);
+	int tic_inc = 0;
+	tic_inc = GetFocusEffect(focusSpellDurByTic, spell_id);
 	
 	if(IsBeneficialSpell(spell_id))
 	{
@@ -401,8 +410,12 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 			break;
 		}
 	}
+
+	if(IsMezSpell(spell_id)) {
+		tic_inc += GetAA(aaMesmerizationMastery);
+	}
 	
-	return (duration * increase) / 100;
+	return (((duration * increase) / 100) + tic_inc);
 }
 
 sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
@@ -418,79 +431,10 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 			|| GetClass() == PALADIN || GetClass() == BEASTLORD ))
 		cast_reducer += (GetLevel()-50)*3;
 	
-	if(casttime >= 4000 && BeneficialSpell(spell_id) && CalcBuffDuration(this, this, spell_id) > 0){
-		switch (GetAA(aaSpellCastingDeftness)) {
-			case 1:
-				cast_reducer += 5;
-				break;
-			case 2:
-				cast_reducer += 10;
-				break;
-			case 3:
-				cast_reducer += 25;
-				break;
-		}
-
-		switch (GetAA(aaQuickBuff))
-		{
-			case 1:
-				cast_reducer += 10;
-				break;
-			case 2:
-				cast_reducer += 25;
-				break;
-			case 3:
-				cast_reducer += 50;
-				break;
-		}
-	}
-	if (IsSummonSpell(spell_id))
-	{
-		switch (GetAA(aaQuickSummoning))
-		{
-			case 1:
-				cast_reducer += 10;
-				break;
-			case 2:
-				cast_reducer += 25;
-				break;
-			case 3:
-				cast_reducer += 50;
-				break;
-		}
-	}
-	if (IsEvacSpell(spell_id))
-	{
-		switch (GetAA(aaQuickEvacuation))
-		{
-			case 1:
-				cast_reducer += 10;
-				break;
-			case 2:
-				cast_reducer += 25;
-				break;
-			case 3:
-				cast_reducer += 50;
-				break;
-		}
-	}
-	if (IsDamageSpell(spell_id) && spells[spell_id].cast_time >= 4000)
-	{
-		switch (GetAA(aaQuickDamage))
-		{
-			case 1:
-				cast_reducer += 2;
-				break;
-			case 2:
-				cast_reducer += 5;
-				break;
-			case 3:
-				cast_reducer += 10;
-				break;
-		}
-	}
-	if (cast_reducer > 50)
-		cast_reducer = 50;	//is this just an arbitrary limit?
+	//LIVE AA SpellCastingDeftness, QuickBuff, QuickSummoning, QuickEvacuation, QuickDamage
+	
+	if (cast_reducer > RuleI(Spells, MaxCastTimeReduction))
+		cast_reducer = RuleI(Spells, MaxCastTimeReduction);	
 	
 	casttime = (casttime*(100 - cast_reducer)/100);
 	
@@ -575,7 +519,7 @@ bool Client::TrainDiscipline(int32 itemid) {
 	int r;
 	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
 		if(m_pp.disciplines.values[r] == spell_id) {
-			Message(13, "You allready know this discipline.");
+			Message(13, "You already know this discipline.");
 			//summon them the item back...
 			SummonItem(itemid);
 			return(false);
@@ -602,6 +546,12 @@ void Client::SendDisciplineUpdate() {
 }
 
 bool Client::UseDiscipline(int32 spell_id, int32 target) {
+	// Dont let client waste a reuse timer if they can't use the disc
+	if (IsStunned() || IsFeared() || IsMezzed() || IsAmnesiad() || IsPet())
+	{
+		return(false);
+	}
+	
 	//make sure we have the spell...
 	int r;
 	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
@@ -652,13 +602,18 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	
 	if(spell.recast_time > 0)
 	{
-		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT, -1, -1, 0, -1, (uint32)DiscTimer, (spell.recast_time / 1000));
+		uint32 reduced_recast = spell.recast_time / 1000;
+		reduced_recast -= CastToClient()->GetFocusEffect(focusReduceRecastTime, spell_id);
+		if(reduced_recast < 0)
+			reduced_recast = 0;
+			
+		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT, -1, -1, 0, -1, (uint32)DiscTimer, reduced_recast);
 		if(spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
 		{
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
 			DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)outapp->pBuffer;
 			dts->TimerID = spells[spell_id].EndurTimerIndex;
-			dts->Duration = spell.recast_time / 1000;
+			dts->Duration = reduced_recast;
 			QueuePacket(outapp);
 			safe_delete(outapp);
 		}	
@@ -701,7 +656,7 @@ void EntityList::AETaunt(Client* taunter, float range) {
 // solar: causes caster to hit every mob within dist range of center with
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster, sint16 resist_adjust)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
@@ -749,12 +704,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 		{
 			if(iCounter < MAX_TARGETS_ALLOWED)
 			{
-				caster->SpellOnTarget(spell_id, curmob);
+				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust);
 			}
 		}
 		else
 		{
-			caster->SpellOnTarget(spell_id, curmob);
+			caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust);
 		}
 
 		if(!isnpc) //npcs are not target limited...
@@ -858,7 +813,7 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affe
 
 //Dook- Rampage and stuff for clients.
 //NPCs handle it differently in Mob::Rampage
-void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count) {
+void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count, bool IsFromSpell) {
 //Dook- Will need tweaking, currently no pets or players or horses 
 	LinkedListIterator<Mob*> iterator(mob_list); 
 	Mob *curmob; 
@@ -875,7 +830,7 @@ void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count) {
 			&& curmob->GetRace() != 216 && curmob->GetRace() != 472 /* dont attack horses */
 			&& (curmob->DistNoRoot(*attacker) <= dist2)
 		) {
-			attacker->Attack(curmob, Hand); 
+			attacker->Attack(curmob, Hand, false, false, IsFromSpell); 
 			hit++;
 			if(count != 0 && hit >= count)
 				return;

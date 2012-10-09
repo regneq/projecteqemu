@@ -67,7 +67,7 @@ CREATE TABLE spawn_events (
 Spawn2::Spawn2(int32 in_spawn2_id, int32 spawngroup_id, 
 	float in_x, float in_y, float in_z, float in_heading, 
 	int32 respawn, int32 variance, int32 timeleft, int32 grid,
-	uint16 in_cond_id, sint16 in_min_value, bool in_enabled)
+	uint16 in_cond_id, sint16 in_min_value, bool in_enabled, EmuAppearance anim)
 : timer(100000)
 {
 	spawn2_id = in_spawn2_id;
@@ -83,7 +83,8 @@ Spawn2::Spawn2(int32 in_spawn2_id, int32 spawngroup_id,
 	condition_min_value = in_min_value;
 	npcthis = NULL;
 	enabled = in_enabled;
-	
+	this->anim = anim;
+
 	if(timeleft == 0xFFFFFFFF) {
 		//special disable timeleft
 		timer.Disable();
@@ -106,7 +107,7 @@ int32 Spawn2::resetTimer()
 	int32 rspawn = respawn_ * 1000;
 	
 	if (variance_ != 0) {
-		int var_over_2 = variance_/2;
+		int var_over_2 = (variance_ * 1000) / 2;
 		rspawn = MakeRandomInt(rspawn - var_over_2, rspawn + var_over_2);
 		
 		//put a lower bound on it, not a lot of difference below 100, so set that as the bound.
@@ -118,13 +119,35 @@ int32 Spawn2::resetTimer()
 	
 }
 
+int32 Spawn2::despawnTimer(int32 despawn_timer)
+{
+	int32 dspawn = despawn_timer * 1000;
+	
+	if (variance_ != 0) {
+		int var_over_2 = (variance_ * 1000) / 2;
+		dspawn = MakeRandomInt(dspawn - var_over_2, dspawn + var_over_2);
+		
+		//put a lower bound on it, not a lot of difference below 100, so set that as the bound.
+		if(dspawn < 100)
+			dspawn = 100;
+	}
+	
+	return (dspawn);
+	
+}
+
 bool Spawn2::Process() {
 	_ZP(Spawn2_Process);
+
+	IsDespawned = false;
 
 	if(!Enabled())
 		return true;
 
-	if(NPCPointerValid())
+	//grab our spawn group
+	SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
+
+	if(NPCPointerValid() && (sg->despawn == 0 || condition_id != 0))
 		return true;
 
 	if (timer.Check())	{
@@ -141,8 +164,6 @@ bool Spawn2::Process() {
 			return(true);
 		}
 		
-		//grab our spawn group
-		SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
 		if (sg == NULL) {
 			database.LoadSpawnGroupsByID(spawngroup_id_,&zone->spawn_group_list);
 			sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
@@ -187,6 +208,12 @@ bool Spawn2::Process() {
 			}
 		}
 
+		if(sg->despawn != 0 && condition_id == 0)
+			zone->Despawn(spawn2_id);
+
+		if(IsDespawned)
+			return true;
+
 		if(spawn2_id)
 			database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), 0);
 		
@@ -195,6 +222,8 @@ bool Spawn2::Process() {
 		npcthis = npc;
 		npc->AddLootTable();
 		npc->SetSp2(spawngroup_id_);
+        npc->SaveGuardPointAnim(anim);
+        npc->SetAppearance((EmuAppearance)anim);
 		entity_list.AddNPC(npc);
 		//this limit add must be done after the AddNPC since we need the entity ID.
 		entity_list.LimitAddNPC(npc);
@@ -260,6 +289,44 @@ void Spawn2::Repop(int32 delay) {
 	npcthis = NULL;
 }
 
+void Spawn2::ForceDespawn()
+{
+	SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
+
+	if(npcthis != NULL)
+	{
+		if(!npcthis->IsEngaged())
+		{
+			if(sg->despawn == 3 || sg->despawn == 4)
+			{
+				npcthis->Depop(true);
+				IsDespawned = true;
+				return;
+			}
+			else
+			{
+				npcthis->Depop(false);
+			}
+		}
+	}
+
+	int32 cur = 100000;
+	int32 dtimer = sg->despawn_timer;
+
+	if(sg->despawn == 1 || sg->despawn == 3)
+	{
+		cur = resetTimer();
+	}
+
+	if(sg->despawn == 2 || sg->despawn == 4)
+	{
+		cur = despawnTimer(dtimer);
+	}
+
+	_log(SPAWNS__MAIN, "Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
+	timer.Start(cur);
+}
+
 //resets our spawn as if we just died
 void Spawn2::DeathReset()
 {
@@ -280,7 +347,7 @@ void Spawn2::DeathReset()
 	}
 }
 
-bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int16 version, int32 repopdelay) {
+bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, sint16 version, int32 repopdelay) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -288,8 +355,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 	
 	const char *zone_name = database.GetZoneName(zoneid);
 
-	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled FROM spawn2 WHERE zone='%s' AND version=%u", zone_name, version);
-	
+	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled, animation FROM spawn2 WHERE zone='%s' AND version=%u", zone_name, version);	
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -299,7 +365,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 			
 			bool perl_enabled = atoi(row[11]) == 1 ? true : false;
 			int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0]), zone->GetInstanceID()) * 1000);
-			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled);	
+			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled, (EmuAppearance)atoi(row[12]));	
 			spawn2_list.Insert( newSpawn );
 		}
 		mysql_free_result(result);
@@ -321,13 +387,12 @@ Spawn2* ZoneDatabase::LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2i
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled FROM spawn2 WHERE id=%i", spawn2id), errbuf, &result))
-	{
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value, enabled, animation FROM spawn2 WHERE id=%i", spawn2id), errbuf, &result))	{
 		if (mysql_num_rows(result) == 1)
 		{
 			row = mysql_fetch_row(result);
 			bool perl_enabled = atoi(row[11]) == 1 ? true : false;
-			Spawn2* newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), timeleft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled);
+			Spawn2* newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), timeleft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled, (EmuAppearance)atoi(row[12]));
 			spawn2_list.Insert( newSpawn );
 			mysql_free_result(result);
 			safe_delete_array(query);
@@ -420,6 +485,18 @@ void Zone::DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index) {
 		(*spawn2index)++;
 		iterator.RemoveCurrent();
 
+	}
+}
+
+void Zone::Despawn(uint32 spawn2ID) {
+	LinkedListIterator<Spawn2*> iterator(spawn2_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Spawn2 *cur = iterator.GetData();
+		if(spawn2ID == cur->spawn2_id)
+			cur->ForceDespawn();
+		iterator.Advance();
 	}
 }
 
@@ -688,12 +765,12 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name, uint32 in
 	
 	//load spawn conditions	
 	SpawnCondition cond;
-	len = MakeAnyLenString(&query, "SELECT id, onchange FROM spawn_conditions WHERE zone='%s'", zone_name);
+	len = MakeAnyLenString(&query, "SELECT id, onchange, value FROM spawn_conditions WHERE zone='%s'", zone_name);
 	if (database.RunQuery(query, len, errbuf, &result)) {
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {
 			cond.condition_id = atoi(row[0]);
-			cond.value = 0;
+			cond.value = atoi(row[2]);
 			cond.on_change = (SpawnCondition::OnChange) atoi(row[1]);
 			spawn_conditions[cond.condition_id] = cond;
 			

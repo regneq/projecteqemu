@@ -18,7 +18,6 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#define CONSOLE_TIMEOUT 600000
 enum {
 	consoleLoginStatus = 50,	//ability to log in, basic commands.
 	httpLoginStatus = 100,		//can log into the HTTP interface

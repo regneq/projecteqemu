@@ -103,7 +103,7 @@ public:
 	void SendChannelMessageByNumber(string Message);
 	void SendChannelList();
 	void CloseConnection();
-	void ToggleAnnounce();
+	void ToggleAnnounce(string State);
 	bool IsAnnounceOn() { return (Announce == true); }
 	void AnnounceJoin(ChatChannel *Channel, Client *c);
 	void AnnounceLeave(ChatChannel *Channel, Client *c);
@@ -169,6 +169,7 @@ private:
 	int AttemptedMessages;
 	bool ForceDisconnect;
 	ConnectionType TypeOfConnection;
+	bool UnderfootOrLater;
 };
 
 class Clientlist {
@@ -180,8 +181,10 @@ public:
 	Client *FindCharacter(string CharacterName);
 	void	CheckForStaleConnections(Client *c);
 	Client *IsCharacterOnline(string CharacterName);
+	void ProcessOPMailCommand(Client *c, string CommandString);
 
 private:
+
 	EQStreamFactory *chatsf;
 
 	list<Client*> ClientChatConnections;

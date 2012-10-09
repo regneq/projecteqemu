@@ -1,5 +1,5 @@
 APP=ucs
-SF= ucs.o  clientlist.o ../common/timer.o ../common/packet_dump.o ../common/unix.o \
+SF= ucs.o  clientlist.o ../common/timer.o ../common/packet_dump.o ../common/unix.o worldserver.o\
    ../common/Mutex.o ../common/MiscFunctions.o \
    ../common/TCPConnection.o ../common/eqtime.o ../common/crc32.o \
    ../common/md5.o \
@@ -14,7 +14,7 @@ SF= ucs.o  clientlist.o ../common/timer.o ../common/packet_dump.o ../common/unix
    ../common/TCPServer.o ../common/EmuTCPConnection.o \
    ../common/SocketLib/Base64.o ../common/SocketLib/File.o  \
    ../common/dbcore.o database.o ../common/EQEmuConfig.o \
-   .obj/rulesys.o \
+   .obj/rulesys.o ../common/worldconn.o\
    ucsconfig.o chatchannel.o \
    ../common/XMLParser.o ../common/tinyxml/tinystr.o \
    ../common/tinyxml/tinyxml.o ../common/tinyxml/tinyxmlerror.o ../common/tinyxml/tinyxmlparser.o 

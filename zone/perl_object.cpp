@@ -836,7 +836,7 @@ XS(XS_Object_GetEntityVariable)
 		Perl_croak(aTHX_ "Usage: Object::GetEntityVariable(THIS, id)");
 	{
 		Object *		THIS;
-		int32		id = (int32)SvIV(ST(1));
+		Const_char *id = SvPV_nolen(ST(1));
 		Const_char *		RETVAL;
 		dXSTARG;
 
@@ -863,7 +863,7 @@ XS(XS_Object_EntityVariableExists)
 		Perl_croak(aTHX_ "Usage: Object::EntityVariableExists(THIS, id)");
 	{
 		Object *		THIS;
-		int32		id = (int32)SvIV(ST(1));
+		Const_char *id = SvPV_nolen(ST(1));
 		bool		RETVAL;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -890,7 +890,7 @@ XS(XS_Object_SetEntityVariable)
 		Perl_croak(aTHX_ "Usage: Object::SetEntityVariable(THIS, id, var)");
 	{
 		Object *		THIS;
-		int32		id = (int32)SvIV(ST(1));
+		Const_char *id = SvPV_nolen(ST(1));
 		const char *	var = (const char *)SvPV_nolen(ST(2));
 
 		if (sv_derived_from(ST(0), "Object")) {

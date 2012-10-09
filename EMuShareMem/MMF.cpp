@@ -12,7 +12,7 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 	#define vsnprintf	_vsnprintf
 	#define strncasecmp	_strnicmp
@@ -25,7 +25,7 @@ using namespace std;
 MMF::MMF() {
 	SharedMemory = 0;
 	pCanWrite = false;
-	#ifdef WIN32
+	#ifdef _WINDOWS
 		hMapObject = NULL;
 		lpvMem = 0;
 	#else
@@ -53,7 +53,7 @@ bool MMF::Open(const char* iName, int32 iSize) {
 	snprintf(MMFname, sizeof(MMFname), "memfilemap_%s", iName);
 	int32 tmpSize = sizeof(MMF_Struct) + iSize;
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 	char MMFMutexName[200];
 	memset(MMFMutexName, 0, sizeof(MMFMutexName));
 	snprintf(MMFMutexName, sizeof(MMFMutexName), "MutexToProtectOpenMMF_%s", iName);
@@ -327,7 +327,7 @@ bool MMF::Open(const char* iName, int32 iSize) {
 void MMF::Close() {
 	SharedMemory = 0;
 	pCanWrite = false;
-#ifdef WIN32
+#ifdef _WINDOWS
 		if (lpvMem) {
 			// Unmap shared memory from the process's address space.
 			UnmapViewOfFile(lpvMem); 

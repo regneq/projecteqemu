@@ -271,6 +271,9 @@
 			<File
 				RelativePath=".\zoneserver.cpp">
 			</File>
+			<File
+				RelativePath=".\ucs.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -293,6 +296,9 @@
 			<File
 				RelativePath=".\zoneserver.h">
 			</File>
+			<File
+				RelativePath=".\ucs.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Patches"
@@ -304,7 +310,13 @@
 				RelativePath="..\common\patches\Client62.cpp">
 			</File>
 			<File
-				RelativePath="..\common\patches\Live.cpp">
+				RelativePath="..\common\patches\Underfoot.cpp">
+			</File>
+			<File
+				RelativePath="..\common\patches\HoT.cpp">
+			</File>
+			<File
+				RelativePath="..\common\patches\VoA.cpp">
 			</File>
 			<File
 				RelativePath="..\common\patches\Patches.cpp">

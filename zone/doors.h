@@ -13,6 +13,7 @@ class Doors : public Entity
 {
 public:
 	Doors(const Door* door);
+	Doors(const char *dmodel, float dx, float dy, float dz, float dheading, int8 dopentype = 58, int16 dsize = 100);
 	~Doors();
 	bool	IsDoor() const { return true; }
 	void	HandleClick(Client* sender, int8 trigger);
@@ -37,10 +38,13 @@ public:
 	int8	GetTriggerType() { return trigger_type; }
  
 	uint32	GetKeyItem() { return keyitem; }
+	void	SetKeyItem(uint32 in) { keyitem = in; }
 	int8	GetNoKeyring() { return nokeyring; }
+	void	SetNoKeyring(int8 in) { nokeyring = in; }
 	int16	GetLockpick() { return lockpick; } 
+	void	SetLockpick(int16 in) { lockpick = in; } 
 	int16	GetSize() { return size; }
-	void	SetGuildID(int32 guild_id) { guild_id = guild_id; }
+	void	SetGuildID(int32 guild_id) { this->guild_id = guild_id; }
 
 	int32	GetEntityID() { return entity_id; }
 	void	SetEntityID(int32 entity) { entity_id = entity; }
@@ -54,15 +58,27 @@ public:
 	int8	IsLDoNDoor() { return is_ldon_door; }
 	int32	GetClientVersionMask() { return client_version_mask; }
 	
-	void	NPCOpen(NPC* sender);
-	void	ForceOpen(Mob *sender);
-	void	ForceClose(Mob *sender);
+	void	NPCOpen(NPC* sender, bool alt_mode=false);
+	void	ForceOpen(Mob *sender, bool alt_mode=false);
+	void	ForceClose(Mob *sender, bool alt_mode=false);
+	void	ToggleState(Mob *sender);
+
+	void	SetX(float in);
+	void	SetY(float in);
+	void	SetZ(float in);
+	void	SetHeading(float in);
+	void	SetIncline(int in);
+	void	SetDoorName(char* name);
+	void	SetOpenType(int8 in);
+	void	SetLocation(float x, float y, float z);
+	void	SetSize(int16 size);
+	void	CreateDatabaseEntry();
 
 private:
 	
 	int32	db_id;
 	uint8	door_id;
-	char	zone_name[16];
+	char	zone_name[32];
 	char	door_name[32];
 	float	pos_x;
 	float	pos_y;

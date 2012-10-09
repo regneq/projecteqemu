@@ -1,7 +1,7 @@
 #include "../common/debug.h"
 #include "../common/files.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <winsock2.h>
 #endif
 
@@ -15,7 +15,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include <cstdlib>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 	#define strncasecmp	_strnicmp
 	#define strcasecmp	_stricmp
@@ -79,7 +79,7 @@ bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, int
 	{
 		if(fgets(linebuf, 512, f) == NULL)
 			continue;
-#ifdef WIN32
+#ifdef _WINDOWS
 		if (sscanf(linebuf, "%[^=]=%[^\n]\n", type, buf) != 2)
 			continue;
 #else	
@@ -89,27 +89,27 @@ bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, int
 			{
 				if (!strncasecmp (type, "host", 4))
 				{
-					strncpy (host, buf, 199);
+					strn0cpy (host, buf, 199);
 					items[0] = true;
 				}
 				if (!strncasecmp (type, "user", 4))
 				{
-					strncpy (user, buf, 199);
+					strn0cpy (user, buf, 199);
 					items[1] = true;
 				}
 				if (!strncasecmp (type, "pass", 4))
 				{
-					strncpy (passwd, buf, 199);
+					strn0cpy (passwd, buf, 199);
 					items[2] = true;
 				}
 				if (!strncasecmp (type, "data", 4))
 				{
-					strncpy (database, buf, 199);
+					strn0cpy (database, buf, 199);
 					items[3] = true;
 				}
 				if (!strncasecmp (type, "port", 4))
 				{
-					strncpy(cport,buf,5);
+					strn0cpy(cport,buf,5);
 					port=atoi(cport);
 					items[4] = true;
 				}
@@ -162,6 +162,8 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
 			if (retry) {
 				cout << "Database Error: Lost connection, attempting to recover...." << endl;
 				ret = RunQuery(query, querylen, errbuf, result, affected_rows, last_insert_id, errnum, false);
+				if (ret)
+					cout << "Reconnection to database successful." << endl;
 			}
 			else {
 				pStatus = Error;
@@ -262,10 +264,11 @@ bool DBcore::Open(int32* errnum, char* errbuf) {
 		return true;
 	if (GetStatus() == Error)
 		mysql_close(&mysql);
+		mysql_init(&mysql);		// Initialize structure again
 	if (!pHost)
 		return false;
 	/*
-	Quagmire - added CLIENT_FOUND_ROWS flag to the connect
+	Added CLIENT_FOUND_ROWS flag to the connect
 	otherwise DB update calls would say 0 rows affected when the value already equalled
 	what the function was tring to set it to, therefore the function would think it failed 
 	*/

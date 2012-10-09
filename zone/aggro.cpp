@@ -316,6 +316,9 @@ bool Mob::CheckWillAggro(Mob *mob) {
 	// Are they kos?
 	// Are we stupid or are they green
 	// and they don't have their gm flag on
+	int heroicCHA_mod = mob->itembonuses.HeroicCHA/25; // 800 Heroic CHA cap
+	if(heroicCHA_mod > THREATENLY_ARRGO_CHANCE)
+		heroicCHA_mod = THREATENLY_ARRGO_CHANCE;
 	if
 	(
 	//old InZone check taken care of above by !mob->CastToClient()->Connected()
@@ -334,7 +337,7 @@ bool Mob::CheckWillAggro(Mob *mob) {
 			||
 			(
 				fv == FACTION_THREATENLY
-				&& MakeRandomInt(0,99) < THREATENLY_ARRGO_CHANCE
+				&& MakeRandomInt(0,99) < THREATENLY_ARRGO_CHANCE - heroicCHA_mod
 			)
 		)
 	)
@@ -444,9 +447,6 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker) {
 		float r = mob->GetAssistRange();
 		r = r * r;
 
-		if(sender == NULL)
-			return;
-
 		if (
 			mob != sender
 			&& mob != attacker
@@ -455,6 +455,8 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker) {
 			&& mob->GetPrimaryFaction() != 0
 			&& mob->DistNoRoot(*sender) <= r
 			&& !mob->IsEngaged()
+			&& ((!mob->IsPet()) || (mob->IsPet() && mob->GetOwner() && !mob->GetOwner()->IsClient()))
+				// If we're a pet we don't react to any calls for help if our owner is a client
 			)
 		{
 			//if they are in range, make sure we are not green...
@@ -497,6 +499,7 @@ faster, but I'm doing it this way to make it readable and easy to modify
 
 bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 {
+
 	Mob *mob1, *mob2, *tempmob;
 	Client *c1, *c2, *becomenpc;
 //	NPC *npc1, *npc2;
@@ -511,6 +514,10 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 
 	if(this == target)	// you can attack yourself
 		return true;
+
+	if(target->SpecAttacks[NO_HARM_FROM_CLIENT]){
+		return false;
+	}
 
 	// can't damage own pet (applies to everthing)
 	Mob *target_owner = target->GetOwner();
@@ -697,6 +704,9 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 
 	if(!target)
 		return false;
+
+	if (target->GetAllowBeneficial())
+		return true;
 
 	// solar: see IsAttackAllowed for notes
 	
@@ -1158,6 +1168,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				break;
 			}
 			case SE_ATK:
+			case SE_ACv2:
 			case SE_ArmorClass:	{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if (val < 0)
@@ -1247,7 +1258,8 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				AggroAmount += slevel*2;
 				break;
 			}
-			case SE_CurrentMana:	
+			case SE_CurrentMana:
+			case SE_ManaRegen_v2:
 			case SE_ManaPool:
 			case SE_CurrentEndurance:{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
@@ -1262,6 +1274,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				AggroAmount += slevel;			
 				break;
 			}
+			case SE_ReduceHate:
 			case SE_Calm:{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				nonModifiedAggro = val;
@@ -1282,7 +1295,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 
 	if (IsBardSong(spell_id))
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
-	if (GetOwner())
+	if (GetOwner() && IsPet())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 	
 	if(AggroAmount > 0)
@@ -1295,21 +1308,8 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
 		}
 
-		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
-
-		switch (aaSubtlety)
-		{
-		case 0:
-			break;
-		case 1:
-		case 2:
-		case 3:
-			HateMod -= ((aaSubtlety * 3) + 3);
-			break;
-		default:
-			HateMod -= (12 + aaSubtlety);
-			break;
-		}
+		//Live AA - Spell casting subtlety
+		HateMod += aabonuses.hatemod + spellbonuses.hatemod + itembonuses.hatemod;
 
 		AggroAmount = (AggroAmount * HateMod) / 100;
 
@@ -1352,7 +1352,7 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 	}
 	if (IsBardSong(spell_id))
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
-	if (GetOwner())
+	if (GetOwner() && IsPet())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 
 	if(AggroAmount > 0)
@@ -1364,23 +1364,9 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
 		}
 
-		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
-
-		switch (aaSubtlety)
-		{
-		case 0:
-			break;
-		case 1:
-		case 2:
-		case 3:
-			//AggroAount = (AggroAmount * ((aaSubtlety * 3) + 3)) / 100;
-			HateMod -= ((aaSubtlety * 3) + 3);
-			break;
-		default:
-			HateMod -= (12 + aaSubtlety);
-			break;
-		}
-
+		//Live AA - Spell casting subtlety
+		HateMod += aabonuses.hatemod + spellbonuses.hatemod + itembonuses.hatemod;
+		
 		AggroAmount = (AggroAmount * HateMod) / 100;
 
 		//made up number probably scales a bit differently on live but it seems like it will be close enough
@@ -1427,51 +1413,50 @@ void Mob::ClearFeignMemory() {
 }
 
 bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
-	bool Result = false;
 
 	if(!caster) return false;
 
 	if(spells[spell_id].ResistDiff <= -600)
 		return true;
 
-	float r1 = ((((float)spellTarget->GetMR() + spellTarget->GetLevel()) / 3) / spellTarget->GetMaxMR()) + ((float)MakeRandomFloat(-10, 10) / 100.0f);
-	float r2 = 0.0f;
+	//Applies additional Charisma bonus to resist rate
+	float resist_check = ResistSpell(spells[spell_id].resisttype, spell_id, caster,0,0,1);
 
 	if(IsCharmSpell(spell_id)) {
-		// Assume this is a charm spell
-		int32 TotalDominationRank = 0.00f;
-		float TotalDominationBonus = 0.00f;
 
-		if(caster->IsClient())
-			TotalDominationRank = caster->CastToClient()->GetAA(aaTotalDomination);
+		if (spells[spell_id].field209 == -1) //If charm spell has this set(-1), it can not break till end of duration.
+			return true;
 
-		// WildcardX: If someone ever finds for certain what value the TotalDomination ranks provide, please change the values
-		// I implemented below.
+		//1: The mob has a default 25% chance of being allowed a resistance check against the charm.
+		if (MakeRandomInt(0, 100) > RuleI(Spells, CharmBreakCheckChance))
+			return true;
 
-		switch(TotalDominationRank) {
-			case 1 :
-				TotalDominationBonus = 0.05f;
-				break;
-			case 2 :
-				TotalDominationBonus = 0.10f;
-				break;
-			case 3 :
-				TotalDominationBonus = 0.15f;
-				break;
-			default :
-				TotalDominationBonus = 0.00f;
+		//2: The mob makes a resistance check against the charm
+		if (resist_check == 100)
+			return true; 
+						
+		else
+		{
+			if (caster->IsClient())
+			{
+				//3: At maxed ability, Total Domination has a 50% chance of preventing the charm break that otherwise would have occurred. 
+				uint16 TotalDominationBonus = caster->aabonuses.CharmBreakChance + caster->spellbonuses.CharmBreakChance + caster->itembonuses.CharmBreakChance;
+									
+				if (MakeRandomInt(0, 100) < TotalDominationBonus)
+					return true;
+
+			}
 		}
-
-		r2 = ((((float)caster->GetCHA()  + caster->GetLevel()) / 3) / caster->GetMaxCHA()) + ((float)MakeRandomFloat(-10, 10) / 100.0f) + TotalDominationBonus;
 	}
+
 	else
+	{
 		// Assume this is a harmony/pacify spell
-		r2 = ((((float)caster->GetCHA()  + caster->GetLevel()) / 3) / caster->GetMaxCHA()) + ((float)MakeRandomFloat(-10, 10) / 100.0f);
+		if (resist_check == 100)
+			return true; 
+	}
 
-	if(r1 < r2)
-			Result = true;
-
-	return Result;
+	return false;
 }
 
 

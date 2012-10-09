@@ -137,6 +137,111 @@ XS(XS_QuestItem_IsType)
 	XSRETURN(1);
 }
 
+XS(XS_QuestItem_IsAttuned); /* prototype to pass -Wmissing-prototypes */
+XS(XS_QuestItem_IsAttuned)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: QuestItem::IsAttuned(THIS)");
+	{
+		ItemInst*		THIS;
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "QuestItem")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(ItemInst *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type ItemInst");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsInstNoDrop();
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_QuestItem_GetCharges); /* prototype to pass -Wmissing-prototypes */
+XS(XS_QuestItem_GetCharges)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: QuestItem::GetCharges(THIS)");
+	{
+		ItemInst*		THIS;
+		sint16		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "QuestItem")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(ItemInst *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type ItemInst");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCharges();
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_QuestItem_GetAugment); /* prototype to pass -Wmissing-prototypes */
+XS(XS_QuestItem_GetAugment)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: QuestItem::GetAugment(THIS, augment_id)");
+	{
+		ItemInst*	THIS;
+        sint16      slot_id = (sint16)SvIV(ST(1));
+		ItemInst*	RETVAL;
+
+		if (sv_derived_from(ST(0), "QuestItem")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(ItemInst *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type ItemInst");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        RETVAL = THIS->GetAugment(slot_id);
+        ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "QuestItem", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_QuestItem_GetID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_QuestItem_GetID)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: QuestItem::GetID(THIS)");
+	{
+		ItemInst*		THIS;
+		uint32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "QuestItem")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(ItemInst *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type ItemInst");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+        RETVAL = THIS->GetItem()->ID;
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -161,6 +266,10 @@ XS(boot_QuestItem)
 		newXSproto(strcpy(buf, "SetScale"), XS_QuestItem_SetScale, file, "$");
 		newXSproto(strcpy(buf, "ItemSay"), XS_QuestItem_ItemSay, file, "$");
 		newXSproto(strcpy(buf, "IsType"), XS_QuestItem_IsType, file, "$$");
+		newXSproto(strcpy(buf, "IsAttuned"), XS_QuestItem_IsAttuned, file, "$");
+		newXSproto(strcpy(buf, "GetCharges"), XS_QuestItem_GetCharges, file, "$");
+        newXSproto(strcpy(buf, "GetAugment"), XS_QuestItem_GetAugment, file, "$$");
+        newXSproto(strcpy(buf, "GetID"), XS_QuestItem_GetID, file, "$");
 
 	XSRETURN_YES;
 }

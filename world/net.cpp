@@ -43,7 +43,7 @@ using namespace std;
 #include "../common/EQStreamIdent.h"
 //#include "../common/patches/Client62.h"
 #include "../common/rulesys.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 	#define snprintf	_snprintf
 #if (_MSC_VER < 1500)
@@ -98,6 +98,8 @@ CommonProfiler _cp;
 #include "wguild_mgr.h"
 #include "lfplist.h"
 #include "AdventureManager.h"
+#include "ucs.h"
+#include "queryserv.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
@@ -107,6 +109,8 @@ GroupLFPList LFPGroupList;
 ZSList zoneserver_list;
 LoginServerList loginserverlist;
 EQWHTTPServer http_server;
+UCSConnection UCSLink;
+QueryServConnection QSLink;
 LauncherList launcher_list;
 AdventureManager adventure_manager;
 DBAsync *dbasync = NULL;
@@ -324,7 +328,9 @@ int main(int argc, char** argv) {
 	_log(WORLD__INIT, "Reboot zone modes %s",holdzones ? "ON" : "OFF");
 	
 	_log(WORLD__INIT, "Deleted %i stale player corpses from database", database.DeleteStalePlayerCorpses());
+	if (RuleB(World, DeleteStaleCorpeBackups) == true) {
 	_log(WORLD__INIT, "Deleted %i stale player backups from database", database.DeleteStalePlayerBackups());
+	}
 
 	_log(WORLD__INIT, "Loading adventures...");
 	if(!adventure_manager.LoadAdventureTemplates())
@@ -344,6 +350,10 @@ int main(int argc, char** argv) {
 	database.PurgeExpiredInstances();
 	Timer PurgeInstanceTimer(450000);
 	PurgeInstanceTimer.Start(450000);
+
+    _log(WORLD__INIT, "Loading char create info...");
+    database.LoadCharacterCreateAllocations();
+    database.LoadCharacterCreateCombos();
 
 	char errbuf[TCPConnection_ErrorBufferSize];
 	if (tcps.Open(Config->WorldTCPPort, errbuf)) {
@@ -369,6 +379,7 @@ int main(int argc, char** argv) {
 	zoneserver_list.reminder->Disable();
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	InterserverTimer.Trigger();
+	uint8 ReconnectCounter = 100;
 	EQStream* eqs;
 	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
@@ -440,6 +451,10 @@ int main(int argc, char** argv) {
 		
 		launcher_list.Process();
 
+		UCSLink.Process();
+	
+		QSLink.Process();
+
 		LFPGroupList.Process();
 
 		adventure_manager.Process();
@@ -448,13 +463,17 @@ int main(int argc, char** argv) {
 			InterserverTimer.Start();
 			database.ping();
 			AsyncLoadVariables(dbasync, &database);
-			if (loginserverlist.AllConnected() == false) {
-#ifdef WIN32
-				_beginthread(AutoInitLoginServer, 0, NULL);
+			ReconnectCounter++;
+			if (ReconnectCounter >= 12) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
+				ReconnectCounter = 0;
+				if (loginserverlist.AllConnected() == false) {
+#ifdef _WINDOWS
+					_beginthread(AutoInitLoginServer, 0, NULL);
 #else
-				pthread_t thread;
-				pthread_create(&thread, NULL, &AutoInitLoginServer, NULL);
+					pthread_t thread;
+					pthread_create(&thread, NULL, &AutoInitLoginServer, NULL);
 #endif
+				}
 			}
 		}
 		if (numclients == 0) {
@@ -531,7 +550,7 @@ void CatchSignal(int sig_num) {
 }
 
 void UpdateWindowTitle(char* iNewTitle) {
-#ifdef WIN32
+#ifdef _WINDOWS
 	char tmp[500];
 	if (iNewTitle) {
 		snprintf(tmp, sizeof(tmp), "World: %s", iNewTitle);

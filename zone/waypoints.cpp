@@ -34,6 +34,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #include "features.h"
+#include "QuestParserCollection.h"
 
 struct wp_distance
 {
@@ -127,7 +128,7 @@ void NPC::ResumeWandering()
 			itoa(cur_wp,temp,10);	//do this before updating to next waypoint
 			CalculateNewWaypoint(); 
 	        SetAppearance(eaStanding, false); 
-			parse->Event(EVENT_WAYPOINT_DEPART, this->GetNPCTypeID(), temp, this, NULL); 
+			parse->EventNPC(EVENT_WAYPOINT_DEPART, this, NULL, temp, 0);
 		}	// if not currently at a waypoint, we continue on to the one we were headed to before the stop
 	}
 	else
@@ -143,6 +144,7 @@ void NPC::PauseWandering(int pausetime)
 	// otherwise automatically resume when time is up
 	if (GetGrid() != 0)
 	{
+		DistractedFromGrid = true;
 		mlog(QUESTS__PATHING, "Paused Wandering requested. Grid %d. Resuming in %d ms (0=not until told)", GetGrid(), pausetime);
 		SendPosition();
 		if (pausetime<1)
@@ -204,6 +206,9 @@ void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 	cur_wp_z = mtz;
 	cur_wp_pause = 0;
 	cur_wp_heading = mth;
+    pLastFightingDelayMoving = 0;
+    if(AIwalking_timer->Enabled())
+        AIwalking_timer->Start(100);
 }
 
 void NPC::UpdateWaypoint(int wp_index)
@@ -315,7 +320,8 @@ void NPC::CalculateNewWaypoint()
 
 		break;
 	}
-	case 4: //goto the end and depop
+	case 4: //goto the end and depop with spawn timer
+	case 6: //goto the end and depop without spawn timer
 	{
 		cur_wp = cur_wp + 1;
 		break;
@@ -354,7 +360,11 @@ void NPC::CalculateNewWaypoint()
 
 	tar_ndx = 52;
 
-	// Check to see if we need to update the waypoint. - Wes
+	// Preserve waypoint setting for quest controlled NPCs
+	if (cur_wp < 0)
+		cur_wp = old_wp;
+
+	// Check to see if we need to update the waypoint.
 	if (cur_wp != old_wp)
 		UpdateWaypoint(cur_wp);
 }
@@ -531,7 +541,8 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 		return true;
 	}
 	
-	if(tar_ndx<20 && tarx==x && tary==y){
+    int compare_steps = IsBoat() ? 1 : 20;
+	if(tar_ndx < compare_steps && tarx==x && tary==y){
 		x_pos = x_pos + tar_vx*tar_vector;
 		y_pos = y_pos + tar_vy*tar_vector;
 		z_pos = z_pos + tar_vz*tar_vector;
@@ -689,7 +700,11 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 	delta_z=z_pos-nz;
 	delta_heading=0;
 
-	SendPosUpdate();
+	if (IsClient())
+		SendPosUpdate(1);
+	else
+		SendPosUpdate();
+
 	SetAppearance(eaStanding, false);
 	pLastChange = Timer::GetCurrentTime();
 	return true;
@@ -919,32 +934,6 @@ void NPC::AssignWaypoints(sint32 grid) {
 }
 
 void Mob::SendTo(float new_x, float new_y, float new_z) {
-//	float angle;
-//	float dx = new_x-x_pos;
-//	float dy = new_y-y_pos;
-	// 0.09 is a perfect magic number for a human pnj's
-//	AIwalking_timer->Start((int32) ( sqrtf( dx*dx + dy*dy ) * 0.09f ) * 1000 );
-	
-/*	if (new_x-x_pos > 0)
-		angle = - 90 + atan((float)(new_y-y_pos) / (float)(new_x-x_pos)) * 180 / M_PI;
-	else {
-		if (new_x-x_pos < 0)	
-			angle = + 90 + atan((float)(new_y-y_pos) / (float)(new_x-x_pos)) * 180 / M_PI;
-		else { // Added?
-			if (new_y-y_pos > 0)
-				angle = 0;
-			else
-				angle = 180;
-		}
-	}
-	if (angle < 0)
-		angle += 360;
-	if (angle > 360	)
-		angle -= 360;
-	
-	heading	= 256*(360-angle)/360.0f;
-	SetRunAnimSpeed(5);*/
-	//	SendPosUpdate();
 	x_pos = new_x;
 	y_pos = new_y;
 	z_pos = new_z;

@@ -16,5 +16,5 @@ struct MMFNPCFactionLists_Struct {
 
 bool	pDLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, int32 iNPCFactionListStructSize, sint32* iNPCFactionListCount, int32* iMaxNPCFactionListID, int8 iMaxNPCFactions);
 bool	pAddNPCFactionList(uint32 id, const NPCFactionList* nfl);
-bool	pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue);
+bool	pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp);
 const NPCFactionList* pGetNPCFactionList(uint32 id);

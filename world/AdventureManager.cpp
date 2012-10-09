@@ -662,8 +662,7 @@ bool AdventureManager::LoadAdventureTemplates()
 			t->assa_y = atof(row[x++]);
 			t->assa_z = atof(row[x++]);
 			t->assa_h = atof(row[x++]);
-			strncpy(t->text, row[x++], sizeof(t->text));
-			t->text[sizeof(t->text)-1] = '\0';
+			strn0cpy(t->text, row[x++], sizeof(t->text));
 			t->duration = atoi(row[x++]);
 			t->zone_in_time = atoi(row[x++]);
 			t->win_points = atoi(row[x++]);

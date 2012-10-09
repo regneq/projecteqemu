@@ -4,7 +4,7 @@
 using namespace std;
 #include <time.h>
 #include <string.h>
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 
 	#define snprintf	_snprintf
@@ -100,6 +100,8 @@ bool EQEMuLog::open(LogIDs id) {
 	snprintf(exename, sizeof(exename), "_chatchannels");
 #elif defined(UCS)
 	snprintf(exename, sizeof(exename), "_ucs");
+#elif defined(QUERYSERV)
+	snprintf(exename, sizeof(exename), "_queryserv");
 #endif
 	char filename[200];
 #ifndef NO_PIDLOG

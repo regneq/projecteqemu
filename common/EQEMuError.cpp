@@ -15,7 +15,7 @@
 	  along with this program; if not, write to the Free Software
 	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 #include "EQEMuError.h"
@@ -24,7 +24,7 @@
 #include "MiscFunctions.h"
 #include <stdio.h>
 #include <string.h>
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <conio.h>
 #endif
 
@@ -124,7 +124,7 @@ int32 CheckEQEMuError() {
 }
 
 void CheckEQEMuErrorAndPause() {
-#ifdef WIN32
+#ifdef _WINDOWS
 	if (CheckEQEMuError()) {
 		fprintf(stdout, "Hit any key to exit\n");
 		UpdateWindowTitle("Error");

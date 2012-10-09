@@ -124,6 +124,7 @@ public:
 	int32	GetHighestLevel();
 	int32	GetLowestLevel();
 	int32	GetGroup(const char *name);
+	int32	GetGroup(Client *c);
       uint16 GetAvgLevel();
 
 	int32	GetLootType() { return LootType; }
@@ -146,10 +147,13 @@ public:
 	 *  Actual Implementation Stuff
 	 */
 
+	void	RaidMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
 	void	CastGroupSpell(Mob* caster,uint16 spellid, int32 gid);
 	void	SplitExp(uint32 exp, Mob* other);
 	int32	GetTotalRaidDamage(Mob* other);
 	void	BalanceHP(sint32 penalty, int32 gid);
+	void	BalanceMana(sint32 penalty, int32 gid);
+	void	HealGroup(uint32 heal_amt, Mob* caster, int32 gid);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
 	void	GroupBardPulse(Mob* caster, uint16 spellid, int32 gid);
 
@@ -164,7 +168,7 @@ public:
 	void	VerifyRaid();
 	void	MemberZoned(Client *c);
 	void	SendHPPacketsTo(Client *c);
-	void	SendHPPacketsFrom(Client *c);
+	void	SendHPPacketsFrom(Mob *m);
 	void	RaidSay(const char *msg, Client *c);
 	void	RaidGroupSay(const char *msg, Client *c);
 

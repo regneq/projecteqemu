@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#ifndef WIN32
+#ifndef _WINDOWS
 #ifndef __UNIX_H__
 #define __UNIX_H__
 	#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP

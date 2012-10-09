@@ -33,7 +33,7 @@ using namespace std;
 extern Zone* zone;
 
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#define snprintf	_snprintf
 #endif
 
@@ -263,18 +263,42 @@ bool NPC::IsFactionListAlly(uint32 other_faction) {
 	return(CheckNPCFactionAlly(other_faction) == FACTION_ALLY);
 }
 
-// EverHood - Faction Mods for Alliance type spells
+// Faction Mods for Alliance type spells
 void Mob::AddFactionBonus(uint32 pFactionID,sint32 bonus) {
     map <uint32, sint32> :: const_iterator faction_bonus;
 	typedef std::pair <uint32, sint32> NewFactionBonus;
 
 	faction_bonus = faction_bonuses.find(pFactionID);
-	if(faction_bonus == faction_bonuses.end()){
+	if(faction_bonus == faction_bonuses.end())
+	{
 		faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
-	}else{
-		if(faction_bonus->second<bonus){
+	}
+	else
+	{
+		if(faction_bonus->second<bonus)
+		{
 			faction_bonuses.erase(pFactionID);
 			faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
+		}
+	}
+}
+
+// Faction Mods from items
+void Mob::AddItemFactionBonus(uint32 pFactionID,sint32 bonus) {
+    map <uint32, sint32> :: const_iterator faction_bonus;
+	typedef std::pair <uint32, sint32> NewFactionBonus;
+
+	faction_bonus = item_faction_bonuses.find(pFactionID);
+	if(faction_bonus == item_faction_bonuses.end())
+	{
+		item_faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
+	}
+	else
+	{
+		if((bonus > 0 && faction_bonus->second < bonus) || (bonus < 0 && faction_bonus->second > bonus))
+		{
+			item_faction_bonuses.erase(pFactionID);
+			item_faction_bonuses.insert(NewFactionBonus(pFactionID,bonus));
 		}
 	}
 }
@@ -282,12 +306,30 @@ void Mob::AddFactionBonus(uint32 pFactionID,sint32 bonus) {
 sint32 Mob::GetFactionBonus(uint32 pFactionID) {
     map <uint32, sint32> :: const_iterator faction_bonus;
 	faction_bonus = faction_bonuses.find(pFactionID);
-	if(faction_bonus != faction_bonuses.end()){
-			return (*faction_bonus).second;
+	if(faction_bonus != faction_bonuses.end())
+	{
+		return (*faction_bonus).second;
 	}
 	return 0;
 }
 
+sint32 Mob::GetItemFactionBonus(uint32 pFactionID) {
+    map <uint32, sint32> :: const_iterator faction_bonus;
+	faction_bonus = item_faction_bonuses.find(pFactionID);
+	if(faction_bonus != item_faction_bonuses.end())
+	{
+		return (*faction_bonus).second;
+	}
+	return 0;
+}
+
+void Mob::ClearItemFactionBonuses() {
+	map <uint32, sint32> :: iterator itr;
+	for(itr = item_faction_bonuses.begin(); itr != item_faction_bonuses.end(); itr++)
+	{
+		item_faction_bonuses.erase(itr->first);
+	}
+}
 
 FACTION_VALUE Mob::GetSpecialFactionCon(Mob* iOther) {
 #if FACTIONS_DEBUG >= 5
@@ -461,6 +503,7 @@ FACTION_VALUE Client::GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race,
 			tmpFactionValue = GetCharacterFactionLevel(pFaction);
 			// Everhood - tack on any bonuses from Alliance type spell effects
 			tmpFactionValue += GetFactionBonus(pFaction);
+			tmpFactionValue += GetItemFactionBonus(pFaction);
 			//Return the faction to the client
 			fac = CalculateFaction(&fmods, tmpFactionValue);
 			//Message(0,"Faction: %i %i %i %i",fmods.base,fmods.class_mod,fmods.race_mod,fmods.deity_mod);
@@ -521,13 +564,14 @@ void  Client::SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8
 	_ZP(Client_SetFactionLevel);
 	sint32 faction_id[MAX_NPC_FACTIONS]={ 0,0,0,0,0,0,0,0,0,0 };
 	sint32 npc_value[MAX_NPC_FACTIONS]={ 0,0,0,0,0,0,0,0,0,0 };
+	int8 temp[MAX_NPC_FACTIONS]={ 0,0,0,0,0,0,0,0,0,0 };
 	sint32 mod;
 	sint32 t;
 	sint32 tmpValue;
 	sint32 current_value;
 	FactionMods fm;
 	// Get the npc faction list
-	if(!database.GetNPCFactionList(npc_id, faction_id, npc_value))
+	if(!database.GetNPCFactionList(npc_id, faction_id, npc_value, temp))
 		return;
 	for(int i = 0;i<MAX_NPC_FACTIONS;i++)
 	{
@@ -540,6 +584,17 @@ void  Client::SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8
 			// Get the characters current value with that faction
 			current_value = GetCharacterFactionLevel(faction_id[i]);
 			
+			if(this->itembonuses.HeroicCHA) {
+				int faction_mod = itembonuses.HeroicCHA / 5;
+				// If our result isn't truncated, then just do that
+				if(npc_value[i] * faction_mod / 100 != 0) 
+					npc_value[i] += npc_value[i] * faction_mod / 100;
+				// If our result is truncated, then double a mob's value every once and a while to equal what they would have got
+				else {
+					if(MakeRandomInt(0, 100) < faction_mod)
+						npc_value[i] *= 2;
+				}
+			}
 			//figure out their modifier
 			mod = fm.base + fm.class_mod + fm.race_mod + fm.deity_mod;
 			if(mod > MAX_FACTION)
@@ -548,67 +603,69 @@ void  Client::SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8
 				mod = MIN_FACTION;
 			
 			// Calculate the faction
-			tmpValue = current_value + mod + npc_value[i];
-			
-			// Make sure faction hits don't go to GMs...
-			if (m_pp.gm==1 && (tmpValue < current_value)) {
-				tmpValue = current_value;
-			}
-			
-			// Make sure we dont go over the min/max faction limits
-			if(tmpValue >= MAX_FACTION)
-			{
-				t = MAX_FACTION - mod;
-				if(current_value == t) {
-					//do nothing, it is already maxed out
-				} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, factionvalues)))
-				{
-					return;
-				}
-			}
-			else if(tmpValue <= MIN_FACTION)
-			{
-				t = MIN_FACTION - mod;
-				if(current_value == t) {
-					//do nothing, it is already maxed out
-				} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, factionvalues)))
-				{
-					return;
-				}
-			}
-			else
-			{
-				if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], current_value + npc_value[i], factionvalues)))
-				{
-					return;
-				}
-			}
-			if(tmpValue <= MIN_FACTION)
-				tmpValue = MIN_FACTION;
-			//ChannelMessageSend(0,0,7,0,BuildFactionMessage(npc_value[i], faction_id[i]));
-			char* msg = BuildFactionMessage(npc_value[i],faction_id[i],tmpValue);
-			if (msg != 0)
-				Message(0, msg);
-			safe_delete_array(msg);
-		}
+            if(npc_value[i] != 0) {
+			    tmpValue = current_value + mod + npc_value[i];
+			    
+			    // Make sure faction hits don't go to GMs...
+			    if (m_pp.gm==1 && (tmpValue < current_value)) {
+			    	tmpValue = current_value;
+			    }
+			    
+			    // Make sure we dont go over the min/max faction limits
+			    if(tmpValue >= MAX_FACTION)
+			    {
+			    	t = MAX_FACTION - mod;
+			    	if(current_value == t) {
+			    		//do nothing, it is already maxed out
+			    	} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, temp[i], factionvalues)))
+			    	{
+			    		return;
+			    	}
+			    }
+			    else if(tmpValue <= MIN_FACTION)
+			    {
+			    	t = MIN_FACTION - mod;
+			    	if(current_value == t) {
+			    		//do nothing, it is already maxed out
+			    	} else if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], t, temp[i], factionvalues)))
+			    	{
+			    		return;
+			    	}
+			    }
+			    else
+			    {
+			    	if(!(database.SetCharacterFactionLevel(char_id, faction_id[i], current_value + npc_value[i], temp[i], factionvalues)))
+			    	{
+			    		return;
+			    	}
+			    }
+			    if(tmpValue <= MIN_FACTION)
+			    	tmpValue = MIN_FACTION;
+
+			    char* msg = BuildFactionMessage(npc_value[i],faction_id[i],tmpValue,temp[i]);
+			    if (msg != 0)
+			    	Message(0, msg);
+			    safe_delete_array(msg);
+            }
+        }
 	}
 	return;
 }
 
-void  Client::SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value)
+void  Client::SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value, int8 temp)
 {
 	_ZP(Client_SetFactionLevel2);
 //	sint32 tmpValue;
 	sint32 current_value;
 //	FactionMods fm;
 	//Get the npc faction list
-	if(faction_id > 0) {
+	if(faction_id > 0 && value != 0) {
 		//Get the faction modifiers
 		current_value = GetCharacterFactionLevel(faction_id) + value;
-		if(!(database.SetCharacterFactionLevel(char_id, faction_id, current_value, factionvalues)))
+		if(!(database.SetCharacterFactionLevel(char_id, faction_id, current_value, temp, factionvalues)))
 			return;
-		
-		char* msg = BuildFactionMessage(value, faction_id, current_value);
+
+		char* msg = BuildFactionMessage(value, faction_id, current_value, temp);
 		if (msg != 0)
 			Message(0, msg);
 		safe_delete(msg);
@@ -643,63 +700,54 @@ sint32 Client::GetModCharacterFactionLevel(sint32 faction_id) {
 bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race_mod, uint32 deity_mod, sint32 faction_id) {
 	if (faction_id <= 0 || faction_id > (sint32) max_faction)
 		return false;	
-	uint32 modr_tmp =0;
-	uint32 modd_tmp =0;
-	switch (race_mod) {
-		case 1: modr_tmp = 0;break;
-		case 2: modr_tmp = 1;break;
-		case 3: modr_tmp = 2;break;
-		case 4: modr_tmp = 3;break;
-		case 5: modr_tmp = 4;break;
-		case 6: modr_tmp = 5;break;
-		case 7: modr_tmp = 6;break;
-		case 8: modr_tmp = 7;break;
-		case 9: modr_tmp = 8;break;
-		case 10: modr_tmp = 9;break;
-		case 11: modr_tmp = 10;break;
-		case 12: modr_tmp = 11;break;
-		case 14: modr_tmp = 12;break;
-		case 42: modr_tmp = 13;break;
-		case 75: modr_tmp = 14;break;
-		case 108: modr_tmp = 15;break;
-		case 128: modr_tmp = 16;break;
-		case 130: modr_tmp = 17;break;
-		case 161: modr_tmp = 18;break;
-		case 330: modr_tmp = 19;break;
-		case 367: modr_tmp = 20;break;
-		case 522: modr_tmp = 21;break;
-	}
-	if (deity_mod == 140 || deity_mod == 396) 
-		modd_tmp = 0;
-	else
-		modd_tmp = deity_mod - 200;
-	if (faction_array[faction_id] == 0){
+
+    if (faction_array[faction_id] == 0){
 		return false;
 	}
-	fm->base = faction_array[faction_id]->base;
-	if ((class_mod-1) < (sizeof(faction_array[faction_id]->mod_c) / sizeof(faction_array[faction_id]->mod_c[0])))
-		fm->class_mod = faction_array[faction_id]->mod_c[class_mod-1];
-	else {
-//		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::GetFactionData: class_mod-1[=%i] out of range", class_mod-1);
-		fm->class_mod = 0;
-		//return false;
-	}
-	if ((modr_tmp) < (sizeof(faction_array[faction_id]->mod_r) / sizeof(faction_array[faction_id]->mod_r[0])))
-		fm->race_mod = faction_array[faction_id]->mod_r[modr_tmp];
-	else {
-//		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::GetFactionData: modr_tmp[=%i] out of range (race_mod=%i)", modr_tmp, race_mod);
-		fm->race_mod = 0;
-		//return false;
-	}
-	if ((modd_tmp) < (sizeof(faction_array[faction_id]->mod_d) / sizeof(faction_array[faction_id]->mod_d[0])))
-		fm->deity_mod = faction_array[faction_id]->mod_d[modd_tmp];
-	else {
-//		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::GetFactionData: modd_tmp[=%i] out of range (deity_mod=%i)", modd_tmp, deity_mod);
-		fm->deity_mod = 0;
-		//return false;
-	}
-	if(fm->deity_mod > 1000)
-		fm->deity_mod = 0;
+
+    fm->base = faction_array[faction_id]->base;
+
+    if(class_mod > 0) {
+        char str[32];
+        sprintf(str, "c%u", class_mod);
+
+        std::map<std::string, sint16>::const_iterator iter = faction_array[faction_id]->mods.find(str);
+        if(iter != faction_array[faction_id]->mods.end()) {
+            fm->class_mod = iter->second;
+        } else {
+            fm->class_mod = 0;
+        }
+    } else {
+        fm->class_mod = 0;
+    }
+
+    if(race_mod > 0) {
+        char str[32];
+        sprintf(str, "r%u", race_mod);
+
+        std::map<std::string, sint16>::iterator iter = faction_array[faction_id]->mods.find(str);
+        if(iter != faction_array[faction_id]->mods.end()) {
+            fm->race_mod = iter->second;
+        } else {
+            fm->race_mod = 0;
+        }
+    } else {
+        fm->race_mod = 0;
+    }
+
+    if(deity_mod > 0) {
+        char str[32];
+        sprintf(str, "d%u", deity_mod);
+
+        std::map<std::string, sint16>::iterator iter = faction_array[faction_id]->mods.find(str);
+        if(iter != faction_array[faction_id]->mods.end()) {
+            fm->deity_mod = iter->second;
+        } else {
+            fm->deity_mod = 0;
+        }
+    } else {
+        fm->deity_mod = 0;
+    }
 
 	return true;
 }
@@ -735,7 +783,7 @@ bool ZoneDatabase::LoadFactionValues_result(MYSQL_RES* result, faction_map & val
 //o--------------------------------------------------------------
 //| Purpose: duh?
 //o--------------------------------------------------------------
-char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue)
+char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue, int8 temp)
 {
 /*
 
@@ -757,16 +805,16 @@ some day.
 		snprintf(name, sizeof(name),"Faction%i",faction_id);
 	}
 
-	if(totalvalue >= MAX_FACTION) {
+	if(tmpvalue == 0 || temp == 1 || temp == 2) {
+		return 0;
+	}
+	else if (totalvalue >= MAX_FACTION) {
 		MakeAnyLenString(&faction_message, "Your faction standing with %s could not possibly get any better!", name);
 		return faction_message;
 	}
 	else if(tmpvalue > 0 && totalvalue < MAX_FACTION) {
 		MakeAnyLenString(&faction_message, "Your faction standing with %s has gotten better!", name);
 		return faction_message;
-	}
-	else if(tmpvalue == 0) {
-		return 0;
 	}
 	else if(tmpvalue < 0 && totalvalue > MIN_FACTION) {
 		MakeAnyLenString(&faction_message, "Your faction standing with %s has gotten worse!", name);
@@ -789,8 +837,7 @@ bool ZoneDatabase::GetFactionName(sint32 faction_id, char* name, int32 buflen) {
 	if ((faction_id <= 0) || faction_id > sint32(max_faction) ||(faction_array[faction_id] == 0))
 		return false;
 	if (faction_array[faction_id]->name[0] != 0) {
-		strncpy(name, faction_array[faction_id]->name, buflen - 1);
-		name[buflen - 1] = 0;
+		strn0cpy(name, faction_array[faction_id]->name, buflen);
 		return true;
 	}
 	return false;
@@ -804,7 +851,7 @@ bool ZoneDatabase::GetFactionName(sint32 faction_id, char* name, int32 buflen) {
 //|          the npc_id.
 //|          Returns false on failure.
 //o--------------------------------------------------------------
-bool ZoneDatabase::GetNPCFactionList(uint32 npcfaction_id, sint32* faction_id, sint32* value, sint32* primary_faction) {
+bool ZoneDatabase::GetNPCFactionList(uint32 npcfaction_id, sint32* faction_id, sint32* value, int8* temp, sint32* primary_faction) {
 	if (npcfaction_id <= 0) {
 		if (primary_faction)
 			*primary_faction = npcfaction_id;
@@ -818,6 +865,7 @@ bool ZoneDatabase::GetNPCFactionList(uint32 npcfaction_id, sint32* faction_id, s
 	for (int i=0; i<MAX_NPC_FACTIONS; i++) {
 		faction_id[i] = nfl->factionid[i];
 		value[i] = nfl->factionvalue[i];
+		temp[i] = nfl->factiontemp[i];
 	}
 	return true;
 }
@@ -829,7 +877,7 @@ bool ZoneDatabase::GetNPCFactionList(uint32 npcfaction_id, sint32* faction_id, s
 //|          faction_id to specified value.
 //|          Returns false on failure.
 //o--------------------------------------------------------------
-bool ZoneDatabase::SetCharacterFactionLevel(int32 char_id, sint32 faction_id, sint32 value, faction_map &val_list)
+bool ZoneDatabase::SetCharacterFactionLevel(int32 char_id, sint32 faction_id, sint32 value, int8 temp, faction_map &val_list)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -849,9 +897,15 @@ bool ZoneDatabase::SetCharacterFactionLevel(int32 char_id, sint32 faction_id, si
 		return true;
 	}
 
+	if(temp == 2)
+		temp = 0;
+
+	if(temp == 3)
+		temp = 1;
+
 	if (!RunQuery(query, MakeAnyLenString(&query, 
-		"INSERT INTO faction_values (char_id,faction_id,current_value) VALUES (%i,%i,%i)", 
-		char_id, faction_id,value), errbuf, 0, &affected_rows)) {
+		"INSERT INTO faction_values (char_id,faction_id,current_value,temp) VALUES (%i,%i,%i,%i)", 
+		char_id, faction_id,value,temp), errbuf, 0, &affected_rows)) {
 		cerr << "Error in SetCharacterFactionLevel query '" << query << "' " << errbuf << endl;
 		safe_delete_array(query);
 		return false;
@@ -891,7 +945,7 @@ bool ZoneDatabase::LoadFactionData()
 			}
 			mysql_free_result(result);
 			
-			MakeAnyLenString(&query, "SELECT id,name,base,mod_c1,mod_c2,mod_c3,mod_c4,mod_c5,mod_c6,mod_c7,mod_c8,mod_c9,mod_c10,mod_c11,mod_c12,mod_c13,mod_c14,mod_c15,mod_c16,mod_r1,mod_r2,mod_r3,mod_r4,mod_r5,mod_r6,mod_r7,mod_r8,mod_r9,mod_r10,mod_r11,mod_r12,mod_r14,mod_r42,mod_r75,mod_r108,mod_r128,mod_r130,mod_r161,mod_r330,mod_r367,mod_r522,mod_d140,mod_d201,mod_d202,mod_d203,mod_d204,mod_d205,mod_d206,mod_d207,mod_d208,mod_d209,mod_d210,mod_d211,mod_d212,mod_d213,mod_d214,mod_d215,mod_d216 FROM faction_list");
+			MakeAnyLenString(&query, "SELECT id,name,base FROM faction_list");
 			if (RunQuery(query, strlen(query), errbuf, &result))
 			{
 				safe_delete_array(query);
@@ -899,18 +953,21 @@ bool ZoneDatabase::LoadFactionData()
 				{
 					uint32 index = atoi(row[0]);
 					faction_array[index] = new Faction;
-					memset(faction_array[index], 0, sizeof(Faction));
-					strncpy(faction_array[index]->name, row[1], 50);					
+					strn0cpy(faction_array[index]->name, row[1], 50);					
 					faction_array[index]->base = atoi(row[2]);
-					int16 i;
-					for (i=3;i != 19;i++)
-						faction_array[index]->mod_c[i-3] = atoi(row[i]);
-					for (i=19;i != 41;i++)
-						faction_array[index]->mod_r[i-19] = atoi(row[i]);
-					for (i=41;i != 58;i++)
-						faction_array[index]->mod_d[i-41] = atoi(row[i]);
-					//does this make sense?:
-					//faction_array[atoi(row[0])]->mod_r[20] = atoi(row[55]);
+
+                    char sec_errbuf[MYSQL_ERRMSG_SIZE];
+                    MYSQL_RES *sec_result;
+                    MYSQL_ROW sec_row;
+                    MakeAnyLenString(&query, "SELECT `mod`, `mod_name` FROM `faction_list_mod` WHERE faction_id=%u", index);
+                    if (RunQuery(query, strlen(query), sec_errbuf, &sec_result)) {
+                        while((sec_row = mysql_fetch_row(sec_result)))
+                        {
+                            faction_array[index]->mods[sec_row[1]] = atoi(sec_row[0]);
+                        }
+                        mysql_free_result(sec_result);
+                    }
+                    safe_delete_array(query);
 				}
 				mysql_free_result(result);
 			}
@@ -968,6 +1025,7 @@ bool ZoneDatabase::GetFactionIdsForNPC(uint32 nfl_id, list<struct NPCFaction*> *
 			pFac->factionID = nfl->factionid[i];
 			pFac->value_mod = nfl->factionvalue[i];
 			pFac->npc_value = nfl->factionnpcvalue[i];
+			pFac->temp = nfl->factiontemp[i];
 /*			if (nfl->primaryfaction == pFac->factionID)
 				pFac->primary = true;
 			else
@@ -979,3 +1037,28 @@ bool ZoneDatabase::GetFactionIdsForNPC(uint32 nfl_id, list<struct NPCFaction*> *
 	return true;
 }
 
+bool Client::HatedByClass(int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction)
+{
+	
+	bool Result = false;
+	_ZP(Client_GetFactionLevel);
+
+	sint32 tmpFactionValue;
+	FactionMods fmods;
+
+    //First get the NPC's Primary faction
+	if(pFaction > 0)
+	{
+		//Get the faction data from the database
+		if(database.GetFactionData(&fmods, p_class, p_race, p_deity, pFaction))
+		{
+			tmpFactionValue = GetCharacterFactionLevel(pFaction);
+			tmpFactionValue += GetFactionBonus(pFaction);
+			tmpFactionValue += GetItemFactionBonus(pFaction);
+			CalculateFaction(&fmods, tmpFactionValue);
+			if(fmods.class_mod < fmods.race_mod)
+				Result = true;
+		}
+	}
+	return Result;
+}

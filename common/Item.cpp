@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	// VS6 doesn't like the length of STL generated names: disabling
 	#pragma warning(disable:4786)
 	// Quagmire: Dont know why the one in debug.h doesnt work, but it doesnt.
@@ -172,7 +172,12 @@ ItemInst::ItemInst(const ItemInst& copy)
 			m_contents[it->first] = inst_new;
 		}
 	}
+    std::map<std::string, std::string>::const_iterator iter;
+    for (iter = copy.m_custom_data.begin(); iter != copy.m_custom_data.end(); iter++) {
+        m_custom_data[iter->first] = iter->second;
+    }
 	m_SerialNumber = copy.m_SerialNumber;
+    m_custom_data = copy.m_custom_data;
 }
 
 // Clean up container contents
@@ -249,7 +254,7 @@ sint8 ItemInst::AvailableAugmentSlot(sint32 augtype) const
 	int i;
 	for (i=0;i<5;i++) {
 		if (!GetItem(i)) {
-			if (augtype==-1 || (m_item->AugSlotType[i] && (1<<(m_item->AugSlotType[i]-1) & augtype)))
+			if (augtype==-1 || (m_item->AugSlotType[i] && ((1<<(m_item->AugSlotType[i]-1)) & augtype)))
 				break;
 		}
 
@@ -257,6 +262,23 @@ sint8 ItemInst::AvailableAugmentSlot(sint32 augtype) const
 
 	return (i<5) ? i : -1;
 }
+
+bool ItemInst::AvailableWearSlot(uint32 aug_wear_slots) const
+{
+	if (m_item->ItemClass != ItemClassCommon || !m_item)
+		return false;
+
+	int i;
+	for(i=0; i<23; i++) {
+		if(m_item->Slots & (1<<i)) {
+			if(aug_wear_slots & (1<<i))
+				break;
+		}
+	}
+
+	return (i<23) ? true : false;
+}
+
 uint32 ItemInst::GetAugmentItemID(uint8 slot) const
 {
 uint32 id=0;
@@ -556,6 +578,67 @@ ItemInst* Inventory::GetItem(sint16 slot_id) const
 	return result;
 }
 
+std::string ItemInst::GetCustomDataString() const {
+    std::string ret_val;
+    map<std::string, std::string>::const_iterator iter = m_custom_data.begin();
+    while(iter != m_custom_data.end()) {
+        if(ret_val.length() > 0) {
+            ret_val += "^";
+        }
+        ret_val += iter->first;
+        ret_val += "^";
+        ret_val += iter->second;
+        iter++;
+
+        if(ret_val.length() > 0) {
+            ret_val += "^";
+        }
+    }
+    return ret_val;
+}
+
+void ItemInst::SetCustomData(std::string identifier, std::string value) {
+    DeleteCustomData(identifier);
+    m_custom_data[identifier] = value;
+}
+
+void ItemInst::SetCustomData(std::string identifier, int value) {
+    DeleteCustomData(identifier);
+    std::stringstream ss;
+    ss << value;
+    m_custom_data[identifier] = ss.str();
+}
+
+void ItemInst::SetCustomData(std::string identifier, float value) {
+    DeleteCustomData(identifier);
+    std::stringstream ss;
+    ss << value;
+    m_custom_data[identifier] = ss.str();
+}
+
+void ItemInst::SetCustomData(std::string identifier, bool value) {
+    DeleteCustomData(identifier);
+    std::stringstream ss;
+    ss << value;
+    m_custom_data[identifier] = ss.str();
+}
+
+void ItemInst::DeleteCustomData(std::string identifier) {
+    map<std::string, std::string>::iterator iter = m_custom_data.find(identifier);
+    if(iter != m_custom_data.end()) {
+        m_custom_data.erase(iter);
+    }
+}
+
+std::string ItemInst::GetCustomData(std::string identifier) {
+    map<std::string, std::string>::const_iterator iter = m_custom_data.find(identifier);
+    if(iter != m_custom_data.end()) {
+        return iter->second;
+    }
+
+    return "";
+}
+
 // Retrieve item at specified position within bag
 ItemInst* Inventory::GetItem(sint16 slot_id, uint8 bagidx) const
 {
@@ -750,7 +833,7 @@ sint16 Inventory::HasItemByLoreGroup(uint32 loregroup, uint8 where)
 	return slot_id;
 }
 
-bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity) {
+bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
 
 	if(ItemToTry->Stackable) {
 
@@ -1615,6 +1698,10 @@ EvoItemInst::EvoItemInst(const EvoItemInst &copy) {
 			m_contents[it->first] = inst_new;
 		}
 	}
+    std::map<std::string, std::string>::const_iterator iter;
+    for (iter = copy.m_custom_data.begin(); iter != copy.m_custom_data.end(); iter++) {
+        m_custom_data[iter->first] = iter->second;
+    }
 	m_SerialNumber = copy.m_SerialNumber;
 	m_exp = copy.m_exp;
 	m_evolveLvl = copy.m_evolveLvl;
@@ -1652,6 +1739,11 @@ EvoItemInst::EvoItemInst(const ItemInst &basecopy) {
 			m_contents[it->first] = inst_new;
 		}
 	}
+
+    std::map<std::string, std::string>::const_iterator iter;
+    for (iter = copy->m_custom_data.begin(); iter != copy->m_custom_data.end(); iter++) {
+        m_custom_data[iter->first] = iter->second;
+    }
 	m_SerialNumber = copy->m_SerialNumber;
 	m_exp = 0;
 	m_evolveLvl = 0;
@@ -1744,7 +1836,7 @@ void EvoItemInst::ScaleItem() {
 	m_scaledItem->BaneDmgAmt = (sint8)((float)m_item->BaneDmgAmt*Mult);
 	m_scaledItem->BardValue = (sint32)((float)m_item->BardValue*Mult);
 	m_scaledItem->ElemDmgAmt = (uint8)((float)m_item->ElemDmgAmt*Mult);
-	m_scaledItem->Damage = (uint8)((float)m_item->Damage*Mult);
+	m_scaledItem->Damage = (uint32)((float)m_item->Damage*Mult);
 
 	m_scaledItem->CombatEffects = (sint8)((float)m_item->CombatEffects*Mult);
 	m_scaledItem->Shielding = (sint8)((float)m_item->Shielding*Mult);

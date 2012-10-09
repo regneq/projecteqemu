@@ -36,6 +36,7 @@
 #define ServerOP_GuildMemberUpdate	0x0014
 #define ServerOP_RequestOnlineGuildMembers	0x0015
 #define ServerOP_OnlineGuildMembersResponse	0x0016
+#define ServerOP_LFGuildUpdate		0x0017
 
 #define ServerOP_FlagUpdate			0x0018	// GM Flag updated for character, refresh the memory cache
 #define ServerOP_GMGoto				0x0019
@@ -83,6 +84,7 @@
 #define ServerOP_ReloadTitles		0x0062
 #define ServerOP_QGlobalUpdate		0x0063
 #define ServerOP_QGlobalDelete		0x0064
+#define ServerOP_DepopPlayerCorpse	0x0065
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use
@@ -99,6 +101,10 @@
 #define ServerOP_RaidChangeGroup	0x010C //in use
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
+#define ServerOP_GroupInvite		0x010F
+#define ServerOP_GroupFollow		0x0110
+#define ServerOP_GroupFollowAck		0x0111
+#define ServerOP_GroupCancelInvite	0x0112
 
 #define ServerOP_InstanceUpdateTime       0x014F
 #define ServerOP_AdventureRequest         0x0150 
@@ -162,6 +168,20 @@
 #define ServerOP_LauncherConnectInfo	0x3000
 #define ServerOP_LauncherZoneRequest	0x3001
 #define ServerOP_LauncherZoneStatus		0x3002
+#define ServerOP_DoZoneCommand		0x3003
+
+#define ServerOP_UCSMessage		0x4000
+#define ServerOP_UCSMailMessage 0x4001
+#define ServerOP_ReloadRules	0x4002
+#define ServerOP_ReloadRulesWorld	0x4003
+#define ServerOP_CameraShake	0x4004
+#define ServerOP_QueryServGeneric	0x4005
+
+enum { QSG_LFGuild = 0 };
+enum {	QSG_LFGuild_PlayerMatches = 0, QSG_LFGuild_UpdatePlayerInfo, QSG_LFGuild_RequestPlayerInfo, QSG_LFGuild_UpdateGuildInfo, QSG_LFGuild_GuildMatches,
+	QSG_LFGuild_RequestGuildInfo };
+
+#define ServerOP_Speech			0x4513
 
 /************ PACKET RELATED STRUCT ************/
 class ServerPacket
@@ -179,6 +199,8 @@ public:
 			pBuffer = new uchar[size];
 			memset(pBuffer, 0, size);
 		}
+		_wpos = 0;
+		_rpos = 0;
 	}
 	ServerPacket* Copy() {
 		if (this == 0) {
@@ -228,9 +250,27 @@ public:
 		safe_delete_array(tmpdel);
 		return true;
 	}
+
+	void WriteUInt8(uint8 value) { *(uint8 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint8); }
+	void WriteUInt32(uint32 value) { *(uint32 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint32); }
+	void WriteString(const char * str) { uint32 len = strlen(str) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
+
+	uint8 ReadUInt8() { uint8 value = *(uint8 *)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }
+	uint32 ReadUInt32() { uint32 value = *(uint32 *)(pBuffer + _rpos); _rpos += sizeof(uint32); return value; }
+	void ReadString(char *str) { uint32 len = strlen((char *)(pBuffer + _rpos)) + 1; memcpy(str, pBuffer + _rpos, len); _rpos += len; }
+	
+	uint32 GetWritePosition() { return _wpos; }
+	uint32 GetReadPosition() { return _rpos; }
+	void SetWritePosition(uint32 Newwpos) { _wpos = Newwpos; }
+	void WriteSkipBytes(uint32 count) { _wpos += count; }
+	void ReadSkipBytes(uint32 count) { _rpos += count; }
+	void SetReadPosition(uint32 Newrpos) { _rpos = Newrpos; }
+
 	int32	size;
 	int16	opcode;
 	uchar*	pBuffer;
+	uint32	_wpos;
+	uint32	_rpos;
 	bool	compressed;
 	int32	InflatedSize;
 	int32	destination;
@@ -275,6 +315,17 @@ struct SendGroup_Struct{
 	char	thismember[64];
 	char	members[5][64];
 };
+
+struct ServerGroupFollow_Struct {
+	int32 CharacterID;
+	GroupGeneric_Struct gf;
+};
+
+struct ServerGroupFollowAck_Struct {
+	char Name[64];
+};
+
+
 struct ServerChannelMessage_Struct {
 	char  deliverto[64];
 	char  to[64];
@@ -353,6 +404,7 @@ struct ServerZonePlayer_Struct {
 };
 
 struct RezzPlayer_Struct {
+	int32	dbid;
 	int32	exp;
 	int16	rezzopcode;
 	//char	packet[160];
@@ -690,11 +742,11 @@ typedef enum {
 } ZoneRequestCommands;
 struct LauncherZoneRequest {
 	uint8 command;
-	char short_name[17];
+	char short_name[33];
 };
 
 struct LauncherZoneStatus {
-	char short_name[17];
+	char short_name[33];
 	uint32 start_count;
 	uint8 running;
 };
@@ -755,6 +807,13 @@ struct ReloadTasks_Struct {
 struct ServerDepopAllPlayersCorpses_Struct
 {
 	uint32 CharacterID;
+	int32 ZoneID;
+	int16 InstanceID;
+};
+
+struct ServerDepopPlayerCorpse_Struct
+{
+	uint32 DBID;
 	int32 ZoneID;
 	int16 InstanceID;
 };
@@ -993,6 +1052,28 @@ struct ServerLeaderboardRequest_Struct
 {
 	char player[64];
 	uint8 type;
+};
+
+struct ServerCameraShake_Struct
+{
+	uint32 duration; // milliseconds
+	uint32 intensity; // number from 1-10
+};
+
+struct ServerMailMessageHeader_Struct {
+    char from[64];
+    char to[64];
+    char subject[128];
+    char message[0];
+};
+
+struct Server_Speech_Struct {
+	char	to[64];
+	char	from[64];
+	int32	guilddbid;
+	sint16	minstatus;
+	int32	type;
+	char	message[0];
 };
 
 #pragma pack()

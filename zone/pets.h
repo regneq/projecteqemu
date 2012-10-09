@@ -18,7 +18,7 @@
 	
 	class Pet : public NPC {
 	public:
-		Pet(NPCType *type_data, Mob *owner, PetType type, int16 spell_id);
+		Pet(NPCType *type_data, Mob *owner, PetType type, int16 spell_id, sint16 power);
 		
 	};
 /*

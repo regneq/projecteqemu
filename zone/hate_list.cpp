@@ -25,6 +25,11 @@
 #include "../common/rulesys.h"
 #include "../common/MiscFunctions.h"
 #include "hate_list.h"
+#include "QuestParserCollection.h"
+#include "zone.h"
+#include "watermap.h"
+
+extern Zone *zone;
 
 HateList::HateList()
 {
@@ -57,7 +62,7 @@ void HateList::Wipe()
 	while(iterator.MoreElements()) 
 	{
 		Mob* m = iterator.GetData()->ent;
-		parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "0", owner->CastToNPC(), m);
+        parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), m, "0", 0); 
        	iterator.RemoveCurrent();
 
 		if(m->IsClient())
@@ -183,18 +188,18 @@ void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool i
 	tHateEntry *p = Find(ent);
 	if (p)
 	{
-		p->damage+=in_dam;
+		p->damage+=(in_dam>=0)?in_dam:0;
 		p->hate+=in_hate;
 		p->bFrenzy = bFrenzy;
 	}
 	else if (iAddIfNotExist) {
         p = new tHateEntry;
         p->ent = ent;
-        p->damage = in_dam;
+        p->damage = (in_dam>=0)?in_dam:0;
         p->hate = in_hate;
         p->bFrenzy = bFrenzy;
         list.Append(p);
-		parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "1", owner->CastToNPC(), ent);
+		parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "1", 0); 
 
 		if(ent->IsClient())
 			ent->CastToClient()->IncrementAggroCount();
@@ -211,7 +216,7 @@ bool HateList::RemoveEnt(Mob *ent)
 	{
 		if(iterator.GetData()->ent == ent)
 		{
-			parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "0", owner->CastToNPC(), ent);
+            parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "0", 0); 
 			iterator.RemoveCurrent();
 			found = true;
 
@@ -255,6 +260,8 @@ Mob *HateList::GetTop(Mob *center)
 	if (RuleB(Aggro,SmartAggroList)){
 		Mob* topClientInRange = NULL;
 		sint32 hateClientInRange = -1;
+        int skipped_count = 0;
+
 		LinkedListIterator<tHateEntry*> iterator(list);
 		iterator.Reset();
 		while(iterator.MoreElements())
@@ -271,6 +278,14 @@ Mob *HateList::GetTop(Mob *center)
 				iterator.Advance();
 				continue;
 			}
+
+            if(center->IsNPC() && center->CastToNPC()->IsUnderwaterOnly() && zone->HasWaterMap()) {
+                if(!zone->watermap->InLiquid(cur->ent->GetX(), cur->ent->GetY(), cur->ent->GetZ())) {
+                    skipped_count++;
+                    iterator.Advance();
+                    continue;
+                }
+            }
 
 			if(cur->ent->DivineAura() || cur->ent->IsMezzed() || cur->ent->IsFeared()){
 				if(hate == -1)
@@ -336,17 +351,43 @@ Mob *HateList::GetTop(Mob *center)
 			iterator.Advance();
 		}
 
-		if(topClientInRange != NULL && top != NULL && !top->IsClient())
-			return topClientInRange;
-		else
+		if(topClientInRange != NULL && top != NULL) {
+			bool isTopClientType = top->IsClient();
+#ifdef BOTS
+			if(!isTopClientType) {
+				if(top->IsBot()) {
+					isTopClientType = true;
+					topClientInRange = top;
+				}
+			}
+#endif //BOTS
+			if(!isTopClientType)
+				return topClientInRange;
+
 			return top;
+        }
+		else {
+			if(top == NULL && skipped_count > 0) {
+                return center->GetTarget();
+            }
+			return top;
+        }
 	}
 	else{
 		LinkedListIterator<tHateEntry*> iterator(list);
 		iterator.Reset();
+        int skipped_count = 0;
 		while(iterator.MoreElements())
 		{
     		tHateEntry *cur = iterator.GetData();
+            if(center->IsNPC() && center->CastToNPC()->IsUnderwaterOnly() && zone->HasWaterMap()) {
+                if(!zone->watermap->InLiquid(cur->ent->GetX(), cur->ent->GetY(), cur->ent->GetZ())) {
+                    skipped_count++;
+                    iterator.Advance();
+                    continue;
+                }
+            }
+
 			if(cur->ent != NULL && ((cur->hate > hate) || cur->bFrenzy ))
 			{
 				top = cur->ent;
@@ -354,6 +395,9 @@ Mob *HateList::GetTop(Mob *center)
 			}
 			iterator.Advance();
 		}
+		if(top == NULL && skipped_count > 0) {
+            return center->GetTarget();
+        }
 		return top;
 	}
 }

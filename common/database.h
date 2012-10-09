@@ -134,6 +134,7 @@ public:
 	int32	GetAccountIDByChar(const char* charname, int32* oCharID = 0);
 	uint32	GetAccountIDByChar(uint32 char_id);
 	int32	GetAccountIDByName(const char* accname, sint16* status = 0, int32* lsid = 0);
+	uint32	GetGuildDBIDByCharID(int32 char_id);
 	void	GetAccountName(int32 accountid, char* name, int32* oLSAccountID = 0);
 	void	GetCharName(int32 char_id, char* name);
 	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, int32* oInstanceID = 0,float* oX = 0, float* oY = 0, float* oZ = 0);
@@ -164,12 +165,12 @@ public:
 	bool CheckInstanceExists(uint16 instance_id);
 	void BuryCorpsesInInstance(uint16 instance_id);
 	int16 GetInstanceVersion(uint16 instance_id);
-	int16 GetInstanceID(const char* zone, int32 charid, int16 version);
-	int16 GetInstanceID(int32 zone, int32 charid, int16 version);
+	int16 GetInstanceID(const char* zone, int32 charid, sint16 version);
+	int16 GetInstanceID(int32 zone, int32 charid, sint16 version);
 	void AssignGroupToInstance(int32 gid, int32 instance_id);
 	void AssignRaidToInstance(int32 rid, int32 instance_id);
-	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
-	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
+	void FlagInstanceByGroupLeader(int32 zone, sint16 version, int32 charid, int32 gid);
+	void FlagInstanceByRaidLeader(int32 zone, sint16 version, int32 charid, int32 rid);
 	void SetInstanceDuration(int16 instance_id, int32 new_duration);
 	bool GlobalInstance(uint16 instance_id);
 
@@ -206,7 +207,7 @@ public:
 	char*	GetGroupLeaderForLogin(const char* name,char* leaderbuf);
 	
 	void	SetGroupLeaderName(int32 gid, const char* name);
-	char*	GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist = NULL, char *marknpc = NULL,
+	char*	GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* maintank = NULL, char* assist = NULL, char* puller = NULL, char *marknpc = NULL,
 				       GroupLeadershipAA_Struct* GLAA = NULL);
 	void	ClearGroupLeader(int32 gid = 0);
 

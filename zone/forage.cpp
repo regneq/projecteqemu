@@ -21,7 +21,7 @@ using namespace std;
 #include <stdlib.h>
 #include <math.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 
@@ -36,11 +36,11 @@ using namespace std;
 #include "../common/rulesys.h"
 
 #include "zonedb.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #define snprintf	_snprintf
 #endif
 
-
+#include "QuestParserCollection.h"
 
 //max number of items which can be in the foraging table
 //for a given zone.
@@ -90,7 +90,7 @@ int32 ZoneDatabase::GetZoneForage(int32 ZoneID, int8 skill) {
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	int8 index = 0, rindex;
+	int8 index = 0;
 	int32 item[FORAGE_ITEM_LIMIT];
 	int32 chance[FORAGE_ITEM_LIMIT];
 	int32 ret;
@@ -129,7 +129,8 @@ LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[ind
 	
 	ret = 0;
 
-	rindex = MakeRandomInt(1, chancepool);
+	int32 rindex = MakeRandomInt(1, chancepool);
+
 	for(int i = 0; i < index; i++) {
 		if(rindex <= chance[i]) {
 			ret = item[i];
@@ -213,14 +214,14 @@ bool Client::CanFish() {
 
 	if(!Pole || !Pole->IsType(ItemClassCommon) || Pole->GetItem()->ItemType != ItemTypeFishingPole) {
 		if (m_inv.HasItemByUse(ItemTypeFishingPole, 1, invWhereWorn|invWherePersonal|invWhereBank|invWhereSharedBank|invWhereTrading|invWhereCursor))	//We have a fishing pole somewhere, just not equipped
-			Message_StringID(0, FISHING_EQUIP_POLE);	//You need to put your fishing pole in your primary hand.
+			Message_StringID(MT_Skills, FISHING_EQUIP_POLE);	//You need to put your fishing pole in your primary hand.
 		else	//We don't have a fishing pole anywhere
-			Message_StringID(0, FISHING_NO_POLE);	//You can't fish without a fishing pole, go buy one.
+			Message_StringID(MT_Skills, FISHING_NO_POLE);	//You can't fish without a fishing pole, go buy one.
 		return false;
 	}
 
 	if (!Bait || !Bait->IsType(ItemClassCommon) || Bait->GetItem()->ItemType != ItemTypeFishingBait) {
-		Message_StringID(0, FISHING_NO_BAIT);	//You can't fish without fishing bait, go buy some.
+		Message_StringID(MT_Skills, FISHING_NO_BAIT);	//You can't fish without fishing bait, go buy some.
 		return false;
 	}
 
@@ -247,14 +248,14 @@ bool Client::CanFish() {
 		if(n != NODE_NONE) {
 			RodZ = zone->zonemap->FindBestZ(n, dest, NULL, NULL) - 1;
 			bool in_lava = zone->watermap->InLava(RodX, RodY, RodZ);
-			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ);
+			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ) || zone->watermap->InVWater(RodX, RodY, RodZ);
 			//Message(0, "Rod is at %4.3f, %4.3f, %4.3f, InWater says %d, InLava says %d", RodX, RodY, RodZ, in_water, in_lava);
 			if (in_lava) {
-				Message_StringID(0, FISHING_LAVA);	//Trying to catch a fire elemental or something?
+				Message_StringID(MT_Skills, FISHING_LAVA);	//Trying to catch a fire elemental or something?
 				return false;
 			}
 			if((!in_water) || (z_pos-RodZ)>LineLength) {	//Didn't hit the water OR the water is too far below us
-				Message_StringID(0, FISHING_LAND);	//Trying to catch land sharks perhaps?
+				Message_StringID(MT_Skills, FISHING_LAND);	//Trying to catch land sharks perhaps?
 				return false;
 			}
 		}
@@ -285,9 +286,9 @@ void Client::GoFish()
 		13019, // Fresh Fish
 		13076, // Fish Scales
 		13076, // Fish Scales
-            7007, // Rusty Dagger
+        7007, // Rusty Dagger
 		7007, // Rusty Dagger
-            7007 // Rusty Dagger
+        7007 // Rusty Dagger
 		
 	};
 	
@@ -357,13 +358,15 @@ void Client::GoFish()
 			}
 			else
 			{
-				PutItemInInventory(SLOT_CURSOR, *inst);
+				PushItemOnCursor(*inst); // changed from PutItemInInventory(SLOT_CURSOR, *inst); - was additional overhead
 				SendItemPacket(SLOT_CURSOR,inst,ItemPacketSummonItem);
 				if(RuleB(TaskSystem, EnableTaskSystem))
 					UpdateTasksForItem(ActivityFish, food_id);
 			}
 			safe_delete(inst);
 		}
+
+        parse->EventPlayer(EVENT_FISH_SUCCESS, this, "",  inst != NULL ? inst->GetItem()->ID : 0);
 	}
 	else
 	{
@@ -378,6 +381,8 @@ void Client::GoFish()
 			else
 				Message_StringID(MT_Skills, FISHING_FAILED);	//You didn't catch anything.
 		}
+
+        parse->EventPlayer(EVENT_FISH_FAILURE, this, "",  0);
 	}
 	
 	//chance to break fishing pole...
@@ -470,9 +475,12 @@ void Client::ForageItem() {
 			safe_delete(inst);
 		}
 		
+        parse->EventPlayer(EVENT_FORAGE_SUCCESS, this, "",  inst != NULL ? inst->GetItem()->ID : 0);
+
 	} else {
 		Message_StringID(MT_Skills, FORAGE_FAILED);
-	}
+        parse->EventPlayer(EVENT_FORAGE_FAILURE, this, "", 0);
+    }
 	
 	CheckIncreaseSkill(FORAGE, NULL, 5);
 	

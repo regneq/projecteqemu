@@ -30,7 +30,7 @@ using namespace std;
 #include <map>
 
 // Disgrace: for windows compile
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #define snprintf	_snprintf
 #define strncasecmp	_strnicmp
@@ -354,9 +354,9 @@ int32 Database::CreateAccount(const char* name, const char* password, sint16 sta
 	int32 last_insert_id;
 
 	if (password)
-		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', password='%s', status=%i, lsaccount_id=%i;",name,password,status, lsaccount_id);
+		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', password='%s', status=%i, lsaccount_id=%i, time_creation=UNIX_TIMESTAMP();",name,password,status, lsaccount_id);
 	else
-		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', status=%i, lsaccount_id=%i;",name, status, lsaccount_id);
+		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', status=%i, lsaccount_id=%i, time_creation=UNIX_TIMESTAMP();",name, status, lsaccount_id);
 
 	cerr << "Account Attempting to be created:" << name << " " << (sint16) status << endl;
 	if (!RunQuery(query, querylen, errbuf, 0, 0, &last_insert_id)) {
@@ -462,7 +462,7 @@ bool Database::DeleteCharacter(char *name)
 		return false;
 	}
 
-// SCORPIOUS2K - get id from character_ before deleting record so we can clean up inventory and qglobal
+// get id from character_ before deleting record so we can clean up inventory and qglobal
 
 #if DEBUG >= 5
 	printf("DeleteCharacter: Attempting to delete '%s'\n", name);
@@ -563,6 +563,16 @@ bool Database::DeleteCharacter(char *name)
 	}
 
 #if DEBUG >= 5
+	printf(" mail");
+#endif
+	RunQuery(query, MakeAnyLenString(&query, "DELETE from mail WHERE charid='%d'", charid), errbuf, NULL, &affected_rows);
+	if(query)
+	{
+		safe_delete_array(query);
+		query = NULL;
+	}
+
+#if DEBUG >= 5
 	printf(" ptimers");
 #endif
 	RunQuery(query, MakeAnyLenString(&query, "DELETE from timers WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
@@ -637,6 +647,46 @@ bool Database::DeleteCharacter(char *name)
 	}
 
 #if DEBUG >= 5
+	printf(" titlesets");
+#endif
+	RunQuery(query, MakeAnyLenString(&query, "DELETE FROM player_titlesets WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+	if(query)
+	{
+		safe_delete_array(query);
+		query = NULL;
+	}
+
+#if DEBUG >= 5
+    printf(" keyring");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM keyring WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
+    printf(" factions");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM faction_values WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
+    printf(" instances");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE charid='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+
+#if DEBUG >= 5
 	printf(" _character");
 #endif
 	RunQuery(query, MakeAnyLenString(&query, "DELETE from character_ WHERE id='%d'", charid), errbuf, NULL, &affected_rows);
@@ -650,15 +700,17 @@ bool Database::DeleteCharacter(char *name)
 		LogFile->write(EQEMuLog::Error, "DeleteCharacter: error: delete operation affected %d rows\n", affected_rows);
 		return false;
 	}
+
 #if DEBUG >= 5
-    printf(" keyring");
+    printf(" alternate currency");
 #endif
-    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM keyring WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM character_alt_currency WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
     if(query)
     {
         safe_delete_array(query);
         query = NULL;
     }
+
 #if DEBUG >= 5
 	printf("\n");
 #endif
@@ -698,6 +750,7 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inven
 		errbuf,
 		&result
 	)) {
+        safe_delete_array(charidquery);
 		LogFile->write(EQEMuLog::Error, "Error in char store id query: %s: %s", charidquery, errbuf);
 		return(false);
 	}
@@ -719,10 +772,10 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inven
 	const char *zname = GetZoneName(pp->zone_id);
 	if(zname == NULL) {
 		//zone not in the DB, something to prevent crash...
-		strncpy(zone, "qeynos", 49);
+		strn0cpy(zone, "qeynos", 49);
 		pp->zone_id = 1;
 	} else
-		strncpy(zone, zname, 49);
+		strn0cpy(zone, zname, 49);
 	x=pp->x;
 	y=pp->y;
 	z=pp->z;
@@ -771,13 +824,13 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inven
 			{
 				LogFile->write(EQEMuLog::Error, "StoreCharacter inventory failed.  Query '%s' %s", invquery, errbuf);
 			}
-			safe_delete_array(invquery);
 #if EQDEBUG >= 9
 			else
 			{
 				LogFile->write(EQEMuLog::Debug, "StoreCharacter inventory succeeded.  Query '%s' %s", invquery, errbuf);
 			}
 #endif
+            safe_delete_array(invquery);
 		}
 
 		if(i==30){ //end of standard inventory/cursor, jump to internals of bags/cursor
@@ -1738,7 +1791,7 @@ bool Database::SetHackerFlag(const char* accountname, const char* charactername,
 	return true;
 }
 
-bool Database::SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone) { //Lieka:  Utilize the "hacker" table, but also give zone information.
+bool Database::SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone) { //Utilize the "hacker" table, but also give zone information.
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2031,13 +2084,13 @@ void Database::SetGroupLeaderName(int32 gid, const char* name) {
 	safe_delete_array(query);
 }
 
-char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist, char *marknpc, GroupLeadershipAA_Struct* GLAA){
+char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* maintank, char* assist, char* puller, char *marknpc, GroupLeadershipAA_Struct* GLAA){
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES* result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, assist, marknpc, leadershipaa FROM group_leaders WHERE gid=%lu",(unsigned long)gid),
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, maintank, assist, puller, marknpc, leadershipaa FROM group_leaders WHERE gid=%lu",(unsigned long)gid),
 		     errbuf, &result)) {
 
 		safe_delete_array(query);
@@ -2050,14 +2103,20 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 			if(leaderbuf)
 				strcpy(leaderbuf, row[0]);
 
+			if(maintank)
+				strcpy(maintank, row[1]);
+
 			if(assist)
-				strcpy(assist, row[1]);
+				strcpy(assist, row[2]);
+
+			if(puller)
+				strcpy(puller, row[3]);
 
 			if(marknpc)
-				strcpy(marknpc, row[2]);
+				strcpy(marknpc, row[4]);
 
-			if(GLAA && (Lengths[3] == sizeof(GroupLeadershipAA_Struct)))
-				memcpy(GLAA, row[3], sizeof(GroupLeadershipAA_Struct));
+			if(GLAA && (Lengths[5] == sizeof(GroupLeadershipAA_Struct)))
+				memcpy(GLAA, row[5], sizeof(GroupLeadershipAA_Struct));
 
 			mysql_free_result(result);
 			return leaderbuf;
@@ -2069,8 +2128,14 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 	if(leaderbuf)
 		strcpy(leaderbuf, "UNKNOWN");
 
+	if(maintank)
+		maintank[0] = 0;
+
 	if(assist)
 		assist[0] = 0;
+
+	if(puller)
+		puller[0] = 0;
 
 	if(marknpc)
 		marknpc[0] = 0;
@@ -2731,7 +2796,7 @@ int16 Database::GetInstanceVersion(uint16 instance_id)
 	return 0;
 }
 
-int16 Database::GetInstanceID(const char* zone, int32 charid, int16 version)
+int16 Database::GetInstanceID(const char* zone, int32 charid, sint16 version)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2765,7 +2830,7 @@ int16 Database::GetInstanceID(const char* zone, int32 charid, int16 version)
 	return 0;
 }
 
-int16 Database::GetInstanceID(int32 zone, int32 charid, int16 version)
+int16 Database::GetInstanceID(int32 zone, int32 charid, sint16 version)
 {
 	if(!zone)
 		return 0;
@@ -2860,7 +2925,7 @@ void Database::AssignRaidToInstance(int32 rid, int32 instance_id)
 	}
 }
 
-void Database::FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid)
+void Database::FlagInstanceByGroupLeader(int32 zone, sint16 version, int32 charid, int32 gid)
 {
 	int16 id = GetInstanceID(zone, charid, version);
 	if(id != 0)
@@ -2878,7 +2943,7 @@ void Database::FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid
 	AddClientToInstance(l_id, charid);
 }
 
-void Database::FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid)
+void Database::FlagInstanceByRaidLeader(int32 zone, sint16 version, int32 charid, int32 rid)
 {
 	int16 id = GetInstanceID(zone, charid, version);
 	if(id != 0)
@@ -3079,4 +3144,24 @@ bool Database::GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int3
 		safe_delete_array(query);
 		return false;
 	}
+}
+
+int32 Database::GetGuildDBIDByCharID(int32 char_id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	int retVal = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT guild_id FROM guild_members WHERE char_id='%i'", char_id), errbuf, &result)) {
+		if (mysql_num_rows(result) == 1) {
+			MYSQL_ROW row = mysql_fetch_row(result);
+			retVal = atoi(row[0]);
+		}
+		mysql_free_result(result);
+	}
+	else {
+		   cerr << "Error in GetAccountIDByChar query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+	return retVal;
 }

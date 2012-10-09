@@ -64,6 +64,9 @@
 #define GUILD_TRIBUTE_MASTER	64	//not sure
 #define NORRATHS_KEEPERS_MERCHANT 67
 #define DARK_REIGN_MERCHANT 68
+#define FELLOWSHIP_MASTER 69
+#define ALT_CURRENCY_MERCHANT 70
+#define MERCERNARY_MASTER 71
 #define warrior_1 1
 #define monk_1 64
 #define paladin_1 4

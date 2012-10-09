@@ -1,6 +1,6 @@
 #include "../common/debug.h"
 
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"
@@ -17,7 +17,7 @@ MMF DoorsMMF;
 const MMFDoors_Struct* MMFDoorsData = 0;
 MMFDoors_Struct* MMFDoorsData_Writable = 0;
 
-#ifdef WIN32
+#ifdef _WINDOWS
 extern "C" __declspec(dllexport) const Door* GetDoor(uint32 id) {
 	return pGetDoor(id);
 };

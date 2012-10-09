@@ -25,7 +25,7 @@ using namespace std;
 #include <stdlib.h>
 #include <stdarg.h>
 
-#ifdef WIN32
+#ifdef _WINDOWS
 	#include <process.h>
 
 	#define snprintf	_snprintf
@@ -40,6 +40,7 @@ using namespace std;
 #include "worldserver.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/packet_dump.h"
+#include "../common/MiscFunctions.h"
 #include "zonedb.h"
 #include "zone.h"
 #include "entity.h"
@@ -314,7 +315,7 @@ void WorldServer::Process() {
 				}
 				else {
 					entity->CastToClient()->UpdateWho(1);
-					strncpy(zc2->char_name,entity->CastToMob()->GetName(),64);
+					strn0cpy(zc2->char_name,entity->CastToMob()->GetName(),64);
 					zc2->zoneID=ztz->requested_zone_id;
 					zc2->instanceID=ztz->requested_instance_id;
 					zc2->success = 1;
@@ -573,6 +574,7 @@ void WorldServer::Process() {
 		case ServerOP_GuildCharRefresh:
 		case ServerOP_GuildMemberUpdate:
 		case ServerOP_GuildRankUpdate:
+		case ServerOP_LFGuildUpdate:
 //		case ServerOP_GuildGMSet:
 //		case ServerOP_GuildGMSetRank:
 //		case ServerOP_GuildJoin:
@@ -675,7 +677,7 @@ void WorldServer::Process() {
 					}
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
-					client->SetPendingRezzData(srs->exp, srs->rez.spellid, srs->rez.corpse_name);
+					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
                    			_log(SPELLS__REZ, "OP_RezzRequest in zone %s for %s, spellid:%i", 
 					     zone->GetShortName(), client->GetName(), srs->rez.spellid);
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_RezzRequest, 
@@ -721,7 +723,7 @@ void WorldServer::Process() {
 		//	printf("%i\n",zb->zoneid);
 			struct in_addr	in;
 			in.s_addr = GetIP();
-#ifdef WIN32
+#ifdef _WINDOWS
 			char buffer[200];
 			snprintf(buffer,200,". %s %i %s",zb->ip2, zb->port, inet_ntoa(in));
 			if(zb->zoneid != 0) {
@@ -830,12 +832,216 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+        case ServerOP_GroupInvite: {
+			// A player in another zone invited a player in this zone to join their group.
+			//
+			GroupInvite_Struct* gis = (GroupInvite_Struct*)pack->pBuffer;
 
+			Mob *Invitee = entity_list.GetMob(gis->invitee_name);
+
+			if(Invitee && Invitee->IsClient() && !Invitee->IsGrouped() && !Invitee->IsRaidGrouped())
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
+				memcpy(outapp->pBuffer, gis, sizeof(GroupInvite_Struct));
+				Invitee->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+
+			break;
+		}
+		case ServerOP_GroupFollow: {
+			// Player in another zone accepted a group invitation from a player in this zone.
+			//
+			ServerGroupFollow_Struct* sgfs = (ServerGroupFollow_Struct*) pack->pBuffer;
+
+			Mob* Inviter = entity_list.GetClientByName(sgfs->gf.name1);
+
+			if(Inviter && Inviter->IsClient())
+			{
+				Group* group = entity_list.GetGroupByClient(Inviter->CastToClient());
+
+				if(!group){
+			
+					group = new Group(Inviter);
+
+					if(!group)
+						break;
+
+					entity_list.AddGroup(group);
+
+					if(group->GetID() == 0) {
+						Inviter->Message(13, "Unable to get new group id. Cannot create group.");
+						break;
+					}
+
+					database.SetGroupID(Inviter->GetName(), group->GetID(), Inviter->CastToClient()->CharacterID());
+
+					database.SetGroupLeaderName(group->GetID(), Inviter->GetName());
+
+					group->UpdateGroupAAs();
+
+                    if(Inviter->CastToClient()->GetClientVersion() < EQClientSoD)
+			        {
+			        	EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
+			        	GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
+			        	strcpy(outgj->membername, Inviter->GetName());
+			        	strcpy(outgj->yourname, Inviter->GetName());
+			        	outgj->action = groupActInviteInitial; // 'You have formed the group'.
+			        	group->GetGroupAAs(&outgj->leader_aas);
+			        	Inviter->CastToClient()->QueuePacket(outapp);
+			        	safe_delete(outapp);
+			        }
+			        else
+			        {
+			        	// SoD and later
+			        	//
+			        	Inviter->CastToClient()->SendGroupCreatePacket();				
+			        	Inviter->CastToClient()->SendGroupLeaderChangePacket(Inviter->GetName());
+			        	Inviter->CastToClient()->SendGroupJoinAcknowledge();	
+			        }
+				}
+				if(!group)
+					break;
+
+				EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupFollow, sizeof(GroupGeneric_Struct));
+
+				GroupGeneric_Struct *gg = (GroupGeneric_Struct *)outapp->pBuffer;
+
+				strn0cpy(gg->name1, sgfs->gf.name1, sizeof(gg->name1));
+
+				strn0cpy(gg->name2, sgfs->gf.name2, sizeof(gg->name2));
+				
+				Inviter->CastToClient()->QueuePacket(outapp);
+
+				safe_delete(outapp);
+
+				if(!group->AddMember(NULL, sgfs->gf.name2, sgfs->CharacterID))
+					break;
+
+				if(Inviter->CastToClient()->IsLFP())
+					Inviter->CastToClient()->UpdateLFP();
+
+				ServerPacket* pack2 = new ServerPacket(ServerOP_GroupJoin, sizeof(ServerGroupJoin_Struct));
+
+				ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack2->pBuffer;
+
+				gj->gid = group->GetID();
+
+				gj->zoneid = zone->GetZoneID();
+
+				gj->instance_id = zone->GetInstanceID();
+
+				strn0cpy(gj->member_name, sgfs->gf.name2, sizeof(gj->member_name));
+
+				worldserver.SendPacket(pack2);
+
+				safe_delete(pack2);
+
+				// Send acknowledgement back to the Invitee to let them know we have added them to the group.
+				//
+				ServerPacket* pack3 = new ServerPacket(ServerOP_GroupFollowAck, sizeof(ServerGroupFollowAck_Struct));
+
+				ServerGroupFollowAck_Struct* sgfas = (ServerGroupFollowAck_Struct*)pack3->pBuffer;
+
+				strn0cpy(sgfas->Name, sgfs->gf.name2, sizeof(sgfas->Name));
+
+				worldserver.SendPacket(pack3);
+
+				safe_delete(pack3);
+			}
+			break;
+		}
+		case ServerOP_GroupFollowAck: {
+			// The Inviter (in another zone) has successfully added the Invitee (in this zone) to the group.
+			//
+			ServerGroupFollowAck_Struct* sgfas = (ServerGroupFollowAck_Struct*)pack->pBuffer;
+
+			Client *c = entity_list.GetClientByName(sgfas->Name);
+
+			if(!c)
+				break;
+			
+			int32 groupid = database.GetGroupID(c->GetName());
+
+			Group* group = NULL;
+
+			if(groupid > 0)
+			{
+				group = entity_list.GetGroupByID(groupid);
+
+				if(!group)
+				{	//nobody from our group is here... start a new group
+					group = new Group(groupid);
+
+					if(group->GetID() != 0)
+						entity_list.AddGroup(group, groupid);
+					else
+						group = NULL;
+				}	//else, somebody from our group is already here...
+
+				if(group)
+					group->UpdatePlayer(c);
+				else
+					database.SetGroupID(c->GetName(), 0, c->CharacterID());	//cannot re-establish group, kill it
+
+			}
+
+			if(group)
+			{
+				database.RefreshGroupFromDB(c);
+
+				group->SendHPPacketsTo(c);
+
+				// If the group leader is not set, pull the group leader infomrmation from the database.
+				if(!group->GetLeader())
+				{
+					char ln[64];
+					char MainTankName[64];
+					char AssistName[64];
+					char PullerName[64];
+					char NPCMarkerName[64];
+					GroupLeadershipAA_Struct GLAA;
+					memset(ln, 0, 64);
+					strcpy(ln, database.GetGroupLeadershipInfo(group->GetID(), ln, MainTankName, AssistName, PullerName, NPCMarkerName, &GLAA));
+					Client *lc = entity_list.GetClientByName(ln);
+					if(lc)
+						group->SetLeader(lc);
+	
+					group->SetMainTank(MainTankName);
+					group->SetMainAssist(AssistName);
+					group->SetPuller(PullerName);
+					group->SetNPCMarker(NPCMarkerName);
+					group->SetGroupAAs(&GLAA);
+
+				}
+			}
+			break;
+
+		}
+		case ServerOP_GroupCancelInvite: {
+
+			GroupCancel_Struct* sgcs = (GroupCancel_Struct*) pack->pBuffer;
+
+			Mob* Inviter = entity_list.GetClientByName(sgcs->name1);
+
+			if(Inviter && Inviter->IsClient())
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupCancelInvite, sizeof(GroupCancel_Struct));
+				memcpy(outapp->pBuffer, sgcs, sizeof(GroupCancel_Struct));
+				Inviter->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+			break;
+		}
 		case ServerOP_GroupJoin: {
 			ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 			if(zone){
 				if(gj->zoneid == zone->GetZoneID() && gj->instance_id == zone->GetInstanceID())
 					break;
+
+   				Group* g = entity_list.GetGroupByID(gj->gid);
+				if(g)
+					g->AddMember(gj->member_name);
 
 				entity_list.SendGroupJoin(gj->gid, gj->member_name);
 			}
@@ -1006,7 +1212,7 @@ void WorldServer::Process() {
 				Raid *r = entity_list.GetRaidByID(rga->rid);
 				if(r){
 					Client *c = entity_list.GetClientByName(rga->playername);
-					strncpy(r->leadername, rga->playername, 64);
+					strn0cpy(r->leadername, rga->playername, 64);
 					if(c){
 						r->SetLeader(c);
 					}
@@ -1046,8 +1252,8 @@ void WorldServer::Process() {
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupUpdate_Struct));
 					GroupUpdate_Struct* gu = (GroupUpdate_Struct*) outapp->pBuffer;
 					gu->action = groupActDisband;
-					strncpy(gu->leadersname, c->GetName(), 64);
-					strncpy(gu->yourname, c->GetName(), 64);
+					strn0cpy(gu->leadersname, c->GetName(), 64);
+					strn0cpy(gu->yourname, c->GetName(), 64);
 					c->FastQueuePacket(&outapp);
 				}
 			}
@@ -1063,7 +1269,7 @@ void WorldServer::Process() {
 					r->VerifyRaid();
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 					GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-					strncpy(gj->membername, rga->membername, 64);
+					strn0cpy(gj->membername, rga->membername, 64);
 					gj->action = groupActJoin;
 
 					for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -1073,7 +1279,7 @@ void WorldServer::Process() {
 							if(strcmp(r->members[x].member->GetName(), rga->membername) != 0){
 								if((rga->gid < 12) && rga->gid == r->members[x].GroupNumber)
 								{
-									strncpy(gj->yourname, r->members[x].member->GetName(), 64);
+									strn0cpy(gj->yourname, r->members[x].member->GetName(), 64);
 									r->members[x].member->QueuePacket(outapp);
 								}
 							}
@@ -1094,7 +1300,7 @@ void WorldServer::Process() {
 					r->VerifyRaid();
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 					GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-					strncpy(gj->membername, rga->membername, 64);
+					strn0cpy(gj->membername, rga->membername, 64);
 					gj->action = groupActLeave;
 
 					for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -1104,7 +1310,7 @@ void WorldServer::Process() {
 							if(strcmp(r->members[x].member->GetName(), rga->membername) != 0){
 								if((rga->gid < 12) && rga->gid == r->members[x].GroupNumber)
 								{
-									strncpy(gj->yourname, r->members[x].member->GetName(), 64);
+									strn0cpy(gj->yourname, r->members[x].member->GetName(), 64);
 									r->members[x].member->QueuePacket(outapp);
 								}
 							}
@@ -1283,6 +1489,18 @@ void WorldServer::Process() {
 			break;
 
 		}
+
+		case ServerOP_DepopPlayerCorpse:
+		{
+			ServerDepopPlayerCorpse_Struct *sdpcs = (ServerDepopPlayerCorpse_Struct *)pack->pBuffer;
+
+			if(zone && !((zone->GetZoneID() == sdpcs->ZoneID) && (zone->GetInstanceID() == sdpcs->InstanceID)))
+				entity_list.RemoveCorpseByDBID(sdpcs->DBID);
+
+			break;
+
+		}
+
 		case ServerOP_ReloadTitles:
 		{
 			title_manager.LoadTitles();
@@ -1523,7 +1741,47 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_ReloadRules:
+		{
+			rules->LoadRules(&database, rules->GetActiveRuleset());
+			break;
+		}
+		case ServerOP_CameraShake:
+		{
+			if(zone)
+			{
+					ServerCameraShake_Struct *scss = (ServerCameraShake_Struct*)pack->pBuffer;
+					entity_list.CameraEffect(scss->duration, scss->intensity);
+			}
+			break;
+		}
+		case ServerOP_QueryServGeneric:
+		{
+			pack->SetReadPosition(8);
+			char From[64];
+			pack->ReadString(From);
 
+			Client *c = entity_list.GetClientByName(From);
+
+			if(!c)
+				return;
+
+			uint32 Type = pack->ReadUInt32();;
+
+			switch(Type)
+			{
+				case QSG_LFGuild:
+				{
+					c->HandleLFGuildResponse(pack);
+					break;
+				}
+
+				default:
+					break;
+			}
+			
+			break;
+		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;
@@ -1562,8 +1820,8 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 		scm->to[0] = 0;
 		scm->deliverto[0] = '\0';
 	} else {
-		strcpy(scm->to, to);
-		strcpy(scm->deliverto, to);
+		strn0cpy(scm->to, to, sizeof(scm->to));
+		strn0cpy(scm->deliverto, to, sizeof(scm->deliverto));
 	}
 	scm->noreply = false;
 	scm->chan_num = chan_num;
@@ -1657,13 +1915,15 @@ bool WorldServer::SendVoiceMacro(Client* From, int32 Type, char* Target, int32 M
 	return Ret;
 }
 
-bool WorldServer::RezzPlayer(EQApplicationPacket* rpack,int32 rezzexp, int16 opcode) {
+bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, int32 rezzexp, int32 dbid, int16 opcode)
+{
 	_log(SPELLS__REZ, "WorldServer::RezzPlayer rezzexp is %i (0 is normal for RezzComplete", rezzexp);
 	ServerPacket* pack = new ServerPacket(ServerOP_RezzPlayer, sizeof(RezzPlayer_Struct));
 	RezzPlayer_Struct* sem = (RezzPlayer_Struct*) pack->pBuffer;
 	sem->rezzopcode = opcode;
 	sem->rez = *(Resurrect_Struct*) rpack->pBuffer;
 	sem->exp = rezzexp;
+	sem->dbid = dbid;
 	bool ret = SendPacket(pack);
 	if (ret)
 		_log(SPELLS__REZ, "Sending player rezz packet to world spellid:%i", sem->rez.spellid);

@@ -110,7 +110,7 @@ public:
 	SendAA_Struct*	GetAABySequence(int32 seq) { return aas[seq]; }
 	SendAA_Struct*	FindAA(int32 id);
 	uint8	GetTotalAALevels(int32 skill_id);
-	void	LoadZoneDoors(const char* zone, int16 version);
+	void	LoadZoneDoors(const char* zone, sint16 version);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();
 	void	ReloadStaticData();
@@ -127,8 +127,9 @@ public:
 	bool	Process();
 	void	DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index);
 	int32	DumpSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index, Spawn2* spawn2);
+	void	Despawn(uint32 spawngroupID);
 
-	bool	Depop(bool StartSpawnTimer = true);
+	bool	Depop(bool StartSpawnTimer = false);
 	void	Repop(int32 delay = 0);
 	void	SpawnStatus(Mob* client);
 	void	ShowEnabledSpawnStatus(Mob* client);
@@ -173,6 +174,7 @@ public:
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 	list<InternalVeteranReward> VeteranRewards;
+    list<AltCurrencyDefinition_Struct> AlternateCurrencies;
 	char *adv_data;
 	bool did_adventure_actions;
 
@@ -180,6 +182,8 @@ public:
 	void	DoAdventureAssassinationCountIncrease();
 	void	DoAdventureActions();
 	void	LoadVeteranRewards();
+    void    LoadAlternateCurrencies();
+	void	LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList);
 
 	Map*	zonemap;
 	WaterMap* watermap;
@@ -231,6 +235,8 @@ public:
 	LinkedList<ZonePoint*> zone_point_list;
 	int32	numzonepoints;
 	
+	LinkedList<NPC_Emote_Struct*> NPCEmoteList;
+
 private:
 	int32	zoneid;
 	int32	instanceid;

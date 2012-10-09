@@ -262,4 +262,19 @@
 	void Handle_OP_BlockedBuffs(const EQApplicationPacket *app);
 	void Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app);
 	void Handle_OP_ClearBlockedBuffs(const EQApplicationPacket *app);
-	void Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app);
+	void Handle_OP_BuffRemoveRequest(const EQApplicationPacket *app);
+	void Handle_OP_CorpseDrag(const EQApplicationPacket *app);
+	void Handle_OP_CorpseDrop(const EQApplicationPacket *app);
+	void Handle_OP_GroupMakeLeader(const EQApplicationPacket *app);
+	void Handle_OP_GuildCreate(const EQApplicationPacket *app);
+	void Handle_OP_AltCurrencyMerchantRequest(const EQApplicationPacket *app);
+	void Handle_OP_AltCurrencySellSelection(const EQApplicationPacket *app);
+	void Handle_OP_AltCurrencyPurchase(const EQApplicationPacket *app);
+	void Handle_OP_AltCurrencyReclaim(const EQApplicationPacket *app);
+	void Handle_OP_AltCurrencySell(const EQApplicationPacket *app);
+	void Handle_OP_CrystalReclaim(const EQApplicationPacket *app);
+	void Handle_OP_CrystalCreate(const EQApplicationPacket *app);
+	void Handle_OP_LFGuild(const EQApplicationPacket *app);
+	void Handle_OP_XTargetRequest(const EQApplicationPacket *app);
+	void Handle_OP_XTargetAutoAddHaters(const EQApplicationPacket *app);
+

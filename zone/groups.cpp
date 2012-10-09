@@ -20,6 +20,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "NpcAI.h"
 #include "../common/packet_functions.h"
 #include "../common/packet_dump.h"
+#include "../common/MiscFunctions.h"
 #include "worldserver.h"
 extern EntityList entity_list;
 extern WorldServer worldserver;
@@ -46,11 +47,17 @@ Group::Group(int32 gid)
 {
 	leader = NULL;
 	memset(members,0,sizeof(Mob*) * MAX_GROUP_MEMBERS);
-	TargetID = 0;
+	AssistTargetID = 0;
+	TankTargetID = 0;
+	PullerTargetID = 0;
+
 	memset(&LeaderAbilities, 0, sizeof(GroupLeadershipAA_Struct));
 	uint32 i;
 	for(i=0;i<MAX_GROUP_MEMBERS;i++)
+	{
 		memset(membername[i],0,64);	
+		MemberRoles[i] = 0;
+	}
 
 	if(gid != 0) {
 		if(!LearnMembers())
@@ -70,11 +77,16 @@ Group::Group(Mob* leader)
 	members[0] = leader;
 	leader->SetGrouped(true);
 	SetLeader(leader);
-	TargetID = 0;
+	AssistTargetID = 0;
+	TankTargetID = 0;
+	PullerTargetID = 0;
 	memset(&LeaderAbilities, 0, sizeof(GroupLeadershipAA_Struct));
 	uint32 i;
 	for(i=0;i<MAX_GROUP_MEMBERS;i++)
+	{
 		memset(membername[i],0,64);
+		MemberRoles[i] = 0;
+	}
 	strcpy(membername[0],leader->GetName());
 
 	if(leader->IsClient())
@@ -191,76 +203,139 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
   }
 }
 
-bool Group::AddMember(Mob* newmember) {
-	uint32 i=0;
-	//see if they are allready in the group
-	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if(members[i] != NULL && !strcasecmp(members[i]->GetCleanName(), newmember->GetCleanName()))
-			return false;
-	}
-	//put them in the group
-	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if (members[i] == NULL) {
-			members[i] = newmember;
-			break;
-		}
-	}
+bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 CharacterID)
+{
+        bool InZone = true;
 
-	if (i == MAX_GROUP_MEMBERS)
-		return false;
+        // This method should either be passed a Mob*, if the new member is in this zone, or a NULL Mob*
+        // and the name and CharacterID of the new member, if they are out of zone.
+        //
+        if(!newmember && !NewMemberName)
+                return false;
 
-	strcpy(membername[i], newmember->GetCleanName());
-	int x=1;
-	
-	//build the template join packet	
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
-	GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-	strcpy(gj->membername, newmember->GetCleanName());
-	gj->action = groupActJoin;
+        if(!newmember)
+                InZone = false;
+        else
+        {
+                NewMemberName = newmember->GetCleanName();
 
-	gj->leader_aas = LeaderAbilities;
-	
-	for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
-		if (members[i] != NULL && members[i] != newmember) {
-			//fill in group join & send it
-			strcpy(gj->yourname, members[i]->GetCleanName());
+                if(newmember->IsClient())
+                        CharacterID = newmember->CastToClient()->CharacterID();
+        }
 
-			if(members[i]->IsClient())
-			{
-				members[i]->CastToClient()->QueuePacket(outapp);
+        uint32 i = 0;
 
-				//put new member into existing person's list
-				strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], newmember->GetCleanName());
-			}
+        // See if they are already in the group
+        //
+         for (i = 0; i < MAX_GROUP_MEMBERS; ++i)
+                if(!strcasecmp(membername[i], NewMemberName))
+                        return false;
 
-			//put this existing person into the new member's list
-			if(newmember->IsClient()) {
-				if(IsLeader(members[i]))
-					strcpy(newmember->CastToClient()->GetPP().groupMembers[0], members[i]->GetCleanName());
-				else {
-					strcpy(newmember->CastToClient()->GetPP().groupMembers[x], members[i]->GetCleanName());
-					x++;
+        // Put them in the group
+        for (i = 0; i < MAX_GROUP_MEMBERS; ++i)
+        {
+                if (membername[i][0] == '\0')
+                {
+                        if(InZone)
+                                members[i] = newmember;
+
+                        break;
+                }
+        }
+
+        if (i == MAX_GROUP_MEMBERS)
+                return false;
+
+        strcpy(membername[i], NewMemberName);
+	MemberRoles[i] = 0;
+
+        int x=1;
+        
+        //build the template join packet        
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
+        GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;     
+        strcpy(gj->membername, NewMemberName);
+        gj->action = groupActJoin;
+
+        gj->leader_aas = LeaderAbilities;
+        
+        for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
+                if (members[i] != NULL && members[i] != newmember) {
+                        //fill in group join & send it
+                        strcpy(gj->yourname, members[i]->GetCleanName());
+
+                        if(members[i]->IsClient()) {
+                                members[i]->CastToClient()->QueuePacket(outapp);
+
+                                //put new member into existing person's list
+                                strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], NewMemberName);
+                        }
+
+                        //put this existing person into the new member's list
+                        if(InZone && newmember->IsClient()) {
+                                if(IsLeader(members[i]))
+                                        strcpy(newmember->CastToClient()->GetPP().groupMembers[0], members[i]->GetCleanName());
+                                else {
+                                        strcpy(newmember->CastToClient()->GetPP().groupMembers[x], members[i]->GetCleanName());
+                                        x++;
+                                }
+                        }
+                }
+        }
+
+        if(InZone)
+        {
+                //put new member in his own list.
+                newmember->SetGrouped(true);
+
+                if(newmember->IsClient())
+                {
+                        strcpy(newmember->CastToClient()->GetPP().groupMembers[x], NewMemberName);
+                        newmember->CastToClient()->Save();
+                        database.SetGroupID(NewMemberName, GetID(), newmember->CastToClient()->CharacterID());
+                        SendMarkedNPCsToMember(newmember->CastToClient());
+
+						NotifyMainTank(newmember->CastToClient(), 1);
+						NotifyMainAssist(newmember->CastToClient(), 1);
+						NotifyPuller(newmember->CastToClient(), 1);
+                }
+#ifdef BOTS
+				for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
+					if (members[i] != NULL && members[i]->IsBot()) {
+						members[i]->CastToBot()->CalcChanceToCast();	
+					}
 				}
-			}
-		}
-	}
-	
-	//put new member in his own list.
-	if(newmember->IsClient())
-		strcpy(newmember->CastToClient()->GetPP().groupMembers[x], newmember->GetCleanName());
+#endif //BOTS
+        }
+        else
+                database.SetGroupID(NewMemberName, GetID(), CharacterID);
 
-	newmember->SetGrouped(true);
-	
-	if(newmember->IsClient()) {
-		newmember->CastToClient()->Save();
-		database.SetGroupID(newmember->GetCleanName(), GetID(), newmember->CastToClient()->CharacterID());
-		SendMarkedNPCsToMember(newmember->CastToClient());
-	}
-	
-	safe_delete(outapp);
+        safe_delete(outapp);
 
-	return true;
+        return true;
 }
+
+void Group::AddMember(const char *NewMemberName)
+{
+        // This method should be called when both the new member and the group leader are in a different zone to this one.
+        //
+         for (uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+                if(!strcasecmp(membername[i], NewMemberName))
+                {
+                        return;
+                }
+
+        for (uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+        {
+                if (membername[i][0] == '\0')
+                {
+                        strcpy(membername[i], NewMemberName);
+			MemberRoles[i] = 0;
+                        break;
+                }
+        }
+}
+
 
 void Group::QueuePacket(const EQApplicationPacket *app, bool ack_req)
 {
@@ -278,7 +353,6 @@ void Group::SendHPPacketsTo(Mob *member)
 	if(member && member->IsClient())
 	{
 		EQApplicationPacket hpapp;
-
 		EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 
 		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
@@ -286,28 +360,18 @@ void Group::SendHPPacketsTo(Mob *member)
 			if(members[i] && members[i] != member)
 			{
 				members[i]->CreateHPPacket(&hpapp);
-
 				member->CastToClient()->QueuePacket(&hpapp, false);
-
 				if(member->CastToClient()->GetClientVersion() >= EQClientSoD)
 				{
 					outapp.SetOpcode(OP_MobManaUpdate);
-
 					MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
-
 					mmus->spawn_id = members[i]->GetID();
-
 					mmus->mana = members[i]->GetManaPercent();
-
-					member->CastToClient()->QueuePacket(&outapp);
-
+					member->CastToClient()->QueuePacket(&outapp, false);
 					MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
-
 					outapp.SetOpcode(OP_MobEnduranceUpdate);
-
 					meus->endurance = members[i]->GetEndurancePercent();
-
-					member->CastToClient()->QueuePacket(&outapp);
+					member->CastToClient()->QueuePacket(&outapp, false);
 				}
 			}
 		}
@@ -321,7 +385,6 @@ void Group::SendHPPacketsFrom(Mob *member)
 		return;
 
  	member->CreateHPPacket(&hp_app);
-
 	EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 
 	uint32 i;
@@ -329,27 +392,17 @@ void Group::SendHPPacketsFrom(Mob *member)
 		if(members[i] && members[i] != member && members[i]->IsClient())
 		{
 			members[i]->CastToClient()->QueuePacket(&hp_app);
-
 			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
 			{
 				outapp.SetOpcode(OP_MobManaUpdate);
-
 				MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
-
 				mmus->spawn_id = member->GetID();
-
 				mmus->mana = member->GetManaPercent();
-
-				members[i]->CastToClient()->QueuePacket(&outapp);
-
+				members[i]->CastToClient()->QueuePacket(&outapp, false);
 				MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
-
 				outapp.SetOpcode(OP_MobEnduranceUpdate);
-
 				meus->endurance = member->GetEndurancePercent();
-
-				members[i]->CastToClient()->QueuePacket(&outapp);
-
+				members[i]->CastToClient()->QueuePacket(&outapp, false);
 			}
 		}
 	}
@@ -369,7 +422,7 @@ bool Group::UpdatePlayer(Mob* update){
 			if(membername[0] == '\0')
 				memset(pp.groupMembers[i], 0, 64);
 			else
-				strncpy(pp.groupMembers[i], membername[i], 64);
+				strn0cpy(pp.groupMembers[i], membername[i], 64);
 		}
 		if(IsNPCMarker(update->CastToClient()))
 		{
@@ -406,9 +459,20 @@ void Group::MemberZoned(Mob* removemob) {
 				//should NOT clear the name, it is used for world communication.
 				break;
 		  }
+#ifdef BOTS
+		if (members[i] != NULL && members[i]->IsBot()) {
+			members[i]->CastToBot()->CalcChanceToCast();	
+		}
+#endif //BOTS
 	 }
-	 if(removemob->IsClient() && IsMainAssist(removemob->CastToClient()))
-	 	SetGroupTarget(0);
+	 if(removemob->IsClient() && HasRole(removemob, RoleAssist))
+	 	SetGroupAssistTarget(0);
+
+	 if(removemob->IsClient() && HasRole(removemob, RoleTank))
+	 	SetGroupTankTarget(0);
+
+	 if(removemob->IsClient() && HasRole(removemob, RolePuller))
+	 	SetGroupPullerTarget(0);
 }
 
 bool Group::DelMemberOOZ(const char *Name) {
@@ -428,10 +492,13 @@ bool Group::DelMemberOOZ(const char *Name) {
 				}
 
 				memset(membername[i], 0, 64);
+				MemberRoles[i] = 0;
 				if(GroupCount() < 3)
 				{
-					DelegateMarkNPC(NULL);
-					DelegateMainAssist(NULL);
+					UnDelegateMarkNPC(NPCMarkerName.c_str());
+					if(GetLeader() && GetLeader()->IsClient() && GetLeader()->CastToClient()->GetClientVersion() < EQClientSoD) {
+							UnDelegateMainAssist(MainAssistName.c_str());
+					}
 					ClearAllNPCMarks();
 				}
 				return true;
@@ -441,7 +508,8 @@ bool Group::DelMemberOOZ(const char *Name) {
 	return false;
 }
 
-bool Group::DelMember(Mob* oldmember,bool ignoresender){
+bool Group::DelMember(Mob* oldmember,bool ignoresender)
+{
 	if (oldmember == NULL){
 		return false;
 	}
@@ -451,12 +519,13 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 			members[i] = NULL;
 			membername[i][0] = '\0';
 			memset(membername[i],0,64);
+			MemberRoles[i] = 0;
 			break;
 		  }
 	}
 
 	//handle leader quitting group gracefully
-	if (oldmember == GetLeader() && GroupCount() > 2) {
+	if (oldmember == GetLeader() && GroupCount() >= 2) {
 		for(uint32 nl = 0; nl < MAX_GROUP_MEMBERS; nl++) {
 			if(members[nl]) {
 				ChangeLeader(members[nl]);
@@ -492,11 +561,11 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 			if(members[i]->IsClient())
 				members[i]->CastToClient()->QueuePacket(outapp);
 		}
-		#ifdef IPC
-		if(members[i] == oldmember && members[i]->IsNPC() && members[i]->CastToNPC()->IsGrouped() && members[i]->CastToNPC()->IsInteractive()) {
-			 members[i]->CastToNPC()->TakenAction(23,0);
+#ifdef BOTS
+		if (members[i] != NULL && members[i]->IsBot()) {
+			members[i]->CastToBot()->CalcChanceToCast();	
 		}
-		#endif	
+#endif //BOTS
 	}
 
 	if (!ignoresender) {
@@ -516,20 +585,33 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 
 	safe_delete(outapp);
 
-	 if(oldmember->IsClient())
-	 {
-	 	if(IsMainAssist(oldmember->CastToClient()))
-		{
-	 		SetGroupTarget(0);
-			UnDelegateMainAssist(oldmember->GetName());
-		}
-		SendMarkedNPCsToMember(oldmember->CastToClient(), true);
+	if(HasRole(oldmember, RoleTank))
+	{
+		SetGroupTankTarget(0);
+		UnDelegateMainTank(oldmember->GetName());
 	}
+	
+	if(HasRole(oldmember, RoleAssist))
+	{
+	 	SetGroupAssistTarget(0);
+		UnDelegateMainAssist(oldmember->GetName());
+	}
+	
+	if(HasRole(oldmember, RolePuller))
+	{
+		SetGroupPullerTarget(0);
+		UnDelegatePuller(oldmember->GetName());
+	}
+		
+	if(oldmember->IsClient())
+		SendMarkedNPCsToMember(oldmember->CastToClient(), true);
 
 	if(GroupCount() < 3)
 	{
-		DelegateMarkNPC(NULL);
-		DelegateMainAssist(NULL);
+		UnDelegateMarkNPC(NPCMarkerName.c_str());
+		if(GetLeader() && GetLeader()->IsClient() && GetLeader()->CastToClient()->GetClientVersion() < EQClientSoD) {
+			UnDelegateMainAssist(MainAssistName.c_str());
+		}
 		ClearAllNPCMarks();
 	}
 
@@ -556,7 +638,7 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id) {
 		if(members[z] == caster) {
 			caster->SpellOnTarget(spell_id, caster);
 #ifdef GROUP_BUFF_PETS
-			if(caster->GetPet() && caster->GetAA(aaPetAffinity) && !caster->GetPet()->IsCharmed())
+			if(caster->GetPet() && caster->HasPetAffinity() && !caster->GetPet()->IsCharmed())
 				caster->SpellOnTarget(spell_id, caster->GetPet());
 #endif
 		}
@@ -566,7 +648,7 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id) {
 			if(distance <= range2) {
 				caster->SpellOnTarget(spell_id, members[z]);
 #ifdef GROUP_BUFF_PETS
-				if(members[z]->GetPet() && members[z]->GetAA(aaPetAffinity) && !members[z]->GetPet()->IsCharmed())
+				if(members[z]->GetPet() && members[z]->HasPetAffinity() && !members[z]->GetPet()->IsCharmed())
 					caster->SpellOnTarget(spell_id, members[z]->GetPet());
 #endif
 			} else
@@ -595,7 +677,7 @@ void Group::GroupBardPulse(Mob* caster, uint16 spell_id) {
 		if(members[z] == caster) {
 			caster->BardPulse(spell_id, caster);
 #ifdef GROUP_BUFF_PETS
-			if(caster->GetPet() && caster->GetAA(aaPetAffinity) && !caster->GetPet()->IsCharmed())
+			if(caster->GetPet() && caster->HasPetAffinity() && !caster->GetPet()->IsCharmed())
 				caster->BardPulse(spell_id, caster->GetPet());
 #endif
 		}
@@ -605,7 +687,7 @@ void Group::GroupBardPulse(Mob* caster, uint16 spell_id) {
 			if(distance <= range2) {
 				members[z]->BardPulse(spell_id, caster);
 #ifdef GROUP_BUFF_PETS
-				if(members[z]->GetPet() && members[z]->GetAA(aaPetAffinity) && !members[z]->GetPet()->IsCharmed())
+				if(members[z]->GetPet() && members[z]->HasPetAffinity() && !members[z]->GetPet()->IsCharmed())
 					members[z]->GetPet()->BardPulse(spell_id, caster);
 #endif
 			} else
@@ -632,11 +714,12 @@ bool Group::IsGroupMember(const char *Name)
 {
 	if(Name)
 		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
-			if(!strncmp(membername[i], Name, sizeof(membername[0])))
+			if((strlen(Name) == strlen(membername[i])) && !strncmp(membername[i], Name, strlen(Name)))
 				return true;
 
 	return false;
 }
+
 void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -645,11 +728,6 @@ void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char
 
 		if (members[i]->IsClient() && members[i]->CastToClient()->GetFilter(FILTER_GROUP)!=0)
 			members[i]->CastToClient()->ChannelMessageSend(sender->GetName(),members[i]->GetName(),2,language,lang_skill,message);
-		#ifdef IPC
-		if (members[i]->CastToNPC()->IsInteractive() && members[i] != sender)
-			members[i]->CastToNPC()->InteractiveChat(2,1,message,(sender->GetTarget() != NULL) ? sender->GetTarget()->GetName():sender->GetName(),sender);
-				//InteractiveChat(int8 chan_num, int8 language, const char * message, const char* targetname,Mob* sender);
-  		 #endif
 	}
 
 	ServerPacket* pack = new ServerPacket(ServerOP_OOZGroupMessage, sizeof(ServerGroupChannelMessage_Struct) + strlen(message) + 1);
@@ -842,11 +920,7 @@ void Group::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x,
 	uint32 i;
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++)
 	 {
-	 #ifdef IPC
-		if (members[i] != NULL && (members[i]->IsClient() || (members[i]->IsNPC() && members[i]->CastToNPC()->IsInteractive())) && members[i] != sender)
-	 #else
-		  if (members[i] != NULL && members[i]->IsClient() && members[i] != sender)
-	 #endif
+		if (members[i] != NULL && members[i]->IsClient() && members[i] != sender)
 	 	{
 			members[i]->CastToClient()->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 		}
@@ -871,7 +945,7 @@ bool Group::LearnMembers() {
 			if(!row[0])
 				continue;
 			members[i] = NULL;
-			strncpy(membername[i], row[0], 64);
+			strn0cpy(membername[i], row[0], 64);
 
 			i++;
 		}
@@ -955,6 +1029,32 @@ void Client::LeaveGroup() {
 	isgrouped = false;
 }
 
+void Group::HealGroup(uint32 heal_amt, Mob* caster)
+{
+	if (!caster)
+		return;
+
+	int numMem = 0;
+	unsigned int gi = 0;
+	for(; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			numMem += 1;
+		}
+	}
+
+	heal_amt /= numMem;
+	for(gi = 0; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			//members[gi]->SetHP(members[gi]->GetHP() + heal_amt);
+			members[gi]->HealDamage(heal_amt, caster);
+			members[gi]->SendHPUpdate();
+		}
+	}
+}
+
+
 void Group::BalanceHP(sint32 penalty)
 {
 	int dmgtaken = 0, numMem = 0;
@@ -979,6 +1079,37 @@ void Group::BalanceHP(sint32 penalty)
 			else{
 				members[gi]->SetHP(members[gi]->GetMaxHP() - dmgtaken);
 				members[gi]->SendHPUpdate();
+			}
+		}
+	}
+}
+
+void Group::BalanceMana(sint32 penalty)
+{
+	int manataken = 0, numMem = 0;
+	unsigned int gi = 0;
+	for(; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			manataken += (members[gi]->GetMaxMana() - members[gi]->GetMana());
+			numMem += 1;
+		}
+	}
+
+	manataken += manataken * penalty / 100;
+	manataken /= numMem;
+	for(gi = 0; gi < MAX_GROUP_MEMBERS; gi++)
+	{
+		if(members[gi]){
+			if((members[gi]->GetMaxMana() - manataken) < 1){ 
+				members[gi]->SetMana(1);
+				if (members[gi]->IsClient())
+					members[gi]->CastToClient()->SendManaUpdate();
+			}
+			else{
+				members[gi]->SetMana(members[gi]->GetMaxMana() - manataken);
+				if (members[gi]->IsClient())
+					members[gi]->CastToClient()->SendManaUpdate();
 			}
 		}
 	}
@@ -1023,6 +1154,7 @@ void Group::MarkNPC(Mob* Target, int Number)
 			if(i == (Number - 1))
 				return;
 
+			UpdateXTargetMarkedNPC(i+1, NULL);
 			MarkedNPCs[i] = 0;
 
 			AlreadyMarked = true;
@@ -1037,6 +1169,8 @@ void Group::MarkNPC(Mob* Target, int Number)
 			Mob* m = entity_list.GetMob(MarkedNPCs[Number-1]);
 			if(m)
 				m->IsTargeted(-1);
+
+			UpdateXTargetMarkedNPC(Number, NULL);
 		}
 
 		if(EntityID)
@@ -1065,50 +1199,202 @@ void Group::MarkNPC(Mob* Target, int Number)
 	QueuePacket(outapp);
 
 	safe_delete(outapp);
+
+	UpdateXTargetMarkedNPC(Number, m);	
 }
 
-void Group::DelegateMainAssist(const char *NewMainAssistName)
+void Group::DelegateMainTank(const char *NewMainTankName, uint8 toggle)
+{
+	// This method is called when the group leader Delegates the Main Tank role to a member of the group
+	// (or himself). All group members in the zone are notified of the new Main Tank and it is recorded
+	// in the group_leaders table so as to persist across zones.
+	//
+	
+	bool updateDB = false;
+
+	if(!NewMainTankName)
+		return;
+
+	Mob *m = entity_list.GetMob(NewMainTankName);
+
+	if(!m)
+		return;
+
+	if(MainTankName != NewMainTankName || !toggle)
+		updateDB = true;
+	
+	if(m->GetTarget())
+		TankTargetID = m->GetTarget()->GetID();
+	else
+		TankTargetID = 0;
+
+	Mob *mtt = TankTargetID ? entity_list.GetMob(TankTargetID) : 0;
+
+	SetMainTank(NewMainTankName);
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			NotifyMainTank(members[i]->CastToClient(), toggle);
+			members[i]->CastToClient()->UpdateXTargetType(GroupTank, m, NewMainTankName);
+			members[i]->CastToClient()->UpdateXTargetType(GroupTankTarget, mtt);
+		}
+	}
+
+	if(updateDB) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = NULL;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET maintank='%s' WHERE gid=%i LIMIT 1",
+								   MainTankName.c_str(), GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to set group main tank: %s\n", errbuff);
+
+		safe_delete_array(Query);
+	}
+}
+
+void Group::DelegateMainAssist(const char *NewMainAssistName, uint8 toggle)
 {
 	// This method is called when the group leader Delegates the Main Assist role to a member of the group
 	// (or himself). All group members in the zone are notified of the new Main Assist and it is recorded
 	// in the group_leaders table so as to persist across zones.
 	//
-
-	if(MainAssistName.size() > 0)
-		UnDelegateMainAssist(MainAssistName.c_str());
+	
+	bool updateDB = false;
 
 	if(!NewMainAssistName)
 		return;
 
-	Client *c = entity_list.GetClientByName(NewMainAssistName);
+	Mob *m = entity_list.GetMob(NewMainAssistName);
+
+	if(!m)
+		return;
+		
+	if(MainAssistName != NewMainAssistName || !toggle)
+		updateDB = true;
+
+	if(m->GetTarget())
+		AssistTargetID = m->GetTarget()->GetID();
+	else
+		AssistTargetID = 0;
+
+	SetMainAssist(NewMainAssistName);
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if(members[i] && members[i]->IsClient())
+		{
+			NotifyMainAssist(members[i]->CastToClient(), toggle);
+			members[i]->CastToClient()->UpdateXTargetType(GroupAssist, m, NewMainAssistName);
+			members[i]->CastToClient()->UpdateXTargetType(GroupAssistTarget, m->GetTarget());
+		}
+	}
+
+	if(updateDB) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = NULL;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='%s' WHERE gid=%i LIMIT 1",
+								   MainAssistName.c_str(), GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to set group main assist: %s\n", errbuff);
+
+		safe_delete_array(Query);
+	}
+}
+
+void Group::DelegatePuller(const char *NewPullerName, uint8 toggle)
+{
+	// This method is called when the group leader Delegates the Puller role to a member of the group
+	// (or himself). All group members in the zone are notified of the new Puller and it is recorded
+	// in the group_leaders table so as to persist across zones.
+	//
+	
+	bool updateDB = false;
+
+	if(!NewPullerName)
+		return;
+
+	Mob *m = entity_list.GetMob(NewPullerName);
+
+	if(!m)
+		return;
+		
+	if(PullerName != NewPullerName || !toggle)
+		updateDB = true;
+
+	if(m->GetTarget())
+		PullerTargetID = m->GetTarget()->GetID();
+	else
+		PullerTargetID = 0;
+
+	SetPuller(NewPullerName);
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if(members[i] && members[i]->IsClient())
+		{
+			NotifyPuller(members[i]->CastToClient(), toggle);
+			members[i]->CastToClient()->UpdateXTargetType(Puller, m, NewPullerName);
+			members[i]->CastToClient()->UpdateXTargetType(PullerTarget, m->GetTarget());
+		}
+	}
+
+	if(updateDB) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = NULL;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET puller='%s' WHERE gid=%i LIMIT 1",
+								   PullerName.c_str(), GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to set group main puller: %s\n", errbuff);
+
+		safe_delete_array(Query);
+	}
+
+}
+
+void Group::NotifyMainTank(Client *c, uint8 toggle)
+{
+	// Send a packet to the specified Client notifying them who the new Main Tank is. This causes the client to display
+	// a message with the name of the Main Tank.
+	//
 
 	if(!c)
 		return;
 
-	if(c->GetTarget())
-		TargetID = c->GetTarget()->GetID();
+	if(!MainTankName.size())
+		return;
+
+	if(c->GetClientVersion() < EQClientSoD)
+	{
+		if(toggle)
+			c->Message(0, "%s is now Main Tank.", MainTankName.c_str());
+		else
+			c->Message(0, "%s is no longer Main Tank.", MainTankName.c_str());
+	}
 	else
-		TargetID = 0;
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupRoles, sizeof(GroupRole_Struct));
 
-	MainAssistName = NewMainAssistName;
+		GroupRole_Struct *grs = (GroupRole_Struct*)outapp->pBuffer;
 
-	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
-		if(members[i] && members[i]->IsClient())
-			NotifyMainAssist(members[i]->CastToClient());
+		strn0cpy(grs->Name1, MainTankName.c_str(), sizeof(grs->Name1));
 
-	char errbuff[MYSQL_ERRMSG_SIZE];
+		strn0cpy(grs->Name2, GetLeaderName(), sizeof(grs->Name2));
 
-	char *Query = NULL;
+		grs->RoleNumber = 1; 
 
-	if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='%s' WHERE gid=%i LIMIT 1",
-						       NewMainAssistName, GetID()), errbuff))
-		LogFile->write(EQEMuLog::Error, "Unable to set group main assist: %s\n", errbuff);
+		grs->Toggle = toggle;
 
-	safe_delete_array(Query);
+		c->QueuePacket(outapp);
 
+		safe_delete(outapp);
+	}
+	
 }
 
-void Group::NotifyMainAssist(Client *c)
+void Group::NotifyMainAssist(Client *c, uint8 toggle)
 {
 	// Send a packet to the specified Client notifying them who the new Main Assist is. This causes the client to display
 	// a message with the name of the Main Assist.
@@ -1152,67 +1438,172 @@ void Group::NotifyMainAssist(Client *c)
 
 		grs->RoleNumber = 2;
 
-		grs->Toggle = 1;
+		grs->Toggle = toggle;
 
 		c->QueuePacket(outapp);
 
 		safe_delete(outapp);
 	}
 
-	NotifyTarget(c);
+	NotifyAssistTarget(c);
 
 }
 
-void Group::UnDelegateMainAssist(const char *OldMainAssistName)
+void Group::NotifyPuller(Client *c, uint8 toggle)
+{
+	// Send a packet to the specified Client notifying them who the new Puller is. This causes the client to display
+	// a message with the name of the Puller.
+	//
+
+	if(!c)
+		return;
+
+	if(!PullerName.size())
+		return;
+
+	if(c->GetClientVersion() < EQClientSoD)
+	{
+		if(toggle)
+			c->Message(0, "%s is now Puller.", PullerName.c_str());
+		else
+			c->Message(0, "%s is no longer Puller.", PullerName.c_str());
+	}
+	else
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupRoles, sizeof(GroupRole_Struct));
+
+		GroupRole_Struct *grs = (GroupRole_Struct*)outapp->pBuffer;
+
+		strn0cpy(grs->Name1, PullerName.c_str(), sizeof(grs->Name1));
+
+		strn0cpy(grs->Name2, GetLeaderName(), sizeof(grs->Name2));
+
+		grs->RoleNumber = 3;
+
+		grs->Toggle = toggle;
+
+		c->QueuePacket(outapp);
+
+		safe_delete(outapp);
+	}
+
+}
+
+void Group::UnDelegateMainTank(const char *OldMainTankName, uint8 toggle)
+{
+	// Called when the group Leader removes the Main Tank delegation. Sends a packet to each group member in the zone
+	// informing them of the change and update the group_leaders table.
+	//
+	if(OldMainTankName == MainTankName) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
+
+		char *Query = 0;
+
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET maintank='' WHERE gid=%i LIMIT 1",
+								   GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to clear group main tank: %s\n", errbuff);
+
+		safe_delete_array(Query);
+		
+		if(!toggle) {
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+				if(members[i] && members[i]->IsClient())
+				{
+					NotifyMainTank(members[i]->CastToClient(), toggle);
+					members[i]->CastToClient()->UpdateXTargetType(GroupTank, NULL, "");
+					members[i]->CastToClient()->UpdateXTargetType(GroupTankTarget, NULL);
+				}
+			}
+		}
+
+		SetMainTank("");
+	}
+}
+
+void Group::UnDelegateMainAssist(const char *OldMainAssistName, uint8 toggle)
 {
 	// Called when the group Leader removes the Main Assist delegation. Sends a packet to each group member in the zone
 	// informing them of the change and update the group_leaders table.
 	//
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
+	if(OldMainAssistName == MainAssistName) {
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
-	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
+		DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
 
-	das->DelegateAbility = 0;
+		das->DelegateAbility = 0;
 
-	das->MemberNumber = 0;
+		das->MemberNumber = 0;
 
-	das->Action = 1;
+		das->Action = 1;
 
-	das->EntityID = 0;
+		das->EntityID = 0;
 
-	strn0cpy(das->Name, OldMainAssistName, sizeof(das->Name));
+		strn0cpy(das->Name, OldMainAssistName, sizeof(das->Name));
 
-	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
-		if(members[i] && members[i]->IsClient())
-			members[i]->CastToClient()->QueuePacket(outapp);
+		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+			if(members[i] && members[i]->IsClient())
+			{
+				members[i]->CastToClient()->QueuePacket(outapp);
+				members[i]->CastToClient()->UpdateXTargetType(GroupAssist, NULL, "");
+			}
 
-	safe_delete(outapp);
+		safe_delete(outapp);
 
-	char errbuff[MYSQL_ERRMSG_SIZE];
+		char errbuff[MYSQL_ERRMSG_SIZE];
 
-	char *Query = 0;
+		char *Query = 0;
 
-	if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='' WHERE gid=%i LIMIT 1",
-						       GetID()), errbuff))
-		LogFile->write(EQEMuLog::Error, "Unable to clear group main assist: %s\n", errbuff);
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET assist='' WHERE gid=%i LIMIT 1",
+								   GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to clear group main assist: %s\n", errbuff);
 
-	safe_delete_array(Query);
+		safe_delete_array(Query);
+		
+		if(!toggle)
+		{
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+			{
+				if(members[i] && members[i]->IsClient())
+				{
+					NotifyMainAssist(members[i]->CastToClient(), toggle);
+					members[i]->CastToClient()->UpdateXTargetType(GroupAssistTarget, NULL);
+				}
+			}
+		}
 
-	MainAssistName.clear();
+		SetMainAssist("");
+	}
 }
 
-bool Group::IsMainAssist(Client *c)
+void Group::UnDelegatePuller(const char *OldPullerName, uint8 toggle)
 {
-	// Returns true if the specified client has been delegated the Main Assist role.
+	// Called when the group Leader removes the Puller delegation. Sends a packet to each group member in the zone
+	// informing them of the change and update the group_leaders table.
 	//
-	if(!c)
-		return false;
+	if(OldPullerName == PullerName) {
+		char errbuff[MYSQL_ERRMSG_SIZE];
 
-	if(MainAssistName.size())
-		return(c->GetName() == MainAssistName);
+		char *Query = 0;
 
-	return false;
+		if (!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE group_leaders SET puller='' WHERE gid=%i LIMIT 1",
+								   GetID()), errbuff))
+			LogFile->write(EQEMuLog::Error, "Unable to clear group main puller: %s\n", errbuff);
 
+		safe_delete_array(Query);
+		
+		if(!toggle) {
+			for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+				if(members[i] && members[i]->IsClient())
+				{
+					NotifyPuller(members[i]->CastToClient(), toggle);
+					members[i]->CastToClient()->UpdateXTargetType(Puller, NULL, "");
+					members[i]->CastToClient()->UpdateXTargetType(PullerTarget, NULL);
+				}
+			}
+		}
+
+		SetPuller("");
+	}
 }
 
 bool Group::IsNPCMarker(Client *c)
@@ -1229,18 +1620,48 @@ bool Group::IsNPCMarker(Client *c)
 
 }
 
-void Group::SetGroupTarget(int EntityID)
+void Group::SetGroupAssistTarget(Mob *m)
 {
 	// Notify all group members in the zone of the new target the Main Assist has selected.
 	//
-	TargetID = EntityID;
+	AssistTargetID = m ? m->GetID() : 0;
 
 	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
 		if(members[i] && members[i]->IsClient())
-			NotifyTarget(members[i]->CastToClient());
+		{
+			NotifyAssistTarget(members[i]->CastToClient());
+		}
+	}
 }
 
-void Group::NotifyTarget(Client *c)
+void Group::SetGroupTankTarget(Mob *m)
+{
+	TankTargetID = m ? m->GetID() : 0;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			members[i]->CastToClient()->UpdateXTargetType(GroupTankTarget, m);
+		}
+	}
+}
+
+void Group::SetGroupPullerTarget(Mob *m)
+{
+	PullerTargetID = m ? m->GetID() : 0;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			members[i]->CastToClient()->UpdateXTargetType(PullerTarget, m);
+		}
+	}
+}
+
+void Group::NotifyAssistTarget(Client *c)
 {
 	// Send a packet to the specified client notifying them of the group target selected by the Main Assist.
 
@@ -1251,14 +1672,38 @@ void Group::NotifyTarget(Client *c)
 
 	MarkNPC_Struct* mnpcs = (MarkNPC_Struct *)outapp->pBuffer;
 
-	mnpcs->TargetID = TargetID;
+	mnpcs->TargetID = AssistTargetID;
 
 	mnpcs->Number = 0;
 
 	c->QueuePacket(outapp);
 
 	safe_delete(outapp);
+
+	Mob *m = entity_list.GetMob(AssistTargetID);
+
+	c->UpdateXTargetType(GroupAssistTarget, m);
 	
+}
+
+void Group::NotifyTankTarget(Client *c)
+{
+	if(!c)
+		return;
+
+	Mob *m = entity_list.GetMob(TankTargetID);
+
+	c->UpdateXTargetType(GroupTankTarget, m);
+}
+
+void Group::NotifyPullerTarget(Client *c)
+{
+	if(!c)
+		return;
+
+	Mob *m = entity_list.GetMob(PullerTargetID);
+
+	c->UpdateXTargetType(PullerTarget, m);
 }
 
 void Group::DelegateMarkNPC(const char *NewNPCMarkerName)
@@ -1296,6 +1741,9 @@ void Group::NotifyMarkNPC(Client *c)
 	// Notify the specified client who the group member is who has been delgated the Mark NPC ability.
 
 	if(!c)
+		return;
+
+	if(!NPCMarkerName.size())
 		return;
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
@@ -1337,6 +1785,9 @@ void Group::UnDelegateMarkNPC(const char *OldNPCMarkerName)
 	if(!OldNPCMarkerName)
 		return;
 
+	if(!NPCMarkerName.size())
+		return;
+		
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
 	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
@@ -1400,13 +1851,24 @@ void Group::UnMarkNPC(int16 ID)
 	// The primary reason for doing this is so that when a new group member joins or zones in, we
 	// send them correct details of which NPCs are currently marked.
 
-	if(TargetID == ID)
-		TargetID = 0;
+	if(AssistTargetID == ID)
+		AssistTargetID = 0;
+
+	
+	if(TankTargetID == ID)
+		TankTargetID = 0;
+	
+	if(PullerTargetID == ID)
+		PullerTargetID = 0;
 
 	for(int i = 0; i < MAX_MARKED_NPCS; ++i)
+	{
 		if(MarkedNPCs[i] == ID)
+		{
 			MarkedNPCs[i] = 0;
-
+			UpdateXTargetMarkedNPC(i + 1, NULL);
+		}
+	}
 }
 
 void Group::SendMarkedNPCsToMember(Client *c, bool Clear)
@@ -1439,6 +1901,7 @@ void Group::SendMarkedNPCsToMember(Client *c, bool Clear)
 				mnpcs->Number = 0;
 
 			c->QueuePacket(outapp);
+			c->UpdateXTargetType((mnpcs->Number == 1) ? GroupMarkTarget1 : ((mnpcs->Number == 2) ? GroupMarkTarget2 : GroupMarkTarget3), m);
 		}
 	}
 
@@ -1493,7 +1956,7 @@ void Group::QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket*
 
 	int16 SenderID = sender->GetID();
 
-	if(SenderID != TargetID)
+	if(SenderID != AssistTargetID)
 	{
 		bool Marked = false;
 
@@ -1547,8 +2010,8 @@ void Group::ChangeLeader(Mob* newleader)
 		{
 			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
 				members[i]->CastToClient()->SendGroupLeaderChangePacket(newleader->GetName());
-			else
-				members[i]->CastToClient()->QueuePacket(outapp);
+	
+			members[i]->CastToClient()->QueuePacket(outapp);
 		}
 	}
 	safe_delete(outapp);
@@ -1557,4 +2020,68 @@ void Group::ChangeLeader(Mob* newleader)
 const char *Group::GetClientNameByIndex(uint8 index)
 {
 	return membername[index];
+}
+
+void Group::UpdateXTargetMarkedNPC(uint32 Number, Mob *m)
+{
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(members[i] && members[i]->IsClient())
+		{
+			members[i]->CastToClient()->UpdateXTargetType((Number == 1) ? GroupMarkTarget1 : ((Number == 2) ? GroupMarkTarget2 : GroupMarkTarget3), m);
+		}
+	}
+
+}
+
+void Group::SetMainTank(const char *NewMainTankName)
+{
+	MainTankName = NewMainTankName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(!strncasecmp(membername[i], NewMainTankName, 64))
+			MemberRoles[i] |= RoleTank;
+		else
+			MemberRoles[i] &= ~RoleTank;
+	}
+}
+
+void Group::SetMainAssist(const char *NewMainAssistName)
+{
+	MainAssistName = NewMainAssistName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(!strncasecmp(membername[i], NewMainAssistName, 64))
+			MemberRoles[i] |= RoleAssist;
+		else
+			MemberRoles[i] &= ~RoleAssist;
+	}
+}
+
+void Group::SetPuller(const char *NewPullerName)
+{
+	PullerName = NewPullerName;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if(!strncasecmp(membername[i], NewPullerName, 64))
+			MemberRoles[i] |= RolePuller;
+		else
+			MemberRoles[i] &= ~RolePuller;
+	}
+}
+
+bool Group::HasRole(Mob *m, uint8 Role)
+{
+	if(!m)
+		return false;
+
+	for(uint32 i = 0; i < MAX_GROUP_MEMBERS; ++i)
+	{
+		if((m == members[i]) && (MemberRoles[i] & Role))
+			return true;
+	}
+	return false;
 }

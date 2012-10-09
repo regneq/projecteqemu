@@ -6,6 +6,7 @@
 #include <string>
 #include <list>
 #include "event_codes.h"
+#include "QuestInterface.h"
 
 
 struct EventList { 
@@ -36,7 +37,7 @@ struct command_list {
 };
 
 
-class Parser
+class Parser : public QuestInterface
 {
 public:
 	Parser();
@@ -50,7 +51,6 @@ public:
 	std::list<vars*> varlist;
 	std::list<Alias*> AliasList;
 	int32	npcarrayindex;
-	void	AddVar(std::string varname, std::string varval);
 
 	int32	AddNPCQuestID(int32 npcid);
 	int32	FindNPCQuestID(sint32 npcid);
@@ -61,11 +61,6 @@ public:
 
 	void	DelChatAndItemVars(int32 npcid);
 	void	DeleteVar(std::string name);
-
-	//void	Event(int event, int32 npcid, const char * data, Mob* npcmob, Mob* mob);
-	//changed - Eglin.  more reasonable (IMHO) than changing every single referance to the global pointer.
-	//that's what you get for using globals! :)
-	virtual void    Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
 
 	void	ExCommands(std::string command, std::string parms, int argnums, int32 npcid, Mob* other, Mob* mob );
 
@@ -100,15 +95,30 @@ public:
 
 	int	HasQuestFile(int32 npcid);
 	
-	virtual void ReloadQuests();
+    //interface stuff
+    virtual void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data) {}
+    virtual void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {}
+    virtual void EventGlobalPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {}
+    virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) {}
+    virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data) {}
+    virtual bool HasQuestSub(int32 npcid, const char *subname) { return HasQuestFile(npcid); }
+    virtual bool PlayerHasQuestSub(const char *subname) { return true; }
+    virtual bool GlobalPlayerHasQuestSub(const char *subname) { return true; }
+    virtual bool SpellHasQuestSub(uint32 spell_id, const char *subname) { return true; }
+    virtual bool ItemHasQuestSub(ItemInst *itm, const char *subname) { return true; }
+    virtual void AddVar(std::string varname, std::string varval);
+	virtual void ReloadQuests(bool with_timers = false);
+    virtual uint32 GetIdentifier() { return 0x04629fff; }
 
 private:
+    //void	Event(int event, int32 npcid, const char * data, Mob* npcmob, Mob* mob);
+	//changed - Eglin.  more reasonable (IMHO) than changing every single referance to the global pointer.
+	//that's what you get for using globals! :)
+	virtual void    Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
 
 	int32	pMaxNPCID;
 	sint32*	pNPCqstID;
 };
-
-extern Parser* parse;
 
 #endif
 

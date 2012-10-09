@@ -35,7 +35,7 @@
 class BasePacket {
 public:
 	unsigned char *pBuffer;
-	uint32 size;
+	uint32 size, _wpos, _rpos;
 	uint32 src_ip,dst_ip;
 	uint16 src_port,dst_port;
 	uint32 priority;
@@ -55,10 +55,26 @@ public:
 	inline bool operator<(const BasePacket &rhs) {
 		return (timestamp.tv_sec < rhs.timestamp.tv_sec || (timestamp.tv_sec==rhs.timestamp.tv_sec && timestamp.tv_usec < rhs.timestamp.tv_usec));
 	}
+
+	void WriteUInt8(uint8 value) { *(uint8 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint8); }
+	void WriteUInt32(uint32 value) { *(uint32 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint32); }
+	void WriteString(const char * str) { uint32 len = strlen(str) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
+
+	uint8 ReadUInt8() { uint8 value = *(uint8 *)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }
+	uint8 ReadUInt8(uint32 Offset) const { uint8 value = *(uint8 *)(pBuffer + Offset); return value; }
+	uint32 ReadUInt32() { uint32 value = *(uint32 *)(pBuffer + _rpos); _rpos += sizeof(uint32); return value; }
+	uint32 ReadUInt32(uint32 Offset) const { uint32 value = *(uint32 *)(pBuffer + Offset); return value; }
+	void ReadString(char *str) { uint32 len = strlen((char *)(pBuffer + _rpos)) + 1; memcpy(str, pBuffer + _rpos, len); _rpos += len; }
+	void ReadString(char *str, uint32 Offset, uint32 MaxLength) const;
 	
+	uint32 GetWritePosition() { return _wpos; }
+	uint32 GetReadPosition() { return _rpos; }
+	void SetWritePosition(uint32 Newwpos) { _wpos = Newwpos; }
+	void SetReadPosition(uint32 Newrpos) { _rpos = Newrpos; }
+
 protected:
 	virtual ~BasePacket();
-	BasePacket() { pBuffer=NULL; size=0; }
+	BasePacket() { pBuffer=NULL; size=0; _wpos = 0; _rpos = 0; }
 	BasePacket(const unsigned char *buf, const uint32 len);
 };
 

@@ -29,9 +29,7 @@
 #include "StringIDs.h"
 using namespace std;
 
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 const char DEFAULT_OBJECT_NAME[] = "IT63_ACTORDEF";
 const char DEFAULT_OBJECT_NAME_SUFFIX[] = "_ACTORDEF";
@@ -99,9 +97,6 @@ Object::Object(const ItemInst* inst, char* name,float max_x,float min_x,float ma
 	
 	// Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	m_data.unknown064	= 0;	//0x0000000D;
-	m_data.unknown068	= 0;	//0x0000001E;
-	m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 }
@@ -133,9 +128,6 @@ Object::Object(Client* client, const ItemInst* inst)
 
 	// Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	m_data.unknown064	= 0;	//0x0000000D;
-	m_data.unknown068	= 0;	//0x0000001E;
-	m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 	
@@ -192,9 +184,6 @@ Object::Object(const ItemInst *inst, float x, float y, float z, float heading, i
 
 	// Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	m_data.unknown064	= 0;	//0x0000000D;
-	m_data.unknown068	= 0;	//0x0000001E;
-	m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 	
@@ -253,9 +242,6 @@ Object::Object(const char *model, float x, float y, float z, float heading, int8
 
 	//Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	m_data.unknown064	= 0;	//0x0000000D;
-	m_data.unknown068	= 0;	//0x0000001E;
-	m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 
@@ -476,12 +462,10 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 					cursordelete = true;	// otherwise, we delete the new one
 			}
 
-#ifdef EMBPERL
 			char buf[10];
 			snprintf(buf, 9, "%u", m_inst->GetItem()->ID);
 			buf[9] = '\0';
-			((PerlembParser *)parse)->Event(EVENT_PLAYER_PICKUP, 0, buf, (NPC*)NULL, sender);
-#endif		
+            parse->EventPlayer(EVENT_PLAYER_PICKUP, sender, buf, 0);
 
 			// Transfer item to client
 			sender->PutItemInInventory(SLOT_CURSOR, *m_inst, false);
@@ -519,7 +503,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 			coa->open		= 0x01;
 		else {
 			coa->open		= 0x00;
-			sender->Message(13, "Somebody is allready using that container.");
+			//sender->Message(13, "Somebody is allready using that container.");
 		}
 		m_inuse			= true;
 		coa->type		= m_type;
@@ -529,15 +513,21 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 		coa->player_id	= click_object->player_id;
 		coa->icon		= m_icon;
 		
+		if(sender->IsLooting())
+		{
+			coa->open = 0x00;
+			user = sender;
+		}
+
 		sender->QueuePacket(outapp);
 		safe_delete(outapp);
-		
-		// Starting to use this object
-		sender->SetTradeskillObject(this);
 		
 		//if the object allready had a user, we are done
 		if(user != NULL)
 			return(false);
+		
+		// Starting to use this object
+		sender->SetTradeskillObject(this);
 		
 		user = sender;
 		
@@ -573,7 +563,7 @@ uint32 ZoneDatabase::AddObject(uint32 type, uint32 icon, const Object_Struct& ob
 	
 	uint32 database_id = 0;
 	uint32 item_id = 0;
-	sint8 charges = 0;
+	sint16 charges = 0;
 	
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
@@ -615,7 +605,7 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
     char* query = 0;
 	
 	uint32 item_id = 0;
-	sint8 charges = 0;
+	sint16 charges = 0;
 	
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
@@ -648,13 +638,13 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
 	safe_delete_array(object_name);
 	safe_delete_array(query);
 }
-Ground_Spawns* ZoneDatabase::LoadGroundSpawns(int32 zone_id, int16 version, Ground_Spawns* gs){
+Ground_Spawns* ZoneDatabase::LoadGroundSpawns(int32 zone_id, sint16 version, Ground_Spawns* gs){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT max_x,max_y,max_z,min_x,min_y,heading,name,item,max_allowed,respawn_timer from ground_spawns where zoneid=%i and version=%u limit 50", zone_id, version), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT max_x,max_y,max_z,min_x,min_y,heading,name,item,max_allowed,respawn_timer from ground_spawns where zoneid=%i and (version=%u OR version=-1) limit 50", zone_id, version), errbuf, &result))
 	{
 		safe_delete_array(query);
 		int i=0;
@@ -809,7 +799,7 @@ void Object::SetZ(float pos)
 
 void Object::SetModelName(const char* modelname)
 {
-	strncpy(m_data.object_name, modelname, 20); // 20 is the max for chars in object_name, this should be safe
+	strn0cpy(m_data.object_name, modelname, sizeof(m_data.object_name)); // 32 is the max for chars in object_name, this should be safe
 	EQApplicationPacket* app = new EQApplicationPacket();
 	EQApplicationPacket* app2 = new EQApplicationPacket();
 	this->CreateDeSpawnPacket(app);
@@ -927,21 +917,18 @@ void Object::SetHeading(float heading)
 	safe_delete(app2);
 }
 
-void Object::SetEntityVariable(int32 id, const char *m_var)
+void Object::SetEntityVariable(const char *id, const char *m_var)
 {
-	if(!id)
-		return;
-
 	std::string n_m_var = m_var;
 	o_EntityVariables[id] = n_m_var;
 }
 
-const char* Object::GetEntityVariable(int32 id)
+const char* Object::GetEntityVariable(const char *id)
 {
 	if(!id)
 		return NULL;
 
-	std::map<int32, std::string>::iterator iter = o_EntityVariables.find(id);
+	std::map<std::string, std::string>::iterator iter = o_EntityVariables.find(id);
 	if(iter != o_EntityVariables.end())
 	{
 		return iter->second.c_str();
@@ -949,12 +936,12 @@ const char* Object::GetEntityVariable(int32 id)
 	return NULL;
 }
 
-bool Object::EntityVariableExists(int32 id)
+bool Object::EntityVariableExists(const char * id)
 {
 	if(!id)
 		return false;
 
-	std::map<int32, std::string>::iterator iter = o_EntityVariables.find(id);
+	std::map<std::string, std::string>::iterator iter = o_EntityVariables.find(id);
 	if(iter != o_EntityVariables.end())
 	{
 		return true;

@@ -20,10 +20,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
-
-#ifdef EMBPERL
-#include "embparser.h"
-#endif
+#include "QuestParserCollection.h"
 
 // The maximum amount of a single bazaar/barter transaction expressed in copper.
 // Equivalent to 2 Million plat
@@ -349,7 +346,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 
 				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
 
-				if (inst->GetItem()->NoDrop != 0 || other == this) {
+				if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this) {
 					bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
 					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 
@@ -376,37 +373,48 @@ void Client::FinishTrade(Mob* tradingWith) {
 	else if(tradingWith && tradingWith->IsNPC()) {
 
 		bool quest_npc = false;
-
-#ifdef EMBPERL
-		if(((PerlembParser *)parse)->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
-#else
-		if(parse->HasQuestFile(tradingWith->GetNPCTypeID())) {
-#endif
+		if(parse->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
 			// This is a quest NPC
 			quest_npc = true;
+			if(RuleB(NPC, UseMultiQuest)){
+				StoreTurnInItems(tradingWith);
+			}
 		}
 
 		int32 items[4]={0};
 		int8 charges[4]={0};
-
-		int xy = tradingWith->CastToNPC()->CountLoot();
+		bool attuned[4]={0};
 
 		for (sint16 i=3000; i<=3003; i++) {
 			const ItemInst* inst = m_inv[i];
 			if (inst) {
 				items[i-3000]=inst->GetItem()->ID;
 				charges[i-3000]=inst->GetCharges();
+				attuned[i-3000]=inst->IsInstNoDrop();
 				const Item_Struct* item2 = database.GetItem(items[i-3000]);
 				// Handle non-quest NPC trading
 				if (item2 && quest_npc == false) {
-					//if it was not a NO DROP item (or if a GM is trading), let the NPC have it
-					if(GetGM() || item2->NoDrop != 0) {
-						xy++;
-						if (xy <= 20) {	// 20 items max in an NPC loot table
-							tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
+					// if it was not a NO DROP or Attuned item (or if a GM is trading), let the NPC have it
+					if(GetGM() || (item2->NoDrop != 0 && inst->IsInstNoDrop() == false)) {
+						// pets need to look inside bags and try to equip items found there
+						if (item2->ItemClass == ItemClassContainer && item2->BagSlots > 0) {
+							for(sint16 bslot=0; bslot < item2->BagSlots; bslot++) {
+								const ItemInst* baginst = inst->GetItem(bslot);
+								if (baginst) {
+									const Item_Struct* bagitem = database.GetItem(baginst->GetItem()->ID);
+									if (bagitem && (GetGM() || (bagitem->NoDrop != 0 && baginst->IsInstNoDrop() == false))) {
+										tradingWith->CastToNPC()->AddLootDrop(bagitem, &tradingWith->CastToNPC()->itemlist, baginst->GetCharges(), 1, 127, true, true);
+									}
+									else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {
+										PushItemOnCursor(*baginst, true);
+									}
+								}
+							}
 						}
+
+						tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], 1, 127, true, true);
 					}
-					// Return NO DROP items being handed into a non-quest NPC if the rule is true
+					// Return NO DROP and Attuned items being handed into a non-quest NPC if the rule is true
 					else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {
 						PushItemOnCursor(*inst, true);
 					}
@@ -418,7 +426,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 		if(RuleB(TaskSystem, EnableTaskSystem)) {
 			int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
 			if(UpdateTasksOnDeliver(items, Cash, tradingWith->GetNPCTypeID())) {
-				if(!tradingWith->IsMoving()) 
+				if(!tradingWith->IsMoving())
 					tradingWith->FaceTarget(this);
 			}
 		}
@@ -435,35 +443,40 @@ void Client::FinishTrade(Mob* tradingWith) {
 				snprintf(temp1, 100, "item%d.%d", z+1,tradingWith->GetNPCTypeID());
 				snprintf(temp2, 100, "%d",items[z]);
 				parse->AddVar(temp1,temp2);
-				//			memset(temp1,0x0,100);
-				//			memset(temp2,0x0,100);
+				//					  memset(temp1,0x0,100);
+				//					  memset(temp2,0x0,100);
 				snprintf(temp1, 100, "item%d.charges.%d", z+1,tradingWith->GetNPCTypeID());
 				snprintf(temp2, 100, "%d",charges[z]);
 				parse->AddVar(temp1,temp2);
-				//			memset(temp1,0x0,100);
-				//			memset(temp2,0x0,100);
+				//					  memset(temp1,0x0,100);
+				//					  memset(temp2,0x0,100);
+				snprintf(temp1, 100, "item%d.attuned.%d", z+1,tradingWith->GetNPCTypeID());
+				snprintf(temp2, 100, "%d",attuned[z]);
+				parse->AddVar(temp1,temp2);
+				//					  memset(temp1,0x0,100);
+				//					  memset(temp2,0x0,100);
 			}
 			snprintf(temp1, 100, "copper.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->cp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			snprintf(temp1, 100, "silver.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->sp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			snprintf(temp1, 100, "gold.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->gp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			snprintf(temp1, 100, "platinum.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->pp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
-			parse->Event(EVENT_ITEM, tradingWith->GetNPCTypeID(), NULL, tradingWith->CastToNPC(), this);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
+            parse->EventNPC(EVENT_ITEM, tradingWith->CastToNPC(), this, "", 0);
 		}
 	}
 }
@@ -502,7 +515,10 @@ void Client::Trader_ShowItems(){
 	safe_delete(TraderItems);
 }
 
-void Client::SendTraderPacket(Client* Trader) {
+void Client::SendTraderPacket(Client* Trader)
+{
+	if(!Trader)
+		return;
 
 	EQApplicationPacket* outapp= new EQApplicationPacket(OP_BecomeTrader, sizeof(BecomeTrader_Struct));
 
@@ -511,6 +527,10 @@ void Client::SendTraderPacket(Client* Trader) {
 	bts->Code = BazaarTrader_StartTraderMode;
 
 	bts->ID = Trader->GetID();
+
+	strn0cpy(bts->Name, Trader->GetName(), sizeof(bts->Name));
+
+	bts->Unknown072 = 0x33;
 
 	QueuePacket(outapp);
 
@@ -561,6 +581,8 @@ void Client::Trader_StartTrader() {
 
 	bts->ID = this->GetID();
 
+	strn0cpy(bts->Name, GetName(), sizeof(bts->Name));
+
 	entity_list.QueueClients(this, outapp, false);
 
 	_pkt(TRADING__PACKETS, outapp);
@@ -610,6 +632,8 @@ void Client::Trader_EndTrader() {
 	bts->Code = 0;
 
 	bts->ID = this->GetID();
+
+	strn0cpy(bts->Name, GetName(), sizeof(bts->Name));
 
 	entity_list.QueueClients(this, outapp, false);
 
@@ -878,8 +902,8 @@ void Client::FindAndNukeTraderItem(sint32 SerialNumber, int16 Quantity, Client* 
 			if(!Stackable) 
 				Quantity = (Charges > 0) ? Charges : 1;
 
+			_log(TRADING__CLIENT, "FindAndNuke %s, Charges %i, Quantity %i", item->GetItem()->Name, Charges, Quantity);
 		}
-		_log(TRADING__CLIENT, "FindAndNuke %s, Charges %i, Quantity %i", item->GetItem()->Name, Charges, Quantity);
 		if(item && (Charges <= Quantity || (Charges <= 0 && Quantity==1) || !Stackable)){
 			this->DeleteItemInInventory(SlotID, Quantity);
 
@@ -1048,7 +1072,7 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 
 	outtbs->Action = BazaarBuyItem;
 
-	strncpy(outtbs->ItemName, BuyItem->GetItem()->Name, 64);
+	strn0cpy(outtbs->ItemName, BuyItem->GetItem()->Name, 64);
 
 	int TraderSlot = 0;
 
@@ -2513,5 +2537,22 @@ void Client::BuyerItemSearch(const EQApplicationPacket *app) {
 	_pkt(TRADING__BARTER, outapp);
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+bool Client::StoreTurnInItems(Mob* tradingWith) {
+	
+	if ( !tradingWith || !tradingWith->IsNPC() )
+		return false;
+
+				for (sint16 i=3000; i<=3003; i++) {
+					const ItemInst* inst = m_inv[i];
+					if (inst) {
+						database.logevents(AccountName(),AccountID(),admin,GetName(),tradingWith->GetName(),"Quest Turn In Attempt",inst->GetItem()->Name,22);
+
+						tradingWith->CastToNPC()->AddQuestItem(inst->Clone());
+					}
+				}
+
+	return true;
 }
 

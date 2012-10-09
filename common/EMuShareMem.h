@@ -17,7 +17,7 @@
 */
 #ifndef EMuShareMem_H
 #define EMuShareMem_H
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include "../common/unix.h"
@@ -90,7 +90,7 @@ typedef bool(*CALLBACK_DBLoadNPCFactionLists)(sint32, int32);
 typedef bool(*DLLFUNC_DLLLoadNPCFactionLists)(const CALLBACK_DBLoadNPCFactionLists, int32, sint32*, int32*, int8);
 typedef const NPCFactionList*(*DLLFUNC_GetNPCFactionList)(int32);
 typedef bool(*DLLFUNC_AddNPCFactionList)(int32, const NPCFactionList*);
-typedef bool(*DLLFUNC_SetFaction)(int32, uint32*, sint32*, sint8*);
+typedef bool(*DLLFUNC_SetFaction)(int32, uint32*, sint32*, sint8*, int8*);
 struct NPCFactionListDLLFunc_Struct {
 	DLLFUNC_DLLLoadNPCFactionLists DLLLoadNPCFactionLists;
 	DLLFUNC_GetNPCFactionList GetNPCFactionList;
@@ -177,7 +177,7 @@ private:
 	
 	bool loaded;
 	
-#ifdef WIN32
+#ifdef _WINDOWS
 #else
 	static int32  refCount;
 	static int32  refCountU() { return ++refCount; };

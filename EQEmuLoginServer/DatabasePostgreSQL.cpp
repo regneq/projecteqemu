@@ -23,7 +23,7 @@
 #include "ErrorLog.h"
 #include "LoginServer.h"
 
-extern ErrorLog *log;
+extern ErrorLog *server_log;
 extern LoginServer server;
 
 #pragma comment(lib, "libpq.lib")
@@ -34,12 +34,12 @@ DatabasePostgreSQL::DatabasePostgreSQL(string user, string pass, string host, st
 	db = PQsetdbLogin(host.c_str(), port.c_str(), NULL, NULL, name.c_str(), user.c_str(), pass.c_str());
 	if(!db)
 	{
-		log->Log(log_database, "Failed to connect to PostgreSQL Database.");
+		server_log->Log(log_database, "Failed to connect to PostgreSQL Database.");
 	}
 
 	if(PQstatus(db) != CONNECTION_OK)
 	{
-		log->Log(log_database, "Failed to connect to PostgreSQL Database.");
+		server_log->Log(log_database, "Failed to connect to PostgreSQL Database.");
 		PQfinish(db);
 		db = NULL;
 	}
@@ -83,7 +83,7 @@ bool DatabasePostgreSQL::GetLoginDataFromAccountName(string name, string &passwo
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
 		PQclear(res);
 		return false;
 	}
@@ -125,10 +125,8 @@ bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_nam
 	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
 	query << "SLT.ServerListTypeDescription, SAR.AccountName, SAR.AccountPassword FROM " << server.options.GetWorldRegistrationTable();
 	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID JOIN ";
-	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerLongName";
+	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerShortName";
 	query << " = '";
-	query << long_name;
-	query << "' AND WSR.ServerShortName = '";
 	query << short_name;
 	query << "'";
 
@@ -137,7 +135,7 @@ bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_nam
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetWorldRegistration(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetWorldRegistration(): %s", error);
 		PQclear(res);
 		return false;
 	}
@@ -190,12 +188,12 @@ void DatabasePostgreSQL::UpdateLSAccountData(unsigned int id, string ip_address)
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
 	}
 	PQclear(res);
 }
 
-void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string ip_address)
+void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string long_name, string ip_address)
 {
 	if(!db)
 	{
@@ -218,6 +216,8 @@ void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string ip_addr
 	stringstream query(stringstream::in | stringstream::out);
 	query << "UPDATE " << server.options.GetWorldRegistrationTable() << " SET ServerLastLoginDate = current_date, ServerLastIPAddr = '";
 	query << ip_address;
+	query << "', ServerLongName = '";
+	query << long_name;
 	query << "' where ServerID = ";
 	query << id;
 	PGresult *res = PQexec(db, query.str().c_str());
@@ -225,7 +225,7 @@ void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string ip_addr
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
 	}
 	PQclear(res);
 }

@@ -143,6 +143,7 @@ public:
 
 	inline iter_queue cursor_begin()	{ return m_cursor.begin(); }
 	inline iter_queue cursor_end()		{ return m_cursor.end(); }
+	inline bool CursorEmpty()		{ return (m_cursor.size() == 0); }
 	
 	// Retrieve a read-only item from inventory
 	inline const ItemInst* operator[](sint16 slot_id) const { return GetItem(slot_id); }
@@ -170,7 +171,7 @@ public:
 	sint16 HasItem(uint32 item_id, uint8 quantity=0, uint8 where=0xFF);
 
 	// Check whether there is space for the specified number of the specified item.
-	bool HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity);
+	bool HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity);
 	
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
@@ -196,7 +197,12 @@ public:
 	static bool SupportsContainers(sint16 slot_id);
 	
 	void dumpInventory();
-	
+
+	void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, std::string value);
+    void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, int value);
+    void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, float value);
+    void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, bool value);
+    std::string GetCustomItemData(sint16 slot_id, std::string identifier);
 protected:
 	///////////////////////////////
 	// Protected Methods
@@ -272,7 +278,8 @@ public:
 	//
 	// Augements
 	//
-	inline bool IsAugmentable() const { return m_item->AugSlotType[0]!=0; }
+	inline bool IsAugmentable() const { return m_item->AugSlotType[0]!=0 || m_item->AugSlotType[1]!=0 || m_item->AugSlotType[2]!=0 || m_item->AugSlotType[3]!=0 || m_item->AugSlotType[4]!=0; }
+	bool AvailableWearSlot(uint32 aug_wear_slots) const;
 	sint8 AvailableAugmentSlot(sint32 augtype) const;
 	inline sint32 GetAugmentType() const { return m_item->AugType; }
 
@@ -338,6 +345,14 @@ public:
 	bool IsInstNoDrop() const { return m_instnodrop; }
 	void SetInstNoDrop(bool flag) { m_instnodrop=flag; }
 
+    std::string GetCustomDataString() const;
+    void SetCustomData(std::string identifier, std::string value);
+    void SetCustomData(std::string identifier, int value);
+    void SetCustomData(std::string identifier, float value);
+    void SetCustomData(std::string identifier, bool value);
+    std::string GetCustomData(std::string identifier);
+    void DeleteCustomData(std::string identifier);
+
 	// Allows treatment of this object as though it were a pointer to m_item
 	operator bool() const { return (m_item != NULL); }
 	
@@ -382,7 +397,7 @@ protected:
 	//
 	// Items inside of this item (augs or contents);
 	map<uint8, ItemInst*> m_contents; // Zero-based index: min=0, max=9
-	
+    map<std::string, std::string> m_custom_data;
 };
 
 class EvoItemInst: public ItemInst {
