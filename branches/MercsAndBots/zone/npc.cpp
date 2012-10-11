@@ -228,6 +228,11 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	npc_spells_id = 0;
 	HasAISpell = false;
 
+	if(GetClass() == MERCERNARY_MASTER)
+	{
+		LoadMercTypes();
+		LoadMercs();
+	}
 
 	SpellFocusDMG = 0;
 	SpellFocusHeal = 0; 
@@ -2304,4 +2309,134 @@ void NPC::PrintOutQuestItems(Client* c){
 		}
 
 		c->Message(4,"End of quest items list.");
+}
+
+void NPC::LoadMercTypes(){
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTyp.expansion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			MercType tempMercType;
+
+			tempMercType.Type = atoi(DataRow[0]);
+			tempMercType.Expansion = atoi(DataRow[1]);
+
+			mercTypeList.push_back(tempMercType);
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in NPC::LoadMercTypes()");
+	}
+}
+
+void NPC::LoadMercs(){
+
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTem.template_id, MTyp.dbstring AS merc_type_id, MTem.dbstring AS merc_subtype_id, 0 AS CostFormula, MTyp.expansion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			MercData tempMerc;
+
+			tempMerc.MercID = atoi(DataRow[0]);
+			tempMerc.MercType = atoi(DataRow[1]);
+			tempMerc.MercSubType = atoi(DataRow[2]);
+			tempMerc.CostFormula = atoi(DataRow[3]);
+			tempMerc.Expansion = atoi(DataRow[4]);
+
+			mercDataList.push_back(tempMerc);
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in NPC::LoadMercTypes()");
+	}
+}
+
+int NPC::GetNumMercTypes(int32 expansion)
+{
+	int count = 0;
+	std::list<MercType> mercTypeList = GetMercTypesList();
+
+	for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
+		if(mercTypeListItr->Expansion <= expansion)
+			count++;
+	}
+
+	return count;
+}
+
+int NPC::GetNumMercs(int32 expansion)
+{
+	int count = 0;
+	std::list<MercData> mercDataList = GetMercsList();
+
+	for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
+		if(mercListItr->Expansion <= expansion)
+			count++;
+	}
+
+	return count;
+}
+
+std::list<MercType> NPC::GetMercTypesList(int32 expansion) {
+	std::list<MercType> result;
+
+	if(GetNumMercTypes() > 0) {
+		for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
+			if(mercTypeListItr->Expansion <= expansion) {
+				MercType mercType;
+				mercType.Type = mercTypeListItr->Type;
+				mercType.Expansion = mercTypeListItr->Expansion;
+				result.push_back(mercType);
+			}
+		}		
+	}
+
+	return result;
+}
+
+std::list<MercData> NPC::GetMercsList(int32 expansion) {
+	std::list<MercData> result;
+
+	if(GetNumMercs() > 0) {
+		for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
+			if(mercListItr->Expansion <= expansion) {
+				MercData mercData;
+
+				mercData.MercID = mercListItr->MercID;
+				mercData.MercType = mercListItr->MercType;
+				mercData.MercSubType = mercListItr->MercSubType;			
+				mercData.CostFormula = mercListItr->CostFormula;		
+				mercData.Expansion = mercListItr->Expansion;
+				result.push_back(mercData);
+			}
+		}		
+	}
+
+	return result;
 }

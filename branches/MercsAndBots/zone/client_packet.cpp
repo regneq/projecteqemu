@@ -384,6 +384,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LFGuild] = &Client::Handle_OP_LFGuild;
 	ConnectedOpcodes[OP_XTargetRequest] = &Client::Handle_OP_XTargetRequest;
 	ConnectedOpcodes[OP_XTargetAutoAddHaters] = &Client::Handle_OP_XTargetAutoAddHaters;
+	ConnectedOpcodes[OP_MercenaryDataRequest] = &Client::Handle_OP_MercenaryDataRequest;
+	ConnectedOpcodes[OP_MercenaryHire] = &Client::Handle_OP_MercenaryHire;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -13005,4 +13007,290 @@ void Client::Handle_OP_XTargetAutoAddHaters(const EQApplicationPacket *app)
 	}
 
 	XTargetAutoAddHaters = app->ReadUInt8(0);
+}
+
+void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
+{
+	// The payload is 4 bytes. The EntityID of the Mercenary Liason which are of class 71.
+	//
+	if(app->size != 4)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryDataRequest expected 4 got %i", app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	DumpPacket(app);
+	char *InBuffer = (char *)app->pBuffer;
+	uint32 Command = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+
+	//if(HirePending)
+	if(false)
+	{
+		// This is sent when the player clicks 'Hire' to hire a Mercenary
+
+		//HirePending = false;
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, 82);
+
+		char *Buffer = (char *)outapp->pBuffer;
+
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Number of Types (Journeyman and Apprentice in this case
+	
+/*
+		Underfoot Response
+	
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID for Type 0
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Count of Sub-types that follow
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010101); // DBStringID of Sub-Type
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Purchase Cost
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Upkeep Cost
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Purchase Cost Alternate Currency
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Upkeep Cost Alternate Currency
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Type Alternate Currency
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 899609); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 16); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+*/
+
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID for Type 0
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Count of Sub-types that follow
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Unknown
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010101); // DBStringID of Sub-Type
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Purchase Cost
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Upkeep Cost
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Purchase Cost Alternate Currency
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Upkeep Cost Alternate Currency
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Type Alternate Currency
+		if(GetClientVersion() >= EQClientUnderfoot) {
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // Unknown
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 899609); // Unknown
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 16); // Unknown
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // Unknown
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1); // Unknown
+		}
+		else {
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 899609); // Unknown
+		}
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+
+		DumpPacket(outapp);
+		FastQueuePacket(&outapp);
+		return;
+	}
+	// Hard coded response for Dark Elf Mercenaries
+	//
+	// 1744 was the size of the live packet. SoD has fewer fields, so the packet we are actually sending here doesn't need
+	// to be that big, but it doesn't matter for now.
+	//
+	// The packet we are constructing here is a copy of a live packet, so some of these DB string IDs will not exist
+	// in the SOD dbstr_us.txt file and therefore will give Unknown DB String IDs in the UI for now.
+	//
+	
+
+	NPC* tar = entity_list.GetNPCByID(*((uint32*)app->pBuffer));
+    if(tar) {
+		int mercTypeCount = 0;
+		int mercCount = 0;
+		int packetSize; //adjust for UF
+
+        if(DistNoRoot(*tar) > USE_NPC_RANGE2)
+		    return;
+
+        if(tar->GetClass() != MERCERNARY_MASTER) {
+            return;
+        }
+
+		mercTypeCount = tar->GetNumMercTypes(GetClientVersion());
+		mercCount = tar->GetNumMercs(GetClientVersion());
+
+		packetSize = 4 + mercTypeCount * 4 + 4 + mercCount * 14 * 4;
+		
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, packetSize);
+
+		char *Buffer = (char *)outapp->pBuffer;
+
+		char *Start = Buffer;
+
+		std::list<MercType> mercTypeList = tar->GetMercTypesList(GetClientVersion());
+		std::list<MercData> mercDataList = tar->GetMercsList(GetClientVersion());
+
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, tar->GetNumMercTypes(GetClientVersion())); // Number of Types (Journeyman and Apprentice in this case
+
+		for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercTypeListItr->Type); // DBStringID for Type 0
+		}
+
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, tar->GetNumMercs()); // Count of Sub-types that follow
+
+		// Data for first Merc type
+		//
+		for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercID); // I think this is an ID that refers to this Merc template.
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercType); // DBStringID of Type
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercSubType); // DBStringID of Sub-Type
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4910); // Purchase Cost
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 123); // Upkeep Cost
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Purchase Cost Alternate Currency
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Upkeep Cost Alternate Currency
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Type Alternate Currency
+			if(GetClientVersion() >= EQClientUnderfoot) {
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // Unknown
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4294967295); // Unknown
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4); // Unknown
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+			}
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+			if(GetClientVersion() >= EQClientUnderfoot) {
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 519044964); // Unknown
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1); // Unknown
+			}
+			else {
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4294967295); // Unknown
+			}
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+		}
+		
+		DumpPacket(outapp);
+		FastQueuePacket(&outapp);
+	}
+}
+
+void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
+{
+	// The payload is 16 bytes. First four bytes are the Merc ID (Template ID)
+	//
+	if(app->size != 16)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryHire expected 16 got %i", app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	printf("OP_MercenaryHire\n");
+	DumpPacket(app);
+	fflush(stdout);
+	//HirePending = true;
+	SetHoTT(0);
+	SendTargetCommand(0);
+	// This response packet brings up the Mercenary Manager window (
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryHire, 4);
+
+	char *Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+	
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+
+	outapp = new EQApplicationPacket(OP_MercenaryUnknown1, 1);
+
+	Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);
+
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+
+	NPCType* npc_type = new NPCType;
+	memset(npc_type, 0, sizeof(NPCType));
+
+	sprintf(npc_type->name, "%s", "Test_Merc");
+
+	sprintf(npc_type->lastname, "%s", "Merc");
+	npc_type->cur_hp = 4000000;
+	npc_type->max_hp = 4000000;
+	npc_type->race = 1;
+	npc_type->gender = 0;
+	npc_type->class_ = 9;
+	npc_type->deity= 1;
+	npc_type->level = 75;
+	npc_type->npc_id = 0;
+	npc_type->loottable_id = 0;
+	npc_type->texture = 1;
+	npc_type->light = 0;
+	npc_type->runspeed = 0;
+	npc_type->d_meele_texture1 = 1;
+	npc_type->d_meele_texture2 = 1;
+	npc_type->merchanttype = 1;
+	npc_type->bodytype = 1;
+
+	npc_type->STR = 150;
+	npc_type->STA = 150;
+	npc_type->DEX = 150;
+	npc_type->AGI = 150;
+	npc_type->INT = 150;
+	npc_type->WIS = 150;
+	npc_type->CHA = 150;
+
+	npc_type->findable = 1;
+
+	NPC* npc = new NPC(npc_type, 0, GetX(), GetY(), GetZ(), 0, FlyMode1);
+
+	npc->GiveNPCTypeData(npc_type);
+
+	//npc->SetMercenary(true);
+
+	entity_list.AddNPC(npc, true, true);
+
+	printf("Spawned Merc with ID %i\n", npc->GetID()); fflush(stdout);
+
+	outapp = new EQApplicationPacket(OP_MercenaryTimer, 20);
+
+	Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 900000);	// Time in ms
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 180000);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Unknown
+	
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+
+	outapp = new EQApplicationPacket(OP_MercenaryAssign, 12);
+
+	Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, npc->GetID());	// This should be the spawn ID of the Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3);	// Unknown
+
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+
+	outapp = new EQApplicationPacket(OP_MercenaryAssign, 12);
+
+	Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, npc->GetID());	// This should be the spawn ID of the Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xd0);	// Unknown
+
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+
 }

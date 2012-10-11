@@ -4768,6 +4768,62 @@ struct Membership_Struct
 /*108*/ // char exit_url[0];	// URL that will open when EQ is exited
 };
 
+struct MercType_Struct {
+/*000*/ int32 MercType;						// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+};
+
+struct MercStance_Struct {
+/*0000*/ int32 StanceIndex;				// 
+/*0004*/ int32 Stance;						// From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+};
+
+struct MercData_Struct {
+/*0000*/	int32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/	int32	MercSubType;				// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
+/*0008*/	int32	PurchaseCost;			// Purchase Cost (in gold)
+/*0012*/	int32	UpkeepCost;				// Upkeep Cost (in gold)
+/*0016*/	int32	AltCurrencyCost;		// Alternate Currency Purchase Cost? (all seen costs show N/A Bayle Mark) - Seen 0
+/*0020*/	int32	AltCurrencyUpkeep;		// Alternate Currency Upkeep Cost? (all seen costs show 1 Bayle Mark) - Seen 1
+/*0024*/	int32	AltCurrencyType;		// Alternate Currency Type? - 19^17^Bayle Mark^0 - Seen 19
+/*0028*/	int32	StanceCount;			// Iterations of MercStance_Struct - Normally 2 to 4 seen
+/*0032*/	int32	MercUnk02;				// Unknown 
+/*0000*/	struct  MercStance_Struct Stances[0];	// From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+};
+
+//struct MercenaryInfo_Struct {
+/*000*/ //int32 MercID;					// ID unique to each type of mercenary (probably a DB id) - (if 1, do not send MercData_Struct - No merc hired)
+/*004*/ //struct MercData_Struct MercData[0];	// Data for individual mercenaries - Not populated if no merc is hired
+//};
+
+//struct MercenaryMerchantList_Struct {
+/*0000*/ //int32 MercTypeCount;				// Number of Merc Types to follow
+/*0004*/ //struct  MercType_Struct MercTypes[0];			// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/ //int32 MercCount;						// Number of MercenaryInfo_Struct to follow
+/*0008*/ //struct MercenaryInfo_Struct Mercs[0];		// Data for individual mercenaries in the Merchant List
+//};
+
+struct MercenaryUpdate_Struct {
+/*0000*/	int32	MercEntityID;		// Seen 0 (no merc spawned) or 615843841 and 22779137
+/*0004*/	int32	UpdateInterval;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
+/*0008*/	int32	MercUnk01;		// Seen 180000 - 3 minutes in milleseconds?
+/*0012*/	int32	MercState;		// Seen 5 (normal) or 1 (suspended)
+/*0016*/	int32	SuspendedTime;	// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
+/*0020*/
+};
+
+struct MercAssign_Struct {
+/*0000*/	int32 MercEntityID;		// Seen 0 (no merc spawned) or 615843841 and 22779137
+/*0004*/	int32 MercUnk01;			// 
+/*0008*/	int32 MercUnk02;			// 
+/*0012*/
+};
+
+struct MercCommand_Struct {
+/*0000*/	int32 MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 36 (zone in with merc)
+/*0004*/	int32 Option;		// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
+/*0008*/
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

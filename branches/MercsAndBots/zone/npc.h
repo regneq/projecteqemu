@@ -67,6 +67,19 @@ struct AISpells_Struct {
 	sint16  resist_adjust;
 };
 
+struct MercType {
+	int32	Type;
+	int32	Expansion;		
+};
+
+struct MercData {
+	int32	MercID;
+	int32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+	int32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
+	int32	CostFormula;			// To determine cost to client
+	int32	Expansion;				// Only send valid mercs per expansion
+};
+
 class NPC : public Mob
 {
 public:
@@ -266,6 +279,17 @@ public:
 	void				AI_SetRoambox(float iDist, float iRoamDist, int32 iDelay = 2500);
 	void				AI_SetRoambox(float iDist, float iMaxX, float iMinX, float iMaxY, float iMinY, int32 iDelay = 2500);
 	
+	//mercenary stuff
+	void	LoadMercTypes();
+	void	LoadMercs();
+	std::list<MercType> GetMercTypesList() {return mercTypeList; };
+	std::list<MercType> GetMercTypesList( int32 expansion );
+	std::list<MercData> GetMercsList() {return mercDataList; };
+	std::list<MercData> GetMercsList( int32 expansion );
+	int		GetNumMercTypes() { return mercTypeList.size(); };
+	int		GetNumMercTypes( int32 expansion );
+	int		GetNumMercs() { return mercDataList.size(); };
+	int		GetNumMercs( int32 expansion );
 	
 	inline bool WillAggroNPCs() const { return(npc_aggro); }
 	
@@ -528,6 +552,10 @@ protected:
 
 	LinkedList<ItemInst*> questItems;
 	LinkedList<ItemInst*> questDeletionItems;
+
+	//mercenary stuff
+	std::list<MercType> mercTypeList;
+	std::list<MercData> mercDataList;
 
 private:
 	int32	loottable_id;
