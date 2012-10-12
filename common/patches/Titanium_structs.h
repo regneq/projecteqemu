@@ -443,11 +443,8 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining;
-//these last four bytes are really the caster's global player ID for wearoff
-/*013*/ int8	persistant_buff;	//prolly not real
-/*014*/ int8	reserved;		//proll not real
-/*012*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
+/*012*/	int32	counters;
+/*016*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
 };
 
 struct SpellBuffFade_Struct {
@@ -652,7 +649,7 @@ static const uint32 MAX_PP_LANGUAGE		= 28;
 static const uint32 MAX_PP_SPELLBOOK	= 400;
 static const uint32 MAX_PP_MEMSPELL		= 9;
 static const uint32 MAX_PP_SKILL		= 75;
-static const uint32 MAX_PP_AA_ARRAY		= 239;
+static const uint32 MAX_PP_AA_ARRAY		= 240;
 static const uint32 MAX_GROUP_MEMBERS	= 6;
 static const uint32 MAX_RECAST_TYPES	= 20;
 /*
@@ -730,9 +727,7 @@ struct PlayerProfile_Struct
 /*00188*/ uint32  item_material[9];   // Item texture/material of worn items
 /*00224*/ uint8 unknown00224[44];
 /*00268*/ Color_Struct item_tint[9];    // RR GG BB 00
-/*00304*/ uint32 unknown00304;
-/*00308*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];   // AAs
-/*02220*/ uint8 unknown02220[4];
+/*00304*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];   // AAs
 /*02224*/ uint32  points;             // Unspent Practice points
 /*02228*/ uint32  mana;               // Current mana
 /*02232*/ uint32  cur_hp;              // Current HP without +HP equipment
@@ -1365,6 +1360,19 @@ struct GuildCommand_Struct {
 	int32 officer;
 };
 
+// 4244 bytes. Is not really an 'OnLevelMessage', it causes a popup box to display in the client
+// Text looks like HTML.
+struct OnLevelMessage_Struct {
+/*0000*/       char    Title[128];
+/*0128*/       char    Text[4096];
+/*4224*/       uint32  Buttons;
+/*4228*/       uint32  Duration;
+/*4232*/       uint32  PopupID;
+/*4236*/       uint32  unknown4236;
+/*4240*/       uint32  unknown4240;
+/*4244*/
+};
+
 // Opcode OP_GMZoneRequest
 // Size = 88 bytes
 struct GMZoneRequest_Struct {
@@ -1939,10 +1947,7 @@ struct Object_Struct {
 /*32*/	float	z;					// z coord
 /*36*/	float	x;					// x coord
 /*40*/	float	y;					// y coord
-/*44*/	char	object_name[20];	// Name of object, usually something like IT63_ACTORDEF
-/*64*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-/*68*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-/*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+/*44*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF
 /*76*/	uint32	unknown076;			//
 #ifndef WIN32
 #warning ShowEQ shows an extra field in here...
@@ -2325,8 +2330,8 @@ struct GetItems_Struct{
 };
 
 struct BecomeTrader_Struct{
-	int32 id;
-	int32 code;
+	int32 ID;
+	int32 Code;
 };
 
 struct Trader_ShowItems_Struct{
@@ -3207,6 +3212,58 @@ struct ExpeditionJoinPrompt_Struct
 /*068*/ char expedition_name[64];
 };
 
+struct LFGuild_SearchPlayer_Struct
+{
+/*00*/	uint32	Command;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	FromLevel;
+/*12*/	uint32	ToLevel;
+/*16*/	uint32	MinAA;
+/*20*/	uint32	TimeZone;
+/*24*/	uint32	Classes;
+};
+
+struct LFGuild_SearchGuild_Struct
+{
+/*00*/	uint32	Command;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Level;
+/*12*/	uint32	AAPoints;
+/*16*/	uint32	TimeZone;
+/*20*/	uint32	Class;
+/*24*/
+};
+
+struct LFGuild_PlayerToggle_Struct
+{
+/*000*/ uint32	Command;
+/*004*/ uint8	Unknown004[68];
+/*072*/ char	Comment[256];
+/*328*/ uint8	Unknown328[268];
+/*596*/ uint32	TimeZone;
+/*600*/ uint8	Toggle;
+/*601*/ uint8	Unknown601[7];
+/*608*/ uint32	Expires;
+/*612*/
+};
+
+struct LFGuild_GuildToggle_Struct
+{
+/*000*/ uint32	Command;
+/*004*/ uint8	Unknown004[8];
+/*012*/ char	Comment[256];
+/*268*/ uint8	Unknown268[256];
+/*524*/ uint32	FromLevel;
+/*528*/ uint32	 ToLevel;
+/*532*/ uint32	Classes;
+/*536*/ uint32	AACount;
+/*540*/ uint32	TimeZone;
+/*544*/ uint8	Toggle;
+/*545*/ uint8	Unknown545[3];
+/*548*/ uint32	Expires;
+/*552*/ char	Name[64];
+/*616*/
+};
 
 	};	//end namespace structs
 };	//end namespace Titanium

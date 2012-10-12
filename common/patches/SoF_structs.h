@@ -450,7 +450,7 @@ struct InterruptCast_Struct
 {
 	int32 spawnid;
 	int32 messageid;
-	//char	message[0];
+	char	message[0];
 };
 
 struct DeleteSpell_Struct
@@ -521,9 +521,7 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining; //was int16
-/*014*/ int8	persistant_buff;	//prolly not real
-/*015*/ int8	reserved;		//proll not real
+/*012*/	int32	counters;
 /*016*/ uint32  unknown004;    //Might need to be swapped with player_id
 /*020*/ int32	player_id;	//'global' ID of the caster, for wearoff messages
 /*024*/
@@ -1623,6 +1621,19 @@ struct GuildCommand_Struct {
 	int32 officer;
 };
 
+// 4244 bytes. Is not really an 'OnLevelMessage', it causes a popup box to display in the client
+// Text looks like HTML.
+struct OnLevelMessage_Struct {
+/*0000*/       char    Title[128];
+/*0128*/       char    Text[4096];
+/*4224*/       uint32  Buttons;
+/*4228*/       uint32  Duration;
+/*4232*/       uint32  PopupID;
+/*4236*/       uint32  unknown4236;
+/*4240*/       uint32  unknown4240;
+/*4244*/
+};
+
 // Opcode OP_GMZoneRequest
 // Size = 88 bytes
 struct GMZoneRequest_Struct {
@@ -2110,8 +2121,8 @@ struct Emote_Struct {
 
 // Inspect
 struct Inspect_Struct {
-	int16 TargetID;
-	int16 PlayerID;
+	int32 TargetID;
+	int32 PlayerID;
 };
 
 //OP_InspectAnswer - Size: 1860
@@ -2243,9 +2254,7 @@ struct Object_Struct {
 /*44*/	float	z;					// z coord
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
-/*56*/	char	object_name[24];	// Name of object, usually something like IT63_ACTORDEF was [20]
-/*80*/	float	unknown080;			// seems like coords, not always valid, all 0 on most world objects
-/*84*/	float	unknown084;			// seems like coords, not always valid, all 0 on most world objects
+/*56*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF was [20]
 /*88*/	uint32	unknown088;			// unique ID?  Maybe for a table that includes the contents?
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
 /*96*/	uint8	unknown096[4];		// ff ff ff ff
@@ -2652,8 +2661,8 @@ struct GetItems_Struct{
 };
 
 struct BecomeTrader_Struct{
-	int32 id;
-	int32 code;
+	int32 ID;
+	int32 Code;
 };
 
 struct Trader_ShowItems_Struct{
@@ -4011,6 +4020,37 @@ struct ExpeditionJoinPrompt_Struct
 /*004*/ char player_name[64];
 /*068*/ char expedition_name[64];
 };
+
+struct AltCurrencySelectItem_Struct {
+    uint32 merchant_entity_id;
+    uint32 slot_id;
+    uint32 unknown008;
+    uint32 unknown012;
+    uint32 unknown016;
+    uint32 unknown020;
+    uint32 unknown024;
+    uint32 unknown028;
+    uint32 unknown032;
+    uint32 unknown036;
+    uint32 unknown040;
+    uint32 unknown044;
+    uint32 unknown048;
+    uint32 unknown052;
+    uint32 unknown056;
+    uint32 unknown060;
+    uint32 unknown064;
+    uint32 unknown068;
+    uint32 unknown072;
+    uint32 unknown076;
+};
+
+struct AltCurrencySellItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*006*/ uint32 charges;
+/*010*/ uint32 cost;
+};
+
 
 	};	//end namespace structs
 };	//end namespace SoF
