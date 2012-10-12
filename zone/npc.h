@@ -69,7 +69,7 @@ struct AISpells_Struct {
 
 struct MercType {
 	int32	Type;
-	int32	Expansion;		
+	int32	ClientVersion;		
 };
 
 struct MercData {
@@ -77,7 +77,7 @@ struct MercData {
 	int32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
 	int32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
 	int32	CostFormula;			// To determine cost to client
-	int32	Expansion;				// Only send valid mercs per expansion
+	int32	ClientVersion;				// Only send valid mercs per expansion
 };
 
 class NPC : public Mob
