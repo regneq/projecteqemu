@@ -472,7 +472,7 @@ struct InterruptCast_Struct
 {
 	int32 spawnid;
 	int32 messageid;
-	//char	message[0];
+	char	message[0];
 };
 
 struct DeleteSpell_Struct
@@ -543,9 +543,7 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining; //was int16
-/*014*/ int8	persistant_buff;	//prolly not real
-/*015*/ int8	reserved;		//proll not real
+/*012*/	int32   counters;
 /*016*/ uint32  unknown004;    //Might need to be swapped with player_id
 /*020*/ int32	player_id;	//'global' ID of the caster, for wearoff messages
 /*024*/
@@ -2189,8 +2187,8 @@ struct Emote_Struct {
 
 // Inspect
 struct Inspect_Struct {
-	int16 TargetID;
-	int16 PlayerID;
+	int32 TargetID;
+	int32 PlayerID;
 };
 
 //OP_InspectAnswer - Size: 1860
@@ -2322,9 +2320,7 @@ struct Object_Struct {
 /*44*/	float	z;					// z coord
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
-/*56*/	char	object_name[24];	// Name of object, usually something like IT63_ACTORDEF was [20]
-/*80*/	float	unknown080;			// seems like coords, not always valid, all 0 on most world objects
-/*84*/	float	unknown084;			// seems like coords, not always valid, all 0 on most world objects
+/*56*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF was [20]
 /*88*/	uint32	unknown088;			// unique ID?  Maybe for a table that includes the contents?
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
 /*96*/	uint8	unknown096[4];		// ff ff ff ff
@@ -2949,22 +2945,23 @@ struct GuildMakeLeader{
 	char	target[64];
 };
 
-
-
 struct BugStruct{
-/*0000*/	char	chartype[64];
-/*0064*/	char	name[96];
-/*0160*/	char	ui[128];
-/*0288*/	float	x;
-/*0292*/	float	y;
-/*0296*/	float	z;
-/*0300*/	float	heading;
-/*0304*/	int32	unknown304;
-/*0308*/	int32	type;
-/*0312*/	char	unknown312[2144];
-/*2456*/	char	bug[1024];
-/*3480*/	char	placeholder[2];
-/*3482*/	char	system_info[4098];
+/*0000*/    uint32  type1; //seems to be just a different way of seeing type; seems to be ordered completely differently
+/*0004*/	char	chartype[64];
+/*0068*/	char	name[96];
+/*0164*/	char	ui[128];
+/*0292*/	float	x;
+/*0296*/	float	y;
+/*0300*/	float	z;
+/*0304*/	float	heading;
+/*0308*/	uint32	unknown304;
+/*0312*/	char	unknown308[160];
+/*0472*/	char	target_name[64];
+/*0536*/	uint32	type;
+/*0540*/	char	unknown536[2052];
+/*2588*/	char	bug[2048];
+/*4636*/	char	unknown4632[6];
+/*4642*/	char	system_info[4094];
 };
 struct Make_Pet_Struct { //Simple struct for getting pet info
 	int8 level;
@@ -4178,6 +4175,94 @@ struct ExpeditionCompass_Struct
 /*004*/ uint32 count;
 /*008*/ ExpeditionCompassEntry_Struct entries[0];
 };
+
+struct AltCurrencySelectItem_Struct {
+    uint32 merchant_entity_id;
+    uint32 slot_id;
+    uint32 unknown008;
+    uint32 unknown012;
+    uint32 unknown016;
+    uint32 unknown020;
+    uint32 unknown024;
+    uint32 unknown028;
+    uint32 unknown032;
+    uint32 unknown036;
+    uint32 unknown040;
+    uint32 unknown044;
+    uint32 unknown048;
+    uint32 unknown052;
+    uint32 unknown056;
+    uint32 unknown060;
+    uint32 unknown064;
+    uint32 unknown068;
+    uint32 unknown072;
+    uint32 unknown076;
+};
+
+struct AltCurrencySellItem_Struct {
+/*000*/ uint32 merchant_entity_id;
+/*004*/ uint32 slot_id;
+/*006*/ uint32 charges;
+/*010*/ uint32 cost;
+};
+
+struct MercType_Struct {
+/*000*/ int32 MercType;						// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+};
+
+struct MercStance_Struct {
+/*0000*/ int32 StanceIndex;				// 
+/*0004*/ int32 Stance;						// From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+};
+
+struct MercData_Struct {
+/*0000*/	int32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/	int32	MercSubType;				// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
+/*0008*/	int32	PurchaseCost;			// Purchase Cost (in gold)
+/*0012*/	int32	UpkeepCost;				// Upkeep Cost (in gold)
+/*0016*/	int32	AltCurrencyCost;		// Alternate Currency Purchase Cost? (all seen costs show N/A Bayle Mark) - Seen 0
+/*0020*/	int32	AltCurrencyUpkeep;		// Alternate Currency Upkeep Cost? (all seen costs show 1 Bayle Mark) - Seen 1
+/*0024*/	int32	AltCurrencyType;		// Alternate Currency Type? - 19^17^Bayle Mark^0 - Seen 19
+/*0028*/	int32	StanceCount;			// Iterations of MercStance_Struct - Normally 2 to 4 seen
+/*0032*/	int32	MercUnk02;				// Unknown 
+/*0000*/	struct  MercStance_Struct Stances[0];	// From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+};
+
+//struct MercenaryInfo_Struct {
+/*000*/ //int32 MercID;					// ID unique to each type of mercenary (probably a DB id) - (if 1, do not send MercData_Struct - No merc hired)
+/*004*/ //struct MercData_Struct MercData[0];	// Data for individual mercenaries - Not populated if no merc is hired
+//};
+
+//struct MercenaryMerchantList_Struct {
+/*0000*/ //int32 MercTypeCount;				// Number of Merc Types to follow
+/*0004*/ //struct  MercType_Struct MercTypes[0];			// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/ //int32 MercCount;						// Number of MercenaryInfo_Struct to follow
+/*0008*/ //struct MercenaryInfo_Struct Mercs[0];		// Data for individual mercenaries in the Merchant List
+//};
+
+
+struct MercenaryUpdate_Struct {
+/*0000*/	int32	MercEntityID;		// Seen 0 (no merc spawned) or 615843841 and 22779137
+/*0004*/	int32	UpdateInterval;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
+/*0008*/	int32	MercUnk01;		// Seen 180000 - 3 minutes in milleseconds?
+/*0012*/	int32	MercState;		// Seen 5 (normal) or 1 (suspended)
+/*0016*/	int32	SuspendedTime;	// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
+/*0020*/
+};
+
+struct MercAssign_Struct {
+/*0000*/	int32 MercEntityID;		// Seen 0 (no merc spawned) or 615843841 and 22779137
+/*0004*/	int32 MercUnk01;			// 
+/*0008*/	int32 MercUnk02;			// 
+/*0012*/
+};
+
+struct MercCommand_Struct {
+/*0000*/	int32 MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 36 (zone in with merc)
+/*0004*/	int32 Option;		// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
+/*0008*/
+};
+
 
 	};	//end namespace structs
 };	//end namespace SoD

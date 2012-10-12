@@ -278,9 +278,7 @@ ENCODE(OP_PlayerProfile) {
 		OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		OUT(buffs[r].dmg_shield_remaining);
-		OUT(buffs[r].persistant_buff);
-		OUT(buffs[r].reserved);
+		OUT(buffs[r].counters);
 		OUT(buffs[r].player_id);
 	}
 	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
@@ -1086,6 +1084,75 @@ ENCODE(OP_Action) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_BecomeTrader)
+{
+	ENCODE_LENGTH_EXACT(BecomeTrader_Struct);
+	SETUP_DIRECT_ENCODE(BecomeTrader_Struct, structs::BecomeTrader_Struct);
+	OUT(ID);
+	OUT(Code);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_PetBuffWindow)
+{
+	ENCODE_LENGTH_EXACT(PetBuff_Struct);
+	SETUP_DIRECT_ENCODE(PetBuff_Struct, PetBuff_Struct);
+
+	OUT(petid);
+	OUT(buffcount);
+
+	int EQBuffSlot = 0;
+
+	for(uint32 EmuBuffSlot = 0; EmuBuffSlot < BUFF_COUNT; ++EmuBuffSlot)
+	{
+		if(emu->spellid[EmuBuffSlot])
+		{
+			eq->spellid[EQBuffSlot] = emu->spellid[EmuBuffSlot];
+			eq->ticsremaining[EQBuffSlot++] = emu->ticsremaining[EmuBuffSlot];
+		}
+	}
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_OnLevelMessage)
+{
+	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
+	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+	OUT_str(Title);
+	OUT_str(Text);
+	OUT(Buttons);
+	OUT(Duration);
+	OUT(PopupID);
+
+	eq->unknown4236 = 0x00000000;
+	eq->unknown4240 = 0xffffffff;
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_LFGuild)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	uint32 Command = in->ReadUInt32();
+
+	if(Command != 0)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+		return;
+	}
+	
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LFGuild, sizeof(structs::LFGuild_PlayerToggle_Struct));
+
+	memcpy(outapp->pBuffer, in->pBuffer, sizeof(structs::LFGuild_PlayerToggle_Struct));
+
+	dest->FastQueuePacket(&outapp, ack_req);
+	
+	delete in;
+}
+
 DECODE(OP_WearChange) {
 	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
 	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
@@ -1199,6 +1266,20 @@ DECODE(OP_FaceChange) {
 	IN(hairstyle);
 	IN(beard);
 	IN(face);
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_LFGuild)
+{
+	uint32 Command = __packet->ReadUInt32();
+
+	if(Command != 0)
+		return;
+
+	SETUP_DIRECT_DECODE(LFGuild_PlayerToggle_Struct, structs::LFGuild_PlayerToggle_Struct);
+	memcpy(emu, eq, sizeof(structs::LFGuild_PlayerToggle_Struct));
+	memset(emu->Unknown612, 0, sizeof(emu->Unknown612));
 
 	FINISH_DIRECT_DECODE();
 }

@@ -543,9 +543,7 @@ ENCODE(OP_PlayerProfile) {
 		OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		OUT(buffs[r].dmg_shield_remaining);
-		OUT(buffs[r].persistant_buff);
-		OUT(buffs[r].reserved);
+		OUT(buffs[r].counters);
 		OUT(buffs[r].player_id);
 	}
 	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
@@ -1402,14 +1400,6 @@ ENCODE(OP_CancelTrade) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_InterruptCast) {
-	ENCODE_LENGTH_EXACT(InterruptCast_Struct);
-	SETUP_DIRECT_ENCODE(InterruptCast_Struct, structs::InterruptCast_Struct);
-	OUT(spawnid);
-	OUT(messageid);
-	FINISH_ENCODE();
-}
-
 ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
@@ -1691,8 +1681,8 @@ ENCODE(OP_RaidUpdate)
 		
 		add_member->raidGen.action = in_add_member->raidGen.action;
 		add_member->raidGen.parameter = in_add_member->raidGen.parameter;
-		strncpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
-		strncpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
+		strn0cpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
+		strn0cpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
 		add_member->_class = in_add_member->_class;
 		add_member->level= in_add_member->level;
 		add_member->isGroupLeader = in_add_member->isGroupLeader;
@@ -1709,8 +1699,8 @@ ENCODE(OP_RaidUpdate)
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
 		structs::RaidGeneral_Struct *raid_general = (structs::RaidGeneral_Struct*)outapp->pBuffer;
-		strncpy(raid_general->leader_name, in_raid_general->leader_name, 64);
-		strncpy(raid_general->player_name, in_raid_general->player_name, 64);
+		strn0cpy(raid_general->leader_name, in_raid_general->leader_name, 64);
+		strn0cpy(raid_general->player_name, in_raid_general->player_name, 64);
 		raid_general->action = in_raid_general->action;
 		raid_general->parameter = in_raid_general->parameter;
 		dest->FastQueuePacket(&outapp);
@@ -1729,8 +1719,8 @@ ENCODE(OP_RaidJoin)
 
 	general->action = 8;
 	general->parameter = 1;
-	strncpy(general->leader_name, raid_create->leader_name, 64);
-	strncpy(general->player_name, raid_create->leader_name, 64);
+	strn0cpy(general->leader_name, raid_create->leader_name, 64);
+	strn0cpy(general->player_name, raid_create->leader_name, 64);
 
 	dest->FastQueuePacket(&outapp_create);
 	delete[] __emu_buffer;
@@ -1926,6 +1916,81 @@ ENCODE(OP_DzJoinExpeditionConfirm)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_BecomeTrader)
+{
+	ENCODE_LENGTH_EXACT(BecomeTrader_Struct);
+	SETUP_DIRECT_ENCODE(BecomeTrader_Struct, structs::BecomeTrader_Struct);
+	OUT(ID);
+	OUT(Code);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_PetBuffWindow)
+{
+	ENCODE_LENGTH_EXACT(PetBuff_Struct);
+	SETUP_DIRECT_ENCODE(PetBuff_Struct, PetBuff_Struct);
+
+	OUT(petid);
+	OUT(buffcount);
+
+	int EQBuffSlot = 0;
+
+	for(uint32 EmuBuffSlot = 0; EmuBuffSlot < BUFF_COUNT; ++EmuBuffSlot)
+	{
+		if(emu->spellid[EmuBuffSlot])
+		{
+			eq->spellid[EQBuffSlot] = emu->spellid[EmuBuffSlot];
+			eq->ticsremaining[EQBuffSlot++] = emu->ticsremaining[EmuBuffSlot];
+		}
+	}
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_OnLevelMessage)
+{
+	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
+	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+	OUT_str(Title);
+	OUT_str(Text);
+	OUT(Buttons);
+	OUT(Duration);
+	OUT(PopupID);
+
+	eq->unknown4236 = 0x00000000;
+	eq->unknown4240 = 0xffffffff;
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_AltCurrencySell) 
+{
+    ENCODE_LENGTH_EXACT(AltCurrencySellItem_Struct);
+	SETUP_DIRECT_ENCODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+
+    OUT(merchant_entity_id);
+    eq->slot_id = TitaniumToSoFSlot(emu->slot_id);
+    OUT(charges);
+    OUT(cost);
+    FINISH_ENCODE();
+}
+
+ENCODE(OP_InspectRequest) {
+	ENCODE_LENGTH_EXACT(Inspect_Struct);
+	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
+	OUT(TargetID);
+	OUT(PlayerID);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_InspectRequest) {
+	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
+	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
+	IN(TargetID);
+	IN(PlayerID);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
@@ -1960,8 +2025,8 @@ DECODE(OP_RaidInvite) {
 	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
 	SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
 
-	strncpy(emu->leader_name, eq->leader_name, 64);
-	strncpy(emu->player_name, eq->player_name, 64);
+	strn0cpy(emu->leader_name, eq->leader_name, 64);
+	strn0cpy(emu->player_name, eq->player_name, 64);
 	IN(action);
 	IN(parameter);
 
@@ -2107,7 +2172,7 @@ DECODE(OP_ClientUpdate) {
 	FINISH_DIRECT_DECODE();
 }
 
-
+#pragma optimize( "", off )
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -2141,7 +2206,7 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-
+#pragma optimize( "", on )
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);
@@ -2277,6 +2342,16 @@ DECODE(OP_TradeSkillCombine) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_AugmentItem) {
+	DECODE_LENGTH_EXACT(structs::AugmentItem_Struct);
+	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
+
+	emu->container_slot = SoFToTitaniumSlot(eq->container_slot);
+	emu->augment_slot = eq->augment_slot;
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_AugmentInfo) {
 	DECODE_LENGTH_EXACT(structs::AugmentInfo_Struct);
 	SETUP_DIRECT_DECODE(AugmentInfo_Struct, structs::AugmentInfo_Struct);
@@ -2325,7 +2400,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
 	uint32 charges = inst->GetCharges();
-	if (charges > 254)
+	if (!stackable && charges > 254)
 		charges = 0xFFFFFFFF;
 
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
@@ -2345,8 +2420,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.unknown028 = 0;
-	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0); //(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
-	hdr.charges = charges;
+	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0);
+	hdr.charges = (stackable ? (item->MaxCharges ? 1 : 0) : charges);
 	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
 	hdr.unknown044 = 0;
 	hdr.unknown048 = 0;
@@ -2769,6 +2844,27 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	*length = ss.tellp();
 	return item_serial;
 }
+
+DECODE(OP_AltCurrencySellSelection) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySelectItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySelectItem_Struct, structs::AltCurrencySelectItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = SoFToTitaniumSlot(eq->slot_id);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySell) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySellItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = SoFToTitaniumSlot(eq->slot_id);
+    IN(charges);
+    IN(cost);
+    FINISH_DIRECT_DECODE();
+}
+
 
 } //end namespace SoF
 

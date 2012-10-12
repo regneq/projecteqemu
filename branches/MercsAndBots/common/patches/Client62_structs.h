@@ -430,11 +430,8 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining;
-//these last four bytes are really the caster's global player ID for wearoff
-/*013*/ int8	persistant_buff;	//prolly not real
-/*014*/ int8	reserved;		//proll not real
-/*012*/	int8	Unknown012[4];
+/*012*/	int32	counters;
+/*014*/	int8	Unknown012[4];
 };
 
 struct SpellBuffFade_Struct {
@@ -1292,6 +1289,19 @@ struct GuildCommand_Struct {
 	int16 guildeqid;
 	int8 unknown[2]; // for guildinvite all 0's, for remove 0=0x56, 2=0x02
 	int32 officer;
+};
+
+// 4244 bytes. Is not really an 'OnLevelMessage', it causes a popup box to display in the client
+// Text looks like HTML.
+struct OnLevelMessage_Struct {
+/*0000*/       char    Title[128];
+/*0128*/       char    Text[4096];
+/*4224*/       uint32  Buttons;
+/*4228*/       uint32  Duration;
+/*4232*/       uint32  PopupID;
+/*4236*/       uint32  unknown4236;
+/*4240*/       uint32  unknown4240;
+/*4244*/
 };
 
 // Opcode OP_GMZoneRequest
@@ -2269,9 +2279,10 @@ struct GetItems_Struct{
 	int32	items[80];
 };
 
-struct BecomeTrader_Struct{
-	int32 id;
-	int32 code;
+struct BecomeTrader_Struct
+{
+	int32 ID;
+	int32 Code;
 };
 
 struct Trader_ShowItems_Struct{

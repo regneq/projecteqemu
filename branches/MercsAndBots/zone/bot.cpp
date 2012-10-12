@@ -16049,7 +16049,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 						//list leader and number of members
 						c->Message(0, "Bot Heal Rotation- Leader: %s", leaderBot->GetCleanName());
-						c->Message(0, "Bot Heal Rotation- Timer:  %1.1f", (float)(leaderBot->GetHealRotationTimer()/1000));
+						c->Message(0, "Bot Heal Rotation- Timer:  %1.1f", ((float)leaderBot->GetHealRotationTimer()/1000.0f));
 
 						for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
 							Bot* tempBot = *botListItr;

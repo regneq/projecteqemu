@@ -108,7 +108,7 @@ std::string Strategy::Describe() const {
 static inline int32 TitaniumToSoDSlot(int32 TitaniumSlot) {
 	int32 SoDSlot = 0;
 
-	if(TitaniumSlot >= 21 && TitaniumSlot <= 50)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	if(TitaniumSlot >= 21 && TitaniumSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
 		SoDSlot = TitaniumSlot + 1;
 	}
@@ -543,9 +543,7 @@ ENCODE(OP_PlayerProfile) {
 		OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		OUT(buffs[r].dmg_shield_remaining);
-		OUT(buffs[r].persistant_buff);
-		OUT(buffs[r].reserved);
+        OUT(buffs[r].counters);
 		OUT(buffs[r].player_id);
 	}
 	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
@@ -869,6 +867,22 @@ ENCODE(OP_Barter)
 	
 }
 
+ENCODE(OP_InspectRequest) {
+	ENCODE_LENGTH_EXACT(Inspect_Struct);
+	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
+	OUT(TargetID);
+	OUT(PlayerID);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_InspectRequest) {
+	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
+	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
+	IN(TargetID);
+	IN(PlayerID);
+	FINISH_DIRECT_DECODE();
+}
+
 ENCODE(OP_BazaarSearch)
 {
 	EQApplicationPacket *in = *p;
@@ -966,7 +980,16 @@ ENCODE(OP_ZoneSpawns) {
 
 			if(strlen(emu->suffix))
 				PacketSize += strlen(emu->suffix) + 1;
-		
+
+			if(emu->DestructibleObject)
+			{
+				PacketSize = PacketSize - 4;	// No bodytype
+				PacketSize += 53;	// Fixed portion
+				PacketSize += strlen(emu->DestructibleModel) + 1;
+				PacketSize += strlen(emu->DestructibleName2) + 1;
+				PacketSize += strlen(emu->DestructibleString) + 1;
+			}
+
 			bool ShowName = 1;
 			if(emu->bodytype >= 66)
 			{
@@ -999,7 +1022,16 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, SpawnSize - 0.7);	// Eye Height?
+
+			if(emu->DestructibleObject)
+			{
+				VARSTRUCT_ENCODE_TYPE(float, Buffer, 10);	// was int and 0x41200000
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(float, Buffer, SpawnSize - 0.7);	// Eye Height?
+			}
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
@@ -1022,6 +1054,12 @@ ENCODE(OP_ZoneSpawns) {
 
 			Bitfields->showname = ShowName;
 
+			if(emu->DestructibleObject)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x1d600000);
+				Buffer = Buffer -4;
+			}
+
 			Bitfields->ispet = emu->is_pet;
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
@@ -1034,10 +1072,45 @@ ENCODE(OP_ZoneSpawns) {
 			if(strlen(emu->suffix))
 				OtherData = OtherData | 0x08;
 
+			if(emu->DestructibleObject)
+				OtherData = OtherData | 0xd1;	// Live has 0xe1 for OtherData
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, OtherData);
 
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
+			if(emu->DestructibleObject)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x00000000);
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
+			}
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
+
+			if(emu->DestructibleObject)
+			{
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->DestructibleModel);
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->DestructibleName2);
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->DestructibleString);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleAppearance);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk1);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID1);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID2);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID3);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID4);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk2);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk3);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk4);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk5);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk6);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk7);
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->DestructibleUnk8);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk9);
+			}
+
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
@@ -1053,10 +1126,18 @@ ENCODE(OP_ZoneSpawns) {
 				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// showname
 			}*/
 
-			// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
-			// present. Will sort that out later.
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
+
+			if(!emu->DestructibleObject)
+			{
+				// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
+				// present. Will sort that out later.
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			}
 		
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->curHp);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->haircolor);
@@ -1164,8 +1245,6 @@ ENCODE(OP_ZoneSpawns) {
 			}
 			Buffer += 33; // Unknown;
 
-			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
-			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
@@ -1447,9 +1526,10 @@ ENCODE(OP_OnLevelMessage)
 	OUT(Buttons);
 	OUT(Duration);
 	OUT(PopupID);
-	// These two field names are used if Buttons == 1. We should add an interface to them via Perl.
-	sprintf(eq->ButtonName0, "Yes");
-	sprintf(eq->ButtonName1, "No");
+	OUT(NegativeID);
+	// These two field names are used if Buttons == 1.
+	OUT_str(ButtonName0);
+	OUT_str(ButtonName1);
 	FINISH_ENCODE();
 }
 
@@ -1592,14 +1672,6 @@ ENCODE(OP_CancelTrade) {
 	SETUP_DIRECT_ENCODE(CancelTrade_Struct, structs::CancelTrade_Struct);
 	OUT(fromid);
 	OUT(action);
-	FINISH_ENCODE();
-}
-
-ENCODE(OP_InterruptCast) {
-	ENCODE_LENGTH_EXACT(InterruptCast_Struct);
-	SETUP_DIRECT_ENCODE(InterruptCast_Struct, structs::InterruptCast_Struct);
-	OUT(spawnid);
-	OUT(messageid);
 	FINISH_ENCODE();
 }
 
@@ -1830,8 +1902,8 @@ ENCODE(OP_RaidUpdate)
 		
 		add_member->raidGen.action = in_add_member->raidGen.action;
 		add_member->raidGen.parameter = in_add_member->raidGen.parameter;
-		strncpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
-		strncpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
+		strn0cpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
+		strn0cpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
 		add_member->_class = in_add_member->_class;
 		add_member->level= in_add_member->level;
 		add_member->isGroupLeader = in_add_member->isGroupLeader;
@@ -1848,8 +1920,8 @@ ENCODE(OP_RaidUpdate)
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
 		structs::RaidGeneral_Struct *raid_general = (structs::RaidGeneral_Struct*)outapp->pBuffer;
-		strncpy(raid_general->leader_name, in_raid_general->leader_name, 64);
-		strncpy(raid_general->player_name, in_raid_general->player_name, 64);
+		strn0cpy(raid_general->leader_name, in_raid_general->leader_name, 64);
+		strn0cpy(raid_general->player_name, in_raid_general->player_name, 64);
 		raid_general->action = in_raid_general->action;
 		raid_general->parameter = in_raid_general->parameter;
 		dest->FastQueuePacket(&outapp);
@@ -1868,8 +1940,8 @@ ENCODE(OP_RaidJoin)
 
 	general->action = 8;
 	general->parameter = 1;
-	strncpy(general->leader_name, raid_create->leader_name, 64);
-	strncpy(general->player_name, raid_create->leader_name, 64);
+	strn0cpy(general->leader_name, raid_create->leader_name, 64);
+	strn0cpy(general->player_name, raid_create->leader_name, 64);
 
 	dest->FastQueuePacket(&outapp_create);
 	delete[] __emu_buffer;
@@ -2359,6 +2431,18 @@ ENCODE(OP_GroupUpdate)
 	dest->FastQueuePacket(&outapp);
 }
 
+ENCODE(OP_AltCurrencySell) 
+{
+    ENCODE_LENGTH_EXACT(AltCurrencySellItem_Struct);
+	SETUP_DIRECT_ENCODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+
+    OUT(merchant_entity_id);
+    eq->slot_id = TitaniumToSoDSlot(emu->slot_id);
+    OUT(charges);
+    OUT(cost);
+    FINISH_ENCODE();
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -2411,8 +2495,8 @@ DECODE(OP_RaidInvite) {
 	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
 	SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
 
-	strncpy(emu->leader_name, eq->leader_name, 64);
-	strncpy(emu->player_name, eq->player_name, 64);
+	strn0cpy(emu->leader_name, eq->leader_name, 64);
+	strn0cpy(emu->player_name, eq->player_name, 64);
 	IN(action);
 	IN(parameter);
 
@@ -2573,7 +2657,7 @@ DECODE(OP_ClientUpdate) {
 	FINISH_DIRECT_DECODE();
 }
 
-
+#pragma optimize( "", off )
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -2607,7 +2691,7 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-
+#pragma optimize( "", on )
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);
@@ -2788,6 +2872,16 @@ DECODE(OP_TradeSkillCombine) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_AugmentItem) {
+	DECODE_LENGTH_EXACT(structs::AugmentItem_Struct);
+	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
+
+	emu->container_slot = SoDToTitaniumSlot(eq->container_slot);
+	emu->augment_slot = eq->augment_slot;
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_AugmentInfo) {
 	DECODE_LENGTH_EXACT(structs::AugmentInfo_Struct);
 	SETUP_DIRECT_DECODE(AugmentInfo_Struct, structs::AugmentInfo_Struct);
@@ -2846,7 +2940,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
 	uint32 charges = inst->GetCharges();
-	if (charges > 254)
+	if (!stackable && charges > 254)
 		charges = 0xFFFFFFFF;
 
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
@@ -2866,8 +2960,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.unknown028 = 0;
-	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0); //(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
-	hdr.charges = charges;
+	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0);
+	hdr.charges = (stackable ? (item->MaxCharges ? 1 : 0) : charges);
 	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
 	hdr.unknown044 = 0;
 	hdr.unknown048 = 0;
@@ -3291,5 +3385,44 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	*length = ss.tellp();
 	return item_serial;
 }
+
+DECODE(OP_Bug)
+{
+	DECODE_LENGTH_EXACT(structs::BugStruct);
+	SETUP_DIRECT_DECODE(BugStruct, structs::BugStruct);
+    strn0cpy(emu->chartype, eq->chartype, sizeof(emu->chartype));
+    strn0cpy(emu->name, eq->name, sizeof(emu->name));
+    strn0cpy(emu->ui, eq->ui, sizeof(emu->ui));
+    IN(x);
+    IN(y);
+    IN(z);
+    IN(heading);
+    strn0cpy(emu->target_name, eq->target_name, sizeof(emu->target_name));
+    strn0cpy(emu->bug, eq->bug, sizeof(emu->bug));
+    strn0cpy(emu->system_info, eq->system_info, sizeof(emu->system_info));
+    
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySellSelection) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySelectItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySelectItem_Struct, structs::AltCurrencySelectItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = SoDToTitaniumSlot(eq->slot_id);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySell) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySellItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = SoDToTitaniumSlot(eq->slot_id);
+    IN(charges);
+    IN(cost);
+    FINISH_DIRECT_DECODE();
+}
+
 
 } //end namespace SoD

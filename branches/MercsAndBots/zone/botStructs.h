@@ -39,6 +39,12 @@ struct BotSpell {
 	sint16 ManaCost;
 };
 
+struct BotAA {
+	int32 aa_id;
+	int8 req_level;
+	int8 total_levels;
+};
+
 #endif // BOTS
 
 #endif // BOT_STRUCTS

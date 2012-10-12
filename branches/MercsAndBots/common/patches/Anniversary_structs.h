@@ -479,10 +479,7 @@ struct SpellBuff_Struct
 /*003*/	int8	effect;			//not real
 /*004*/	int32	spellid;
 /*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining;
-//these last four bytes are really the caster's global player ID for wearoff
-/*013*/ int8	persistant_buff;	//prolly not real
-/*014*/ int8	reserved;		//proll not real
+/*012*/	int32	counters;
 /*016*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
 };
 
@@ -1971,9 +1968,9 @@ struct Object_Struct {
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
 /*56*/	char	object_name[20];	// Name of object, usually something like IT63_ACTORDEF
-/*72*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-/*76*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-/*80*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+//*72*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
+//*76*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
+//*80*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
 /*84*/	uint32	unknown076;			//
 /*88*/	uint32	unknown088;			// 
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject

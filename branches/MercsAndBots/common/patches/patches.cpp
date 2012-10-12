@@ -5,43 +5,28 @@
 #include "Client62.h"
 #include "Titanium.h"
 #include "Anniversary.h"
-#include "Live.h"
+#include "Underfoot.h"
 #include "SoF.h"
 #include "SoD.h"
+#include "HoT.h"
+#include "VoA.h"
 
 void RegisterAllPatches(EQStreamIdentifier &into) {
 	Client62::Register(into);
 	Titanium::Register(into);
-	//Anniversary::Register(into);
 	SoF::Register(into);
 	SoD::Register(into);
-	Live::Register(into);
+	Underfoot::Register(into);
+	//HoT::Register(into);
+	//VoA::Register(into);
 }
 
 void ReloadAllPatches() {
 	Client62::Reload();
 	Titanium::Reload();
-	//Anniversary::Reload();
 	SoF::Reload();
 	SoD::Reload();
-	Live::Reload();
+	Underfoot::Reload();
+	//HoT::Reload();
+	//VoA::Reload();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

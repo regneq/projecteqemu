@@ -1579,9 +1579,23 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						}
 					}
 					else {
-						if(TargetClient != this->CastToClient()) {
-							Message(13, "Your target must be a group member for this spell.");
-							break;
+						Raid *r = entity_list.GetRaidByClient(caster->CastToClient());
+						if(r)
+						{
+							int32 gid = 0xFFFFFFFF;
+							gid = r->GetGroup(caster->GetName());
+							if(gid < 11)
+							{
+								if(r->GetGroup(TargetClient->GetName()) != gid) {
+									Message(13, "Your target must be a group member for this spell.");
+									break;
+								}
+							}
+						} else {
+							if(TargetClient != this->CastToClient()) {
+								Message(13, "Your target must be a group member for this spell.");
+								break;
+							}
 						}
 					}
 
