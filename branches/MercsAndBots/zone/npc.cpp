@@ -2318,7 +2318,7 @@ void NPC::LoadMercTypes(){
 	MYSQL_RES* DatasetResult;
 	MYSQL_ROW DataRow;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTyp.expansion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTyp.clientversion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {
@@ -2326,7 +2326,7 @@ void NPC::LoadMercTypes(){
 			MercType tempMercType;
 
 			tempMercType.Type = atoi(DataRow[0]);
-			tempMercType.Expansion = atoi(DataRow[1]);
+			tempMercType.ClientVersion = atoi(DataRow[1]);
 
 			mercTypeList.push_back(tempMercType);
 		}
@@ -2350,7 +2350,7 @@ void NPC::LoadMercs(){
 	MYSQL_RES* DatasetResult;
 	MYSQL_ROW DataRow;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTem.template_id, MTyp.dbstring AS merc_type_id, MTem.dbstring AS merc_subtype_id, 0 AS CostFormula, MTyp.expansion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTem.merc_template_id, MTyp.dbstring AS merc_type_id, MTem.dbstring AS merc_subtype_id, 0 AS CostFormula, MTem.clientversion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {
@@ -2361,7 +2361,7 @@ void NPC::LoadMercs(){
 			tempMerc.MercType = atoi(DataRow[1]);
 			tempMerc.MercSubType = atoi(DataRow[2]);
 			tempMerc.CostFormula = atoi(DataRow[3]);
-			tempMerc.Expansion = atoi(DataRow[4]);
+			tempMerc.ClientVersion = atoi(DataRow[4]);
 
 			mercDataList.push_back(tempMerc);
 		}
@@ -2377,41 +2377,41 @@ void NPC::LoadMercs(){
 	}
 }
 
-int NPC::GetNumMercTypes(int32 expansion)
+int NPC::GetNumMercTypes(int32 clientVersion)
 {
 	int count = 0;
 	std::list<MercType> mercTypeList = GetMercTypesList();
 
 	for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
-		if(mercTypeListItr->Expansion <= expansion)
+		if(mercTypeListItr->ClientVersion <= clientVersion)
 			count++;
 	}
 
 	return count;
 }
 
-int NPC::GetNumMercs(int32 expansion)
+int NPC::GetNumMercs(int32 clientVersion)
 {
 	int count = 0;
 	std::list<MercData> mercDataList = GetMercsList();
 
 	for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
-		if(mercListItr->Expansion <= expansion)
+		if(mercListItr->ClientVersion <= clientVersion)
 			count++;
 	}
 
 	return count;
 }
 
-std::list<MercType> NPC::GetMercTypesList(int32 expansion) {
+std::list<MercType> NPC::GetMercTypesList(int32 clientVersion) {
 	std::list<MercType> result;
 
 	if(GetNumMercTypes() > 0) {
 		for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
-			if(mercTypeListItr->Expansion <= expansion) {
+			if(mercTypeListItr->ClientVersion <= clientVersion) {
 				MercType mercType;
 				mercType.Type = mercTypeListItr->Type;
-				mercType.Expansion = mercTypeListItr->Expansion;
+				mercType.ClientVersion = mercTypeListItr->ClientVersion;
 				result.push_back(mercType);
 			}
 		}		
@@ -2420,19 +2420,19 @@ std::list<MercType> NPC::GetMercTypesList(int32 expansion) {
 	return result;
 }
 
-std::list<MercData> NPC::GetMercsList(int32 expansion) {
+std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
 	std::list<MercData> result;
 
 	if(GetNumMercs() > 0) {
 		for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
-			if(mercListItr->Expansion <= expansion) {
+			if(mercListItr->ClientVersion <= clientVersion) {
 				MercData mercData;
 
 				mercData.MercID = mercListItr->MercID;
 				mercData.MercType = mercListItr->MercType;
 				mercData.MercSubType = mercListItr->MercSubType;			
 				mercData.CostFormula = mercListItr->CostFormula;		
-				mercData.Expansion = mercListItr->Expansion;
+				mercData.ClientVersion = mercListItr->ClientVersion;
 				result.push_back(mercData);
 			}
 		}		
