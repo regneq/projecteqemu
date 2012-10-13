@@ -123,6 +123,17 @@ Mob* Entity::CastToMob() {
 	return static_cast<Mob*>(this);
 }
 
+Merc* Entity::CastToMerc() {
+#ifdef _EQDEBUG
+	if(!IsMerc()) {	
+		cout << "CastToMerc error" << endl;
+		DebugBreak();
+		return 0;
+	}
+#endif
+	return static_cast<Merc*>(this);
+}
+
 
 Trap* Entity::CastToTrap()
 {
@@ -217,6 +228,16 @@ const Mob* Entity::CastToMob() const {
 	return static_cast<const Mob*>(this);
 }
 
+const Merc* Entity::CastToMerc() const {
+#ifdef _EQDEBUG
+	if(!IsMerc()) {	
+		cout << "CastToMerc error" << endl;
+		DebugBreak();
+		return 0;
+	}
+#endif
+	return static_cast<const Merc*>(this);
+}
 
 const Trap* Entity::CastToTrap() const {
 #ifdef DEBUG
@@ -629,6 +650,38 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	mob_list.Insert(npc);
 }
 
+void EntityList::AddMerc(Merc* merc, bool SendSpawnPacket, bool dontqueue) {
+	if(merc) {
+		merc->SetID(GetFreeID());
+
+		if(SendSpawnPacket) {
+			if(dontqueue) {
+				// Send immediately
+				EQApplicationPacket* outapp = new EQApplicationPacket();
+				merc->CreateSpawnPacket(outapp);
+				outapp->priority = 6;
+				QueueClients(merc, outapp, true);
+				safe_delete(outapp);
+			}
+			else {
+				// Queue the packet
+				NewSpawn_Struct* ns = new NewSpawn_Struct;
+				memset(ns, 0, sizeof(NewSpawn_Struct));
+				merc->FillSpawnStruct(ns, merc);
+				AddToSpawnQueue(merc->GetID(), &ns);
+				safe_delete(ns);
+			}
+
+            //parse->EventMERC(EVENT_SPAWN, merc, NULL, "", 0);
+		}
+
+		merc_list.Insert(merc);
+		mob_list.Insert(merc);
+		if(!merc_list.dont_delete)
+			merc_list.dont_delete=true;
+	}
+}
+
 void EntityList::AddObject(Object* obj, bool SendSpawnPacket) {
 	obj->SetID(GetFreeID()); 
 	if (SendSpawnPacket) {
@@ -853,6 +906,19 @@ Entity* EntityList::GetEntityMob(int16 id){
 	}
 	return 0;
 }
+Entity* EntityList::GetEntityMerc(int16 id){
+	LinkedListIterator<Merc*> iterator(merc_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetID() == id)
+		{
+			return iterator.GetData();
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
 Entity* EntityList::GetEntityMob(const char *name)
 {
 	if (name == 0)
@@ -1017,6 +1083,23 @@ NPC* EntityList::GetNPCByNPCTypeID(int32 npc_id)
 		if (iterator.GetData()->GetNPCTypeID() == npc_id)
 		{
 			return iterator.GetData();
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+Merc* EntityList::GetMercByID(int16 id) {
+	LinkedListIterator<Merc*> iterator(merc_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->GetID() == id) {
+				return iterator.GetData();
+			}
 		}
 		iterator.Advance();
 	}
@@ -2314,6 +2397,13 @@ void EntityList::RemoveAllNPCs(){
 	}
 	npc_limit_list.clear();
 }
+void EntityList::RemoveAllMercs(){
+	LinkedListIterator<Merc*> iterator(merc_list);
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		iterator.RemoveCurrent(false);
+	}
+}
 void EntityList::RemoveAllGroups(){
 	while (group_list.size())
 		group_list.pop_front();
@@ -2423,6 +2513,19 @@ bool EntityList::RemoveNPC(int16 delete_id){
 			//take it out of our limit list
 			if(npc_limit_list.count(delete_id) == 1)
 				npc_limit_list.erase(delete_id);
+			return true;
+		}
+		iterator.Advance();
+	}
+	return false;
+}
+bool EntityList::RemoveMerc(int16 delete_id){
+	LinkedListIterator<Merc*> iterator(merc_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData()->GetID()==delete_id){
+			iterator.RemoveCurrent(false);//Already Deleted
 			return true;
 		}
 		iterator.Advance();

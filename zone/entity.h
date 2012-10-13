@@ -41,6 +41,7 @@
 class Client;
 class Mob;
 class NPC;
+class Merc;
 class Corpse;
 class Beacon;
 class Petition;
@@ -70,6 +71,7 @@ public:
 	virtual bool IsClient()			const { return false; }
 	virtual bool IsNPC()			const { return false; }
 	virtual bool IsMob()			const { return false; }
+	virtual bool IsMerc()			const { return false; }
 	virtual bool IsCorpse()			const { return false; }
 	virtual bool IsPlayerCorpse()	const { return false; }
 	virtual bool IsNPCCorpse()		const { return false; }
@@ -86,6 +88,7 @@ public:
 	Client* CastToClient();
 	NPC*    CastToNPC();
 	Mob*    CastToMob();
+	Merc*   CastToMerc();
 	Corpse*	CastToCorpse();
 	Object* CastToObject();
 	Doors*	CastToDoors();
@@ -95,6 +98,7 @@ public:
 	const Client* CastToClient() const;
 	const NPC*    CastToNPC() const;
 	const Mob*    CastToMob() const;
+	const Merc*    CastToMerc() const;
 	const Corpse*	CastToCorpse() const;
 	const Object* CastToObject() const;
 //	const Group*	CastToGroup() const;
@@ -134,6 +138,7 @@ public:
 	Mob*	GetTargetForVirus(Mob* spreader);
 	NPC*	GetNPCByID(int16 id);
 	NPC*	GetNPCByNPCTypeID(int32 npc_id);
+	Merc*	GetMercByID(int16 id);
 	Client* GetClientByName(const char *name); 
 	Client* GetClientByAccID(int32 accid);
 	Client* GetClientByID(int16 id);
@@ -194,6 +199,7 @@ public:
 	void	SendTraders(Client* client);	
 	void    AddClient(Client*);
 	void    AddNPC(NPC*, bool SendSpawnPacket = true, bool dontqueue = false);
+	void	AddMerc(Merc*, bool SendSpawnPacket = true, bool dontqueue = false);
 	void	AddCorpse(Corpse* pc, int32 in_id = 0xFFFFFFFF);
 	void    AddObject(Object*, bool SendSpawnPacket = true);
 	void    AddGroup(Group*);
@@ -210,6 +216,7 @@ public:
 	bool	RemoveClient(int16 delete_id);
 	bool	RemoveClient(Client* delete_client);
 	bool	RemoveNPC(int16 delete_id);
+	bool	RemoveMerc(int16 delete_id);
 	bool	RemoveGroup(int32 delete_id);
 	bool	RemoveRaid(int32 delete_id);
 	bool	RemoveCorpse(int16 delete_id);
@@ -220,6 +227,7 @@ public:
 	void	RemoveAllMobs();
 	void	RemoveAllClients();
 	void	RemoveAllNPCs();
+	void	RemoveAllMercs();
 	void	RemoveAllGroups();
 	void	RemoveAllCorpses();
 	void	RemoveAllDoors();
@@ -232,6 +240,7 @@ public:
 	void	DestroyTempPets(Mob *owner);
 	Entity*	GetEntityMob(int16 id);
 	Entity* GetEntityMob(const char *name);
+	Entity*	GetEntityMerc(int16 id);
 	Entity*	GetEntityDoor(int16 id);
 	Entity*	GetEntityObject(int16 id);
 	Entity*	GetEntityCorpse(int16 id);
@@ -377,6 +386,7 @@ public:
 
 	void GetMobList(list<Mob*> &m_list);
 	void GetNPCList(list<NPC*> &n_list);
+	void GetMercList(list<Merc*> &n_list);
 	void GetClientList(list<Client*> &c_list);
 	void GetCorpseList(list<Corpse*> &c_list);
 	void GetObjectList(list<Object*> &o_list);
@@ -408,6 +418,7 @@ private:
 	LinkedList<Client*> client_list;
 	LinkedList<Mob*> mob_list;
 	LinkedList<NPC*> npc_list;
+	LinkedList<Merc *> merc_list;
 	list<Group*> group_list;
 	LinkedList<Corpse*> corpse_list;
 	LinkedList<Object*> object_list;

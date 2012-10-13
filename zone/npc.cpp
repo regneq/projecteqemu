@@ -2357,7 +2357,7 @@ void NPC::LoadMercs(){
 		while(DataRow = mysql_fetch_row(DatasetResult)) {
 			MercData tempMerc;
 
-			tempMerc.MercID = atoi(DataRow[0]);
+			tempMerc.MercTemplateID = atoi(DataRow[0]);
 			tempMerc.MercType = atoi(DataRow[1]);
 			tempMerc.MercSubType = atoi(DataRow[2]);
 			tempMerc.CostFormula = atoi(DataRow[3]);
@@ -2428,7 +2428,7 @@ std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
 			if(mercListItr->ClientVersion <= clientVersion) {
 				MercData mercData;
 
-				mercData.MercID = mercListItr->MercID;
+				mercData.MercTemplateID = mercListItr->MercTemplateID;
 				mercData.MercType = mercListItr->MercType;
 				mercData.MercSubType = mercListItr->MercSubType;			
 				mercData.CostFormula = mercListItr->CostFormula;		
