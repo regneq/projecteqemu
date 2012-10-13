@@ -292,7 +292,7 @@
     </ClCompile>
     <ClCompile Include="..\common\patches\Underfoot.cpp">
       <Filter>Patches</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="..\common\patches\VoA.cpp">
       <Filter>Patches</Filter>
     </ClCompile>
@@ -457,6 +457,9 @@
     </ClCompile>
     <ClCompile Include="..\common\XMLParser.cpp">
       <Filter>Common Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="merc.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -726,6 +729,9 @@
     </ClInclude>
     <ClInclude Include="..\common\version.h">
       <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="merc.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

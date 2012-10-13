@@ -13139,12 +13139,12 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercTypeListItr->Type); // DBStringID for Type 0
 		}
 
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, tar->GetNumMercs()); // Count of Sub-types that follow
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, tar->GetNumMercs(GetClientVersion())); // Count of Sub-types that follow
 
 		// Data for first Merc type
 		//
 		for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercID); // I think this is an ID that refers to this Merc template.
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercTemplateID); // I think this is an ID that refers to this Merc template.
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercType); // DBStringID of Type
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, mercListItr->MercSubType); // DBStringID of Sub-Type
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4910); // Purchase Cost
@@ -13189,10 +13189,13 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 		return;
 	}
+	
+	uint32 merc_template_id = app->ReadUInt32(0);
+	uint32 merchant_id = app->ReadUInt32(8);
 
-	printf("OP_MercenaryHire\n");
+	//printf("OP_MercenaryHire\n");
 	DumpPacket(app);
-	fflush(stdout);
+	//fflush(stdout);
 	//HirePending = true;
 	SetHoTT(0);
 	SendTargetCommand(0);
@@ -13248,15 +13251,21 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	npc_type->findable = 1;
 
-	NPC* npc = new NPC(npc_type, 0, GetX(), GetY(), GetZ(), 0, FlyMode1);
+	//NPC* npc = new NPC(npc_type, 0, GetX(), GetY(), GetZ(), 0, FlyMode1);
 
-	npc->GiveNPCTypeData(npc_type);
+	//npc->GiveNPCTypeData(npc_type);
 
 	//npc->SetMercenary(true);
 
-	entity_list.AddNPC(npc, true, true);
+	//entity_list.AddNPC(npc, true, true);
 
-	printf("Spawned Merc with ID %i\n", npc->GetID()); fflush(stdout);
+	Merc* merc = new Merc(npc_type, GetX(), GetY(), GetZ(), 0);
+
+	entity_list.AddMerc(merc, true, true);
+
+	merc->SendPosition();
+
+	//printf("Spawned Merc with ID %i\n", npc->GetID()); fflush(stdout);
 
 	outapp = new EQApplicationPacket(OP_MercenaryTimer, 20);
 
@@ -13275,7 +13284,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	Buffer = (char *)outapp->pBuffer;
 
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, npc->GetID());	// This should be the spawn ID of the Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, merc->GetID());	// This should be the spawn ID of the Merc
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1);	// Unknown
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3);	// Unknown
 
@@ -13286,7 +13295,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	Buffer = (char *)outapp->pBuffer;
 
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, npc->GetID());	// This should be the spawn ID of the Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, merc->GetID());	// This should be the spawn ID of the Merc
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Unknown
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xd0);	// Unknown
 

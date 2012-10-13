@@ -1081,6 +1081,7 @@
     <ClCompile Include="inventory.cpp" />
     <ClCompile Include="loottables.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="merc.cpp" />
     <ClCompile Include="mob.cpp" />
     <ClCompile Include="MobAI.cpp" />
     <ClCompile Include="net.cpp" />
@@ -1233,6 +1234,7 @@
     <ClInclude Include="loottable.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="masterentity.h" />
+    <ClInclude Include="merc.h" />
     <ClInclude Include="mob.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="npc.h" />

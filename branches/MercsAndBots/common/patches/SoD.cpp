@@ -1243,7 +1243,11 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
 			}
-			Buffer += 33; // Unknown;
+
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown;
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown;
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->is_npc); //IsMercenary
+			Buffer += 24; // Unknown;
 
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
