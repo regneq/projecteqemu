@@ -1266,6 +1266,68 @@ ENCODE(OP_ZoneSpawns) {
 	delete in;
 }
 
+ENCODE(OP_MercenaryDataResponse) {
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	MercenaryMerchantList_Struct *emu = (MercenaryMerchantList_Struct *) __emu_buffer;
+
+	char *Buffer = (char *) in->pBuffer;
+
+	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
+	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
+
+	int r;
+	int k;
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, PacketSize);
+	Buffer = (char *) outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypeCount);
+
+	for(r = 0; r < emu->MercTypeCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypes[r]);
+	}
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
+
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercID);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercSubType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].PurchaseCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].UpkeepCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk01);
+		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MerchantSlot);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk02);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk03);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk04);
+		for(k = 0; k < emu->Mercs[r].StanceCount; k++)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].StanceIndex);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].Stance);
+		}
+	}
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+}
+
 ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
 ENCODE(OP_ItemPacket) {
 	//consume the packet
