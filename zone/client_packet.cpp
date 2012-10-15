@@ -386,6 +386,9 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_XTargetAutoAddHaters] = &Client::Handle_OP_XTargetAutoAddHaters;
 	ConnectedOpcodes[OP_MercenaryDataRequest] = &Client::Handle_OP_MercenaryDataRequest;
 	ConnectedOpcodes[OP_MercenaryHire] = &Client::Handle_OP_MercenaryHire;
+	ConnectedOpcodes[OP_MercenaryCommand] = &Client::Handle_OP_MercenaryCommand;
+	ConnectedOpcodes[OP_MercenaryDataUpdateRequest] = &Client::Handle_OP_MercenaryDataUpdateRequest;
+	ConnectedOpcodes[OP_MercenarySuspendRequest] = &Client::Handle_OP_MercenarySuspendRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -13109,8 +13112,12 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	MercenaryMerchantRequest_Struct* mmrq = (MercenaryMerchantRequest_Struct*) app->pBuffer;
 	uint32 merc_template_id = mmrq->MercID;
 	uint32 merchant_id = mmrq->MercMerchantID;
+	uint32 merc_unk1 = mmrq->MercUnk01;
+	uint32 merc_unk2 = mmrq->MercUnk02;
 
 	DumpPacket(app);
+
+	Message(7, "Mercenary Debug: Template ID (%i), Merchant ID (%i), Unknown1 (%i), Unknown2 (%i)", merc_template_id, merchant_id, merc_unk1, merc_unk2);
 
 	//HirePending = true;
 	SetHoTT(0);
@@ -13209,4 +13216,120 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	DumpPacket(outapp);
 	FastQueuePacket(&outapp);
 
+}
+
+void Client::Handle_OP_MercenarySuspendRequest(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(SuspendMercenary_Struct))
+	{
+		Message(13, "Size mismatch in OP_MercenarySuspendRequest expected %i got %i", sizeof(SuspendMercenary_Struct), app->size);
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenarySuspendRequest expected %i got %i", sizeof(SuspendMercenary_Struct), app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	SuspendMercenary_Struct* sm = (SuspendMercenary_Struct*) app->pBuffer;
+	uint32 merc_suspend = sm->SuspendMerc;	// Seen 30 for suspending or unsuspending
+
+	DumpPacket(app);
+
+	Message(7, "Mercenary Debug: Suspend ( %i ) received.", merc_suspend);
+	
+	// Handle the Command here...
+	// Check if the merc is suspended and if so, unsuspend, otherwise suspend it
+	
+	
+	// This response packet includes the timestamp of the suspend request
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenarySuspendResponse, sizeof(SuspendMercenaryResponse_Struct));
+	SuspendMercenaryResponse_Struct* smr = (SuspendMercenaryResponse_Struct*)outapp->pBuffer;
+	smr->SuspendTime = Timer::GetCurrentTime();	// Unix Timestamp
+	
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+}
+
+void Client::Handle_OP_MercenaryCommand(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(MercenaryCommand_Struct))
+	{
+		Message(13, "Size mismatch in OP_MercenaryCommand expected %i got %i", sizeof(MercenaryCommand_Struct), app->size);
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryCommand expected %i got %i", sizeof(MercenaryCommand_Struct), app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	MercenaryCommand_Struct* mc = (MercenaryCommand_Struct*) app->pBuffer;
+	uint32 merc_command = mc->MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 36 (zone in with merc)
+	sint32 option = mc->Option;	// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
+
+	DumpPacket(app);
+
+	Message(7, "Mercenary Debug: Command %i, Option %i received.", merc_command, option);
+	
+	// Handle the Command here...
+	// Will need a list of what every type of command is supposed to do
+	// Unsure if there is a server response to this packet
+}
+
+void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app)
+{
+	// The payload is 0 bytes.
+	if(app->size != 0)
+	{
+		Message(13, "Size mismatch in OP_MercenaryDataUpdateRequest expected 0 got %i", app->size);
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryDataUpdateRequest expected 0 got %i", app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	DumpPacket(app);
+
+	Message(7, "Mercenary Debug: Data Update Request Recieved.");
+	
+	// Hard setting some stuff until it can be coded to load properly from the DB
+	int mercCount = 1;
+	int stanceCount = 2;
+	char mercName[32];	// This actually needs to be null terminated
+	strcpy(mercName, GetRandPetName());
+	
+	uint32 packetSize = sizeof(MercenaryDataUpdate_Struct) + ( sizeof(MercenaryData_Struct) - 8 + sizeof(MercenaryStance_Struct) * stanceCount ) * mercCount + strlen(mercName);
+	
+	// This response packet seems to be sent on zoning or camping by client request
+	// It is populated with owned merc data only
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, packetSize);
+	MercenaryDataUpdate_Struct* mdu = (MercenaryDataUpdate_Struct*)outapp->pBuffer;
+
+	mdu->MercStatus = 0;
+	mdu->MercCount = mercCount;
+
+	for(int i = 0; i < mercCount; i++)
+	{
+		mdu->MercData[i].MercID = 400;
+		mdu->MercData[i].MercType = 330000100;
+		mdu->MercData[i].MercSubType = 330020105;
+		mdu->MercData[i].PurchaseCost = 4910;
+		mdu->MercData[i].UpkeepCost = 123;
+		mdu->MercData[i].Status = 0;
+		mdu->MercData[i].AltCurrencyCost = 0;
+		mdu->MercData[i].AltCurrencyUpkeep = 1;
+		mdu->MercData[i].AltCurrencyType = 19;
+		mdu->MercData[i].MercUnk01 = 0;
+		mdu->MercData[i].TimeLeft = 900000;
+		mdu->MercData[i].MerchantSlot = 1;
+		mdu->MercData[i].MercUnk02 = 1;
+		mdu->MercData[i].StanceCount = stanceCount;
+		mdu->MercData[i].MercUnk03 = 519044964;
+		mdu->MercData[i].MercUnk04 = 1;
+		strcpy(mdu->MercData[i].MercName, mercName);
+		for (int stanceindex = 0; stanceindex < stanceCount; stanceindex++)
+		{
+			mdu->MercData[i].Stances[stanceindex].StanceIndex = stanceindex;
+			mdu->MercData[i].Stances[stanceindex].Stance = stanceindex + 1;
+		}
+		mdu->MercData[i].MercUnk05 = 1;
+		i++;
+	}
+
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp); 
 }
