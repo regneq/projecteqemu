@@ -89,7 +89,7 @@ void Merc::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.flymode = 0;
 		ns->spawn.size = 0;
 		ns->spawn.NPC = 1;					// 0=player,1=npc,2=pc corpse,3=npc corpse
-
+		ns->spawn.IsMercenary = 1;
 		/*const Item_Struct* item = 0;
 		const ItemInst* inst = 0;
 
@@ -603,4 +603,180 @@ void Merc::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_sk
 	
 		//GoToDeath();
 	/*}*/
+}
+
+Merc* Client::GetMerc() {
+	if(GetMercID() == 0)
+		return(NULL);
+	
+	Merc* tmp = entity_list.GetMercByID(GetMercID());
+	if(tmp == NULL) {
+		SetMercID(0);
+		return(NULL);
+	}
+	
+	if(tmp->GetOwnerID() != GetID()) {
+		SetMercID(0);
+		return(NULL);
+	}
+	
+	return(tmp);
+}
+
+void Merc::SetMercData( uint32 templateID ) {
+	SetMercTemplateID( templateID );
+	SetMercType( 330000100 );
+	SetMercSubType( 330020105 );
+}
+
+void Client::SetMerc(Merc* newmerc) {
+	Merc* oldmerc = GetMerc();
+	if (oldmerc) {
+		oldmerc->SetOwnerID(0);
+	}
+	if (newmerc == NULL) {
+		SetMercID(0);
+	} else {
+		SetMercID(newmerc->GetID());
+		Client* oldowner = entity_list.GetClientByID(newmerc->GetOwnerID());
+		if (oldowner)
+			oldowner->SetMercID(0);
+		newmerc->SetOwnerID(this->GetID());
+		m_mercdata.MercTemplateID = newmerc->GetMercTemplateID();
+		m_mercdata.MercType = newmerc->GetMercType();
+		m_mercdata.MercSubType = newmerc->GetMercSubType();
+		m_mercdata.CostFormula = 0;
+		m_mercdata.ClientVersion = 0;
+		m_mercdata.MercNameType = 0;
+	}
+}
+
+void NPC::LoadMercTypes(){
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTyp.clientversion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			MercType tempMercType;
+
+			tempMercType.Type = atoi(DataRow[0]);
+			tempMercType.ClientVersion = atoi(DataRow[1]);
+
+			mercTypeList.push_back(tempMercType);
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in NPC::LoadMercTypes()");
+	}
+}
+
+void NPC::LoadMercs(){
+
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTem.merc_template_id, MTyp.dbstring AS merc_type_id, MTem.dbstring AS merc_subtype_id, 0 AS CostFormula, MTem.clientversion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			MercData tempMerc;
+
+			tempMerc.MercTemplateID = atoi(DataRow[0]);
+			tempMerc.MercType = atoi(DataRow[1]);
+			tempMerc.MercSubType = atoi(DataRow[2]);
+			tempMerc.CostFormula = atoi(DataRow[3]);
+			tempMerc.ClientVersion = atoi(DataRow[4]);
+
+			mercDataList.push_back(tempMerc);
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in NPC::LoadMercTypes()");
+	}
+}
+
+int NPC::GetNumMercTypes(int32 clientVersion)
+{
+	int count = 0;
+	std::list<MercType> mercTypeList = GetMercTypesList();
+
+	for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
+		if(mercTypeListItr->ClientVersion <= clientVersion)
+			count++;
+	}
+
+	return count;
+}
+
+int NPC::GetNumMercs(int32 clientVersion)
+{
+	int count = 0;
+	std::list<MercData> mercDataList = GetMercsList();
+
+	for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
+		if(mercListItr->ClientVersion <= clientVersion)
+			count++;
+	}
+
+	return count;
+}
+
+std::list<MercType> NPC::GetMercTypesList(int32 clientVersion) {
+	std::list<MercType> result;
+
+	if(GetNumMercTypes() > 0) {
+		for(std::list<MercType>::iterator mercTypeListItr = mercTypeList.begin(); mercTypeListItr != mercTypeList.end(); mercTypeListItr++) {
+			if(mercTypeListItr->ClientVersion <= clientVersion) {
+				MercType mercType;
+				mercType.Type = mercTypeListItr->Type;
+				mercType.ClientVersion = mercTypeListItr->ClientVersion;
+				result.push_back(mercType);
+			}
+		}		
+	}
+
+	return result;
+}
+
+std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
+	std::list<MercData> result;
+
+	if(GetNumMercs() > 0) {
+		for(std::list<MercData>::iterator mercListItr = mercDataList.begin(); mercListItr != mercDataList.end(); mercListItr++) {
+			if(mercListItr->ClientVersion <= clientVersion) {
+				MercData mercData;
+
+				mercData.MercTemplateID = mercListItr->MercTemplateID;
+				mercData.MercType = mercListItr->MercType;
+				mercData.MercSubType = mercListItr->MercSubType;			
+				mercData.CostFormula = mercListItr->CostFormula;		
+				mercData.ClientVersion = mercListItr->ClientVersion;
+				result.push_back(mercData);
+			}
+		}		
+	}
+
+	return result;
 }

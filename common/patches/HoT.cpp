@@ -1289,7 +1289,8 @@ ENCODE(OP_ZoneSpawns) {
 			//Buffer = (char *) outapp->pBuffer + (PacketSize - 53);
 			//_log(NET__ERROR, "Buffer Now %8X", Buffer);
 
-			Buffer += 9; // Unknown 8 bytes followed by Merc flag
+			Buffer += 8; // Unknown 8 bytes followed by Merc flag
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->IsMercenary);   //IsMercenary
 			VARSTRUCT_ENCODE_STRING(Buffer, "0000000000000000");
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);

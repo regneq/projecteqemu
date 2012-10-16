@@ -13027,6 +13027,61 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 	MercenaryMerchantShopRequest_Struct* mmsr = (MercenaryMerchantShopRequest_Struct*) app->pBuffer;
 	uint32 merchant_id = mmsr->MercMerchantID;
 
+	//client is requesting data about currently owned mercenary
+	if(merchant_id == 0) {
+		int mercTypeCount = 0;
+		int mercCount = 0;
+		int mercStanceCount = 2;	// Temporarily Hard Set
+		int packetSize;
+		int i=0;
+
+		mercTypeCount = 1;
+		mercCount = 1;
+
+		packetSize = sizeof(MercenaryMerchantList_Struct) - 4 + mercTypeCount * 4 + ( sizeof(MercenaryListEntry_Struct) - 8 + sizeof(MercenaryStance_Struct) * mercStanceCount ) * mercCount;
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, packetSize);
+		MercenaryMerchantList_Struct* mml = (MercenaryMerchantList_Struct*)outapp->pBuffer;
+
+		//MercType mercType = GetMercTypeByTemplateID(template_id);
+		//MercData mercData = GetMercByTemplateID(template_id);
+		MercData *mercData = GetMercData();
+
+		if(mercData) {
+			mml->MercTypeCount = mercTypeCount;
+			mml->MercTypes[i] = mercData->MercType;	// DBStringID for Type
+
+			mml->MercCount = mercCount;
+			mml->Mercs[i].MercID = mercData->MercTemplateID;				
+			mml->Mercs[i].MercType = mercData->MercType;			
+			mml->Mercs[i].MercSubType = mercData->MercSubType;		
+			mml->Mercs[i].PurchaseCost = 4910;		
+			mml->Mercs[i].UpkeepCost = 123;			
+			mml->Mercs[i].Status = 0;				
+			mml->Mercs[i].AltCurrencyCost = 0;	
+			mml->Mercs[i].AltCurrencyUpkeep = 1;	
+			mml->Mercs[i].AltCurrencyType = 19;
+			mml->Mercs[i].MercUnk01 = 0;			
+			mml->Mercs[i].TimeLeft = -1;			
+			mml->Mercs[i].MerchantSlot = i + 1;
+			mml->Mercs[i].MercUnk02 = 1;			
+			mml->Mercs[i].StanceCount = mercStanceCount;		
+			mml->Mercs[i].MercUnk03 = 519044964;		
+			mml->Mercs[i].MercUnk04 = 1;		
+			//mml->Mercs[i].MercName;
+			for (int stanceindex = 0; stanceindex < mercStanceCount; stanceindex++)
+			{
+				mml->Mercs[i].Stances[stanceindex].StanceIndex = stanceindex;
+				mml->Mercs[i].Stances[stanceindex].Stance = stanceindex + 1;
+			}
+
+
+			DumpPacket(outapp);
+			FastQueuePacket(&outapp); 
+		}
+		return;
+	}
+
 	DumpPacket(app);
 
 	NPC* tar = entity_list.GetNPCByID(merchant_id);
@@ -13139,6 +13194,8 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	DumpPacket(outapp);
 	FastQueuePacket(&outapp);
 
+	//get mercenary data
+
 	NPCType* npc_type = new NPCType;
 	memset(npc_type, 0, sizeof(NPCType));
 
@@ -13151,7 +13208,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	npc_type->gender = 0;
 	npc_type->class_ = 9;
 	npc_type->deity= 1;
-	npc_type->level = 75;
+	npc_type->level = GetLevel();
 	npc_type->npc_id = 0;
 	npc_type->loottable_id = 0;
 	npc_type->texture = 1;
@@ -13172,17 +13229,21 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	npc_type->findable = 1;
 
-	NPC* merc = new NPC(npc_type, 0, GetX(), GetY(), GetZ(), 0, FlyMode1);
+	//NPC* merc = new NPC(npc_type, 0, GetX(), GetY(), GetZ(), 0, FlyMode1);
 
-	merc->GiveNPCTypeData(npc_type);
+	//merc->GiveNPCTypeData(npc_type);
 
 	//merc->SetMercenary(true);
 
-	entity_list.AddNPC(merc, true, true);
+	//entity_list.AddNPC(merc, true, true);
 
-	//Merc* merc = new Merc(npc_type, GetX(), GetY(), GetZ(), 0);
-
-	//entity_list.AddMerc(merc, true, true);
+	Merc* merc = new Merc(npc_type, GetX(), GetY(), GetZ(), 0);
+	
+	merc->SetMercData( merc_template_id );
+	//merc->SetOwnerID(GetID());
+	entity_list.AddMerc(merc, true, true);
+	//SetMercID(merc->GetID());
+	SetMerc(merc);
 
 	merc->SendPosition();
 
@@ -13190,10 +13251,26 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	// TODO: Populate these packets properly instead of hard coding the data fields.
 
+	/*uint32 itemID = 0;
+	int8 materialFromSlot = 0xFF;
+	for(int i=0; i<22; ++i) {
+		itemID = GetMercItemBySlot(i);
+		if(itemID != 0) {
+			materialFromSlot = Inventory::CalcMaterialFromSlot(i);
+			if(materialFromSlot != 0xFF) {
+				this->SendWearChange(materialFromSlot);
+			}
+		}
+	}*/
+
+	merc->SendIllusionPacket(npc_type->race, npc_type->gender, npc_type->texture, npc_type->helmtexture, npc_type->haircolor, npc_type->beardcolor,
+												npc_type->eyecolor1, npc_type->eyecolor2, npc_type->hairstyle, npc_type->luclinface, npc_type->beard, 0xFF,
+												npc_type->drakkin_heritage, npc_type->drakkin_tattoo, npc_type->drakkin_details, npc_type->size);
+
 	// Send Mercenary Status/Timer packet
 	outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
 	MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
-	mss->MercEntityID = 1;			// Seen 0 (no merc spawned) or 615843841 and 22779137
+	mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
 	mss->UpdateInterval = 900000;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
 	mss->MercUnk01 = 180000;		// Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
 	mss->MercState = 5;				// Seen 5 (normal) or 1 (suspended)
