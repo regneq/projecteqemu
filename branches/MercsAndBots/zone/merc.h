@@ -6,17 +6,17 @@
 using namespace std;
 
 struct MercType {
-	int32	Type;
-	int32	ClientVersion;		
+	uint32	Type;
+	uint32	ClientVersion;		
 };
 
 struct MercData {
-	int32	MercTemplateID;
-	int32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
-	int32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
-	int32	CostFormula;			// To determine cost to client
-	int32	ClientVersion;				// Only send valid mercs per expansion
-	int8	MercNameType;			// Determines if merc gets random name or default text
+	uint32	MercTemplateID;
+	uint32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+	uint32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
+	uint32	CostFormula;			// To determine cost to client
+	uint32	ClientVersion;				// Only send valid mercs per expansion
+	uint8	MercNameType;			// Determines if merc gets random name or default text
 	char	MercNamePrefix[25];
 	char	MercNameSuffix[25];
 };
@@ -40,6 +40,20 @@ public:
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
 	bool IsDead() { return GetHP() < 0;};
+
+	int32 GetMercTemplateID() { return _MercTemplateID; }
+	int32 GetMercType() { return _MercType; }
+	int32 GetMercSubType() { return _MercSubType; }
+
+	void SetMercData (uint32 templateID );
+	void SetMercTemplateID( uint32 templateID ) { _MercTemplateID = templateID; }
+	void SetMercType( uint32 type ) { _MercType = type; }
+	void SetMercSubType( uint32 subtype ) { _MercSubType = subtype; }
+
+private:
+	uint32 _MercTemplateID;
+	uint32 _MercType;
+	uint32 _MercSubType;
 };
 
 #endif // MERC_H
