@@ -389,6 +389,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_MercenaryCommand] = &Client::Handle_OP_MercenaryCommand;
 	ConnectedOpcodes[OP_MercenaryDataUpdateRequest] = &Client::Handle_OP_MercenaryDataUpdateRequest;
 	ConnectedOpcodes[OP_MercenarySuspendRequest] = &Client::Handle_OP_MercenarySuspendRequest;
+	ConnectedOpcodes[OP_MercenaryDismiss] = &Client::Handle_OP_MercenaryDismiss;
+	ConnectedOpcodes[OP_MercenaryTimerRequest] = &Client::Handle_OP_MercenaryTimerRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -13027,6 +13029,8 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 	MercenaryMerchantShopRequest_Struct* mmsr = (MercenaryMerchantShopRequest_Struct*) app->pBuffer;
 	uint32 merchant_id = mmsr->MercMerchantID;
 
+	Message(7, "Mercenary Debug: Data Request for Merchant ID (%i)", merchant_id);
+
 	//client is requesting data about currently owned mercenary
 	if(merchant_id == 0) {
 		int mercTypeCount = 0;
@@ -13101,8 +13105,8 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 		mercTypeCount = tar->GetNumMercTypes(GetClientVersion());
 		mercCount = tar->GetNumMercs(GetClientVersion());
 
-		
-		packetSize = sizeof(MercenaryMerchantList_Struct) - 4 + mercTypeCount * 4 + ( sizeof(MercenaryListEntry_Struct) - 8 + sizeof(MercenaryStance_Struct) * mercStanceCount ) * mercCount;
+		// Struct currently set for a max of 3 Merc Types and a max of 5 Stances
+		packetSize = sizeof(MercenaryMerchantList_Struct) - 12 + mercTypeCount * 4 + ( sizeof(MercenaryListEntry_Struct) - 40 + sizeof(MercenaryStance_Struct) * mercStanceCount ) * mercCount;
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, packetSize);
 		MercenaryMerchantList_Struct* mml = (MercenaryMerchantList_Struct*)outapp->pBuffer;
@@ -13241,7 +13245,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	
 	merc->SetMercData( merc_template_id );
 	//merc->SetOwnerID(GetID());
-	entity_list.AddMerc(merc, true, true);
+	entity_list.AddMerc(merc, true, false);
 	//SetMercID(merc->GetID());
 	SetMerc(merc);
 
@@ -13409,4 +13413,63 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 
 	DumpPacket(outapp);
 	FastQueuePacket(&outapp); 
+}
+
+void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
+{
+	// The payload is 0 or 1 bytes.
+	if(app->size > 1)
+	{
+		Message(13, "Size mismatch in OP_MercenaryDismiss expected 0 got %i", app->size);
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryDismiss expected 0 got %i", app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	DumpPacket(app);
+
+	uint8 Command = 0;
+	if(app->size > 1)
+	{
+		char *InBuffer = (char *)app->pBuffer;
+		Command = VARSTRUCT_DECODE_TYPE(uint8, InBuffer);
+	}
+
+	Message(7, "Mercenary Debug: Dismiss Request ( %i ) Recieved.", Command);
+
+	// Handle the dismiss here...
+	
+	// Unsure if there is a server response to this packet
+	
+}
+
+void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
+{
+	// The payload is 0 bytes.
+	if(app->size != 0)
+	{
+		Message(13, "Size mismatch in OP_MercenaryTimerRequest expected 0 got %i", app->size);
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryTimerRequest expected 0 got %i", app->size);
+		DumpPacket(app);
+		return;
+	}
+	
+	DumpPacket(app);
+
+	Message(7, "Mercenary Debug: Timer Request received.");
+
+	// To Do: Load Mercenary Timer Data to properly populate this reply packet
+	// All hard set values for now
+	
+	// Send Mercenary Status/Timer packet
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
+	MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
+	mss->MercEntityID = 1; // Seen 0 (no merc spawned) or 615843841 and 22779137
+	mss->UpdateInterval = 900000; // Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
+	mss->MercUnk01 = 180000; // Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
+	mss->MercState = 5; // Seen 5 (normal) or 1 (suspended)
+	mss->SuspendedTime = 0; // Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
+	
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
 }

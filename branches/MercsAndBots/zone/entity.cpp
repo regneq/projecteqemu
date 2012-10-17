@@ -510,6 +510,9 @@ void EntityList::MobProcess() {
 			Mob* mob=iterator.GetData();
 			if(mob->IsNPC())
 				entity_list.RemoveNPC(mob->CastToNPC()->GetID());
+			else if(mob->IsMerc()) {
+				entity_list.RemoveMerc(mob->CastToMerc()->GetID());
+			}
 #ifdef BOTS
 			else if(mob->IsBot()) {
 				entity_list.RemoveBot(mob->CastToBot()->GetID());
