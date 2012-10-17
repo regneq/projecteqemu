@@ -1098,6 +1098,7 @@ public:
 	void SetMercID( int32 newmercid) { mercid = newmercid; }
 	Merc* GetMerc();
 	void SetMerc(Merc* newmerc);
+	void SendMercDataPacket(int MercID);
 
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);

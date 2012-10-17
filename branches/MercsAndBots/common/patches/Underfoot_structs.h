@@ -4298,7 +4298,7 @@ struct MercenaryListEntry_Struct {
 /*0045*/	int32	StanceCount;		// Iterations of MercenaryStance_Struct - Normally 2 to 4 seen
 /*0049*/	sint32	MercUnk03;			// Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0053*/	int8	MercUnk04;			// Seen 1 
-/*0054*/	MercenaryStance_Struct Stances[2];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0054*/	MercenaryStance_Struct Stances[1];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 };
 
 // [OPCode: 0x27ac OP_MercenaryDataResponse] On Live as of April 2 2012 [Server->Client]
@@ -4306,7 +4306,7 @@ struct MercenaryListEntry_Struct {
 // Sent by the server when browsing the Mercenary Merchant
 struct MercenaryMerchantList_Struct {
 /*0000*/	int32	MercTypeCount;			// Number of Merc Types to follow
-/*0004*/	int32	MercTypes[3];			// Count varies, but hard set to 3 for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/	int32	MercTypes[1];			// Count varies, but hard set to 3 for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
 /*0016*/	int32	MercCount;				// Number of MercenaryInfo_Struct to follow
 /*0020*/	MercenaryListEntry_Struct Mercs[0];	// Data for individual mercenaries in the Merchant List
 };
@@ -4336,7 +4336,7 @@ struct MercenaryData_Struct {
 /*0045*/	int32	StanceCount;		// Iterations of MercenaryStance_Struct - Normally 2 to 4 seen
 /*0049*/	sint32	MercUnk03;			// Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0053*/	int8	MercUnk04;			// Seen 1
-/*0054*/	MercenaryStance_Struct Stances[2];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0054*/	MercenaryStance_Struct Stances[1];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 /*0000*/	int32	MercUnk05;			// Seen 1 - Extra Merc Data field that differs from MercenaryListEntry_Struct
 // MercUnk05 may be a field that is at the end of the packet only, even if multiple mercs are listed (haven't seen examples of multiple mercs owned at once)
 };

@@ -4833,7 +4833,7 @@ struct MercenaryData_Struct {
 /*0053*/	sint32	MercUnk03;			// Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0057*/	int8	MercUnk04;			// Seen 1 
 /*0058*/	char	MercName[1];		// Null Terminated Mercenary Name (00 at merchants)
-/*0000*/	MercenaryStance_Struct Stances[1];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0000*/	MercenaryStance_Struct Stances[5];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 /*0000*/	int32	MercUnk05;			// Seen 1 - Extra Merc Data field that differs from MercenaryListEntry_Struct
 // MercUnk05 may be a field that is at the end of the packet only, even if multiple mercs are listed (haven't seen examples of multiple mercs owned at once)
 };
