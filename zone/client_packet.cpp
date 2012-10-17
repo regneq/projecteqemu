@@ -13275,28 +13275,31 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	// Send Mercenary Status/Timer packet
 	outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
 	MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
-	mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
+	//mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
+	mss->MercEntityID = 1;			// This field needs to be renamed.  If set to 1, it shows stances in the merc window, otherwise it does not.			
 	mss->UpdateInterval = 900000;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
 	mss->MercUnk01 = 180000;		// Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
 	mss->MercState = 5;				// Seen 5 (normal) or 1 (suspended)
 	mss->SuspendedTime = 0;			// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
 	FastQueuePacket(&outapp);
 
-	// Send Mercenary Assign packet twice
+	// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 	outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
 	MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
-	mas->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
+	mas->MercEntityID = merc->GetID();
 	mas->MercUnk01 = 1;		// Values seen on Live
 	mas->MercUnk02 = 2;		// Values seen on Live
 	FastQueuePacket(&outapp);
 
 	outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
 	MercenaryAssign_Struct* mas2 = (MercenaryAssign_Struct*)outapp->pBuffer;
-	mas2->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
+	mas2->MercEntityID = merc->GetID();
 	mas2->MercUnk01 = 0;		// Values seen on Live
 	mas2->MercUnk02 = 13;	// Values seen on Live 0xd0
 	DumpPacket(outapp);
 	FastQueuePacket(&outapp);
+
+	SendMercDataPacket(merc_template_id);
 
 }
 
@@ -13367,53 +13370,9 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 	DumpPacket(app);
 
 	Message(7, "Mercenary Debug: Data Update Request Recieved.");
-	
-	// Hard setting some stuff until it can be coded to load properly from the DB
-	int mercCount = 1;
-	int stanceCount = 2;
-	char mercName[32];	// This actually needs to be null terminated
-	strcpy(mercName, GetRandPetName());
-	
-	uint32 packetSize = sizeof(MercenaryDataUpdate_Struct) + ( sizeof(MercenaryData_Struct) - 8 + sizeof(MercenaryStance_Struct) * stanceCount ) * mercCount + strlen(mercName);
-	
-	// This response packet seems to be sent on zoning or camping by client request
-	// It is populated with owned merc data only
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, packetSize);
-	MercenaryDataUpdate_Struct* mdu = (MercenaryDataUpdate_Struct*)outapp->pBuffer;
 
-	mdu->MercStatus = 0;
-	mdu->MercCount = mercCount;
-
-	for(int i = 0; i < mercCount; i++)
-	{
-		mdu->MercData[i].MercID = 400;
-		mdu->MercData[i].MercType = 330000100;
-		mdu->MercData[i].MercSubType = 330020105;
-		mdu->MercData[i].PurchaseCost = 4910;
-		mdu->MercData[i].UpkeepCost = 123;
-		mdu->MercData[i].Status = 0;
-		mdu->MercData[i].AltCurrencyCost = 0;
-		mdu->MercData[i].AltCurrencyUpkeep = 1;
-		mdu->MercData[i].AltCurrencyType = 19;
-		mdu->MercData[i].MercUnk01 = 0;
-		mdu->MercData[i].TimeLeft = 900000;
-		mdu->MercData[i].MerchantSlot = 1;
-		mdu->MercData[i].MercUnk02 = 1;
-		mdu->MercData[i].StanceCount = stanceCount;
-		mdu->MercData[i].MercUnk03 = 519044964;
-		mdu->MercData[i].MercUnk04 = 1;
-		strcpy(mdu->MercData[i].MercName, mercName);
-		for (int stanceindex = 0; stanceindex < stanceCount; stanceindex++)
-		{
-			mdu->MercData[i].Stances[stanceindex].StanceIndex = stanceindex;
-			mdu->MercData[i].Stances[stanceindex].Stance = stanceindex + 1;
-		}
-		mdu->MercData[i].MercUnk05 = 1;
-		i++;
-	}
-
-	DumpPacket(outapp);
-	FastQueuePacket(&outapp); 
+	int MercID = 400;
+	SendMercDataPacket(MercID);
 }
 
 void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)

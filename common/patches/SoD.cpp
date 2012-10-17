@@ -1310,6 +1310,57 @@ ENCODE(OP_MercenaryDataResponse) {
 	delete in;
 }
 
+ENCODE(OP_MercenaryDataUpdate) {
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	MercenaryDataUpdate_Struct *emu = (MercenaryDataUpdate_Struct *) __emu_buffer;
+
+	char *Buffer = (char *) in->pBuffer;
+
+	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
+
+	int r;
+	int k;
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
+	Buffer = (char *) outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercStatus);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
+
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercID);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercSubType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].PurchaseCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].UpkeepCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyUpkeep);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
+		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->MercData[r].TimeLeft);
+		for(k = 0; k < emu->MercData[r].StanceCount; k++)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].Stance);
+		}
+		//VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
+	}
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+}
+
 ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
 ENCODE(OP_ItemPacket) {
 	//consume the packet

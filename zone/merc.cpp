@@ -686,6 +686,56 @@ void Client::SetMerc(Merc* newmerc) {
 	}
 }
 
+void Client::SendMercDataPacket(int MercID) {
+	// Hard setting some stuff until it can be coded to load properly from the DB/Memory
+	int mercCount = 1;
+	int stanceCount = 2;
+	char mercName[32];	// This actually needs to be null terminated
+	strcpy(mercName, GetRandPetName());
+	
+	uint32 packetSize = sizeof(MercenaryDataUpdate_Struct) + sizeof(MercenaryData_Struct) * mercCount + strlen(mercName);
+	
+	// This response packet seems to be sent on zoning or camping by client request
+	// It is populated with owned merc data only
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, packetSize);
+	MercenaryDataUpdate_Struct* mdu = (MercenaryDataUpdate_Struct*)outapp->pBuffer;
+
+	mdu->MercStatus = 0;
+	mdu->MercCount = mercCount;
+
+	for(int i = 0; i < mercCount; i++)
+	{
+		mdu->MercData[i].MercID = MercID;
+		mdu->MercData[i].MercType = 330000100;
+		mdu->MercData[i].MercSubType = 330020105;
+		mdu->MercData[i].PurchaseCost = 4910;
+		mdu->MercData[i].UpkeepCost = 123;
+		mdu->MercData[i].Status = 0;
+		mdu->MercData[i].AltCurrencyCost = 0;
+		mdu->MercData[i].AltCurrencyUpkeep = 1;
+		mdu->MercData[i].AltCurrencyType = 19;
+		mdu->MercData[i].MercUnk01 = 0;
+		mdu->MercData[i].TimeLeft = 900000;
+		mdu->MercData[i].MerchantSlot = 1;
+		mdu->MercData[i].MercUnk02 = 1;
+		mdu->MercData[i].StanceCount = stanceCount;
+		mdu->MercData[i].MercUnk03 = 519044964;
+		mdu->MercData[i].MercUnk04 = 1;
+		strcpy(mdu->MercData[i].MercName, mercName);
+		for (int stanceindex = 0; stanceindex < stanceCount; stanceindex++)
+		{
+			mdu->MercData[i].Stances[stanceindex].StanceIndex = stanceindex;
+			mdu->MercData[i].Stances[stanceindex].Stance = stanceindex + 1;
+		}
+		mdu->MercData[i].MercUnk05 = 1;
+		i++;
+	}
+
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp); 
+}
+
+
 void NPC::LoadMercTypes(){
 	std::string errorMessage;
 	char* Query = 0;
