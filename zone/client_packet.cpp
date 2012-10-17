@@ -13042,7 +13042,7 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 		mercTypeCount = 1;
 		mercCount = 1;
 
-		packetSize = sizeof(MercenaryMerchantList_Struct) - 4 + mercTypeCount * 4 + ( sizeof(MercenaryListEntry_Struct) - 8 + sizeof(MercenaryStance_Struct) * mercStanceCount ) * mercCount;
+		packetSize = sizeof(MercenaryMerchantList_Struct) + sizeof(MercenaryListEntry_Struct) * mercCount;
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, packetSize);
 		MercenaryMerchantList_Struct* mml = (MercenaryMerchantList_Struct*)outapp->pBuffer;
@@ -13106,7 +13106,7 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 		mercCount = tar->GetNumMercs(GetClientVersion());
 
 		// Struct currently set for a max of 3 Merc Types and a max of 5 Stances
-		packetSize = sizeof(MercenaryMerchantList_Struct) - 12 + mercTypeCount * 4 + ( sizeof(MercenaryListEntry_Struct) - 40 + sizeof(MercenaryStance_Struct) * mercStanceCount ) * mercCount;
+		packetSize = sizeof(MercenaryMerchantList_Struct) + sizeof(MercenaryListEntry_Struct) * mercCount;
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, packetSize);
 		MercenaryMerchantList_Struct* mml = (MercenaryMerchantList_Struct*)outapp->pBuffer;
@@ -13234,18 +13234,15 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	npc_type->findable = 1;
 
 	//NPC* merc = new NPC(npc_type, 0, GetX(), GetY(), GetZ(), 0, FlyMode1);
-
 	//merc->GiveNPCTypeData(npc_type);
-
 	//merc->SetMercenary(true);
-
 	//entity_list.AddNPC(merc, true, true);
 
 	Merc* merc = new Merc(npc_type, GetX(), GetY(), GetZ(), 0);
 	
 	merc->SetMercData( merc_template_id );
 	//merc->SetOwnerID(GetID());
-	entity_list.AddMerc(merc, true, false);
+	entity_list.AddMerc(merc, true, true);
 	//SetMercID(merc->GetID());
 	SetMerc(merc);
 
@@ -13255,7 +13252,8 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	// TODO: Populate these packets properly instead of hard coding the data fields.
 
-	/*uint32 itemID = 0;
+	/*
+	uint32 itemID = 0;
 	int8 materialFromSlot = 0xFF;
 	for(int i=0; i<22; ++i) {
 		itemID = GetMercItemBySlot(i);
@@ -13265,11 +13263,14 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 				this->SendWearChange(materialFromSlot);
 			}
 		}
-	}*/
+	}
+	*/
 
+	/*
 	merc->SendIllusionPacket(npc_type->race, npc_type->gender, npc_type->texture, npc_type->helmtexture, npc_type->haircolor, npc_type->beardcolor,
 												npc_type->eyecolor1, npc_type->eyecolor2, npc_type->hairstyle, npc_type->luclinface, npc_type->beard, 0xFF,
 												npc_type->drakkin_heritage, npc_type->drakkin_tattoo, npc_type->drakkin_details, npc_type->size);
+	*/
 
 	// Send Mercenary Status/Timer packet
 	outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));

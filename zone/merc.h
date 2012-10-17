@@ -49,6 +49,7 @@ public:
 	void SetMercTemplateID( uint32 templateID ) { _MercTemplateID = templateID; }
 	void SetMercType( uint32 type ) { _MercType = type; }
 	void SetMercSubType( uint32 subtype ) { _MercSubType = subtype; }
+	bool Process();
 
 private:
 	uint32 _MercTemplateID;

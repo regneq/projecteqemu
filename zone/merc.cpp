@@ -190,6 +190,41 @@ void Merc::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	}
 }
 
+bool Merc::Process()
+{
+	_ZP(Merc_Process);
+	
+	if(IsStunned() && stunned_timer.Check())
+	{
+		this->stunned = false;
+		this->stunned_timer.Disable();
+	}
+
+	SpellProcess();
+
+	if(tic_timer.Check())
+	{
+		//6 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
+		if(!IsMoving() && !IsEngaged())
+		{
+			SendPosition();
+		}
+
+		BuffProcess();
+	}
+	
+	if(GetAppearance() == eaDead && GetHP() > 0)
+		SetAppearance(eaStanding);
+
+	if (IsStunned() || IsMezzed())
+		return true;
+
+	// Bot AI
+	AI_Process();
+
+	return true;
+}
+
 bool Merc::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool IsFromSpell)
 {
 
