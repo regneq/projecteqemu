@@ -35,6 +35,7 @@ class Client;
 #include "../common/deity.h"
 #include "mob.h"
 #include "npc.h"
+#include "merc.h"
 #include "zone.h"
 #include "AA.h"
 #include "../common/seperator.h"
@@ -304,7 +305,7 @@ public:
 	inline Inventory& GetInv()				{ return m_inv; }
 	inline const Inventory& GetInv() const	{ return m_inv; }
 	inline PetInfo* GetPetInfo(int16 pet) { return (pet==1)?&m_suspendedminion:&m_petinfo; }
-	inline MercData* GetMercData() { return &m_mercdata; }
+	inline MercTemplate* GetMercData() { return &m_mercdata; }
 	bool	CheckAccess(sint16 iDBLevel, sint16 iDefaultLevel);
 
 	void	CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
@@ -1098,7 +1099,7 @@ public:
 	void SetMercID( int32 newmercid) { mercid = newmercid; }
 	Merc* GetMerc();
 	void SetMerc(Merc* newmerc);
-	void SendMercDataPacket(int MercID);
+	void SendMercDataPacket(int32 MercID);
 
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
@@ -1255,7 +1256,7 @@ private:
 	Object*						m_tradeskill_object;
 	PetInfo						m_petinfo; // current pet data, used while loading from and saving to DB
 	PetInfo						m_suspendedminion; // pet data for our suspended minion.
-	MercData					m_mercdata; // current mercenary
+	MercTemplate				m_mercdata; // current mercenary
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);
