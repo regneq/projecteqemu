@@ -658,10 +658,19 @@ Merc* Client::GetMerc() {
 	return(tmp);
 }
 
-void Merc::SetMercData( uint32 templateID ) {
-	SetMercTemplateID( templateID );
-	SetMercType( 330000100 );
-	SetMercSubType( 330020105 );
+void Merc::SetMercData( uint32 template_id ) {
+	MercTemplate* merctemplate = database.GetMercTemplate(template_id);
+
+	SetMercTemplateID( merctemplate->MercTemplateID );
+	SetMercType( merctemplate->MercType );
+	SetMercSubType( merctemplate->MercSubType );
+	SetProficiencyID( merctemplate->ProficiencyID );
+	SetCostFormula( merctemplate->CostFormula );
+	SetMercNameType( merctemplate->MercNameType );
+}
+
+MercTemplate* ZoneDatabase::GetMercTemplate( uint32 template_id ) {
+	return &merc_templates[template_id];
 }
 
 void Client::SetMerc(Merc* newmerc) {
@@ -680,13 +689,14 @@ void Client::SetMerc(Merc* newmerc) {
 		m_mercdata.MercTemplateID = newmerc->GetMercTemplateID();
 		m_mercdata.MercType = newmerc->GetMercType();
 		m_mercdata.MercSubType = newmerc->GetMercSubType();
-		m_mercdata.CostFormula = 0;
+		m_mercdata.CostFormula = newmerc->GetCostFormula();
 		m_mercdata.ClientVersion = 0;
-		m_mercdata.MercNameType = 0;
+		m_mercdata.MercNameType = newmerc->GetMercNameType();
+		m_mercdata.SuspendedTime = 0;
 	}
 }
 
-void Client::SendMercDataPacket(int MercID) {
+void Client::SendMercDataPacket(int32 MercID) {
 	// Hard setting some stuff until it can be coded to load properly from the DB/Memory
 	int mercCount = 1;
 	int stanceCount = 2;
@@ -703,13 +713,15 @@ void Client::SendMercDataPacket(int MercID) {
 	mdu->MercStatus = 0;
 	mdu->MercCount = mercCount;
 
+	MercTemplate *mercData = GetMercData();
+
 	for(int i = 0; i < mercCount; i++)
 	{
-		mdu->MercData[i].MercID = MercID;
-		mdu->MercData[i].MercType = 330000100;
-		mdu->MercData[i].MercSubType = 330020105;
-		mdu->MercData[i].PurchaseCost = 4910;
-		mdu->MercData[i].UpkeepCost = 123;
+		mdu->MercData[i].MercID = GetMercID();
+		mdu->MercData[i].MercType = mercData->MercType;
+		mdu->MercData[i].MercSubType = mercData->MercSubType;
+		mdu->MercData[i].PurchaseCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, this->GetLevel());
+		mdu->MercData[i].UpkeepCost = Merc::CalcUpkeepCost(mercData->MercTemplateID, this->GetLevel());
 		mdu->MercData[i].Status = 0;
 		mdu->MercData[i].AltCurrencyCost = 0;
 		mdu->MercData[i].AltCurrencyUpkeep = 1;
@@ -864,4 +876,56 @@ std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
 	}
 
 	return result;
+}
+
+int32 Merc::CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type) {
+	int32 cost = 0;
+
+	MercTemplate *mercData = database.GetMercTemplate(templateID);
+
+	if(mercData) {
+		if(currency_type == 0) { //calculate cost in coin - cost in gold
+			int levels_above_cutoff;
+			switch (mercData->CostFormula) {
+			case 0:
+				levels_above_cutoff = level > 10 ? (level - 10) : 0;
+				cost = levels_above_cutoff * 300;
+				cost += level >= 10 ? 100 : 0;
+				break;
+			default:
+				break;
+			}
+		}
+		else if(currency_type == 19) {
+			cost = 0;
+		}
+	}
+
+	return cost/100;
+}
+
+int32 Merc::CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type) {
+	int32 cost = 0;
+
+	MercTemplate *mercData = database.GetMercTemplate(templateID);
+
+	if(mercData) {
+		if(currency_type == 0) { //calculate cost in coin - cost in gold
+			int levels_above_cutoff;
+			switch (mercData->CostFormula) {
+			case 0:
+				levels_above_cutoff = level > 10 ? (level - 10) : 0;
+				cost = levels_above_cutoff * 300;
+				cost += level >= 10 ? 100 : 0;
+				break;
+			default:
+				break;
+			}
+		}
+		else if(currency_type == 19) { // cost in Bayle Marks
+			cost = 1;
+		}
+	}
+
+	return cost/100;
 }

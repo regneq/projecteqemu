@@ -93,6 +93,31 @@ struct TraderCharges_Struct {
 	sint32 Charges[80];
 };
 
+const int MaxMercStanceID = 9;
+
+struct MercStanceInfo {
+	uint8	ProficiencyID;
+	uint8	ClassID;	
+	int32	StanceID;
+	uint8	IsDefault;
+};
+
+struct MercTemplate {
+	uint32	MercTemplateID;
+	uint32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+	uint32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
+	uint16	RaceID;
+	uint8	ClassID;
+	uint8	ProficiencyID;
+	uint8	CostFormula;			// To determine cost to client
+	uint32	ClientVersion;				// Only send valid mercs per expansion
+	uint8	MercNameType;			// Determines if merc gets random name or default text
+	char	MercNamePrefix[25];
+	char	MercNameSuffix[25];
+	int32	Stances[MaxMercStanceID];
+	int32	SuspendedTime;
+};
+
 
 class ItemInst;
 struct FactionMods;
@@ -382,6 +407,12 @@ public:
     void LoadAltCurrencyValues(uint32 char_id, std::map<uint32, uint32> &currency);
     void UpdateAltCurrencyValue(uint32 char_id, uint32 currency_id, uint32 value);
 
+	/*
+     * Mercenaries
+     */
+	//void LoadMercTypes();
+	void LoadMercTemplates();
+	MercTemplate* GetMercTemplate( uint32 template_id );
     
 	/*
 	 * Misc stuff.
@@ -409,6 +440,7 @@ protected:
 	bool*				npc_spells_loadtried;
 	int8 item_minstatus[MAX_ITEM_ID];
 	int8 door_isopen_array[255];
+	std::map<uint32, MercTemplate> merc_templates;
 };
 
 extern ZoneDatabase database;
