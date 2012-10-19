@@ -33,15 +33,35 @@ public:
 	virtual Raid* GetRaid() { return 0; }
 	virtual Group* GetGroup() { return 0; }
 
+	// Mob AI Virtual Override Methods
+	virtual void AI_Process();
+	virtual void AI_Stop();
+
+	// Static Merc Group Methods
+	static bool AddMercToGroup(Merc* merc, Group* group);
+	static bool RemoveMercFromGroup(Merc* merc, Group* group);
+
 	virtual bool IsMerc() const { return true; }
 
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
+	static Merc* LoadMerc(Client *c, MercTemplate* merctemplate, uint32 merchant_id);
+	bool Spawn();
+	bool Dismiss();
+	bool Suspend();
+	bool Unsuspend();
+
+	void Zone();
+	virtual void Depop();
 
 	bool IsDead() { return GetHP() < 0;};
 
 	static int32 CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type = 0);
 	static int32 CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type = 0);
 
+	// "GET" Class Methods
+	virtual Mob* GetOwner();
+	Client* GetMercOwner();
+	uint32 GetMercID() { return _MercID; }
 	uint32 GetMercTemplateID() { return _MercTemplateID; }
 	uint32 GetMercType() { return _MercType; }
 	uint32 GetMercSubType() { return _MercSubType; }
@@ -49,7 +69,9 @@ public:
 	uint32 GetCostFormula() { return _CostFormula; }
 	uint32 GetMercNameType() { return _NameType; }
 
+	// "SET" Class Methods
 	void SetMercData (uint32 templateID );
+	void SetMercID( uint32 mercID ) { _MercID = mercID; }
 	void SetMercTemplateID( uint32 templateID ) { _MercTemplateID = templateID; }
 	void SetMercType( uint32 type ) { _MercType = type; }
 	void SetMercSubType( uint32 subtype ) { _MercSubType = subtype; }
@@ -60,6 +82,7 @@ public:
 	bool Process();
 
 private:
+	uint32 _MercID;
 	uint32 _MercTemplateID;
 	uint32 _MercType;
 	uint32 _MercSubType;

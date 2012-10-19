@@ -212,17 +212,124 @@ bool Merc::Process()
 
 		BuffProcess();
 	}
-	
-	if(GetAppearance() == eaDead && GetHP() > 0)
-		SetAppearance(eaStanding);
 
 	if (IsStunned() || IsMezzed())
 		return true;
 
-	// Bot AI
+	// Merc AI
 	AI_Process();
 
 	return true;
+}
+
+void Merc::AI_Process() {
+	if(!IsAIControlled())
+		return;
+
+	if(IsCasting())
+		return;
+
+	// A bot wont start its AI if not grouped
+	if(!GetOwner() || !IsGrouped()) {
+		return;
+	}
+
+	if(GetAppearance() == eaDead)
+		return;
+
+	Mob* MercOwner = GetOwner();
+
+	// The bots need an owner
+	if(!MercOwner)
+		return;
+
+	try {
+		if(MercOwner->CastToClient()->IsDead()) {
+			SetTarget(0);
+			SetOwnerID(0);
+			return;
+		}
+	}
+	catch(...) {
+		SetTarget(0);
+		SetOwnerID(0);
+		return;
+	}
+
+	if(!IsEngaged()) {
+		if(GetFollowID()) {
+			if(MercOwner && MercOwner->CastToClient()->AutoAttackEnabled() && MercOwner->GetTarget() &&
+				MercOwner->GetTarget()->IsNPC() && MercOwner->GetTarget()->GetHateAmount(MercOwner)) {
+					AddToHateList(MercOwner->GetTarget(), 1);
+			}
+			else {
+				Group* g = GetGroup();
+
+				if(g) {
+					for(int counter = 0; counter < g->GroupCount(); counter++) {
+						if(g->members[counter]) {
+							if(g->members[counter]->IsEngaged() && g->members[counter]->GetTarget()) {
+								AddToHateList(g->members[counter]->GetTarget(), 1);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if(!IsEngaged()) {
+		// Not engaged in combat
+		SetTarget(0);
+
+		/*if(!IsMoving() && AIthink_timer->Check() && !spellend_timer.Enabled()) {
+			if(GetStance() != MercStancePassive) {
+				if(!AI_IdleCastCheck() && !IsCasting())
+					Meditate(true);
+			}
+			else {
+				Meditate(true);
+			}
+
+		}*/
+
+		if(AImovement_timer->Check()) {
+			if(GetFollowID()) {
+				Mob* follow = entity_list.GetMob(GetFollowID());
+
+				if(follow) {
+					float dist = DistNoRoot(*follow);
+					float speed = follow->GetRunspeed();
+
+					if(dist < GetFollowDistance() + 1000) 
+						speed = follow->GetWalkspeed();
+
+					SetRunAnimSpeed(0);
+
+					if(dist > GetFollowDistance()) {
+						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
+						//if(rest_timer.Enabled())
+						//	rest_timer.Disable();
+						return;
+					} 
+					else
+					{						
+						if(moved)
+						{
+							moved=false;
+							SendPosition();
+							SetMoving(false);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void Merc::AI_Stop() {
+	Mob::AI_Stop();
 }
 
 bool Merc::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool IsFromSpell)
@@ -640,6 +747,252 @@ void Merc::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_sk
 	/*}*/
 }
 
+Client* Merc::GetMercOwner() {
+	Client* mercOwner = 0;
+
+	if(GetOwnerID()) {
+		mercOwner = GetOwner()->CastToClient();
+	}
+
+	return mercOwner; 
+}
+
+Mob* Merc::GetOwner() {
+	Mob* Result = 0;
+
+	Result = entity_list.GetMob(GetOwnerID());
+
+	if(!Result) {
+		this->SetOwnerID(0);
+	}
+
+	return Result->CastToMob();
+}
+
+Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id) {
+	Merc* merc;
+
+	if(c->GetMercID()) {
+		merc_template = c->GetMercData();
+	}
+
+	//get mercenary data
+	if(merc_template) {
+		NPCType* npc_type = new NPCType;
+		memset(npc_type, 0, sizeof(NPCType));
+
+		sprintf(npc_type->name, "%s", GetRandPetName());
+
+		int8 gender;
+		NPC* tar = entity_list.GetNPCByID(merchant_id);
+		if(tar) {
+			gender = Mob::GetDefaultGender(merc_template->RaceID, tar->GetGender());
+		}
+
+		sprintf(npc_type->lastname, "%s's %s", c->GetName(), "Mercenary");
+		npc_type->cur_hp = 4000000;
+		npc_type->max_hp = 4000000;
+		npc_type->race = 1;
+		npc_type->gender = gender;
+		npc_type->class_ = merc_template->ClassID;
+		npc_type->deity= 1;
+		npc_type->level = c->GetLevel();
+		npc_type->npc_id = 0;
+		npc_type->loottable_id = 0;
+		npc_type->texture = 1;
+		npc_type->light = 0;
+		npc_type->runspeed = 0;
+		npc_type->d_meele_texture1 = 1;
+		npc_type->d_meele_texture2 = 1;
+		npc_type->merchanttype = 1;
+		npc_type->bodytype = 1;
+
+		npc_type->STR = 150;
+		npc_type->STA = 150;
+		npc_type->DEX = 150;
+		npc_type->AGI = 150;
+		npc_type->INT = 150;
+		npc_type->WIS = 150;
+		npc_type->CHA = 150;
+		npc_type->MR = 50;
+		npc_type->FR = 50;
+		npc_type->CR = 50;
+		npc_type->PR = 50;
+		npc_type->DR = 50;
+		npc_type->Corrup = 15;
+
+		npc_type->findable = 1;
+
+		Merc* merc = new Merc(npc_type, c->GetX(), c->GetY(), c->GetZ(), 0);
+	
+		merc->SetMercData( merc_template->MercTemplateID );
+
+		return merc;
+	}
+
+	return 0;
+}
+
+bool Merc::Spawn() {
+	Client* mercOwner;
+
+	if(GetOwner() && GetOwner()->IsClient()) {
+		mercOwner = GetOwner()->CastToClient();
+	}
+
+	if(!mercOwner)
+		return false;
+
+	MercTemplate* merc_template = database.GetMercTemplate(GetMercTemplateID());
+
+	if(!merc_template)
+		return false;
+
+	entity_list.AddMerc(this, true, true);
+
+	SendPosition();
+
+	//printf("Spawned Merc with ID %i\n", npc->GetID()); fflush(stdout);
+
+	/*
+	uint32 itemID = 0;
+	int8 materialFromSlot = 0xFF;
+	for(int i=0; i<22; ++i) {
+		itemID = GetMercItemBySlot(i);
+		if(itemID != 0) {
+			materialFromSlot = Inventory::CalcMaterialFromSlot(i);
+			if(materialFromSlot != 0xFF) {
+				this->SendWearChange(materialFromSlot);
+			}
+		}
+	}
+	*/
+
+		
+	SendIllusionPacket(merc_template->RaceID, GetGender(), GetTexture(), GetHelmTexture(), GetHairColor(), GetBeardColor(),
+		GetEyeColor1(), GetEyeColor2(), GetHairStyle(), GetLuclinFace(), GetBeard(), 0xFF,
+		GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), GetSize());
+
+	if(!mercOwner->IsGrouped()) {
+		Group *g = new Group(mercOwner);
+		if(AddMercToGroup(this, g)) {
+			entity_list.AddGroup(g);
+			database.SetGroupLeaderName(g->GetID(), mercOwner->GetName());
+			g->SaveGroupLeaderAA();
+			database.SetGroupID(mercOwner->GetName(), g->GetID(), mercOwner->CharacterID());
+			database.SetGroupID(GetCleanName(), g->GetID(), GetMercID());
+		}
+	}
+	else {
+		AddMercToGroup(this, mercOwner->GetGroup());
+		database.SetGroupID(GetCleanName(), mercOwner->GetGroup()->GetID(), GetMercID());
+	}
+
+	return true;
+}
+
+bool Merc::Dismiss() {
+	Client* mercOwner;
+
+	if(GetOwner() && GetOwner()->IsClient()) {
+		mercOwner = GetOwner()->CastToClient();
+	}
+
+	if(!mercOwner)
+		return false;
+
+	if(IsGrouped()) {
+		RemoveMercFromGroup(this, GetGroup());
+	}
+
+	//Save();
+
+	Depop();
+
+	return true;
+}
+
+void Merc::Zone() {
+	if(HasGroup()) {
+		GetGroup()->MemberZoned(this);
+	}
+
+	//Save();
+	Depop();
+}
+
+void Merc::Depop() {
+	WipeHateList();
+	
+	entity_list.RemoveFromHateLists(this);
+	
+	if(HasGroup())
+		RemoveMercFromGroup(this, GetGroup());
+	
+	SetOwnerID(0);
+	
+	Mob::Depop(false);
+}
+
+bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
+	bool Result = false;
+
+	if(merc && group) {
+		if(merc->HasGroup()) {
+			if(!group->IsLeader(merc)) {
+				merc->SetFollowID(0);
+
+				if(group->DelMember(merc))
+					database.SetGroupID(merc->GetCleanName(), 0, merc->GetMercID());
+
+				if(group->GroupCount() <= 1)
+					group->DisbandGroup();
+			}
+			else {
+				for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+					if(!group->members[i])
+						continue;
+
+					group->members[i]->SetFollowID(0);
+				}
+
+				group->DisbandGroup();
+				database.SetGroupID(merc->GetCleanName(), 0, merc->GetMercID());
+			}
+
+			Result = true;
+		}
+	}
+
+	return Result;
+}
+
+bool Merc::AddMercToGroup(Merc* merc, Group* group) {
+	bool Result = false;
+
+	if(merc && group) {
+		if(!merc->HasGroup()) {
+			// Add bot to this group
+			if(group->AddMember(merc)) {
+				if(group->GetLeader()) {
+					merc->SetFollowID(group->GetLeader()->GetID());
+
+					// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
+					if(group->GroupCount() == 2 && group->GetLeader()->IsClient()) {
+						group->UpdateGroupAAs();
+						Mob *TempLeader = group->GetLeader();
+						group->SendUpdate(groupActUpdate, TempLeader);
+					}
+				}
+
+				Result = true;
+			}
+		}
+	}
+
+	return Result;
+}
+
 Merc* Client::GetMerc() {
 	if(GetMercID() == 0)
 		return(NULL);
@@ -659,14 +1012,15 @@ Merc* Client::GetMerc() {
 }
 
 void Merc::SetMercData( uint32 template_id ) {
-	MercTemplate* merctemplate = database.GetMercTemplate(template_id);
+	MercTemplate* merc_template = database.GetMercTemplate(template_id);
 
-	SetMercTemplateID( merctemplate->MercTemplateID );
-	SetMercType( merctemplate->MercType );
-	SetMercSubType( merctemplate->MercSubType );
-	SetProficiencyID( merctemplate->ProficiencyID );
-	SetCostFormula( merctemplate->CostFormula );
-	SetMercNameType( merctemplate->MercNameType );
+	SetMercID(199);   //ToDO: Get ID From Merc table after saving
+	SetMercTemplateID( merc_template->MercTemplateID );
+	SetMercType( merc_template->MercType );
+	SetMercSubType( merc_template->MercSubType );
+	SetProficiencyID( merc_template->ProficiencyID );
+	SetCostFormula( merc_template->CostFormula );
+	SetMercNameType( merc_template->MercNameType );
 }
 
 MercTemplate* ZoneDatabase::GetMercTemplate( uint32 template_id ) {

@@ -13182,13 +13182,15 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	SetHoTT(0);
 	SendTargetCommand(0);
 
-	MercTemplate* merctemplate = database.GetMercTemplate(merc_template_id);
+	MercTemplate* merc_template = database.GetMercTemplate(merc_template_id);
 
-	if(merctemplate) {
+	if(merc_template) {
+		int32 ResponseType = GetMercID() ? 9 : 0;
+		
 		// This response packet brings up the Mercenary Manager window
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryHire, sizeof(MercenaryMerchantResponse_Struct));
 		MercenaryMerchantResponse_Struct* mmr = (MercenaryMerchantResponse_Struct*)outapp->pBuffer;
-		mmr->ResponseType = 0;		// Seen 0 for hire response, 6 for info response, and 9 for denied hire request
+		mmr->ResponseType = ResponseType;		// Seen 0 for hire response, 6 for info response, and 9 for denied hire request
 		FastQueuePacket(&outapp);
 
 		// Unknown Mercenary-Related Packet
@@ -13201,113 +13203,44 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 		DumpPacket(outapp);
 		FastQueuePacket(&outapp);
 
-		//get mercenary data
+		if(!GetMercID()) {
 
-		NPCType* npc_type = new NPCType;
-		memset(npc_type, 0, sizeof(NPCType));
+			// Get merc, assign it to client & spawn
+			Merc* merc = Merc::LoadMerc(this, merc_template, merchant_id);
+			SetMerc(merc);
+			merc->Spawn();
 
-		sprintf(npc_type->name, "%s", GetRandPetName());
+			// TODO: Populate these packets properly instead of hard coding the data fields.
 
-		int8 gender;
-		NPC* tar = entity_list.GetNPCByID(merchant_id);
-		if(tar) {
-			gender = Mob::GetDefaultGender(merctemplate->RaceID, tar->GetGender());
+			// Send Mercenary Status/Timer packet
+			outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
+			MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
+			//mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
+			mss->MercEntityID = 1;			// This field needs to be renamed.  If set to 1, it shows stances in the merc window, otherwise it does not.			
+			mss->UpdateInterval = 900000;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
+			mss->MercUnk01 = 180000;		// Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
+			mss->MercState = 5;				// Seen 5 (normal) or 1 (suspended)
+			mss->SuspendedTime = 0;			// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
+			FastQueuePacket(&outapp);
+
+			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
+			outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
+			MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
+			mas->MercEntityID = merc->GetID();
+			mas->MercUnk01 = 1;		// Values seen on Live
+			mas->MercUnk02 = 2;		// Values seen on Live
+			FastQueuePacket(&outapp);
+
+			outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
+			MercenaryAssign_Struct* mas2 = (MercenaryAssign_Struct*)outapp->pBuffer;
+			mas2->MercEntityID = merc->GetID();
+			mas2->MercUnk01 = 0;		// Values seen on Live
+			mas2->MercUnk02 = 13;	// Values seen on Live 0xd0
+			DumpPacket(outapp);
+			FastQueuePacket(&outapp);
+
+			SendMercDataPacket(merc_template_id);
 		}
-
-		sprintf(npc_type->lastname, "%s's %s", GetName(), "Mercenary");
-		npc_type->cur_hp = 4000000;
-		npc_type->max_hp = 4000000;
-		npc_type->race = 1;
-		npc_type->gender = gender;
-		npc_type->class_ = merctemplate->ClassID;
-		npc_type->deity= 1;
-		npc_type->level = GetLevel();
-		npc_type->npc_id = 0;
-		npc_type->loottable_id = 0;
-		npc_type->texture = 1;
-		npc_type->light = 0;
-		npc_type->runspeed = 0;
-		npc_type->d_meele_texture1 = 1;
-		npc_type->d_meele_texture2 = 1;
-		npc_type->merchanttype = 1;
-		npc_type->bodytype = 1;
-
-		npc_type->STR = 150;
-		npc_type->STA = 150;
-		npc_type->DEX = 150;
-		npc_type->AGI = 150;
-		npc_type->INT = 150;
-		npc_type->WIS = 150;
-		npc_type->CHA = 150;
-		npc_type->MR = 50;
-		npc_type->FR = 50;
-		npc_type->CR = 50;
-		npc_type->PR = 50;
-		npc_type->DR = 50;
-		npc_type->Corrup = 15;
-
-		npc_type->findable = 1;
-
-		Merc* merc = new Merc(npc_type, GetX(), GetY(), GetZ(), 0);
-	
-		merc->SetMercData( merc_template_id );
-		entity_list.AddMerc(merc, true, true);
-		SetMerc(merc);
-
-		merc->SendPosition();
-
-		//printf("Spawned Merc with ID %i\n", npc->GetID()); fflush(stdout);
-
-		// TODO: Populate these packets properly instead of hard coding the data fields.
-
-		/*
-		uint32 itemID = 0;
-		int8 materialFromSlot = 0xFF;
-		for(int i=0; i<22; ++i) {
-			itemID = GetMercItemBySlot(i);
-			if(itemID != 0) {
-				materialFromSlot = Inventory::CalcMaterialFromSlot(i);
-				if(materialFromSlot != 0xFF) {
-					this->SendWearChange(materialFromSlot);
-				}
-			}
-		}
-		*/
-
-		/*
-		merc->SendIllusionPacket(npc_type->race, npc_type->gender, npc_type->texture, npc_type->helmtexture, npc_type->haircolor, npc_type->beardcolor,
-													npc_type->eyecolor1, npc_type->eyecolor2, npc_type->hairstyle, npc_type->luclinface, npc_type->beard, 0xFF,
-													npc_type->drakkin_heritage, npc_type->drakkin_tattoo, npc_type->drakkin_details, npc_type->size);
-		*/
-
-		// Send Mercenary Status/Timer packet
-		outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
-		MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
-		//mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
-		mss->MercEntityID = 1;			// This field needs to be renamed.  If set to 1, it shows stances in the merc window, otherwise it does not.			
-		mss->UpdateInterval = 900000;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
-		mss->MercUnk01 = 180000;		// Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
-		mss->MercState = 5;				// Seen 5 (normal) or 1 (suspended)
-		mss->SuspendedTime = 0;			// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
-		FastQueuePacket(&outapp);
-
-		// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-		outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
-		MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
-		mas->MercEntityID = merc->GetID();
-		mas->MercUnk01 = 1;		// Values seen on Live
-		mas->MercUnk02 = 2;		// Values seen on Live
-		FastQueuePacket(&outapp);
-
-		outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
-		MercenaryAssign_Struct* mas2 = (MercenaryAssign_Struct*)outapp->pBuffer;
-		mas2->MercEntityID = merc->GetID();
-		mas2->MercUnk01 = 0;		// Values seen on Live
-		mas2->MercUnk02 = 13;	// Values seen on Live 0xd0
-		DumpPacket(outapp);
-		FastQueuePacket(&outapp);
-
-		SendMercDataPacket(merc_template_id);
 	}
 
 }
@@ -13407,6 +13340,12 @@ void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
 	Message(7, "Mercenary Debug: Dismiss Request ( %i ) Recieved.", Command);
 
 	// Handle the dismiss here...
+	if(GetMercID()) {
+		Merc* merc = GetMerc();
+
+		if(merc)
+			merc->Dismiss();
+	}
 	
 	// Unsure if there is a server response to this packet
 	

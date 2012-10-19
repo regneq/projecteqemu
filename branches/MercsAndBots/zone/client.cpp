@@ -257,6 +257,8 @@ Client::Client(EQStreamInterface* ieqs)
 	TotalSecondsPlayed = 0;
 	keyring.clear();
 	bind_sight_target = NULL;
+	mercid = 0;
+	SetMerc(0);
 
 	logging_enabled = CLIENT_DEFAULT_LOGGING_ENABLED;
 
