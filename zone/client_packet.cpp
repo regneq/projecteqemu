@@ -13182,7 +13182,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	SetHoTT(0);
 	SendTargetCommand(0);
 
-	MercTemplate* merc_template = database.GetMercTemplate(merc_template_id);
+	MercTemplate* merc_template = zone->GetMercTemplate(merc_template_id);
 
 	if(merc_template) {
 		int32 ResponseType = GetMercID() ? 9 : 0;
@@ -13207,8 +13207,8 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 			// Get merc, assign it to client & spawn
 			Merc* merc = Merc::LoadMerc(this, merc_template, merchant_id);
+			merc->Spawn(this);
 			SetMerc(merc);
-			merc->Spawn();
 
 			// TODO: Populate these packets properly instead of hard coding the data fields.
 
@@ -13264,7 +13264,12 @@ void Client::Handle_OP_MercenarySuspendRequest(const EQApplicationPacket *app)
 	
 	// Handle the Command here...
 	// Check if the merc is suspended and if so, unsuspend, otherwise suspend it
-	
+	if(GetMercID() && GetMerc()) {
+		GetMerc()->Suspend();
+	}
+	else {
+		GetMerc()->Unsuspend();
+	}
 	
 	// This response packet includes the timestamp of the suspend request
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenarySuspendResponse, sizeof(SuspendMercenaryResponse_Struct));

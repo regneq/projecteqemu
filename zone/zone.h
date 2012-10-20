@@ -161,6 +161,8 @@ public:
 	void	LoadTempMerchantData_result(MYSQL_RES* result);
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
+	void LoadMercTemplates();
+	MercTemplate* GetMercTemplate( uint32 template_id );
 
 	void SetInstanceTimer(int32 new_duration);
 	void LoadLDoNTraps();
@@ -289,6 +291,8 @@ private:
 	QGlobalCache *qGlobals;
 	
 	Mutex	MZoneLock;
+
+	std::map<uint32, MercTemplate> merc_templates;
 };
 
 #endif
