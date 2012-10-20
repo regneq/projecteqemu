@@ -406,13 +406,6 @@ public:
      */
     void LoadAltCurrencyValues(uint32 char_id, std::map<uint32, uint32> &currency);
     void UpdateAltCurrencyValue(uint32 char_id, uint32 currency_id, uint32 value);
-
-	/*
-     * Mercenaries
-     */
-	//void LoadMercTypes();
-	void LoadMercTemplates();
-	MercTemplate* GetMercTemplate( uint32 template_id );
     
 	/*
 	 * Misc stuff.
@@ -440,7 +433,6 @@ protected:
 	bool*				npc_spells_loadtried;
 	int8 item_minstatus[MAX_ITEM_ID];
 	int8 door_isopen_array[255];
-	std::map<uint32, MercTemplate> merc_templates;
 };
 
 extern ZoneDatabase database;

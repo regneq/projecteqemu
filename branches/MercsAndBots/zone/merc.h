@@ -34,8 +34,12 @@ public:
 	virtual Group* GetGroup() { return 0; }
 
 	// Mob AI Virtual Override Methods
-	virtual void AI_Process();
+	virtual void AI_Init();
+	virtual void AI_Start(int32 iMoveDelay = 0);
 	virtual void AI_Stop();
+	virtual void AI_Process();
+
+	virtual bool Process();
 
 	// Static Merc Group Methods
 	static bool AddMercToGroup(Merc* merc, Group* group);
@@ -45,13 +49,14 @@ public:
 
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	static Merc* LoadMerc(Client *c, MercTemplate* merctemplate, uint32 merchant_id);
-	bool Spawn();
+	bool Spawn(Client *owner);
 	bool Dismiss();
 	bool Suspend();
 	bool Unsuspend();
 
 	void Zone();
 	virtual void Depop();
+	bool GetDepop() { return p_depop; }
 
 	bool IsDead() { return GetHP() < 0;};
 
@@ -79,7 +84,13 @@ public:
 	void SetCostFormula( uint8 costformula ) { _CostFormula = costformula; }
 	void SetMercNameType( uint8 nametype ) { _NameType = nametype; }
 
-	bool Process();
+protected:
+	int16   skills[HIGHEST_SKILL+1];
+	int32   equipment[MAX_WORN_INVENTORY];	//this is an array of item IDs
+	int16	d_meele_texture1;			//this is an item Material value
+	int16	d_meele_texture2;			//this is an item Material value (offhand)
+	int8	prim_melee_type;			//Sets the Primary Weapon attack message and animation
+	int8	sec_melee_type;				//Sets the Secondary Weapon attack message and animation
 
 private:
 	uint32 _MercID;
@@ -89,6 +100,8 @@ private:
 	uint8  _ProficiencyID;
 	uint8 _CostFormula;
 	uint8 _NameType;
+
+	bool	p_depop;
 };
 
 #endif // MERC_H

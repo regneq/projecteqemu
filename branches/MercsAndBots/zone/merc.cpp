@@ -65,7 +65,13 @@ Merc::Merc(const NPCType* d, float x, float y, float z, float heading)
 	  d->maxlevel,
 	  d->scalerate) 
 {
-	
+	int r;
+	for(r = 0; r <= HIGHEST_SKILL; r++) {
+		skills[r] = database.GetSkillCap(GetClass(),(SkillType)r,GetLevel());
+	}
+
+	AI_Init();
+	AI_Start();
 }
 
 Merc::~Merc() {
@@ -200,6 +206,13 @@ bool Merc::Process()
 		this->stunned_timer.Disable();
 	}
 
+	if(!GetMercOwner())
+		return false;
+
+	if (GetDepop()) {
+		return false;
+	}
+
 	SpellProcess();
 
 	if(tic_timer.Check())
@@ -326,6 +339,19 @@ void Merc::AI_Process() {
 			}
 		}
 	}
+}
+
+void Merc::AI_Init() {
+	Mob::AI_Init();
+}
+
+void Merc::AI_Start(int32 iMoveDelay) {
+	Mob::AI_Start(iMoveDelay);
+
+	if (!pAIControlled)
+		return;
+	
+	SetAttackTimer();
 }
 
 void Merc::AI_Stop() {
@@ -833,17 +859,11 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 	return 0;
 }
 
-bool Merc::Spawn() {
-	Client* mercOwner;
-
-	if(GetOwner() && GetOwner()->IsClient()) {
-		mercOwner = GetOwner()->CastToClient();
-	}
-
-	if(!mercOwner)
+bool Merc::Spawn(Client *owner) {
+	if(!owner)
 		return false;
 
-	MercTemplate* merc_template = database.GetMercTemplate(GetMercTemplateID());
+	MercTemplate* merc_template = zone->GetMercTemplate(GetMercTemplateID());
 
 	if(!merc_template)
 		return false;
@@ -873,29 +893,29 @@ bool Merc::Spawn() {
 		GetEyeColor1(), GetEyeColor2(), GetHairStyle(), GetLuclinFace(), GetBeard(), 0xFF,
 		GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), GetSize());
 
-	if(!mercOwner->IsGrouped()) {
-		Group *g = new Group(mercOwner);
+	if(!owner->IsGrouped()) {
+		Group *g = new Group(owner);
 		if(AddMercToGroup(this, g)) {
 			entity_list.AddGroup(g);
-			database.SetGroupLeaderName(g->GetID(), mercOwner->GetName());
+			database.SetGroupLeaderName(g->GetID(), owner->GetName());
 			g->SaveGroupLeaderAA();
-			database.SetGroupID(mercOwner->GetName(), g->GetID(), mercOwner->CharacterID());
+			database.SetGroupID(owner->GetName(), g->GetID(), owner->CharacterID());
 			database.SetGroupID(GetCleanName(), g->GetID(), GetMercID());
 		}
 	}
 	else {
-		AddMercToGroup(this, mercOwner->GetGroup());
-		database.SetGroupID(GetCleanName(), mercOwner->GetGroup()->GetID(), GetMercID());
+		AddMercToGroup(this, owner->GetGroup());
+		database.SetGroupID(GetCleanName(), owner->GetGroup()->GetID(), GetMercID());
 	}
 
 	return true;
 }
 
-bool Merc::Dismiss() {
+bool Merc::Suspend() {
 	Client* mercOwner;
 
-	if(GetOwner() && GetOwner()->IsClient()) {
-		mercOwner = GetOwner()->CastToClient();
+	if(GetMercOwner()) {
+		mercOwner = GetMercOwner();
 	}
 
 	if(!mercOwner)
@@ -906,6 +926,84 @@ bool Merc::Dismiss() {
 	}
 
 	//Save();
+	
+	mercOwner->SetMercID(0);
+	// Set merc suspended time for client & merc
+
+	Depop();
+
+	return true;
+}
+
+bool Merc::Unsuspend() {
+	Client* mercOwner;
+
+	if(GetMercOwner()) {
+		mercOwner = GetMercOwner();
+	}
+
+	if(!mercOwner)
+		return false;
+
+	if(!GetMercID()) {
+
+		// Get merc, assign it to client & spawn
+		Merc* merc = Merc::LoadMerc(mercOwner, mercOwner->GetMercData(), 0);
+		//mercOwner->SetMerc(this);
+		merc->Spawn(mercOwner);
+
+		// TODO: Populate these packets properly instead of hard coding the data fields.
+
+		// Send Mercenary Status/Timer packet
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
+		MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
+		//mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
+		mss->MercEntityID = 1;			// This field needs to be renamed.  If set to 1, it shows stances in the merc window, otherwise it does not.			
+		mss->UpdateInterval = 900000;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
+		mss->MercUnk01 = 180000;		// Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
+		mss->MercState = 5;				// Seen 5 (normal) or 1 (suspended)
+		mss->SuspendedTime = 0;			// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
+		mercOwner->FastQueuePacket(&outapp);
+
+		// Send Mercenary Assign packet twice - This is actually just WeaponEquip
+		outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
+		MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
+		mas->MercEntityID = merc->GetID();
+		mas->MercUnk01 = 1;		// Values seen on Live
+		mas->MercUnk02 = 2;		// Values seen on Live
+		mercOwner->FastQueuePacket(&outapp);
+
+		outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
+		MercenaryAssign_Struct* mas2 = (MercenaryAssign_Struct*)outapp->pBuffer;
+		mas2->MercEntityID = merc->GetID();
+		mas2->MercUnk01 = 0;		// Values seen on Live
+		mas2->MercUnk02 = 13;	// Values seen on Live 0xd0
+		DumpPacket(outapp);
+		mercOwner->FastQueuePacket(&outapp);
+
+		mercOwner->SendMercDataPacket(GetMercTemplateID());
+	}
+
+	return true;
+}
+
+bool Merc::Dismiss() {
+	Client* mercOwner;
+
+	if(GetMercOwner()) {
+		mercOwner = GetMercOwner();
+	}
+
+	if(!mercOwner)
+		return false;
+
+	if(IsGrouped()) {
+		RemoveMercFromGroup(this, GetGroup());
+	}
+
+	//Save();
+
+	mercOwner->SetMerc(0);
 
 	Depop();
 
@@ -930,6 +1028,8 @@ void Merc::Depop() {
 		RemoveMercFromGroup(this, GetGroup());
 	
 	SetOwnerID(0);
+
+	p_depop = true;
 	
 	Mob::Depop(false);
 }
@@ -1012,7 +1112,7 @@ Merc* Client::GetMerc() {
 }
 
 void Merc::SetMercData( uint32 template_id ) {
-	MercTemplate* merc_template = database.GetMercTemplate(template_id);
+	MercTemplate* merc_template = zone->GetMercTemplate(template_id);
 
 	SetMercID(199);   //ToDO: Get ID From Merc table after saving
 	SetMercTemplateID( merc_template->MercTemplateID );
@@ -1023,7 +1123,7 @@ void Merc::SetMercData( uint32 template_id ) {
 	SetMercNameType( merc_template->MercNameType );
 }
 
-MercTemplate* ZoneDatabase::GetMercTemplate( uint32 template_id ) {
+MercTemplate* Zone::GetMercTemplate( uint32 template_id ) {
 	return &merc_templates[template_id];
 }
 
@@ -1034,6 +1134,13 @@ void Client::SetMerc(Merc* newmerc) {
 	}
 	if (newmerc == NULL) {
 		SetMercID(0);
+		m_mercdata.MercTemplateID = 0;
+		m_mercdata.MercType = 0;
+		m_mercdata.MercSubType = 0;
+		m_mercdata.CostFormula = 0;
+		m_mercdata.ClientVersion = 0;
+		m_mercdata.MercNameType = 0;
+		m_mercdata.SuspendedTime = 0;
 	} else {
 		SetMercID(newmerc->GetID());
 		Client* oldowner = entity_list.GetClientByID(newmerc->GetOwnerID());
@@ -1235,7 +1342,7 @@ std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
 int32 Merc::CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type) {
 	int32 cost = 0;
 
-	MercTemplate *mercData = database.GetMercTemplate(templateID);
+	MercTemplate *mercData = zone->GetMercTemplate(templateID);
 
 	if(mercData) {
 		if(currency_type == 0) { //calculate cost in coin - cost in gold
@@ -1261,7 +1368,7 @@ int32 Merc::CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_ty
 int32 Merc::CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type) {
 	int32 cost = 0;
 
-	MercTemplate *mercData = database.GetMercTemplate(templateID);
+	MercTemplate *mercData = zone->GetMercTemplate(templateID);
 
 	if(mercData) {
 		if(currency_type == 0) { //calculate cost in coin - cost in gold
