@@ -29,9 +29,9 @@ public:
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = SLOT_PRIMARY, bool FromRiposte = false, bool IsStrikethrough = false, bool IsFromSpell = false);
 	virtual bool HasRaid() { return false; }
-	virtual bool HasGroup() { return false; }
+	virtual bool HasGroup() { return (GetGroup() ? true : false); }
 	virtual Raid* GetRaid() { return 0; }
-	virtual Group* GetGroup() { return 0; }
+	virtual Group* GetGroup() { return entity_list.GetGroupByMob(this); }
 
 	// Mob AI Virtual Override Methods
 	virtual void AI_Init();

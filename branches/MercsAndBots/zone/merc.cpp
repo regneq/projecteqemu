@@ -65,6 +65,8 @@ Merc::Merc(const NPCType* d, float x, float y, float z, float heading)
 	  d->maxlevel,
 	  d->scalerate) 
 {
+	p_depop = false;
+
 	int r;
 	for(r = 0; r <= HIGHEST_SKILL; r++) {
 		skills[r] = database.GetSkillCap(GetClass(),(SkillType)r,GetLevel());
