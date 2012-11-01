@@ -169,8 +169,8 @@ Client::Client(EQStreamInterface* ieqs)
 	charm_cast_timer(3500),
 	qglobal_purge_timer(30000),
 	TrackingTimer(2000),
-	RespawnFromHoverTimer(0)
-
+	RespawnFromHoverTimer(0),
+	merc_timer(900000)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
@@ -2156,6 +2156,7 @@ void Client::AddMoneyToPP(uint64 copper, bool updateclient){
 	//tmp	= tmp - (tmp2* 10);
     //if (updateclient)
 	//	SendClientMoneyUpdate(0,tmp);
+	tmp2 = tmp;
     new_val = m_pp.copper + tmp2;
     if(new_val < 0) {
         m_pp.copper = 0;

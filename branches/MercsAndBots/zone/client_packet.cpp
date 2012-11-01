@@ -13035,21 +13035,18 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 
 	//client is requesting data about currently owned mercenary
 	if(merchant_id == 0) {
-		int mercTypeCount = 0;
-		int mercCount = 0;
+		int mercTypeCount = 1;
+		int mercCount = 1;
 		int mercStanceCount = 2;	// Temporarily Hard Set
 		int packetSize;
 		int i=0;
-
-		mercTypeCount = 1;
-		mercCount = 1;
 
 		packetSize = sizeof(MercenaryMerchantList_Struct) + sizeof(MercenaryListEntry_Struct) * mercCount;
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, packetSize);
 		MercenaryMerchantList_Struct* mml = (MercenaryMerchantList_Struct*)outapp->pBuffer;
 
-		MercTemplate *mercData = GetMercData();
+		MercTemplate *mercData = GetMercTemplate();
 
 		if(mercData) {
 			mml->MercTypeCount = mercTypeCount;
@@ -13066,11 +13063,11 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 			mml->Mercs[i].AltCurrencyUpkeep = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
 			mml->Mercs[i].AltCurrencyType = altCurrentType;
 			mml->Mercs[i].MercUnk01 = 0;			
-			mml->Mercs[i].TimeLeft = -1;			
+			mml->Mercs[i].TimeLeft = 900000;			
 			mml->Mercs[i].MerchantSlot = i + 1;
 			mml->Mercs[i].MercUnk02 = 1;			
 			mml->Mercs[i].StanceCount = mercStanceCount;		
-			mml->Mercs[i].MercUnk03 = 519044964;		
+			mml->Mercs[i].MercUnk03 = 0;		
 			mml->Mercs[i].MercUnk04 = 1;		
 			//mml->Mercs[i].MercName;
 			for (int stanceindex = 0; stanceindex < mercStanceCount; stanceindex++)
@@ -13078,7 +13075,6 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 				mml->Mercs[i].Stances[stanceindex].StanceIndex = stanceindex;
 				mml->Mercs[i].Stances[stanceindex].Stance = stanceindex + 1;
 			}
-
 
 			DumpPacket(outapp);
 			FastQueuePacket(&outapp); 
@@ -13239,7 +13235,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			DumpPacket(outapp);
 			FastQueuePacket(&outapp);
 
-			SendMercDataPacket(merc_template_id);
+			//SendMercDataPacket(GetMercID());
 		}
 	}
 
@@ -13264,12 +13260,7 @@ void Client::Handle_OP_MercenarySuspendRequest(const EQApplicationPacket *app)
 	
 	// Handle the Command here...
 	// Check if the merc is suspended and if so, unsuspend, otherwise suspend it
-	if(GetMercID() && GetMerc()) {
-		GetMerc()->Suspend();
-	}
-	else {
-		GetMerc()->Unsuspend();
-	}
+	SuspendMercCommand();
 	
 	// This response packet includes the timestamp of the suspend request
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenarySuspendResponse, sizeof(SuspendMercenaryResponse_Struct));
@@ -13373,16 +13364,22 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 
 	// To Do: Load Mercenary Timer Data to properly populate this reply packet
 	// All hard set values for now
+	int32 entityID = 0;
+	int32 mercState = 5;
+	int32 suspendedTime = 0;
+	if(GetMercID()) {
+		Merc* merc = GetMerc();
+
+		if(merc) {
+			entityID = merc->GetID();
+			
+			if(GetMercInfo()->IsSuspended) {
+				mercState = 1;
+				suspendedTime = GetMercInfo()->SuspendedTime;
+			}
 	
-	// Send Mercenary Status/Timer packet
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
-	MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
-	mss->MercEntityID = 1; // Seen 0 (no merc spawned) or 615843841 and 22779137
-	mss->UpdateInterval = 900000; // Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
-	mss->MercUnk01 = 180000; // Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
-	mss->MercState = 5; // Seen 5 (normal) or 1 (suspended)
-	mss->SuspendedTime = 0; // Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
-	
-	DumpPacket(outapp);
-	FastQueuePacket(&outapp);
+			// Send Mercenary Status/Timer packet
+			SendMercTimerPacket(entityID, mercState, suspendedTime);
+		}
+	}
 }

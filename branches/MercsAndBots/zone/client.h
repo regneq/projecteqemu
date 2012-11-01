@@ -305,7 +305,8 @@ public:
 	inline Inventory& GetInv()				{ return m_inv; }
 	inline const Inventory& GetInv() const	{ return m_inv; }
 	inline PetInfo* GetPetInfo(int16 pet) { return (pet==1)?&m_suspendedminion:&m_petinfo; }
-	inline MercTemplate* GetMercData() { return &m_mercdata; }
+	inline MercInfo* GetMercInfo() { return &m_mercinfo; }
+	MercTemplate* GetMercTemplate() { return&m_mercinfo.MercTemplate; }
 	bool	CheckAccess(sint16 iDBLevel, sint16 iDefaultLevel);
 
 	void	CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
@@ -1100,6 +1101,11 @@ public:
 	Merc* GetMerc();
 	void SetMerc(Merc* newmerc);
 	void SendMercDataPacket(int32 MercID);
+	void SendMercMerchantResponsePacket(sint32 response_type);
+	void SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time);
+	void SendMercSuspendResponsePacket(int32 suspended_time);
+	void SuspendMercCommand();
+	void UpdateMercTimer();
 
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
@@ -1256,7 +1262,7 @@ private:
 	Object*						m_tradeskill_object;
 	PetInfo						m_petinfo; // current pet data, used while loading from and saving to DB
 	PetInfo						m_suspendedminion; // pet data for our suspended minion.
-	MercTemplate				m_mercdata; // current mercenary
+	MercInfo					m_mercinfo; // current mercenary
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);
@@ -1317,6 +1323,7 @@ private:
 	Timer	qglobal_purge_timer;
 	Timer	TrackingTimer;
 	Timer	RespawnFromHoverTimer;
+	Timer	merc_timer;
 
 	float	proximity_x;
 	float	proximity_y;
