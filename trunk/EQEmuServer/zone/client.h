@@ -673,6 +673,7 @@ public:
 	void UntrainDisc(int slot, bool update_client = true);
 	void UntrainDiscAll(bool update_client = true);
 	bool SpellGlobalCheck(int16 Spell_ID, int16 Char_ID);
+	int32 GetCharMaxLevelFromQGlobal();
 
 	inline bool	IsSitting() const {return (playeraction == 1);}
 	inline bool	IsBecomeNPC() const { return npcflag; }

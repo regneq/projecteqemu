@@ -279,6 +279,19 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		set_exp = GetEXPForLevel(maxlevel);
 	}
 	
+	if(RuleB(Character, PerCharacterQglobalMaxLevel)){
+		int32 MaxLevel = GetCharMaxLevelFromQGlobal();
+		if(MaxLevel){
+			if(GetLevel() >= MaxLevel){
+				int32 expneeded = GetEXPForLevel(MaxLevel);
+				if(set_exp > expneeded)
+				{
+					set_exp =  expneeded;
+				}
+			}
+		}
+	}
+
 	if ((GetLevel() != check_level) && !(check_level >= maxlevel)) {
 		char val1[20]={0};
 		if (GetLevel() == check_level-1){
@@ -610,4 +623,31 @@ void Client::SendLeadershipEXPUpdate() {
 	eu->raid_leadership_points = m_pp.raid_leadership_points;
 	
 	FastQueuePacket(&outapp);
+}
+
+int32 Client::GetCharMaxLevelFromQGlobal() {
+
+		QGlobalCache *char_c = NULL;
+		char_c = this->GetQGlobals();
+
+		std::list<QGlobal> globalMap;
+		uint32 ntype = 0;
+
+		if(char_c)
+		{
+			QGlobalCache::Combine(globalMap, char_c->GetBucket(), ntype, this->CharacterID(), zone->GetZoneID());
+		}
+
+		std::list<QGlobal>::iterator iter = globalMap.begin();
+		uint32 gcount = 0;
+		while(iter != globalMap.end())
+		{
+			if((*iter).name.compare("CharMaxLevel") == 0){
+				return atoi((*iter).value.c_str());
+			}
+			++iter;
+			++gcount;
+		}
+
+	return false;   // Default is false
 }

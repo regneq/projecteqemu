@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/31/2012==
+Akkadius: Added the ability to govern player max levels through the source per character. It will look for a qglobal named 'CharMaxLevel', type 5 qglobal, if the rule is enabled and the character flag is set, they will not be able to pass that level.
+Optional SQL: utils/sql/svn/2243_optional_char_max_level_rule.sql
+
 ==10/22/2012==
 Lerxst2112: Fixed issue in AddMoneyToPP where the amount of silver was being added to copper instead of the leftover copper.
 
