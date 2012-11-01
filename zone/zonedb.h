@@ -115,7 +115,14 @@ struct MercTemplate {
 	char	MercNamePrefix[25];
 	char	MercNameSuffix[25];
 	int32	Stances[MaxMercStanceID];
+};
+
+struct MercInfo {
+	MercTemplate MercTemplate;
 	int32	SuspendedTime;
+	bool	IsSuspended;
+	int32	MercTimerRemaining;
+	uint8	Gender;
 };
 
 

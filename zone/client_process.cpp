@@ -234,6 +234,10 @@ bool Client::Process() {
 //				SpellFinished(bardsong, bardsong_target, bardsong_slot, spells[bardsong].mana);
 			}
 		}
+
+		if(merc_timer.Check()) {
+			UpdateMercTimer();
+		}
 		
 		if(IsAIControlled())
 			AI_Process();
