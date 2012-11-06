@@ -2917,7 +2917,8 @@ void Client::SuspendMercCommand()
 				if(CurrentMerc->Suspend()) {
 					// Set merc suspended time for client & merc
 					CurrentMercInfo->IsSuspended = true;
-					CurrentMercInfo->SuspendedTime = Timer::GetCurrentTime();
+					// Suspend Timer hard set to 5 minutes, but could be change to a rule
+					CurrentMercInfo->SuspendedTime = time(0) + 300;
 					CurrentMercInfo->MercTimerRemaining = merc_timer.GetRemainingTime();
 					merc_timer.Disable();
 
