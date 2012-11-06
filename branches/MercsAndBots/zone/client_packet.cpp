@@ -13063,7 +13063,7 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 			mml->Mercs[i].AltCurrencyUpkeep = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
 			mml->Mercs[i].AltCurrencyType = altCurrentType;
 			mml->Mercs[i].MercUnk01 = 0;			
-			mml->Mercs[i].TimeLeft = 900000;			
+			mml->Mercs[i].TimeLeft = -1;			
 			mml->Mercs[i].MerchantSlot = i + 1;
 			mml->Mercs[i].MercUnk02 = 1;			
 			mml->Mercs[i].StanceCount = mercStanceCount;		
@@ -13209,32 +13209,11 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			// TODO: Populate these packets properly instead of hard coding the data fields.
 
 			// Send Mercenary Status/Timer packet
-			outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
-			MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
-			//mss->MercEntityID = merc->GetID();			// Seen 0 (no merc spawned) or 615843841 and 22779137
-			mss->MercEntityID = 1;			// This field needs to be renamed.  If set to 1, it shows stances in the merc window, otherwise it does not.			
-			mss->UpdateInterval = 900000;	// Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
-			mss->MercUnk01 = 180000;		// Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
-			mss->MercState = 5;				// Seen 5 (normal) or 1 (suspended)
-			mss->SuspendedTime = 0;			// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
-			FastQueuePacket(&outapp);
+			SendMercTimerPacket(1, 5, 0);
 
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-			outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
-			MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
-			mas->MercEntityID = merc->GetID();
-			mas->MercUnk01 = 1;		// Values seen on Live
-			mas->MercUnk02 = 2;		// Values seen on Live
-			FastQueuePacket(&outapp);
-
-			outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
-			MercenaryAssign_Struct* mas2 = (MercenaryAssign_Struct*)outapp->pBuffer;
-			mas2->MercEntityID = merc->GetID();
-			mas2->MercUnk01 = 0;		// Values seen on Live
-			mas2->MercUnk02 = 13;	// Values seen on Live 0xd0
-			DumpPacket(outapp);
-			FastQueuePacket(&outapp);
-
+			SendMercAssignPacket(merc->GetID(), 1, 2);
+			SendMercAssignPacket(merc->GetID(), 0, 13);
 			//SendMercDataPacket(GetMercID());
 		}
 	}
@@ -13258,17 +13237,8 @@ void Client::Handle_OP_MercenarySuspendRequest(const EQApplicationPacket *app)
 
 	Message(7, "Mercenary Debug: Suspend ( %i ) received.", merc_suspend);
 	
-	// Handle the Command here...
 	// Check if the merc is suspended and if so, unsuspend, otherwise suspend it
 	SuspendMercCommand();
-	
-	// This response packet includes the timestamp of the suspend request
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenarySuspendResponse, sizeof(SuspendMercenaryResponse_Struct));
-	SuspendMercenaryResponse_Struct* smr = (SuspendMercenaryResponse_Struct*)outapp->pBuffer;
-	smr->SuspendTime = Timer::GetCurrentTime();	// Unix Timestamp
-	
-	DumpPacket(outapp);
-	FastQueuePacket(&outapp);
 }
 
 void Client::Handle_OP_MercenaryCommand(const EQApplicationPacket *app)
@@ -13307,7 +13277,7 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 
 	DumpPacket(app);
 
-	Message(7, "Mercenary Debug: Data Update Request Recieved.");
+	Message(7, "Mercenary Debug: Data Update Request Received.");
 
 	if(GetMercID())
 		SendMercDataPacket(GetMercID());
@@ -13333,7 +13303,7 @@ void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
 		Command = VARSTRUCT_DECODE_TYPE(uint8, InBuffer);
 	}
 
-	Message(7, "Mercenary Debug: Dismiss Request ( %i ) Recieved.", Command);
+	Message(7, "Mercenary Debug: Dismiss Request ( %i ) Received.", Command);
 
 	// Handle the dismiss here...
 	if(GetMercID()) {
@@ -13350,7 +13320,7 @@ void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
 void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 {
 	// The payload is 0 bytes.
-	if(app->size != 0)
+	if(app->size > 1)
 	{
 		Message(13, "Size mismatch in OP_MercenaryTimerRequest expected 0 got %i", app->size);
 		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryTimerRequest expected 0 got %i", app->size);

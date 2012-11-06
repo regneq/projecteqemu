@@ -2917,7 +2917,7 @@ void Client::SuspendMercCommand()
 				if(CurrentMerc->Suspend()) {
 					// Set merc suspended time for client & merc
 					CurrentMercInfo->IsSuspended = true;
-					CurrentMercInfo->SuspendedTime = Timer::GetCurrentTime() + 30000;
+					CurrentMercInfo->SuspendedTime = Timer::GetCurrentTime();
 					CurrentMercInfo->MercTimerRemaining = merc_timer.GetRemainingTime();
 					merc_timer.Disable();
 
@@ -2981,20 +2981,8 @@ bool Merc::Unsuspend() {
 		mercOwner->SendMercTimerPacket(GetID(), mercState, suspendedTime);
 
 		// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
-		MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
-		mas->MercEntityID = GetID();
-		mas->MercUnk01 = 1;		// Values seen on Live
-		mas->MercUnk02 = 2;		// Values seen on Live
-		mercOwner->FastQueuePacket(&outapp);
-
-		outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
-		MercenaryAssign_Struct* mas2 = (MercenaryAssign_Struct*)outapp->pBuffer;
-		mas2->MercEntityID = GetID();
-		mas2->MercUnk01 = 0;		// Values seen on Live
-		mas2->MercUnk02 = 13;	// Values seen on Live 0xd0
-		DumpPacket(outapp);
-		mercOwner->FastQueuePacket(&outapp);
+		mercOwner->SendMercAssignPacket(GetID(), 1, 2);
+		mercOwner->SendMercAssignPacket(GetID(), 0, 13);
 
 		mercOwner->SendMercDataPacket(GetMercTemplateID());
 	}
@@ -3244,23 +3232,31 @@ void Client::SendMercSuspendResponsePacket(int32 suspended_time) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenarySuspendResponse, sizeof(SuspendMercenaryResponse_Struct));
 	SuspendMercenaryResponse_Struct* smr = (SuspendMercenaryResponse_Struct*)outapp->pBuffer;
 	smr->SuspendTime = suspended_time;		// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
-	//smr->SuspendTime = 30000;		// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
 	
 	DumpPacket(outapp);
 	FastQueuePacket(&outapp);
 }
 
-void Client::SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time) {
+void Client::SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time, sint32 update_interval, sint32 unk01) {
 	// Send Mercenary Status/Timer packet
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
 	MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
 	mss->MercEntityID = entity_id; // Seen 0 (no merc spawned) or 615843841 and 22779137
-	mss->UpdateInterval = 900000; // Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
-	mss->MercUnk01 = 180000; // Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
+	mss->UpdateInterval = update_interval; // Seen 900000 - Matches from 0x6537 packet (15 minutes in ms?)
+	mss->MercUnk01 = unk01; // Seen 180000 - 3 minutes in milleseconds? Maybe next update interval?
 	mss->MercState = merc_state; // Seen 5 (normal) or 1 (suspended)
 	mss->SuspendedTime = suspended_time; // Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
 	
 	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+}
+
+void Client::SendMercAssignPacket(int32 entityID, int32 unk01, int32 unk02) {
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
+	MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
+	mas->MercEntityID = entityID;
+	mas->MercUnk01 = unk01;
+	mas->MercUnk02 = unk02;
 	FastQueuePacket(&outapp);
 }
 
