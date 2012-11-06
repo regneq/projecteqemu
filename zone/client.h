@@ -676,6 +676,7 @@ public:
 	void UntrainDisc(int slot, bool update_client = true);
 	void UntrainDiscAll(bool update_client = true);
 	bool SpellGlobalCheck(int16 Spell_ID, int16 Char_ID);
+	int32 GetCharMaxLevelFromQGlobal();
 
 	inline bool	IsSitting() const {return (playeraction == 1);}
 	inline bool	IsBecomeNPC() const { return npcflag; }
@@ -1102,8 +1103,9 @@ public:
 	void SetMerc(Merc* newmerc);
 	void SendMercDataPacket(int32 MercID);
 	void SendMercMerchantResponsePacket(sint32 response_type);
-	void SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time);
+	void SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time, sint32 update_interval = 900000, sint32 unk01 = 180000);
 	void SendMercSuspendResponsePacket(int32 suspended_time);
+	void SendMercAssignPacket(int32 entityID, int32 unk01, int32 unk02);
 	void SuspendMercCommand();
 	void UpdateMercTimer();
 
