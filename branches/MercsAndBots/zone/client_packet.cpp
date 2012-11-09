@@ -853,6 +853,8 @@ void Client::Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app)
 	//No idea why live sends this if even were not in a guild
 	SendGuildMOTD();
 
+	SpawnMercOnZone();
+
 	return;
 }
 
@@ -13035,63 +13037,8 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 
 	//client is requesting data about currently owned mercenary
 	if(merchant_id == 0) {
-		int mercTypeCount = 1;
-		int mercCount = 1;
-		int packetSize = 0;
-		int i=0;
 
-
-		MercenaryMerchantList_Struct* mml = new MercenaryMerchantList_Struct;
-		MercTemplate *mercData = GetMercTemplate();
-
-		if(mercData) {
-				if(mercTypeCount > 0)
-				{
-					mml->MercTypeCount = mercTypeCount;
-					mml->MercGrades = new MercenaryGrade_Struct[mercTypeCount];	// DBStringID for Type
-				}
-				mml->MercCount = mercCount;
-				if(mercCount > 0)
-				{
-					mml->Mercs = new MercenaryListEntry_Struct[mercCount];
-					mml->Mercs[i].MercID = mercData->MercTemplateID;				
-					mml->Mercs[i].MercType = mercData->MercType;			
-					mml->Mercs[i].MercSubType = mercData->MercSubType;		
-					mml->Mercs[i].PurchaseCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), 0);		
-					mml->Mercs[i].UpkeepCost = Merc::CalcUpkeepCost(mercData->MercTemplateID, GetLevel(), 0);		
-					mml->Mercs[i].Status = 0;				
-					mml->Mercs[i].AltCurrencyCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
-					mml->Mercs[i].AltCurrencyUpkeep = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
-					mml->Mercs[i].AltCurrencyType = altCurrentType;
-					mml->Mercs[i].MercUnk01 = 0;			
-					mml->Mercs[i].TimeLeft = -1;			
-					mml->Mercs[i].MerchantSlot = i + 1;
-					mml->Mercs[i].MercUnk02 = 1;			
-					mml->Mercs[i].StanceCount = zone->merc_stance_list[mercData->MercTemplateID].size();		
-					mml->Mercs[i].MercUnk03 = 0;		
-					mml->Mercs[i].MercUnk04 = 1;		
-					//mml->Mercs[i].MercName;
-					int stanceindex = 0;
-					if(mml->Mercs[i].StanceCount != 0)
-					{
-						mml->Mercs[i].Stances = new MercenaryStance_Struct[mml->Mercs[i].StanceCount];
-						list<MercStanceInfo>::iterator iter = zone->merc_stance_list[mercData->MercTemplateID].begin();
-						while(iter != zone->merc_stance_list[mercData->MercTemplateID].end())
-						{
-						mml->Mercs[i].Stances[stanceindex].StanceIndex = stanceindex;
-						mml->Mercs[i].Stances[stanceindex].Stance = (iter->StanceID);
-							stanceindex++;
-							iter++;
-						}
-					}
-
-					EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, 1); //Packet sizes are handled by the encoder.
-					outapp->pBuffer = (unsigned char*)mml;
-			//		DumpPacket(outapp);
-					FastQueuePacket(&outapp);
-			}
-		}
-		return;
+		//send info about your current merc(s)
 	}
 
 	DumpPacket(app);
@@ -13244,7 +13191,14 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(merc->GetID(), 1, 2);
 			SendMercAssignPacket(merc->GetID(), 0, 13);
-			//SendMercDataPacket(GetMercID());
+			if(GetClientVersion() >= EQClientUnderfoot)
+			{
+			SendMercDataPacket(GetMercID());
+			}
+			else
+			{
+			SendMercPersonalInfo();
+			}
 		}
 	}
 
@@ -13285,6 +13239,11 @@ void Client::Handle_OP_MercenaryCommand(const EQApplicationPacket *app)
 	uint32 merc_command = mc->MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 36 (zone in with merc)
 	sint32 option = mc->Option;	// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
 
+	if(option >= 0)
+	{
+		GetEPP().mercState = option;
+	}
+
 	DumpPacket(app);
 
 	Message(7, "Mercenary Debug: Command %i, Option %i received.", merc_command, option);
@@ -13310,7 +13269,16 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 	Message(7, "Mercenary Debug: Data Update Request Received.");
 
 	if(GetMercID())
+	{
+		if(GetClientVersion() >= EQClientUnderfoot)
+		{
 		SendMercDataPacket(GetMercID());
+		}
+		else
+		{
+		SendMercPersonalInfo();
+		}
+	}
 }
 
 void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
@@ -13373,9 +13341,9 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 		if(merc) {
 			entityID = merc->GetID();
 			
-			if(GetMercInfo()->IsSuspended) {
+			if(GetEPP().mercIsSuspended) {
 				mercState = 1;
-				suspendedTime = GetMercInfo()->SuspendedTime;
+				suspendedTime = GetEPP().mercSuspendedTime;
 			}
 	
 			// Send Mercenary Status/Timer packet

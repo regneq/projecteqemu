@@ -305,8 +305,6 @@ public:
 	inline Inventory& GetInv()				{ return m_inv; }
 	inline const Inventory& GetInv() const	{ return m_inv; }
 	inline PetInfo* GetPetInfo(int16 pet) { return (pet==1)?&m_suspendedminion:&m_petinfo; }
-	inline MercInfo* GetMercInfo() { return &m_mercinfo; }
-	MercTemplate* GetMercTemplate() { return&m_mercinfo.MercTemplate; }
 	bool	CheckAccess(sint16 iDBLevel, sint16 iDefaultLevel);
 
 	void	CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
@@ -1106,7 +1104,9 @@ public:
 	void SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time, sint32 update_interval = 900000, sint32 unk01 = 180000);
 	void SendMercSuspendResponsePacket(int32 suspended_time);
 	void SendMercAssignPacket(int32 entityID, int32 unk01, int32 unk02);
+	void SendMercPersonalInfo();
 	void SuspendMercCommand();
+	void SpawnMercOnZone();
 	void UpdateMercTimer();
 
 	char* GetRacePlural(Client* client);

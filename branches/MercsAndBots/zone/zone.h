@@ -176,6 +176,7 @@ public:
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 	map<uint32,std::list<MercStanceInfo> > merc_stance_list;
+	map<uint32, MercTemplate> merc_templates;
 	list<InternalVeteranReward> VeteranRewards;
     list<AltCurrencyDefinition_Struct> AlternateCurrencies;
 	char *adv_data;
@@ -292,8 +293,6 @@ private:
 	QGlobalCache *qGlobals;
 	
 	Mutex	MZoneLock;
-
-	std::map<uint32, MercTemplate> merc_templates;
 };
 
 #endif
