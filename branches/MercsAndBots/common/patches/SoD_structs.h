@@ -4206,6 +4206,10 @@ struct AltCurrencySellItem_Struct {
 /*010*/ uint32 cost;
 };
 
+struct MercenaryGrade_Struct {
+uint32 GradeCountEntry;	
+};
+
 // Used by MercenaryListEntry_Struct
 struct MercenaryStance_Struct {
 /*0000*/	int32	StanceIndex;	// Index of this stance (sometimes reverse reverse order - 3, 2, 1, 0 for 4 stances etc)
@@ -4224,7 +4228,7 @@ struct MercenaryListEntry_Struct {
 /*0028*/	int32	AltCurrencyType;	// Alternate Currency Type? - 19^17^Bayle Mark^0 - Seen 19
 /*0032*/	int32	StanceCount;		// Iterations of MercenaryStance_Struct - Normally 2 to 4 seen
 /*0036*/	sint32	TimeLeft;			// Unknown (always see -1 at merchant) - Seen 900000 (15 minutes in ms for newly hired merc)
-/*0040*/	MercenaryStance_Struct Stances[1];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0040*/	MercenaryStance_Struct* Stances;	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 };
 
 // [OPCode: 0x27ac OP_MercenaryDataResponse] On Live as of April 2 2012 [Server->Client]
@@ -4232,9 +4236,9 @@ struct MercenaryListEntry_Struct {
 // Sent by the server when browsing the Mercenary Merchant
 struct MercenaryMerchantList_Struct {
 /*0000*/	int32	MercTypeCount;			// Number of Merc Types to follow
-/*0004*/	int32	MercTypes[1];			// Count varies, but hard set to 3 for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/	MercenaryGrade_Struct* MercGrades;	// Count varies, but hard set to 3 max for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
 /*0016*/	int32	MercCount;				// Number of MercenaryInfo_Struct to follow
-/*0020*/	MercenaryListEntry_Struct Mercs[0];	// Data for individual mercenaries in the Merchant List
+/*0020*/	MercenaryListEntry_Struct* Mercs;	// Data for individual mercenaries in the Merchant List
 };
 
 // [OPCode: 0x4dd9 OP_MercenaryDataRequest] On Live as of April 2 2012 [Client->Server]

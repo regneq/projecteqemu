@@ -678,13 +678,9 @@ void Zone::LoadMercTemplates(){
 			tempMercTemplate.CostFormula = atoi(DataRow[6]);
 			tempMercTemplate.ClientVersion = atoi(DataRow[7]);
 
-			for(int i=0; i<MaxMercStanceID; i++) {
-				tempMercTemplate.Stances[i] = 0;
-			}
-
 			for(std::list<MercStanceInfo>::iterator mercStanceListItr = merc_stances.begin(); mercStanceListItr != merc_stances.end(); mercStanceListItr++) {
 				if(mercStanceListItr->ClassID == tempMercTemplate.ClassID && mercStanceListItr->ProficiencyID == tempMercTemplate.ProficiencyID) {
-					tempMercTemplate.Stances[mercStanceListItr->StanceID -1] = 1;
+					zone->merc_stance_list[tempMercTemplate.MercTemplateID].push_back((*mercStanceListItr));
 				}
 			}
 

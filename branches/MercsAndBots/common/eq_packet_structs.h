@@ -4774,6 +4774,11 @@ struct MercenaryStance_Struct {
 /*0004*/	int32	Stance;			// From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 };
 
+//Not an EQ packet, just a single int for the mercenary merchant structure.
+struct MercenaryGrade_Struct {
+uint32 GradeCountEntry;	
+};
+
 // Used by MercenaryMerchantList_Struct
 struct MercenaryListEntry_Struct {
 /*0000*/	int32	MercID;				// ID unique to each type of mercenary (probably a DB id)
@@ -4793,7 +4798,7 @@ struct MercenaryListEntry_Struct {
 /*0053*/	sint32	MercUnk03;			// Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0057*/	int8	MercUnk04;			// Seen 1 
 /*0058*/	char	MercName[1];		// Null Terminated Mercenary Name (00 at merchants)
-/*0000*/	MercenaryStance_Struct Stances[5];	// Count Varies, but hard set to 5 max for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0000*/	MercenaryStance_Struct* Stances;	// Count Varies, but hard set to 5 max for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 };
 
 // [OPCode: 0x27ac OP_MercenaryDataResponse] On Live as of April 2 2012 [Server->Client]
@@ -4801,9 +4806,9 @@ struct MercenaryListEntry_Struct {
 // Sent by the server when browsing the Mercenary Merchant
 struct MercenaryMerchantList_Struct {
 /*0000*/	int32	MercTypeCount;			// Number of Merc Types to follow
-/*0004*/	int32	MercTypes[3];			// Count varies, but hard set to 3 max for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/	MercenaryGrade_Struct* MercGrades;	// Count varies, but hard set to 3 max for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
 /*0016*/	int32	MercCount;				// Number of MercenaryInfo_Struct to follow
-/*0020*/	MercenaryListEntry_Struct Mercs[0];	// Data for individual mercenaries in the Merchant List
+/*0020*/	MercenaryListEntry_Struct* Mercs;	// Data for individual mercenaries in the Merchant List
 };
 
 // [OPCode: 0x4dd9 OP_MercenaryDataRequest] On Live as of April 2 2012 [Client->Server]
@@ -4833,7 +4838,7 @@ struct MercenaryData_Struct {
 /*0053*/	sint32	MercUnk03;			// Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0057*/	int8	MercUnk04;			// Seen 1 
 /*0058*/	char	MercName[1];		// Null Terminated Mercenary Name (00 at merchants)
-/*0000*/	MercenaryStance_Struct Stances[5];	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0000*/	MercenaryStance_Struct* Stances;	// Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 /*0000*/	int32	MercUnk05;			// Seen 1 - Extra Merc Data field that differs from MercenaryListEntry_Struct
 // MercUnk05 may be a field that is at the end of the packet only, even if multiple mercs are listed (haven't seen examples of multiple mercs owned at once)
 };
@@ -4905,14 +4910,36 @@ struct MercenaryMerchantRequest_Struct {
 /*0000*/	int32	MercID;			// Seen 399 and 400 for merc ID
 /*0004*/	int32	MercUnk01;		// Seen 1
 /*0008*/	int32	MercMerchantID;	// Entity ID for Mercenary Merchant
-/*0012*/	int32	MercUnk02;		// Seen 65302016 (00 6e e4 03) - (probably actually individual int8 fields)
+/*0012*/	int32	MercUnk02;		// Seen 65302016 (00 6e e4 03) - (probably actually individual int8 fields), but seen as DWORD in Seeds client.
 /*0016*/
 };
 
 // [OPCode: 0x5e78 (OP_MercenaryHire?)] On Live as of April 2 2012
+/*
+Valid response IDs:
+
+0 - Hire me! (Assign Merc after sending this.)
+1 - Insufficient money message.
+2 - Mercenary-To-Hire does not exist in the server's DB.
+3 - Mercenary failed to spawn. (this actually tells us the mercenary should spawn BEFORE recieving this packet.)
+4 - Mercenaries not allowed in raids.
+5 - You already have a mercenary request pending
+6 - You must dismiss the mercenary before hiring a new one.
+7 - You must dismiss your suspended one before hiring a new one.
+8 - Group is full.
+9 - Error creating mercenary
+10 - Replacing mercenary(?!)
+11 - Your mercenary has quit! You ran out of money to pay for your mercenary!
+12 - Your mercenary waived an upkeep cost of %d plat, and %d gold and your mercenary upkeep cost timer has been reset to %s. <-- these values are for GM resets of mercenaries and are generated from the client's
+mercenary info. NOT from the packet.
+13 - Your mercenary is about to be quit due to insufficient funds! <--- Sent before the mercenary quits, unsure of time sent before.
+14 - There is no mercenary liason nearby! <-- hacking attempt check if no mercenary merchant is in the zone!
+15 - You are too far away from the liason! <-- Liason exists as type in the zone, but client is too far away. (position update happened)
+16 - You do not meet the requirements for that mercenary! <-- For example, if a mercenary is 'unlocked' in some way, send this if they do not have the mercenary unlock.
+*/
 // Sent by Server in response to requesting to view Mercenary info or Hire a Mercenary
 struct MercenaryMerchantResponse_Struct {
-/*0000*/	int32	ResponseType;	// Seen 0 for hire response, 6 for info response, and 9 for denied hire request
+/*0000*/	int32	ResponseType;
 /*0004*/
 };
 
