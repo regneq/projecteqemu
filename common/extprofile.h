@@ -21,8 +21,8 @@
 #include "eq_packet_structs.h"
 #include "Item.h"
 
-#pragma pack(1)
 
+#pragma pack(1)
 
 /*
 	This is a place to store data that dosent have a home in the
@@ -49,6 +49,12 @@ struct ExtendedProfile_Struct {
 	uint32				expended_aa;		// Total of expended AA
 	uint32				pet_hp;
 	uint32				pet_mana;
+	uint32				mercTemplateID;
+	int32				mercSuspendedTime;
+	bool				mercIsSuspended;
+	int32				mercTimerRemaining;
+	uint8				mercGender;
+	sint32				mercState;
 };
 
 #pragma pack()

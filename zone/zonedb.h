@@ -118,11 +118,12 @@ struct MercTemplate {
 };
 
 struct MercInfo {
-	struct MercTemplate MercTemplate;
+	MercTemplate myTemplate;
 	int32	SuspendedTime;
 	bool	IsSuspended;
 	int32	MercTimerRemaining;
 	uint8	Gender;
+	sint32	State;
 };
 
 

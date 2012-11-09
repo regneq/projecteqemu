@@ -98,6 +98,13 @@ RULE_BOOL ( Character, EnableXTargetting, true) // Enable Extended Targetting Wi
 
 RULE_CATEGORY_END()
 
+RULE_CATEGORY( Mercs )
+RULE_INT (Mercs, SuspendIntervalMS, 900000)
+RULE_INT (Mercs, UpkeepIntervalMS,  180000)
+RULE_INT (Mercs, SuspendIntervalS, 300)
+RULE_INT (Mercs, UpkeepIntervalS, 300)
+RULE_CATEGORY_END()
+
 RULE_CATEGORY( Guild )
 RULE_INT ( Guild, MaxMembers, 2048 )
 RULE_BOOL ( Guild, PlayerCreationAllowed, false)	// Allow players to create a guild using the window in Underfoot+

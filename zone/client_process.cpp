@@ -235,8 +235,11 @@ bool Client::Process() {
 			}
 		}
 
-		if(merc_timer.Check()) {
-			UpdateMercTimer();
+		if(GetMerc())
+		{
+			if(p_timers.Expired(&database, pTimerMercReuse, false)) {
+				UpdateMercTimer();
+			}
 		}
 		
 		if(IsAIControlled())
