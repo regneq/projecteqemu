@@ -2259,10 +2259,7 @@ void Merc::AI_Process() {
 
 				if(follow) {
 					float dist = DistNoRoot(*follow);
-					float speed = follow->GetRunspeed();
-
-					if(dist < GetFollowDistance() + 1000) 
-						speed = follow->GetWalkspeed();
+					float speed = 1.88; //Change this to a rule for merc runspeed at some point.
 
 					SetRunAnimSpeed(0);
 
@@ -2792,7 +2789,7 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 		npc_type->drakkin_details = 0;
 		npc_type->drakkin_heritage = 0;
 		npc_type->drakkin_tattoo = 0;
-		npc_type->runspeed = 1.25;
+		npc_type->runspeed = 1.88;
 		npc_type->findable = 0;
 		npc_type->hp_regen = 1;
 		npc_type->mana_regen = 1;

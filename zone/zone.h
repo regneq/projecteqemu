@@ -175,6 +175,7 @@ public:
 	map<uint32,std::string> adventure_entry_list_flavor;
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
+	map<uint32,std::list<MercStanceInfo> > merc_stance_list;
 	list<InternalVeteranReward> VeteranRewards;
     list<AltCurrencyDefinition_Struct> AlternateCurrencies;
 	char *adv_data;

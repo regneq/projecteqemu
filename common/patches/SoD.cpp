@@ -1267,7 +1267,9 @@ ENCODE(OP_MercenaryDataResponse) {
 	char *Buffer = (char *) in->pBuffer;
 
 	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
-	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
+
+	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - 4) * emu->MercCount;
+
 
 	int r;
 	int k;
@@ -1282,26 +1284,35 @@ ENCODE(OP_MercenaryDataResponse) {
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypeCount);
 	for(r = 0; r < emu->MercTypeCount; r++)
 	{
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypes[r]);
+		if(emu->MercTypeCount > 0)
+		{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercGrades[r].GradeCountEntry);
+		}
 	}
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
 
-	for(r = 0; r < emu->MercCount; r++)
+	if(emu->MercCount)
 	{
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercID);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercSubType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].PurchaseCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].UpkeepCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
-		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
-		for(k = 0; k < emu->Mercs[r].StanceCount; k++)
+		for(r = 0; r < emu->MercCount; r++)
 		{
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].StanceIndex);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].Stance);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercID);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercType);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercSubType);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].PurchaseCost);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].UpkeepCost);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyCost);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
+			VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
+			if(emu->Mercs[r].StanceCount > 0)
+			{
+				for(k = 0; k < emu->Mercs[r].StanceCount; k++)
+				{
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].StanceIndex);
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].Stance);
+				}
+			}
 		}
 	}
 
