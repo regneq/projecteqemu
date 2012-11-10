@@ -170,7 +170,7 @@ Client::Client(EQStreamInterface* ieqs)
 	qglobal_purge_timer(30000),
 	TrackingTimer(2000),
 	RespawnFromHoverTimer(0),
-	merc_timer(900000)
+	merc_timer(5000)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;

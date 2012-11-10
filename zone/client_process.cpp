@@ -241,6 +241,18 @@ bool Client::Process() {
 				UpdateMercTimer();
 			}
 		}
+
+		if(GetEPP().mercTemplateID != 0)
+		{
+			if(GetEPP().mercIsSuspended == true)
+			{
+				p_timers.Disable(pTimerMercReuse);
+			}
+
+			if(p_timers.Expired(&database, pTimerMercSuspend, false)) {
+				CheckMercSuspendTimer();
+			}
+		}
 		
 		if(IsAIControlled())
 			AI_Process();

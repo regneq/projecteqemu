@@ -49,6 +49,7 @@ enum {	//values for pTimerType
 	pTimerItemEnd = 200, //I don't think any items would use one this high but hey, incase.
     pTimerPeqzoneReuse = 900,
 	pTimerMercReuse = 901,
+	pTimerMercSuspend = 902,
 	pTimerAAStart = 1000,		//AA re-use timers
 	pTimerAAEnd = 2999,
 	pTimerAAEffectStart = 3001,	//AA effect timers
