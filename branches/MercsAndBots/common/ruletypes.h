@@ -99,10 +99,10 @@ RULE_BOOL ( Character, EnableXTargetting, true) // Enable Extended Targetting Wi
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Mercs )
-RULE_INT (Mercs, SuspendIntervalMS, 900000)
+RULE_INT (Mercs, SuspendIntervalMS, 10000)
 RULE_INT (Mercs, UpkeepIntervalMS,  180000)
-RULE_INT (Mercs, SuspendIntervalS, 300)
-RULE_INT (Mercs, UpkeepIntervalS, 300)
+RULE_INT (Mercs, SuspendIntervalS, 10)
+RULE_INT (Mercs, UpkeepIntervalS, 180)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )

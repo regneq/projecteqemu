@@ -779,6 +779,7 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 
 	//No idea why live sends this if even were not in a guild
 	SendGuildMOTD();
+	SpawnMercOnZone();
 
 	return;
 }
@@ -13185,8 +13186,15 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 			// TODO: Populate these packets properly instead of hard coding the data fields.
 
+
+			//Clear the timers because we're hiring a new merc, the old merc's timers are no longer relevant to this character.
+			if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
+						p_timers.Clear(&database, pTimerMercSuspend);
+			if(!p_timers.Expired(&database, pTimerMercReuse, false))
+						p_timers.Clear(&database, pTimerMercReuse);
+
 			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(1, 5, 0);
+			SendMercTimerPacket(GetID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(merc->GetID(), 1, 2);
@@ -13347,7 +13355,7 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 			}
 	
 			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(entityID, mercState, suspendedTime);
+			SendMercTimerPacket(entityID, mercState, suspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 		}
 	}
 }
