@@ -2148,12 +2148,15 @@ bool Merc::Process()
 		this->stunned_timer.Disable();
 	}
 
+	if (p_depop)
+    {
+		SetOwnerID(0);
+		SetMercID(0);
+		return false;
+    }
+
 	if(!GetMercOwner())
 		return false;
-
-	if (GetDepop()) {
-		return false;
-	}
 
 	if(IsSuspended()) {
 		//return false;
@@ -2719,7 +2722,8 @@ void Merc::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_sk
 Client* Merc::GetMercOwner() {
 	Client* mercOwner = 0;
 
-	if(GetOwnerID()) {
+	if(GetOwner())
+	{
 		mercOwner = GetOwner()->CastToClient();
 	}
 
@@ -3077,6 +3081,12 @@ void Merc::Zone() {
 	if(HasGroup()) {
 		GetGroup()->MemberZoned(this);
 	}
+
+	if(IsGrouped()) { //Names and IDs will change as a result of mercs being in a group.
+		RemoveMercFromGroup(this, GetGroup());
+	}
+
+	SetMercID(0);
 
 	//Save();
 	Depop();
