@@ -6855,7 +6855,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	int32 PetCommand = pet->command;
 
 	// Handle Sit/Stand toggle in UF and later.
-	if(GetClientVersion() >= EQClientUnderfoot)
+	if(GetClientVersion() > EQClientHoT)
 	{
 		if(PetCommand == PET_SITDOWN)
 			if(mypet->GetPetOrder() == SPO_Sit)
@@ -13197,7 +13197,8 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			SendMercAssignPacket(merc->GetID(), 1, 2);
 			SendMercAssignPacket(merc->GetID(), 0, 13);
 			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
-			if(GetClientVersion() >= EQClientUnderfoot)
+			GetEPP().mercState = 0;
+			if(GetClientVersion() > EQClientUnderfoot)
 			{
 			SendMercDataPacket(GetMercID());
 			}
@@ -13276,7 +13277,7 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 
 	if(GetMercID())
 	{
-		if(GetClientVersion() >= EQClientUnderfoot)
+		if(GetClientVersion() > EQClientHoT)
 		{
 		SendMercDataPacket(GetMercID());
 		}
@@ -13353,7 +13354,7 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 			}
 	
 			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(entityID, mercState, suspendedTime);
+			SendMercTimerPacket(entityID, mercState, suspendedTime, GetEPP().mercSuspendedTime, p_timers.GetRemainingTime(pTimerMercSuspend));
 		}
 	}
 }
