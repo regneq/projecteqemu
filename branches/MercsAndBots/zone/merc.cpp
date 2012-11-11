@@ -2978,27 +2978,25 @@ void Client::SpawnMercOnZone()
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(GetID(), 1, 2);
 			SendMercAssignPacket(GetID(), 0, 13);
-			SendMercDataPacket(GetMercID());
 			SendMercPersonalInfo();
 			SendMercMerchantResponsePacket(0);
 		}
 		else
 		{
 				// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
+			SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend) * 1000);
 
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(GetID(), 1, 2);
 			SendMercAssignPacket(GetID(), 0, 13);
 
 			SendMercPersonalInfo();
-
 			if(GetEPP().mercSuspendedTime != 0) {
 				if(time(NULL) >= GetEPP().mercSuspendedTime){
 				GetEPP().mercSuspendedTime = 0;
-				SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
 				}
 			}
+			SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
 			SendMercMerchantResponsePacket(0);
 		}
 	}
@@ -3231,65 +3229,6 @@ void Client::SetMerc(Merc* newmerc) {
 		GetEPP().mercSuspendedTime = 0;
 		GetEPP().mercGender = newmerc->GetGender();
 	}
-}
-
-void Client::SendMercDataPacket(int32 MercID) {
-	// Hard setting some stuff until it can be coded to load properly from the DB/Memory
-	int mercCount = 1;
-	int stanceCount = 2;
-	int32 altCurrentType = 19;
-	char mercName[32];	// This actually needs to be null terminated
-	strcpy(mercName, GetRandPetName());
-	
-	uint32 packetSize = sizeof(MercenaryDataUpdate_Struct) + sizeof(MercenaryData_Struct) * mercCount + strlen(mercName);
-	
-	// This response packet seems to be sent on zoning or camping by client request
-	// It is populated with owned merc data only
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, packetSize);
-	MercenaryDataUpdate_Struct* mdu = (MercenaryDataUpdate_Struct*)outapp->pBuffer;
-
-	mdu->MercStatus = 0;
-	mdu->MercCount = mercCount;
-
-	MercTemplate *mercData = &zone->merc_templates[MercID];
-
-	for(int i = 0; i < mercCount; i++)
-	{
-		mdu->MercData[i].MercID = MercID;
-		mdu->MercData[i].MercType = mercData->MercType;
-		mdu->MercData[i].MercSubType = mercData->MercSubType;
-		mdu->MercData[i].PurchaseCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, this->GetLevel());
-		mdu->MercData[i].UpkeepCost = Merc::CalcUpkeepCost(mercData->MercTemplateID, this->GetLevel());
-		mdu->MercData[i].Status = 0;
-		mdu->MercData[i].AltCurrencyCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, this->GetLevel(), altCurrentType);
-		mdu->MercData[i].AltCurrencyUpkeep = Merc::CalcUpkeepCost(mercData->MercTemplateID, this->GetLevel(), altCurrentType);
-		mdu->MercData[i].AltCurrencyType = altCurrentType;
-		mdu->MercData[i].MercUnk01 = 0;
-		mdu->MercData[i].TimeLeft = merc_timer.GetRemainingTime();
-		mdu->MercData[i].MerchantSlot = 1;
-		mdu->MercData[i].MercUnk02 = 1;
-		mdu->MercData[i].StanceCount = stanceCount;
-		mdu->MercData[i].MercUnk03 = 519044964;
-		mdu->MercData[i].MercUnk04 = 1;
-		strcpy(mdu->MercData[i].MercName, mercName);
-		for (int stanceindex = 0; stanceindex < stanceCount; stanceindex++)
-		{
-			mdu->MercData[i].Stances = new MercenaryStance_Struct[mdu->MercData[i].StanceCount];
-			list<MercStanceInfo>::iterator iter = zone->merc_stance_list[mdu->MercData[i].MercID].begin();
-			while(iter != zone->merc_stance_list[MercID].end())
-			{
-				mdu->MercData[i].Stances[stanceindex].StanceIndex = stanceindex;
-				mdu->MercData[i].Stances[stanceindex].Stance = (iter->StanceID);
-				stanceindex++;
-				iter++;
-			}
-		}
-		mdu->MercData[i].MercUnk05 = 1;
-		i++;
-	}
-
-	DumpPacket(outapp);
-	FastQueuePacket(&outapp); 
 }
 
 void Client::SendMercMerchantResponsePacket(sint32 response_type) {
