@@ -2930,6 +2930,7 @@ void Client::SuspendMercCommand()
 					merc_timer.Start(GetEPP().mercTimerRemaining);
 					if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
 						p_timers.Clear(&database, pTimerMercSuspend);
+						SendMercPersonalInfo();
 						SendMercMerchantResponsePacket(0);
 				}
 			}

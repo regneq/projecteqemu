@@ -13198,14 +13198,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			SendMercAssignPacket(merc->GetID(), 0, 13);
 			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
 			GetEPP().mercState = 0;
-			if(GetClientVersion() > EQClientUnderfoot)
-			{
-			SendMercDataPacket(GetMercID());
-			}
-			else
-			{
 			SendMercPersonalInfo();
-			}
 		}
 	}
 
@@ -13277,14 +13270,7 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 
 	if(GetMercID())
 	{
-		if(GetClientVersion() > EQClientHoT)
-		{
-		SendMercDataPacket(GetMercID());
-		}
-		else
-		{
 		SendMercPersonalInfo();
-		}
 	}
 }
 
