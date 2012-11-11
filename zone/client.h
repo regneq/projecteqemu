@@ -1099,7 +1099,6 @@ public:
 	void SetMercID( int32 newmercid) { mercid = newmercid; }
 	Merc* GetMerc();
 	void SetMerc(Merc* newmerc);
-	void SendMercDataPacket(int32 MercID);
 	void SendMercMerchantResponsePacket(sint32 response_type);
 	void SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time, sint32 update_interval = 900000, sint32 unk01 = 180000);
 	void SendMercSuspendResponsePacket(int32 suspended_time);
