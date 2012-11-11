@@ -2889,6 +2889,8 @@ void Client::UpdateMercTimer()
 			{
 			int32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
 			//TakeMoneyFromPP(upkeep, true);
+			// Send Mercenary Status/Timer packet
+			SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 			SendMercMerchantResponsePacket(10);
 			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
 			merc_timer.Start(GetEPP().mercTimerRemaining);
@@ -2970,39 +2972,25 @@ void Client::SpawnMercOnZone()
 			merc_timer.Start(GetEPP().mercTimerRemaining);
 
 			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+			SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
 
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(GetID(), 1, 2);
 			SendMercAssignPacket(GetID(), 0, 13);
-
-			if(GetClientVersion() >= EQClientUnderfoot)
-			{
-				SendMercDataPacket(GetMercID());
-			}
-			else
-			{
-				SendMercPersonalInfo();
-			}
+			SendMercDataPacket(GetMercID());
+			SendMercPersonalInfo();
 			SendMercMerchantResponsePacket(0);
 		}
 		else
 		{
 				// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+			SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
 
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(GetID(), 1, 2);
 			SendMercAssignPacket(GetID(), 0, 13);
 
-			if(GetClientVersion() >= EQClientUnderfoot)
-			{
-				SendMercDataPacket(GetMercID());
-			}
-			else
-			{
-				SendMercPersonalInfo();
-			}
+			SendMercPersonalInfo();
 
 			if(GetEPP().mercSuspendedTime != 0) {
 				if(time(NULL) >= GetEPP().mercSuspendedTime){
@@ -3061,7 +3049,7 @@ bool Merc::Unsuspend() {
 		// TODO: Populate these packets properly instead of hard coding the data fields.
 
 		// Send Mercenary Status/Timer packet
-		mercOwner->SendMercTimerPacket(GetID(), mercState, suspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+		mercOwner->SendMercTimerPacket(GetID(), mercState, suspendedTime, mercOwner->GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
 
 		// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 		mercOwner->SendMercAssignPacket(GetID(), 1, 2);
@@ -3229,7 +3217,7 @@ void Client::SetMerc(Merc* newmerc) {
 		GetEPP().mercTimerRemaining = 0;
 		GetEPP().mercSuspendedTime = 0;
 		GetEPP().mercGender = 0;
-		GetEPP().mercState = -1;
+		GetEPP().mercState = 0;
 	} else {
 		SetMercID(newmerc->GetID());
 		Client* oldowner = entity_list.GetClientByID(newmerc->GetOwnerID());
