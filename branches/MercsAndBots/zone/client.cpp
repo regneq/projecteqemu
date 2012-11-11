@@ -170,7 +170,7 @@ Client::Client(EQStreamInterface* ieqs)
 	qglobal_purge_timer(30000),
 	TrackingTimer(2000),
 	RespawnFromHoverTimer(0),
-	merc_timer(5000)
+	merc_timer(RuleI(Mercs, UpkeepIntervalMS))
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
@@ -555,6 +555,15 @@ bool Client::Save(int8 iCommitNow) {
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
 	m_pp.RestTimer = rest_timer.GetRemainingTime() / 1000;
+
+	if(GetEPP().mercTimerRemaining > RuleI(Mercs, UpkeepIntervalMS))
+		GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
+
+	if(merc_timer.Enabled())
+	{
+		GetEPP().mercTimerRemaining = merc_timer.GetRemainingTime();
+	}
+
 	m_pp.lastlogin = time(NULL);
 	if (pQueuedSaveWorkID) {
 		dbasync->CancelWork(pQueuedSaveWorkID);
@@ -7056,7 +7065,7 @@ void Client::SendMercPersonalInfo()
 					mml->Mercs[i].AltCurrencyUpkeep = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
 					mml->Mercs[i].AltCurrencyType = altCurrentType;
 					mml->Mercs[i].MercUnk01 = 0;			
-					mml->Mercs[i].TimeLeft = GetEPP().mercTimerRemaining;			
+					mml->Mercs[i].TimeLeft = GetEPP().mercSuspendedTime;			
 					mml->Mercs[i].MerchantSlot = i + 1;
 					mml->Mercs[i].MercUnk02 = 1;			
 					mml->Mercs[i].StanceCount = zone->merc_stance_list[mercData->MercTemplateID].size();		
@@ -7082,6 +7091,7 @@ void Client::SendMercPersonalInfo()
 			//		DumpPacket(outapp);
 					FastQueuePacket(&outapp);
 			}
+			SendMercMerchantResponsePacket(0);
 		}
 		return;
 }

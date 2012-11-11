@@ -2884,11 +2884,15 @@ void Client::UpdateMercTimer()
 {
 	Merc *merc =  GetMerc();
 
-	if(merc && !merc->IsSuspended()) {
-		int32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
-		//TakeMoneyFromPP(upkeep, true);
-		SendMercMerchantResponsePacket(10);
-		p_timers.Start(pTimerMercReuse, RuleI(Mercs, UpkeepIntervalS));
+	if(merc && !merc->IsSuspended()) {		
+			if(merc_timer.Check())
+			{
+			int32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
+			//TakeMoneyFromPP(upkeep, true);
+			SendMercMerchantResponsePacket(10);
+			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
+			merc_timer.Start(GetEPP().mercTimerRemaining);
+			}
 	}
 }
 
@@ -2911,20 +2915,20 @@ void Client::SuspendMercCommand()
 	{
 		if(GetEPP().mercIsSuspended) {
 				GetEPP().mercIsSuspended = false;
-				p_timers.Enable(pTimerMercReuse);
+				//p_timers.Enable(pTimerMercReuse);
 				GetEPP().mercSuspendedTime = 0;
-				//merc_timer.SetTimer(CurrentMercInfo->MercTimerRemaining);		//check for enable/disable first
 			
 				// Get merc, assign it to client & spawn
 				Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
 				merc->Spawn(this);
 				merc->SetSuspended(false);
 				SetMerc(merc);
-		
 				if(merc->Unsuspend())
 				{
+					merc_timer.Start(GetEPP().mercTimerRemaining);
 					if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
 						p_timers.Clear(&database, pTimerMercSuspend);
+						SendMercMerchantResponsePacket(0);
 				}
 			}
 		
@@ -2936,14 +2940,18 @@ void Client::SuspendMercCommand()
 					// Set merc suspended time for client & merc
 					GetEPP().mercIsSuspended = true;
 					GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
+					GetEPP().mercTimerRemaining = merc_timer.GetRemainingTime();
+					merc_timer.Disable();
 					UpdateMercTimer();
 					SetMercID(0);
-					Save(0);
+					p_timers.Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
 					SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
+					SendMercMerchantResponsePacket(0);
 				}
 			}
 		}
 	}
+	Save(0);
 }
 
 void Client::SpawnMercOnZone()
@@ -2959,6 +2967,7 @@ void Client::SpawnMercOnZone()
 			merc->Spawn(this);
 			merc->SetSuspended(false);
 			SetMerc(merc);
+			merc_timer.Start(GetEPP().mercTimerRemaining);
 
 			// Send Mercenary Status/Timer packet
 			SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
@@ -2975,6 +2984,7 @@ void Client::SpawnMercOnZone()
 			{
 				SendMercPersonalInfo();
 			}
+			SendMercMerchantResponsePacket(0);
 		}
 		else
 		{
@@ -2985,7 +2995,6 @@ void Client::SpawnMercOnZone()
 			SendMercAssignPacket(GetID(), 1, 2);
 			SendMercAssignPacket(GetID(), 0, 13);
 
-
 			if(GetClientVersion() >= EQClientUnderfoot)
 			{
 				SendMercDataPacket(GetMercID());
@@ -2994,6 +3003,14 @@ void Client::SpawnMercOnZone()
 			{
 				SendMercPersonalInfo();
 			}
+
+			if(GetEPP().mercSuspendedTime != 0) {
+				if(time(NULL) >= GetEPP().mercSuspendedTime){
+				GetEPP().mercSuspendedTime = 0;
+				SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
+				}
+			}
+			SendMercMerchantResponsePacket(0);
 		}
 	}
 }
@@ -3259,7 +3276,7 @@ void Client::SendMercDataPacket(int32 MercID) {
 		mdu->MercData[i].AltCurrencyUpkeep = Merc::CalcUpkeepCost(mercData->MercTemplateID, this->GetLevel(), altCurrentType);
 		mdu->MercData[i].AltCurrencyType = altCurrentType;
 		mdu->MercData[i].MercUnk01 = 0;
-		mdu->MercData[i].TimeLeft = GetEPP().mercTimerRemaining;
+		mdu->MercData[i].TimeLeft = merc_timer.GetRemainingTime();
 		mdu->MercData[i].MerchantSlot = 1;
 		mdu->MercData[i].MercUnk02 = 1;
 		mdu->MercData[i].StanceCount = stanceCount;
