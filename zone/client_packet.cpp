@@ -13190,15 +13190,13 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			//Clear the timers because we're hiring a new merc, the old merc's timers are no longer relevant to this character.
 			if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
 						p_timers.Clear(&database, pTimerMercSuspend);
-			if(!p_timers.Expired(&database, pTimerMercReuse, false))
-						p_timers.Clear(&database, pTimerMercReuse);
-
 			// Send Mercenary Status/Timer packet
 			SendMercTimerPacket(GetID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 
 			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
 			SendMercAssignPacket(merc->GetID(), 1, 2);
 			SendMercAssignPacket(merc->GetID(), 0, 13);
+			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
 			if(GetClientVersion() >= EQClientUnderfoot)
 			{
 			SendMercDataPacket(GetMercID());
@@ -13355,7 +13353,7 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 			}
 	
 			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(entityID, mercState, suspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+			SendMercTimerPacket(entityID, mercState, suspendedTime);
 		}
 	}
 }
