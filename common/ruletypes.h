@@ -103,6 +103,7 @@ RULE_INT (Mercs, SuspendIntervalMS, 10000)
 RULE_INT (Mercs, UpkeepIntervalMS,  180000)
 RULE_INT (Mercs, SuspendIntervalS, 10)
 RULE_INT (Mercs, UpkeepIntervalS, 180)
+RULE_BOOL ( Mercs, MercGroupXP, false ) // Determines whether client gets xp for bots outside their group.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )

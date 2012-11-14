@@ -1,25 +1,14 @@
 #ifndef MERC_H
 #define MERC_H
-
 #include "mob.h"
 #include "zonedb.h"
-
+#include "npc.h"
 using namespace std;
 
-struct MercType {
-	uint32	Type;
-	uint32	ClientVersion;		
-};
 
-struct MercData {
-	uint32	MercTemplateID;
-	uint32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
-	uint32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
-	uint32	CostFormula;			// To determine cost to client
-	uint32	ClientVersion;				// Only send valid mercs per expansion
-};
+const int MercAISpellRange = 100; // TODO: Write a method that calcs what the merc's spell range is based on spell, equipment, AA, whatever and replace this
 
-class Merc : public Mob {
+class Merc : public NPC {
 public:
 	Merc(const NPCType* d, float x, float y, float z, float heading);
 	virtual ~Merc();
@@ -34,8 +23,6 @@ public:
 	virtual Group* GetGroup() { return entity_list.GetGroupByMob(this); }
 
 	// Mob AI Virtual Override Methods
-	virtual void AI_Init();
-	virtual void AI_Start(int32 iMoveDelay = 0);
 	virtual void AI_Stop();
 	virtual void AI_Process();
 
@@ -44,6 +31,7 @@ public:
 	// Static Merc Group Methods
 	static bool AddMercToGroup(Merc* merc, Group* group);
 	static bool RemoveMercFromGroup(Merc* merc, Group* group);
+	void ProcessClientZoneChange(Client* mercOwner);
 
 	virtual bool IsMerc() const { return true; }
 
@@ -53,13 +41,11 @@ public:
 	bool Dismiss();
 	bool Suspend();
 	bool Unsuspend();
-
 	void Zone();
 	virtual void Depop();
 	bool GetDepop() { return p_depop; }
 
 	bool IsDead() { return GetHP() < 0;};
-	bool IsSitting() {return false; };
 	bool IsMedding() {return _medding; };
 	bool IsSuspended() {return _suspended; };
 
@@ -69,6 +55,7 @@ public:
 	// "GET" Class Methods
 	virtual Mob* GetOwner();
 	Client* GetMercOwner();
+	virtual Mob* GetOwnerOrSelf();
 	uint32 GetMercID() { return _MercID; }
 	uint32 GetMercTemplateID() { return _MercTemplateID; }
 	uint32 GetMercType() { return _MercType; }
@@ -168,6 +155,17 @@ public:
 	void SetMercNameType( uint8 nametype ) { _NameType = nametype; }
 	void SetClientVersion(uint8 clientVersion) { _OwnerClientVersion = clientVersion; }
 	void SetSuspended(bool suspended) { _suspended = suspended; }
+
+	void Sit();
+	void Stand();
+	bool IsSitting();
+	bool IsStanding();
+
+	// Merc-specific functions
+	bool IsMercCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
+	bool IsMercCasterCombatRange(Mob *target);
+	virtual float GetMaxMeleeRangeToTarget(Mob* target);
+	virtual void MercMeditate(bool isSitting);
 
 protected:
 	void CalcItemBonuses(StatBonuses* newbon);

@@ -21,7 +21,6 @@
 class NPC;
 #include "zonedb.h"
 #include "mob.h"
-#include "merc.h"
 //#include "spawn.h"
 
 #include <list>
