@@ -320,6 +320,12 @@ void WorldServer::Process() {
 					zc2->instanceID=ztz->requested_instance_id;
 					zc2->success = 1;
 
+					// This block is necessary to clean up any merc objects owned by a Client. Maybe we should do this for bots, too?
+					if(entity->CastToClient()->GetMerc() != NULL)
+					{
+					entity->CastToClient()->GetMerc()->ProcessClientZoneChange(entity->CastToClient());
+					}
+
 					entity->CastToMob()->SetZone(ztz->requested_zone_id, ztz->requested_instance_id);
 
 					if(ztz->ignorerestrictions == 3)

@@ -14,56 +14,7 @@
 #include "watermap.h"
 
 Merc::Merc(const NPCType* d, float x, float y, float z, float heading) 
-	: Mob(d->name,
-	  d->lastname,
-	  d->max_hp,
-	  d->max_hp,
-	  d->gender,
-	  d->race,
-	  d->class_,
-      (bodyType)d->bodytype,
-	  d->deity,
-	  d->level,
-	  d->npc_id,
-	  d->size,
-	  d->runspeed,
-	  heading,
-	  x,
-	  y,
-	  z,
-	  d->light,
-	  d->texture,
-	  d->helmtexture,
-	  d->AC,
-	  d->ATK,
-	  d->STR,
-	  d->STA,
-	  d->DEX,
-	  d->AGI,
-	  d->INT,
-	  d->WIS,
-	  d->CHA,
-	  d->haircolor,
-	  d->beardcolor,
-	  d->eyecolor1,
-	  d->eyecolor2,
-	  d->hairstyle,
-	  d->luclinface,
-	  d->beard,
-	  d->drakkin_heritage,
-	  d->drakkin_tattoo,
-	  d->drakkin_details,
-	  (int32*)d->armor_tint,
-	  0,
-	  d->see_invis,			// pass see_invis/see_ivu flags to mob constructor
-	  d->see_invis_undead,
-	  d->see_hide,
-	  d->see_improved_hide,
-	  d->hp_regen,
-	  d->mana_regen,
-	  d->qglobal,
-	  d->maxlevel,
-	  d->scalerate) 
+	: NPC(d, 0, x, y, z, heading, 0, false) 
 {
 	_baseAC = d->AC;
 	_baseSTR = d->STR;
@@ -2184,6 +2135,28 @@ bool Merc::Process()
 	return true;
 }
 
+bool Merc::IsMercCasterCombatRange(Mob *target) {
+	bool result = false;
+
+	if(target) {
+		float range = MercAISpellRange;
+
+		range *= range;
+
+		// half the max so the bot doesn't always stop at max range to allow combat movement
+		range *= .5;
+
+		float targetDistance = DistNoRootNoZ(*target);
+
+		if(targetDistance > range)		
+			result = false;
+		else
+			result = true;
+	}
+
+	return result;
+}
+
 void Merc::AI_Process() {
 	if(!IsAIControlled())
 		return;
@@ -2241,20 +2214,252 @@ void Merc::AI_Process() {
 		}
 	}
 
-	if(!IsEngaged()) {
+	if(IsEngaged())
+	{
+		_ZP(Mob_BOT_Process_IsEngaged);
+
+		if(IsRooted())
+			SetTarget(hate_list.GetClosest(this));
+		else
+			SetTarget(hate_list.GetTop(this));
+
+		if(!GetTarget())
+			return;
+
+		if(HasPet())
+			GetPet()->SetTarget(GetTarget());
+
+		if(!IsSitting())
+			FaceTarget(GetTarget());
+
+		if(DivineAura())
+			return;
+
+		// Let's check if we have a los with our target.
+		// If we don't, our hate_list is wiped.
+		// Else, it was causing the bot to aggro behind wall etc... causing massive trains.
+		if(!CheckLosFN(GetTarget()) || GetTarget()->IsMezzed() || !IsAttackAllowed(GetTarget())) {
+			WipeHateList();
+
+			if(IsMoving()) {
+				SetHeading(0);
+				SetRunAnimSpeed(0);
+
+				if(moved) {
+					moved = false;
+					SendPosition();
+					SetMoving(false);
+				}
+			}
+
+			return;
+		}
+
+		bool atCombatRange = false;
+		
+		float meleeDistance = GetMaxMeleeRangeToTarget(GetTarget());
+
+		if(GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == WARRIOR) {
+			meleeDistance = meleeDistance * .30;
+		}
+		else {
+			meleeDistance *= (float)MakeRandomFloat(.50, .85);
+		}
+		if(IsMercCaster() && GetLevel() > 12) {
+			if(IsMercCasterCombatRange(GetTarget()))
+				atCombatRange = true;
+		}
+		else if(DistNoRoot(*GetTarget()) <= meleeDistance) {
+			atCombatRange = true;
+		}
+
+		if(atCombatRange) {
+			if(IsMoving()) {
+				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
+				SetRunAnimSpeed(0);
+				
+				if(moved) {
+					moved = false;
+					SendPosition();
+					SetMoving(false);
+				}
+			}
+
+			if(AImovement_timer->Check()) {
+				if(!IsMoving() && GetClass() == ROGUE && !BehindMob(GetTarget(), GetX(), GetY())) {
+					// Move the rogue to behind the mob
+					float newX = 0;
+					float newY = 0;
+					float newZ = 0;
+
+					if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
+						CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+						return;
+					}
+				}
+				else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*GetTarget()) < GetTarget()->GetSize())) {
+					// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
+					float newX = 0;
+					float newY = 0;
+					float newZ = 0;
+
+					if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false) && GetArchetype() != ARCHETYPE_CASTER) {
+						CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+						return;
+					}
+				}
+
+				if(IsMoving())
+					SendPosUpdate();
+				else
+					SendPosition();
+			}
+
+			if((!(IsMercCaster() && GetLevel() > 12)) && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) {
+				// we can't fight if we don't have a target, are stun/mezzed or dead..
+				// Stop attacking if the target is enraged
+				if(IsEngaged() && !BehindMob(GetTarget(), GetX(), GetY()) && GetTarget()->IsEnraged())
+					return;
+				//TODO: Implement Stances.
+				/*if(GetBotStance() == BotStancePassive)
+					return;*/
+
+				// First, special attack per class (kick, backstab etc..)
+				DoClassAttacks(GetTarget());
+
+				//try main hand first
+				if(attack_timer.Check()) {
+					Attack(GetTarget(), SLOT_PRIMARY);
+
+					bool tripleSuccess = false;
+
+					if(GetOwner() && GetTarget() && CanThisClassDoubleAttack()) {
+
+						if(GetOwner()) {
+							Attack(GetTarget(), SLOT_PRIMARY, true);
+						}
+
+						if(GetOwner() && GetTarget() && SpecAttacks[SPECATK_TRIPLE]) {
+							tripleSuccess = true;
+							Attack(GetTarget(), SLOT_PRIMARY, true);
+						}
+
+						//quad attack, does this belong here??
+						if(GetOwner() && GetTarget() && SpecAttacks[SPECATK_QUAD]) {
+							Attack(GetTarget(), SLOT_PRIMARY, true);
+						}
+					}
+
+					//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
+					sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
+
+					if (GetTarget() && flurrychance)
+					{
+						if(MakeRandomInt(0, 100) < flurrychance) 
+						{
+							Message_StringID(MT_NPCFlurry, 128);
+							Attack(GetTarget(), SLOT_PRIMARY, false);
+							Attack(GetTarget(), SLOT_PRIMARY, false);
+						}
+					}
+
+					sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
+
+					if (GetTarget() && ExtraAttackChanceBonus) {
+								if(MakeRandomInt(0, 100) < ExtraAttackChanceBonus)
+								{
+									Attack(GetTarget(), SLOT_PRIMARY, false);
+								}
+							}
+				}
+
+				// TODO: Do mercs berserk? Find this out on live...
+				//if (GetClass() == WARRIOR || GetClass() == BERSERKER) {
+				//	if(GetHP() > 0 && !berserk && this->GetHPRatio() < 30) {
+				//		entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_START, GetName());
+				//		this->berserk = true;
+				//	}
+				//	if (berserk && this->GetHPRatio() > 30) {
+				//		entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_END, GetName());
+				//		this->berserk = false;
+				//	}
+				//}
+
+				//now off hand
+				if(GetTarget() && attack_dw_timer.Check() && CanThisClassDualWield()) {
+
+						int weapontype = NULL;
+						bool bIsFist = true;
+
+						if(bIsFist || ((weapontype != ItemType2HS) && (weapontype != ItemType2HPierce) && (weapontype != ItemType2HB))) {
+							float DualWieldProbability = 0.0f;
+				
+							sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+							DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
+							sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+							DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;
+
+							float random = MakeRandomFloat(0, 1);
+
+							if (random < DualWieldProbability){ // Max 78% of DW
+
+								Attack(GetTarget(), SLOT_SECONDARY);	// Single attack with offhand
+					
+								if( CanThisClassDoubleAttack()) {
+									if(GetTarget() && GetTarget()->GetHP() > -10)
+										Attack(GetTarget(), SLOT_SECONDARY);	// Single attack with offhand
+								}
+							}
+						}
+					}
+				}
+			}// end in combat range
+			else {
+				if(GetTarget()->IsFeared() && !spellend_timer.Enabled()){
+					// This is a mob that is fleeing either because it has been feared or is low on hitpoints
+					//TODO: Implement Stances. 
+					//if(GetBotStance() != BotStancePassive)
+						AI_PursueCastCheck();
+				}
+
+				if (AImovement_timer->Check()) {
+					if(!IsRooted()) {
+						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
+						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed());
+						return;
+					}
+
+					if(IsMoving())
+						SendPosUpdate();
+					else
+						SendPosition();
+				}
+			} // end not in combat range
+
+			if(!IsMoving() && !spellend_timer.Enabled()) {
+			
+				//TODO: Implement Stances.
+				//if(GetBotStance() == BotStancePassive)
+				//	return;
+
+				if(AI_EngagedCastCheck()) {
+					MercMeditate(false);
+				}
+				else if(GetArchetype() == ARCHETYPE_CASTER)
+					MercMeditate(true);
+			}
+		} // end IsEngaged()
+	else {
 		// Not engaged in combat
 		SetTarget(0);
 
-		/*if(!IsMoving() && AIthink_timer->Check() && !spellend_timer.Enabled()) {
-			if(GetStance() != MercStancePassive) {
-				if(!AI_IdleCastCheck() && !IsCasting())
-					Meditate(true);
-			}
-			else {
-				Meditate(true);
-			}
-
-		}*/
+		if(!IsMoving() && AIthink_timer->Check() && !spellend_timer.Enabled()) {
+			
+			//TODO: Implement passive stances.
+			//if(GetBotStance() != BotStancePassive) {
+			if(!AI_IdleCastCheck() && !IsCasting())
+				MercMeditate(true);
+		}
 
 		if(AImovement_timer->Check()) {
 			if(GetFollowID()) {
@@ -2262,14 +2467,15 @@ void Merc::AI_Process() {
 
 				if(follow) {
 					float dist = DistNoRoot(*follow);
-					float speed = 1.88; //Change this to a rule for merc runspeed at some point.
+					float speed = GetRunspeed();
+
+					if(dist < GetFollowDistance() + 1000) 
+						speed = GetWalkspeed();
 
 					SetRunAnimSpeed(0);
 
 					if(dist > GetFollowDistance()) {
 						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
-						//if(rest_timer.Enabled())
-						//	rest_timer.Disable();
 						return;
 					} 
 					else
@@ -2287,21 +2493,106 @@ void Merc::AI_Process() {
 	}
 }
 
-void Merc::AI_Init() {
-	Mob::AI_Init();
-}
-
-void Merc::AI_Start(int32 iMoveDelay) {
-	Mob::AI_Start(iMoveDelay);
-
-	if (!pAIControlled)
-		return;
-	
-	SetAttackTimer();
-}
-
 void Merc::AI_Stop() {
+	NPC::AI_Stop();
 	Mob::AI_Stop();
+}
+
+
+void Merc::MercMeditate(bool isSitting) {
+	if(isSitting) {
+		// If the bot is a caster has less than 99% mana while its not engaged, he needs to sit to meditate
+		if(GetManaRatio() < 99.0f)
+		{
+			if(!IsSitting())
+				Sit();
+		}
+		else
+		{
+			if(IsSitting())
+				Stand();
+		}
+	}
+	else
+	{
+		if(IsSitting())
+			Stand();
+	}
+}
+
+
+void Merc::Sit() {
+	if(IsMoving()) {
+		moved = false;
+		// SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
+		SendPosition();
+		SetMoving(false);
+		tar_ndx = 0;
+	}
+
+	SetAppearance(eaSitting);
+}
+
+void Merc::Stand() {
+	SetAppearance(eaStanding);
+}
+
+bool Merc::IsSitting() {
+	bool result = false;
+
+	if(GetAppearance() == eaSitting && !IsMoving())
+		result = true;
+
+	return result;
+}
+
+bool Merc::IsStanding() {
+	bool result = false;
+
+	if(GetAppearance() == eaStanding)
+		result = true;
+
+	return result;
+}
+
+float Merc::GetMaxMeleeRangeToTarget(Mob* target) {
+	float result = 0;
+	
+	if(target) {
+		float size_mod = GetSize();
+		float other_size_mod = target->GetSize();
+
+		if(GetRace() == 49 || GetRace() == 158 || GetRace() == 196) //For races with a fixed size
+			size_mod = 60.0f;
+		else if (size_mod < 6.0)
+			size_mod = 8.0f;
+
+		if(target->GetRace() == 49 || target->GetRace() == 158 || target->GetRace() == 196) //For races with a fixed size
+			other_size_mod = 60.0f;
+		else if (other_size_mod < 6.0)
+			other_size_mod = 8.0f;
+
+		if (other_size_mod > size_mod) {
+			size_mod = other_size_mod;
+		}
+
+		// this could still use some work, but for now it's an improvement....
+
+		if (size_mod > 29)
+			size_mod *= size_mod;
+		else if (size_mod > 19)
+			size_mod *= size_mod * 2;
+		else
+			size_mod *= size_mod * 4;
+
+		// prevention of ridiculously sized hit boxes
+		if (size_mod > 10000)
+			size_mod = size_mod / 7;
+
+		result = size_mod;
+	}
+
+	return result;
 }
 
 bool Merc::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, bool IsFromSpell)
@@ -2314,258 +2605,8 @@ bool Merc::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, boo
 		LogFile->write(EQEMuLog::Error, "A null Mob object was passed to Merc::Attack() for evaluation!");
 		return false;
 	}
-	
-	if(!GetTarget())
-		SetTarget(other);
-	
-	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetName():"(NULL)", Hand, bRiposte?"(this is a riposte)":"");
-	
-	//SetAttackTimer();
-	if (
-		   (IsCasting() && GetClass() != BARD && !IsFromSpell)
-		|| other == NULL
-		|| (other->IsClient() && other->CastToClient()->IsDead())
-		|| (GetHP() < 0)
-		|| (!IsAttackAllowed(other))
-		//|| ((IsClient() && CastToClient()->dead)
-		) {
-		mlog(COMBAT__ATTACKS, "Attack canceled, invalid circumstances.");
-		return false; // Only bards can attack while casting
-	}
-	/*if(DivineAura() && !GetGM()) {//cant attack while invulnerable unless your a gm
-		mlog(COMBAT__ATTACKS, "Attack canceled, Divine Aura is in effect.");
-		Message_StringID(MT_DefaultText, DIVINE_AURA_NO_ATK);	//You can't attack while invulnerable!
-		return false;
-	}*/
 
-	//if (GetFeigned())
-	//	return false; // Rogean: How can you attack while feigned? Moved up from Aggro Code.
-
-	
-	ItemInst* weapon;
-	if (Hand == 14){	// Kaiyodo - Pick weapon from the attacking hand
-		//weapon = GetInv().GetItem(SLOT_SECONDARY);
-		OffHandAtk(true);
-	}
-	else{
-		//weapon = GetInv().GetItem(SLOT_PRIMARY);
-		OffHandAtk(false);
-	}
-
-	if(weapon != NULL) {
-		if (!weapon->IsWeapon()) {
-			mlog(COMBAT__ATTACKS, "Attack canceled, Item %s (%d) is not a weapon.", weapon->GetItem()->Name, weapon->GetID());
-			return(false);
-		}
-		mlog(COMBAT__ATTACKS, "Attacking with weapon: %s (%d)", weapon->GetItem()->Name, weapon->GetID());
-	} else {
-		mlog(COMBAT__ATTACKS, "Attacking without a weapon.");
-	}
-	
-	// calculate attack_skill and skillinuse depending on hand and weapon
-	// also send Packet to near clients
-	SkillType skillinuse;
-	AttackAnimation(skillinuse, Hand, weapon);
-	mlog(COMBAT__ATTACKS, "Attacking with %s in slot %d using skill %d", weapon?weapon->GetItem()->Name:"Fist", Hand, skillinuse);
-	
-	/// Now figure out damage
-	int damage = 0;
-	int8 mylevel = GetLevel() ? GetLevel() : 1;
-	int32 hate = 0;
-	if (weapon) hate = weapon->GetItem()->Damage + weapon->GetItem()->ElemDmgAmt;
-	int weapon_damage = GetWeaponDamage(other, weapon, &hate);
-	if (hate == 0 && weapon_damage > 1) hate = weapon_damage;
-	
-	//if weapon damage > 0 then we know we can hit the target with this weapon
-	//otherwise we cannot and we set the damage to -5 later on
-	if(weapon_damage > 0){
-
-		//try a finishing blow.. if successful end the attack
-		if(TryFinishingBlow(other, skillinuse))
-			return (true);
-		
-		int min_hit = 1;
-		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
-
-		if(GetLevel() < 10 && max_hit > 20)
-			max_hit = (RuleI(Combat, HitCapPre10));
-		else if(GetLevel() < 20 && max_hit > 40)
-			max_hit = (RuleI(Combat, HitCapPre20));
-
-
-		// ***************************************************************
-		// *** Calculate the damage bonus, if applicable, for this hit ***
-		// ***************************************************************
-
-#ifndef EQEMU_NO_WEAPON_DAMAGE_BONUS
-
-		// If you include the preprocessor directive "#define EQEMU_NO_WEAPON_DAMAGE_BONUS", that indicates that you do not
-		// want damage bonuses added to weapon damage at all. This feature was requested by ChaosSlayer on the EQEmu Forums.
-		//
-		// This is not recommended for normal usage, as the damage bonus represents a non-trivial component of the DPS output
-		// of weapons wielded by higher-level melee characters (especially for two-handed weapons).
-
-		int ucDamageBonus = 0;
-
-		if( Hand == 13 && GetLevel() >= 28 && IsWarriorClass() )
-		{
-			// Damage bonuses apply only to hits from the main hand (Hand == 13) by characters level 28 and above
-			// who belong to a melee class. If we're here, then all of these conditions apply.
-
-			ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
-
-			min_hit += (int) ucDamageBonus;
-			max_hit += (int) ucDamageBonus;
-			hate += ucDamageBonus;
-		}
-#endif
-		//Live AA - Sinister Strikes *Adds weapon damage bonus to offhand weapon.
-		if (Hand==14) {
-			if (aabonuses.SecondaryDmgInc || itembonuses.SecondaryDmgInc || spellbonuses.SecondaryDmgInc){
-				
-				ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
-
-				min_hit += (int) ucDamageBonus;
-				max_hit += (int) ucDamageBonus;
-				hate += ucDamageBonus;
-			}
-		}
-
-		min_hit += min_hit * GetMeleeMinDamageMod_SE(skillinuse) / 100;
-
-		if(max_hit < min_hit)
-			max_hit = min_hit;
-
-		if(RuleB(Combat, UseIntervalAC))
-			damage = max_hit;
-		else
-			damage = MakeRandomInt(min_hit, max_hit);
-
-		mlog(COMBAT__DAMAGE, "Damage calculated to %d (min %d, max %d, str %d, skill %d, DMG %d, lv %d)",
-			damage, min_hit, max_hit, GetSTR(), GetSkill(skillinuse), weapon_damage, mylevel);
-
-		//check to see if we hit..
-		if(!other->CheckHitChance(this, skillinuse, Hand)) {
-			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
-			damage = 0;
-		} else {	//we hit, try to avoid it
-			other->AvoidDamage(this, damage);
-			other->MeleeMitigation(this, damage, min_hit);
-			if(damage > 0) {
-				ApplyMeleeDamageBonus(skillinuse, damage);
-				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100) + GetSkillDmgAmt(skillinuse);
-				TryCriticalHit(other, skillinuse, damage);
-			}
-			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
-		}
-
-		//riposte
-		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
-		if (damage == -3)  {
-			if (bRiposte) return false;
-			else {
-				if (Hand == 14) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
-					//Live AA - SlipperyAttacks 
-					//This spell effect most likely directly modifies the actual riposte chance when using offhand attack.
-					sint16 OffhandRiposteFail = aabonuses.OffhandRiposteFail + itembonuses.OffhandRiposteFail + spellbonuses.OffhandRiposteFail;
-					OffhandRiposteFail *= -1; //Live uses a negative value for this.
-
-					if (OffhandRiposteFail && 
-						(OffhandRiposteFail > 99 || (MakeRandomInt(0, 100) < OffhandRiposteFail))) {
-						damage = 0; // Counts as a miss
-						slippery_attack = true;
-					} else 
-						DoRiposte(other);
-						if (IsDead()) return false;
-				}
-				else 
-					DoRiposte(other);
-					if (IsDead()) return false;
-			}
-		}
-
-		if (((damage < 0) || slippery_attack) && !bRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
-			sint16 bonusStrikeThrough = itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aabonuses.StrikeThrough;
-	
-			if(bonusStrikeThrough && (MakeRandomInt(0, 100) < bonusStrikeThrough)) {
-				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
-				Attack(other, Hand, false, true); // Strikethrough only gives another attempted hit
-				return false;
-			}
-		}
-	}
-	else{
-		damage = -5;
-	}
-
-
-	// Hate Generation is on a per swing basis, regardless of a hit, miss, or block, its always the same.
-	// If we are this far, this means we are atleast making a swing.
-	if (!bRiposte) // Ripostes never generate any aggro.
-		other->AddToHateList(this, hate);
-	
-	///////////////////////////////////////////////////////////
-	//////    Send Attack Damage
-	///////////////////////////////////////////////////////////
-	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
-
-	if (IsDead()) return false;
-
-	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap))
-	{
-		int lifetap_amt = spellbonuses.MeleeLifetap + itembonuses.MeleeLifetap;
-		if(lifetap_amt > 100)
-			lifetap_amt = 100;
-
-		lifetap_amt = damage * lifetap_amt / 100;
-
-		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
-		//heal self for damage done..
-		HealDamage(lifetap_amt);
-		
-		if (spellbonuses.MeleeLifetap)
-			CheckHitsRemaining(0, false,false, SE_MeleeLifetap);
-	}
-	
-	//break invis when you attack
-	if(invisible) {
-		mlog(COMBAT__ATTACKS, "Removing invisibility due to melee attack.");
-		BuffFadeByEffect(SE_Invisibility);
-		BuffFadeByEffect(SE_Invisibility2);
-		invisible = false;
-	}
-	if(invisible_undead) {
-		mlog(COMBAT__ATTACKS, "Removing invisibility vs. undead due to melee attack.");
-		BuffFadeByEffect(SE_InvisVsUndead);
-		BuffFadeByEffect(SE_InvisVsUndead2);
-		invisible_undead = false;
-	}
-	if(invisible_animals){
-		mlog(COMBAT__ATTACKS, "Removing invisibility vs. animals due to melee attack.");
-		BuffFadeByEffect(SE_InvisVsAnimals);
-		invisible_animals = false;
-	}
-
-	if(hidden || improved_hidden){
-		hidden = false;
-		improved_hidden = false;
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
-		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
-		sa_out->spawn_id = GetID();
-		sa_out->type = 0x03;
-		sa_out->parameter = 0;
-		entity_list.QueueClients(this, outapp, true);
-		safe_delete(outapp);
-	}
-
-	if(GetTarget())
-		TriggerDefensiveProcs(weapon, other, Hand, damage);
-
-	if (damage > 0)
-		return true;
-
-	else
-		return false;
+	return NPC::Attack(other, Hand, bRiposte, IsStrikethrough, IsFromSpell);
 }
 
 void Merc::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable, sint8 buffslot, bool iBuffTic)
@@ -2575,148 +2616,89 @@ void Merc::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_sk
 	
 	if(spell_id==0)
 		spell_id = SPELL_UNKNOWN;
-	
-	// cut all PVP spell damage to 2/3 -solar
-	// EverHood - Blasting ourselfs is considered PvP 
-	//Don't do PvP mitigation if the caster is damaging himself
-	if(other && other->IsClient() && (other != this) && damage > 0) {
-		int PvPMitigation = 100;
-		if(attack_skill == ARCHERY)
-			PvPMitigation = 80;
-		else
-			PvPMitigation = 67;
-		damage = (damage * PvPMitigation) / 100;
-	}
-			
 
-	//do a majority of the work...
-	CommonDamage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
+	NPC::Damage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
+
+	//Not needed since we're using NPC damage.
+	//CommonDamage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
+}
+
+
+Mob* Merc::GetOwnerOrSelf() {
+	Mob* Result = 0;
+
+	if(this->GetMercOwner())
+		Result = GetMercOwner();
+	else
+		Result = this;
+
+	return Result;
 }
 
 void Merc::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_skill)
 {
-	if(IsDead())
-		return;	//cant die more than once...
+	NPC::Death(killerMob, damage, spell, attack_skill);
+	Save();
 
-	int exploss;
-	
-	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob ? killerMob->GetName() : "Unknown", damage, spell, attack_skill);
-	
-	//
-	// #1: Send death packet to everyone
-	//
-	uint8 killed_level = GetLevel();
-	if(!spell) spell = SPELL_UNKNOWN;
+	Mob *give_exp = hate_list.GetDamageTop(this);
+	Client *give_exp_client = NULL;
 
-	//
-	// #2: figure out things that affect the player dying and mark them dead
-	//
+	if(give_exp && give_exp->IsClient())
+		give_exp_client = give_exp->CastToClient();
 
-	InterruptSpell();
-	SetPet(0);
-	//SetHorseId(0);
-	//dead = true;
+	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
 
+	//if (give_exp_client && !IsCorpse() && MerchantType == 0)
+	//{
+	//	Group *kg = entity_list.GetGroupByClient(give_exp_client);
+	//	Raid *kr = entity_list.GetRaidByClient(give_exp_client);
 
-	if (killerMob != NULL)
+	//	if(!kr && give_exp_client->IsClient() && give_exp_client->GetBotRaidID() > 0) {
+	//		BotRaids *br = entity_list.GetBotRaidByMob(give_exp_client->CastToMob());
+	//		if(br) {
+	//			if(!IsLdonTreasure)
+	//				br->SplitExp((EXP_FORMULA), this);
+
+	//			if(br->GetBotMainTarget() == this)
+	//				br->SetBotMainTarget(NULL);
+
+	//			/* Send the EVENT_KILLED_MERIT event for all raid members */
+	//			if(br->BotRaidGroups[0]) {
+	//				for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+	//					if(br->BotRaidGroups[0]->members[j] && br->BotRaidGroups[0]->members[j]->IsClient()) {
+	//						parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, br->BotRaidGroups[0]->members[j]);
+	//						if(RuleB(TaskSystem, EnableTaskSystem)) {
+	//							br->BotRaidGroups[0]->members[j]->CastToClient()->UpdateTasksOnKill(GetNPCTypeID());
+	//						}
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+
+	//corpse->Depop();
+
+	//no corpse, no exp if we're a merc. We'll suspend instead, since that's what live does. I'm not actually sure live supports 'depopping' merc corpses.
+	//if(entity_list.GetCorpseByID(GetID()))
+	//	entity_list.GetCorpseByID(GetID())->Depop();
+
+	if(Suspend())
 	{
-		if (killerMob->IsNPC()) {
-            parse->EventNPC(EVENT_SLAY, killerMob->CastToNPC(), this, "", 0);
-			int16 emoteid = killerMob->CastToNPC()->GetNPCEmoteID();
-			if(emoteid != 0)
-				killerMob->CastToNPC()->DoNPCEmote(KILLEDPC,emoteid);
-			killerMob->TrySpellOnKill(killed_level,spell);
-		}
-		
-		if(killerMob->IsClient() && (killerMob->CastToClient()->IsDueling())) {
-
-			if (killerMob->IsClient() && killerMob->CastToClient()->IsDueling() && killerMob->CastToClient()->GetDuelTarget() == GetID())
-			{
-				//if duel opponent killed us...
-				killerMob->CastToClient()->SetDueling(false);
-				killerMob->CastToClient()->SetDuelTarget(0);
-				entity_list.DuelMessage(killerMob,this,false);
-			} else {
-				//otherwise, we just died, end the duel.
-				//Mob* who = entity_list.GetMob(GetDuelTarget());
-				//if(who && who->IsClient()) {
-				//	who->CastToClient()->SetDueling(false);
-				//	who->CastToClient()->SetDuelTarget(0);
-				//}
-			}
-		}
-	}
-
-	entity_list.RemoveFromTargets(this);
-	hate_list.RemoveEnt(this);
-	
-	
-	//remove ourself from all proximities
-	//ClearAllProximities();
-
-	//
-	// #3: exp loss and corpse generation
-	//
-
-	if(spell != SPELL_UNKNOWN)
-	{
-		uint32 buff_count = GetMaxTotalSlots();
-		for(uint16 buffIt = 0; buffIt < buff_count; buffIt++)
+		//If the merc owner is valid, and the merc is 'pseudo-suspended', do this:
+		if(GetMercOwner() != NULL)
 		{
-			if(buffs[buffIt].spellid == spell && buffs[buffIt].client)
-			{
-				exploss = 0;	// no exp loss for pvp dot
-				break;
-			}
+							Client* owner = GetMercOwner();
+							owner->GetEPP().mercIsSuspended = true;
+							owner->GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
+							owner->GetEPP().mercTimerRemaining = owner->GetMercTimer().GetRemainingTime();
+							owner->GetMercTimer().Disable();
+							owner->UpdateMercTimer();
+							owner->GetPTimers().Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
+							owner->SendMercSuspendResponsePacket(owner->GetEPP().mercSuspendedTime);
+							owner->SendMercMerchantResponsePacket(0);
 		}
 	}
-
-	bool LeftCorpse = false;
-
-
-		BuffFadeDetrimental();
-
-
-	//
-	// Finally, send em home
-	//
-
-	// we change the mob variables, not pp directly, because Save() will copy
-	// from these and overwrite what we set in pp anyway
-	//
-
-	/*if(LeftCorpse && (GetClientVersionBit() & BIT_SoFAndLater) && RuleB(Character, RespawnFromHover))
-	{
-		ClearDraggedCorpses();
-
-		RespawnFromHoverTimer.Start(RuleI(Character, RespawnFromHoverTimer) * 1000);
-
-		SendRespawnBinds();
-	}
-	else
-	{*/
-		if(isgrouped)
-		{
-			Group *g = GetGroup();
-			if(g)
-				g->MemberZoned(this);
-		}
-	
-		//Raid* r = entity_list.GetRaidByClient(this);
-
-		//if(r)
-		//	r->MemberZoned(this);
-
-		//dead_timer.Start(5000, true);
-
-		//m_pp.zone_id = m_pp.binds[0].zoneId;
-		//m_pp.zoneInstance = 0;
-		//database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
-		
-		Save();
-	
-		//GoToDeath();
-	/*}*/
 }
 
 Client* Merc::GetMercOwner() {
@@ -2724,7 +2706,10 @@ Client* Merc::GetMercOwner() {
 
 	if(GetOwner())
 	{
+		if(GetOwner()->IsClient())
+		{
 		mercOwner = GetOwner()->CastToClient();
+		}
 	}
 
 	return mercOwner; 
@@ -2862,21 +2847,6 @@ bool Merc::Spawn(Client *owner) {
 		GetEyeColor1(), GetEyeColor2(), GetHairStyle(), GetLuclinFace(), GetBeard(), 0xFF,
 		GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), GetSize());
 
-	if(!owner->IsGrouped()) {
-		Group *g = new Group(owner);
-		if(AddMercToGroup(this, g)) {
-			entity_list.AddGroup(g);
-			database.SetGroupLeaderName(g->GetID(), owner->GetName());
-			g->SaveGroupLeaderAA();
-			database.SetGroupID(owner->GetName(), g->GetID(), owner->CharacterID());
-			database.SetGroupID(GetCleanName(), g->GetID(), GetMercID());
-		}
-	}
-	else {
-		AddMercToGroup(this, owner->GetGroup());
-		database.SetGroupID(GetCleanName(), owner->GetGroup()->GetID(), GetMercID());
-	}
-
 	return true;
 }
 
@@ -2912,94 +2882,128 @@ void Client::CheckMercSuspendTimer()
 void Client::SuspendMercCommand()
 {
 	bool ExistsMerc = GetEPP().mercTemplateID != 0;
-	
-	if(ExistsMerc == true)
-	{
-		if(GetEPP().mercIsSuspended) {
-				GetEPP().mercIsSuspended = false;
-				//p_timers.Enable(pTimerMercReuse);
-				GetEPP().mercSuspendedTime = 0;
+		if(ExistsMerc == true)
+		{
+			if(GetEPP().mercIsSuspended) {
+					GetEPP().mercIsSuspended = false;
+					//p_timers.Enable(pTimerMercReuse);
+					GetEPP().mercSuspendedTime = 0;
 			
-				// Get merc, assign it to client & spawn
-				Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
-				merc->Spawn(this);
-				merc->SetSuspended(false);
-				SetMerc(merc);
-				if(merc->Unsuspend())
-				{
-					merc_timer.Start(GetEPP().mercTimerRemaining);
-					if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
-						p_timers.Clear(&database, pTimerMercSuspend);
-						SendMercPersonalInfo();
-						SendMercMerchantResponsePacket(0);
-				}
+					// Get merc, assign it to client & spawn
+					Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
+					merc->Spawn(this);
+					merc->SetSuspended(false);
+					SetMerc(merc);
+					if(merc->Unsuspend())
+					{
+						merc_timer.Start(GetEPP().mercTimerRemaining);
+						if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
+							p_timers.Clear(&database, pTimerMercSuspend);
+							SendMercPersonalInfo();
+							SendMercMerchantResponsePacket(0);
+
+						if(!IsGrouped()) {
+								Group *g = new Group(this);
+								if(merc->AddMercToGroup(merc, g)) {
+								entity_list.AddGroup(g);
+								database.SetGroupLeaderName(g->GetID(), this->GetName());
+								g->SaveGroupLeaderAA();
+								database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
+								database.SetGroupID(merc->GetCleanName(), g->GetID(), merc->GetMercID());
+								}
+							}
+						else {
+							merc->AddMercToGroup(merc, this->GetGroup());
+							database.SetGroupID(GetCleanName(), this->GetGroup()->GetID(), merc->GetMercID());
+						}
+					}
 			}
 		
-		else {
-			Merc* CurrentMerc = GetMerc();
+			else {
+				Merc* CurrentMerc = GetMerc();
 
-			if(CurrentMerc) {
-				if(CurrentMerc->Suspend()) {
-					// Set merc suspended time for client & merc
-					GetEPP().mercIsSuspended = true;
-					GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
-					GetEPP().mercTimerRemaining = merc_timer.GetRemainingTime();
-					merc_timer.Disable();
-					UpdateMercTimer();
-					SetMercID(0);
-					p_timers.Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
-					SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
-					SendMercMerchantResponsePacket(0);
+				if(CurrentMerc && GetMercID()) {
+					if(CurrentMerc->Suspend()) {
+						// Set merc suspended time for client & merc
+						GetEPP().mercIsSuspended = true;
+						GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
+						GetEPP().mercTimerRemaining = merc_timer.GetRemainingTime();
+						merc_timer.Disable();
+						UpdateMercTimer();
+						p_timers.Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
+						SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
+						SendMercMerchantResponsePacket(0);
+					}
 				}
 			}
 		}
+}
+
+
+// Handles all client zone change event
+void Merc::ProcessClientZoneChange(Client* mercOwner) {
+	if(mercOwner) 
+	{
+		Zone();
 	}
-	Save(0);
 }
 
 void Client::SpawnMercOnZone()
 {
 	bool ExistsMerc = GetEPP().mercTemplateID != 0;
-	
-	if(ExistsMerc == true)
-	{
-		if(!GetEPP().mercIsSuspended) {
-			GetEPP().mercSuspendedTime = 0;			
-			// Get merc, assign it to client & spawn
-			Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
-			merc->Spawn(this);
-			merc->SetSuspended(false);
-			SetMerc(merc);
-			merc_timer.Start(GetEPP().mercTimerRemaining);
-
-			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
-
-			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-			SendMercAssignPacket(GetID(), 1, 2);
-			SendMercAssignPacket(GetID(), 0, 13);
-			SendMercPersonalInfo();
-			SendMercMerchantResponsePacket(0);
-		}
-		else
+		if(ExistsMerc == true)
 		{
-				// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend) * 1000);
+				if(!GetEPP().mercIsSuspended) {
+					GetEPP().mercSuspendedTime = 0;			
+					// Get merc, assign it to client & spawn
+					Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
+					merc->Spawn(this);
+					merc->SetSuspended(false);
+					SetMerc(merc);
+					merc_timer.Start(GetEPP().mercTimerRemaining);
 
-			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-			SendMercAssignPacket(GetID(), 1, 2);
-			SendMercAssignPacket(GetID(), 0, 13);
+					// Send Mercenary Status/Timer packet
+					SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
 
-			SendMercPersonalInfo();
-			if(GetEPP().mercSuspendedTime != 0) {
-				if(time(NULL) >= GetEPP().mercSuspendedTime){
-				GetEPP().mercSuspendedTime = 0;
+					// Send Mercenary Assign packet twice - This is actually just WeaponEquip
+					SendMercAssignPacket(GetID(), 1, 2);
+					SendMercAssignPacket(GetID(), 0, 13);
+					SendMercPersonalInfo();
+					SendMercMerchantResponsePacket(0);
+					if(!IsGrouped()) {
+					Group *g = new Group(this);
+					if(merc->AddMercToGroup(merc, g)) {
+					entity_list.AddGroup(g);
+					database.SetGroupLeaderName(g->GetID(), this->GetName());
+					g->SaveGroupLeaderAA();
+					database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
+					database.SetGroupID(merc->GetCleanName(), g->GetID(), merc->GetMercID());
+					}
+				}
+				else {
+					merc->AddMercToGroup(merc, this->GetGroup());
+					database.SetGroupID(GetCleanName(), this->GetGroup()->GetID(), merc->GetMercID());
 				}
 			}
-			SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
-			SendMercMerchantResponsePacket(0);
+			else
+			{
+					// Send Mercenary Status/Timer packet
+				SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend) * 1000);
+
+				// Send Mercenary Assign packet twice - This is actually just WeaponEquip
+				SendMercAssignPacket(GetID(), 1, 2);
+				SendMercAssignPacket(GetID(), 0, 13);
+
+				SendMercPersonalInfo();
+				if(GetEPP().mercSuspendedTime != 0) {
+					if(time(NULL) >= GetEPP().mercSuspendedTime){
+					GetEPP().mercSuspendedTime = 0;
+					}
+				}
+				SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
+				SendMercMerchantResponsePacket(0);
+			}
 		}
-	}
 }
 
 bool Merc::Suspend() {
@@ -3104,11 +3108,15 @@ void Merc::Depop() {
 	if(HasGroup())
 		RemoveMercFromGroup(this, GetGroup());
 	
+	if(HasPet()) {
+		GetPet()->Depop();
+	}
+	
 	SetOwnerID(0);
 
 	p_depop = true;
 	
-	Mob::Depop(false);
+	NPC::Depop(false);
 }
 
 bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
@@ -3129,8 +3137,6 @@ bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
 				for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(!group->members[i])
 						continue;
-
-					group->members[i]->SetFollowID(0);
 				}
 
 				group->DisbandGroup();

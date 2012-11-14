@@ -1108,7 +1108,7 @@ public:
 	void SpawnMercOnZone();
 	void UpdateMercTimer();
 	void CheckMercSuspendTimer();
-
+	Timer GetMercTimer() { return merc_timer; };
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
 
