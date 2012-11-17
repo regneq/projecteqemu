@@ -466,7 +466,8 @@ typedef enum {
 
 struct MercType {
 	uint32	Type;
-	uint32	ClientVersion;		
+	uint32	ClientVersion;	
+	uint32	NPCID;
 };
 
 struct MercData {
@@ -475,6 +476,7 @@ struct MercData {
 	uint32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
 	uint32	CostFormula;			// To determine cost to client
 	uint32	ClientVersion;				// Only send valid mercs per expansion
+	uint32	NPCID;
 };
 
 class EGNode;

@@ -13185,24 +13185,26 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 			// Get merc, assign it to client & spawn
 			Merc* merc = Merc::LoadMerc(this, merc_template, merchant_id);
-			merc->Spawn(this);
-			SetMerc(merc);
+			if(merc) {
+				merc->Spawn(this);
+				SetMerc(merc);
 
-			// TODO: Populate these packets properly instead of hard coding the data fields.
+				// TODO: Populate these packets properly instead of hard coding the data fields.
 
 
-			//Clear the timers because we're hiring a new merc, the old merc's timers are no longer relevant to this character.
-			if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
-						p_timers.Clear(&database, pTimerMercSuspend);
-			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(GetID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+				//Clear the timers because we're hiring a new merc, the old merc's timers are no longer relevant to this character.
+				if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
+							p_timers.Clear(&database, pTimerMercSuspend);
+				// Send Mercenary Status/Timer packet
+				SendMercTimerPacket(GetID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 
-			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-			SendMercAssignPacket(merc->GetID(), 1, 2);
-			SendMercAssignPacket(merc->GetID(), 0, 13);
-			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
-			GetEPP().mercState = 0;
-			SendMercPersonalInfo();
+				// Send Mercenary Assign packet twice - This is actually just WeaponEquip
+				SendMercAssignPacket(merc->GetID(), 1, 2);
+				SendMercAssignPacket(merc->GetID(), 0, 13);
+				GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
+				GetEPP().mercState = 0;
+				SendMercPersonalInfo();
+			}
 		}
 	}
 
