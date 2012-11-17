@@ -13044,6 +13044,10 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 
 	DumpPacket(app);
 
+	if(!RuleB(Mercs, AllowMercs)) {
+		return;
+	}
+
 	NPC* tar = entity_list.GetNPCByID(merchant_id);
     if(tar) {
 		int mercTypeCount = 0;
@@ -13322,6 +13326,10 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 	DumpPacket(app);
 
 	Message(7, "Mercenary Debug: Timer Request received.");
+
+	if(!RuleB(Mercs, AllowMercs)) {
+		return;
+	}
 
 	// To Do: Load Mercenary Timer Data to properly populate this reply packet
 	// All hard set values for now

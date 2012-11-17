@@ -37,6 +37,7 @@ public:
 
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	static Merc* LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id);
+	static const char *GetRandomName();
 	bool Spawn(Client *owner);
 	bool Dismiss();
 	bool Suspend();
