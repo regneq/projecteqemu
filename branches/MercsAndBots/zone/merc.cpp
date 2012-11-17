@@ -2727,6 +2727,102 @@ Mob* Merc::GetOwner() {
 	return Result->CastToMob();
 }
 
+const char* Merc::GetRandomName(){
+	// creates up to a 10 char name
+	static char name[17];
+	char vowels[18]="aeiouyaeiouaeioe";
+	char cons[48]="bcdfghjklmnpqrstvwxzybcdgklmnprstvwbcdgkpstrkd";
+	char rndname[17]="\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+	char paircons[33]="ngrkndstshthphsktrdrbrgrfrclcr";
+	bool valid = false;
+
+	while(!valid) {
+		int rndnum=MakeRandomInt(0, 75),n=1;
+		bool dlc=false;
+		bool vwl=false;
+		bool dbl=false;
+		if (rndnum>63)
+		{	// rndnum is 0 - 75 where 64-75 is cons pair, 17-63 is cons, 0-16 is vowel
+			rndnum=(rndnum-61)*2;	// name can't start with "ng" "nd" or "rk"
+			rndname[0]=paircons[rndnum];
+			rndname[1]=paircons[rndnum+1];
+			n=2;
+		}
+		else if (rndnum>16)
+		{
+			rndnum-=17;
+			rndname[0]=cons[rndnum];
+		}
+		else
+		{
+			rndname[0]=vowels[rndnum];
+			vwl=true;
+		}
+		int namlen=MakeRandomInt(5, 10);
+		for (int i=n;i<namlen;i++)
+		{
+			dlc=false;
+			if (vwl)	//last char was a vowel
+			{			// so pick a cons or cons pair
+				rndnum=MakeRandomInt(0, 62);
+				if (rndnum>46)
+				{	// pick a cons pair
+					if (i>namlen-3)	// last 2 chars in name?
+					{	// name can only end in cons pair "rk" "st" "sh" "th" "ph" "sk" "nd" or "ng"
+						rndnum=MakeRandomInt(0, 7)*2;
+					}
+					else
+					{	// pick any from the set
+						rndnum=(rndnum-47)*2;
+					}
+					rndname[i]=paircons[rndnum];
+					rndname[i+1]=paircons[rndnum+1];
+					dlc=true;	// flag keeps second letter from being doubled below
+					i+=1;
+				}
+				else
+				{	// select a single cons
+					rndname[i]=cons[rndnum];
+				}
+			}
+			else
+			{		// select a vowel
+				rndname[i]=vowels[MakeRandomInt(0, 16)];
+			}
+			vwl=!vwl;
+			if (!dbl && !dlc)
+			{	// one chance at double letters in name
+				if (!MakeRandomInt(0, i+9))	// chances decrease towards end of name
+				{
+					rndname[i+1]=rndname[i];
+					dbl=true;
+					i+=1;
+				}
+			}
+		}
+
+		rndname[0]=toupper(rndname[0]);
+
+		if(!database.CheckNameFilter(rndname)) {
+			valid = false;
+		}
+		else if(rndname[0] < 'A' && rndname[0] > 'Z') {
+			//name must begin with an upper-case letter.
+			valid = false;
+		}
+		else if (database.CheckUsedName(rndname)) {
+			valid = true;
+		}
+		else {
+			valid = false;
+		}
+	}
+
+	memset(name, 0, 17);
+	strcpy(name, rndname);
+	return name;
+}
+
 Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id) {
 	Merc* merc;
 
@@ -2742,7 +2838,7 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 		NPCType* npc_type = new NPCType;
 		memset(npc_type, 0, sizeof(NPCType));
 
-		sprintf(npc_type->name, "%s", GetRandPetName());
+		sprintf(npc_type->name, "%s", GetRandomName());
 
 		int8 gender;
 		if(merchant_id > 0) {
@@ -3234,6 +3330,22 @@ void Client::SetMerc(Merc* newmerc) {
 		GetEPP().mercIsSuspended = newmerc->IsSuspended();
 		GetEPP().mercSuspendedTime = 0;
 		GetEPP().mercGender = newmerc->GetGender();
+
+		if(!IsGrouped()) {
+			Group *g = new Group(this);
+
+			if(newmerc->AddMercToGroup(newmerc, g)) {
+			entity_list.AddGroup(g);
+			database.SetGroupLeaderName(g->GetID(), this->GetName());
+			g->SaveGroupLeaderAA();
+			database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
+			database.SetGroupID(newmerc->GetCleanName(), g->GetID(), newmerc->GetMercID());
+			}
+		}
+		else {
+			newmerc->AddMercToGroup(newmerc, this->GetGroup());
+			database.SetGroupID(GetCleanName(), this->GetGroup()->GetID(), newmerc->GetMercID());
+		}
 	}
 }
 
