@@ -260,6 +260,7 @@ private:
 	bool	_medding;
 	bool	_suspended;
 	bool	p_depop;
+	const NPCType*	ourNPCData;
 };
 
 #endif // MERC_H

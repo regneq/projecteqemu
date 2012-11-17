@@ -170,6 +170,7 @@ public:
 	void LoadAdventureFlavor();
 	
 	map<uint32,NPCType *> npctable;
+	map<uint32,NPCType *> merctable;
 	map<uint32,std::list<MerchantList> > merchanttable;
 	map<uint32,std::list<TempMerchantList> > tmpmerchanttable;
 	map<uint32,std::string> adventure_entry_list_flavor;
