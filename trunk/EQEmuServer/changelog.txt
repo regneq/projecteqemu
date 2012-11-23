@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/22/2012==
+Sorvani: Tabasco sent in this bugfix: Ranged attack crash
+It doesn't happen every time, but if an NPC is flagged for ranged attacks and they kill their target, the AIProcess function continues on under the assumption that the target is still available.
+
+I just adjusted it to set a flag and do the actual attack at the end of the function. I haven't been able to reproduce the crash since.
+
 ==10/31/2012==
 Akkadius: Added the ability to govern player max levels through the source per character. It will look for a qglobal named 'CharMaxLevel', type 5 qglobal, if the rule is enabled and the character flag is set, they will not be able to pass that level.
 Optional SQL: utils/sql/svn/2243_optional_char_max_level_rule.sql
