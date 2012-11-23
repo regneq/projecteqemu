@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/23/2012==
+cavedude: (Tabasco) Re-added probability, setting it to 100 (default) effectively bypasses probability and no additional roll is made. Setting it to 0 prevents the table from being rolled at all, so you can disable the table but still keep the entries if needed.
+Required SQL: utils/sql/svn/2260_probability.sql
 
 ==11/22/2012==
 Sorvani: Tabasco sent in this bugfix: Ranged attack crash
