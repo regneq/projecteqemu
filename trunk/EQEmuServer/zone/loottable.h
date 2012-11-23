@@ -30,6 +30,8 @@ create table lootdrop (id int(11) unsigned auto_increment primary key, name varc
 create table lootdrop_entries (lootdrop_id int(11) unsigned not null, item_id int(11) not null, 
 item_charges tinyint(2) default 1 not null, equip_item tinyint(2) unsigned not null, 
 chance tinyint(2) unsigned default 1 not null, primary key (lootdrop_id, item_id));
+
+ALTER TABLE  `loottable_entries` ADD  `probability` FLOAT NOT NULL DEFAULT  '100';
 */
 
 
@@ -47,6 +49,7 @@ struct LootTableEntries_Struct {
 	uint8	droplimit;
 	uint8	mindrop;
 	uint8	multiplier;
+    float   probability;
 };
 
 struct LootTable_Struct {
