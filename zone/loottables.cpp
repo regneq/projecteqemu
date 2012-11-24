@@ -143,7 +143,7 @@ bool SharedDatabase::DBLoadLoot() {
 			tmpmincash = atoi(row[1]);
 			tmpmaxcash = atoi(row[2]);
 			tmpavgcoin = atoi(row[3]);
-			if (RunQuery(query, MakeAnyLenString(&query, "SELECT loottable_id, lootdrop_id, droplimit, mindrop, multiplier FROM loottable_entries WHERE loottable_id=%i", tmpid), errbuf, &result2)) {
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT loottable_id, lootdrop_id, droplimit, mindrop, multiplier, probability FROM loottable_entries WHERE loottable_id=%i", tmpid), errbuf, &result2)) {
 				safe_delete_array(query);
 				tmpLT = (LootTable_Struct*) new uchar[sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * mysql_num_rows(result2))];
 				memset(tmpLT, 0, sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * mysql_num_rows(result2)));
@@ -164,6 +164,7 @@ bool SharedDatabase::DBLoadLoot() {
 					tmpLT->Entries[i].droplimit = atoi(row[2]);
 					tmpLT->Entries[i].mindrop = atoi(row[3]);
 					tmpLT->Entries[i].multiplier = atoi(row[4]);
+                    tmpLT->Entries[i].probability = atof(row[5]);
 					i++;
 				}
 				if (!EMuShareMemDLL.Loot.cbAddLootTable(tmpid, tmpLT)) {
@@ -313,9 +314,21 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 	// Do items
 	for (int32 i=0; i<lts->NumEntries; i++) {
 		for (int32 k = 1; k <= lts->Entries[i].multiplier; k++) {
-		int8 droplimit = lts->Entries[i].droplimit;
-		int8 mindrop = lts->Entries[i].mindrop;
-				AddLootDropToNPC(npc,lts->Entries[i].lootdrop_id, itemlist, droplimit, mindrop);
+		    int8 droplimit = lts->Entries[i].droplimit;
+		    int8 mindrop = lts->Entries[i].mindrop;
+
+            //LootTable Entry probability
+            float ltchance = 0.0f;
+            ltchance = lts->Entries[i].probability;
+
+            float drop_chance = 0.0f;
+            if(ltchance > 0.0 && ltchance < 100.0) {
+                drop_chance = MakeRandomFloat(0.0, 100.0);
+            }
+
+            if (ltchance != 0.0 && (ltchance == 100.0 || drop_chance < ltchance)) {
+			    AddLootDropToNPC(npc,lts->Entries[i].lootdrop_id, itemlist, droplimit, mindrop);
+            }
 		}
 	}
 }

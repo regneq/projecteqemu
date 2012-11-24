@@ -1004,6 +1004,7 @@ void Mob::AI_Process() {
 		return;
 	
 	bool engaged = IsEngaged();
+    bool doranged = false;
 
 	// Begin: Additions for Wiz Fear Code
 	//
@@ -1259,7 +1260,7 @@ void Mob::AI_Process() {
 			{
 				//could not summon them, check ranged...
 				if(SpecAttacks[SPECATK_RANGED_ATK])
-					RangedAttack(target);
+                    doranged = true;
 
 				// Now pursue
 				// TODO: Check here for another person on hate list with close hate value
@@ -1469,6 +1470,12 @@ void Mob::AI_Process() {
 				
          } 
       } // else if (AImovement_timer->Check()) 
+   }
+
+   //Do Ranged attack here
+   if(doranged)
+   {
+       RangedAttack(target);
    }
 }
 

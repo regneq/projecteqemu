@@ -1,0 +1,1 @@
+ALTER TABLE  `loottable_entries` ADD  `probability` FLOAT NOT NULL DEFAULT  '100';
