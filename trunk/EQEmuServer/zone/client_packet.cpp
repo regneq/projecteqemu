@@ -6864,9 +6864,15 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
 			if (GetTarget() != this && mypet->DistNoRootNoZ(*GetTarget()) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
-				mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
-				if(mypet->GetPetOrder() != SPO_Guard)
-					mypet->SetPetOrder(SPO_Follow);
+				if (mypet->IsHeld()) {
+					if (!mypet->IsFocused()) {
+						mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
+						if(mypet->GetPetOrder() != SPO_Guard)
+							mypet->SetPetOrder(SPO_Follow);
+					} else {
+						mypet->SetTarget(GetTarget());
+					}
+				}
 				zone->AddAggroMob();
 				mypet->AddToHateList(GetTarget(), 1);
 				Message_StringID(10, PET_ATTACKING, mypet->GetCleanName(), GetTarget()->GetCleanName());
@@ -7009,6 +7015,60 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->Say("I will hold until given an order, master.");
 			mypet->WipeHateList();
 			mypet->SetHeld(true);
+		}
+		break;
+	}
+	case PET_NOCAST: {
+		if(GetAA(aaAdvancedPetDiscipline) == 2 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsNoCast()) {
+				Message(0,"%s says, 'I will now cast spells, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetNoCast(false);
+			} else {
+				Message(0,"%s says, 'I will no longer cast spells, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetNoCast(true);
+			}
+		}
+		break;
+	}
+ 	case PET_FOCUS: {
+		if(GetAA(aaAdvancedPetDiscipline) >= 1 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsFocused()) {
+				Message(0,"%s says, 'I am no longer focused, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(false);
+			} else {
+				Message(0,"%s says, 'I will now focus my attention, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(true);
+			}
+		}
+		break;
+	}
+ 	case PET_FOCUS_ON: {
+		if(GetAA(aaAdvancedPetDiscipline) >= 1 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsFocused()) {
+				Message(0,"%s says, 'I am already focused, Master!",mypet->GetCleanName());
+			} else {
+				Message(0,"%s says, 'I will now focus my attention, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(true);
+			}
+		}
+		break;
+	}
+ 	case PET_FOCUS_OFF: {
+		if(GetAA(aaAdvancedPetDiscipline) >= 1 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsFocused()) {
+				Message(0,"%s says, 'I am no longer focused, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(false);
+			} else {
+				Message(0,"%s says, 'I am already not focused, Master!",mypet->GetCleanName());
+			}
 		}
 		break;
 	}
