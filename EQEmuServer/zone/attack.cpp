@@ -2265,6 +2265,7 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	Mob* owner = other->GetOwner();
 	Mob* mypet = this->GetPet();
 	Mob* myowner = this->GetOwner();
+	Mob* targetmob = this->GetTarget();
 	
 	if(other){
 		AddRampage(other);
@@ -2274,9 +2275,14 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 		hate = ((hate * (hatemod))/100);
 	}
 	
-	if(IsPet() && GetOwner() && GetOwner()->GetAA(aaPetDiscipline) && IsHeld()){
+	if(IsPet() && GetOwner() && GetOwner()->GetAA(aaPetDiscipline) && IsHeld() && !IsFocused()) { //ignore aggro if hold and !focus
 		return; 
-	}	
+	}
+
+	if(IsPet() && GetOwner() && GetOwner()->GetAA(aaPetDiscipline) && IsHeld() && GetOwner()->GetAA(aaAdvancedPetDiscipline) >= 1 && IsFocused()) {
+		if (!targetmob)
+			return;
+	}
 
 	if(IsClient() && !IsAIControlled())
 		return;
@@ -3214,10 +3220,12 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		Mob *pet = GetPet();
 		if (pet && !pet->IsFamiliar() && !pet->SpecAttacks[IMMUNE_AGGRO] && !pet->IsEngaged() && attacker && attacker != this && !attacker->IsCorpse()) 
 		{
-			mlog(PETS__AGGRO, "Sending pet %s into battle due to attack.", pet->GetName());
-			pet->AddToHateList(attacker, 1);
-			pet->SetTarget(attacker);
-			Message_StringID(10, PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
+			if (!pet->IsHeld()) {
+				mlog(PETS__AGGRO, "Sending pet %s into battle due to attack.", pet->GetName());
+				pet->AddToHateList(attacker, 1);
+				pet->SetTarget(attacker);
+				Message_StringID(10, PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
+			}
 		}	
 	
 		//see if any runes want to reduce this damage

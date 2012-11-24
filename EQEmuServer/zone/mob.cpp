@@ -306,6 +306,8 @@ Mob::Mob(const char*   in_name,
 	typeofpet = petCharmed;		//default to charmed...
 	petpower = 0;
 	held = false;
+	nocast = false;
+	focused = false;
 	
 	attacked_count = 0;
 	mezzed = false;
@@ -2741,6 +2743,10 @@ void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 	if(spell_id == SPELL_UNKNOWN || on->SpecAttacks[NO_HARM_FROM_CLIENT]){ //This is so 65535 doesn't get passed to the client message and to logs because it is not relavant information for debugging.
 				return;
 	}
+
+	if (IsNoCast())
+		return;
+
 	if(!IsValidSpell(spell_id)){ // Check for a valid spell otherwise it will crash through the function
 		if(this->IsClient()){
 			this->Message(0, "Invalid spell proc %u", spell_id);

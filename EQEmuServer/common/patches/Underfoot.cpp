@@ -3260,6 +3260,15 @@ DECODE(OP_PetCommands)
 		case 0x1d:
 			emu->command = 0x02;	// Leave/Go Away
 			break;
+		case 0x15:
+			emu->command = 0x12;	// No Cast - /command
+			break;
+		case 0x16:
+			emu->command = 0x12;	// No Cast - Pet Window
+			break;
+		case 0x18:
+			emu->command = 0x13;	// Focus - Pet Window
+			break;
 		default:
 			emu->command = eq->command;
 	}
