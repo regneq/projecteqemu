@@ -1,5 +1,35 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/23/2012==
+cavedude: (Tabasco) Re-added probability, setting it to 100 (default) effectively bypasses probability and no additional roll is made. Setting it to 0 prevents the table from being rolled at all, so you can disable the table but still keep the entries if needed.
+Required SQL: utils/sql/svn/2260_probability.sql
+
+==11/22/2012==
+Sorvani: Tabasco sent in this bugfix: Ranged attack crash
+It doesn't happen every time, but if an NPC is flagged for ranged attacks and they kill their target, the AIProcess function continues on under the assumption that the target is still available.
+
+I just adjusted it to set a flag and do the actual attack at the end of the function. I haven't been able to reproduce the crash since.
+
+==10/31/2012==
+Akkadius: Added the ability to govern player max levels through the source per character. It will look for a qglobal named 'CharMaxLevel', type 5 qglobal, if the rule is enabled and the character flag is set, they will not be able to pass that level.
+Optional SQL: utils/sql/svn/2243_optional_char_max_level_rule.sql
+
+==10/22/2012==
+Lerxst2112: Fixed issue in AddMoneyToPP where the amount of silver was being added to copper instead of the leftover copper.
+
+==10/03/2012==
+Sorvani: Disabled optimization around the DECODE(OP_CharacterCreate) in all SoF+ patches to force character creation to validate correctly.
+
+==10/02/2012==
+Sorvani: A NPC that is immune to Mez, Slow, Fear, Charm, or Snare will now generate aggro based on the respective spell's normal aggro.
+
+==09/28/2012==
+Sorvani: SE_SummonCorpse will now work in raid groups.
+
+==09/27/2012==
+Bad_Captain: Bots- Changed #bot healrotation timer to allow decimal values.
+Bad_Captain: Bots- Rewrote bot AAs to load from DB.
+Bad_Captain: Bots- Synced bot code to client code for aabonuses, attack, spell casting, etc., as the result of the client aabonuses changes.
 
 ==09/23/2012==
 Kayen: Fix for crippling blow chance, other minor fixes related to bonuses.
