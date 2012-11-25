@@ -1418,7 +1418,7 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, Client
 	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
 	ZonePoint* closest_zp = 0;
 	float closest_dist = FLT_MAX;
-	float max_distance2 = max_distance*max_distance;
+	float max_distance2 = max_distance * max_distance;
 	iterator.Reset();
 	while(iterator.MoreElements())
 	{
@@ -1439,7 +1439,7 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, Client
 			if(zp->y == 999999 || zp->y == -999999)
 				delta_y = 0;
 
-			float dist = delta_x*delta_x+delta_y*delta_y;
+			float dist = sqrt(delta_x * delta_x + delta_y * delta_y);
 			if (dist < closest_dist)
 			{
 				closest_zp = zp;
@@ -1449,19 +1449,19 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, Client
 		iterator.Advance();
 	}
 	
-	if(closest_dist>(40000.0f) && closest_dist<max_distance2)
+	if(closest_dist > 400.0f && closest_dist < max_distance2)
 	{
 		if(client)
-			client->CheatDetected(MQZoneUnknownDest, x, y, z); //[Paddy] Someone is trying to use /zone
-		LogFile->write(EQEMuLog::Status, "WARNING: Closest zone point for zone id %d is %f, you might need to update your zone_points table if you dont arrive at the right spot.",to,closest_dist);
-		LogFile->write(EQEMuLog::Status, "<Real Zone Points>.  %f x %f y %fz ",x,y,z);
+			client->CheatDetected(MQZoneUnknownDest, x, y, z); // Someone is trying to use /zone
+		LogFile->write(EQEMuLog::Status, "WARNING: Closest zone point for zone id %d is %f, you might need to update your zone_points table if you dont arrive at the right spot.", to, closest_dist);
+		LogFile->write(EQEMuLog::Status, "<Real Zone Points>.  %f x %f y %f z ", x, y, z);
 	}
 	
 	if(closest_dist > max_distance2)
 		closest_zp = NULL;
 	
 	if(!closest_zp)
-		closest_zp = GetClosestZonePointWithoutZone(x,y,z, client);
+		closest_zp = GetClosestZonePointWithoutZone(x, y, z, client);
 
 	return closest_zp;
 }

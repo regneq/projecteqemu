@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/25/2012==
+JJ: Initial fix for /MQZone detection to reduce false positives.
 
 ==11/24/2012==
 Sorvani: (Vaion) Added /pet no cast and /pet focus
