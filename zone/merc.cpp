@@ -2838,9 +2838,9 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 			{
 				if(c->GetEPP().merc_name[0] == 0)
 				{
-				sprintf_s(c->GetEPP().merc_name, 64, "%s", GetRandPetName()); //sanity check.
+					snprintf(c->GetEPP().merc_name, 64, "%s", GetRandPetName()); //sanity check.
 				}
-				sprintf_s(npc_type->name, 64, "%s", c->GetEPP().merc_name);
+				snprintf(npc_type->name, 64, "%s", c->GetEPP().merc_name);
 			}
 			int8 gender;
 			if(merchant_id > 0) {
