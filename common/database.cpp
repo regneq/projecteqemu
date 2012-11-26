@@ -1997,20 +1997,17 @@ void Database::AddReport(std::string who, std::string against, std::string lines
 	safe_delete_array(escape_str);
 }
 
-void  Database::SetGroupID(const char* name,int32 id, int32 charid){
+void  Database::SetGroupID(const char* name,int32 id, int32 charid, int32 ismerc){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	if(id == 0){ //removing you from table
-	if (!RunQuery(query, MakeAnyLenString(&query, "delete from group_id where charid=%i and name='%s'",charid, name), errbuf))
-		printf("Unable to get group id: %s\n",errbuf);
+	if (!RunQuery(query, MakeAnyLenString(&query, "delete from group_id where charid=%i and name='%s' and ismerc=%i",charid, name, ismerc), errbuf))
+		LogFile->write(EQEMuLog::Error, "Error deleting character from group id: %s", errbuf);
 	}
 	else{
-	if (!RunQuery(query, MakeAnyLenString(&query, "replace into group_id set charid=%i, groupid=%i, name='%s'",charid, id, name), errbuf))
-		printf("Unable to get group id: %s\n",errbuf);
+	if (!RunQuery(query, MakeAnyLenString(&query, "replace into group_id set charid=%i, groupid=%i, name='%s', ismerc='%i'",charid, id, name, ismerc), errbuf))
+		LogFile->write(EQEMuLog::Error, "Error adding character to group id: %s", errbuf);
 	}
-#ifdef _EQDEBUG
-	printf("Set group id on '%s' to %d\n", name, id);
-#endif
 	safe_delete_array(query);
 }
 
@@ -2043,11 +2040,11 @@ int32 Database::GetGroupID(const char* name){
 				groupid=atoi(row[0]);
 		}
 		else
-			printf("Unable to get group id, char not found!\n");
+		LogFile->write(EQEMuLog::Error, "Unable to get groupid, character not found!");
 		mysql_free_result(result);
 	}
 	else
-			printf("Unable to get group id: %s\n",errbuf);
+	LogFile->write(EQEMuLog::Error, "Error getting group id: %s", errbuf);
 	safe_delete_array(query);
 	return groupid;
 }

@@ -988,7 +988,11 @@ void WorldServer::Process() {
 				if(group)
 					group->UpdatePlayer(c);
 				else
+				{
+					if(c->GetMerc())
+					database.SetGroupID(c->GetMerc()->GetCleanName(), 0, c->CharacterID(), true);
 					database.SetGroupID(c->GetName(), 0, c->CharacterID());	//cannot re-establish group, kill it
+				}
 
 			}
 

@@ -58,6 +58,7 @@ public:
 	Client* GetMercOwner();
 	virtual Mob* GetOwnerOrSelf();
 	uint32 GetMercID() { return _MercID; }
+	uint32 GetMercCharacterID( ) { return owner_char_id; }
 	uint32 GetMercTemplateID() { return _MercTemplateID; }
 	uint32 GetMercType() { return _MercType; }
 	uint32 GetMercSubType() { return _MercSubType; }
@@ -148,6 +149,7 @@ public:
 	// "SET" Class Methods
 	void SetMercData (uint32 templateID );
 	void SetMercID( uint32 mercID ) { _MercID = mercID; }
+	void SetMercCharacterID( uint32 mercID ) { owner_char_id = mercID; }
 	void SetMercTemplateID( uint32 templateID ) { _MercTemplateID = templateID; }
 	void SetMercType( uint32 type ) { _MercType = type; }
 	void SetMercSubType( uint32 subtype ) { _MercSubType = subtype; }
@@ -260,6 +262,7 @@ private:
 	bool	_medding;
 	bool	_suspended;
 	bool	p_depop;
+	int32	owner_char_id;
 	const NPCType*	ourNPCData;
 };
 

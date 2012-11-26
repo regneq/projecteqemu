@@ -42,7 +42,7 @@ struct ExtendedProfile_Struct {
 	int16				old_pet_mana;
 	SpellBuff_Struct	pet_buffs[BUFF_COUNT];
 	int32				pet_items[MAX_MATERIALS];
-	char				pet_name[64];
+	char				merc_name[64];
 	
 	uint32				aa_effects;
 	uint32				perAA;		//% of exp going to AAs

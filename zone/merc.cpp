@@ -2110,8 +2110,10 @@ bool Merc::Process()
     }
 
 	if(!GetMercOwner())
+	{
+		p_depop = true;
 		return false;
-
+	}
 	if(IsSuspended()) {
 		//return false;
 	}
@@ -2688,19 +2690,7 @@ void Merc::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_sk
 
 	if(Suspend())
 	{
-		//If the merc owner is valid, and the merc is 'pseudo-suspended', do this:
-		if(GetMercOwner() != NULL)
-		{
-							Client* owner = GetMercOwner();
-							owner->GetEPP().mercIsSuspended = true;
-							owner->GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
-							owner->GetEPP().mercTimerRemaining = owner->GetMercTimer().GetRemainingTime();
-							owner->GetMercTimer().Disable();
-							owner->UpdateMercTimer();
-							owner->GetPTimers().Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
-							owner->SendMercSuspendResponsePacket(owner->GetEPP().mercSuspendedTime);
-							owner->SendMercMerchantResponsePacket(0);
-		}
+		//todo: perl event?
 	}
 }
 
@@ -2844,8 +2834,14 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 			NPCType* npc_type = new NPCType; //This is actually a very terrible method of assigning stats, and should be changed at some point. See the comment in merc's deconstructor.
 			memset(npc_type, 0, sizeof(NPCType));
 			memcpy(npc_type, npc_type_to_copy, sizeof(NPCType));
-			sprintf(npc_type->name, "%s", GetRandPetName());
-
+			if(c)
+			{
+				if(c->GetEPP().merc_name[0] == 0)
+				{
+				sprintf_s(c->GetEPP().merc_name, 64, "%s", GetRandPetName()); //sanity check.
+				}
+				sprintf_s(npc_type->name, 64, "%s", c->GetEPP().merc_name);
+			}
 			int8 gender;
 			if(merchant_id > 0) {
 				NPC* tar = entity_list.GetNPCByID(merchant_id);
@@ -2859,14 +2855,8 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 
 			sprintf(npc_type->lastname, "%s's %s", c->GetName(), "Mercenary");
 			npc_type->max_hp = (npc_type->max_hp * npc_type->scalerate) / 100;
-			npc_type->gender = gender;
-			npc_type->class_ = npc_type->class_;
-			npc_type->npc_id = 0;
-			npc_type->loottable_id = 0;
-			npc_type->bodytype = 1;
-
-			npc_type->maxlevel = c->GetLevel();
-			npc_type->npc_id = 0;
+			npc_type->loottable_id = 0; // Loottable has to be 0, otherwise we'll be leavin' some corpses!
+			npc_type->npc_id = 0; //NPC ID has to be 0, otherwise db gets all confuzzled.
 			npc_type->STR = (npc_type->STR  * npc_type->scalerate) / 100;
 			npc_type->STA = (npc_type->STA * npc_type->scalerate) / 100;
 			npc_type->DEX = (npc_type->DEX * npc_type->scalerate) / 100;
@@ -2882,10 +2872,10 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 			npc_type->CR =  (npc_type->CR * npc_type->scalerate) / 100;
 			npc_type->Corrup =  (npc_type->Corrup * npc_type->scalerate) / 100;
 			npc_type->AC =  (npc_type->AC * npc_type->scalerate) / 100;
-			npc_type->race = merc_template->RaceID;
-			npc_type->class_ = merc_template->ClassID;
-			npc_type->maxlevel = 0;
-			Merc* merc = new Merc(npc_type, c->GetX(), c->GetY(), c->GetZ(), 0);
+			//npc_type->race = merc_template->RaceID; //Commented these out because it conflicted with the initial goal of mercs.
+			//npc_type->class_ = merc_template->ClassID;
+			npc_type->maxlevel = 0; //We should hard-set this to override scalerate's functionality in the NPC class when it is constructed.
+			Merc* merc = new Merc(npc_type, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
 			merc->SetMercData( merc_template->MercTemplateID );
 			return merc;
 		}
@@ -2971,31 +2961,7 @@ void Client::SuspendMercCommand()
 					merc->Spawn(this);
 					merc->SetSuspended(false);
 					SetMerc(merc);
-					if(merc->Unsuspend())
-					{
-						merc_timer.Start(GetEPP().mercTimerRemaining);
-						if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
-							p_timers.Clear(&database, pTimerMercSuspend);
-							SendMercPersonalInfo();
-							SendMercMerchantResponsePacket(0);
-
-						if(!IsGrouped()) {
-								Group *g = new Group(this);
-								if(merc->AddMercToGroup(merc, g)) {
-								entity_list.AddGroup(g);
-								database.SetGroupLeaderName(g->GetID(), this->GetName());
-								g->SaveGroupLeaderAA();
-								database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
-								database.SetGroupID(merc->GetCleanName(), g->GetID(), GetMercID());
-								g->SendUpdate(groupActUpdate, this);
-								}
-							}
-						else {
-							merc->AddMercToGroup(merc, this->GetGroup());
-							database.SetGroupID(GetCleanName(), this->GetGroup()->GetID(), GetMercID());
-							GetGroup()->SendUpdate(groupActUpdate, this);
-						}
-					}
+					merc->Unsuspend();
 				}
 			}
 		
@@ -3003,17 +2969,7 @@ void Client::SuspendMercCommand()
 				Merc* CurrentMerc = GetMerc();
 
 				if(CurrentMerc && GetMercID()) {
-					if(CurrentMerc->Suspend()) {
-						// Set merc suspended time for client & merc
-						GetEPP().mercIsSuspended = true;
-						GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
-						GetEPP().mercTimerRemaining = merc_timer.GetRemainingTime();
-						merc_timer.Disable();
-						UpdateMercTimer();
-						p_timers.Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
-						SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
-						SendMercMerchantResponsePacket(0);
-					}
+					CurrentMerc->Suspend();
 				}
 			}
 		}
@@ -3041,33 +2997,9 @@ void Client::SpawnMercOnZone()
 							merc->Spawn(this);
 							merc->SetSuspended(false);
 							SetMerc(merc);
-							merc_timer.Start(GetEPP().mercTimerRemaining);
-
-							// Send Mercenary Status/Timer packet
-							SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
-
-							// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-							SendMercAssignPacket(GetID(), 1, 2);
-							SendMercAssignPacket(GetID(), 0, 13);
-							SendMercPersonalInfo();
-							SendMercMerchantResponsePacket(0);
-							if(!IsGrouped()) {
-								Group *g = new Group(this);
-								if(merc->AddMercToGroup(merc, g)) {
-								entity_list.AddGroup(g);
-								database.SetGroupLeaderName(g->GetID(), this->GetName());
-								g->SaveGroupLeaderAA();
-								database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
-								database.SetGroupID(merc->GetCleanName(), g->GetID(), GetMercID());
-								GetGroup()->SendUpdate(groupActUpdate, this);
-								}
-							}
-					else {
-						merc->AddMercToGroup(merc, this->GetGroup());
-						database.SetGroupID(GetCleanName(), this->GetGroup()->GetID(), GetMercID());
-						GetGroup()->SendUpdate(groupActUpdate, this);
-					}
-				}
+							merc->Unsuspend();
+							merc->SetFollowID(this->GetID());
+						}
 			}
 			else
 			{
@@ -3107,6 +3039,17 @@ bool Merc::Suspend() {
 	}
 
 	//Save();
+
+	Client* owner = GetMercOwner();
+	owner->GetEPP().mercIsSuspended = true;
+	owner->GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
+	owner->GetEPP().mercTimerRemaining = owner->GetMercTimer().GetRemainingTime();
+	owner->GetMercTimer().Disable();
+	owner->UpdateMercTimer();
+	owner->GetPTimers().Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
+	owner->SendMercSuspendResponsePacket(owner->GetEPP().mercSuspendedTime);
+	owner->SendMercMerchantResponsePacket(0);
+
 	
 	Depop();
 
@@ -3142,6 +3085,27 @@ bool Merc::Unsuspend() {
 		mercOwner->SendMercAssignPacket(GetID(), 1, 2);
 		mercOwner->SendMercAssignPacket(GetID(), 0, 13);
 
+		mercOwner->GetMercTimer().Start(mercOwner->GetEPP().mercTimerRemaining);
+		if(!mercOwner->GetPTimers().Expired(&database, pTimerMercSuspend, false)) 
+			mercOwner->GetPTimers().Clear(&database, pTimerMercSuspend);
+			mercOwner->SendMercPersonalInfo();
+			mercOwner->SendMercMerchantResponsePacket(0);
+			if(!mercOwner->IsGrouped()) {
+			Group *g = new Group(mercOwner);
+				if(AddMercToGroup(this, g)) {
+					entity_list.AddGroup(g);
+					database.SetGroupLeaderName(g->GetID(), mercOwner->GetName());
+					g->SaveGroupLeaderAA();
+					database.SetGroupID(mercOwner->GetName(), g->GetID(), mercOwner->CharacterID());
+					database.SetGroupID(this->GetName(), g->GetID(), mercOwner->CharacterID(), true);
+					database.RefreshGroupFromDB(mercOwner);
+				}
+			}
+			else {
+					this->AddMercToGroup(this, mercOwner->GetGroup());
+					database.SetGroupID(GetName(), mercOwner->GetGroup()->GetID(), mercOwner->CharacterID(), true);
+					database.RefreshGroupFromDB(mercOwner);
+			}
 	}
 
 	return true;
@@ -3212,8 +3176,10 @@ bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
 				merc->SetFollowID(0);
 
 				if(group->DelMember(merc))
-					database.SetGroupID(merc->GetCleanName(), 0, merc->GetMercID());
-
+				{
+					if(merc->GetMercCharacterID() != 0)
+					database.SetGroupID(merc->GetName(), 0, merc->GetMercCharacterID(), true);
+				}
 				if(group->GroupCount() <= 1)
 				{
 					group->DisbandGroup();
@@ -3223,10 +3189,18 @@ bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
 				for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(!group->members[i])
 						continue;
+
+					if(!group->members[i]->IsMerc())
+						continue;
+
+					Merc* groupmerc = group->members[i]->CastToMerc();
+
+					groupmerc->SetOwnerID(0);
+
 				}
 
 				group->DisbandGroup();
-				database.SetGroupID(merc->GetCleanName(), 0, merc->GetMercID());
+				database.SetGroupID(merc->GetCleanName(), 0, merc->GetMercCharacterID(), true);
 			}
 
 			Result = true;
@@ -3244,13 +3218,7 @@ bool Merc::AddMercToGroup(Merc* merc, Group* group) {
 			// Add bot to this group
 			if(group->AddMember(merc)) {
 				if(group->GetLeader()) {
-					merc->SetFollowID(group->GetLeader()->GetID());
-
-					// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
-					if(group->GroupCount() == 2 && group->GetLeader()->IsClient()) {
-						group->UpdateGroupAAs();
-						Mob *TempLeader = group->GetLeader();
-					}
+					merc->SetFollowID(merc->GetMercOwner()->GetID());
 				}
 
 				Result = true;
@@ -3281,8 +3249,6 @@ Merc* Client::GetMerc() {
 
 void Merc::SetMercData( uint32 template_id ) {
 	MercTemplate* merc_template = zone->GetMercTemplate(template_id);
-
-	SetMercID(1);   //ToDO: Get ID From Merc table after saving
 	SetMercTemplateID( merc_template->MercTemplateID );
 	SetMercType( merc_template->MercType );
 	SetMercSubType( merc_template->MercSubType );
@@ -3312,27 +3278,12 @@ void Client::SetMerc(Merc* newmerc) {
 		SetMercID(newmerc->GetID());
 		Client* oldowner = entity_list.GetClientByID(newmerc->GetOwnerID());
 		newmerc->SetOwnerID(this->GetID());
+		newmerc->SetMercCharacterID(this->CharacterID());
 		newmerc->SetClientVersion((uint8)this->GetClientVersion());
 		GetEPP().mercTemplateID = newmerc->GetMercTemplateID();
 		GetEPP().mercIsSuspended = newmerc->IsSuspended();
 		GetEPP().mercSuspendedTime = 0;
 		GetEPP().mercGender = newmerc->GetGender();
-
-		if(!IsGrouped()) {
-			Group *g = new Group(this);
-
-			if(newmerc->AddMercToGroup(newmerc, g)) {
-			entity_list.AddGroup(g);
-			database.SetGroupLeaderName(g->GetID(), this->GetName());
-			g->SaveGroupLeaderAA();
-			database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
-			database.SetGroupID(newmerc->GetCleanName(), g->GetID(), newmerc->GetMercID());
-			}
-		}
-		else {
-			newmerc->AddMercToGroup(newmerc, this->GetGroup());
-			database.SetGroupID(GetCleanName(), this->GetGroup()->GetID(), newmerc->GetMercID());
-		}
 	}
 }
 
@@ -3384,7 +3335,7 @@ void NPC::LoadMercTypes(){
 	MYSQL_RES* DatasetResult;
 	MYSQL_ROW DataRow;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTyp.clientversion, MType.merc_npc_type_id FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTem.clientversion, MTyp.merc_npc_type_id FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {

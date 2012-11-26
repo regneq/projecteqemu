@@ -6419,6 +6419,10 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 		if(!group->AddMember(this))
 			return;
+		if(GetMerc())
+		{
+			group->AddMember(GetMerc());
+		}
 
 		if(inviter->CastToClient()->IsLFP()) {
 			// If the player who invited us to a group is LFP, have them update world now that we have joined
@@ -6539,22 +6543,65 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 #endif
 	if((group->IsLeader(this) && (GetTarget() == 0 || GetTarget() == this)) || (group->GroupCount()<3)) {
 		group->DisbandGroup();
+		if(GetMerc() != NULL)
+		GetMerc()->Suspend();
 	} else {
 		Mob* memberToDisband = NULL;
 		memberToDisband = GetTarget();
 
 		if(!memberToDisband)
 			memberToDisband = entity_list.GetMob(gd->name2);
-		if(memberToDisband ){
-			if(group->IsLeader(this))
-			{ // the group leader can kick other members out of the group...
-				group->DelMember(memberToDisband,false);
+			if(memberToDisband )
+			{
+				if(group->IsLeader(this)) // the group leader can kick other members out of the group...
+				{
+					group->DelMember(memberToDisband,false);
+					if(memberToDisband->IsClient())
+					{
+						Client* memberClient = memberToDisband->CastToClient();
+						Merc* memberMerc = memberToDisband->CastToClient()->GetMerc();
+							if(memberMerc != NULL)
+							{
+								memberMerc->RemoveMercFromGroup(memberMerc, group);
+								if(!memberMerc->IsGrouped() && !memberClient->IsGrouped())
+								{
+									Group *g = new Group(memberClient);
+									if(memberMerc->AddMercToGroup(memberMerc, g)) {
+										entity_list.AddGroup(g);
+										database.SetGroupLeaderName(g->GetID(), memberClient->GetName());
+										g->SaveGroupLeaderAA();
+										database.SetGroupID(memberClient->GetName(), g->GetID(), memberClient->CharacterID());
+										database.SetGroupID(memberMerc->GetName(), g->GetID(), memberClient->CharacterID(), true);
+										database.RefreshGroupFromDB(memberClient);
+									}
+								}
+							}
+					}
+					else if(memberToDisband->IsMerc())
+					{
+						memberToDisband->CastToMerc()->Suspend();
+					}
+				}
+				else 
+				{   // ...but other members can only remove themselves
+					group->DelMember(this,false);
+
+					if(!IsGrouped() && GetMerc() != NULL)
+					{
+						if(!IsGrouped()) {
+						Group *g = new Group(this);
+							if(GetMerc()->AddMercToGroup(GetMerc(), g)) {
+								entity_list.AddGroup(g);
+								database.SetGroupLeaderName(g->GetID(), this->GetName());
+								g->SaveGroupLeaderAA();
+								database.SetGroupID(this->GetName(), g->GetID(), this->CharacterID());
+								database.SetGroupID(GetMerc()->GetName(), g->GetID(), this->CharacterID(), true);
+								database.RefreshGroupFromDB(this);
+							}
+						}
+					}
+				}
 			}
-			else 
-			{   // ...but other members can only remove themselves
-				group->DelMember(this,false);
-            }
-		}
 		else
 			LogFile->write(EQEMuLog::Error, "Failed to remove player from group. Unable to find player named %s in player group", gd->name2);
 	}
@@ -13186,24 +13233,12 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			// Get merc, assign it to client & spawn
 			Merc* merc = Merc::LoadMerc(this, merc_template, merchant_id);
 			if(merc) {
-				merc->Spawn(this);
-				SetMerc(merc);
-
-				// TODO: Populate these packets properly instead of hard coding the data fields.
-
-
-				//Clear the timers because we're hiring a new merc, the old merc's timers are no longer relevant to this character.
-				if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
-							p_timers.Clear(&database, pTimerMercSuspend);
-				// Send Mercenary Status/Timer packet
-				SendMercTimerPacket(GetID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
-
-				// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-				SendMercAssignPacket(merc->GetID(), 1, 2);
-				SendMercAssignPacket(merc->GetID(), 0, 13);
-				GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
-				GetEPP().mercState = 0;
-				SendMercPersonalInfo();
+					merc->Spawn(this);
+					merc->SetSuspended(false);
+					SetMerc(merc);
+					merc->Unsuspend();
+					if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
+						p_timers.Clear(&database, pTimerMercSuspend);
 			}
 		}
 	}
