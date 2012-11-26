@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==11/25/2012==
 JJ: Initial fix for /MQZone detection to reduce false positives.
+Sorvani: Corrected Improved Familiar pre-req and commited Vaion's AA update to fix animation Empathy.
+Required SQL: utils/sql/svn/2264_required_aa_updates.sql
 
 ==11/24/2012==
 Sorvani: (Vaion) Added /pet no cast and /pet focus
