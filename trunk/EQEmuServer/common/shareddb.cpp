@@ -1402,8 +1402,13 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges) {
 	ItemInst* inst = NULL;
 	if (item) {
-		if (charges == 0)
+		if (charges == 0) {
 			charges = item->MaxCharges;
+			// if maxcharges was -1 that means it is an unlimited use item. 
+			// set it to 1 charge so that it is usable on creation
+			if (charges == -1)
+				charges = 1;
+		}
 
 		if(item->CharmFileID != 0 || (item->LoreGroup >= 1000 && item->LoreGroup != -1)) {
 			inst = new EvoItemInst(item, charges);

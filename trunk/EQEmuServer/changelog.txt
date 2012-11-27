@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/27/2012==
+Sorvani: fix for newly created items with unlmiited charges to actually be usable.
+Sorvani: (Uleat) Lore check is now made for items inside bags being trade before the trade completes.
+
 ==11/25/2012==
 JJ: Initial fix for /MQZone detection to reduce false positives.
 Sorvani: Corrected Improved Familiar pre-req and commited Vaion's AA update to fix animation Empathy.
