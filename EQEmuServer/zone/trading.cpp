@@ -486,7 +486,8 @@ bool Client::CheckTradeLoreConflict(Client* other)
 	if (!other)
 		return true;
 	// Move each trade slot into free inventory slot
-	for (sint16 i=3000; i<=3007; i++){
+	for (sint16 i=3000; i<=3179; i++){
+		if(i == 3008) { i = 3100; }
 		const ItemInst* inst = m_inv[i];
 
 		if (inst && inst->GetItem()) {
