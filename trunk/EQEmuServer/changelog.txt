@@ -17,6 +17,8 @@ Akkadius: Added 'loottable_id` to NPC::ModifyNPCStat which also changes quest::M
 Akkadius: Fixed heap corruption in quest_globals that would occur if a value over 64 bytes was created
 Akkadius: Changed value size in qglobals from 64 bytes to 128 bytes
 Akkadius: Added #reloadworld - This command will reload every single zones Perl quests and repop them
+Secrets: Minor code fix for qglobals. Since we removed the id field from qglobals, I suppose we shouldn't use it in code.
+Secrets: Warning fix for a quest function.
 
 Perl Changes:
 Akkadius: Added EVENT_DISCONNECT to global_player.pl/player.pl - Event that triggers whenever a character disconnects from the world
