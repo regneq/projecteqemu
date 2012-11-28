@@ -1939,6 +1939,8 @@ int QuestManager::gettaskactivitydonecount(int task, int activity) {
 
 	if(RuleB(TaskSystem, EnableTaskSystem) && initiator)
 		return initiator->GetTaskActivityDoneCountFromTaskID(task, activity);
+
+	return 0; //improper args
 	
 }
 void QuestManager::updatetaskactivity(int task, int activity, int count) {
