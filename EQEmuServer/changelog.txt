@@ -16,7 +16,7 @@ Akkadius: QueryServ can now be used on a separate server and can use an entirely
 Akkadius: Added 'loottable_id` to NPC::ModifyNPCStat which also changes quest::ModifyNPCStat(identifier, newValue); as well
 Akkadius: Fixed heap corruption in quest_globals that would occur if a value over 64 bytes was created
 Akkadius: Changed value size in qglobals from 64 bytes to 128 bytes
-Akkadius: Added #reloadworld - This command will reload every single zones Perl quests and reboot them
+Akkadius: Added #reloadworld - This command will reload every single zones Perl quests and repop them
 
 Perl Changes:
 Akkadius: Added EVENT_DISCONNECT to global_player.pl/player.pl - Event that triggers whenever a character disconnects from the world
