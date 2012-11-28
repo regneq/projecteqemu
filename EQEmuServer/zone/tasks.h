@@ -169,6 +169,7 @@ public:
 	int GetActiveTaskID(int index);
 	bool IsTaskActivityCompleted(int index, int ActivityID);
 	int GetTaskActivityDoneCount(int index, int ActivityID);
+	int GetTaskActivityDoneCountFromTaskID(int TaskID, int ActivityID);
 	int GetTaskStartTime(int index);
 	void AcceptNewTask(Client *c, int TaskID, int NPCID);
 	void FailTask(Client *c, int TaskID);

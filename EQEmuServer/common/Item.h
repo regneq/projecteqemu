@@ -299,6 +299,7 @@ public:
 	void ClearByFlags(byFlagSetting is_nodrop, byFlagSetting is_norent);
 	uint8 FirstOpenSlot() const;
 	bool IsNoneEmptyContainer();
+	map<uint8, ItemInst*>* GetContents() { return &m_contents; }
 
 	//
 	// Augments
@@ -338,6 +339,7 @@ public:
 
 	sint16 GetCurrentSlot() const			{ return m_currentslot; }
 	void SetCurrentSlot(sint16 curr_slot)   { m_currentslot = curr_slot; }
+
 
 
 

@@ -35,6 +35,7 @@ using namespace std;
 	#include <unistd.h>
 #endif
 
+
 #include "client.h"
 #include "../common/emu_opcodes.h"
 #include "../common/eq_packet_structs.h"
@@ -66,6 +67,8 @@ extern LoginServerList loginserverlist;
 extern ClientList client_list;
 extern uint32 numclients;
 extern volatile bool RunLoops;
+
+
 
 Client::Client(EQStreamInterface* ieqs)
 : autobootup_timeout(RuleI(World, ZoneAutobootTimeoutMS)),
@@ -758,8 +761,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			if(!pZoning) {
 				database.SetGroupID(char_name, 0, charid);
-				database.SetLFP(charid, false);
-				database.SetLFG(charid, false);
+				database.SetLoginFlags(charid, false, false, 1);
 			}
 			else{
 				int32 groupid=database.GetGroupID(char_name);

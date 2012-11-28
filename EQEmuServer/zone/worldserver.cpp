@@ -57,6 +57,7 @@ using namespace std;
 #include "titles.h"
 #include "QGlobals.h"
 
+
 extern EntityList    entity_list;
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
@@ -1780,6 +1781,41 @@ void WorldServer::Process() {
 					break;
 			}
 			
+			break;
+		}
+		case ServerOP_CZSignalClient:
+		{
+			CZClientSignal_Struct* CZCS = (CZClientSignal_Struct*) pack->pBuffer;
+			Client* client = entity_list.GetClientByCharID(CZCS->charid);
+			if (client != 0) {
+				client->Signal(CZCS->data);
+			}
+			break;
+		}
+		case ServerOP_CZSignalClientByName:
+		{
+			CZClientSignalByName_Struct* CZCS = (CZClientSignalByName_Struct*) pack->pBuffer;
+			Client* client = entity_list.GetClientByName(CZCS->Name);
+			if (client != 0) {
+				client->Signal(CZCS->data);
+			}
+			break;
+		}
+		case ServerOP_CZMessagePlayer:
+		{
+			CZMessagePlayer_Struct* CZCS = (CZMessagePlayer_Struct*) pack->pBuffer;
+			Client* client = entity_list.GetClientByName(CZCS->CharName);
+			if (client != 0) {
+				client->Message(CZCS->Type, CZCS->Message);
+			}
+			break;
+		}
+		case ServerOP_ReloadWorld:
+		{
+			ReloadWorld_Struct* RW = (ReloadWorld_Struct*) pack->pBuffer;
+			if(zone){
+				zone->ReloadWorld(RW->Option);
+			}
 			break;
 		}
 		default: {

@@ -3,6 +3,51 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==11/27/2012==
 Sorvani: fix for newly created items with unlmiited charges to actually be usable.
 Sorvani: (Uleat) Lore check is now made for items inside bags being trade before the trade completes.
+Akkadius: Started first works of implementing QueryServ for what it was meant to be used
+Akkadius: Moved QueryServ to it's own configuration block in the eqemu_config.xml (example):
+	<qsdatabase>
+		<host>localhost</host>
+		<port>3306</port>
+		<username>root</username>
+		<password>password</password>
+		<db>queryserv</db>
+	</qsdatabase>
+Akkadius: QueryServ can now be used on a separate server and can use an entirely separate database as it was meant to
+Akkadius: Added 'loottable_id` to NPC::ModifyNPCStat which also changes quest::ModifyNPCStat(identifier, newValue); as well
+Akkadius: Fixed heap corruption in quest_globals that would occur if a value over 64 bytes was created
+Akkadius: Changed value size in qglobals from 64 bytes to 128 bytes
+Akkadius: Added #reloadworld - This command will reload every single zones Perl quests and reboot them
+
+Perl Changes:
+Akkadius: Added EVENT_DISCONNECT to global_player.pl/player.pl - Event that triggers whenever a character disconnects from the world
+Akkadius: Added EVENT_CONNECT to global_player.pl/player.pl - Event that triggers whenever a character connects to the world
+Akkadius: Added EVENT_TASK_UPDATE to global_player.pl/player.pl - Event that triggers whenever a donecount is incremented in a task, exports variables: $donecount, $activity_id and $task_id
+Akkadius: Added EVENT_TASK_COMPLETE to global_player.pl/player.pl - Event that triggers whenever a task is complete, this can sort of be checked in EVENT_TASK_STAGE_COMPLETED already but this is more finite, exports variables: $donecount, $activity_id and $task_id
+Akkadius: Added EVENT_TASK_FAIL to global_player.pl/player.pl - Event that triggers whenever a task has failed, exports variables: $task_id
+Akkadius: Added $client->SignalClient($data), it uses the client as the initiator and the client that gets sent the data, good for entity_list iterations through client
+Akkadius: Exported $client->AddAlternateCurrencyValue(currency_id, amount); originally created by KLS
+Akkadius: Added quest::gettaskactivitydonecount(task, activity); which obviously will get the amount done in a task based on task and activity
+Akkadius: Added cross zone client signalling capability by character ID: quest::crosszonesignalclientbycharid(char_id, data);
+Akkadius: Added cross zone client signalling capability by character Name: quest::crosszonesignalclientbyname(Name, data);
+Akkadius: Added cross zone client messaging capability by character Name: quest::crosszonemessageplayerbyname(Type, Name, Message);
+Akkadius: Added the ability to flow #commands through Perl, by flow meaning if the command doesn't process through the traditional command system, it will dump the output to EVENT_SAY in player.pl/global_player.pl based on rule Chat:FlowCommandstoPerl_EVENT_SAY
+
+QueryServ Changes:
+* I plan on adding much more logging to this server, but for now I've started with the following:
+* QueryServ requires rules to be enabled before packets get sent to QueryServ, otherwise World/Zone doesn't need to even craft the packets for logging
+Akkadius: Logging all player kills through QueryServ, you need to have QueryServ:PlayerLogNPCKills Rule Enabled, type: 0 = Solo, 1 = Group, 2 = Raid
+Akkadius: Player trades logging started but definitely not finished
+Akkadius: Removed the rules system from QueryServ, rules should only be read from World/Zone
+
+REQUIRED SQL: utils/sql/queryserv/2268_QueryServ.sql
+
+Database Changes:
+Akkadius: Added a field in `character_` called `firstlogon` that will essentially be booled true when a player logs on, it handles a characters online status between world and zone and ultimately gets used in EVENT_CONNECT
+Akkadius: Completely dropped the `id` column in `quest_globals`, the (`charid`, `npcid`, `zoneid`, `name`) fields will act as the primary keys, tested and working fine. This solves capping out on ID's as they are unecessary.
+Akkadius: Changed value size of `quest_globals` field `value` from 64 bytes to 128 bytes
+Akkadius: Removed an AA that was causing heap corruption
+
+REQUIRED SQL: utils/sql/svn/2268_required_updates.sql
 
 ==11/25/2012==
 JJ: Initial fix for /MQZone detection to reduce false positives.

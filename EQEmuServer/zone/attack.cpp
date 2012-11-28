@@ -42,6 +42,8 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "QuestParserCollection.h"
 #include "watermap.h"
+#include "worldserver.h"
+extern WorldServer worldserver;
 
 #ifdef _WINDOWS
 #define snprintf	_snprintf
@@ -2055,10 +2057,12 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 #endif //BOTS
 	}
 
+	int PlayerCount = 0; // QueryServ Player Counting
+
 	Client *give_exp_client = NULL;
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
-
+	
 	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
 	if (give_exp_client && !IsCorpse() && MerchantType == 0)
 	{
@@ -2078,8 +2082,30 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
                     parse->EventNPC(EVENT_KILLED_MERIT, this, kr->members[i].member, "killed", 0);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						kr->members[i].member->UpdateTasksOnKill(GetNPCTypeID());
+					PlayerCount++;
 				}
 			}
+
+			// QueryServ Logging - Raid Kills
+			if(RuleB(QueryServ, PlayerLogNPCKills)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerLogNPCKills, sizeof(QSPlayerLogNPCKill_Struct) + (sizeof(QSPlayerLogNPCKillsPlayers_Struct) * PlayerCount));
+				PlayerCount = 0;
+				QSPlayerLogNPCKill_Struct* QS = (QSPlayerLogNPCKill_Struct*) pack->pBuffer;
+				QS->s1.NPCID = this->GetNPCTypeID();
+				QS->s1.ZoneID = this->GetZoneID();
+				QS->s1.Type = 2; // Raid Fight
+				for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
+					if (kr->members[i].member != NULL) { // If Group Member is Client
+						Client *c = kr->members[i].member;
+						QS->Chars[PlayerCount].char_id = c->CharacterID();
+						PlayerCount++;
+					}
+				}
+				worldserver.SendPacket(pack); // Send Packet to World
+				safe_delete(pack); 
+			}
+			// End QueryServ Logging
+
 		}
 		else if (give_exp_client->IsGrouped() && kg != NULL)
 		{
@@ -2096,8 +2122,30 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
                     parse->EventNPC(EVENT_KILLED_MERIT, this, c, "killed", 0);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						c->UpdateTasksOnKill(GetNPCTypeID());
+
+					PlayerCount++;
 				}
 			}
+			
+			// QueryServ Logging - Group Kills
+			if(RuleB(QueryServ, PlayerLogNPCKills)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerLogNPCKills, sizeof(QSPlayerLogNPCKill_Struct) + (sizeof(QSPlayerLogNPCKillsPlayers_Struct) * PlayerCount));
+				PlayerCount = 0;
+				QSPlayerLogNPCKill_Struct* QS = (QSPlayerLogNPCKill_Struct*) pack->pBuffer;
+				QS->s1.NPCID = this->GetNPCTypeID();
+				QS->s1.ZoneID = this->GetZoneID();
+				QS->s1.Type = 1; // Group Fight
+				for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+					if (kg->members[i] != NULL && kg->members[i]->IsClient()) { // If Group Member is Client
+						Client *c = kg->members[i]->CastToClient();
+						QS->Chars[PlayerCount].char_id = c->CharacterID();
+						PlayerCount++;
+					}
+				}
+				worldserver.SendPacket(pack); // Send Packet to World
+				safe_delete(pack); 
+			}
+			// End QueryServ Logging
 		}
 		else
 		{
@@ -2118,6 +2166,21 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
             parse->EventNPC(EVENT_KILLED_MERIT, this, give_exp_client, "killed", 0);
 			if(RuleB(TaskSystem, EnableTaskSystem))
 				give_exp_client->UpdateTasksOnKill(GetNPCTypeID());
+
+			// QueryServ Logging - Solo
+			if(RuleB(QueryServ, PlayerLogNPCKills)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerLogNPCKills, sizeof(QSPlayerLogNPCKill_Struct) + (sizeof(QSPlayerLogNPCKillsPlayers_Struct) * 1));
+				QSPlayerLogNPCKill_Struct* QS = (QSPlayerLogNPCKill_Struct*) pack->pBuffer;
+				QS->s1.NPCID = this->GetNPCTypeID();
+				QS->s1.ZoneID = this->GetZoneID();
+				QS->s1.Type = 0; // Solo Fight
+				Client *c = give_exp_client;
+				QS->Chars[0].char_id = c->CharacterID();
+				PlayerCount++;
+				worldserver.SendPacket(pack); // Send Packet to World
+				safe_delete(pack); 
+			}
+			// End QueryServ Logging
 		}
 	}
 	
