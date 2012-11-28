@@ -162,6 +162,7 @@ void command_findnpctype(Client *c, const Seperator *sep);
 void command_findzone(Client *c, const Seperator *sep);
 void command_viewnpctype(Client *c, const Seperator *sep);
 void command_reloadqst(Client *c, const Seperator *sep);
+void command_reloadworld(Client *c, const Seperator *sep);
 void command_reloadzps(Client *c, const Seperator *sep);
 void command_zoneshutdown(Client *c, const Seperator *sep);
 void command_zonebootup(Client *c, const Seperator *sep);

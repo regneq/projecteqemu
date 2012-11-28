@@ -1966,6 +1966,11 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 		slow_mitigation = atof(val.c_str());
 		return;
 	}
+	if(id == "loottable_id")
+	{
+		loottable_id = atof(val.c_str());
+		return;
+	}
 }
 
 void NPC::LevelScale() {

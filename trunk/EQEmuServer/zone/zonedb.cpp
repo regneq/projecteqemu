@@ -833,7 +833,7 @@ void ZoneDatabase::UpdateBuyLine(uint32 CharID, uint32 BuySlot, uint32 Quantity)
 bool ZoneDatabase::GetCharacterInfoForLogin(const char* name, uint32* character_id, 
 char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, 
 uint32* pplen, uint32* guilddbid, int8* guildrank, 
-int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
+int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets, uint8 *firstlogon) {
 	_CP(Database_GetCharacterInfoForLogin);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -846,14 +846,14 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
 	
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
-		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets,firstlogon FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
-		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets,firstlogon FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
 	if (RunQuery(query, querylen, errbuf, &result)) {
-		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG, NumXTargets);
+		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG, NumXTargets, firstlogon);
 		mysql_free_result(result);
 	}
 	else {
@@ -871,7 +871,7 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
 bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result, 
 	int32* character_id, char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, 
 	ExtendedProfile_Struct *ext, uint32* pplen, uint32* guilddbid, int8* guildrank, 
-	int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
+	int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets, int8* firstlogon) {
 	_CP(Database_GetCharacterInfoForLogin_result);
 	
     MYSQL_ROW row;
@@ -944,6 +944,12 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 		if(NumXTargets)
 		{
 			*NumXTargets = atoi(row[14]);
+		}
+
+
+		if(firstlogon)
+		{
+			*firstlogon = atoi(row[15]);
 		}
 
 		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF

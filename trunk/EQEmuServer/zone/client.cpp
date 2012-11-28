@@ -800,6 +800,31 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		}
 	}
 
+
+	if(RuleB(QueryServ, PlayerChatLogging)){
+		ServerPacket* pack = new ServerPacket(ServerOP_Speech, sizeof(Server_Speech_Struct)+strlen(message)+1);
+		Server_Speech_Struct* sem = (Server_Speech_Struct*) pack->pBuffer;
+	
+		if(chan_num == 0)
+			sem->guilddbid = GuildID();
+		else
+			sem->guilddbid = 0;
+	
+		strcpy(sem->message, message);
+		sem->minstatus = this->Admin();
+		sem->type = chan_num;
+		if(targetname != 0)
+			strcpy(sem->to,targetname);
+	
+		if(GetName() != 0)
+			strcpy(sem->from,GetName());
+	
+		pack->Deflate();
+		if(worldserver.Connected())
+			worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+
 	switch(chan_num)
 	{
 	case 0: { // GuildChat
@@ -983,7 +1008,15 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	}
 	case 8: { // /say
 		if(message[0] == COMMAND_CHAR)  {
-			command_dispatch(this, message);
+			if(command_dispatch(this, message) == -2){
+				if(RuleB(Chat, FlowCommandstoPerl_EVENT_SAY)){
+					if(parse->PlayerHasQuestSub("EVENT_SAY"))  {
+						parse->EventPlayer(EVENT_SAY, this, message, language);
+					}
+				}else{
+					this->Message(13, "Command '%s' not recognized.", message);
+				}
+			}
 			break;
 		}
 		Mob* sender = this;

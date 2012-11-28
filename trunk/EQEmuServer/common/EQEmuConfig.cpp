@@ -191,7 +191,32 @@ void EQEmuConfig::do_database(TiXmlElement *ele) {
 	if (text)
 		DatabaseDB=text;
 }
+
 		
+void EQEmuConfig::do_qsdatabase(TiXmlElement *ele) {
+	const char *text;
+
+	text=ParseTextBlock(ele,"host",true);
+	if (text)
+		QSDatabaseHost=text;
+
+	text=ParseTextBlock(ele,"port",true);
+	if (text)
+		QSDatabasePort=atoi(text);
+
+	text=ParseTextBlock(ele,"username",true);
+	if (text)
+		QSDatabaseUsername=text;
+
+	text=ParseTextBlock(ele,"password",true);
+	if (text)
+		QSDatabasePassword=text;
+
+	text=ParseTextBlock(ele,"db",true);
+	if (text)
+		QSDatabaseDB=text;
+}
+
 void EQEmuConfig::do_zones(TiXmlElement *ele) {
 	const char *text;
 	TiXmlElement *sub_ele;
@@ -213,32 +238,6 @@ void EQEmuConfig::do_zones(TiXmlElement *ele) {
 		if (text)
 			ZonePortHigh=atoi(text);
 	}
-
-/*	node = ele->FirstChild("start");
-	if (node) {
-		string s_static="static";
-		string s_dynamic="dynamic";
-		sub_node=NULL;
-		while( (sub_node = node->IterateChildren( sub_node )) ) {
-			if(sub_node->Type() != TiXmlNode::ELEMENT)
-				continue;	//skip crap we dont care about
-
-			TiXmlElement *sub_ele = (TiXmlElement *) sub_node;
-
-			if (s_static == sub_ele->Value()) {
-				const char *zone = MakeLowerString(sub_ele->Attribute("zone"));
-				const char *port = sub_ele->Attribute("port");
-				if (zone) {
-					StaticZones[zone] = (port) ? atoi(port) : 0;
-				}
-			} else if (s_dynamic == sub_ele->Value()) {
-				const char *count = sub_ele->Attribute("count");
-				if (count) {
-					DynamicCount=atoi(count);
-				}
-			}
-		}
-	}*/
 }
 
 void EQEmuConfig::do_files(TiXmlElement *ele) {
@@ -363,6 +362,16 @@ string EQEmuConfig::GetByName(const string &var_name) const {
 		return(DatabaseDB);
 	if(var_name == "DatabasePort")
 		return(itoa(DatabasePort));
+	if(var_name == "QSDatabaseHost")
+		return(QSDatabaseHost);
+	if(var_name == "QSDatabaseUsername")
+		return(QSDatabaseUsername);
+	if(var_name == "QSDatabasePassword")
+		return(QSDatabasePassword);
+	if(var_name == "QSDatabaseDB")
+		return(QSDatabaseDB);
+	if(var_name == "QSDatabasePort")
+		return(itoa(QSDatabasePort));
 	if(var_name == "SpellsFile")
 		return(SpellsFile);
 	if(var_name == "OpCodesFile")
@@ -419,6 +428,11 @@ void EQEmuConfig::Dump() const
 	cout << "DatabasePassword = " << DatabasePassword << endl;
 	cout << "DatabaseDB = " << DatabaseDB << endl;
 	cout << "DatabasePort = " << DatabasePort << endl;
+	cout << "QSDatabaseHost = " << QSDatabaseHost << endl;
+	cout << "QSDatabaseUsername = " << QSDatabaseUsername << endl;
+	cout << "QSDatabasePassword = " << QSDatabasePassword << endl;
+	cout << "QSDatabaseDB = " << QSDatabaseDB << endl;
+	cout << "QSDatabasePort = " << QSDatabasePort << endl;
 	cout << "SpellsFile = " << SpellsFile << endl;
 	cout << "OpCodesFile = " << OpCodesFile << endl;
 	cout << "EQTimeFile = " << EQTimeFile << endl;

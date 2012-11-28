@@ -68,6 +68,13 @@ public:
 	string DatabaseDB;
 	uint16 DatabasePort;
 
+	// From <qsdatabase> // QueryServ
+	string QSDatabaseHost;
+	string QSDatabaseUsername;
+	string QSDatabasePassword;
+	string QSDatabaseDB;
+	uint16 QSDatabasePort;
+
 	// From <files/>
 	string SpellsFile;
 	string OpCodesFile;
@@ -143,6 +150,13 @@ protected:
 		DatabaseUsername="eq";
 		DatabasePassword="eq";
 		DatabaseDB="eq";
+
+		// QueryServ Database
+		QSDatabaseHost="localhost";
+		QSDatabasePort=3306;
+		QSDatabaseUsername="eq";
+		QSDatabasePassword="eq";
+		QSDatabaseDB="eq";
 
 		// Files
 		SpellsFile="spells_us.txt";

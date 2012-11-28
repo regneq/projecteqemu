@@ -63,6 +63,9 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_CAST_ON",
 	"EVENT_TASKACCEPTED",
 	"EVENT_TASK_STAGE_COMPLETE",
+	"EVENT_TASK_UPDATE",
+	"EVENT_TASK_COMPLETE",
+	"EVENT_TASK_FAIL",
 	"EVENT_AGGRO_SAY",
 	"EVENT_PLAYER_PICKUP",
 	"EVENT_POPUPRESPONSE",
@@ -88,7 +91,9 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_FISH_SUCCESS",
 	"EVENT_FISH_FAILURE",
 	"EVENT_CLICK_OBJECT",
-	"EVENT_DISCOVER_ITEM"
+	"EVENT_DISCOVER_ITEM",
+	"EVENT_DISCONNECT",
+	"EVENT_CONNECT"
 };
 
 extern Zone* zone;
@@ -682,7 +687,21 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			safe_delete(sep);
 			break;
 		}
-
+		case EVENT_TASK_FAIL:{
+			Seperator *sep = new Seperator(data);
+			ExportVar(packagename.c_str(), "task_id", sep->arg[0]);
+			safe_delete(sep);
+			break;
+		}
+		case EVENT_TASK_COMPLETE:
+		case EVENT_TASK_UPDATE:{
+			Seperator *sep = new Seperator(data);
+			ExportVar(packagename.c_str(), "donecount", sep->arg[0]);
+			ExportVar(packagename.c_str(), "activity_id", sep->arg[1]);
+			ExportVar(packagename.c_str(), "task_id", sep->arg[2]);
+			safe_delete(sep);
+			break;
+		}
 		case EVENT_PLAYER_PICKUP:{
 			ExportVar(packagename.c_str(), "picked_up_id", data);
 			break;		

@@ -579,7 +579,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		account_id));
 	//DO NOT FORGET TO EDIT ZoneDatabase::GetCharacterInfoForLogin if you change this
 	dbaw->AddQuery(2, &query, MakeAnyLenString(&query,
-		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets "
+		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets,firstlogon"
 		" FROM character_  LEFT JOIN guild_members ON id=char_id WHERE id=%i",
 		character_id));
 	dbaw->AddQuery(3, &query, MakeAnyLenString(&query,
@@ -8503,7 +8503,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			}
 		}
 		else if (dbaq->QPT() == 2) {
-			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG, &MaxXTargets);
+			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG, &MaxXTargets, &firstlogon);
 		}
 		else if (dbaq->QPT() == 3) {
 			database.RemoveTempFactions(this);
@@ -9347,6 +9347,9 @@ void Client::CompleteConnect()
 	SendDisciplineTimers();
 
 	parse->EventPlayer(EVENT_ENTERZONE, this, "", 0);
+
+	if(firstlogon == 1)
+		parse->EventPlayer(EVENT_CONNECT, this, "", 0); //This sub event is for if a player logs in for the first time since entering world.
 
 	if(zone)
 	{

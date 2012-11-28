@@ -1266,17 +1266,27 @@ bool ZoneServer::Process() {
 		}
 
 		case ServerOP_QueryServGeneric:
-		case ServerOP_Speech: 
+		case ServerOP_Speech:
+		case ServerOP_QSPlayerMoneyTradeLog:
+		case ServerOP_QSPlayerTradeLog:
+		case ServerOP_QSPlayerLogNPCKills:
 		{
 			QSLink.SendPacket(pack);
 			break;
 		}
-
+		case ServerOP_CZSignalClientByName:
+		case ServerOP_CZMessagePlayer:
+		case ServerOP_CZSignalClient:
+		{
+			zoneserver_list.SendPacket(pack);
+			break;
+		}
 		case ServerOP_DepopAllPlayersCorpses:
 		case ServerOP_DepopPlayerCorpse:
 		case ServerOP_ReloadTitles:
 		case ServerOP_SpawnStatusChange:
 		case ServerOP_ReloadTasks:
+		case ServerOP_ReloadWorld:
 		case ServerOP_UpdateSpawn:
 		{
 			zoneserver_list.SendPacket(pack);

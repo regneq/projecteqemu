@@ -184,6 +184,7 @@ public:
 	void	LoadVeteranRewards();
     void    LoadAlternateCurrencies();
 	void	LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList);
+	void	ReloadWorld(int32 Option);
 
 	Map*	zonemap;
 	WaterMap* watermap;

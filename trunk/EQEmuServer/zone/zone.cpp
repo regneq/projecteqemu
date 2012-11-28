@@ -110,7 +110,6 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 		worldserver.SetZone(0);
 		return false;
 	}
-
 	zone->zonemap = Map::LoadMapfile(zone->map_name);
 	zone->watermap = WaterMap::LoadWaterMapfile(zone->map_name);
 	zone->pathing = PathManager::LoadPathFile(zone->map_name);
@@ -2488,5 +2487,12 @@ void Zone::LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList)
 	{
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadNPCEmotes: %s (%s)", query, errbuf);
 		safe_delete_array(query);
+	}
+}
+
+void Zone::ReloadWorld(int32 Option){
+	if(Option == 1){
+		zone->Repop(0);
+		parse->ReloadQuests();
 	}
 }

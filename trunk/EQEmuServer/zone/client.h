@@ -968,6 +968,9 @@ public:
 
 	inline int GetTaskActivityDoneCount(int ClientTaskIndex, int ActivityID)
 	 	   { return (taskstate ? taskstate->GetTaskActivityDoneCount(ClientTaskIndex, ActivityID) :0); }
+	
+	inline int GetTaskActivityDoneCountFromTaskID(int TaskID, int ActivityID)
+	 	   { return (taskstate ? taskstate->GetTaskActivityDoneCountFromTaskID(TaskID, ActivityID) :0); }
 
 	inline int ActiveTasksInSet(int TaskSet)
 	 	   { return (taskstate ? taskstate->ActiveTasksInSet(TaskSet) :0); }
@@ -1234,6 +1237,7 @@ private:
 	int16				TrackingID;
 	int16				CustomerID;
 	uint32              account_creation;
+	int8				firstlogon;
 	bool	Trader;
 	bool	Buyer;
 	string	BuyerWelcomeMessage;

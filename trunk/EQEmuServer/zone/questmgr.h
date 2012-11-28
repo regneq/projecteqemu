@@ -172,6 +172,7 @@ public:
 	bool istaskenabled(int taskid);
 	bool istaskactive(int task);
 	bool istaskactivityactive(int task, int activity);
+	int gettaskactivitydonecount(int task, int activity);
 	void updatetaskactivity(int task, int activity, int count);
 	void resettaskactivity(int task, int activity);
 	void taskexploredarea(int exploreid);
@@ -244,6 +245,9 @@ public:
 	void CompleteHandIn();
 	void ResetHandIn();
 	void ClearHandIn();
+	void CrossZoneSignalPlayerByCharID(int charid, int32 data);
+	void CrossZoneSignalPlayerByName(const char *CharName, int32 data);
+	void CrossZoneMessagePlayerByName(int32 Type, const char *CharName, const char *Message);
 
 #ifdef BOTS
 	int createbotcount();

@@ -405,6 +405,7 @@ RULE_BOOL ( Chat, ServerWideAuction, true)
 RULE_BOOL ( Chat, EnableVoiceMacros, true)
 RULE_BOOL ( Chat, EnableMailKeyIPVerification, true)
 RULE_BOOL ( Chat, EnableAntiSpam, true)
+RULE_BOOL ( Chat, FlowCommandstoPerl_EVENT_SAY, false) // Allows you to parse #commands into EVENT_SAY (Useful in global_player.pl) that aren't found in the source - should probably be individual scripts per command sometime
 RULE_INT ( Chat, MinStatusToBypassAntiSpam, 100)
 RULE_INT ( Chat, MinimumMessagesPerInterval, 4)
 RULE_INT ( Chat, MaximumMessagesPerInterval, 12)
@@ -480,6 +481,14 @@ RULE_INT ( EQStream, RetransmitTimeoutMax, 5000 ) // maximum retransmit timeout 
 RULE_INT ( EQStream, AverageDeltaMax, 2500 ) // maximum average rtt where we will still recalculate transmit rates
 RULE_REAL ( EQStream, RetransmitTimeoutMult, 3.0 ) // multiplier applied to rtt stats to generate a retransmit timeout value
 RULE_BOOL ( EQStream, RetransmitAckedPackets, true ) // should we restransmit packets that were already acked?
+RULE_CATEGORY_END()
+
+RULE_CATEGORY( QueryServ )
+RULE_BOOL( QueryServ, PlayerChatLogging, false) // Logs Player Chat
+RULE_BOOL( QueryServ, PlayerLogTrades, false) // Logs Player Trades
+RULE_BOOL( QueryServ, PlayerLogMoneyTrades, false) // Logs Player Money Trades
+RULE_BOOL( QueryServ, PlayerLogNPCKills, false) // Logs Player NPC Kills
+RULE_BOOL( QueryServ, PlayerLogPCCoordinates, false) // Logs Player Coordinates with certain events
 RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY
