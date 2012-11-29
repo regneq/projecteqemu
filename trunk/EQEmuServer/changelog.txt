@@ -19,6 +19,7 @@ Akkadius: Changed value size in qglobals from 64 bytes to 128 bytes
 Akkadius: Added #reloadworld - This command will reload every single zones Perl quests and repop them
 Secrets: Minor code fix for qglobals. Since we removed the id field from qglobals, I suppose we shouldn't use it in code.
 Secrets: Warning fix for a quest function.
+Secrets: Fixed a crash issue where player corpses did not exist at all in a function (ie; they were disabled) yet we are trying to use an invalid pointer
 
 Perl Changes:
 Akkadius: Added EVENT_DISCONNECT to global_player.pl/player.pl - Event that triggers whenever a character disconnects from the world
