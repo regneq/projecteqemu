@@ -20,6 +20,7 @@ Akkadius: Added #reloadworld - This command will reload every single zones Perl 
 Secrets: Minor code fix for qglobals. Since we removed the id field from qglobals, I suppose we shouldn't use it in code.
 Secrets: Warning fix for a quest function.
 Secrets: Fixed a crash issue where player corpses did not exist at all in a function (ie; they were disabled) yet we are trying to use an invalid pointer
+Secrets: durp, i'm retarded. memleak fix.
 
 Perl Changes:
 Akkadius: Added EVENT_DISCONNECT to global_player.pl/player.pl - Event that triggers whenever a character disconnects from the world
