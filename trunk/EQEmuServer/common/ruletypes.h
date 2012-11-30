@@ -149,6 +149,7 @@ RULE_INT ( World, ExpansionSettings, 16383) // Sets the expansion settings for t
 RULE_INT ( World, PVPSettings, 0) // Sets the PVP settings for the server, 1 = Rallos Zek RuleSet, 2 = Tallon/Vallon Zek Ruleset, 4 = Sullon Zek Ruleset, 6 = Discord Ruleset, anything above 6 is the Discord Ruleset without the no-drop restrictions removed. TODO: Edit IsAttackAllowed in Zone to accomodate for these rules.
 RULE_BOOL (World, IsGMPetitionWindowEnabled, false)
 RULE_INT (World, FVNoDropFlag, 0) // Sets the Firiona Vie settings on the client. If set to 2, the flag will be set for GMs only, allowing trading of no-drop items.
+RULE_BOOL (World, IPLimitDisconnectAll, false)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )
