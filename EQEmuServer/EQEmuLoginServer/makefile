@@ -14,7 +14,7 @@ MYSQL_FLAGS=$(shell mysql_config --cflags)
 MYSQL_LIB=$(shell mysql_config --libs)
 DFLAGS=-DEQDEBUG=5
 WFLAGS=-Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wno-deprecated  -Wcomment -Wcast-align
-COPTS=$(WFLAGS) -O -g -march=i686 -pthread -pipe -DEQLAUNCH $(DFLAGS) $(MYSQL_FLAGS)
+COPTS=$(WFLAGS) -O -g -march=i686 -pthread -pipe -DEQLAUNCH $(DFLAGS) $(MYSQL_FLAGS) --std=c++0x
 LINKOPTS=$(COPTS) -rdynamic -L. -lstdc++ -ldl $(MYSQL_LIB) -lEQEmuAuthCrypto -lcryptopp
 
 
