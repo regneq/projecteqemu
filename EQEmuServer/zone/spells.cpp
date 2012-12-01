@@ -3028,9 +3028,17 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 	//cannot hurt untargetable mobs
 	bodyType bt = spelltar->GetBodyType();
 	if(bt == BT_NoTarget || bt == BT_NoTarget2) {
-		mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are untargetable", spell_id, spelltar->GetName());
-		safe_delete(action_packet);
-		return(false);
+		if (spelltar->IsNPC()) {
+			if (!spelltar->CastToNPC()->GetSwarmOwner()) {
+				mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are untargetable", spell_id, spelltar->GetName());
+				safe_delete(action_packet);
+				return(false);
+			}
+		} else {
+			mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are untargetable", spell_id, spelltar->GetName());
+			safe_delete(action_packet);
+			return(false);
+		}
 	}
 
 	// Prevent double invising, which made you uninvised
