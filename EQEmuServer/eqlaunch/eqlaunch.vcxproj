@@ -163,7 +163,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\..\Build\</OutDir>
     <IntDir>.\../Build/eqlaunch/Release\</IntDir>
-    <TargetName>eqlaunch</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>

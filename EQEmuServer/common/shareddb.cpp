@@ -1399,6 +1399,23 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 	return inst;
 }
 
+// Create appropriate ItemInst class
+ItemInst* SharedDatabase::CreateCorpseItem(const Item_Struct* item, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
+{
+	ItemInst* inst = NULL;
+	if (item) {
+		inst = CreateBaseItem(item, charges);
+		inst->PutAugment(this, 0, aug1);
+		inst->PutAugment(this, 1, aug2);
+		inst->PutAugment(this, 2, aug3);
+		inst->PutAugment(this, 3, aug4);
+		inst->PutAugment(this, 4, aug5);
+		inst->SetCharges(charges);
+	}
+	
+	return inst;
+}
+
 ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges) {
 	ItemInst* inst = NULL;
 	if (item) {
