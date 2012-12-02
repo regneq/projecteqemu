@@ -402,6 +402,7 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float i
 			|| t3 > iRange
 			|| mob->DistNoRoot(*caster) > iRange2
 				//this call should seem backwards:
+			|| !mob->CheckLosFN(caster)
 			|| mob->GetReverseFactionCon(caster) >= FACTION_KINDLY
 		) {
 			continue;

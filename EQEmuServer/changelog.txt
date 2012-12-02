@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/2/2012==
+Secrets: Pets can no longer proc from any hand other than their primary hand. This fixes an issue where beastlord pets could proc two, three or four from dual wielding/double attacking pets (as well as a general mechanics fix).
+Secrets: NPCs will no longer attempt to heal through walls. There is now a LOS check for friendly NPC heals through walls. This was especially apparent in the PEQ database in Splitpaw, where you could have maybe 10 NPCs healing through walls at a time. I don't recall this ever happening on live past OoW. If this is incorrect revert it and make it a rule.
+
 ==12/1/2012==
 Vaion: Swarm Pets are now untargetable.  They still gain aggro, are attackable and can be casted on by NPCs, but clients cannot target them.
 Sorvani: Items with 0 charges will no longer get a free recharge when players die. Changed the TargetName property for all projects to be $(ProjectName). The only project that will have a new name is chatserver. It is now called ucs matching the linux build.
