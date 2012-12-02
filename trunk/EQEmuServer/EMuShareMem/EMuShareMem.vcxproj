@@ -172,7 +172,7 @@
     <OutDir>.\..\Build\</OutDir>
     <IntDir>.\../Build/EMuShareMem/Release\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
-    <TargetName>EMuShareMem</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.dll</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
