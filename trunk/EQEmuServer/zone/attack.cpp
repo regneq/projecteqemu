@@ -3881,6 +3881,12 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 
 		if(!isRanged)
 		{
+			if(IsPet() && hand != 13) //Pets can only proc spell procs from their primay hand (ie; beastlord pets)
+			{
+				//Maybe implement this later if pets are ever given dual procs?
+			}
+			else
+			{
 				int chance = ProcChance * (SpellProcs[i].chance);
 				if(MakeRandomInt(0, 100) < chance) {
 					mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
@@ -3888,6 +3894,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				} else {
 					mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 				}
+			}
 		}
 		if (bRangedAttack) {
 			int chance = ProcChance * RangedProcs[i].chance;
