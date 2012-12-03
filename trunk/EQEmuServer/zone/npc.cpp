@@ -1723,23 +1723,32 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 {
 	Mob::FillSpawnStruct(ns, ForWho);
-	if(GetOwnerID() || GetSwarmOwner())
-	{
-		ns->spawn.is_pet = 1;
-		if (GetOwnerID()) {
-			Client *c = entity_list.GetClientByID(GetOwnerID());
-			if(c)
-				sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+	if (RuleB(Pets, TargetableSwarmPet)) {
+		if(GetOwnerID() || GetSwarmOwner()) {
+			ns->spawn.is_pet = 1;
+			if (GetOwnerID()) {
+				Client *c = entity_list.GetClientByID(GetOwnerID());
+				if(c)
+					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+			}
+			else if (GetSwarmOwner()) {
+				ns->spawn.bodytype = 11;
+				Client *c = entity_list.GetClientByID(GetSwarmOwner());
+				if(c)
+					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+			}
 		}
-		else if (GetSwarmOwner()) {
-			ns->spawn.bodytype = 11;
-			Client *c = entity_list.GetClientByID(GetSwarmOwner());
-			if(c)
-				sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
-		}
+	} else {
+		if(GetOwnerID()) {
+			ns->spawn.is_pet = 1;
+			if (GetOwnerID()) {
+				Client *c = entity_list.GetClientByID(GetOwnerID());
+				if(c)
+					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+			}
+		} else
+			ns->spawn.is_pet = 0;
 	}
-	else
-		ns->spawn.is_pet = 0;
 
 	ns->spawn.is_npc = 1;
 }
