@@ -109,7 +109,7 @@ std::string Strategy::Describe() const {
 static inline int32 TitaniumToUnderfootSlot(int32 TitaniumSlot) {
 	int32 UnderfootSlot = 0;
 
-	if(TitaniumSlot >= 21 && TitaniumSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	if(TitaniumSlot >= 21 && TitaniumSlot <= 53)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
 		UnderfootSlot = TitaniumSlot + 1;
 	}
@@ -141,7 +141,7 @@ static inline int32 TitaniumToUnderfootSlot(int32 TitaniumSlot) {
 static inline int32 UnderfootToTitaniumSlot(int32 UnderfootSlot) {
 	int32 TitaniumSlot = 0;
 	
-	if(UnderfootSlot >= 22 && UnderfootSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	if(UnderfootSlot >= 22 && UnderfootSlot <= 54)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
 		TitaniumSlot = UnderfootSlot - 1;
 	}
@@ -2103,34 +2103,6 @@ ENCODE(OP_WhoAllResponse)
 	delete in;
 }
 
-
-ENCODE(OP_InspectAnswer) {
-	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
-	SETUP_DIRECT_ENCODE(InspectResponse_Struct, structs::InspectResponse_Struct);
-
-	OUT(TargetID);
-	OUT(playerid);
-
-	int r;
-	for (r = 0; r < 21; r++) {
-		strn0cpy(eq->itemnames[r], emu->itemnames[r], sizeof(eq->itemnames[r]));
-	}
-	// Swap last 2 slots for Arrow and Power Source
-	strn0cpy(eq->itemnames[21], emu->itemnames[22], sizeof(eq->itemnames[21]));
-	strn0cpy(eq->unknown_zero, emu->itemnames[21], sizeof(eq->unknown_zero));
-
-	int k;
-	for (k = 0; k < 21; k++) {
-		OUT(itemicons[k]);
-	}
-	// Swap last 2 slots for Arrow and Power Source
-	eq->itemicons[21] = emu->itemicons[22];
-	eq->unknown_zero2 = emu->itemicons[21];
-	strn0cpy(eq->text, emu->text, sizeof(eq->text));
-
-	FINISH_ENCODE();
-}
-
 ENCODE(OP_GroupInvite) {
 	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
 	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupInvite_Struct);
@@ -2727,36 +2699,6 @@ DECODE(OP_BazaarSearch)
 	IN(Beginning.Action);
 	memcpy(emu->Name, eq->Name, sizeof(emu->Name));
 	IN(SerialNumber);
-
-	FINISH_DIRECT_DECODE();
-}
-
-DECODE(OP_InspectAnswer) {
-	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
-	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
-	
-	IN(TargetID);
-	IN(playerid);
-
-	int r;
-	for (r = 0; r < 21; r++) {
-		strn0cpy(emu->itemnames[r], eq->itemnames[r], sizeof(emu->itemnames[r]));
-	}
-	// Swap last 2 slots for Arrow and Power Source
-	strn0cpy(emu->itemnames[22], eq->itemnames[21], sizeof(emu->itemnames[22]));
-	strn0cpy(emu->itemnames[21], eq->unknown_zero, sizeof(emu->itemnames[21]));
-	strn0cpy(emu->unknown_zero, eq->unknown_zero, sizeof(emu->unknown_zero));
-
-	int k;
-	for (k = 0; k < 21; k++) {
-		IN(itemicons[k]);
-	}
-	// Swap last 2 slots for Arrow and Power Source
-	emu->itemicons[22] = eq->itemicons[21];
-	emu->itemicons[21] = eq->unknown_zero2;
-	emu->unknown_zero2 = eq->unknown_zero2;
-	strn0cpy(emu->text, eq->text, sizeof(emu->text));
-	//emu->unknown1772 = 0;
 
 	FINISH_DIRECT_DECODE();
 }

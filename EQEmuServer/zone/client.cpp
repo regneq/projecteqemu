@@ -5510,9 +5510,10 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 		insr->playerid = requestee->GetID();
 
 		const Item_Struct* item = NULL;
-		
-		for (sint16 L=0; L <= 21; L++) {
-			const ItemInst* inst = requestee->GetInv().GetItem(L);
+		const ItemInst* inst = NULL;
+
+		for(sint16 L = 0; L <= 20; L++) {
+			inst = requestee->GetInv().GetItem(L);
 
 			if(inst) {
 				item = inst->GetItem();
@@ -5524,21 +5525,30 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 					insr->itemicons[L] = 0xFFFFFFFF;
 			}
 		}
-		/*
-		// Special handling for Power Source slot on SoF clients
-		if(requestee->GetClientVersion() >= EQClientSoF && requester->GetClientVersion() >= EQClientSoF) {
-			const ItemInst* inst = requestee->GetInv().GetItem(9999);
-			if(inst) {
-				item = inst->GetItem();
-				if(item) {
-					strcpy(insr->itemnames[22], item->Name);
-					insr->itemicons[22] = item->Icon;
-				}
-				else
-					insr->itemicons[22] = 0xFFFFFFFF;
+
+		inst = requestee->GetInv().GetItem(9999);
+
+		if(inst) {
+			item = inst->GetItem();
+			if(item) {
+				strcpy(insr->itemnames[21], item->Name);
+				insr->itemicons[21] = item->Icon;
 			}
+			else
+				insr->itemicons[21] = 0xFFFFFFFF;
 		}
-		*/
+
+		inst = requestee->GetInv().GetItem(21);
+
+		if(inst) {
+			item = inst->GetItem();
+			if(item) {
+				strcpy(insr->itemnames[22], item->Name);
+				insr->itemicons[22] = item->Icon;
+			}
+			else
+				insr->itemicons[22] = 0xFFFFFFFF;
+		}
 
 		//Need to add the player inspect notes code here at some point...
 

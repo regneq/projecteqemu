@@ -916,6 +916,34 @@ ENCODE(OP_VetRewardsAvaliable)
 	delete[] __emu_buffer;
 }
 
+ENCODE(OP_InspectAnswer) {
+	ENCODE_LENGTH_EXACT(structs::InspectResponse_Struct);
+	SETUP_DIRECT_ENCODE(InspectResponse_Struct, structs::InspectResponse_Struct);
+
+	OUT(TargetID);
+	OUT(playerid);
+
+	int r;
+	for (r = 0; r <= 20; r++) {
+		strn0cpy(eq->itemnames[r], emu->itemnames[r], sizeof(eq->itemnames[r]));
+	}
+
+	// move arrow item down to last element in titanium array
+	strn0cpy(eq->itemnames[21], emu->itemnames[22], sizeof(eq->itemnames[21]));
+
+	int k;
+	for (k = 0; k <= 20; k++) {
+		OUT(itemicons[k]);
+	}
+
+	// move arrow icon down to last element in titanium array
+	eq->itemicons[21] = emu->itemicons[22];
+
+	strn0cpy(eq->text, emu->text, sizeof(eq->text));
+
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_RespondAA) {
 	ENCODE_LENGTH_EXACT(AATable_Struct);
 	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
@@ -1129,6 +1157,36 @@ ENCODE(OP_OnLevelMessage)
 	eq->unknown4240 = 0xffffffff;
 
 	FINISH_ENCODE();
+}
+
+DECODE(OP_InspectAnswer) {
+	DECODE_LENGTH_EXACT(InspectResponse_Struct);
+	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
+	
+	IN(TargetID);
+	IN(playerid);
+
+	int r;
+	for (r = 0; r <= 20; r++) {
+		strn0cpy(emu->itemnames[r], eq->itemnames[r], sizeof(emu->itemnames[r]));
+	}
+
+	// move arrow item up to last element in server array
+	strn0cpy(emu->itemnames[21], "", sizeof(emu->itemnames[21]));
+	strn0cpy(emu->itemnames[22], eq->itemnames[21], sizeof(emu->itemnames[22]));
+	
+	int k;
+	for (k = 0; k <= 20; k++) {
+		IN(itemicons[k]);
+	}
+
+	// move arrow icon up to last element in server array
+	emu->itemicons[21] = 0xFFFFFFFF;
+	emu->itemicons[22] = eq->itemicons[21];
+
+	strn0cpy(emu->text, eq->text, sizeof(emu->text));
+
+	FINISH_DIRECT_DECODE();
 }
 
 ENCODE(OP_LFGuild)

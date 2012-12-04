@@ -580,8 +580,13 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 	// #1: Try to auto equip
 	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level && !inst.GetItem()->Attuneable && inst.GetItem()->ItemType != ItemTypeAugment)
 	{
-		for (sint16 i = 0; i < 22; i++)
+		for (sint16 i = 0; i < 9999; i++) // originally (i < 22)
 		{
+			if (i == 22) {
+				if(this->GetClientVersion() >= EQClientSoF) { i = 9999; } // added power source check for SoF+ clients
+				else { break; }
+			}
+			
 			if (!m_inv[i])
 			{
 				if( i == SLOT_PRIMARY && inst.IsWeapon() ) // If item is primary slot weapon

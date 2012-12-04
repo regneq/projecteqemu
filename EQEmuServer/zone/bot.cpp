@@ -11631,16 +11631,46 @@ void Bot::ProcessBotInspectionRequest(Bot* inspectedBot, Client* client) {
 
 		const Item_Struct* item = 0;
 		const ItemInst* inst = 0;
-		for(sint16 L=0; L<=21; ++L) {
+
+		// Modded to display power source items (will only show up on SoF+ client inspect windows though.)
+		// I don't think bots are currently coded to use them..but, you'll have to use '#bot inventory list'
+		// to see them on a Titanium client when/if they are activated. -U
+		for(sint16 L = 0; L <= 20; L++) {
 			inst = inspectedBot->GetBotItem(L);
+
 			if(inst) {
-				if(item = inst->GetItem()) {
+				item = inst->GetItem();
+				if(item) {
 					strcpy(insr->itemnames[L], item->Name);
 					insr->itemicons[L] = item->Icon;
 				}
 				else
 					insr->itemicons[L] = 0xFFFFFFFF;
 			}
+		}
+
+		inst = inspectedBot->GetBotItem(9999);
+
+		if(inst) {
+			item = inst->GetItem();
+			if(item) {
+				strcpy(insr->itemnames[21], item->Name);
+				insr->itemicons[21] = item->Icon;
+			}
+			else
+				insr->itemicons[21] = 0xFFFFFFFF;
+		}
+
+		inst = inspectedBot->GetBotItem(21);
+
+		if(inst) {
+			item = inst->GetItem();
+			if(item) {
+				strcpy(insr->itemnames[22], item->Name);
+				insr->itemicons[22] = item->Icon;
+			}
+			else
+				insr->itemicons[22] = 0xFFFFFFFF;
 		}
 
 		client->QueuePacket(outapp); // Send answer to requester
