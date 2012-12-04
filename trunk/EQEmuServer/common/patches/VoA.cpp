@@ -2303,7 +2303,7 @@ ENCODE(OP_InspectRequest) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_InspectAnswer) {
+/*ENCODE(OP_InspectAnswer) {
 	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
 	SETUP_DIRECT_ENCODE(InspectResponse_Struct, structs::InspectResponse_Struct);
 
@@ -2328,7 +2328,7 @@ ENCODE(OP_InspectAnswer) {
 	strn0cpy(eq->text, emu->text, sizeof(eq->text));
 
 	FINISH_ENCODE();
-}
+}*/
 
 ENCODE(OP_GroupInvite) {
 	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
@@ -3086,7 +3086,7 @@ DECODE(OP_InspectRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
-DECODE(OP_InspectAnswer) {
+/*DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
 	
@@ -3114,7 +3114,7 @@ DECODE(OP_InspectAnswer) {
 	//emu->unknown1772 = 0;
 
 	FINISH_DIRECT_DECODE();
-}
+}*/
 
 DECODE(OP_RaidInvite) {
 	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
