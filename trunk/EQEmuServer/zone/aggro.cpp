@@ -531,7 +531,7 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 	bodyType bt = target->GetBodyType();
 
 	if(bt == BT_NoTarget || bt == BT_NoTarget2) {
-		if (RuleB(Pets, TargetableSwarmPet)) {
+		if (RuleB(Pets, UnTargetableSwarmPet)) {
 			if (target->IsNPC()) {
 				if (!target->CastToNPC()->GetSwarmOwner()) {
 					return(false);

@@ -3028,7 +3028,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect, bool use_re
 	//cannot hurt untargetable mobs
 	bodyType bt = spelltar->GetBodyType();
 	if(bt == BT_NoTarget || bt == BT_NoTarget2) {
-		if (RuleB(Pets, TargetableSwarmPet)) {
+		if (RuleB(Pets, UnTargetableSwarmPet)) {
 			if (spelltar->IsNPC()) {
 				if (!spelltar->CastToNPC()->GetSwarmOwner()) {
 					mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are untargetable", spell_id, spelltar->GetName());
