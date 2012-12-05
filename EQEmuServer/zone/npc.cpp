@@ -1723,7 +1723,7 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 {
 	Mob::FillSpawnStruct(ns, ForWho);
-	if (RuleB(Pets, TargetableSwarmPet)) {
+	if (RuleB(Pets, UnTargetableSwarmPet)) {
 		if(GetOwnerID() || GetSwarmOwner()) {
 			ns->spawn.is_pet = 1;
 			if (GetOwnerID()) {

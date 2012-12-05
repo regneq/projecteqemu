@@ -117,7 +117,7 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY( Pets )
 RULE_REAL( Pets, AttackCommandRange, 150 )
-RULE_BOOL( Pets, TargetableSwarmPet, false )
+RULE_BOOL( Pets, UnTargetableSwarmPet, false )
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( GM )
