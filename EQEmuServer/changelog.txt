@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/05/2012==
+Akkadius: Ability to send signals through the Telnet console to character: signalcharbyname <playername> <id>
+
 ==12/04/2012==
 Sorvani: (Uleat) Update to inspect (SoF+) and corpses to related to handling power sources. Titanium inspect still broken.
 Vaion: Renamed the rule for targeting swarm pets so that it make sense with the code.
