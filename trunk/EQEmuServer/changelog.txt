@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==12/06/2012==
+Secrets: Fixed OP_PVPStats in HoT to the proper opcode, OP_WebLink. You can use $client->SendWebLink("website"); in perl to use this functionality to pop open a web browser ingame.
+
 ==12/05/2012==
 Akkadius: Ability to send signals through the Telnet console to character: signalcharbyname <playername> <id>
 

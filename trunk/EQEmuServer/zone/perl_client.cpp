@@ -5429,6 +5429,32 @@ XS(XS_Client_AddAlternateCurrencyValue)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_SendWebLink); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_SendWebLink)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::SendWebLink(THIS, website)");
+	{
+		Client *	THIS;
+		char *		website = NULL;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 1)	{	website = (char *)SvPV_nolen(ST(1));	}
+
+		THIS->SendWebLink(website);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5648,6 +5674,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "OpenLFGuildWindow"), XS_Client_OpenLFGuildWindow, file, "$");
 		newXSproto(strcpy(buf, "SignalClient"), XS_Client_SignalClient, file, "$");
 		newXSproto(strcpy(buf, "AddAlternateCurrencyValue"), XS_Client_AddAlternateCurrencyValue, file, "$$$");
+		newXSproto(strcpy(buf, "SendWebLink"), XS_Client_SendWebLink, file, "$:$");
 		XSRETURN_YES;
 }
 

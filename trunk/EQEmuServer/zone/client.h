@@ -1100,6 +1100,7 @@ public:
 
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
+	void  SendWebLink(const char* website);
 
 	bool	StoreTurnInItems(Mob* with);
 
