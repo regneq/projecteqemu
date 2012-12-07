@@ -1897,6 +1897,12 @@ struct AdventureFinish_Struct{
 /*004*/ uint32 points;
 /*008*/
 };
+
+struct Weblink_Struct{
+/*000*/ char weblink[1]; 
+/*004*/
+};
+
 //OP_AdventureRequest
 struct AdventureRequest_Struct{
 /*000*/	int32 risk;//1 normal,2 hard.

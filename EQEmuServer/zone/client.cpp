@@ -7066,3 +7066,18 @@ char* Client::GetClassPlural(Client* client) {
 			return "Classes"; break;
 	}
 }
+
+
+void Client::SendWebLink(const char *website)
+{
+	if(website != 0)
+	{
+				string str = website;
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_Weblink, sizeof(Weblink_Struct) + str.length() + 1);
+				Weblink_Struct *wl = (Weblink_Struct*)outapp->pBuffer;
+				memcpy(wl->weblink, str.c_str(), str.length() + 1);
+				wl->weblink[str.length() + 1] = '\0';
+
+				FastQueuePacket(&outapp);
+	}
+}
