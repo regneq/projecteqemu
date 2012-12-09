@@ -1360,6 +1360,15 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 	
 	if(spell_id==0)
 		spell_id = SPELL_UNKNOWN;
+
+	if(spell_id!=0 && spell_id != SPELL_UNKNOWN && other && damage > 0)
+	{
+		if(other->IsNPC() && !other->IsPet())
+		{
+			float npcspellscale = other->CastToNPC()->GetSpellScale();
+			damage = ((float)damage * npcspellscale) / (float)100;
+		}
+	}
 	
 	// cut all PVP spell damage to 2/3 -solar
 	// EverHood - Blasting ourselfs is considered PvP 
@@ -3574,6 +3583,17 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 	uint32 maxhp = GetMaxHP();
 	uint32 curhp = GetHP();
 	uint32 acthealed = 0;
+
+	if(caster && amount > 0)
+	{
+		if(caster->IsNPC() && !caster->IsPet())
+		{
+			float npchealscale = caster->CastToNPC()->GetHealScale();
+			amount = ((float)amount * npchealscale) / (float)100;
+		}
+	}
+
+
 	if(amount > (maxhp - curhp))
 		acthealed = (maxhp - curhp);
 	else

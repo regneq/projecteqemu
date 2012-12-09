@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/08/2012==
+Secrets/Akkadius: Implemented the customary ability to scale an NPC's spell damage or healing % by a modifier loaded from the npc data in npc_types
+	This will allow an NPC to do for example 150% of the damage of their damage spells if spellscale is set to '150'
+	'healscale' field needs to be set to affect heals in a similar manner
+	Both of these can also be accessed via ModifyNPCStat through 'healscale' and 'spellscale'
+	
+REQUIRED SQL: utils/sql/svn/2283_required_npc_changes.sql
 
 ==12/06/2012==
 Secrets: Fixed OP_PVPStats in HoT to the proper opcode, OP_WebLink. You can use $client->SendWebLink("website"); in perl to use this functionality to pop open a web browser ingame.

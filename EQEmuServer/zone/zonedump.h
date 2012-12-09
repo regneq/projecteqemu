@@ -116,6 +116,8 @@ struct NPCType
 	bool	unique_spawn_by_name;
     bool    underwater;
 	int32	emoteid;
+	float	spellscale;
+	float	healscale;
 };
 
 struct ZSDump_Spawn2 {
