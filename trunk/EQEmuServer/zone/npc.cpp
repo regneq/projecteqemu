@@ -145,6 +145,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	save_wp = 0;
 	spawn_group = 0;
 	swarmInfoPtr = NULL;
+	spellscale = d->spellscale;
+	healscale = d->healscale;
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
 	
@@ -1986,6 +1988,16 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 	if(id == "loottable_id")
 	{
 		loottable_id = atof(val.c_str());
+		return;
+	}
+	if(id == "healscale")
+	{
+		healscale = atof(val.c_str());
+		return;
+	}
+	if(id == "spellscale")
+	{
+		spellscale = atof(val.c_str());
 		return;
 	}
 }
