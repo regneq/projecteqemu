@@ -1821,8 +1821,8 @@ struct Emote_Struct {
 
 // Inspect 
 struct Inspect_Struct { 
-	int16 TargetID; 
-	int16 PlayerID; 
+	int32 TargetID; 
+	int32 PlayerID; 
 }; 
 //OP_InspectAnswer
 struct InspectResponse_Struct{//Cofruben:need to send two of this for the inspect response.
@@ -1831,6 +1831,7 @@ struct InspectResponse_Struct{//Cofruben:need to send two of this for the inspec
 /*008*/	char itemnames[22][64];
 /*1416*/int32 itemicons[22];
 /*1504*/char text[288];
+/*1792*/
 };
 
 //OP_SetDataRate

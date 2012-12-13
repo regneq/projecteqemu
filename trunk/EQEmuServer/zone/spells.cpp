@@ -1104,7 +1104,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 		&& inventory_slot != 0xFFFFFFFF)	// 10 is an item
 	{
 		const ItemInst* inst = CastToClient()->GetInv()[inventory_slot];
-		if (inst && inst->IsType(ItemClassCommon))
+		if (inst && inst->IsType(ItemClassCommon) && (inst->GetItem()->Click.Effect == spell_id) && inst->GetCharges())
 		{
 			//const Item_Struct* item = inst->GetItem();
 			sint16 charges = inst->GetItem()->MaxCharges;
@@ -1118,7 +1118,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot,
 		else
 		{
 			mlog(SPELLS__CASTING_ERR, "Item used to cast spell %d was missing from inventory slot %d after casting!", spell_id, inventory_slot);
-			Message(0, "Error: item not found for inventory slot #%i", inventory_slot);
+			Message(13, "Casting Error: Active casting item not found in inventory slot %i", inventory_slot);
 			InterruptSpell();
 			return;
 		}

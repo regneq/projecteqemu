@@ -6590,55 +6590,64 @@ void Client::Handle_OP_GMEmoteZone(const EQApplicationPacket *app)
 	return;
 }
 
-void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app)
-{
-	if (app->size != sizeof(Inspect_Struct)) {
+void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(Inspect_Struct)) {
 		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectRequest, size=%i, expected %i", app->size, sizeof(Inspect_Struct));
 		return;
 	}
-	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
-	Mob* tmp = entity_list.GetMob(ins->TargetID);
-	if(tmp != 0 && tmp->IsClient()) {
-		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) {
-			tmp->CastToClient()->QueuePacket(app); // Send request to target
-		}
-		else {	//Inspecting an SoF or later client which make the server handle the request
-			ProcessInspectRequest(tmp->CastToClient(), this);
-		}
 
+	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
+	Mob* tmp			= entity_list.GetMob(ins->TargetID);
+
+	if(tmp != 0 && tmp->IsClient()) {
+		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) { tmp->CastToClient()->QueuePacket(app); } // Send request to target
+		//Inspecting an SoF or later client which make the server handle the request
+		else { ProcessInspectRequest(tmp->CastToClient(), this); }
 	}
+
 #ifdef BOTS
-	if(tmp != 0 && tmp->IsBot())
-		Bot::ProcessBotInspectionRequest(tmp->CastToBot(), this);
+	if(tmp != 0 && tmp->IsBot()) { Bot::ProcessBotInspectionRequest(tmp->CastToBot(), this); }
 #endif
 
 	return;
 }
 
-void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app)
-{
-	if (app->size != sizeof(Inspect_Struct)) {
-		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectAnswer, size=%i, expected %i", app->size, sizeof(Inspect_Struct));
+void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app) {
+
+	if (app->size != sizeof(InspectResponse_Struct)) {
+		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectAnswer, size=%i, expected %i", app->size, sizeof(InspectResponse_Struct));
 		return;
 	}
+
 	//Fills the app sent from client.
-	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
-	EQApplicationPacket* outapp = app->Copy();
+	EQApplicationPacket* outapp	 = app->Copy();
 	InspectResponse_Struct* insr = (InspectResponse_Struct*) outapp->pBuffer;
-	Mob* tmp = entity_list.GetMob(ins->TargetID);
-	const Item_Struct* item = NULL;
-	for (sint16 L=0; L<=21; L++) {
+	Mob* tmp					 = entity_list.GetMob(insr->TargetID);
+	const Item_Struct* item		 = NULL;
+
+	for (sint16 L = 0; L <= 20; L++) {
 		const ItemInst* inst = GetInv().GetItem(L);
-		item = (inst) ? inst->GetItem() : NULL;
-		if(item>0){
-			strcpy(insr->itemnames[L],item->Name);
-			insr->itemicons[L]=item->Icon;
+		item				 = inst ? inst->GetItem() : NULL;
+		
+		if(item) {
+			strcpy(insr->itemnames[L], item->Name);
+			insr->itemicons[L] = item->Icon;
 		}
-		else
-			insr->itemicons[L]=0xFFFFFFFF;
+		else { insr->itemicons[L] = 0xFFFFFFFF; }
 	}
-	if(tmp != 0 && tmp->IsClient())
-		tmp->CastToClient()->QueuePacket(outapp); // Send answer to requester
+
+	const ItemInst* inst = GetInv().GetItem(21);
+	item = inst ? inst->GetItem() : NULL;
+	
+	if(item) {
+		strcpy(insr->itemnames[22], item->Name);
+		insr->itemicons[22] = item->Icon;
+	}
+	else { insr->itemicons[22] = 0xFFFFFFFF; }
+
+	if(tmp != 0 && tmp->IsClient()) { tmp->CastToClient()->QueuePacket(outapp); } // Send answer to requester
+
 	return;
 }
 

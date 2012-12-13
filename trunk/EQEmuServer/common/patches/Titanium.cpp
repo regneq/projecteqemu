@@ -917,7 +917,7 @@ ENCODE(OP_VetRewardsAvaliable)
 }
 
 ENCODE(OP_InspectAnswer) {
-	ENCODE_LENGTH_EXACT(structs::InspectResponse_Struct);
+	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
 	SETUP_DIRECT_ENCODE(InspectResponse_Struct, structs::InspectResponse_Struct);
 
 	OUT(TargetID);
@@ -1159,8 +1159,24 @@ ENCODE(OP_OnLevelMessage)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_InspectRequest) {
+	ENCODE_LENGTH_EXACT(Inspect_Struct);
+	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
+	OUT(TargetID);
+	OUT(PlayerID);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_InspectRequest) {
+	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
+	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
+	IN(TargetID);
+	IN(PlayerID);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_InspectAnswer) {
-	DECODE_LENGTH_EXACT(InspectResponse_Struct);
+	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
 	
 	IN(TargetID);

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/13/2012==
+SOrvani: (Uleat) Player Inspect works for Titanium users again. Spell casting from a clicky effect checks that the item is still in the slot it was cast from before applying the affect and removing the charge (if applicable).
+
 ==12/08/2012==
 Secrets/Akkadius: Implemented the customary ability to scale an NPC's spell damage or healing % by a modifier loaded from the npc data in npc_types
 	This will allow an NPC to do for example 150% of the damage of their damage spells if spellscale is set to '150'
