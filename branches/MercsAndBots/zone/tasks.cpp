@@ -1850,11 +1850,16 @@ void ClientTaskState::UpdateTasksOnTouch(Client *c, int ZoneID) {
 void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int TaskIndex, int ActivityID, int Count) {
 
 	_log(TASKS__UPDATE, "IncrementDoneCount");
-
+	
 	ActiveTasks[TaskIndex].Activity[ActivityID].DoneCount += Count;
 
 	if(ActiveTasks[TaskIndex].Activity[ActivityID].DoneCount > Task->Activity[ActivityID].GoalCount)
 		ActiveTasks[TaskIndex].Activity[ActivityID].DoneCount = Task->Activity[ActivityID].GoalCount;
+
+	char buf[24];
+	snprintf(buf, 23, "%d %d %d", ActiveTasks[TaskIndex].Activity[ActivityID].DoneCount, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID, ActiveTasks[TaskIndex].TaskID);
+	buf[23] = '\0';
+	parse->EventPlayer(EVENT_TASK_UPDATE, c, buf, 0);
 
 	ActiveTasks[TaskIndex].Activity[ActivityID].Updated=true;
 	// Have we reached the goal count for this activity ?
@@ -1887,6 +1892,11 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 		// updated in UnlockActivities. Send the completed task list to the
 		// client. This is the same sequence the packets are sent on live.
 		if(TaskComplete) {
+			char buf[24];
+			snprintf(buf, 23, "%d %d %d", ActiveTasks[TaskIndex].Activity[ActivityID].DoneCount, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID, ActiveTasks[TaskIndex].TaskID);
+			buf[23] = '\0';
+			parse->EventPlayer(EVENT_TASK_COMPLETE, c, buf, 0);
+
 			taskmanager->SendCompletedTasksToClient(c, this);
 			c->SendTaskActivityComplete(ActiveTasks[TaskIndex].TaskID, 0, TaskIndex, false);
 			taskmanager->SaveClientState(c, this);
@@ -2422,6 +2432,10 @@ void Client::SendTaskActivityComplete(int TaskID, int ActivityID, int TaskIndex,
 void Client::SendTaskFailed(int TaskID, int TaskIndex) {
 
 	// 0x54eb
+	char buf[24];
+	snprintf(buf, 23, "%d", TaskID);
+	buf[23] = '\0';
+	parse->EventPlayer(EVENT_TASK_FAIL, this, buf, 0);
 
 	TaskActivityComplete_Struct* tac;
 	
@@ -2859,6 +2873,17 @@ int ClientTaskState::GetTaskActivityDoneCount(int index, int ActivityID) {
 
 	return ActiveTasks[index].Activity[ActivityID].DoneCount;
 
+}
+
+int ClientTaskState::GetTaskActivityDoneCountFromTaskID(int TaskID, int ActivityID){
+	int ActiveTaskIndex = -1;
+	for(int i=0; i<MAXACTIVETASKS; i++) {
+		if(ActiveTasks[i].TaskID==TaskID) {
+			ActiveTaskIndex = i;
+			break;
+		}
+	}
+	return ActiveTasks[ActiveTaskIndex].Activity[ActivityID].DoneCount;
 }
 
 int ClientTaskState::GetTaskStartTime(int index) {

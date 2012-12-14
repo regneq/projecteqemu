@@ -1223,7 +1223,7 @@ int QuestManager::InsertQuestGlobal(
 			qgu->expdate = Timer::GetTimeSeconds() + duration;
 		}
 		strcpy((char*)qgu->name, varname);
-		strcpy((char*)qgu->value, varvalue);
+		strn0cpy((char*)qgu->value, varvalue, 128);
 		qgu->id = last_id;
 		qgu->from_zone_id = zone->GetZoneID();
 		qgu->from_instance_id = zone->GetInstanceID();
@@ -1935,7 +1935,14 @@ bool QuestManager::istaskactivityactive(int task, int activity) {
 
 	return false;
 }
+int QuestManager::gettaskactivitydonecount(int task, int activity) {
 
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator)
+		return initiator->GetTaskActivityDoneCountFromTaskID(task, activity);
+
+	return 0; //improper args
+	
+}
 void QuestManager::updatetaskactivity(int task, int activity, int count) {
 
 	if(RuleB(TaskSystem, EnableTaskSystem) && initiator)
@@ -2006,7 +2013,6 @@ int QuestManager::activespeaktask() {
 
 	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner)
 		return initiator->ActiveSpeakTask(owner->GetNPCTypeID());
-
 	return 0;
 }
 int QuestManager::activespeakactivity(int taskid) {
@@ -2675,4 +2681,36 @@ void QuestManager::ClearHandIn()
 	{
 		owner->CastToNPC()->ClearQuestLists();
 	}
+}
+
+void QuestManager::CrossZoneSignalPlayerByCharID(int charid, int32 data){
+	ServerPacket* pack = new ServerPacket(ServerOP_CZSignalClient, sizeof(CZClientSignal_Struct));
+	CZClientSignal_Struct* CZSC = (CZClientSignal_Struct*) pack->pBuffer;
+	CZSC->charid = charid;
+	CZSC->data = data;
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+}
+
+void QuestManager::CrossZoneSignalPlayerByName(const char *CharName, int32 data){
+	uint32 message_len = strlen(CharName) + 1;
+	ServerPacket* pack = new ServerPacket(ServerOP_CZSignalClientByName, sizeof(CZClientSignalByName_Struct) + message_len);
+	CZClientSignalByName_Struct* CZSC = (CZClientSignalByName_Struct*) pack->pBuffer;
+	strn0cpy(CZSC->Name, CharName, 64);
+	CZSC->data = data;
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+}
+
+
+void QuestManager::CrossZoneMessagePlayerByName(int32 Type, const char *CharName, const char *Message){
+	uint32 message_len = strlen(CharName) + 1;
+	uint32 message_len2 = strlen(Message) + 1;
+	ServerPacket* pack = new ServerPacket(ServerOP_CZMessagePlayer, sizeof(CZMessagePlayer_Struct) + message_len + message_len2);
+	CZMessagePlayer_Struct* CZSC = (CZMessagePlayer_Struct*) pack->pBuffer;
+	CZSC->Type = Type;
+	strn0cpy(CZSC->CharName, CharName, 64);
+	strn0cpy(CZSC->Message, Message, 512);
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
 }

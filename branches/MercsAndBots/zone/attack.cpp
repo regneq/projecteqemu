@@ -42,6 +42,8 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "QuestParserCollection.h"
 #include "watermap.h"
+#include "worldserver.h"
+extern WorldServer worldserver;
 
 #ifdef _WINDOWS
 #define snprintf	_snprintf
@@ -1358,6 +1360,15 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 	
 	if(spell_id==0)
 		spell_id = SPELL_UNKNOWN;
+
+	if(spell_id!=0 && spell_id != SPELL_UNKNOWN && other && damage > 0)
+	{
+		if(other->IsNPC() && !other->IsPet())
+		{
+			float npcspellscale = other->CastToNPC()->GetSpellScale();
+			damage = ((float)damage * npcspellscale) / (float)100;
+		}
+	}
 	
 	// cut all PVP spell damage to 2/3 -solar
 	// EverHood - Blasting ourselfs is considered PvP 
@@ -2058,10 +2069,12 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 
 	}
 
+	int PlayerCount = 0; // QueryServ Player Counting
+
 	Client *give_exp_client = NULL;
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
-
+	
 	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
 	if (give_exp_client && !IsCorpse() && MerchantType == 0)
 	{
@@ -2081,8 +2094,30 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
                     parse->EventNPC(EVENT_KILLED_MERIT, this, kr->members[i].member, "killed", 0);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						kr->members[i].member->UpdateTasksOnKill(GetNPCTypeID());
+					PlayerCount++;
 				}
 			}
+
+			// QueryServ Logging - Raid Kills
+			if(RuleB(QueryServ, PlayerLogNPCKills)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerLogNPCKills, sizeof(QSPlayerLogNPCKill_Struct) + (sizeof(QSPlayerLogNPCKillsPlayers_Struct) * PlayerCount));
+				PlayerCount = 0;
+				QSPlayerLogNPCKill_Struct* QS = (QSPlayerLogNPCKill_Struct*) pack->pBuffer;
+				QS->s1.NPCID = this->GetNPCTypeID();
+				QS->s1.ZoneID = this->GetZoneID();
+				QS->s1.Type = 2; // Raid Fight
+				for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
+					if (kr->members[i].member != NULL) { // If Group Member is Client
+						Client *c = kr->members[i].member;
+						QS->Chars[PlayerCount].char_id = c->CharacterID();
+						PlayerCount++;
+					}
+				}
+				worldserver.SendPacket(pack); // Send Packet to World
+				safe_delete(pack); 
+			}
+			// End QueryServ Logging
+
 		}
 		else if (give_exp_client->IsGrouped() && kg != NULL)
 		{
@@ -2099,8 +2134,30 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
                     parse->EventNPC(EVENT_KILLED_MERIT, this, c, "killed", 0);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						c->UpdateTasksOnKill(GetNPCTypeID());
+
+					PlayerCount++;
 				}
 			}
+			
+			// QueryServ Logging - Group Kills
+			if(RuleB(QueryServ, PlayerLogNPCKills)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerLogNPCKills, sizeof(QSPlayerLogNPCKill_Struct) + (sizeof(QSPlayerLogNPCKillsPlayers_Struct) * PlayerCount));
+				PlayerCount = 0;
+				QSPlayerLogNPCKill_Struct* QS = (QSPlayerLogNPCKill_Struct*) pack->pBuffer;
+				QS->s1.NPCID = this->GetNPCTypeID();
+				QS->s1.ZoneID = this->GetZoneID();
+				QS->s1.Type = 1; // Group Fight
+				for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+					if (kg->members[i] != NULL && kg->members[i]->IsClient()) { // If Group Member is Client
+						Client *c = kg->members[i]->CastToClient();
+						QS->Chars[PlayerCount].char_id = c->CharacterID();
+						PlayerCount++;
+					}
+				}
+				worldserver.SendPacket(pack); // Send Packet to World
+				safe_delete(pack); 
+			}
+			// End QueryServ Logging
 		}
 		else
 		{
@@ -2121,6 +2178,21 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
             parse->EventNPC(EVENT_KILLED_MERIT, this, give_exp_client, "killed", 0);
 			if(RuleB(TaskSystem, EnableTaskSystem))
 				give_exp_client->UpdateTasksOnKill(GetNPCTypeID());
+
+			// QueryServ Logging - Solo
+			if(RuleB(QueryServ, PlayerLogNPCKills)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerLogNPCKills, sizeof(QSPlayerLogNPCKill_Struct) + (sizeof(QSPlayerLogNPCKillsPlayers_Struct) * 1));
+				QSPlayerLogNPCKill_Struct* QS = (QSPlayerLogNPCKill_Struct*) pack->pBuffer;
+				QS->s1.NPCID = this->GetNPCTypeID();
+				QS->s1.ZoneID = this->GetZoneID();
+				QS->s1.Type = 0; // Solo Fight
+				Client *c = give_exp_client;
+				QS->Chars[0].char_id = c->CharacterID();
+				PlayerCount++;
+				worldserver.SendPacket(pack); // Send Packet to World
+				safe_delete(pack); 
+			}
+			// End QueryServ Logging
 		}
 	}
 	
@@ -2268,6 +2340,7 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	Mob* owner = other->GetOwner();
 	Mob* mypet = this->GetPet();
 	Mob* myowner = this->GetOwner();
+	Mob* targetmob = this->GetTarget();
 	
 	if(other){
 		AddRampage(other);
@@ -2277,9 +2350,14 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 		hate = ((hate * (hatemod))/100);
 	}
 	
-	if(IsPet() && GetOwner() && GetOwner()->GetAA(aaPetDiscipline) && IsHeld()){
+	if(IsPet() && GetOwner() && GetOwner()->GetAA(aaPetDiscipline) && IsHeld() && !IsFocused()) { //ignore aggro if hold and !focus
 		return; 
-	}	
+	}
+
+	if(IsPet() && GetOwner() && GetOwner()->GetAA(aaPetDiscipline) && IsHeld() && GetOwner()->GetAA(aaAdvancedPetDiscipline) >= 1 && IsFocused()) {
+		if (!targetmob)
+			return;
+	}
 
 	if(IsClient() && !IsAIControlled())
 		return;
@@ -3229,10 +3307,12 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		Mob *pet = GetPet();
 		if (pet && !pet->IsFamiliar() && !pet->SpecAttacks[IMMUNE_AGGRO] && !pet->IsEngaged() && attacker && attacker != this && !attacker->IsCorpse()) 
 		{
-			mlog(PETS__AGGRO, "Sending pet %s into battle due to attack.", pet->GetName());
-			pet->AddToHateList(attacker, 1);
-			pet->SetTarget(attacker);
-			Message_StringID(10, PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
+			if (!pet->IsHeld()) {
+				mlog(PETS__AGGRO, "Sending pet %s into battle due to attack.", pet->GetName());
+				pet->AddToHateList(attacker, 1);
+				pet->SetTarget(attacker);
+				Message_StringID(10, PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
+			}
 		}	
 	
 		//see if any runes want to reduce this damage
@@ -3518,6 +3598,17 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 	uint32 maxhp = GetMaxHP();
 	uint32 curhp = GetHP();
 	uint32 acthealed = 0;
+
+	if(caster && amount > 0)
+	{
+		if(caster->IsNPC() && !caster->IsPet())
+		{
+			float npchealscale = caster->CastToNPC()->GetHealScale();
+			amount = ((float)amount * npchealscale) / (float)100;
+		}
+	}
+
+
 	if(amount > (maxhp - curhp))
 		acthealed = (maxhp - curhp);
 	else
@@ -3825,6 +3916,12 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 
 		if(!isRanged)
 		{
+			if(IsPet() && hand != 13) //Pets can only proc spell procs from their primay hand (ie; beastlord pets)
+			{
+				//Maybe implement this later if pets are ever given dual procs?
+			}
+			else
+			{
 				int chance = ProcChance * (SpellProcs[i].chance);
 				if(MakeRandomInt(0, 100) < chance) {
 					mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
@@ -3832,6 +3929,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				} else {
 					mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 				}
+			}
 		}
 		if (bRangedAttack) {
 			int chance = ProcChance * RangedProcs[i].chance;

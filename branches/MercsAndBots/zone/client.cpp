@@ -811,6 +811,31 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		}
 	}
 
+
+	if(RuleB(QueryServ, PlayerChatLogging)){
+		ServerPacket* pack = new ServerPacket(ServerOP_Speech, sizeof(Server_Speech_Struct)+strlen(message)+1);
+		Server_Speech_Struct* sem = (Server_Speech_Struct*) pack->pBuffer;
+	
+		if(chan_num == 0)
+			sem->guilddbid = GuildID();
+		else
+			sem->guilddbid = 0;
+	
+		strcpy(sem->message, message);
+		sem->minstatus = this->Admin();
+		sem->type = chan_num;
+		if(targetname != 0)
+			strcpy(sem->to,targetname);
+	
+		if(GetName() != 0)
+			strcpy(sem->from,GetName());
+	
+		pack->Deflate();
+		if(worldserver.Connected())
+			worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+
 	switch(chan_num)
 	{
 	case 0: { // GuildChat
@@ -994,7 +1019,15 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	}
 	case 8: { // /say
 		if(message[0] == COMMAND_CHAR)  {
-			command_dispatch(this, message);
+			if(command_dispatch(this, message) == -2){
+				if(RuleB(Chat, FlowCommandstoPerl_EVENT_SAY)){
+					if(parse->PlayerHasQuestSub("EVENT_SAY"))  {
+						parse->EventPlayer(EVENT_SAY, this, message, language);
+					}
+				}else{
+					this->Message(13, "Command '%s' not recognized.", message);
+				}
+			}
 			break;
 		}
 		Mob* sender = this;
@@ -5488,9 +5521,10 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 		insr->playerid = requestee->GetID();
 
 		const Item_Struct* item = NULL;
-		
-		for (sint16 L=0; L <= 21; L++) {
-			const ItemInst* inst = requestee->GetInv().GetItem(L);
+		const ItemInst* inst = NULL;
+
+		for(sint16 L = 0; L <= 20; L++) {
+			inst = requestee->GetInv().GetItem(L);
 
 			if(inst) {
 				item = inst->GetItem();
@@ -5502,21 +5536,30 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 					insr->itemicons[L] = 0xFFFFFFFF;
 			}
 		}
-		/*
-		// Special handling for Power Source slot on SoF clients
-		if(requestee->GetClientVersion() >= EQClientSoF && requester->GetClientVersion() >= EQClientSoF) {
-			const ItemInst* inst = requestee->GetInv().GetItem(9999);
-			if(inst) {
-				item = inst->GetItem();
-				if(item) {
-					strcpy(insr->itemnames[22], item->Name);
-					insr->itemicons[22] = item->Icon;
-				}
-				else
-					insr->itemicons[22] = 0xFFFFFFFF;
+
+		inst = requestee->GetInv().GetItem(9999);
+
+		if(inst) {
+			item = inst->GetItem();
+			if(item) {
+				strcpy(insr->itemnames[21], item->Name);
+				insr->itemicons[21] = item->Icon;
 			}
+			else
+				insr->itemicons[21] = 0xFFFFFFFF;
 		}
-		*/
+
+		inst = requestee->GetInv().GetItem(21);
+
+		if(inst) {
+			item = inst->GetItem();
+			if(item) {
+				strcpy(insr->itemnames[22], item->Name);
+				insr->itemicons[22] = item->Icon;
+			}
+			else
+				insr->itemicons[22] = 0xFFFFFFFF;
+		}
 
 		//Need to add the player inspect notes code here at some point...
 
@@ -7032,6 +7075,21 @@ char* Client::GetClassPlural(Client* client) {
 			return "Berserkers"; break;
 		default:
 			return "Classes"; break;
+	}
+}
+
+
+void Client::SendWebLink(const char *website)
+{
+	if(website != 0)
+	{
+				string str = website;
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_Weblink, sizeof(Weblink_Struct) + str.length() + 1);
+				Weblink_Struct *wl = (Weblink_Struct*)outapp->pBuffer;
+				memcpy(wl->weblink, str.c_str(), str.length() + 1);
+				wl->weblink[str.length() + 1] = '\0';
+
+				FastQueuePacket(&outapp);
 	}
 }
 

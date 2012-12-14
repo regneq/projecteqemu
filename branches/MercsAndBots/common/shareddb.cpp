@@ -1399,11 +1399,33 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 	return inst;
 }
 
+// Create appropriate ItemInst class
+ItemInst* SharedDatabase::CreateCorpseItem(const Item_Struct* item, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
+{
+	ItemInst* inst = NULL;
+	if (item) {
+		inst = CreateBaseItem(item, charges);
+		inst->PutAugment(this, 0, aug1);
+		inst->PutAugment(this, 1, aug2);
+		inst->PutAugment(this, 2, aug3);
+		inst->PutAugment(this, 3, aug4);
+		inst->PutAugment(this, 4, aug5);
+		inst->SetCharges(charges);
+	}
+	
+	return inst;
+}
+
 ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges) {
 	ItemInst* inst = NULL;
 	if (item) {
-		if (charges == 0)
+		if (charges == 0) {
 			charges = item->MaxCharges;
+			// if maxcharges was -1 that means it is an unlimited use item. 
+			// set it to 1 charge so that it is usable on creation
+			if (charges == -1)
+				charges = 1;
+		}
 
 		if(item->CharmFileID != 0 || (item->LoreGroup >= 1000 && item->LoreGroup != -1)) {
 			inst = new EvoItemInst(item, charges);

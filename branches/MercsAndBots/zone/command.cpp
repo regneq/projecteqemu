@@ -272,6 +272,7 @@ int command_init(void) {
 		command_add("reloadquest"," - Clear quest cache (any argument causes it to also stop all timers)",150,command_reloadqst) ||
 		command_add("reloadqst",NULL,0,command_reloadqst) ||
 		command_add("reloadpl",NULL,0,command_reloadqst) ||
+		command_add("reloadworld",NULL,0,command_reloadworld) ||
 		command_add("rq",NULL,0,command_reloadqst) ||
 		command_add("reloadzonepoints","- Reload zone points from database",150,command_reloadzps) ||
 		command_add("reloadzps",NULL,0,command_reloadzps) ||
@@ -653,8 +654,7 @@ int command_realdispatch(Client *c, const char *message)
 	string cstr(sep.arg[0]+1);
 	
 	if(commandlist.count(cstr) != 1) {
-		c->Message(13, "Command '%s' not recognized.", sep.arg[0]+1);
-		return(-1);
+		return(-2);
 	}
 	
 	CommandRecord *cur = commandlist[cstr];
@@ -3503,6 +3503,19 @@ void command_reloadqst(Client *c, const Seperator *sep)
 		parse->ReloadQuests(true);
 	}
 
+}
+
+void command_reloadworld(Client *c, const Seperator *sep)
+{
+	if (sep->arg[1][0] == 0)
+	{
+		c->Message(0, "Reloading quest cache and repopping zones worldwide.");
+		ServerPacket* pack = new ServerPacket(ServerOP_ReloadWorld, sizeof(ReloadWorld_Struct));
+		ReloadWorld_Struct* RW = (ReloadWorld_Struct*) pack->pBuffer;
+		RW->Option = 1;
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 }
 
 void command_reloadzps(Client *c, const Seperator *sep)
@@ -9415,10 +9428,10 @@ void command_modifynpcstat(Client *c, const Seperator *sep)
 
 	if(sep->arg[1][0] == '\0')
 	{
-		c->Message(0, "usage#modifynpcstat arg value");
+		c->Message(0, "usage #modifynpcstat arg value");
 		c->Message(0, "Args: ac, str, sta, agi, dex, wis, _int, cha, max_hp, mr, fr, cr, pr, dr, runspeed, special_attacks, "
 			"attack_speed, atk, accuracy, trackable, min_hit, max_hit, see_invis_undead, see_hide, see_improved_hide, "
-			"hp_regen, mana_regen, aggro, assist, slow_mitigation");
+			"hp_regen, mana_regen, aggro, assist, slow_mitigation, loottable_id, healscale, spellscale");
 		return;
 	}
 

@@ -467,7 +467,6 @@ typedef enum {
 struct MercType {
 	uint32	Type;
 	uint32	ClientVersion;	
-	uint32	NPCID;
 };
 
 struct MercData {
@@ -1116,6 +1115,10 @@ bool logpos;
 	inline const eStandingPetOrder GetPetOrder() const { return pStandingPetOrder; }
 	inline void			SetHeld(bool nState) { held = nState; }
 	inline const bool	IsHeld() const { return held; }
+	inline void			SetNoCast(bool nState) { nocast = nState; }
+	inline const bool	IsNoCast() const { return nocast; }
+	inline void			SetFocused(bool nState) { focused = nState; }
+	inline const bool	IsFocused() const { return focused; }
 	inline const bool	IsRoamer() const { return roamer; }
 	inline const bool   IsRooted() const { return rooted || permarooted; }
 	inline const bool   HasVirus() const { return has_virus; }
@@ -1348,6 +1351,8 @@ protected:
 	float	runspeed;
 	int32 pLastChange;
 	bool held;
+	bool nocast;
+	bool focused;
 	void CalcSpellBonuses(StatBonuses* newbon);
 	virtual void CalcBonuses();
 	void TrySkillProc(Mob *on, int16 skill, float chance);

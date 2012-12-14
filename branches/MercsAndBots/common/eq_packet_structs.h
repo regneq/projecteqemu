@@ -1898,6 +1898,12 @@ struct AdventureFinish_Struct{
 /*004*/ uint32 points;
 /*008*/
 };
+
+struct Weblink_Struct{
+/*000*/ char weblink[1]; 
+/*004*/
+};
+
 //OP_AdventureRequest
 struct AdventureRequest_Struct{
 /*000*/	int32 risk;//1 normal,2 hard.
@@ -2284,15 +2290,14 @@ struct Inspect_Struct {
 	int16 TargetID;
 	int16 PlayerID;
 };
-//OP_InspectAnswer
-struct InspectResponse_Struct{//Cofruben:need to send two of this for the inspect response.
+//OP_InspectAnswer - Size: 1860
+struct InspectResponse_Struct{
 /*000*/	int32 TargetID;
 /*004*/	int32 playerid;
-/*008*/	char itemnames[21][64];
-/*1352*/char unknown_zero[64];//fill with zero's.
-/*1416*/int32 itemicons[21];
-/*1500*/int32 unknown_zero2;
-/*1504*/char text[288];
+/*008*/	char itemnames[23][64];
+/*1480*/int32 itemicons[23];
+/*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254
+/*1860*/
 };
 
 //OP_SetDataRate

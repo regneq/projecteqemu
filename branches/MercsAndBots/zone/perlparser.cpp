@@ -2353,6 +2353,24 @@ XS(XS__istaskactivityactive)
 
 	XSRETURN(1);
 }
+XS(XS__gettaskactivitydonecount);
+XS(XS__gettaskactivitydonecount)
+{
+	dXSARGS;
+	int32        RETVAL;
+	dXSTARG;
+
+	if(items == 2) {
+		unsigned int task = (int)SvIV(ST(0));
+		unsigned int activity = (int)SvIV(ST(1));
+		RETVAL = quest_manager.gettaskactivitydonecount(task, activity);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	} else {
+		Perl_croak(aTHX_ "Usage: gettaskactivitydonecount(task,activity)");
+	}
+
+	XSRETURN(1);
+}
 XS(XS__updatetaskactivity);
 XS(XS__updatetaskactivity)
 {
@@ -3387,6 +3405,65 @@ XS(XS__clearhandin) {
 	XSRETURN_EMPTY;
 }
 
+XS(XS__crosszonesignalclientbycharid);
+XS(XS__crosszonesignalclientbycharid)
+{
+	dXSARGS;
+
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: crosszonesignalclientbycharid(char_id, data)");
+
+	if (items == 2) {
+		int	char_id = (int)SvIV(ST(0));
+		int32 data = (int32)SvIV(ST(1));
+		quest_manager.CrossZoneSignalPlayerByCharID(char_id, data);
+	} else {
+		Perl_croak(aTHX_ "Usage: crosszonesignalclientbycharid(char_id, data)");
+	}
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__crosszonesignalclientbyname);
+XS(XS__crosszonesignalclientbyname)
+{
+	dXSARGS;
+
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: crosszonesignalclientbycharid(Name, data)");
+
+	if (items == 2) {
+		char *Name = (char *)SvPV_nolen(ST(0));
+		int32 data = (int32)SvIV(ST(1));
+		quest_manager.CrossZoneSignalPlayerByName(Name, data);
+	} else {
+		Perl_croak(aTHX_ "Usage: crosszonesignalclientbycharid(Name, data)");
+	}
+
+	XSRETURN_EMPTY;
+}
+
+
+XS(XS__crosszonemessageplayerbyname);
+XS(XS__crosszonemessageplayerbyname)
+{
+	dXSARGS;
+
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: crosszonemessageplayerbyname(Type, Name, Message)");
+
+	if (items == 3) {
+		int32 Type = (int32)SvIV(ST(0));
+		char *Name = (char *)SvPV_nolen(ST(1));
+		char *Message = (char *)SvPV_nolen(ST(2));
+		quest_manager.CrossZoneMessagePlayerByName(Type, Name, Message);
+	} else {
+		Perl_croak(aTHX_ "Usage: crosszonemessageplayerbyname(Type, Name, Message)");
+	}
+
+	XSRETURN_EMPTY;
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -3541,6 +3618,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "istaskenabled"), XS__istaskenabled, file);
 		newXS(strcpy(buf, "istaskactive"), XS__istaskactive, file);
 		newXS(strcpy(buf, "istaskactivityactive"), XS__istaskactivityactive, file);
+		newXS(strcpy(buf, "gettaskactivitydonecount"), XS__gettaskactivitydonecount, file);
 		newXS(strcpy(buf, "updatetaskactivity"), XS__updatetaskactivity, file);
 		newXS(strcpy(buf, "resettaskactivity"), XS__resettaskactivity, file);
 		newXS(strcpy(buf, "taskexploredarea"), XS__taskexploredarea, file);
@@ -3604,6 +3682,9 @@ EXTERN_C XS(boot_quest)
         newXS(strcpy(buf, "completehandin"), XS__completehandin, file);
         newXS(strcpy(buf, "resethandin"), XS__resethandin, file);
 		newXS(strcpy(buf, "clearhandin"), XS__clearhandin, file);
+		newXS(strcpy(buf, "crosszonesignalclientbycharid"), XS__crosszonesignalclientbycharid, file);
+		newXS(strcpy(buf, "crosszonesignalclientbyname"), XS__crosszonesignalclientbyname, file);
+		newXS(strcpy(buf, "crosszonemessageplayerbyname"), XS__crosszonemessageplayerbyname, file);
 	XSRETURN_YES;
 }
 

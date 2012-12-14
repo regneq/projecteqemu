@@ -248,6 +248,8 @@ public:
 	void	ClearMerchantTemp();
 	void	SetLFP(int32 CharID, bool LFP); 
 	void	SetLFG(int32 CharID, bool LFG);
+	void	SetFirstLogon(int32 CharID, int8 firstlogon);
+	void	SetLoginFlags(int32 CharID, bool LFP, bool LFG, int8 firstlogon); 
 	void	AddReport(std::string who, std::string against, std::string lines);
 	
 

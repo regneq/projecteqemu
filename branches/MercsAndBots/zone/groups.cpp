@@ -225,12 +225,12 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
 				if(newmember->IsMerc())
 				{
 					Client* owner = newmember->CastToMerc()->GetMercOwner();
-						if(owner)
-						{
-								CharacterID = owner->CastToClient()->CharacterID();
-								NewMemberName = newmember->GetName();
-								ismerc = true;
-						}
+					if(owner)
+					{
+						CharacterID = owner->CastToClient()->CharacterID();
+						NewMemberName = newmember->GetName();
+						ismerc = true;
+					}
 				}
         }
 
@@ -273,7 +273,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
         for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
                 if (members[i] != NULL && members[i] != newmember) {
                         //fill in group join & send it
-						if(members[i]->IsMerc())
+                        if(members[i]->IsMerc())
 						{
                         strcpy(gj->yourname, members[i]->GetName());
 						}
@@ -286,7 +286,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
 
                                 //put new member into existing person's list
                                 strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], NewMemberName);
-						}
+                        }
 
                         //put this existing person into the new member's list
                         if(InZone && newmember->IsClient()) {
@@ -296,7 +296,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
                                         strcpy(newmember->CastToClient()->GetPP().groupMembers[x], members[i]->GetCleanName());
                                         x++;
                                 }
-						}
+                        }
                 }
         }
 

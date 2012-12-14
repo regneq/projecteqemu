@@ -530,8 +530,19 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 	//cannot hurt untargetable mobs
 	bodyType bt = target->GetBodyType();
 
-	if(bt == BT_NoTarget || bt == BT_NoTarget2)
-		return(false);
+	if(bt == BT_NoTarget || bt == BT_NoTarget2) {
+		if (RuleB(Pets, UnTargetableSwarmPet)) {
+			if (target->IsNPC()) {
+				if (!target->CastToNPC()->GetSwarmOwner()) {
+					return(false);
+				}
+			} else {
+				return(false);
+			}
+		} else {
+			return(false);
+		}
+	}
 
 	if(!isSpellAttack)
 	{

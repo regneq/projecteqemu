@@ -37,6 +37,8 @@ public:
 
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	static Merc* LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id);
+	void UpdateMercStats(Client *c);
+	void UpdateMercAppearance(Client *c);
 	static const char *GetRandomName();
 	bool Spawn(Client *owner);
 	bool Dismiss();
@@ -92,22 +94,6 @@ public:
 	inline virtual sint16	GetPR()	const { return PR; }
 	inline virtual sint16	GetCR()	const { return CR; }
 	inline virtual sint16	GetCorrup()	const { return Corrup; }
-	
-	sint16	GetMaxStat() const;
-	sint16	GetMaxResist() const;
-	sint16  GetMaxSTR() const;
-    sint16  GetMaxSTA() const;
-    sint16  GetMaxDEX() const;
-    sint16  GetMaxAGI() const;
-    sint16  GetMaxINT() const;
-    sint16  GetMaxWIS() const;
-    sint16  GetMaxCHA() const;
-	sint16  GetMaxMR() const;
-	sint16  GetMaxPR() const;
-	sint16  GetMaxDR() const;
-	sint16  GetMaxCR() const;
-	sint16  GetMaxFR() const;
-	sint16  GetMaxCorrup() const;
 
 	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
 	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }

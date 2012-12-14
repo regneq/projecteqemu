@@ -174,10 +174,15 @@ void ClientList::GetCLEIP(int32 iIP) {
 					// The IP Limit is set by the status of the account if status > MaxClientsPerIP
 					if (IPInstances > countCLEIPs->Admin()) {
 						
-						// Remove the connection
-						countCLEIPs->SetOnline(CLE_Status_Offline);
-						iterator.RemoveCurrent();
-						continue;
+						if(RuleB(World, IPLimitDisconnectAll)) {
+							DisconnectByIP(iIP);
+							return;
+						} else {
+							// Remove the connection
+							countCLEIPs->SetOnline(CLE_Status_Offline);
+							iterator.RemoveCurrent();
+							continue;
+						}
 					}
 				}
 				// Else if the Admin status of the connection is not eligible for the higher limit,
@@ -185,20 +190,54 @@ void ClientList::GetCLEIP(int32 iIP) {
 				else if ((countCLEIPs->Admin() < (RuleI(World, AddMaxClientsStatus)) ||
 						(RuleI(World, AddMaxClientsStatus) < 0))) {
 
-					// Remove the connection
-					countCLEIPs->SetOnline(CLE_Status_Offline);
-					iterator.RemoveCurrent();
-					continue;
+					if(RuleB(World, IPLimitDisconnectAll)) {
+						DisconnectByIP(iIP);
+						return;
+					} else {
+						// Remove the connection
+						countCLEIPs->SetOnline(CLE_Status_Offline);
+						iterator.RemoveCurrent();
+						continue;
+					}
 				}
 				// else they are eligible for the higher limit, but if they exceed that
 				else if (IPInstances > RuleI(World, AddMaxClientsPerIP)) {
 
-					// Remove the connection
-					countCLEIPs->SetOnline(CLE_Status_Offline);
-					iterator.RemoveCurrent();
-					continue;
+					if(RuleB(World, IPLimitDisconnectAll)) {
+						DisconnectByIP(iIP);
+						return;
+					} else {
+						// Remove the connection
+						countCLEIPs->SetOnline(CLE_Status_Offline);
+						iterator.RemoveCurrent();
+						continue;
+					}
 				}
 			}
+		}
+		iterator.Advance();
+	}
+}
+
+void ClientList::DisconnectByIP(int32 iIP) {
+	ClientListEntry* countCLEIPs = 0;
+	LinkedListIterator<ClientListEntry*> iterator(clientlist);
+	iterator.Reset();
+
+	while(iterator.MoreElements()) {
+		countCLEIPs = iterator.GetData();
+		if ((countCLEIPs->GetIP() == iIP)) {
+            if(strlen(countCLEIPs->name())) {
+                ServerPacket* pack = new ServerPacket(ServerOP_KickPlayer, sizeof(ServerKickPlayer_Struct));
+                ServerKickPlayer_Struct* skp = (ServerKickPlayer_Struct*) pack->pBuffer;
+                strcpy(skp->adminname, "SessionLimit");
+                strcpy(skp->name, countCLEIPs->name());
+                skp->adminrank = 255;
+                zoneserver_list.SendPacket(pack);
+                safe_delete(pack);
+            }
+			countCLEIPs->SetOnline(CLE_Status_Offline);
+			iterator.RemoveCurrent();
 		}
 		iterator.Advance();
 	}

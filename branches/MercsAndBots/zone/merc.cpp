@@ -152,6 +152,55 @@ void Merc::GenerateBaseStats() {
 			Attack += 5;
 			break;
 	}
+	
+	float MercSize = GetSize();
+
+	switch(this->GetRace()) {
+			case 1: // Humans have no race bonus
+				break;
+			case 2: // Barbarian
+				MercSize = 7.0;
+				break;
+			case 3: // Erudite
+				break;
+			case 4: // Wood Elf
+				MercSize = 5.0;
+				break;
+			case 5: // High Elf
+				break;
+			case 6: // Dark Elf
+				MercSize = 5.0;
+				break;
+			case 7: // Half Elf
+				MercSize = 5.5;
+				break;
+			case 8: // Dwarf
+				MercSize = 4.0;
+				break;
+			case 9: // Troll
+				MercSize = 8.0;
+				break;
+			case 10: // Ogre
+				MercSize = 9.0;
+				break;
+			case 11: // Halfling
+				MercSize = 3.5;
+				break;
+			case 12: // Gnome
+				MercSize = 3.0;
+				break;
+			case 128: // Iksar
+				break;
+			case 130: // Vah Shir
+				MercSize = 7.0;
+				break;
+			case 330: // Froglok
+				MercSize = 5.0;
+				break;
+			case 522: // Drakkin
+				MercSize = 5.0;
+				break;
+	}
 
 	this->_baseSTR = Strength;
 	this->_baseSTA = Stamina;
@@ -167,6 +216,80 @@ void Merc::GenerateBaseStats() {
 	this->_basePR = PoisonResist;
 	this->_baseCR = ColdResist;
 	this->_baseCorrup = CorruptionResist;
+	this->size = MercSize;
+}
+
+void Merc::GenerateAppearance() {
+	// Randomize facial appearance
+	int iFace = 0;
+	if(this->GetRace() == 2) { // Barbarian w/Tatoo
+		iFace = MakeRandomInt(0, 79);
+	}
+	else {
+		iFace = MakeRandomInt(0, 7);
+	}
+
+	int iHair = 0;
+	int iBeard = 0;
+	int iBeardColor = 1;
+	if(this->GetRace() == 522) {
+		iHair = MakeRandomInt(0, 8);
+		iBeard = MakeRandomInt(0, 11);
+		iBeardColor = MakeRandomInt(0, 3);
+	}
+	else if(this->GetGender()) {
+		iHair = MakeRandomInt(0, 2);
+		if(this->GetRace() == 8) { // Dwarven Females can have a beard
+			if(MakeRandomInt(1, 100) < 50) {
+				iFace += 10;
+			}
+		}
+	}
+	else {
+		iHair = MakeRandomInt(0, 3);
+		iBeard = MakeRandomInt(0, 5);
+		iBeardColor = MakeRandomInt(0, 19);
+	}
+
+	int iHairColor = 0;
+	if(this->GetRace() == 522) {
+		iHairColor = MakeRandomInt(0, 3);
+	}
+	else {
+		iHairColor = MakeRandomInt(0, 19);
+	}
+
+	int8 iEyeColor1 = (int8)MakeRandomInt(0, 9);
+	int8 iEyeColor2 = 0;
+	if(this->GetRace() == 522) {
+		iEyeColor1 = iEyeColor2 = (int8)MakeRandomInt(0, 11);
+	}
+	else if(MakeRandomInt(1, 100) > 96) {
+		iEyeColor2 = MakeRandomInt(0, 9);
+	}
+	else {
+		iEyeColor2 = iEyeColor1;
+	}
+
+	int iHeritage = 0;
+	int iTattoo = 0;
+	int iDetails = 0;
+	if(this->GetRace() == 522) {
+		iHeritage = MakeRandomInt(0, 6);
+		iTattoo = MakeRandomInt(0, 7);
+		iDetails = MakeRandomInt(0, 7);
+	}
+
+	this->luclinface = iFace;
+	this->hairstyle = iHair;
+	this->beard = iBeard;
+	this->beardcolor = iBeardColor;
+	this->haircolor = iHairColor;
+	this->eyecolor1 = iEyeColor1;
+	this->eyecolor2 = iEyeColor2;
+	this->drakkin_heritage = iHeritage;
+	this->drakkin_tattoo = iTattoo;
+	this->drakkin_details = iDetails;
 }
 
 int Merc::CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat)
@@ -679,121 +802,6 @@ int Merc::GroupLeadershipAAOffenseEnhancement()
 	return 0;
 }
 
-sint16 Merc::GetMaxStat() const {
-	if((RuleI(Character, StatCap)) > 0)
-		return (RuleI(Character, StatCap));
-
-	int level = GetLevel();
-	
-	sint16 base = 0;
-	
-	if (level < 61) {
-		base = 255;
-	}
-	else if (GetClientVersion() >= EQClientSoF) {
-		base = 255 + 5 * (level - 60);
-	}
-	else if (level < 71) {
-		base = 255 + 5 * (level - 60);
-	}
-	else {
-		base = 330;
-	}
-	
-	return(base);
-}
-
-sint16 Merc::GetMaxResist() const 
-{
-	int level = GetLevel();
-
-	sint16 base = 500;
-	
-	if(level > 60)
-		base += ((level - 60) * 5);
-
-	return base;
-}
-
-sint16 Merc::GetMaxSTR() const {
-	return GetMaxStat()
-		+ itembonuses.STRCapMod
-		+ spellbonuses.STRCapMod
-		+ aabonuses.STRCapMod;
-}
-sint16 Merc::GetMaxSTA() const {
-	return GetMaxStat()
-		+ itembonuses.STACapMod
-		+ spellbonuses.STACapMod
-		+ aabonuses.STACapMod;
-}
-sint16 Merc::GetMaxDEX() const {
-	return GetMaxStat()
-		+ itembonuses.DEXCapMod
-		+ spellbonuses.DEXCapMod
-		+ aabonuses.DEXCapMod;
-}
-sint16 Merc::GetMaxAGI() const {
-	return GetMaxStat()
-		+ itembonuses.AGICapMod
-		+ spellbonuses.AGICapMod
-		+ aabonuses.AGICapMod;
-}
-sint16 Merc::GetMaxINT() const {
-	return GetMaxStat()
-		+ itembonuses.INTCapMod
-		+ spellbonuses.INTCapMod
-		+ aabonuses.INTCapMod;
-}
-sint16 Merc::GetMaxWIS() const {
-	return GetMaxStat()
-		+ itembonuses.WISCapMod
-		+ spellbonuses.WISCapMod
-		+ aabonuses.WISCapMod;
-}
-sint16 Merc::GetMaxCHA() const {
-	return GetMaxStat()
-		+ itembonuses.CHACapMod
-		+ spellbonuses.CHACapMod
-		+ aabonuses.CHACapMod;
-}
-sint16 Merc::GetMaxMR() const {
-	return GetMaxResist()
-		+ itembonuses.MRCapMod
-		+ spellbonuses.MRCapMod
-		+ aabonuses.MRCapMod;
-}
-sint16 Merc::GetMaxPR() const {
-	return GetMaxResist()
-		+ itembonuses.PRCapMod
-		+ spellbonuses.PRCapMod
-		+ aabonuses.PRCapMod;
-}
-sint16 Merc::GetMaxDR() const {
-	return GetMaxResist()
-		+ itembonuses.DRCapMod
-		+ spellbonuses.DRCapMod
-		+ aabonuses.DRCapMod;
-}
-sint16 Merc::GetMaxCR() const {
-	return GetMaxResist()
-		+ itembonuses.CRCapMod
-		+ spellbonuses.CRCapMod
-		+ aabonuses.CRCapMod;
-}
-sint16 Merc::GetMaxFR() const {
-	return GetMaxResist()
-		+ itembonuses.FRCapMod
-		+ spellbonuses.FRCapMod
-		+ aabonuses.FRCapMod;
-}
-sint16 Merc::GetMaxCorrup() const {
-	return GetMaxResist()
-		+ itembonuses.CorrupCapMod
-		+ spellbonuses.CorrupCapMod
-		+ aabonuses.CorrupCapMod;
-}
-
 sint32 Merc::LevelRegen()
 {
 	bool sitting = IsSitting();
@@ -852,16 +860,10 @@ sint16 Merc::CalcSTR() {
 	
 	sint16 mod = aabonuses.STR;
 	
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
 	STR = val + mod;
 	
 	if(STR < 1)
 		STR = 1;
-
-	int m = GetMaxSTR();
-	if(STR > m)
-		STR = m;
 	
 	return(STR);
 }
@@ -871,16 +873,10 @@ sint16 Merc::CalcSTA() {
 	
 	sint16 mod = aabonuses.STA;
 	
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
 	STA = val + mod;
 	
 	if(STA < 1)
 		STA = 1;
-
-	int m = GetMaxSTA();
-	if(STA > m)
-		STA = m;
 	
 	return(STA);
 }
@@ -889,19 +885,12 @@ sint16 Merc::CalcAGI() {
 	sint16 val = _baseAGI + itembonuses.AGI + spellbonuses.AGI;
 	sint16 mod = aabonuses.AGI;
 
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
-
 	sint16 str = GetSTR();
 	
 	AGI = val + mod;
 
 	if(AGI < 1)
 		AGI = 1;
-
-	int m = GetMaxAGI();
-	if(AGI > m)
-		AGI = m;
 	
 	return(AGI);
 }
@@ -910,17 +899,11 @@ sint16 Merc::CalcDEX() {
 	sint16 val = _baseDEX + itembonuses.DEX + spellbonuses.DEX;
 	
 	sint16 mod = aabonuses.DEX;
-	
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
+
 	DEX = val + mod;
 	
 	if(DEX < 1)
 		DEX = 1;
-
-	int m = GetMaxDEX();
-	if(DEX > m)
-		DEX = m;
 	
 	return(DEX);
 }
@@ -930,16 +913,10 @@ sint16 Merc::CalcINT() {
 
 	sint16 mod = aabonuses.INT;
 	
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
 	INT = val + mod;
 
 	if(INT < 1)
 		INT = 1;
-
-	int m = GetMaxINT();
-	if(INT > m)
-		INT = m;
 	
 	return(INT);
 }
@@ -949,16 +926,10 @@ sint16 Merc::CalcWIS() {
 	
 	sint16 mod = aabonuses.WIS;
 	
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
 	WIS = val + mod;
 
 	if(WIS < 1)
 		WIS = 1;
-
-	int m = GetMaxWIS();
-	if(WIS > m)
-		WIS = m;
 	
 	return(WIS);
 }
@@ -968,16 +939,10 @@ sint16 Merc::CalcCHA() {
 	
 	sint16 mod = aabonuses.CHA;
 	
-	if(val>255 && GetLevel() <= 60)
-		val = 255;
 	CHA = val + mod;
 	
 	if(CHA < 1)
 		CHA = 1;
-
-	int m = GetMaxCHA();
-	if(CHA > m)
-		CHA = m;
 	
 	return(CHA);
 }
@@ -989,38 +954,18 @@ sint16	Merc::CalcMR()
 {
 	MR = _baseMR + itembonuses.MR + spellbonuses.MR + aabonuses.MR;
 	
-	if(GetClass() == WARRIOR)
-		MR += GetLevel() / 2;
-	
 	if(MR < 1)
 		MR = 1;
-
-	if(MR > GetMaxMR())
-		MR = GetMaxMR();
 
 	return(MR);
 }
 
 sint16	Merc::CalcFR()
 {
-	FR = _baseFR;
-	
-	int c = GetClass();
-	if(c == RANGER) {
-		FR += 4;
-		
-		int l = GetLevel();
-		if(l > 49)
-			FR += l - 49;
-	}
-	
-	FR += itembonuses.FR + spellbonuses.FR + aabonuses.FR;
+	FR = _baseFR + itembonuses.FR + spellbonuses.FR + aabonuses.FR;
 	
 	if(FR < 1)
 		FR = 1;
-	
-	if(FR > GetMaxFR())
-		FR = GetMaxFR();
 
 	return(FR);
 }
@@ -1032,9 +977,6 @@ sint16	Merc::CalcDR()
 	if(DR < 1)
 		DR = 1;
 
-	if(DR > GetMaxDR())
-		DR = GetMaxDR();
-
 	return(DR);
 }
 
@@ -1042,47 +984,20 @@ sint16	Merc::CalcPR()
 {
 	PR = _basePR;
 	
-	int c = GetClass();
-	if(c == ROGUE) {
-		PR += 8;
-		
-		int l = GetLevel();
-		if(l > 49)
-			PR += l - 49;
-
-	}
-	
 	PR += itembonuses.PR + spellbonuses.PR + aabonuses.PR;
 	
 	if(PR < 1)
 		PR = 1;
-
-	if(PR > GetMaxPR())
-		PR = GetMaxPR();
 
 	return(PR);
 }
 
 sint16	Merc::CalcCR()
 {
-	CR = _baseCR;
-	
-	int c = GetClass();
-	if(c == RANGER) {
-		CR += 4;
-		
-		int l = GetLevel();
-		if(l > 49)
-			CR += l - 49;
-	}
-	
-	CR += itembonuses.CR + spellbonuses.CR + aabonuses.CR;
+	CR = _baseCR + itembonuses.CR + spellbonuses.CR + aabonuses.CR;
 	
 	if(CR < 1)
 		CR = 1;
-
-	if(CR > GetMaxCR())
-		CR = GetMaxCR();
 
 	return(CR);
 }
@@ -1090,9 +1005,6 @@ sint16	Merc::CalcCR()
 sint16	Merc::CalcCorrup()
 {
 	Corrup = _baseCorrup + itembonuses.Corrup + spellbonuses.Corrup + aabonuses.Corrup;
-	
-	if(Corrup > GetMaxCorrup())
-		Corrup = GetMaxCorrup();
 
 	return(Corrup);
 }
@@ -1103,427 +1015,13 @@ sint16 Merc::CalcATK() {
 }
 
 sint16 Merc::CalcAC() {
-
-	// new formula
-	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
-	if (avoidance < 0)
-		avoidance = 0;
-
-	int mitigation = 0;
-	if (GetClass() == WIZARD) {
-		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/4 + (itembonuses.AC+1);
-		//this might be off by 4..
-		mitigation -= 4;
-	} else {
-		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/3 + ((itembonuses.AC*4)/3);
-	}
-	int displayed = 0;
-	displayed += ((avoidance+mitigation)*1000)/847;	//natural AC
-	
-	//Iksar AC, untested
-	if (GetRace() == IKSAR) {
-		displayed += 12;
-		int iksarlevel = GetLevel();
-		iksarlevel -= 10;
-		if (iksarlevel > 25)
-			iksarlevel = 25;
-		if (iksarlevel > 0)
-			displayed += iksarlevel * 12 / 10;
-	}
-	
-	// Shield AC bonus for HeroicSTR
-	if(itembonuses.HeroicSTR) {
-		bool equiped = m_inv.GetItem(SLOT_SECONDARY);
-		if(equiped) {
-			uint8 shield = m_inv.GetItem(SLOT_SECONDARY)->GetItem()->ItemType;
-			if(shield == ItemTypeShield) 
-				displayed += itembonuses.HeroicSTR/2;
-		}
-	}
-	
 	//spell AC bonuses are added directly to natural total
-	displayed += spellbonuses.AC;
-	
-	AC = displayed;
+	AC += spellbonuses.AC;
 	return(AC);
 }
 
-sint16 Merc::acmod() {
-	int agility = GetAGI();
-	int level = GetLevel();
-	if(agility < 1 || level < 1)
-		return(0);
-	
-	if (agility <=74){
-		if (agility == 1)
-			return -24;
-		else if (agility <=3)
-			return -23;
-		else if (agility == 4)
-			return -22;
-		else if (agility <=6)
-			return -21;
-		else if (agility <=8)
-			return -20;
-		else if (agility == 9)
-			return -19;
-		else if (agility <=11)
-			return -18;
-		else if (agility == 12)
-			return -17;
-		else if (agility <=14)
-			return -16;
-		else if (agility <=16)
-			return -15;
-		else if (agility == 17)
-			return -14;
-		else if (agility <=19)
-			return -13;
-		else if (agility == 20)
-			return -12;
-		else if (agility <=22)
-			return -11;
-		else if (agility <=24)
-			return -10;
-		else if (agility == 25)
-			return -9;
-		else if (agility <=27)
-			return -8;
-		else if (agility == 28)
-			return -7;
-		else if (agility <=30)
-			return -6;
-		else if (agility <=32)
-			return -5;
-		else if (agility == 33)
-			return -4;
-		else if (agility <=35)
-			return -3;
-		else if (agility == 36)
-			return -2;
-		else if (agility <=38)
-			return -1;
-		else if (agility <=65)
-			return 0;
-		else if (agility <=70)
-			return 1;
-		else if (agility <=74)
-			return 5;
-	}
-	else if(agility <= 137) {
-		if (agility == 75){
-			if (level <= 6)
-				return 9;
-			else if (level <= 19)
-				return 23;
-			else if (level <= 39)
-				return 33;
-			else
-				return 39;
-		}
-		else if (agility >= 76 && agility <= 79){
-			if (level <= 6)
-				return 10;
-			else if (level <= 19)
-				return 23;
-			else if (level <= 39)
-				return 33;
-			else
-				return 40;
-		}
-		else if (agility == 80){
-			if (level <= 6)
-				return 11;
-			else if (level <= 19)
-				return 24;
-			else if (level <= 39)
-				return 34;
-			else
-				return 41;
-		}
-		else if (agility >= 81 && agility <= 85){
-			if (level <= 6)
-				return 12;
-			else if (level <= 19)
-				return 25;
-			else if (level <= 39)
-				return 35;
-			else
-				return 42;
-		}
-		else if (agility >= 86 && agility <= 90){
-			if (level <= 6)
-				return 12;
-			else if (level <= 19)
-				return 26;
-			else if (level <= 39)
-				return 36;
-			else
-				return 42;
-		}
-		else if (agility >= 91 && agility <= 95){
-			if (level <= 6)
-				return 13;
-			else if (level <= 19)
-				return 26;
-			else if (level <= 39)
-				return 36;
-			else
-				return 43;
-		}
-		else if (agility >= 96 && agility <= 99){
-			if (level <= 6)
-				return 14;
-			else if (level <= 19)
-				return 27;
-			else if (level <= 39)
-				return 37;
-			else 
-				return 44;
-		}
-		else if (agility == 100 && level >= 7){
-			if (level <= 19)
-				return 28;
-			else if (level <= 39)
-				return 38;
-			else
-				return 45;
-		}
-		else if (level <= 6) {
-			return 15;
-		}
-		//level is >6
-		else if (agility >= 101 && agility <= 105){
-			if (level <= 19)
-				return 29;
-			else if (level <= 39)
-				return 39;// not verified
-			else
-				return 45;
-		}
-		else if (agility >= 106 && agility <= 110){
-			if (level <= 19)
-				return 29;
-			else if (level <= 39)
-				return 39;// not verified
-			else
-				return 46;
-		}
-		else if (agility >= 111 && agility <= 115){
-			if (level <= 19)
-				return 30;
-			else if (level <= 39)
-				return 40;// not verified
-			else
-				return 47;
-		}
-		else if (agility >= 116 && agility <= 119){
-			if (level <= 19)
-				return 31;
-			else if (level <= 39)
-				return 41;
-			else
-				return 47;
-		}
-		else if (level <= 19) {
-				return 32;
-		}
-		//level is > 19
-		else if (agility == 120){
-			if (level <= 39)
-				return 42;
-			else
-				return 48;
-		}
-		else if (agility <= 125){
-			if (level <= 39)
-				return 42;
-			else
-				return 49;
-		}
-		else if (agility <= 135){
-			if (level <= 39)
-				return 42;
-			else
-				return 50;
-		}
-		else {
-			if (level <= 39)
-				return 42;
-			else
-				return 51;
-		}
-	} else if(agility <= 300) {
-		if(level <= 6) {
-			if(agility <= 139)
-				return(21);
-			else if(agility == 140)
-				return(22);
-			else if(agility <= 145)
-				return(23);
-			else if(agility <= 150)
-				return(23);
-			else if(agility <= 155)
-				return(24);
-			else if(agility <= 159)
-				return(25);
-			else if(agility == 160)
-				return(26);
-			else if(agility <= 165)
-				return(26);
-			else if(agility <= 170)
-				return(27);
-			else if(agility <= 175)
-				return(28);
-			else if(agility <= 179)
-				return(28);
-			else if(agility == 180)
-				return(29);
-			else if(agility <= 185)
-				return(30);
-			else if(agility <= 190)
-				return(31);
-			else if(agility <= 195)
-				return(31);
-			else if(agility <= 199)
-				return(32);
-			else if(agility <= 219)
-				return(33);
-			else if(agility <= 239)
-				return(34);
-			else
-				return(35);
-		} else if(level <= 19) {
-			if(agility <= 139)
-				return(34);
-			else if(agility == 140)
-				return(35);
-			else if(agility <= 145)
-				return(36);
-			else if(agility <= 150)
-				return(37);
-			else if(agility <= 155)
-				return(37);
-			else if(agility <= 159)
-				return(38);
-			else if(agility == 160)
-				return(39);
-			else if(agility <= 165)
-				return(40);
-			else if(agility <= 170)
-				return(40);
-			else if(agility <= 175)
-				return(41);
-			else if(agility <= 179)
-				return(42);
-			else if(agility == 180)
-				return(43);
-			else if(agility <= 185)
-				return(43);
-			else if(agility <= 190)
-				return(44);
-			else if(agility <= 195)
-				return(45);
-			else if(agility <= 199)
-				return(45);
-			else if(agility <= 219)
-				return(46);
-			else if(agility <= 239)
-				return(47);
-			else
-				return(48);
-		} else if(level <= 39) {
-			if(agility <= 139)
-				return(44);
-			else if(agility == 140)
-				return(45);
-			else if(agility <= 145)
-				return(46);
-			else if(agility <= 150)
-				return(47);
-			else if(agility <= 155)
-				return(47);
-			else if(agility <= 159)
-				return(48);
-			else if(agility == 160)
-				return(49);
-			else if(agility <= 165)
-				return(50);
-			else if(agility <= 170)
-				return(50);
-			else if(agility <= 175)
-				return(51);
-			else if(agility <= 179)
-				return(52);
-			else if(agility == 180)
-				return(53);
-			else if(agility <= 185)
-				return(53);
-			else if(agility <= 190)
-				return(54);
-			else if(agility <= 195)
-				return(55);
-			else if(agility <= 199)
-				return(55);
-			else if(agility <= 219)
-				return(56);
-			else if(agility <= 239)
-				return(57);
-			else
-				return(58);
-		} else {	//lvl >= 40
-			if(agility <= 139)
-				return(51);
-			else if(agility == 140)
-				return(52);
-			else if(agility <= 145)
-				return(53);
-			else if(agility <= 150)
-				return(53);
-			else if(agility <= 155)
-				return(54);
-			else if(agility <= 159)
-				return(55);
-			else if(agility == 160)
-				return(56);
-			else if(agility <= 165)
-				return(56);
-			else if(agility <= 170)
-				return(57);
-			else if(agility <= 175)
-				return(58);
-			else if(agility <= 179)
-				return(58);
-			else if(agility == 180)
-				return(59);
-			else if(agility <= 185)
-				return(60);
-			else if(agility <= 190)
-				return(61);
-			else if(agility <= 195)
-				return(61);
-			else if(agility <= 199)
-				return(62);
-			else if(agility <= 219)
-				return(63);
-			else if(agility <= 239)
-				return(64);
-			else
-				return(65);
-		}
-	}
-	else{
-		//seems about 21 agil per extra AC pt over 300...
-	return (65 + ((agility-300) / 21));
-	}
-#if EQDEBUG >= 11
-	LogFile->write(EQEMuLog::Error, "Error in Merc::acmod(): Agility: %i, Level: %i",agility,level);
-#endif
-	return 0;
-};
-
 sint32 Merc::CalcHPRegen() {
-	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
+	sint32 regen = hp_regen + itembonuses.HPRegen + spellbonuses.HPRegen;
 
 	//regen += aabonuses.HPRegen + GroupLeadershipAAHealthRegeneration();
 
@@ -1569,78 +1067,10 @@ sint32 Merc::CalcMaxHP() {
 	return max_hp;
 }
 
-// This is for calculating Base HPs + STA bonus for SoD or later clients.
-sint32 Merc::GetClassHPFactor() {
-
-	int factor;
-
-	// Note: Base HP factor under level 41 is equal to factor / 12, and from level 41 to 80 is factor / 6.
-	// Base HP over level 80 is factor / 10
-	// HP per STA point per level is factor / 30 for level 80+
-	// HP per STA under level 40 is the level 80 HP Per STA / 120, and for over 40 it is / 60.
-	
-	switch(GetClass())
-	{
-		case WIZARD:
-			factor = 240;
-			break;
-		case ROGUE:
-			factor = 255;
-			break;
-		case CLERIC:
-			factor = 264;
-			break;
-		case WARRIOR:
-			factor = 300;
-			break;
-		default:
-			factor = 240;
-			break;
-	}
-	return factor;
-}
-
 sint32 Merc::CalcBaseHP()
 {
-	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
-		float SoDPost255;
-		int16 NormalSTA = GetSTA();
+	base_hp = max_hp;
 
-		if(((NormalSTA - 255) / 2) > 0)
-			SoDPost255 = ((NormalSTA - 255) / 2);
-		else
-			SoDPost255 = 0;
-
-		int hp_factor = GetClassHPFactor();
-		
-		if (level < 41) {
-			base_hp = (5 + (GetLevel() * hp_factor / 12) + 
-				((NormalSTA - SoDPost255) * GetLevel() * hp_factor / 3600));
-		}
-		else if (level < 81) {
-			base_hp = (5 + (40 * hp_factor / 12) + ((GetLevel() - 40) * hp_factor / 6) + 
-				((NormalSTA - SoDPost255) * hp_factor / 90) + 
-				((NormalSTA - SoDPost255) * (GetLevel() - 40) * hp_factor / 1800));
-		}
-		else { 
-			base_hp = (5 + (80 * hp_factor / 8) + ((GetLevel() - 80) * hp_factor / 10) + 
-				((NormalSTA - SoDPost255) * hp_factor / 90) + 
-				((NormalSTA - SoDPost255) * hp_factor / 45));
-		}
-
-		base_hp += (GetHeroicSTA() * 10);
-
-	}
-	else {
-		int16 Post255;
-		int16 lm=GetClassLevelFactor();
-		if((GetSTA()-255)/2 > 0)
-			Post255 = (GetSTA()-255)/2;
-		else
-			Post255 = 0;
-			
-		base_hp = (5)+(GetLevel()*lm/10) + (((GetSTA()-Post255)*GetLevel()*lm/3000)) + ((Post255*GetLevel())*lm/6000);
-	}
 	return base_hp;
 }
 
@@ -1686,117 +1116,7 @@ sint32 Merc::CalcMaxMana()
 
 sint32 Merc::CalcBaseMana()
 {
-	int WisInt = 0;
-	int MindLesserFactor, MindFactor;
-	sint32 max_m = 0;
-	int wisint_mana = 0;
-	int base_mana = 0;
-	int ConvertedWisInt = 0;
-	switch(GetCasterClass())
-	{
-		case 'I': 
-			WisInt = GetINT();
-
-			if (GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
-				
-				if (WisInt > 100) {
-					ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
-					if (WisInt > 201) {
-						ConvertedWisInt -= ((WisInt - 201) * 5 / 4);
-					}
-				}
-				else {
-					ConvertedWisInt = WisInt;
-				}
-
-				if (GetLevel() < 41) { 
-					wisint_mana = (GetLevel() * 75 * ConvertedWisInt / 1000);
-					base_mana = (GetLevel() * 15);
-				}
-				else if (GetLevel() < 81) {
-					wisint_mana = ((3 * ConvertedWisInt) + ((GetLevel() - 40) * 15 * ConvertedWisInt / 100));
-					base_mana = (600 + ((GetLevel() - 40) * 30));
-				}
-				else {
-					wisint_mana = (9 * ConvertedWisInt);
-					base_mana = (1800 + ((GetLevel() - 80) * 18));
-				}
-				max_m = base_mana + wisint_mana + (GetHeroicINT() * 10);
-			}
-			else
-			{
-				if((( WisInt - 199 ) / 2) > 0)
-					MindLesserFactor = ( WisInt - 199 ) / 2;
-				else
-					MindLesserFactor = 0;
-
-				MindFactor = WisInt - MindLesserFactor;
-				if(WisInt > 100)
-					max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-				else
-					max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
-			}
-			break;
-
-		case 'W':
-			WisInt = GetWIS();
-
-			if (GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
-
-				if (WisInt > 100) {
-					ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
-					if (WisInt > 201) {
-						ConvertedWisInt -= ((WisInt - 201) * 5 / 4);
-					}
-				}
-				else {
-					ConvertedWisInt = WisInt;
-				}
-
-				if (GetLevel() < 41) { 
-					wisint_mana = (GetLevel() * 75 * ConvertedWisInt / 1000);
-					base_mana = (GetLevel() * 15);
-				}
-				else if (GetLevel() < 81) {
-					wisint_mana = ((3 * ConvertedWisInt) + ((GetLevel() - 40) * 15 * ConvertedWisInt / 100));
-					base_mana = (600 + ((GetLevel() - 40) * 30));
-				}
-				else {
-					wisint_mana = (9 * ConvertedWisInt);
-					base_mana = (1800 + ((GetLevel() - 80) * 18));
-				}
-				max_m = base_mana + wisint_mana + (GetHeroicWIS() * 10);
-			}
-			else
-			{
-				if((( WisInt - 199 ) / 2) > 0)
-					MindLesserFactor = ( WisInt - 199 ) / 2;
-				else
-					MindLesserFactor = 0;
-
-				MindFactor = WisInt - MindLesserFactor;
-				if(WisInt > 100)
-					max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-				else
-					max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
-			}
-			break;
-				
-		case 'N': {
-			max_m = 0;
-			break;
-		}
-		default: {
-			LogFile->write(EQEMuLog::Debug, "Invalid Class '%c' in CalcMaxMana", GetCasterClass());
-			max_m = 0;
-			break;
-		}
-	}
-
-#if EQDEBUG >= 11
-	LogFile->write(EQEMuLog::Debug, "Merc::CalcBaseMana() called for %s - returning %d", GetName(), max_m);
-#endif
-	return max_m;
+	return max_mana;
 }
 
 sint32 Merc::CalcBaseManaRegen() 
@@ -1818,7 +1138,6 @@ sint32 Merc::CalcBaseManaRegen()
 
 sint32 Merc::CalcManaRegen() 
 {
-	uint8 clevel = GetLevel();
 	sint32 regen = 0;
 	//this should be changed so we dont med while camping, etc...
 	if (IsSitting()) 
@@ -1826,15 +1145,15 @@ sint32 Merc::CalcManaRegen()
 		BuffFadeBySitModifier();
 		if(HasSkill(MEDITATE)) {
 			this->_medding = true;
-			regen = (((GetSkill(MEDITATE) / 10) + (clevel - (clevel / 4))) / 4) + 4;
+			regen = ((GetSkill(MEDITATE) / 10) + mana_regen);
 			regen += spellbonuses.ManaRegen + itembonuses.ManaRegen;
 		}
 		else
-			regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
+			regen = mana_regen + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 	}
 	else {
 		this->_medding = false;
-		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
+		regen = mana_regen + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 	}
 	
 	//AAs
@@ -2109,11 +1428,11 @@ bool Merc::Process()
 		return false;
     }
 
-	if(!GetMercOwner())
-	{
+	if(!GetMercOwner()) {
 		p_depop = true;
 		return false;
 	}
+
 	if(IsSuspended()) {
 		//return false;
 	}
@@ -2828,7 +2147,7 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 
 	//get mercenary data
 	if(merc_template) {
-		const NPCType* npc_type_to_copy = database.GetMercType(merc_template->MercNPCID, c->GetLevel()); //TODO: Maybe add a way of updating client merc stats in a seperate function? like, for example, on leveling up.
+		const NPCType* npc_type_to_copy = database.GetMercType(merc_template->MercNPCID, merc_template->RaceID, c->GetLevel()); //TODO: Maybe add a way of updating client merc stats in a seperate function? like, for example, on leveling up.
 		if(npc_type_to_copy != NULL)
 		{
 			NPCType* npc_type = new NPCType; //This is actually a very terrible method of assigning stats, and should be changed at some point. See the comment in merc's deconstructor.
@@ -2838,7 +2157,7 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 			{
 				if(c->GetEPP().merc_name[0] == 0)
 				{
-					snprintf(c->GetEPP().merc_name, 64, "%s", GetRandPetName()); //sanity check.
+					snprintf(c->GetEPP().merc_name, 64, "%s", GetRandomName()); //sanity check.
 				}
 				snprintf(npc_type->name, 64, "%s", c->GetEPP().merc_name);
 			}
@@ -2854,34 +2173,57 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 			}
 
 			sprintf(npc_type->lastname, "%s's %s", c->GetName(), "Mercenary");
-			npc_type->max_hp = (npc_type->max_hp * npc_type->scalerate) / 100;
+			npc_type->gender = gender;
 			npc_type->loottable_id = 0; // Loottable has to be 0, otherwise we'll be leavin' some corpses!
 			npc_type->npc_id = 0; //NPC ID has to be 0, otherwise db gets all confuzzled.
-			npc_type->STR = (npc_type->STR  * npc_type->scalerate) / 100;
-			npc_type->STA = (npc_type->STA * npc_type->scalerate) / 100;
-			npc_type->DEX = (npc_type->DEX * npc_type->scalerate) / 100;
-			npc_type->AGI = (npc_type->AGI * npc_type->scalerate) / 100;
-			npc_type->WIS = (npc_type->WIS * npc_type->scalerate) / 100;
-			npc_type->INT = (npc_type->INT * npc_type->scalerate) / 100;
-			npc_type->CHA = (npc_type->CHA * npc_type->scalerate) / 100;
-			npc_type->ATK = (npc_type->ATK * npc_type->scalerate) / 100;
-			npc_type->MR =  (npc_type->MR * npc_type->scalerate) / 100;
-			npc_type->FR =  (npc_type->FR * npc_type->scalerate) / 100;
-			npc_type->DR =  (npc_type->DR * npc_type->scalerate) / 100;
-			npc_type->PR =  (npc_type->PR * npc_type->scalerate) / 100;
-			npc_type->CR =  (npc_type->CR * npc_type->scalerate) / 100;
-			npc_type->Corrup =  (npc_type->Corrup * npc_type->scalerate) / 100;
-			npc_type->AC =  (npc_type->AC * npc_type->scalerate) / 100;
-			//npc_type->race = merc_template->RaceID; //Commented these out because it conflicted with the initial goal of mercs.
-			//npc_type->class_ = merc_template->ClassID;
+			npc_type->race = merc_template->RaceID;
+			npc_type->class_ = merc_template->ClassID;
 			npc_type->maxlevel = 0; //We should hard-set this to override scalerate's functionality in the NPC class when it is constructed.
-			Merc* merc = new Merc(npc_type, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
+			
+			Merc* merc = new Merc(npc_type, c->GetX(), c->GetY(), c->GetZ(), 0);
 			merc->SetMercData( merc_template->MercTemplateID );
+			merc->UpdateMercStats(c);
 			return merc;
 		}
 	}
 
 	return 0;
+}
+
+void Merc::UpdateMercStats(Client *c) {
+	if(c->GetEPP().mercTemplateID >0) {
+		const NPCType* npc_type = database.GetMercType( zone->GetMercTemplate(c->GetEPP().mercTemplateID)->MercNPCID, GetRace(), c->GetLevel()); 
+		max_hp = (npc_type->max_hp * npc_type->scalerate) / 100;
+		max_mana = (npc_type->max_hp * npc_type->scalerate) / 100;
+		level = npc_type->level;
+		max_dmg = (npc_type->max_dmg * npc_type->scalerate) / 100;
+		min_dmg = (npc_type->min_dmg * npc_type->scalerate) / 100;
+		_baseSTR = (npc_type->STR  * npc_type->scalerate) / 100;
+		_baseSTA = (npc_type->STA * npc_type->scalerate) / 100;
+		_baseDEX = (npc_type->DEX * npc_type->scalerate) / 100;
+		_baseAGI = (npc_type->AGI * npc_type->scalerate) / 100;
+		_baseWIS = (npc_type->WIS * npc_type->scalerate) / 100;
+		_baseINT = (npc_type->INT * npc_type->scalerate) / 100;
+		_baseCHA = (npc_type->CHA * npc_type->scalerate) / 100;
+		_baseATK = (npc_type->ATK * npc_type->scalerate) / 100;
+		_baseMR =  (npc_type->MR * npc_type->scalerate) / 100;
+		_baseFR =  (npc_type->FR * npc_type->scalerate) / 100;
+		_baseDR =  (npc_type->DR * npc_type->scalerate) / 100;
+		_basePR =  (npc_type->PR * npc_type->scalerate) / 100;
+		_baseCR =  (npc_type->CR * npc_type->scalerate) / 100;
+		_baseCorrup =  (npc_type->Corrup * npc_type->scalerate) / 100;
+		_baseAC =  (npc_type->AC * npc_type->scalerate) / 100;
+		//maxlevel = 0;
+
+		CalcBonuses();
+		
+		CalcMaxEndurance();
+		CalcMaxHP();
+		CalcMaxMana();
+	}
+}
+
+void Merc::UpdateMercAppearance(Client *c) {
 }
 
 bool Merc::Spawn(Client *owner) {
@@ -2969,7 +2311,17 @@ void Client::SuspendMercCommand()
 				Merc* CurrentMerc = GetMerc();
 
 				if(CurrentMerc && GetMercID()) {
-					CurrentMerc->Suspend();
+					if(CurrentMerc->Suspend()) {
+						// Set merc suspended time for client & merc
+						GetEPP().mercIsSuspended = true;
+						GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
+						GetEPP().mercTimerRemaining = merc_timer.GetRemainingTime();
+						merc_timer.Disable();
+						UpdateMercTimer();
+						p_timers.Start(pTimerMercSuspend, RuleI(Mercs, SuspendIntervalS));
+						SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
+						SendMercMerchantResponsePacket(0);
+					}
 				}
 			}
 		}
@@ -2987,39 +2339,39 @@ void Merc::ProcessClientZoneChange(Client* mercOwner) {
 void Client::SpawnMercOnZone()
 {
 	bool ExistsMerc = GetEPP().mercTemplateID != 0;
-		if(ExistsMerc == true)
-		{
-					if(!GetEPP().mercIsSuspended) {
-						GetEPP().mercSuspendedTime = 0;			
-						// Get merc, assign it to client & spawn
-						Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
-						if(merc) {
-							merc->Spawn(this);
-							merc->SetSuspended(false);
-							SetMerc(merc);
-							merc->Unsuspend();
-							merc->SetFollowID(this->GetID());
-						}
-			}
-			else
-			{
-					// Send Mercenary Status/Timer packet
-				SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend) * 1000);
-
-				// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-				SendMercAssignPacket(GetID(), 1, 2);
-				SendMercAssignPacket(GetID(), 0, 13);
-
-				SendMercPersonalInfo();
-				if(GetEPP().mercSuspendedTime != 0) {
-					if(time(NULL) >= GetEPP().mercSuspendedTime){
-					GetEPP().mercSuspendedTime = 0;
-					}
-				}
-				SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
-				SendMercMerchantResponsePacket(0);
+	if(ExistsMerc == true)
+	{
+		if(!GetEPP().mercIsSuspended) {
+			GetEPP().mercSuspendedTime = 0;			
+			// Get merc, assign it to client & spawn
+			Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);
+			if(merc) {
+				merc->Spawn(this);
+				merc->SetSuspended(false);
+				SetMerc(merc);
+				merc->Unsuspend();
+				merc->SetFollowID(this->GetID());
 			}
 		}
+		else
+		{
+				// Send Mercenary Status/Timer packet
+			SendMercTimerPacket(GetID(), 1, GetEPP().mercSuspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend) * 1000);
+
+			// Send Mercenary Assign packet twice - This is actually just WeaponEquip
+			SendMercAssignPacket(GetID(), 1, GetEquipmentMaterial(MATERIAL_PRIMARY));
+			SendMercAssignPacket(GetID(), 0, GetEquipmentMaterial(MATERIAL_SECONDARY));
+
+			SendMercPersonalInfo();
+			if(GetEPP().mercSuspendedTime != 0) {
+				if(time(NULL) >= GetEPP().mercSuspendedTime){
+				GetEPP().mercSuspendedTime = 0;
+				}
+			}
+			SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
+			SendMercMerchantResponsePacket(0);
+		}
+	}
 }
 
 bool Merc::Suspend() {
@@ -3050,7 +2402,6 @@ bool Merc::Suspend() {
 	owner->SendMercSuspendResponsePacket(owner->GetEPP().mercSuspendedTime);
 	owner->SendMercMerchantResponsePacket(0);
 
-	
 	Depop();
 
 	return true;
@@ -3082,30 +2433,31 @@ bool Merc::Unsuspend() {
 		mercOwner->SendMercTimerPacket(GetID(), mercState, suspendedTime, mercOwner->GetEPP().mercTimerRemaining, RuleI(Mercs, SuspendIntervalMS));
 
 		// Send Mercenary Assign packet twice - This is actually just WeaponEquip
-		mercOwner->SendMercAssignPacket(GetID(), 1, 2);
-		mercOwner->SendMercAssignPacket(GetID(), 0, 13);
+		mercOwner->SendMercAssignPacket(GetID(), 1, GetEquipmentMaterial(MATERIAL_PRIMARY));
+		mercOwner->SendMercAssignPacket(GetID(), 0, GetEquipmentMaterial(MATERIAL_SECONDARY));
 
 		mercOwner->GetMercTimer().Start(mercOwner->GetEPP().mercTimerRemaining);
 		if(!mercOwner->GetPTimers().Expired(&database, pTimerMercSuspend, false)) 
 			mercOwner->GetPTimers().Clear(&database, pTimerMercSuspend);
-			mercOwner->SendMercPersonalInfo();
-			mercOwner->SendMercMerchantResponsePacket(0);
-			if(!mercOwner->IsGrouped()) {
+		mercOwner->SendMercPersonalInfo();
+		mercOwner->SendMercMerchantResponsePacket(0);
+		if(!mercOwner->IsGrouped()) {
 			Group *g = new Group(mercOwner);
-				if(AddMercToGroup(this, g)) {
-					entity_list.AddGroup(g);
-					database.SetGroupLeaderName(g->GetID(), mercOwner->GetName());
-					g->SaveGroupLeaderAA();
-					database.SetGroupID(mercOwner->GetName(), g->GetID(), mercOwner->CharacterID());
-					database.SetGroupID(this->GetName(), g->GetID(), mercOwner->CharacterID(), true);
-					database.RefreshGroupFromDB(mercOwner);
-				}
+			if(AddMercToGroup(this, g)) {
+				entity_list.AddGroup(g);
+				database.SetGroupLeaderName(g->GetID(), mercOwner->GetName());
+				g->SaveGroupLeaderAA();
+				database.SetGroupID(mercOwner->GetName(), g->GetID(), mercOwner->CharacterID());
+				database.SetGroupID(this->GetName(), g->GetID(), mercOwner->CharacterID(), true);
+				database.RefreshGroupFromDB(mercOwner);
 			}
-			else {
-					this->AddMercToGroup(this, mercOwner->GetGroup());
-					database.SetGroupID(GetName(), mercOwner->GetGroup()->GetID(), mercOwner->CharacterID(), true);
-					database.RefreshGroupFromDB(mercOwner);
-			}
+		}
+		else {
+				this->AddMercToGroup(this, mercOwner->GetGroup());
+				database.SetGroupID(GetName(), mercOwner->GetGroup()->GetID(), mercOwner->CharacterID(), true);
+				database.RefreshGroupFromDB(mercOwner);
+		}
+
 	}
 
 	return true;
@@ -3175,11 +2527,11 @@ bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
 			if(!group->IsLeader(merc)) {
 				merc->SetFollowID(0);
 
-				if(group->DelMember(merc))
-				{
+				if(group->DelMember(merc)) {
 					if(merc->GetMercCharacterID() != 0)
-					database.SetGroupID(merc->GetName(), 0, merc->GetMercCharacterID(), true);
+						database.SetGroupID(merc->GetName(), 0, merc->GetMercCharacterID(), true);
 				}
+
 				if(group->GroupCount() <= 1)
 				{
 					group->DisbandGroup();
@@ -3196,7 +2548,6 @@ bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
 					Merc* groupmerc = group->members[i]->CastToMerc();
 
 					groupmerc->SetOwnerID(0);
-
 				}
 
 				group->DisbandGroup();
@@ -3215,7 +2566,7 @@ bool Merc::AddMercToGroup(Merc* merc, Group* group) {
 
 	if(merc && group) {
 		if(!merc->HasGroup()) {
-			// Add bot to this group
+			// Add merc to this group
 			if(group->AddMember(merc)) {
 				if(group->GetLeader()) {
 					merc->SetFollowID(merc->GetMercOwner()->GetID());
@@ -3287,6 +2638,13 @@ void Client::SetMerc(Merc* newmerc) {
 	}
 }
 
+void Client::UpdateMercLevel() {
+	Merc* merc = GetMerc();
+	if (merc) {
+		merc->UpdateMercStats(this);
+	}
+}
+
 void Client::SendMercMerchantResponsePacket(sint32 response_type) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryHire, sizeof(MercenaryMerchantResponse_Struct));
 	MercenaryMerchantResponse_Struct* mmr = (MercenaryMerchantResponse_Struct*)outapp->pBuffer;
@@ -3335,7 +2693,7 @@ void NPC::LoadMercTypes(){
 	MYSQL_RES* DatasetResult;
 	MYSQL_ROW DataRow;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTem.clientversion, MTyp.merc_npc_type_id FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTyp.dbstring, MTyp.clientversion FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {
@@ -3344,7 +2702,6 @@ void NPC::LoadMercTypes(){
 
 			tempMercType.Type = atoi(DataRow[0]);
 			tempMercType.ClientVersion = atoi(DataRow[1]);
-			tempMercType.NPCID = atoi(DataRow[2]);
 
 			mercTypeList.push_back(tempMercType);
 		}
@@ -3368,7 +2725,7 @@ void NPC::LoadMercs(){
 	MYSQL_RES* DatasetResult;
 	MYSQL_ROW DataRow;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTem.merc_template_id, MTyp.dbstring AS merc_type_id, MTem.dbstring AS merc_subtype_id, 0 AS CostFormula, MTem.clientversion, MTyp.merc_npc_type_id FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT DISTINCT MTem.merc_template_id, MTyp.dbstring AS merc_type_id, MTem.dbstring AS merc_subtype_id, 0 AS CostFormula, CASE WHEN MTem.clientversion > MTyp.clientversion then MTem.clientversion ELSE MTyp.clientversion END AS clientversion, MTem.merc_npc_type_id FROM merc_merchant_entries MME, merc_merchant_template_entries MMTE, merc_types MTyp, merc_templates MTem WHERE MME.merchant_id = %i AND MME.merc_merchant_template_id = MMTE.merc_merchant_template_id AND MMTE.merc_template_id = MTem.merc_template_id AND MTem.merc_type_id = MTyp.merc_type_id;", GetNPCTypeID()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {
@@ -3431,7 +2788,6 @@ std::list<MercType> NPC::GetMercTypesList(int32 clientVersion) {
 				MercType mercType;
 				mercType.Type = mercTypeListItr->Type;
 				mercType.ClientVersion = mercTypeListItr->ClientVersion;
-				mercType.NPCID = mercTypeListItr->NPCID;
 				result.push_back(mercType);
 			}
 		}		
