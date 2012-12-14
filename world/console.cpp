@@ -23,6 +23,7 @@ using namespace std;
 #include <stdarg.h>
 #include <stdlib.h>
 
+
 #include "../common/version.h"
 #include "console.h"
 #include "zoneserver.h"
@@ -467,10 +468,21 @@ void Console::ProcessCommand(const char* command) {
 				}
 				if (admin >= 100) {
 					SendMessage(1, "  LSReconnect");
+					SendMessage(1, "  signalcharbyname charname ID");
 				}
 			}
 			else if (strcasecmp(sep.arg[0], "ping") == 0) {
 				// do nothing
+			}
+			else if (strcasecmp(sep.arg[0], "signalcharbyname") == 0) {
+				SendMessage(1, "Signal Sent to %s with ID %i", (char*) sep.arg[1], atoi(sep.arg[2]));
+				uint32 message_len = strlen((char*) sep.arg[1]) + 1;
+				ServerPacket* pack = new ServerPacket(ServerOP_CZSignalClientByName, sizeof(CZClientSignalByName_Struct) + message_len);
+				CZClientSignalByName_Struct* CZSC = (CZClientSignalByName_Struct*) pack->pBuffer;
+				strn0cpy(CZSC->Name, (char*) sep.arg[1], 64);
+				CZSC->data = atoi(sep.arg[2]);
+				zoneserver_list.SendPacket(pack);
+				safe_delete(pack);
 			}
 			else if (strcasecmp(sep.arg[0], "setpass") == 0 && admin >= consolePassStatus) {
 				if (sep.argnum != 2)

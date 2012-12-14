@@ -21,6 +21,8 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #include "QuestParserCollection.h"
+#include "worldserver.h"
+extern WorldServer worldserver;
 
 // The maximum amount of a single bazaar/barter transaction expressed in copper.
 // Equivalent to 2 Million plat
@@ -335,8 +337,8 @@ void Client::FinishTrade(Mob* tradingWith) {
 		Client* other = tradingWith->CastToClient();
 		if(other) {
 			sint16 slot_id;
-
 			mlog(TRADING__CLIENT, "Finishing trade with client %s", other->GetName());
+			const Item_Struct* item = NULL;
 
 			// Move each trade slot into free inventory slot
 			for (sint16 i=3000; i<=3007; i++){
@@ -345,6 +347,38 @@ void Client::FinishTrade(Mob* tradingWith) {
 					continue;
 
 				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
+
+				/// Log Player Trades through QueryServ if Rule Enabled
+				if(RuleB(QueryServ, PlayerLogTrades)){
+						ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerTradeLog, sizeof(QSPlayerTradeLog_Struct));
+						QSPlayerTradeLog_Struct* QSPTL = (QSPlayerTradeLog_Struct*) pack->pBuffer;
+
+						strcpy(QSPTL->from, this->GetName());
+						strcpy(QSPTL->to, other->GetName());
+						strcpy(QSPTL->ItemName, inst->GetItem()->Name);
+						QSPTL->Charges = inst->GetCharges();
+						QSPTL->ItemID = inst->GetItem()->ID;
+						QSPTL->SlotID = i;
+						pack->Deflate();
+						if(worldserver.Connected())
+							worldserver.SendPacket(pack);
+						safe_delete(pack);
+						
+						// Todo: Check into why trade slots aren't calculating correctly
+						if (inst->IsType(ItemClassContainer)) {
+							//Message(15, "Yes this is a container");
+							sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+							int8 BagSize=inst->GetItem()->BagSlots;
+							uint8 BagSlot;
+							for (BagSlot=0; BagSlot<BagSize; BagSlot++) {
+								//Message(15, "This is container slot %i with BaseSlotID %i BagSize %i BagSlot %i", BagSlot, BaseSlotID, BagSize, Inventory::CalcSlotId(i, BagSlot));
+								//if(inst->GetItem(Inventory::CalcSlotId(i, BagSlot))) {
+									//Message(15, "BaseSlotID %i BagSlotId %i BagSize %i ItemID %i ItemName %s", BaseSlotID, BagSlot, BagSize, inst->GetItem()->ID, inst->GetItem()->Name);
+								//}		
+							}
+						}
+
+				}
 
 				if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this) {
 					bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
@@ -367,6 +401,20 @@ void Client::FinishTrade(Mob* tradingWith) {
 			// Money - look into how NPC's receive cash
 			this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
 
+			if(RuleB(QueryServ, PlayerLogTrades) && (other->trade->cp != 0 || other->trade->sp != 0 || other->trade->gp != 0 || other->trade->pp != 0)){
+				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerMoneyTradeLog, sizeof(QSPlayerMoneyTradeLog_Struct));
+				QSPlayerMoneyTradeLog_Struct* QSPTL = (QSPlayerMoneyTradeLog_Struct*) pack->pBuffer;
+				strcpy(QSPTL->from, this->GetName());
+				strcpy(QSPTL->to, other->GetName());
+				QSPTL->Copper = other->trade->cp;
+				QSPTL->Silver = other->trade->sp;
+				QSPTL->Gold = other->trade->gp;
+				QSPTL->Platinum = other->trade->pp;
+				pack->Deflate();
+				if(worldserver.Connected())
+					worldserver.SendPacket(pack);
+				safe_delete(pack);
+			}
 			//Do not reset the trade here, done by the caller.
 		}
 	}
@@ -486,7 +534,8 @@ bool Client::CheckTradeLoreConflict(Client* other)
 	if (!other)
 		return true;
 	// Move each trade slot into free inventory slot
-	for (sint16 i=3000; i<=3007; i++){
+	for (sint16 i=3000; i<=3179; i++){
+		if(i == 3008) { i = 3100; }
 		const ItemInst* inst = m_inv[i];
 
 		if (inst && inst->GetItem()) {

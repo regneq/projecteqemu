@@ -58,6 +58,9 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 	if (!tar)
 		return false;
 
+	if (IsNoCast())
+		return false;
+
 	if(AI_HasSpells() == false)
 		return false;
 
@@ -399,6 +402,7 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float i
 			|| t3 > iRange
 			|| mob->DistNoRoot(*caster) > iRange2
 				//this call should seem backwards:
+			|| !mob->CheckLosFN(caster)
 			|| mob->GetReverseFactionCon(caster) >= FACTION_KINDLY
 		) {
 			continue;
@@ -1064,7 +1068,14 @@ void Mob::AI_Process() {
 		{
 			if(AItarget_check_timer->Check())
 			{
-				SetTarget(hate_list.GetTop(this));
+				if (IsFocused()) {
+					if (!target) {
+						SetTarget(hate_list.GetTop(this));
+					}
+				} else {
+					SetTarget(hate_list.GetTop(this));
+				}
+
 			}
 		}
 

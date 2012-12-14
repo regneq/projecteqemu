@@ -969,6 +969,9 @@ public:
 
 	inline int GetTaskActivityDoneCount(int ClientTaskIndex, int ActivityID)
 	 	   { return (taskstate ? taskstate->GetTaskActivityDoneCount(ClientTaskIndex, ActivityID) :0); }
+	
+	inline int GetTaskActivityDoneCountFromTaskID(int TaskID, int ActivityID)
+	 	   { return (taskstate ? taskstate->GetTaskActivityDoneCountFromTaskID(TaskID, ActivityID) :0); }
 
 	inline int ActiveTasksInSet(int TaskSet)
 	 	   { return (taskstate ? taskstate->ActiveTasksInSet(TaskSet) :0); }
@@ -1107,10 +1110,12 @@ public:
 	void SuspendMercCommand();
 	void SpawnMercOnZone();
 	void UpdateMercTimer();
+	void UpdateMercLevel();
 	void CheckMercSuspendTimer();
 	Timer GetMercTimer() { return merc_timer; };
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
+	void  SendWebLink(const char* website);
 
 	bool	StoreTurnInItems(Mob* with);
 
@@ -1248,6 +1253,7 @@ private:
 	int16				TrackingID;
 	int16				CustomerID;
 	uint32              account_creation;
+	int8				firstlogon;
 	uint32              mercid;
 	bool	Trader;
 	bool	Buyer;

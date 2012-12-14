@@ -65,6 +65,7 @@
 #include "map.h"
 #include "guild_mgr.h"
 #include <string>
+#include "QuestParserCollection.h"
 
 using namespace std;
 
@@ -770,6 +771,12 @@ void Client::OnDisconnect(bool hard_disconnect) {
 
 		if (MyRaid)
 			MyRaid->MemberZoned(this);
+
+		if(this->IsClient()){
+			if(parse->PlayerHasQuestSub("EVENT_DISCONNECT"))  {
+				parse->EventPlayer(EVENT_DISCONNECT, this, "", 0);
+			}
+		}
 	}
 
 	Mob *Other = trade->With();
@@ -787,6 +794,8 @@ void Client::OnDisconnect(bool hard_disconnect) {
 
 		Other->trade->Reset();
 	}
+
+	database.SetFirstLogon(CharacterID(), 0); //We change firstlogon status regardless of if a player logs out to zone or not, because we only want to trigger it on their first login from world.
 
 	//remove ourself from all proximities
 	ClearAllProximities();

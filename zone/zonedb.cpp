@@ -833,7 +833,7 @@ void ZoneDatabase::UpdateBuyLine(uint32 CharID, uint32 BuySlot, uint32 Quantity)
 bool ZoneDatabase::GetCharacterInfoForLogin(const char* name, uint32* character_id, 
 char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, 
 uint32* pplen, uint32* guilddbid, int8* guildrank, 
-int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
+int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets, uint8 *firstlogon) {
 	_CP(Database_GetCharacterInfoForLogin);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -846,14 +846,14 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
 	
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
-		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets,firstlogon FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
-		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets,firstlogon FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
 	if (RunQuery(query, querylen, errbuf, &result)) {
-		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG, NumXTargets);
+		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG, NumXTargets, firstlogon);
 		mysql_free_result(result);
 	}
 	else {
@@ -871,7 +871,7 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
 bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result, 
 	int32* character_id, char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, 
 	ExtendedProfile_Struct *ext, uint32* pplen, uint32* guilddbid, int8* guildrank, 
-	int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets) {
+	int8 *class_, int8 *level, bool *LFP, bool *LFG, uint8 *NumXTargets, int8* firstlogon) {
 	_CP(Database_GetCharacterInfoForLogin_result);
 	
     MYSQL_ROW row;
@@ -944,6 +944,12 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 		if(NumXTargets)
 		{
 			*NumXTargets = atoi(row[14]);
+		}
+
+
+		if(firstlogon)
+		{
+			*firstlogon = atoi(row[15]);
 		}
 
 		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF
@@ -1110,7 +1116,9 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.private_corpse,"
             "npc_types.unique_spawn_by_name,"
             "npc_types.underwater,"
-			"npc_types.emoteid";
+			"npc_types.emoteid,"
+			"npc_types.spellscale,"
+			"npc_types.healscale";
 
 		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
@@ -1286,6 +1294,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->unique_spawn_by_name = atoi(row[r++]) == 1 ? true : false;
                 tmpNPCType->underwater = atoi(row[r++]) == 1 ? true : false;
 				tmpNPCType->emoteid = atoi(row[r++]);
+				tmpNPCType->spellscale = atoi(row[r++]);
+				tmpNPCType->healscale = atoi(row[r++]);
 
 				// If NPC with duplicate NPC id already in table,
 				// free item we attempted to add.
@@ -1313,12 +1323,15 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 }
 
 
-const NPCType* ZoneDatabase::GetMercType(uint32 id, uint32 clientlevel) {
+const NPCType* ZoneDatabase::GetMercType(uint32 id, uint16 raceid, uint32 clientlevel) {
 	const NPCType *npc=NULL;
 	map<uint32,NPCType *>::iterator itr;
 
+	//need to save based on merc_npc_type & client level
+	uint32 merc_type_id = id * 100 + clientlevel;
+
    // If NPC is already in tree, return it.
-	if((itr = zone->merctable.find(id)) != zone->merctable.end())
+	if((itr = zone->merctable.find(merc_type_id)) != zone->merctable.end())
 		return itr->second;
 	//If the NPC type is 0, return NULL. (sanity check)
 	if(id == 0)
@@ -1334,87 +1347,90 @@ const NPCType* ZoneDatabase::GetMercType(uint32 id, uint32 clientlevel) {
       // If id is 0, load all npc_types for the current zone,
       // according to spawn2.
       const char *basic_query = "SELECT "
-			"merc_npc_types.id,"
-			"merc_npc_types.name,"
-			"merc_npc_types.level,"
-            "merc_npc_types.race,"
-			"merc_npc_types.class,"
-			"merc_npc_types.hp,"
-            "merc_npc_types.mana,"
-            "merc_npc_types.gender,"
-			"merc_npc_types.texture,"
-			"merc_npc_types.helmtexture,"
-            "merc_npc_types.size,"
-			"merc_npc_types.loottable_id,"
-            "merc_npc_types.merchant_id,"
-            "merc_npc_types.alt_currency_id,"
-			"merc_npc_types.adventure_template_id,"
-			"merc_npc_types.trap_template,"
-			"merc_npc_types.attack_speed,"
-            "merc_npc_types.STR,"
-			"merc_npc_types.STA,"
-			"merc_npc_types.DEX,"
-			"merc_npc_types.AGI,"
-            "merc_npc_types._INT,"
-			"merc_npc_types.WIS,"
-			"merc_npc_types.CHA,"
-            "merc_npc_types.MR,"
-			"merc_npc_types.CR,"
-			"merc_npc_types.DR,"
-			"merc_npc_types.FR,"
-			"merc_npc_types.PR,"
-			"merc_npc_types.Corrup,"
-            "merc_npc_types.mindmg,"
-            "merc_npc_types.maxdmg,"
-            "merc_npc_types.attack_count,"
-			"merc_npc_types.npcspecialattks,"
-            "merc_npc_types.npc_spells_id,"
-			"merc_npc_types.d_meele_texture1,"
-            "merc_npc_types.d_meele_texture2,"
-			"merc_npc_types.prim_melee_type,"
-			"merc_npc_types.sec_melee_type,"
-            "merc_npc_types.runspeed,"
-			"merc_npc_types.findable,"
-			"merc_npc_types.trackable,"
-            "merc_npc_types.hp_regen_rate,"
-			"merc_npc_types.mana_regen_rate,"
-            "merc_npc_types.aggroradius,"
-			"merc_npc_types.bodytype,"
-            "merc_npc_types.npc_faction_id,"
-			"merc_npc_types.face,"
-            "merc_npc_types.luclin_hairstyle,"
-			"merc_npc_types.luclin_haircolor,"
-            "merc_npc_types.luclin_eyecolor,"
-			"merc_npc_types.luclin_eyecolor2,"
-            "merc_npc_types.luclin_beardcolor,"
-			"merc_npc_types.luclin_beard,"
-			"merc_npc_types.drakkin_heritage,"
-			"merc_npc_types.drakkin_tattoo,"
-			"merc_npc_types.drakkin_details,"
-			"merc_npc_types.armortint_id,"
-			"merc_npc_types.armortint_red,"
-			"merc_npc_types.armortint_green,"
-			"merc_npc_types.armortint_blue,"
-            "merc_npc_types.see_invis,"
-			"merc_npc_types.see_invis_undead,"
-            "merc_npc_types.lastname,"
-			"merc_npc_types.qglobal,"
-			"merc_npc_types.AC,"
-            "merc_npc_types.npc_aggro,"
-			"merc_npc_types.spawn_limit,"
-			"merc_npc_types.see_hide,"
-			"merc_npc_types.see_improved_hide,"
-			"merc_npc_types.ATK,"
-			"merc_npc_types.Accuracy,"
-			"merc_npc_types.slow_mitigation,"
-			"merc_npc_types.maxlevel,"
-			"merc_npc_types.scalerate,"
-			"merc_npc_types.private_corpse,"
-            "merc_npc_types.unique_spawn_by_name,"
-            "merc_npc_types.underwater,"
-			"merc_npc_types.emoteid";
+			"vwMercNpcTypes.merc_npc_type_id,"
+			"vwMercNpcTypes.name,"
+			//"vwMercNpcTypes.clientlevel,"
+			"vwMercNpcTypes.level,"
+            "vwMercNpcTypes.race_id,"
+			"vwMercNpcTypes.class_id,"
+			"vwMercNpcTypes.hp,"
+            "vwMercNpcTypes.mana,"
+            "vwMercNpcTypes.gender,"
+			"vwMercNpcTypes.texture,"
+			"vwMercNpcTypes.helmtexture,"
+            //"vwMercNpcTypes.size,"
+			// "vwMercNpcTypes.loottable_id,"
+            // "vwMercNpcTypes.merchant_id,"
+            // "vwMercNpcTypes.alt_currency_id,"
+			// "vwMercNpcTypes.adventure_template_id,"
+			// "vwMercNpcTypes.trap_template,"
+			"vwMercNpcTypes.attack_speed,"
+            "vwMercNpcTypes.STR,"
+			"vwMercNpcTypes.STA,"
+			"vwMercNpcTypes.DEX,"
+			"vwMercNpcTypes.AGI,"
+            "vwMercNpcTypes._INT,"
+			"vwMercNpcTypes.WIS,"
+			"vwMercNpcTypes.CHA,"
+            "vwMercNpcTypes.MR,"
+			"vwMercNpcTypes.CR,"
+			"vwMercNpcTypes.DR,"
+			"vwMercNpcTypes.FR,"
+			"vwMercNpcTypes.PR,"
+			"vwMercNpcTypes.Corrup,"
+            "vwMercNpcTypes.mindmg,"
+            "vwMercNpcTypes.maxdmg,"
+            "vwMercNpcTypes.attack_count,"
+			"vwMercNpcTypes.npcspecialattks,"
+            // "vwMercNpcTypes.npc_spells_id,"
+			"vwMercNpcTypes.d_meele_texture1,"
+            "vwMercNpcTypes.d_meele_texture2,"
+			"vwMercNpcTypes.prim_melee_type,"
+			"vwMercNpcTypes.sec_melee_type,"
+            "vwMercNpcTypes.runspeed,"
+			// "vwMercNpcTypes.findable,"
+			// "vwMercNpcTypes.trackable,"
+            "vwMercNpcTypes.hp_regen_rate,"
+			"vwMercNpcTypes.mana_regen_rate,"
+            // "vwMercNpcTypes.aggroradius,"
+			"vwMercNpcTypes.bodytype,"
+            // "vwMercNpcTypes.npc_faction_id,"
+			//"vwMercNpcTypes.face,"
+            //"vwMercNpcTypes.luclin_hairstyle,"
+			//"vwMercNpcTypes.luclin_haircolor,"
+            //"vwMercNpcTypes.luclin_eyecolor,"
+			//"vwMercNpcTypes.luclin_eyecolor2,"
+            //"vwMercNpcTypes.luclin_beardcolor,"
+			//"vwMercNpcTypes.luclin_beard,"
+			//"vwMercNpcTypes.drakkin_heritage,"
+			//"vwMercNpcTypes.drakkin_tattoo,"
+			//"vwMercNpcTypes.drakkin_details,"
+			"vwMercNpcTypes.armortint_id,"
+			"vwMercNpcTypes.armortint_red,"
+			"vwMercNpcTypes.armortint_green,"
+			"vwMercNpcTypes.armortint_blue,"
+            // "vwMercNpcTypes.see_invis,"
+			// "vwMercNpcTypes.see_invis_undead,"
+            // "vwMercNpcTypes.lastname,"
+			// "vwMercNpcTypes.qglobal,"
+			"vwMercNpcTypes.AC,"
+            // "vwMercNpcTypes.npc_aggro,"
+			// "vwMercNpcTypes.spawn_limit,"
+			// "vwMercNpcTypes.see_hide,"
+			// "vwMercNpcTypes.see_improved_hide,"
+			"vwMercNpcTypes.ATK,"
+			"vwMercNpcTypes.Accuracy,"
+			"vwMercNpcTypes.spellscale,"
+			"vwMercNpcTypes.healscale";
+			// "vwMercNpcTypes.slow_mitigation,"
+			// "vwMercNpcTypes.maxlevel,"
+			// "vwMercNpcTypes.scalerate,"
+			// "vwMercNpcTypes.private_corpse,"
+            // "vwMercNpcTypes.unique_spawn_by_name,"
+            // "vwMercNpcTypes.underwater,"
+			// "vwMercNpcTypes.emoteid";
 
-		MakeAnyLenString(&query, "%s FROM merc_npc_types WHERE id=%d AND clientlevel=%d", basic_query, id, clientlevel); //dual primary keys. one is ID, one is level.
+		MakeAnyLenString(&query, "%s FROM vwMercNpcTypes WHERE merc_npc_type_id=%d AND clientlevel=%d AND race_id = %d", basic_query, id, clientlevel, raceid); //dual primary keys. one is ID, one is level.
 
 		if (RunQuery(query, strlen(query), errbuf, &result)) {
          // Process each row returned.
@@ -1437,12 +1453,12 @@ const NPCType* ZoneDatabase::GetMercType(uint32 id, uint32 clientlevel) {
 				tmpNPCType->gender = atoi(row[r++]);
 				tmpNPCType->texture = atoi(row[r++]);
 				tmpNPCType->helmtexture = atoi(row[r++]);
-				tmpNPCType->size = atof(row[r++]);
-				tmpNPCType->loottable_id = atoi(row[r++]);
-				tmpNPCType->merchanttype = atoi(row[r++]);
-                tmpNPCType->alt_currency_type = atoi(row[r++]);
-				tmpNPCType->adventure_template = atoi(row[r++]);
-				tmpNPCType->trap_template = atoi(row[r++]);
+				//tmpNPCType->size = atof(row[r++]);
+				//tmpNPCType->loottable_id = atoi(row[r++]);
+				//tmpNPCType->merchanttype = atoi(row[r++]);
+                //tmpNPCType->alt_currency_type = atoi(row[r++]);
+				//tmpNPCType->adventure_template = atoi(row[r++]);
+				//tmpNPCType->trap_template = atoi(row[r++]);
 				tmpNPCType->attack_speed = atof(row[r++]);
 				tmpNPCType->STR = atoi(row[r++]);
 				tmpNPCType->STA = atoi(row[r++]);
@@ -1461,40 +1477,41 @@ const NPCType* ZoneDatabase::GetMercType(uint32 id, uint32 clientlevel) {
 				tmpNPCType->max_dmg = atoi(row[r++]);
                 tmpNPCType->attack_count = atoi(row[r++]);
 				strcpy(tmpNPCType->npc_attacks,row[r++]);
-				tmpNPCType->npc_spells_id = atoi(row[r++]);
+				//tmpNPCType->npc_spells_id = atoi(row[r++]);
 				tmpNPCType->d_meele_texture1 = atoi(row[r++]);
 				tmpNPCType->d_meele_texture2 = atoi(row[r++]);
 				tmpNPCType->prim_melee_type = atoi(row[r++]);
 				tmpNPCType->sec_melee_type = atoi(row[r++]);
 				tmpNPCType->runspeed= atof(row[r++]);
-				tmpNPCType->findable = atoi(row[r++]) == 0? false : true;
-				tmpNPCType->trackable = atoi(row[r++]) == 0? false : true;
+				//tmpNPCType->findable = atoi(row[r++]) == 0? false : true;
+				//tmpNPCType->trackable = atoi(row[r++]) == 0? false : true;
 				tmpNPCType->hp_regen = atoi(row[r++]);
 				tmpNPCType->mana_regen = atoi(row[r++]);
 				
-				tmpNPCType->aggroradius = (sint32)atoi(row[r++]);
+				//tmpNPCType->aggroradius = (sint32)atoi(row[r++]);
+				tmpNPCType->aggroradius = RuleI(Mercs, AggroRadius);
 				// set defaultvalue for aggroradius
-				if (tmpNPCType->aggroradius <= 0)
-					tmpNPCType->aggroradius = 70;
+				//if (tmpNPCType->aggroradius <= 0)
+				//	tmpNPCType->aggroradius = 70;
 
 				if (row[r] && strlen(row[r]))
 					tmpNPCType->bodytype = (int8)atoi(row[r]);
 				else
-					tmpNPCType->bodytype = 0;
+					tmpNPCType->bodytype = 1;
 				r++;
 				
-				tmpNPCType->npc_faction_id = atoi(row[r++]);
+				//tmpNPCType->npc_faction_id = atoi(row[r++]);
 				
-				tmpNPCType->luclinface = atoi(row[r++]);
-				tmpNPCType->hairstyle = atoi(row[r++]);
-				tmpNPCType->haircolor = atoi(row[r++]);
-				tmpNPCType->eyecolor1 = atoi(row[r++]);
-				tmpNPCType->eyecolor2 = atoi(row[r++]);
-				tmpNPCType->beardcolor = atoi(row[r++]);
-				tmpNPCType->beard = atoi(row[r++]);
-				tmpNPCType->drakkin_heritage = atoi(row[r++]);
-				tmpNPCType->drakkin_tattoo = atoi(row[r++]);
-				tmpNPCType->drakkin_details = atoi(row[r++]);
+				//tmpNPCType->luclinface = atoi(row[r++]);
+				//tmpNPCType->hairstyle = atoi(row[r++]);
+				//tmpNPCType->haircolor = atoi(row[r++]);
+				//tmpNPCType->eyecolor1 = atoi(row[r++]);
+				//tmpNPCType->eyecolor2 = atoi(row[r++]);
+				//tmpNPCType->beardcolor = atoi(row[r++]);
+				//tmpNPCType->beard = atoi(row[r++]);
+				//tmpNPCType->drakkin_heritage = atoi(row[r++]);
+				//tmpNPCType->drakkin_tattoo = atoi(row[r++]);
+				//tmpNPCType->drakkin_details = atoi(row[r++]);
 				uint32 armor_tint_id = atoi(row[r++]);
 				tmpNPCType->armor_tint[0] = (atoi(row[r++]) & 0xFF) << 16;
 				tmpNPCType->armor_tint[0] |= (atoi(row[r++]) & 0xFF) << 8;
@@ -1567,36 +1584,38 @@ const NPCType* ZoneDatabase::GetMercType(uint32 id, uint32 clientlevel) {
 					}
 				}
 
-				tmpNPCType->see_invis = atoi(row[r++]);
-				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag
-				if (row[r] != NULL)
-					strn0cpy(tmpNPCType->lastname, row[r], 32);
-				r++;
+				//tmpNPCType->see_invis = atoi(row[r++]);
+				//tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag
+				//if (row[r] != NULL)
+				//	strn0cpy(tmpNPCType->lastname, row[r], 32);
+				//r++;
 				
-				tmpNPCType->qglobal = atoi(row[r++])==0?false:true;	// qglobal
+				//tmpNPCType->qglobal = atoi(row[r++])==0?false:true;	// qglobal
 				tmpNPCType->AC = atoi(row[r++]);
-				tmpNPCType->npc_aggro = atoi(row[r++])==0?false:true;
-				tmpNPCType->spawn_limit = atoi(row[r++]);
-				tmpNPCType->see_hide = atoi(row[r++])==0?false:true;
-				tmpNPCType->see_improved_hide = atoi(row[r++])==0?false:true;
+				//tmpNPCType->npc_aggro = atoi(row[r++])==0?false:true;
+				//tmpNPCType->spawn_limit = atoi(row[r++]);
+				//tmpNPCType->see_hide = atoi(row[r++])==0?false:true;
+				//tmpNPCType->see_improved_hide = atoi(row[r++])==0?false:true;
 				tmpNPCType->ATK = atoi(row[r++]);
 				tmpNPCType->accuracy_rating = atoi(row[r++]);
-				tmpNPCType->slow_mitigation = atof(row[r++]);
-				tmpNPCType->maxlevel = atoi(row[r++]);
-				tmpNPCType->scalerate = atoi(row[r++]);
-				tmpNPCType->private_corpse = atoi(row[r++]) == 1 ? true : false;
-				tmpNPCType->unique_spawn_by_name = atoi(row[r++]) == 1 ? true : false;
-                tmpNPCType->underwater = atoi(row[r++]) == 1 ? true : false;
-				tmpNPCType->emoteid = atoi(row[r++]);
+				//tmpNPCType->slow_mitigation = atof(row[r++]);
+				//tmpNPCType->maxlevel = atoi(row[r++]);
+				tmpNPCType->scalerate = RuleI(Mercs, ScaleRate);
+				//tmpNPCType->private_corpse = atoi(row[r++]) == 1 ? true : false;
+				//tmpNPCType->unique_spawn_by_name = atoi(row[r++]) == 1 ? true : false;
+                //tmpNPCType->underwater = atoi(row[r++]) == 1 ? true : false;
+				//tmpNPCType->emoteid = atoi(row[r++]);
+				tmpNPCType->spellscale = atoi(row[r++]);
+				tmpNPCType->healscale = atoi(row[r++]);
 
 				// If NPC with duplicate NPC id already in table,
 				// free item we attempted to add.
-				if (zone->merctable.find(tmpNPCType->npc_id) != zone->merctable.end())
+				if (zone->merctable.find(tmpNPCType->npc_id * 100 + clientlevel) != zone->merctable.end())
 				{
 					delete tmpNPCType;
 					npc = NULL;
 				} else {
-					zone->merctable[tmpNPCType->npc_id]=tmpNPCType;
+					zone->merctable[tmpNPCType->npc_id * 100 + clientlevel]=tmpNPCType;
 					npc = tmpNPCType;
 				}
 

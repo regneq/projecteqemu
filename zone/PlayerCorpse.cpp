@@ -364,15 +364,23 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 		// to go into the regular slots on the player, out of bags
 	
 		// worn + inventory + cursor
-        std::list<uint32> removed_list;
-        bool cursor = false;
+		std::list<uint32> removed_list;
+		bool cursor = false;
 		for(i = 0; i <= 30; i++)
 		{
+			if(i == 21 && client->GetClientVersion() >= EQClientSoF) {
+				item = client->GetInv().GetItem(9999);
+				if((item && (!client->IsBecomeNPC())) || (item && client->IsBecomeNPC() && !item->GetItem()->NoRent)) {
+					std::list<uint32> slot_list = MoveItemToCorpse(client, item, 9999);
+					removed_list.merge(slot_list);   
+				}
+				
+			}
+
 			item = client->GetInv().GetItem(i);
-			if((item && (!client->IsBecomeNPC())) || (item && client->IsBecomeNPC() && !item->GetItem()->NoRent))
-			{
-            std::list<uint32> slot_list = MoveItemToCorpse(client, item, i);
-            removed_list.merge(slot_list);   
+			if((item && (!client->IsBecomeNPC())) || (item && client->IsBecomeNPC() && !item->GetItem()->NoRent)) {
+				std::list<uint32> slot_list = MoveItemToCorpse(client, item, i);
+				removed_list.merge(slot_list);   
 			}
 		}
 
@@ -445,7 +453,7 @@ std::list<uint32> Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint1
    // Qualified bag slot iterations. processing bag slots that don't exist is probably not a good idea.
    if(item->IsType(ItemClassContainer) && ((equipslot >= 22 && equipslot <=30))) // Limit the bag check to inventory and cursor slots.
 	{
-		for(bagindex = 0; bagindex <= 10; bagindex++)
+		for(bagindex = 0; bagindex <= 9; bagindex++)
 		{
          // For empty bags in cursor queue, slot was previously being resolved as SLOT_INVALID (-1)
 			interior_slot = Inventory::CalcSlotId(equipslot, bagindex);
@@ -454,7 +462,7 @@ std::list<uint32> Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint1
 			if(interior_item)
 			{
 				AddItem(interior_item->GetItem()->ID, interior_item->GetCharges(), interior_slot, interior_item->GetAugmentItemID(0), interior_item->GetAugmentItemID(1), interior_item->GetAugmentItemID(2), interior_item->GetAugmentItemID(3), interior_item->GetAugmentItemID(4));
-            returnlist.push_back(Inventory::CalcSlotId(equipslot, bagindex));
+				returnlist.push_back(Inventory::CalcSlotId(equipslot, bagindex));
 				client->DeleteItemInInventory(interior_slot, 0, true, false);
 			}
 		}
@@ -986,7 +994,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		if(tCanLoot==5){
 			int pkitem = GetPKItem();
 			const Item_Struct* item = database.GetItem(pkitem);
-			ItemInst* inst = database.CreateItem(item, item->MaxCharges);
+			ItemInst* inst = database.CreateCorpseItem(item, item->MaxCharges);
 			if (inst)
 			{
 				client->SendItemPacket(22, inst, ItemPacketLoot);
@@ -1004,27 +1012,12 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		cur = itemlist.begin();
 		end = itemlist.end();
 
-      int corpselootlimit = 30; // 30 is the original value // con check value in QueryLoot needs to reflect this value
+		int8 containercount = 0;
+		int corpselootlimit;
       
-      /* need actual corpse limit values per client (or client range)..if always 30, then these con checks are unneeded
-      // enumeration shouldn't be needed unless someone finds a use for this info elsewhere
-      
-      if (client->GetClientVersion()>=EQClientVoA)
-         corpselootlimit=30;
-      else if (client->GetClientVersion()>=EQClientHoT)
-         corpselootlimit=30;
-      else if (client->GetClientVersion()>=EQClientUnderfoot)
-         corpselootlimit=30;
-      else if (client->GetClientVersion()>=EQClientSoD)
-         corpselootlimit=30;
-      else if (client->GetClientVersion()>=EQClientSoF) // SoF has 32 visible slots..change untested
-         corpselootlimit=30;
-      else if (client->GetClientVersion()>=EQClientTitanium)
-         corpselootlimit=30;
-      else if (client->GetClientVersion()>=EQClient62)
-         corpselootlimit=30;
-      else
-         corpselootlimit=30; // */
+		if (client->GetClientVersion() >= EQClientSoF) { corpselootlimit = 32; }
+		else if (client->GetClientVersion() == EQClientTitanium) { corpselootlimit = 31; }
+		else { corpselootlimit = 30; }
 
 		for(; cur != end; cur++) {
 			ServerLootItem_Struct* item_data = *cur;
@@ -1041,7 +1034,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 					item = database.GetItem(item_data->item_id);
 					if (client && item)
 					{
-						ItemInst* inst = database.CreateItem(item, item_data->charges, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
+						ItemInst* inst = database.CreateCorpseItem(item, item_data->charges, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
 						if (inst)
 						{
 							client->SendItemPacket(i + 22, inst, ItemPacketLoot);
@@ -1141,7 +1134,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 	if (item != 0)
 	{
 		if(item_data)
-			inst = database.CreateItem(item, item_data?item_data->charges:0, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
+			inst = database.CreateCorpseItem(item, item_data?item_data->charges:0, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
 		else
 			inst = database.CreateItem(item);
 
@@ -1355,12 +1348,20 @@ void Corpse::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 }
 
 void Corpse::QueryLoot(Client* to) {
-   int x = 0, y = 0; // x = visible items, y = total items
-	to->Message(0, "Coin: %ip %ig %is %ic", platinum, gold, silver, copper);
+
+	int x = 0, y = 0; // x = visible items, y = total items
+	to->Message(0, "Coin: %ip, %ig, %is, %ic", platinum, gold, silver, copper);
 
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
+
+	int corpselootlimit;
+      
+	if (to->GetClientVersion() >= EQClientSoF) { corpselootlimit = 32; }
+	else if (to->GetClientVersion() == EQClientTitanium) { corpselootlimit = 31; }
+	else { corpselootlimit = 30; }
+
 	for(; cur != end; cur++) {
 		ServerLootItem_Struct* sitem = *cur;
 
@@ -1368,14 +1369,14 @@ void Corpse::QueryLoot(Client* to) {
          if (sitem->equipSlot >= 251 && sitem->equipSlot <= 340)
             sitem->lootslot = 0xFFFF;
          else
-            x < 30 ? sitem->lootslot = x : sitem->lootslot = 0xFFFF; // this con value needs to reflect corpselootlimit in MakeLootRequestPackets
+            x < corpselootlimit ? sitem->lootslot = x : sitem->lootslot = 0xFFFF;
          
          const Item_Struct* item = database.GetItem(sitem->item_id);
 
          if (item)
-            to->Message((sitem->lootslot == 0xFFFF), "  LootSlot: %i (EquipSlot: %i) Item: %s (%d) with %i %s", sitem->lootslot, sitem->equipSlot, item->Name, item->ID, sitem->charges, sitem->charges==1?"charge":"charges");
+            to->Message((sitem->lootslot == 0xFFFF), "LootSlot: %i (EquipSlot: %i) Item: %s (%d), Count: %i", static_cast<sint16>(sitem->lootslot), sitem->equipSlot, item->Name, item->ID, sitem->charges);
          else
-            to->Message((sitem->lootslot == 0xFFFF), "  Error: 0x%04x", sitem->item_id);
+            to->Message((sitem->lootslot == 0xFFFF), "Error: 0x%04x", sitem->item_id);
          
          if (sitem->lootslot != 0xFFFF)
             x++;
@@ -1387,9 +1388,9 @@ void Corpse::QueryLoot(Client* to) {
          const Item_Struct* item = database.GetItem(sitem->item_id);
          
          if (item)
-            to->Message(0, "  LootSlot: %i Item: %s (%d) with %i %s", sitem->lootslot, item->Name, item->ID, sitem->charges, sitem->charges==1?"charge":"charges");
+            to->Message(0, "LootSlot: %i Item: %s (%d), Count: %i", sitem->lootslot, item->Name, item->ID, sitem->charges);
          else
-            to->Message(0, "  Error: 0x%04x", sitem->item_id);
+            to->Message(0, "Error: 0x%04x", sitem->item_id);
 
          y++;
       }
@@ -1883,8 +1884,11 @@ Corpse* ZoneDatabase::LoadPlayerCorpse(int32 player_corpse_id) {
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, charid, charname, x, y, z, heading, data, timeofdeath, rezzed, WasAtGraveyard FROM player_corpses WHERE id='%u'", player_corpse_id), errbuf, &result)) {
 		row = mysql_fetch_row(result);
 		lengths = mysql_fetch_lengths(result);
+		if(row && lengths)
+		{
 		NewCorpse = Corpse::LoadFromDBData(atoi(row[0]), atoi(row[1]), row[2], (uchar*) row[7], lengths[7], atof(row[3]), atoi(row[4]), atoi(row[5]), atoi(row[6]), row[8],atoi(row[9])==1, atoi(row[10]));
 		entity_list.AddCorpse(NewCorpse);
+		}
 		mysql_free_result(result);
 	}
 	else {

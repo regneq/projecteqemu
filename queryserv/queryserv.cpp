@@ -42,7 +42,7 @@ Database database;
 LFGuildManager lfguildmanager;
 string WorldShortName;
 
-RuleManager *rules = new RuleManager();
+// RuleManager *rules = new RuleManager();
 
 const queryservconfig *Config;
 
@@ -84,29 +84,30 @@ int main() {
 	_log(QUERYSERV__INIT, "Connecting to MySQL...");
 
 	if (!database.Connect(
-		Config->DatabaseHost.c_str(),
-		Config->DatabaseUsername.c_str(),
-		Config->DatabasePassword.c_str(),
-		Config->DatabaseDB.c_str(),
-		Config->DatabasePort)) {
+		Config->QSDatabaseHost.c_str(),
+		Config->QSDatabaseUsername.c_str(),
+		Config->QSDatabasePassword.c_str(),
+		Config->QSDatabaseDB.c_str(),
+		Config->QSDatabasePort)) {
 		_log(WORLD__INIT_ERR, "Cannot continue without a database connection.");
 		return(1);
 	}
 
 	char tmp[64];
 
-	if (database.GetVariable("RuleSet", tmp, sizeof(tmp)-1)) {
-		_log(WORLD__INIT, "Loading rule set '%s'", tmp);
-		if(!rules->LoadRules(&database, tmp)) {
-			_log(QUERYSERV__ERROR, "Failed to load ruleset '%s', falling back to defaults.", tmp);
-		}
-	} else {
-		if(!rules->LoadRules(&database, "default")) {
-			_log(QUERYSERV__INIT, "No rule set configured, using default rules");
-		} else {
-			_log(QUERYSERV__INIT, "Loaded default rule set 'default'", tmp);
-		}
-	}
+	// Disable the Rule system, since we could be split brained from the main database
+	// if (database.GetVariable("RuleSet", tmp, sizeof(tmp)-1)) {
+	// 	_log(WORLD__INIT, "Loading rule set '%s'", tmp);
+	// 	if(!rules->LoadRules(&database, tmp)) {
+	// 		_log(QUERYSERV__ERROR, "Failed to load ruleset '%s', falling back to defaults.", tmp);
+	// 	}
+	// } else {
+	// 	if(!rules->LoadRules(&database, "default")) {
+	// 		_log(QUERYSERV__INIT, "No rule set configured, using default rules");
+	// 	} else {
+	// 		_log(QUERYSERV__INIT, "Loaded default rule set 'default'", tmp);
+	// 	}
+	// }
 
 	if (signal(SIGINT, CatchSignal) == SIG_ERR)	{
 		_log(QUERYSERV__ERROR, "Could not set signal handler");

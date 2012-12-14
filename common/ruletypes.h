@@ -105,6 +105,8 @@ RULE_INT (Mercs, SuspendIntervalS, 10)
 RULE_INT (Mercs, UpkeepIntervalS, 180)
 RULE_BOOL ( Mercs, MercGroupXP, false ) // Determines whether client gets xp for bots outside their group.
 RULE_BOOL ( Mercs, AllowMercs, true )
+RULE_INT (Mercs, AggroRadius, 70)
+RULE_INT (Mercs, ScaleRate, 100)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )
@@ -126,6 +128,7 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY( Pets )
 RULE_REAL( Pets, AttackCommandRange, 150 )
+RULE_BOOL( Pets, UnTargetableSwarmPet, false )
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( GM )
@@ -158,6 +161,7 @@ RULE_INT ( World, ExpansionSettings, 16383) // Sets the expansion settings for t
 RULE_INT ( World, PVPSettings, 0) // Sets the PVP settings for the server, 1 = Rallos Zek RuleSet, 2 = Tallon/Vallon Zek Ruleset, 4 = Sullon Zek Ruleset, 6 = Discord Ruleset, anything above 6 is the Discord Ruleset without the no-drop restrictions removed. TODO: Edit IsAttackAllowed in Zone to accomodate for these rules.
 RULE_BOOL (World, IsGMPetitionWindowEnabled, false)
 RULE_INT (World, FVNoDropFlag, 0) // Sets the Firiona Vie settings on the client. If set to 2, the flag will be set for GMs only, allowing trading of no-drop items.
+RULE_BOOL (World, IPLimitDisconnectAll, false)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )
@@ -414,6 +418,7 @@ RULE_BOOL ( Chat, ServerWideAuction, true)
 RULE_BOOL ( Chat, EnableVoiceMacros, true)
 RULE_BOOL ( Chat, EnableMailKeyIPVerification, true)
 RULE_BOOL ( Chat, EnableAntiSpam, true)
+RULE_BOOL ( Chat, FlowCommandstoPerl_EVENT_SAY, false) // Allows you to parse #commands into EVENT_SAY (Useful in global_player.pl) that aren't found in the source - should probably be individual scripts per command sometime
 RULE_INT ( Chat, MinStatusToBypassAntiSpam, 100)
 RULE_INT ( Chat, MinimumMessagesPerInterval, 4)
 RULE_INT ( Chat, MaximumMessagesPerInterval, 12)
@@ -489,6 +494,14 @@ RULE_INT ( EQStream, RetransmitTimeoutMax, 5000 ) // maximum retransmit timeout 
 RULE_INT ( EQStream, AverageDeltaMax, 2500 ) // maximum average rtt where we will still recalculate transmit rates
 RULE_REAL ( EQStream, RetransmitTimeoutMult, 3.0 ) // multiplier applied to rtt stats to generate a retransmit timeout value
 RULE_BOOL ( EQStream, RetransmitAckedPackets, true ) // should we restransmit packets that were already acked?
+RULE_CATEGORY_END()
+
+RULE_CATEGORY( QueryServ )
+RULE_BOOL( QueryServ, PlayerChatLogging, false) // Logs Player Chat
+RULE_BOOL( QueryServ, PlayerLogTrades, false) // Logs Player Trades
+RULE_BOOL( QueryServ, PlayerLogMoneyTrades, false) // Logs Player Money Trades
+RULE_BOOL( QueryServ, PlayerLogNPCKills, false) // Logs Player NPC Kills
+RULE_BOOL( QueryServ, PlayerLogPCCoordinates, false) // Logs Player Coordinates with certain events
 RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY

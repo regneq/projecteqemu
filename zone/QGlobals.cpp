@@ -69,12 +69,12 @@ void QGlobalCache::LoadByNPCID(uint32 npcID)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (database.RunQuery(query, MakeAnyLenString(&query, "select id, name, charid, npcid, zoneid, value, expdate"
+	if (database.RunQuery(query, MakeAnyLenString(&query, "select name, charid, npcid, zoneid, value, expdate"
 		" from quest_globals where npcid = %d", npcID), errbuf, &result))
 	{
 		while((row = mysql_fetch_row(result)))
 		{
-			AddGlobal(atoi(row[0]), QGlobal(std::string(row[1]), atoi(row[2]), atoi(row[3]), atoi(row[4]), row[5], row[6]?atoi(row[6]):0xFFFFFFFF));
+			AddGlobal(0, QGlobal(std::string(row[0]), atoi(row[1]), atoi(row[2]), atoi(row[3]), row[4], row[5]?atoi(row[5]):0xFFFFFFFF));
 		}
 		mysql_free_result(result);
 	}
@@ -88,12 +88,12 @@ void QGlobalCache::LoadByCharID(uint32 charID)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (database.RunQuery(query, MakeAnyLenString(&query, "select id, name, charid, npcid, zoneid, value, expdate from"
+	if (database.RunQuery(query, MakeAnyLenString(&query, "select name, charid, npcid, zoneid, value, expdate from"
 		" quest_globals where charid = %d && npcid = 0", charID), errbuf, &result))
 	{
 		while((row = mysql_fetch_row(result)))
 		{
-			AddGlobal(atoi(row[0]), QGlobal(std::string(row[1]), atoi(row[2]), atoi(row[3]), atoi(row[4]), row[5], row[6]?atoi(row[6]):0xFFFFFFFF));
+			AddGlobal(0, QGlobal(std::string(row[0]), atoi(row[1]), atoi(row[2]), atoi(row[3]), row[4], row[5]?atoi(row[5]):0xFFFFFFFF));
 		}
 		mysql_free_result(result);
 	}
@@ -107,12 +107,12 @@ void QGlobalCache::LoadByZoneID(uint32 zoneID)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (database.RunQuery(query, MakeAnyLenString(&query, "select id, name, charid, npcid, zoneid, value, expdate from quest_globals"
+	if (database.RunQuery(query, MakeAnyLenString(&query, "select name, charid, npcid, zoneid, value, expdate from quest_globals"
 		" where zoneid = %d && npcid = 0 && charid = 0", zoneID), errbuf, &result))
 	{
 		while((row = mysql_fetch_row(result)))
 		{
-			AddGlobal(atoi(row[0]), QGlobal(std::string(row[1]), atoi(row[2]), atoi(row[3]), atoi(row[4]), row[5], row[6]?atoi(row[6]):0xFFFFFFFF));
+			AddGlobal(0, QGlobal(std::string(row[0]), atoi(row[1]), atoi(row[2]), atoi(row[3]), row[4], row[5]?atoi(row[5]):0xFFFFFFFF));
 		}
 		mysql_free_result(result);
 	}
@@ -125,12 +125,12 @@ void QGlobalCache::LoadByGlobalContext()
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (database.RunQuery(query, MakeAnyLenString(&query, "select id, name, charid, npcid, zoneid, value, expdate from quest_globals"
+	if (database.RunQuery(query, MakeAnyLenString(&query, "select name, charid, npcid, zoneid, value, expdate from quest_globals"
 		" where zoneid = 0 && npcid = 0 && charid = 0"), errbuf, &result))
 	{
 		while((row = mysql_fetch_row(result)))
 		{
-			AddGlobal(atoi(row[0]), QGlobal(std::string(row[1]), atoi(row[2]), atoi(row[3]), atoi(row[4]), row[5], row[6]?atoi(row[6]):0xFFFFFFFF));
+			AddGlobal(0, QGlobal(std::string(row[0]), atoi(row[1]), atoi(row[2]), atoi(row[3]), row[4], row[5]?atoi(row[5]):0xFFFFFFFF));
 		}
 		mysql_free_result(result);
 	}

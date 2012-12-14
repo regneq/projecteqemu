@@ -145,6 +145,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	save_wp = 0;
 	spawn_group = 0;
 	swarmInfoPtr = NULL;
+	spellscale = d->spellscale;
+	healscale = d->healscale;
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
 	
@@ -1728,15 +1730,32 @@ bool Mob::HasNPCSpecialAtk(const char* parse) {
 void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 {
 	Mob::FillSpawnStruct(ns, ForWho);
-	if(GetOwnerID())
-	{
-		ns->spawn.is_pet = 1;
-		Client *c = entity_list.GetClientByID(GetOwnerID());
-		if(c)
-			sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+	if (RuleB(Pets, UnTargetableSwarmPet)) {
+		if(GetOwnerID() || GetSwarmOwner()) {
+			ns->spawn.is_pet = 1;
+			if (GetOwnerID()) {
+				Client *c = entity_list.GetClientByID(GetOwnerID());
+				if(c)
+					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+			}
+			else if (GetSwarmOwner()) {
+				ns->spawn.bodytype = 11;
+				Client *c = entity_list.GetClientByID(GetSwarmOwner());
+				if(c)
+					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+			}
+		}
+	} else {
+		if(GetOwnerID()) {
+			ns->spawn.is_pet = 1;
+			if (GetOwnerID()) {
+				Client *c = entity_list.GetClientByID(GetOwnerID());
+				if(c)
+					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+			}
+		} else
+			ns->spawn.is_pet = 0;
 	}
-	else
-		ns->spawn.is_pet = 0;
 
 	ns->spawn.is_npc = 1;
 }
@@ -1969,6 +1988,21 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 	if(id == "slow_mitigation")
 	{
 		slow_mitigation = atof(val.c_str());
+		return;
+	}
+	if(id == "loottable_id")
+	{
+		loottable_id = atof(val.c_str());
+		return;
+	}
+	if(id == "healscale")
+	{
+		healscale = atof(val.c_str());
+		return;
+	}
+	if(id == "spellscale")
+	{
+		spellscale = atof(val.c_str());
 		return;
 	}
 }

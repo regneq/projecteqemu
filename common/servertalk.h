@@ -176,6 +176,14 @@
 #define ServerOP_ReloadRulesWorld	0x4003
 #define ServerOP_CameraShake	0x4004
 #define ServerOP_QueryServGeneric	0x4005
+#define ServerOP_CZSignalClient 0x4006
+#define ServerOP_CZSignalClientByName 0x4007
+#define ServerOP_CZMessagePlayer 0x4008
+#define ServerOP_ReloadWorld 0x4009
+
+#define ServerOP_QSPlayerTradeLog 0x4010
+#define ServerOP_QSPlayerMoneyTradeLog 0x4011
+#define ServerOP_QSPlayerLogNPCKills 0x4012
 
 enum { QSG_LFGuild = 0 };
 enum {	QSG_LFGuild_PlayerMatches = 0, QSG_LFGuild_UpdatePlayerInfo, QSG_LFGuild_RequestPlayerInfo, QSG_LFGuild_UpdateGuildInfo, QSG_LFGuild_GuildMatches,
@@ -907,7 +915,7 @@ struct ServerQGlobalUpdate_Struct
 {
 	uint32 id;
 	char name[64];
-	char value[64];
+	char value[128];
 	uint32 npc_id;
 	uint32 char_id;
 	uint32 zone_id;
@@ -1074,6 +1082,59 @@ struct Server_Speech_Struct {
 	sint16	minstatus;
 	int32	type;
 	char	message[0];
+};
+
+struct CZClientSignal_Struct {
+	int charid;
+	int32 data;
+};
+
+struct CZClientSignalByName_Struct {
+	char Name[64];
+	int32 data;
+};
+
+struct QSPlayerTradeLog_Struct {
+	char	from[64];
+	char	to[64];
+	char	ItemName[64];
+	uint32	ItemID;
+	sint16  SlotID;
+	sint16  Charges;
+};
+
+struct QSPlayerMoneyTradeLog_Struct {
+	char	from[64];
+	char	to[64];
+	uint32  Copper;
+	uint32  Silver;
+	uint32  Gold;
+	uint32  Platinum;
+};
+
+struct QSPlayerLogNPCKillSub_Struct{
+	int32 NPCID;
+	int32 ZoneID;
+    int32 Type;
+};
+
+struct QSPlayerLogNPCKillsPlayers_Struct{
+	int32 char_id;
+};
+
+struct QSPlayerLogNPCKill_Struct{
+	QSPlayerLogNPCKillSub_Struct s1;
+	QSPlayerLogNPCKillsPlayers_Struct Chars[0];
+};
+
+struct CZMessagePlayer_Struct {
+	int32   Type;
+	char	CharName[64];
+	char	Message[512];
+};
+
+struct ReloadWorld_Struct{
+	int32 Option;
 };
 
 #pragma pack()

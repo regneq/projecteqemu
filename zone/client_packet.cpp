@@ -587,7 +587,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		account_id));
 	//DO NOT FORGET TO EDIT ZoneDatabase::GetCharacterInfoForLogin if you change this
 	dbaw->AddQuery(2, &query, MakeAnyLenString(&query,
-		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets "
+		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid,xtargets,firstlogon"
 		" FROM character_  LEFT JOIN guild_members ON id=char_id WHERE id=%i",
 		character_id));
 	dbaw->AddQuery(3, &query, MakeAnyLenString(&query,
@@ -6544,7 +6544,7 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 	if((group->IsLeader(this) && (GetTarget() == 0 || GetTarget() == this)) || (group->GroupCount()<3)) {
 		group->DisbandGroup();
 		if(GetMerc() != NULL)
-		GetMerc()->Suspend();
+			GetMerc()->Suspend();
 	} else {
 		Mob* memberToDisband = NULL;
 		memberToDisband = GetTarget();
@@ -6648,55 +6648,64 @@ void Client::Handle_OP_GMEmoteZone(const EQApplicationPacket *app)
 	return;
 }
 
-void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app)
-{
-	if (app->size != sizeof(Inspect_Struct)) {
+void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(Inspect_Struct)) {
 		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectRequest, size=%i, expected %i", app->size, sizeof(Inspect_Struct));
 		return;
 	}
-	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
-	Mob* tmp = entity_list.GetMob(ins->TargetID);
-	if(tmp != 0 && tmp->IsClient()) {
-		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) {
-			tmp->CastToClient()->QueuePacket(app); // Send request to target
-		}
-		else {	//Inspecting an SoF or later client which make the server handle the request
-			ProcessInspectRequest(tmp->CastToClient(), this);
-		}
 
+	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
+	Mob* tmp			= entity_list.GetMob(ins->TargetID);
+
+	if(tmp != 0 && tmp->IsClient()) {
+		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) { tmp->CastToClient()->QueuePacket(app); } // Send request to target
+		//Inspecting an SoF or later client which make the server handle the request
+		else { ProcessInspectRequest(tmp->CastToClient(), this); }
 	}
+
 #ifdef BOTS
-	if(tmp != 0 && tmp->IsBot())
-		Bot::ProcessBotInspectionRequest(tmp->CastToBot(), this);
+	if(tmp != 0 && tmp->IsBot()) { Bot::ProcessBotInspectionRequest(tmp->CastToBot(), this); }
 #endif
 
 	return;
 }
 
-void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app)
-{
-	if (app->size != sizeof(Inspect_Struct)) {
-		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectAnswer, size=%i, expected %i", app->size, sizeof(Inspect_Struct));
+void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app) {
+
+	if (app->size != sizeof(InspectResponse_Struct)) {
+		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectAnswer, size=%i, expected %i", app->size, sizeof(InspectResponse_Struct));
 		return;
 	}
+
 	//Fills the app sent from client.
-	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
-	EQApplicationPacket* outapp = app->Copy();
+	EQApplicationPacket* outapp	 = app->Copy();
 	InspectResponse_Struct* insr = (InspectResponse_Struct*) outapp->pBuffer;
-	Mob* tmp = entity_list.GetMob(ins->TargetID);
-	const Item_Struct* item = NULL;
-	for (sint16 L=0; L<=21; L++) {
+	Mob* tmp					 = entity_list.GetMob(insr->TargetID);
+	const Item_Struct* item		 = NULL;
+
+	for (sint16 L = 0; L <= 20; L++) {
 		const ItemInst* inst = GetInv().GetItem(L);
-		item = (inst) ? inst->GetItem() : NULL;
-		if(item>0){
-			strcpy(insr->itemnames[L],item->Name);
-			insr->itemicons[L]=item->Icon;
+		item				 = inst ? inst->GetItem() : NULL;
+		
+		if(item) {
+			strcpy(insr->itemnames[L], item->Name);
+			insr->itemicons[L] = item->Icon;
 		}
-		else
-			insr->itemicons[L]=0xFFFFFFFF;
+		else { insr->itemicons[L] = 0xFFFFFFFF; }
 	}
-	if(tmp != 0 && tmp->IsClient())
-		tmp->CastToClient()->QueuePacket(outapp); // Send answer to requester
+
+	const ItemInst* inst = GetInv().GetItem(21);
+	item = inst ? inst->GetItem() : NULL;
+	
+	if(item) {
+		strcpy(insr->itemnames[22], item->Name);
+		insr->itemicons[22] = item->Icon;
+	}
+	else { insr->itemicons[22] = 0xFFFFFFFF; }
+
+	if(tmp != 0 && tmp->IsClient()) { tmp->CastToClient()->QueuePacket(outapp); } // Send answer to requester
+
 	return;
 }
 
@@ -6922,9 +6931,15 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
 			if (GetTarget() != this && mypet->DistNoRootNoZ(*GetTarget()) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
-				mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
-				if(mypet->GetPetOrder() != SPO_Guard)
-					mypet->SetPetOrder(SPO_Follow);
+				if (mypet->IsHeld()) {
+					if (!mypet->IsFocused()) {
+						mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
+						if(mypet->GetPetOrder() != SPO_Guard)
+							mypet->SetPetOrder(SPO_Follow);
+					} else {
+						mypet->SetTarget(GetTarget());
+					}
+				}
 				zone->AddAggroMob();
 				mypet->AddToHateList(GetTarget(), 1);
 				Message_StringID(10, PET_ATTACKING, mypet->GetCleanName(), GetTarget()->GetCleanName());
@@ -7067,6 +7082,60 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->Say("I will hold until given an order, master.");
 			mypet->WipeHateList();
 			mypet->SetHeld(true);
+		}
+		break;
+	}
+	case PET_NOCAST: {
+		if(GetAA(aaAdvancedPetDiscipline) == 2 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsNoCast()) {
+				Message(0,"%s says, 'I will now cast spells, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetNoCast(false);
+			} else {
+				Message(0,"%s says, 'I will no longer cast spells, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetNoCast(true);
+			}
+		}
+		break;
+	}
+ 	case PET_FOCUS: {
+		if(GetAA(aaAdvancedPetDiscipline) >= 1 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsFocused()) {
+				Message(0,"%s says, 'I am no longer focused, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(false);
+			} else {
+				Message(0,"%s says, 'I will now focus my attention, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(true);
+			}
+		}
+		break;
+	}
+ 	case PET_FOCUS_ON: {
+		if(GetAA(aaAdvancedPetDiscipline) >= 1 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsFocused()) {
+				Message(0,"%s says, 'I am already focused, Master!",mypet->GetCleanName());
+			} else {
+				Message(0,"%s says, 'I will now focus my attention, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(true);
+			}
+		}
+		break;
+	}
+ 	case PET_FOCUS_OFF: {
+		if(GetAA(aaAdvancedPetDiscipline) >= 1 && mypet->IsNPC()) {
+			if (mypet->IsFeared())
+				break;
+			if (mypet->IsFocused()) {
+				Message(0,"%s says, 'I am no longer focused, Master!",mypet->GetCleanName());
+				mypet->CastToNPC()->SetFocused(false);
+			} else {
+				Message(0,"%s says, 'I am already not focused, Master!",mypet->GetCleanName());
+			}
 		}
 		break;
 	}
@@ -8501,7 +8570,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			}
 		}
 		else if (dbaq->QPT() == 2) {
-			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG, &MaxXTargets);
+			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG, &MaxXTargets, &firstlogon);
 		}
 		else if (dbaq->QPT() == 3) {
 			database.RemoveTempFactions(this);
@@ -9345,6 +9414,9 @@ void Client::CompleteConnect()
 	SendDisciplineTimers();
 
 	parse->EventPlayer(EVENT_ENTERZONE, this, "", 0);
+
+	if(firstlogon == 1)
+		parse->EventPlayer(EVENT_CONNECT, this, "", 0); //This sub event is for if a player logs in for the first time since entering world.
 
 	if(zone)
 	{
@@ -13233,12 +13305,12 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 			// Get merc, assign it to client & spawn
 			Merc* merc = Merc::LoadMerc(this, merc_template, merchant_id);
 			if(merc) {
-					merc->Spawn(this);
-					merc->SetSuspended(false);
-					SetMerc(merc);
-					merc->Unsuspend();
-					if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
-						p_timers.Clear(&database, pTimerMercSuspend);
+				merc->Spawn(this);
+				merc->SetSuspended(false);
+				SetMerc(merc);
+				merc->Unsuspend();
+				if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
+					p_timers.Clear(&database, pTimerMercSuspend);
 			}
 		}
 	}

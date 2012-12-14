@@ -47,6 +47,7 @@ using namespace std;
 #include "database.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/MiscFunctions.h"
+#include "../common/servertalk.h"
 
 Database::Database ()
 {
@@ -144,7 +145,7 @@ void Database::AddSpeech(const char* from, const char* to, const char* message, 
 	DoEscapeString(S2, to, strlen(to));
 	DoEscapeString(S3, message, strlen(message));
 
-	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `player_speech` SET `from`='%s', `to`='%s', `message`='%s', `minstatus`='%i', `guilddbid`='%i', `type`='%i'", S1, S2, S3, minstatus, guilddbid, type), errbuf, 0, 0)) {
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_speech` SET `from`='%s', `to`='%s', `message`='%s', `minstatus`='%i', `guilddbid`='%i', `type`='%i'", S1, S2, S3, minstatus, guilddbid, type), errbuf, 0, 0)) {
 		_log(NET__WORLD, "Failed Speech Entry Insert: %s", errbuf);
 		_log(NET__WORLD, "%s", query);
 	}
@@ -153,4 +154,58 @@ void Database::AddSpeech(const char* from, const char* to, const char* message, 
 	safe_delete_array(S1);
 	safe_delete_array(S2);
 	safe_delete_array(S3);
+}
+
+void Database::LogPlayerTrade(const char* from, const char* to, const char* ItemName, uint32 ItemID, sint16 SlotID, sint16 Charges){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	char *S1 = new char[strlen(from) * 2 + 1];
+	char *S2 = new char[strlen(to) * 2 + 1];
+	char *S3 = new char[strlen(ItemName) * 2 + 1];
+
+	DoEscapeString(S1, from, strlen(from));
+	DoEscapeString(S2, to, strlen(to));
+	DoEscapeString(S3, ItemName, strlen(ItemName));
+
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_trades` SET `from`='%s', `to`='%s', `item_name`='%s', `item_id`='%i', `slot_id`='%i', `charges`='%i', `time`=NOW()", S1, S2, S3, ItemID, SlotID, Charges), errbuf, 0, 0)) {
+		_log(NET__WORLD, "Failed player log trade Insert: %s", errbuf);
+		_log(NET__WORLD, "%s", query);
+	}
+
+	safe_delete_array(query); safe_delete_array(S1); safe_delete_array(S2); safe_delete_array(S3);
+}
+
+void Database::LogPlayerMoneyTrade(const char* from, const char* to, uint32 Copper, uint32 Silver, uint32 Gold, uint32 Platinum){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	char *S1 = new char[strlen(from) * 2 + 1];
+	char *S2 = new char[strlen(to) * 2 + 1];
+	DoEscapeString(S1, from, strlen(from));
+	DoEscapeString(S2, to, strlen(to));
+
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_money_trades` SET `from`='%s', `to`='%s', `copper`='%i', `silver`='%i', `gold`='%i', `platinum`='%i', `time`=NOW()", S1, S2, Copper, Silver, Gold, Platinum), errbuf, 0, 0)) {
+		_log(NET__WORLD, "Failed player money log trade Insert: %s", errbuf);
+		_log(NET__WORLD, "%s", query);
+	}
+
+	safe_delete_array(query); safe_delete_array(S1); safe_delete_array(S2);
+}
+
+void Database::LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	int32 lastid = 0;
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_npc_kill_record` SET `npc_id`='%i', `type`='%i', `zone_id`='%i', `time`=NOW()", QS->s1.NPCID, QS->s1.Type, QS->s1.ZoneID), errbuf, 0, 0, &lastid)) {
+		_log(NET__WORLD, "Failed NPC Kill Log Record Insert: %s", errbuf);
+		_log(NET__WORLD, "%s", query);
+	}
+
+	if(Members > 0){
+		for (int i = 0; i < Members; i++) {
+			if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_npc_kill_record_entries` SET `event_id`='%i', `char_id`='%i'", lastid, QS->Chars[i].char_id, errbuf, 0, 0))) {
+				_log(NET__WORLD, "Failed NPC Kill Log Entry Insert: %s", errbuf);
+				_log(NET__WORLD, "%s", query);
+			}
+		}
+	}
 }

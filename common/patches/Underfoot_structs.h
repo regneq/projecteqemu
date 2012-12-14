@@ -2234,10 +2234,8 @@ struct Inspect_Struct {
 struct InspectResponse_Struct{
 /*000*/	int32 TargetID;
 /*004*/	int32 playerid;
-/*008*/	char itemnames[22][64];
-/*1416*/char unknown_zero[64];
-/*1480*/int32 itemicons[22];
-/*1568*/int32 unknown_zero2;
+/*008*/	char itemnames[23][64];
+/*1480*/int32 itemicons[23];
 /*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254
 /*1860*/
 };

@@ -341,6 +341,12 @@ public:
 	void DoNPCEmote(int8 event_, int16 emoteid);
 	bool CanTalk();
 
+	inline void  SetSpellScale(float amt)		{ spellscale = amt; }
+	inline float GetSpellScale()				{ return spellscale; }
+
+	inline void  SetHealScale(float amt)		{ healscale = amt; }
+	inline float GetHealScale()					{ return healscale; }
+
 	void AddQuestItem(ItemInst* inst) { questItems.Insert(inst); }
 
 	void ClearQuestLists()
@@ -493,6 +499,8 @@ protected:
 	sint32	accuracy_rating;
 	sint16  attack_count;
     uint32  npc_mana;
+	float  spellscale;
+	float  healscale;
 
 	//pet crap:
 	int16	pet_spell_id;

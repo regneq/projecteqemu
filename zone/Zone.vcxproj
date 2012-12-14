@@ -280,7 +280,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\..\Build\</OutDir>
     <IntDir>.\../Build/Zone/Release\</IntDir>
-    <TargetName>Zone</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -358,6 +358,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
+    <IncludePath>C:\zlib\include;C:\Perl\lib\CORE;C:\MySQL\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\MySQL\lib\opt;C:\zlib\lib;C:\Perl\lib\CORE;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugBots x64|Win32'">
     <OutDir>..\build\</OutDir>

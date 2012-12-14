@@ -88,6 +88,24 @@ void WorldServer::Process()
 				database.AddSpeech(tmp1.c_str(), tmp2.c_str(), SSS->message, SSS->minstatus, SSS->guilddbid, SSS->type);
 				break;
 			}
+			case ServerOP_QSPlayerTradeLog:
+			{
+				QSPlayerTradeLog_Struct *QS = (QSPlayerTradeLog_Struct*)pack->pBuffer;
+				string from = QS->from;
+				string to = QS->to;
+				string ItemName = QS->ItemName;
+
+				database.LogPlayerTrade(from.c_str(), to.c_str(), ItemName.c_str(), QS->ItemID, QS->SlotID, QS->Charges);
+				break;
+			}
+			case ServerOP_QSPlayerLogNPCKills:
+			{
+				QSPlayerLogNPCKill_Struct *QS = (QSPlayerLogNPCKill_Struct*)pack->pBuffer;
+				int32 Members = pack->size - sizeof(QSPlayerLogNPCKill_Struct);
+				if (Members > 0) Members = Members / sizeof(QSPlayerLogNPCKillsPlayers_Struct);
+				database.LogPlayerNPCKill(QS, Members);
+				break;
+			}
 			case ServerOP_QueryServGeneric:
 			{
 				// The purpose of ServerOP_QueryServerGeneric is so that we don't have to add code to world just to relay packets
