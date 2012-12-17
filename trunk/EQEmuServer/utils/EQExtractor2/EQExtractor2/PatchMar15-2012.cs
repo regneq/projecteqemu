@@ -21,6 +21,186 @@ namespace EQExtractor2.Patches
             PatchConfFileName = "patch_Mar15-2012.conf";
         }
 
+        public override void RegisterExplorers()
+        {        
+            //OpManager.RegisterExplorer("OP_ZoneEntry", ExploreZoneEntry);
+        }
+
+        public void ExploreZoneEntry(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            if (Direction != PacketDirection.ServerToClient)
+                return;
+
+            string SpawnName = Buffer.ReadString(true);
+                        
+            UInt32 SpawnID = Buffer.ReadUInt32();
+
+            byte Level = Buffer.ReadByte();
+
+            float UnkSize = Buffer.ReadSingle();
+
+            byte IsNPC = Buffer.ReadByte();
+
+            UInt32 Bitfield = Buffer.ReadUInt32();
+            /*
+            NewSpawn.Showname = (Bitfield >> 28) & 1;
+            NewSpawn.TargetableWithHotkey = (Bitfield >> 27) & 1;
+            NewSpawn.Targetable = (Bitfield >> 26) & 1;
+
+            NewSpawn.ShowHelm = (Bitfield >> 24) & 1;
+            NewSpawn.Gender = (Bitfield >> 20) & 3;
+
+            NewSpawn.Padding5 = (Bitfield >> 4) & 1;
+            NewSpawn.Padding7 = (Bitfield >> 6) & 2047;
+            NewSpawn.Padding26 = (Bitfield >> 25) & 1;
+            */
+            Byte OtherData = Buffer.ReadByte();
+
+            Buffer.SkipBytes(8);    // Skip 8 unknown bytes
+
+            //NewSpawn.DestructableString1 = "";
+            //NewSpawn.DestructableString2 = "";
+            //NewSpawn.DestructableString3 = "";
+
+            if ((IsNPC > 0) && ((OtherData & 3) > 0))
+            {
+                // Destructable Objects. Not handled yet
+                //
+                //SQLOut(String.Format("-- OBJECT FOUND SpawnID {0}", SpawnID.ToString("x")));
+
+                Buffer.ReadString(false);
+
+                Buffer.ReadString(false);
+
+                Buffer.ReadString(false);
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadUInt32();
+
+                Buffer.ReadByte();
+
+                
+            }
+            OutputStream.WriteLine("Size starts at offset {0}", Buffer.GetPosition());
+
+            float Size = Buffer.ReadSingle();
+
+            byte Face = Buffer.ReadByte();
+
+            float WalkSpeed = Buffer.ReadSingle();
+
+            float RunSpeed = Buffer.ReadSingle();
+
+            UInt32 Race = Buffer.ReadUInt32();
+
+            byte PropCount = Buffer.ReadByte();
+
+            UInt32 BodyType = 0;
+
+            if (PropCount >= 1)
+            {
+                BodyType = Buffer.ReadUInt32();
+
+                for (int j = 1; j < PropCount; ++j)
+                    Buffer.SkipBytes(4);
+            }
+
+            Buffer.SkipBytes(1);   // Skip HP %
+
+            byte HairColor = Buffer.ReadByte();
+            byte BeardColor = Buffer.ReadByte();
+            byte EyeColor1 = Buffer.ReadByte();
+            byte EyeColor2 = Buffer.ReadByte();
+            byte HairStyle = Buffer.ReadByte();
+            byte Beard = Buffer.ReadByte();
+
+            UInt32 DrakkinHeritage = Buffer.ReadUInt32();
+
+            UInt32 DrakkinTattoo = Buffer.ReadUInt32();
+
+            UInt32 DrakkinDetails = Buffer.ReadUInt32();
+
+            Buffer.SkipBytes(1);   // Skip Holding
+
+            UInt32 Deity = Buffer.ReadUInt32();
+
+            Buffer.SkipBytes(8);    // Skip GuildID and GuildRank
+
+            byte Class = Buffer.ReadByte();
+
+            Buffer.SkipBytes(4);     // Skip PVP, Standstate, Light, Flymode
+
+            byte EquipChest2 = Buffer.ReadByte();
+
+            bool UseWorn = (EquipChest2 == 255);
+
+            Buffer.SkipBytes(2);    // 2 Unknown bytes;
+
+            byte Helm = Buffer.ReadByte();
+
+            string LastName = Buffer.ReadString(true);
+
+            Buffer.SkipBytes(5);    // AATitle + unknown byte
+
+            UInt32 PetOwnerID = Buffer.ReadUInt32();
+
+            Buffer.SkipBytes(26);   // Unknown byte + 6 unknown uint32
+
+            OutputStream.WriteLine("Position starts at offset {0}", Buffer.GetPosition());
+
+            UInt32 Position1 = Buffer.ReadUInt32();
+
+            UInt32 Position2 = Buffer.ReadUInt32();
+
+            UInt32 Position3 = Buffer.ReadUInt32();
+
+            UInt32 Position4 = Buffer.ReadUInt32();
+
+            UInt32 Position5 = Buffer.ReadUInt32();
+
+            float YPos = Utils.EQ19ToFloat((Int32)(Position3 & 0x7FFFF));
+
+            float Heading = Utils.EQ19ToFloat((Int32)(Position4 & 0xFFF));
+
+            float XPos = Utils.EQ19ToFloat((Int32)(Position4 >> 12) & 0x7FFFF);
+
+            float ZPos = Utils.EQ19ToFloat((Int32)(Position5 & 0x7FFFF));
+
+            OutputStream.WriteLine("(X,Y,Z) = {0}, {1}, {2}, Heading = {3}", XPos, YPos, ZPos, Heading);
+
+            if (NPCType.IsPlayableRace(Race))
+            {
+                for (int ColourSlot = 0; ColourSlot < 9; ++ColourSlot)
+                    OutputStream.WriteLine("Color {0} is {1}", ColourSlot, Buffer.ReadUInt32());
+            }
+
+            OutputStream.WriteLine("");
+
+        }
+
         override public List<ZoneEntryStruct> GetSpawns()
         {
             List<ZoneEntryStruct> ZoneSpawns = new List<ZoneEntryStruct>();

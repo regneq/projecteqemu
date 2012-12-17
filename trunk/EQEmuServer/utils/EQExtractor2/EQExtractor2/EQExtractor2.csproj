@@ -75,6 +75,7 @@
     <Compile Include="PatchAug04-2011.cs" />
     <Compile Include="PatchAugust15-2012.cs" />
     <Compile Include="PatchDec7-2010.cs" />
+    <Compile Include="PatchDecember10-2012.cs" />
     <Compile Include="PatchFeb8-2011.cs" />
     <Compile Include="PatchGeneric.cs" />
     <Compile Include="EQApplicationLayer.cs" />
@@ -135,6 +136,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="patch_August15-2012.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_Dec10-2012.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="patch_Dec7-2010.conf">
