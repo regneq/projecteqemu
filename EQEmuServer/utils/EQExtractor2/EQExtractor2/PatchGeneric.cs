@@ -12,6 +12,16 @@ namespace EQExtractor2.Patches
 
     class PatchSpecficDecoder
     {
+        protected class PacketToMatch
+        {
+	        public String	OPCodeName;
+            public PacketDirection Direction;
+	        public Int32	RequiredSize;
+	        public bool	VersionMatched;
+        };
+
+
+
         public PatchSpecficDecoder()
         {
             Version = "Unsupported Client Version";
@@ -282,6 +292,10 @@ namespace EQExtractor2.Patches
         protected int PPZoneIDOffset;
 
         protected string PatchConfFileName;
+
+        protected PacketToMatch[] PacketsToMatch;
+
+        protected UInt32 WaitingForPacket;
 
         protected IdentificationStatus IDStatus;
 
