@@ -362,7 +362,11 @@ namespace EQExtractor2.Patches
 
                 NewSpawn.PropCount = Buffer.ReadByte();
 
-                NewSpawn.BodyType = Buffer.ReadUInt32();
+                if (NewSpawn.PropCount > 0)
+                    NewSpawn.BodyType = Buffer.ReadUInt32();
+                else
+                    NewSpawn.BodyType = 0;
+                
 
                 for (int j = 1; j < NewSpawn.PropCount; ++j)
                         Buffer.SkipBytes(4);
@@ -840,12 +844,17 @@ namespace EQExtractor2.Patches
             }
 
             byte Properties = Buffer.ReadByte();
-            UInt32 BodyType = Buffer.ReadUInt32();
+            OutputStream.WriteLine("Properties = {0}, Offset now {1}", Properties, Buffer.GetPosition());
 
-            OutputStream.WriteLine("Properties = {0}, Bodytype = {1}", Properties, BodyType);
+            UInt32 BodyType = 0;
+            
+            if(Properties > 0)
+                BodyType = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("Bodytype = {0}",  BodyType);
             
             if (Properties != 1)
-                OutputStream.WriteLine("XXXX Properies is {0}", Properties);
+                OutputStream.WriteLine("XXXX Properties is {0}", Properties);
 
             for (int i = 1; i < Properties; ++i)
                 OutputStream.WriteLine("   Prop: {0}", Buffer.ReadUInt32());
