@@ -1159,6 +1159,28 @@ Doors* EntityList::GetDoorsByDBID(int32 id)
 	return 0;
 }
 
+Doors* EntityList::GetDoorsByDoorID(int32 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Doors*> iterator(door_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToDoors()->GetDoorID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 int16 EntityList::GetFreeID()
 {
 	if(last_insert_id > 1500)
