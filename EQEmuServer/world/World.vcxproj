@@ -1044,6 +1044,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\patches\RoF.cpp" />
     <ClCompile Include="Adventure.cpp" />
     <ClCompile Include="AdventureManager.cpp" />
     <ClCompile Include="client.cpp" />

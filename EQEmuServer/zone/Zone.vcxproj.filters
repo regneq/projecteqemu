@@ -292,7 +292,7 @@
     </ClCompile>
     <ClCompile Include="..\common\patches\Underfoot.cpp">
       <Filter>Patches</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="..\common\patches\VoA.cpp">
       <Filter>Patches</Filter>
     </ClCompile>
@@ -457,6 +457,9 @@
     </ClCompile>
     <ClCompile Include="..\common\XMLParser.cpp">
       <Filter>Common Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\patches\RoF.cpp">
+      <Filter>Patches</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
