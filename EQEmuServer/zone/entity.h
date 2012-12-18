@@ -160,6 +160,7 @@ public:
 	Object*	GetObjectByID(int16 id);
 	Object*	GetObjectByDBID(int32 id);
 	Doors*	GetDoorsByID(int16 id);
+	Doors* GetDoorsByDoorID(int32 id);
 	Doors*	GetDoorsByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);
 	void RemoveCorpseByDBID(int32 dbid);
