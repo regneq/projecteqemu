@@ -1,7 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
-==12/17/2012==
+==12/18/2012==
 Lerxst: Added the RoF.cpp files to the patches folder of the project for the vs2008 people.
 
 ==12/17/2012==
