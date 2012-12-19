@@ -43,6 +43,7 @@ public:
 	void	SendCharInfo();
 	void	SendMaxCharCreate(int max_chars);
 	void	SendMembership();
+	void	SendMembershipSettings();
 	void	EnterWorld(bool TryBootup = true);
 	void	ZoneUnavail();
 	void	QueuePacket(const EQApplicationPacket* app, bool ack_req = true);
