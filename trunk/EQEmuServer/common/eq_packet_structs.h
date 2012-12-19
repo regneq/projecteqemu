@@ -4773,6 +4773,35 @@ struct Membership_Struct
 /*108*/ // char exit_url[0];	// URL that will open when EQ is exited
 };
 
+struct Membership_Entry_Struct
+{
+/*000*/ uint32 purchase_id;		// Seen 1, then increments 90287 to 90300
+/*004*/ uint32 bitwise_entry;	// Seen 16 to 65536 - Skips 4096
+/*008*/ 
+};
+
+struct Membership_Setting_Struct
+{
+/*000*/ uint32 setting_index;	// 0, 1, or 2
+/*004*/ uint32 setting_id;		// 0 to 21
+/*008*/ sint32 setting_value;	// All can be 0, 1, or -1
+/*012*/ 
+};
+
+struct Membership_Details_Struct
+{
+/*0000*/ uint32 membership_setting_count;	// Seen 66
+/*0016*/ Membership_Setting_Struct settings[66];
+/*0012*/ uint32 race_entry_count;	// Seen 15
+/*1044*/ Membership_Entry_Struct membership_races[15];
+/*0012*/ uint32 class_entry_count;	// Seen 15
+/*1044*/ Membership_Entry_Struct membership_classes[15];
+/*1044*/ uint32 exit_url_length;	// Length of the exit_url string (0 for none)
+/*1048*/ //char exit_url[42];		// Upgrade to Silver or Gold Membership URL
+/*1048*/ uint32 exit_url_length2;	// Length of the exit_url2 string (0 for none)
+/*0000*/ //char exit_url2[49];		// Upgrade to Gold Membership URL
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

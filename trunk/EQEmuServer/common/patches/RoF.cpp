@@ -1734,112 +1734,17 @@ ENCODE(OP_GroundSpawn)
 ENCODE(OP_SendMembership) {
 	ENCODE_LENGTH_EXACT(Membership_Struct);
 	SETUP_DIRECT_ENCODE(Membership_Struct, structs::Membership_Struct);
-
-	eq->membership_setting_count = 66;
-
-	uint32 entry_count = 0;
-	uint32 entry_value = 0;
-	for (int setting_id=0; setting_id < 22; setting_id++)
+	
+	eq->membership = emu->membership;
+	eq->races = emu->races;
+	eq->classes = emu->classes;
+	eq->entrysize = 22;
+	for (int i=0; i<21; i++)
 	{
-		for (int setting_index=0; setting_index < 3; setting_index++)
-		{
-			
-			eq->settings[entry_count].setting_index = setting_index;
-			eq->settings[entry_count].setting_id = setting_id;
-			entry_value = 0;
-			if (setting_id < 21)
-			{
-				entry_value = emu->entries[setting_id];
-			}
-			eq->settings[entry_count].setting_value = entry_value;
-			entry_count++;
-		}
+		eq->entries[i] = emu->entries[i];
 	}
+	eq->entries[21] = 0;
 
-	eq->race_entry_count = 15;
-	eq->class_entry_count = 15;
-
-	uint32 cur_purchase_id = 90287;
-	uint32 cur_purchase_id2 = 90301;
-	uint32 cur_bitwise_value = 2;
-	for (int entry_id=0; entry_id < 15; entry_id++)
-	{
-		if (entry_id == 0)
-		{
-			eq->membership_races[entry_id].purchase_id = 1;	// emu->membership ?
-			eq->membership_races[entry_id].bitwise_entry = emu->races;
-			eq->membership_classes[entry_id].purchase_id = 1;	// emu->membership ?
-			eq->membership_classes[entry_id].bitwise_entry = emu->classes;
-		}
-		else
-		{
-			eq->membership_races[entry_id].purchase_id = cur_purchase_id;
-
-			if (entry_id < 3)
-			{
-				eq->membership_classes[entry_id].purchase_id = cur_purchase_id;
-			}
-			else
-			{
-				eq->membership_classes[entry_id].purchase_id = cur_purchase_id2;
-				cur_purchase_id2++;
-			}
-
-			if (entry_id == 1)
-			{
-				eq->membership_races[entry_id].bitwise_entry = emu->races;
-				eq->membership_classes[entry_id].bitwise_entry = emu->classes;
-			}
-			else if (entry_id == 2)
-			{
-				eq->membership_races[entry_id].bitwise_entry = 0x1ffff;
-				eq->membership_classes[entry_id].bitwise_entry = 0x1ffff;
-			}
-			else
-			{
-				if (entry_id == 11)
-				{
-					// Live Skips 4096
-					cur_bitwise_value *= 2;
-				}
-				eq->membership_races[entry_id].bitwise_entry = cur_bitwise_value;
-				eq->membership_classes[entry_id].bitwise_entry = cur_bitwise_value;
-			}
-			cur_purchase_id++;
-		}
-		cur_bitwise_value *= 2;
-	}
-
-	eq->exit_url_length = 0;
-	eq->exit_url_length2 = 0;
-
-	/*
-	Account Access Level Settings
-
-	ID	-	Free	Silver	Gold	-	Possible Setting
-	00	-	250		1000	-1		-	Max AA Restriction
-	01	-	-1		-1		-1		-	Max Level Restriction
-	02	-	2		4		-1		-	Max Char Slots per Account
-	03	-	1		1		-1		-	Max Spell Rank
-	04	-	4		6		-1		-	Main Inventory Size
-	05	-	100		500		-1		-	Max Platinum per level
-	06	-	0		0		1		-	Send Mail?
-	07	-	0		0		1		-	Send Parcels?
-	08	-	1		1		1		-	Voice Chat Unlimited?
-	09	-	2		5		-1		-	Mercenary Tiers
-	10	-	0		1		1		-	Create Guilds?
-	11	-	0		0		-1		-	Shared Bank Slots
-	12	-	9		14		-1		-	Max Journal Quests - 1
-	13	-	0		1		1		-	Neighborhood-House Allowed?
-	14	-	0		0		1		-	Prestige Enabled?
-	15	-	0		0		1		-	Broker System Unlimited?
-	16	-	0		1		1		-	Chat UnRestricted?
-	17	-	0		0		1		-	Progression Server Access?
-	18	-	0		0		1		-	Full Customer Support?
-	19	-	0		0		-1		-	0 for Silver
-	20	-	0		0		-1		-	0 for Silver
-	21	-	0		0		0		-	Unknown 0
-	*/
 	FINISH_ENCODE();
 }
 

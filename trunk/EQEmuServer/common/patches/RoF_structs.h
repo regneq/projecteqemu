@@ -220,7 +220,7 @@ struct Membership_Setting_Struct
 /*012*/ 
 };
 
-struct Membership_Struct
+struct Membership_Details_Struct
 {
 /*0000*/ uint32 membership_setting_count;	// Seen 66
 /*0016*/ Membership_Setting_Struct settings[66];
@@ -229,9 +229,19 @@ struct Membership_Struct
 /*0012*/ uint32 class_entry_count;	// Seen 15
 /*1044*/ Membership_Entry_Struct membership_classes[15];
 /*1044*/ uint32 exit_url_length;	// Length of the exit_url string (0 for none)
-/*1048*/ // char exit_url[0];		// Upgrade to Silver or Gold Membership URL
+/*1048*/ //char exit_url[42];		// Upgrade to Silver or Gold Membership URL
 /*1048*/ uint32 exit_url_length2;	// Length of the exit_url2 string (0 for none)
-/*0000*/ // char exit_url2[0];		// Upgrade to Gold Membership URL
+/*0000*/ //char exit_url2[49];		// Upgrade to Gold Membership URL
+};
+
+struct Membership_Struct
+{
+/*000*/ uint32 membership;	// Seen 2 on Gold Account
+/*004*/ uint32 races;	// Seen ff ff 01 00
+/*008*/ uint32 classes;	// Seen ff ff 01 01
+/*012*/ uint32 entrysize; // Seen 22
+/*016*/ sint32 entries[22]; // Most -1, 1, and 0 for Gold Status
+/*104*/ 
 };
 
 
