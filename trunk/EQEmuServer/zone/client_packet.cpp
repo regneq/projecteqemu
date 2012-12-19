@@ -542,6 +542,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientVoA;
 		ClientVersionBit = BIT_VoA;
 	}
+	else if(StreamDescription == "Patch RoF")
+	{
+		ClientVersion = EQClientRoF;
+		ClientVersionBit = BIT_RoF;
+	}
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
 	Client* client = entity_list.GetClientByName(cze->char_name);

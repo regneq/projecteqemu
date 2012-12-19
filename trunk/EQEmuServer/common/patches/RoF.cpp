@@ -698,18 +698,14 @@ ENCODE(OP_PlayerProfile) {
 
 	uint32 r;
 	
-	eq->available_slots=0xffffffff;
-	memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
-	memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
-	
-//	OUT(checksum);
+	//	OUT(checksum);
+	eq->checksum_size = (sizeof(structs::PlayerProfile_Struct) - 9);	// Was 18404
 	OUT(gender);
 	OUT(race);
 	OUT(class_);
-//	OUT(unknown00016);
 	OUT(level);
 	eq->level1 = emu->level;
-//	OUT(unknown00022[2]);
+	eq->bind_count = 5;
 	for(r = 0; r < 5; r++) {
 		OUT(binds[r].zoneId);
 		OUT(binds[r].x);
@@ -718,35 +714,42 @@ ENCODE(OP_PlayerProfile) {
 		OUT(binds[r].heading);
 	}
 	OUT(deity);
-	OUT(intoxication);
-	OUT_array(spellSlotRefresh, structs::MAX_PP_MEMSPELL);
-	OUT(abilitySlotRefresh);
-	OUT(points); // Relocation Test
-//	OUT(unknown0166[4]);
+	eq->unknown4_count = 10;
+	eq->equip_count = 22;
+	for(r = 0; r < 9; r++) {
+		if (r > 0)
+		{
+			eq->equipment[r].equip0 = emu->item_material[r];
+			eq->equipment[r].equip1 = 0;
+			eq->equipment[r].itemId = 0;
+		}
+	}
+	eq->equip2_count = 9;
+	//OUT(intoxication);
+	//OUT_array(spellSlotRefresh, structs::MAX_PP_MEMSPELL);
+	//OUT(abilitySlotRefresh);
+	eq->tint_count = 9;
+	for(r = 0; r < 7; r++) {
+		OUT(item_tint[r].color);
+	}
+	eq->tint_count2 = 9;
+	for(r = 0; r < 7; r++) {
+		eq->item_tint2[r].color = emu->item_tint[r].color;
+	}
+	
 	OUT(haircolor);
 	OUT(beardcolor);
 	OUT(eyecolor1);
 	OUT(eyecolor2);
 	OUT(hairstyle);
 	OUT(beard);
-//	OUT(unknown00178[10]);
-	for(r = 0; r < 9; r++) {
-		eq->equipment[r].equip0 = emu->item_material[r];
-		eq->equipment[r].equip1 = 0;
-		eq->equipment[r].itemId = 0;
-		//eq->colors[r].color = emu->colors[r].color;
-	}
-	for(r = 0; r < 7; r++) {
-		OUT(item_tint[r].color);
-	}
-//	OUT(unknown00224[48]);
-	//NOTE: new client supports 300 AAs, our internal rep/PP
-	//only supports 240..
-	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
-		OUT(aa_array[r].AA);
-		OUT(aa_array[r].value);
-	}
-//	OUT(unknown02220[4]);
+	OUT(face);
+	eq->unknown_rof8 = -1;
+	eq->height = 5.0;
+	eq->unknown_rof11 = 3.0;
+	eq->unknown_rof12 = 2.5;
+	eq->unknown_rof13 = 5.5;
+	OUT(points);
 	OUT(mana);
 	OUT(cur_hp);
 	OUT(STR);
@@ -756,25 +759,31 @@ ENCODE(OP_PlayerProfile) {
 	OUT(INT);
 	OUT(DEX);
 	OUT(WIS);
-	OUT(face);
-//	OUT(unknown02264[47]);
-	OUT_array(spell_book, structs::MAX_PP_SPELLBOOK);
-//	OUT(unknown4184[128]);
-	OUT_array(mem_spells, structs::MAX_PP_MEMSPELL);
-//	OUT(unknown04396[32]);
-	OUT(platinum);
-	OUT(gold);
-	OUT(silver);
-	OUT(copper);
-	OUT(platinum_cursor);
-	OUT(gold_cursor);
-	OUT(silver_cursor);
-	OUT(copper_cursor);
+	
+	//NOTE: new client supports 300 AAs, our internal rep/PP
+	//only supports 240..
+	eq->aa_count = 300;
+	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
+		OUT(aa_array[r].AA);
+		OUT(aa_array[r].value);
+	}
+	eq->skill_count = 100;
 	OUT_array(skills, structs::MAX_PP_SKILL);
-//	OUT(unknown04760[236]);
-	OUT(toxicity);
-	OUT(thirst_level);
-	OUT(hunger_level);
+	eq->unknown15_count = 25;
+	eq->discipline_count = 200;
+	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
+		OUT(disciplines.values[r]);
+	}
+	eq->timestamp_count = 20;
+	eq->recast_count = structs::MAX_RECAST_TYPES;
+	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
+	eq->timestamp2_count = 100;
+	eq->spell_book_count = structs::MAX_PP_SPELLBOOK;
+	OUT_array(spell_book, structs::MAX_PP_SPELLBOOK);
+	eq->mem_spell_count = structs::MAX_PP_MEMSPELL;
+	OUT_array(mem_spells, structs::MAX_PP_MEMSPELL);
+	eq->unknown16_count = 13;
+	eq->buff_count = structs::BUFF_COUNT;
 	//PS this needs to be figured out more; but it was 'good enough'
 	for(r = 0; r < structs::BUFF_COUNT; r++) 
 	{
@@ -788,29 +797,33 @@ ENCODE(OP_PlayerProfile) {
 		{
 			eq->buffs[r].slotid = 0;
 		}
-		//OUT(buffs[r].slotid);
 		OUT(buffs[r].level);
-		//OUT(buffs[r].bard_modifier);
-		//OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		//OUT(buffs[r].dmg_shield_remaining);
-		//OUT(buffs[r].persistant_buff);
-		//OUT(buffs[r].reserved);
-		//OUT(buffs[r].player_id);
 	}
-	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
-		OUT(disciplines.values[r]);
-	}
-	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
-//	OUT(unknown08124[360]);
-	OUT(endurance);
+
+	OUT(platinum);
+	OUT(gold);
+	OUT(silver);
+	OUT(copper);
+	OUT(platinum_cursor);
+	OUT(gold_cursor);
+	OUT(silver_cursor);
+	OUT(copper_cursor);
+	
+	//OUT(toxicity);
+	//OUT(thirst_level);
+	//OUT(hunger_level);
+	
+	//OUT(endurance);
 	OUT(aapoints_spent);
+	eq->aapoint_count = 5;
 	eq->aapoints_assigned = emu->aapoints_spent + emu->aapoints;
 	OUT(aapoints);
-//	OUT(unknown06160[4]);
+
 	//NOTE: new client supports 20 bandoliers, our internal rep 
 	//only supports 4..
+	eq->bandolier_count = 20;
 	for(r = 0; r < 4; r++) {
 		OUT_str(bandoliers[r].name);
 		uint32 k;
@@ -820,83 +833,94 @@ ENCODE(OP_PlayerProfile) {
 			OUT_str(bandoliers[r].items[k].item_name);
 		}
 	}
-//	OUT(unknown07444[5120]);
+	eq->potionbelt_count = 5;
 	for(r = 0; r < structs::MAX_POTIONS_IN_BELT; r++) {
 		OUT(potionbelt.items[r].item_id);
 		OUT(potionbelt.items[r].icon);
 		OUT_str(potionbelt.items[r].item_name);
 	}
-//	OUT(unknown12852[8]);
-//	OUT(unknown12864[76]);
+
+	eq->expansion_count = 20;
+	eq->name_str_len = 64;
 	OUT_str(name);
+	eq->last_name_str_len = 32;
 	OUT_str(last_name);
-	OUT(guild_id);
 	OUT(birthday);
 	OUT(lastlogin);
 	OUT(timePlayedMin);
-	OUT(pvp);
-	OUT(anon);
-	OUT(gm);
-	OUT(guildrank);
-	OUT(guildbanker);
-//	OUT(unknown13054[12]);
-	OUT(exp);
-//	OUT(unknown13072[8]);
 	OUT(timeentitledonaccount);
+	//OUT(expansions);
+	eq->expansions = 0x1ffff;
+	eq->language_count = MAX_PP_LANGUAGE;
 	OUT_array(languages, structs::MAX_PP_LANGUAGE);
-//	OUT(unknown13109[7]);
+	OUT_array(spell_book, structs::MAX_PP_SPELLBOOK);
+	
+	OUT(zone_id);
+	OUT(zoneInstance);
 	OUT(y); //reversed x and y
 	OUT(x);
 	OUT(z);
 	OUT(heading);
-//	OUT(unknown13132[4]);
+	eq->unknown_rof27 = 100;
+	eq->unknown_rof28 = -1;
+	
+	eq->unknown32_count = 5;
+	eq->unknown33_count = 32;
+	eq->unknown37_count = 5;
+	eq->unknown38_count = 10;
+	eq->unknown_string1_count = 64;
+	eq->unknown_string2_count = 64;
+	eq->unknown_string3_count = 64;
+	
+	eq->unknown_rof47 = 6;
+	eq->unknown_rof49 = 64;
+	eq->unknown_rof51 = 100;
+	eq->unknown_rof53 = 50;
+	
+	/*
+	// The fields below have not yet been identified in the current PP
+	//eq->available_slots=0xffffffff;
+	//memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
+	//memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
+	OUT(pvp);
+	OUT(anon);
+	OUT(gm);
+	OUT(guild_id);
+	OUT(guildrank);
+	OUT(guildbanker);
+	OUT(exp);
 	OUT(platinum_bank);
 	OUT(gold_bank);
 	OUT(silver_bank);
 	OUT(copper_bank);
 	OUT(platinum_shared);
-//	OUT(unknown13156[84]);
-	//OUT(expansions);
-	eq->expansions = 0xffff;
-//	OUT(unknown13244[12]);
+	
 	OUT(autosplit);
-//	OUT(unknown13260[16]);
-	OUT(zone_id);
-	OUT(zoneInstance);
 	for(r = 0; r < structs::MAX_GROUP_MEMBERS; r++) {
 		OUT_str(groupMembers[r]);
 	}
 	strcpy(eq->groupLeader, emu->groupMembers[0]);
-//	OUT_str(groupLeader);
-//	OUT(unknown13728[660]);
 	OUT(entityid);
 	OUT(leadAAActive);
-//	OUT(unknown14392[4]);
 	OUT(ldon_points_guk);
 	OUT(ldon_points_mir);
 	OUT(ldon_points_mmc);
 	OUT(ldon_points_ruj);
 	OUT(ldon_points_tak);
 	OUT(ldon_points_available);
-//	OUT(unknown14420[132]);
 	OUT(tribute_time_remaining);
 	OUT(career_tribute_points);
-//	OUT(unknown7208);
 	OUT(tribute_points);
-//	OUT(unknown7216);
 	OUT(tribute_active);
 	for(r = 0; r < structs::MAX_PLAYER_TRIBUTES; r++) {
 		OUT(tributes[r].tribute);
 		OUT(tributes[r].tier);
 	}
-//	OUT(unknown14616[8]);
 	OUT(group_leadership_exp);
-//	OUT(unknown14628);
 	OUT(raid_leadership_exp);
 	OUT(group_leadership_points);
 	OUT(raid_leadership_points);
 	OUT_array(leader_abilities.ranks, structs::MAX_LEADERSHIP_AA_ARRAY);
-//	OUT(unknown14772[128]);
 	OUT(air_remaining);
 	OUT(PVPKills);
 	OUT(PVPDeaths);
@@ -905,9 +929,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(PVPBestKillStreak);
 	OUT(PVPWorstDeathStreak);
 	OUT(PVPCurrentKillStreak);
-//	OUT(unknown17892[4580]);
 	OUT(expAA);
-//	OUT(unknown19516[40]);
 	OUT(currentRadCrystals);
 	OUT(careerRadCrystals);
 	OUT(currentEbonCrystals);
@@ -915,28 +937,14 @@ ENCODE(OP_PlayerProfile) {
 	OUT(groupAutoconsent);
 	OUT(raidAutoconsent);
 	OUT(guildAutoconsent);
-//	OUT(unknown19575[5]);
 	eq->level3 = emu->level;
 	eq->showhelm = emu->showhelm;
 	OUT(RestTimer);
-//	OUT(unknown19584[4]);
-//	OUT(unknown19588);
-
-
-const uint8 bytes[] = {
-0xa3,0x02,0x00,0x00,0x95,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x19,0x00,0x00,0x00,
-0x19,0x00,0x00,0x00,0x19,0x00,0x00,0x00,0x0F,0x00,0x00,0x00,0x0F,0x00,0x00,0x00,
-0x0F,0x00,0x00,0x00,0x0F,0x00,0x00,0x00,0x1F,0x85,0xEB,0x3E,0x33,0x33,0x33,0x3F,
-0x04,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x07,0x00,0x00,0x00,
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
-};
-
-	memcpy(eq->unknown18700, bytes, sizeof(bytes));
-		
-
+	*/
 	
 	//set the checksum...
-	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
+	//CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
+	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4, 9);
 	_hex(NET__ERROR, eq, sizeof(structs::PlayerProfile_Struct));
 	FINISH_ENCODE();
 }
@@ -994,6 +1002,9 @@ ENCODE(OP_NewZone) {
 	eq->unknown904 = 180;
 	eq->unknown908 = 2;
 	eq->unknown912 = 2;
+	eq->unknown932 = -1;	// Set from PoK Example
+	eq->unknown936 = -1;	// Set from PoK Example
+	eq->unknown944 = 1.0;	// Set from PoK Example
 
 	FINISH_ENCODE();
 }
@@ -1685,7 +1696,7 @@ ENCODE(OP_SpawnDoor) {
 ENCODE(OP_GroundSpawn)
 {
 
-	// We are not encoding the spawn_id field here, or a size but it doesn't appear to matter.
+	// We are not encoding the spawn_id field here, but it doesn't appear to matter.
 	//
 	EQApplicationPacket *in = *p;
 	*p = NULL;
@@ -1694,7 +1705,7 @@ ENCODE(OP_GroundSpawn)
 
 	unsigned char *__emu_buffer = in->pBuffer;
 
-	in->size = strlen(emu->object_name) + 58;
+	in->size = strlen(emu->object_name) + sizeof(Object_Struct) - 1;
 
 	in->pBuffer = new unsigned char[in->size];
 	
@@ -1704,26 +1715,132 @@ ENCODE(OP_GroundSpawn)
 	VARSTRUCT_ENCODE_STRING(OutBuffer, emu->object_name);
 	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, emu->zone_id);
 	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, emu->zone_instance);
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00006762
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observer 0x7fffbb64
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->drop_id);	// Some unique id
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Same for all objects in the zone
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->heading);
-	// This next field is actually a float. There is a groundspawn in freeportwest (sack of money sitting on some barrels) which requires this
-	// field to be set to (float)255.0 to appear at all, and also the size field below to be 5, to be the correct size. I think SoD has the same
-	// issue.
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// This appears to be the size field.
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, 0);	// Normally 0, but seen (float)255.0 as well
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, 1);	// Need to add emu->size to struct
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->y);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->x);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->z);
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);	// Unknown, observed 0xffffffff
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00000014
-	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, 0);	// Unknown, observed 0x00
+	VARSTRUCT_ENCODE_TYPE(sint32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
 
 	delete[] __emu_buffer;
 	
 	dest->FastQueuePacket(&in, ack_req);
+}
+
+ENCODE(OP_SendMembership) {
+	ENCODE_LENGTH_EXACT(Membership_Struct);
+	SETUP_DIRECT_ENCODE(Membership_Struct, structs::Membership_Struct);
+
+	eq->membership_setting_count = 66;
+
+	uint32 entry_count = 0;
+	uint32 entry_value = 0;
+	for (int setting_id=0; setting_id < 22; setting_id++)
+	{
+		for (int setting_index=0; setting_index < 3; setting_index++)
+		{
+			
+			eq->settings[entry_count].setting_index = setting_index;
+			eq->settings[entry_count].setting_id = setting_id;
+			entry_value = 0;
+			if (setting_id < 21)
+			{
+				entry_value = emu->entries[setting_id];
+			}
+			eq->settings[entry_count].setting_value = entry_value;
+			entry_count++;
+		}
+	}
+
+	eq->race_entry_count = 15;
+	eq->class_entry_count = 15;
+
+	uint32 cur_purchase_id = 90287;
+	uint32 cur_purchase_id2 = 90301;
+	uint32 cur_bitwise_value = 2;
+	for (int entry_id=0; entry_id < 15; entry_id++)
+	{
+		if (entry_id == 0)
+		{
+			eq->membership_races[entry_id].purchase_id = 1;	// emu->membership ?
+			eq->membership_races[entry_id].bitwise_entry = emu->races;
+			eq->membership_classes[entry_id].purchase_id = 1;	// emu->membership ?
+			eq->membership_classes[entry_id].bitwise_entry = emu->classes;
+		}
+		else
+		{
+			eq->membership_races[entry_id].purchase_id = cur_purchase_id;
+
+			if (entry_id < 3)
+			{
+				eq->membership_classes[entry_id].purchase_id = cur_purchase_id;
+			}
+			else
+			{
+				eq->membership_classes[entry_id].purchase_id = cur_purchase_id2;
+				cur_purchase_id2++;
+			}
+
+			if (entry_id == 1)
+			{
+				eq->membership_races[entry_id].bitwise_entry = emu->races;
+				eq->membership_classes[entry_id].bitwise_entry = emu->classes;
+			}
+			else if (entry_id == 2)
+			{
+				eq->membership_races[entry_id].bitwise_entry = 0x1ffff;
+				eq->membership_classes[entry_id].bitwise_entry = 0x1ffff;
+			}
+			else
+			{
+				if (entry_id == 11)
+				{
+					// Live Skips 4096
+					cur_bitwise_value *= 2;
+				}
+				eq->membership_races[entry_id].bitwise_entry = cur_bitwise_value;
+				eq->membership_classes[entry_id].bitwise_entry = cur_bitwise_value;
+			}
+			cur_purchase_id++;
+		}
+		cur_bitwise_value *= 2;
+	}
+
+	eq->exit_url_length = 0;
+	eq->exit_url_length2 = 0;
+
+	/*
+	Account Access Level Settings
+
+	ID	-	Free	Silver	Gold	-	Possible Setting
+	00	-	250		1000	-1		-	Max AA Restriction
+	01	-	-1		-1		-1		-	Max Level Restriction
+	02	-	2		4		-1		-	Max Char Slots per Account
+	03	-	1		1		-1		-	Max Spell Rank
+	04	-	4		6		-1		-	Main Inventory Size
+	05	-	100		500		-1		-	Max Platinum per level
+	06	-	0		0		1		-	Send Mail?
+	07	-	0		0		1		-	Send Parcels?
+	08	-	1		1		1		-	Voice Chat Unlimited?
+	09	-	2		5		-1		-	Mercenary Tiers
+	10	-	0		1		1		-	Create Guilds?
+	11	-	0		0		-1		-	Shared Bank Slots
+	12	-	9		14		-1		-	Max Journal Quests - 1
+	13	-	0		1		1		-	Neighborhood-House Allowed?
+	14	-	0		0		1		-	Prestige Enabled?
+	15	-	0		0		1		-	Broker System Unlimited?
+	16	-	0		1		1		-	Chat UnRestricted?
+	17	-	0		0		1		-	Progression Server Access?
+	18	-	0		0		1		-	Full Customer Support?
+	19	-	0		0		-1		-	0 for Silver
+	20	-	0		0		-1		-	0 for Silver
+	21	-	0		0		0		-	Unknown 0
+	*/
+	FINISH_ENCODE();
 }
 
 ENCODE(OP_ManaChange) {

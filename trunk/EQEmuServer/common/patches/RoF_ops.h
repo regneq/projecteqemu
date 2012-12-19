@@ -81,6 +81,7 @@ E(OP_WearChange)
 E(OP_ShopRequest)
 E(OP_CastSpell)
 E(OP_InterruptCast)
+E(OP_SendMembership)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
