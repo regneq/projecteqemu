@@ -127,7 +127,8 @@ typedef enum {
 	EQClientSoD,
 	EQClientUnderfoot,
 	EQClientHoT,
-	EQClientVoA
+	EQClientVoA,
+	EQClientRoF
 } EQClientVersion;
 
 enum {

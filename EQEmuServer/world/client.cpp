@@ -123,6 +123,10 @@ Client::Client(EQStreamInterface* ieqs)
 	{
 		ClientVersionBit = BIT_VoA;
 	}
+	else if(StreamDescription == "Patch RoF")
+	{
+		ClientVersionBit = BIT_RoF;
+	}
 }
 
 Client::~Client() {
