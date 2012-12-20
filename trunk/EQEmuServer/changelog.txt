@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/20/2012==
+Akkadius: Changed maxlevel default value and value for lootdrop_entries, this is a thing more affecting servers with higher than 127 so this doesn't affect many people.
+
+OPTIONAL SQL: utils/sql/svn/2300_optional_loot_changes.sql
+
 ==12/19/2012==
 Trevius: RoF - More work on RoF Structs and added the Client Version stuff.
 Trevius: RoF - Removed/Disabled most opcodes until we are further along and then I will add them all back in and populate the rest.
