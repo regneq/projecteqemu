@@ -150,6 +150,7 @@
 	void Handle_OP_GMEmoteZone(const EQApplicationPacket *app);
 	void Handle_OP_InspectRequest(const EQApplicationPacket *app);
 	void Handle_OP_InspectAnswer(const EQApplicationPacket *app);
+	void Handle_OP_InspectMessageUpdate(const EQApplicationPacket *app);
 	void Handle_OP_Medding(const EQApplicationPacket *app);
 	void Handle_OP_DeleteSpell(const EQApplicationPacket *app);
 	void Handle_OP_PetitionBug(const EQApplicationPacket *app);
