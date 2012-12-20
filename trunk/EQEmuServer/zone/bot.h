@@ -518,6 +518,9 @@ public:
 	
 	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath; }
 
+	inline InspectMessage_Struct& GetInspectMessage()			  { return _botInspectMessage; }
+	inline const InspectMessage_Struct& GetInspectMessage() const { return _botInspectMessage; }
+
 	// "SET" Class Methods
 	void SetBotSpellID(uint32 newSpellID);
 	virtual void SetSpawnStatus(bool spawnStatus) { _spawnStatus = spawnStatus; }
@@ -619,6 +622,7 @@ private:
 	uint32 _healRotationMemberPrev;
 	int8 _numHealRotationMembers;
 	std::map<uint32, BotAA> botAAs;
+	InspectMessage_Struct _botInspectMessage;
 
 	// Private "base stats" Members
 	sint16 _baseMR;

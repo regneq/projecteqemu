@@ -1659,3 +1659,73 @@ void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMax
 const EvolveInfo* SharedDatabase::GetEvolveInfo(uint32 loregroup) {
 	return NULL;	// nothing here for now... database and/or sharemem pulls later
 }
+
+void SharedDatabase::GetPlayerInspectMessage(char* playername, InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT inspectmessage FROM character_ WHERE name='%s'", playername), errbuf, &result)) {
+		safe_delete_array(query);
+
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			memcpy(message, row[0], sizeof(InspectMessage_Struct));
+		}
+
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetPlayerInspectMessage query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}
+
+void SharedDatabase::SetPlayerInspectMessage(char* playername, const InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET inspectmessage='%s' WHERE name='%s'", message->text, playername), errbuf)) {
+		cerr << "Error in SetPlayerInspectMessage query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
+}
+
+void SharedDatabase::GetBotInspectMessage(uint32 botid, InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT BotInspectMessage FROM bots WHERE BotID=%i", botid), errbuf, &result)) {
+		safe_delete_array(query);
+
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			memcpy(message, row[0], sizeof(InspectMessage_Struct));
+		}
+
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetBotInspectMessage query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}
+
+void SharedDatabase::SetBotInspectMessage(uint32 botid, const InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE bots SET BotInspectMessage='%s' WHERE BotID=%i", message->text, botid), errbuf)) {
+		cerr << "Error in SetBotInspectMessage query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
+}

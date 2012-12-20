@@ -2289,14 +2289,21 @@ struct Inspect_Struct {
 	int16 TargetID;
 	int16 PlayerID;
 };
+
 //OP_InspectAnswer - Size: 1860
-struct InspectResponse_Struct{
+struct InspectResponse_Struct {
 /*000*/	int32 TargetID;
 /*004*/	int32 playerid;
 /*008*/	char itemnames[23][64];
 /*1480*/int32 itemicons[23];
-/*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254
+/*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254 // Msg struct property is 256 (254 + '\0' is my guess) -U
 /*1860*/
+};
+
+//OP_InspectMessageUpdate - Size: 256 (SoF+ clients after self-inspect window is closed) -U
+struct InspectMessage_Struct {
+/*000*/ char text[256];
+/*256*/
 };
 
 //OP_SetDataRate

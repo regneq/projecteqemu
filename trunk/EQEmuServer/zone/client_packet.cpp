@@ -257,6 +257,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GMEmoteZone] = &Client::Handle_OP_GMEmoteZone;
 	ConnectedOpcodes[OP_InspectRequest] = &Client::Handle_OP_InspectRequest;
 	ConnectedOpcodes[OP_InspectAnswer] = &Client::Handle_OP_InspectAnswer;
+	ConnectedOpcodes[OP_InspectMessageUpdate] = &Client::Handle_OP_InspectMessageUpdate;
 	ConnectedOpcodes[OP_DeleteSpell] = &Client::Handle_OP_DeleteSpell;
 	ConnectedOpcodes[OP_PetitionBug] = &Client::Handle_OP_PetitionBug;
 	ConnectedOpcodes[OP_Bug] = &Client::Handle_OP_Bug;
@@ -6607,7 +6608,7 @@ void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app) {
 
 	if(tmp != 0 && tmp->IsClient()) {
 		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) { tmp->CastToClient()->QueuePacket(app); } // Send request to target
-		//Inspecting an SoF or later client which make the server handle the request
+		// Inspecting an SoF or later client will make the server handle the request
 		else { ProcessInspectRequest(tmp->CastToClient(), this); }
 	}
 
@@ -6651,9 +6652,27 @@ void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app) {
 	}
 	else { insr->itemicons[22] = 0xFFFFFFFF; }
 
+	InspectMessage_Struct* newmessage = (InspectMessage_Struct*) insr->text;
+	InspectMessage_Struct& playermessage = this->GetInspectMessage();
+	memcpy(&playermessage, newmessage, sizeof(InspectMessage_Struct));
+	database.SetPlayerInspectMessage(name, &playermessage);
+
 	if(tmp != 0 && tmp->IsClient()) { tmp->CastToClient()->QueuePacket(outapp); } // Send answer to requester
 
 	return;
+}
+
+void Client::Handle_OP_InspectMessageUpdate(const EQApplicationPacket *app) {
+
+	if (app->size != sizeof(InspectMessage_Struct)) {
+		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectMessageUpdate, size=%i, expected %i", app->size, sizeof(InspectMessage_Struct));
+		return;
+	}
+
+	InspectMessage_Struct* newmessage = (InspectMessage_Struct*) app->pBuffer;
+	InspectMessage_Struct& playermessage = this->GetInspectMessage();
+	memcpy(&playermessage, newmessage, sizeof(InspectMessage_Struct));
+	database.SetPlayerInspectMessage(name, &playermessage);
 }
 
 #if 0	// solar: i dont think there's an op for this now, and we check this
@@ -8528,6 +8547,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			return false;
 		}
 	}
+
+	// This should be a part of the PlayerProfile BLOB, but we don't want to modify that -U
+	// The player inspect message is retrieved from the db on load, then saved as new updates come in..no mods to Client::Save()
+	database.GetPlayerInspectMessage(m_pp.name, &m_inspect_message);
 
 	conn_state = PlayerProfileLoaded;
 
