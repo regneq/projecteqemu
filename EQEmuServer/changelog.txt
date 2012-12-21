@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/21/2012==
+Sorvani: Items with zero charges remaining and located in a bag will no longer get set to MaxCharges when looted from a corpse. Round 2.
+Sorvani: (Hateborne) copy paste issue in Mob::TryDivineSave corrected
+
 ==12/20/2012==
 Akkadius: Changed maxlevel default value and value for lootdrop_entries, this is a thing more affecting servers with higher than 127 so this doesn't affect many people.
 
