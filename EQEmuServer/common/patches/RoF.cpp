@@ -585,8 +585,8 @@ ENCODE(OP_SendCharInfo) {
 			eq2->beard = emu->beard[r];
 			eq2->char_enabled = 1;
 			eq2->tutorial = emu->tutorial[r];
-			eq2->unknown1 = 0;
 			eq2->drakkin_heritage = emu->drakkin_heritage[r];
+			eq2->unknown1 = 0;
 			eq2->gohome = emu->gohome[r];
 			eq2->LastLogin = 1212696584;
 			eq2->unknown2 = 0;

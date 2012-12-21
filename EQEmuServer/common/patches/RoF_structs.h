@@ -160,7 +160,7 @@ struct CharSelectEquip {
 };
 
 struct CharacterSelectEntry_Struct {
-/*0000*/	char name[1];		// Name null terminated
+/*0000*/	char name[1];			// Name null terminated
 /*0000*/	uint8 class_;
 /*0000*/	uint32 race;
 /*0000*/	uint8 level;
@@ -171,8 +171,8 @@ struct CharacterSelectEntry_Struct {
 /*0000*/	uint8 gender;
 /*0000*/	uint8 face;
 /*0000*/	CharSelectEquip	equip[9];
-/*0000*/	uint8 u15;	// Seen FF
-/*0000*/	uint8 u19;	// Seen FF
+/*0000*/	uint8 u15;				// Seen FF
+/*0000*/	uint8 u19;				// Seen FF
 /*0000*/	uint32 drakkin_tattoo;
 /*0000*/	uint32 drakkin_details;
 /*0000*/	uint32 deity;
@@ -184,13 +184,13 @@ struct CharacterSelectEntry_Struct {
 /*0000*/	uint8 eyecolor2;
 /*0000*/	uint8 hairstyle;
 /*0000*/	uint8 beard;
-/*0000*/	uint8 char_enabled;			// Seen 1
-/*0000*/	uint8 tutorial;				// Seen 1 for new char or 0 for existing
-/*0000*/	uint8 unknown1;				// Seen 0
-/*0000*/	uint32 drakkin_heritage;	// Guessed - May be 1 byte up
-/*0000*/	uint8 gohome;				// Seen 0 for new char and 1 for existing
+/*0000*/	uint8 char_enabled;
+/*0000*/	uint8 tutorial;			// Seen 1 for new char or 0 for existing
+/*0000*/	uint32 drakkin_heritage;
+/*0000*/	uint8 unknown1;			// Seen 0
+/*0000*/	uint8 gohome;			// Seen 0 for new char and 1 for existing
 /*0000*/	uint32 LastLogin;
-/*0000*/	uint8 unknown2;				// Seen 0
+/*0000*/	uint8 unknown2;			// Seen 0
 };
 
 /*

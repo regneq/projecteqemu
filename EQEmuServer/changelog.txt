@@ -7,6 +7,7 @@ Trevius: RoF - Fixed the Character Select Struct, which should prevent an error 
 Trevius: RoF - Character Creation is now functional.
 Trevius: RoF - Identified more fields in the Player Profile and added the correct checksum so the current packet should work (thanks Derision).
 Trevius: RoF - Added the opcode for max characters to allow up to 10 chars to be created per account instead of 0 (thanks Noport).
+Trevius: RoF - Fixed Drakkin Appearances at Character Select.  Appears that all facial/body features are now perfectly aligned.
 
 ==12/20/2012==
 Akkadius: Changed maxlevel default value and value for lootdrop_entries, this is a thing more affecting servers with higher than 127 so this doesn't affect many people.
