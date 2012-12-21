@@ -67,7 +67,6 @@ public:
 	 */
 	ItemInst* CreateItem(uint32 item_id, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	ItemInst* CreateItem(const Item_Struct* item, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
-	ItemInst* CreateCorpseItem(const Item_Struct* item, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	ItemInst* CreateBaseItem(const Item_Struct* item, sint16 charges=0);
 	
 	/*
