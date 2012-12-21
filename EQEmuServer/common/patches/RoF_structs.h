@@ -169,31 +169,28 @@ struct CharacterSelectEntry_Struct {
 /*0000*/	uint16 zone;
 /*0000*/	uint16 instance;
 /*0000*/	uint8 gender;
-/*0000*/	uint8 face;			// Guessed
+/*0000*/	uint8 face;
 /*0000*/	CharSelectEquip	equip[9];
-/*0000*/	uint8 u15;
-/*0000*/	uint8 u19;
-/*0000*/	uint32 unknown5;
-/*0000*/	uint32 unknown6;
+/*0000*/	uint8 u15;	// Seen FF
+/*0000*/	uint8 u19;	// Seen FF
+/*0000*/	uint32 drakkin_tattoo;
+/*0000*/	uint32 drakkin_details;
 /*0000*/	uint32 deity;
 /*0000*/	uint32 primary;
 /*0000*/	uint32 secondary;
-/*0000*/	uint8 haircolor;	// Guessed
-/*0000*/	uint8 beardcolor;	// Guessed
-/*0000*/	uint8 eyecolor1;	// Guessed
-/*0000*/	uint8 eyecolor2;	// Guessed
-/*0000*/	uint8 unknown3;
+/*0000*/	uint8 haircolor;
+/*0000*/	uint8 beardcolor;
+/*0000*/	uint8 eyecolor1;
+/*0000*/	uint8 eyecolor2;
 /*0000*/	uint8 hairstyle;
 /*0000*/	uint8 beard;
-/*0000*/	uint8 drakkin_heritage;
-/*0000*/	uint8 drakkin_tattoo;
-/*0000*/	uint8 drakkin_details;
-/*0000*/	uint8 unknown;
-/*0000*/	uint8 gohome;		// Guessed
-/*0000*/	uint8 tutorial;		// Guessed
-/*0000*/	uint8 char_enabled;	// Guessed
+/*0000*/	uint8 char_enabled;			// Seen 1
+/*0000*/	uint8 tutorial;				// Seen 1 for new char or 0 for existing
+/*0000*/	uint8 unknown1;				// Seen 0
+/*0000*/	uint32 drakkin_heritage;	// Guessed - May be 1 byte up
+/*0000*/	uint8 gohome;				// Seen 0 for new char and 1 for existing
 /*0000*/	uint32 LastLogin;
-/*0000*/	uint8 unknown2;
+/*0000*/	uint8 unknown2;				// Seen 0
 };
 
 /*
@@ -740,35 +737,34 @@ struct NameGeneration_Struct
 
 /*
 ** Character Creation struct
-** Length: 140 Bytes
-** OpCode: 0x009b
+** Length: 96 Bytes
 */
 struct CharCreate_Struct
 {
-/*0000*/	int32	class_;
-/*0004*/	int32	haircolor;
-/*0008*/	int32	beard;	
-/*0012*/	int32	beardcolor;
-/*0016*/	int32	gender;
-/*0020*/	int32	race;
-/*0024*/	int32	start_zone;
-/*0028*/	int32	hairstyle;
-/*0032*/	int32	deity;
-/*0036*/	int32	STR;
-/*0040*/	int32	STA;
-/*0044*/	int32	AGI;
-/*0048*/	int32	DEX;
-/*0052*/	int32	WIS;
-/*0056*/	int32	INT;
-/*0060*/	int32	CHA;
-/*0064*/	int32	face;		// Could be unknown0076
-/*0068*/	int32	eyecolor1;	//its possiable we could have these switched
-/*0073*/	int32	eyecolor2;	//since setting one sets the other we really can't check
-/*0076*/	int32	tutorial;
-/*0080*/	int32	drakkin_heritage;
-/*0084*/	int32	drakkin_tattoo;
-/*0088*/	int32	drakkin_details;
-/*0092*/	int32	unknown0092;
+/*0000*/	uint32	gender;
+/*0004*/	uint32	race;
+/*0008*/	uint32	class_;
+/*0012*/	uint32	deity;
+/*0016*/	uint32	start_zone;
+/*0020*/	uint32	haircolor;
+/*0024*/	uint32	beard;
+/*0028*/	uint32	beardcolor;
+/*0032*/	uint32	hairstyle;
+/*0036*/	uint32	face;
+/*0040*/	uint32	eyecolor1;
+/*0044*/	uint32	eyecolor2;
+/*0048*/	uint32	drakkin_heritage;
+/*0052*/	uint32	drakkin_tattoo;
+/*0056*/	uint32	drakkin_details;
+/*0060*/	uint32	STR;
+/*0064*/	uint32	STA;
+/*0068*/	uint32	AGI;
+/*0073*/	uint32	DEX;
+/*0076*/	uint32	WIS;
+/*0080*/	uint32	INT;
+/*0084*/	uint32	CHA;
+/*0088*/	uint32	tutorial;
+/*0092*/	uint32	unknown0092;
 /*0096*/
 };
 
@@ -964,90 +960,90 @@ union
 /*06092*/ uint32 timestamp2_count;				// Seen 100
 /*06096*/ uint32 timestamps2[100];				// Unknown Unix Timestamps - maybe Skill related?
 /*06496*/ uint32 spell_book_count;				// Seen 720
-/*06500*/ int32   spell_book[MAX_PP_SPELLBOOK];	// List of the Spells in spellbook 720 = 90 pages [2880 bytes]
+/*06500*/ uint32 spell_book[MAX_PP_SPELLBOOK];	// List of the Spells in spellbook 720 = 90 pages [2880 bytes]
 /*09380*/ uint32 mem_spell_count;				// Seen 16
-/*09384*/ sint32   mem_spells[MAX_PP_MEMSPELL];	// [16] List of spells memorized - First 12 are set or -1 and last 4 are 0s
+/*09384*/ sint32 mem_spells[MAX_PP_MEMSPELL];	// [16] List of spells memorized - First 12 are set or -1 and last 4 are 0s
 /*09448*/ uint32 unknown16_count;				// Seen 13
 /*09452*/ uint32 unknown_rof16[13];				// Possibly spell or buff related
-/*00000*/ uint8 unknown_rof17;					// 
-/*00000*/ uint32 buff_count;					// Seen 42
-/*00000*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [42] 3360 bytes - Buffs currently on the player (42 Max) - (Each Size 80)
-/*00000*/ //uint32 unknown_rof18;			// 
-/*00000*/ uint32  platinum;				// Platinum Pieces on player
-/*00000*/ uint32  gold;					// Gold Pieces on player
-/*00000*/ uint32  silver;				// Silver Pieces on player
-/*00000*/ uint32  copper;				// Copper Pieces on player
-/*00000*/ uint32  platinum_cursor;		// Platinum Pieces on cursor
-/*00000*/ uint32  gold_cursor;			// Gold Pieces on cursor
-/*00000*/ uint32  silver_cursor;		// Silver Pieces on cursor
-/*00000*/ uint32  copper_cursor;		// Copper Pieces on cursor
-/*00000*/ uint32  intoxication;			// Alcohol level (in ticks till sober?) - Position Guessed
-/*00000*/ uint32  toxicity;				// Potion Toxicity (15=too toxic, each potion adds 3) - Position Guessed
-/*00000*/ uint32 unknown_rof19;			// 
-/*00000*/ uint32  thirst_level;			// Drink (ticks till next drink) - Position Guessed
-/*00000*/ uint32  hunger_level;			// Food (ticks till next eat) - Position Guessed
-/*00000*/ uint32  aapoints_spent;		// Number of spent AA points
-/*00000*/ uint32 aapoint_count;	// Seen 5 - Unsure what this is exactly
-/*00000*/ uint32  aapoints_assigned;	// Number of Assigned AA points - Seen 206 (total of the 4 fields below)
-/*00000*/ uint32 aa_spent_general;	// Seen 63
-/*00000*/ uint32 aa_spent_archetype;	// Seen 40
-/*00000*/ uint32 aa_spent_class;		// Seen 103
-/*00000*/ uint32 aa_spent_special;	// Seen 0
-/*00000*/ uint32  aapoints;	// Unspent AA points - Seen 1
-/*00000*/ uint16 unknown_rof20;		// 
-/*00000*/ uint32 bandolier_count;		// Seen 20
-/*00000*/ Bandolier_Struct bandoliers[MAX_PLAYER_BANDOLIER]; // [20] 744 bytes (Variable Name Sizes) - bandolier contents
-/*00000*/ uint32 potionbelt_count;		// Seen 5
-/*00000*/ PotionBelt_Struct  potionbelt;	// [5] 45 bytes potion belt - (Variable Name Sizes)
-/*00000*/ sint32 unknown_rof21;			// Seen -1
-/*00000*/ uint32 item_hp_total;			// Guessed
-/*00000*/ uint32 item_endurance_total;	// Guessed
-/*00000*/ uint32 item_mana_total;		// Guessed - Only seen on casters so far - Matches above field if caster
-/*00000*/ uint32 unknown_rof22[12];		// Same for all seen PPs:
+/*09504*/ uint8 unknown_rof17;					// Seen 0 or 8
+/*09505*/ uint32 buff_count;					// Seen 42
+/*09509*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [42] 3360 bytes - Buffs currently on the player (42 Max) - (Each Size 80)
+/*12869*/ uint32 platinum;				// Platinum Pieces on player
+/*12873*/ uint32 gold;					// Gold Pieces on player
+/*12877*/ uint32 silver;				// Silver Pieces on player
+/*12881*/ uint32 copper;				// Copper Pieces on player
+/*12885*/ uint32 platinum_cursor;		// Platinum Pieces on cursor
+/*12889*/ uint32 gold_cursor;			// Gold Pieces on cursor
+/*12893*/ uint32 silver_cursor;			// Silver Pieces on cursor
+/*12897*/ uint32 copper_cursor;			// Copper Pieces on cursor
+/*12901*/ uint32 intoxication;			// Alcohol level (in ticks till sober?) - Position Guessed
+/*12905*/ uint32 toxicity;				// Potion Toxicity (15=too toxic, each potion adds 3) - Position Guessed
+/*12909*/ uint32 unknown_rof19;			// 
+/*12913*/ uint32 thirst_level;			// Drink (ticks till next drink) - Position Guessed
+/*12917*/ uint32 hunger_level;			// Food (ticks till next eat) - Position Guessed
+/*12921*/ uint32 aapoints_spent;		// Number of spent AA points
+/*12925*/ uint32 aapoint_count;			// Seen 5 - Unsure what this is exactly
+/*12929*/ uint32 aapoints_assigned;		// Number of Assigned AA points - Seen 206 (total of the 4 fields below)
+/*12933*/ uint32 aa_spent_general;		// Seen 63
+/*12937*/ uint32 aa_spent_archetype;	// Seen 40
+/*12941*/ uint32 aa_spent_class;		// Seen 103
+/*12945*/ uint32 aa_spent_special;		// Seen 0
+/*12949*/ uint32 aapoints;				// Unspent AA points - Seen 1
+/*12953*/ uint16 unknown_rof20;			// 
+/*12955*/ uint32 bandolier_count;		// Seen 20
+/*12959*/ Bandolier_Struct bandoliers[MAX_PLAYER_BANDOLIER]; // [20] 740 bytes (Variable Name Sizes) - bandolier contents
+/*13699*/ uint32 potionbelt_count;		// Seen 5
+/*13703*/ PotionBelt_Struct potionbelt;	// [5] 45 bytes potion belt - (Variable Name Sizes)
+/*13748*/ sint32 unknown_rof21;			// Seen -1
+/*13752*/ sint32 hp_total;				// Guessed - Seen 20 on level 1 new mage
+/*13756*/ sint32 endurance_total;		// Guessed - Seen 20 on level 1 new mage
+/*13760*/ sint32 mana_total;			// Guessed - Only seen on casters so far - Matches above field if caster
+/*13764*/ uint32 unknown_rof22[12];		// Same for all seen PPs - 48 bytes:
 /*
 19 00 00 00 19 00 00 00 19 00 00 00 0f 00 00 00 
 0f 00 00 00 0f 00 00 00 0f 00 00 00 1f 85 eb 3e 
 33 33 33 3f 08 00 00 00 02 00 00 00 01 00 00 00
 */
-/*00000*/ uint32 expansion_count;		// Total number of owned expansions? - Seen 19 and 20
-/*00000*/ uint32 unknown_rof23[4];		// 
-/*00000*/ uint32 unknown_rof24[2];		// Seen random numbers from 3800 to 113858
-/*00000*/ uint32 unknown_rof25;			// Seen 106
+/*13812*/ uint32 unknown_rof23;			// Seen 5, 19, and 20 in examples
+/*13816*/ uint32 unknown_rof24[4];		// 
+/*13832*/ uint32 unknown_rof25[2];		// Seen random numbers from 0 to 2165037
+/*13840*/ uint32 unknown_rof26;			// Seen 106
 //END SUB-STRUCT used for shrouding. 
-/*00000*/ uint32 name_str_len;			// Seen 64
-/*00000*/ char    name[64];				// Name of player - 19960 for Live 1180 difference
-/*00000*/ uint32 last_name_str_len;		// Seen 32
-/*00000*/ char    last_name[32];		// Last name of player
-/*00000*/ uint32  birthday;				// character birthday
-/*00000*/ uint32  account_startdate;	// Date the Account was started
-/*00000*/ uint32  lastlogin;			// character last save time
-/*00000*/ uint32  timePlayedMin;		// time character played
-/*00000*/ uint32  timeentitledonaccount;
-/*00000*/ uint32  expansions;			// Bitmask for expansions ff 7f 00 00 - SoD
-/*00000*/ uint32 language_count;		// Seen 32
-/*00000*/ uint8 languages[MAX_PP_LANGUAGE];	// [32] 100 bytes List of languages
-/*00000*/ uint16  zone_id;				// see zones.h
-/*00000*/ uint16  zoneInstance;			// Instance id
-/*00000*/ float     y;                  // Players y position (NOT positive about this switch)
-/*00000*/ float     x;                  // Players x position
-/*00000*/ float     z;                  // Players z position
-/*00000*/ float     heading;            // Players heading
-/*00000*/ uint32 unknown_rof27;			// Seen 100
-/*00000*/ sint32 unknown_rof28;			// Seen -1
-/*00000*/ uint8 unknown_rof29[10];		// 
-/*00000*/ uint32 unknown_rof30;			// Random large number?
-/*00000*/ uint32 unknown_rof31;			// 
-/*00000*/ uint32 unknown32_count;		// Seen 5 
-/*00000*/ uint8 unknown_rof32[29];		// 
-/*00000*/ uint32 unknown33_count;		// Seen 32 for melee/hybrid and 21 for casters?
-/*00000*/ uint32 unknown_rof33[64];		// Struct contains 2 ints, so double 32 count (Variable Sized)
+/*13844*/ uint32 name_str_len;			// Seen 64
+/*13848*/ char   name[64];				// Name of player - 19960 for Live 1180 difference
+/*13912*/ uint32 last_name_str_len;		// Seen 32
+/*13916*/ char   last_name[32];			// Last name of player
+/*13948*/ uint32 birthday;				// character birthday
+/*13952*/ uint32 account_startdate;		// Date the Account was started
+/*13956*/ uint32 lastlogin;				// character last save time
+/*13960*/ uint32 timePlayedMin;			// time character played
+/*13964*/ uint32 timeentitledonaccount;
+/*13968*/ uint32 expansions;			// Bitmask for expansions ff 7f 00 00 - SoD
+/*13972*/ uint32 language_count;		// Seen 32
+/*13976*/ uint8 languages[MAX_PP_LANGUAGE];	// [32] 32 bytes - List of languages
+/*14008*/ uint16 zone_id;				// see zones.h
+/*14010*/ uint16 zoneInstance;			// Instance id
+/*14012*/ float  y;                 	// Players y position (NOT positive about this switch)
+/*14016*/ float  x;                 	// Players x position
+/*14020*/ float  z;                 	// Players z position
+/*14024*/ float  heading;           	// Players heading
+/*14028*/ uint32 air_remaining;			// Air supply (seconds)
+/*14032*/ sint32 unknown_rof28;			// Seen -1
+/*14036*/ uint8 unknown_rof29[10];		// 
+/*14046*/ uint32 unknown_rof30;			// Random large number or 0
+/*14050*/ uint32 unknown_rof31;			// 
+/*14054*/ uint32 unknown32_count;		// Seen 5 
+/*14058*/ uint8 unknown_rof32[29];		// 
+/*14087*/ uint32 unknown33_count;		// Seen 32 for melee/hybrid and 21 for druid, 34 for mage
+/*14091*/ uint32 unknown_rof33[64];		// Struct contains 2 ints, so double 32 count (Variable Sized)
+// Position Varies after this point - Really starts varying at Bandolier names, but if no names set it starts here
 /*00000*/ sint32 unknown_rof34;			// Seen -1
 /*00000*/ sint32 unknown_rof35;			// Seen -1
 /*00000*/ uint8 unknown_rof36[18];		// 
 /*00000*/ uint32 unknown37_count;		// Seen 5
-/*00000*/ sint32 unknown_rof37[10];		// Seen -1 or 0 - Struct contains 2 ints
+/*00000*/ sint32 unknown_rof37[10];		// Alternates -1 and 0 - Struct contains 2 ints
 /*00000*/ uint32 unknown38_count;		// Seen 10
-/*00000*/ sint32 unknown_rof38[20];		// Seen -1 or 0 - Struct contains 2 ints
+/*00000*/ sint32 unknown_rof38[20];		// Alternates -1 and 0 - Struct contains 2 ints
 /*00000*/ uint8 unknown_rof39[137];		// 
 /*00000*/ float unknown_rof40;			// Seen 1.0
 /*00000*/ uint32 unknown_rof41[9];		// 
@@ -1067,13 +1063,23 @@ union
 /*00000*/ uint32 unknown_rof48[13];		// Seen all 0s or some mix of ints and float?
 /*00000*/ uint32 unknown_rof49;			// Seen 64
 /*00000*/ uint8 unknown_rof50[256];		// Seen mostly 0s, but one example had a 2 in the middle
-/*00000*/ uint32 unknown_rof51;			// Seen 100
+/*00000*/ uint32 unknown_rof51;			// Seen 100 or 0
 /*00000*/ uint8 unknown_rof52[82];		// 
 /*00000*/ uint32 unknown_rof53;			// Seen 50
-// 121 bytes in the next field?
 
-uint8 unknown_rof54[2391];				// Spacer to get the packet about the right size
+uint8 unknown_rof54[1325];	// Unknown Section
 
+// Bottom of Struct:
+/*00000*/ uint8  groupAutoconsent;		// 0=off, 1=on
+/*00000*/ uint8  raidAutoconsent;		// 0=off, 1=on
+/*00000*/ uint8  guildAutoconsent;		// 0=off, 1=on
+/*00000*/ uint8 unknown_rof55;			// Seen 1
+/*00000*/ uint32 level3;				// SoF looks at the level here to determine how many leadership AA you can bank.
+/*00000*/ uint32 showhelm;				// 0=no, 1=yes
+/*00000*/ uint32 RestTimer;
+/*00000*/ uint8 unknown_rof56;
+/*00000*/ uint32 unknown_rof57;			// Seen 49
+/*00000*/ uint8  unknown_rof58[1045];	// Seen all 0s
 
 /*
 ///////////////////// - Haven't identified the below fields in the PP yet
@@ -1099,8 +1105,8 @@ uint32  autosplit;			// 0 = off, 1 = on
 
 char      groupMembers[MAX_GROUP_MEMBERS][64];// 384 all the members in group, including self
 char      groupLeader[64];	// Leader of the group ?
-
 uint32  entityid;
+
 uint32  leadAAActive;			// 0 = leader AA off, 1 = leader AA on
 sint32  ldon_points_guk;		// Earned GUK points
 sint32  ldon_points_mir;		// Earned MIR points
@@ -1118,7 +1124,7 @@ double raid_leadership_exp;	// Current raid lead AA exp points
 uint32  group_leadership_points; // Unspent group lead AA points
 uint32  raid_leadership_points;  // Unspent raid lead AA points
 LeadershipAA_Struct leader_abilities; // [128]Leader AA ranks 19332
-uint32  air_remaining;		// Air supply (seconds)
+
 uint32  PVPKills;
 uint32  PVPDeaths;
 uint32  PVPCurrentPoints;
@@ -1135,16 +1141,9 @@ uint32 currentRadCrystals;	// Current count of radiant crystals
 uint32 careerRadCrystals;		// Total count of radiant crystals ever
 uint32 currentEbonCrystals;	// Current count of ebon crystals
 uint32 careerEbonCrystals;	// Total count of ebon crystals ever
-uint8  groupAutoconsent;		// 0=off, 1=on
-uint8  raidAutoconsent;		// 0=off, 1=on
-uint8  guildAutoconsent;		// 0=off, 1=on
-uint32 level3;				// SoF looks at the level here to determine how many leadership AA you can bank.
-uint32 showhelm;				// 0=no, 1=yes
-uint32 RestTimer;
 */
 
 };
-
 
 /*
 ** Client Target Struct

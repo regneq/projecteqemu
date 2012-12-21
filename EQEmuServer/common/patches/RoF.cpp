@@ -572,8 +572,8 @@ ENCODE(OP_SendCharInfo) {
 			}
 			eq2->u15 = 0xff;
 			eq2->u19 = 0xFF;
-			eq2->unknown5 = 0;
-			eq2->unknown6 = 0;
+			eq2->drakkin_tattoo = emu->drakkin_tattoo[r];
+			eq2->drakkin_details = emu->drakkin_details[r];
 			eq2->deity = emu->deity[r];
 			eq2->primary = emu->primary[r];
 			eq2->secondary = emu->secondary[r];
@@ -581,16 +581,13 @@ ENCODE(OP_SendCharInfo) {
 			eq2->beardcolor = emu->beardcolor[r];
 			eq2->eyecolor1 = emu->eyecolor1[r];
 			eq2->eyecolor2 = emu->eyecolor2[r];
-			eq2->unknown3 = 0;
 			eq2->hairstyle = emu->hairstyle[r];
 			eq2->beard = emu->beard[r];
-			eq2->drakkin_heritage = emu->drakkin_heritage[r];
-			eq2->drakkin_tattoo = emu->drakkin_tattoo[r];
-			eq2->drakkin_details = emu->drakkin_details[r];
-			eq2->unknown = 0;
-			eq2->gohome = emu->gohome[r];
-			eq2->tutorial = emu->tutorial[r]; // was u15
 			eq2->char_enabled = 1;
+			eq2->tutorial = emu->tutorial[r];
+			eq2->unknown1 = 0;
+			eq2->drakkin_heritage = emu->drakkin_heritage[r];
+			eq2->gohome = emu->gohome[r];
 			eq2->LastLogin = 1212696584;
 			eq2->unknown2 = 0;
 		}
@@ -698,7 +695,11 @@ ENCODE(OP_PlayerProfile) {
 
 	uint32 r;
 	
-	//	OUT(checksum);
+	//eq->available_slots=0xffffffff;
+	//memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
+	//memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
+	
+//	OUT(checksum);
 	eq->checksum_size = (sizeof(structs::PlayerProfile_Struct) - 9);	// Was 18404
 	OUT(gender);
 	OUT(race);
@@ -811,11 +812,10 @@ ENCODE(OP_PlayerProfile) {
 	OUT(silver_cursor);
 	OUT(copper_cursor);
 	
-	//OUT(toxicity);
-	//OUT(thirst_level);
-	//OUT(hunger_level);
+	OUT(thirst_level);
+	OUT(hunger_level);
 	
-	//OUT(endurance);
+	
 	OUT(aapoints_spent);
 	eq->aapoint_count = 5;
 	eq->aapoints_assigned = emu->aapoints_spent + emu->aapoints;
@@ -840,7 +840,7 @@ ENCODE(OP_PlayerProfile) {
 		OUT_str(potionbelt.items[r].item_name);
 	}
 
-	eq->expansion_count = 20;
+	//eq->unknown_rof23 = 20;
 	eq->name_str_len = 64;
 	OUT_str(name);
 	eq->last_name_str_len = 32;
@@ -861,7 +861,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(x);
 	OUT(z);
 	OUT(heading);
-	eq->unknown_rof27 = 100;
+	OUT(air_remaining);
 	eq->unknown_rof28 = -1;
 	
 	eq->unknown32_count = 5;
@@ -877,11 +877,17 @@ ENCODE(OP_PlayerProfile) {
 	eq->unknown_rof51 = 100;
 	eq->unknown_rof53 = 50;
 	
+	OUT(groupAutoconsent);
+	OUT(raidAutoconsent);
+	OUT(guildAutoconsent);
+	eq->level3 = emu->level;
+	eq->showhelm = emu->showhelm;
+	OUT(RestTimer);
+	eq->unknown_rof57 = 49;
+	
 	/*
-	// The fields below have not yet been identified in the current PP
-	//eq->available_slots=0xffffffff;
-	//memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
-	//memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
+	OUT(toxicity);
+	OUT(endurance);
 	OUT(pvp);
 	OUT(anon);
 	OUT(gm);
@@ -921,7 +927,6 @@ ENCODE(OP_PlayerProfile) {
 	OUT(group_leadership_points);
 	OUT(raid_leadership_points);
 	OUT_array(leader_abilities.ranks, structs::MAX_LEADERSHIP_AA_ARRAY);
-	OUT(air_remaining);
 	OUT(PVPKills);
 	OUT(PVPDeaths);
 	OUT(PVPCurrentPoints);
@@ -934,17 +939,10 @@ ENCODE(OP_PlayerProfile) {
 	OUT(careerRadCrystals);
 	OUT(currentEbonCrystals);
 	OUT(careerEbonCrystals);
-	OUT(groupAutoconsent);
-	OUT(raidAutoconsent);
-	OUT(guildAutoconsent);
-	eq->level3 = emu->level;
-	eq->showhelm = emu->showhelm;
-	OUT(RestTimer);
 	*/
-	
+
 	//set the checksum...
-	//CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
-	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4, 9);
+	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-1, 8);
 	_hex(NET__ERROR, eq, sizeof(structs::PlayerProfile_Struct));
 	FINISH_ENCODE();
 }
@@ -3325,20 +3323,27 @@ DECODE(OP_ClientUpdate) {
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
-	IN(class_);
-	IN(beardcolor);
-	IN(beard);
-	IN(hairstyle);
+	
 	IN(gender);
 	IN(race);
+	IN(class_);
+	IN(deity);
 
 	if(RuleB(World, EnableTutorialButton) && eq->tutorial)
 		emu->start_zone = RuleI(World, TutorialZoneID);
 	else
 		emu->start_zone = eq->start_zone;
-		
+	
 	IN(haircolor);
-	IN(deity);
+	IN(beard);
+	IN(beardcolor);
+	IN(hairstyle);
+	IN(face);
+	IN(eyecolor1);
+	IN(eyecolor2);
+	IN(drakkin_heritage);
+	IN(drakkin_tattoo);
+	IN(drakkin_details);
 	IN(STR);
 	IN(STA);
 	IN(AGI);
@@ -3346,12 +3351,7 @@ DECODE(OP_CharacterCreate) {
 	IN(WIS);
 	IN(INT);
 	IN(CHA);
-	IN(face);
-	IN(eyecolor1);
-	IN(eyecolor2);
-	IN(drakkin_heritage);
-	IN(drakkin_tattoo);
-	IN(drakkin_details);
+	//IN(tutorial);
 
 	FINISH_DIRECT_DECODE();
 }
