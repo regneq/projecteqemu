@@ -4976,7 +4976,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 						if(other_item) {
 							trade_count++;
 
-							if(other_item->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+							if(other_item->IsType(ItemClassContainer)) {
 								for(uint8 bagslot_id=0; bagslot_id<other_item->GetItem()->BagSlots; bagslot_id++) {
 									ItemInst* other_bagitem = other_item->GetItem(bagslot_id);
 
@@ -4989,7 +4989,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 						if(this_item) {
 							trade_count++;
 						
-							if(this_item->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+							if(this_item->IsType(ItemClassContainer)) {
 								for(uint8 bagslot_id=0; bagslot_id<this_item->GetItem()->BagSlots; bagslot_id++) {
 									ItemInst* this_bagitem = this_item->GetItem(bagslot_id);
 

@@ -389,7 +389,7 @@ void Client::FinishTrade(Mob* tradingWith, ServerPacket* qspack, bool finalizer)
 					if(finalizer) { qsaudit->char2_count++; }
 					else		  { qsaudit->char1_count++; }
 					
-					if(inst->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+					if(inst->IsType(ItemClassContainer)) {
 						// Slot ID's are generated based on how the db saves bag items...
 						// At this point, items are stored in the container instance -U
 						for(uint8 j = 0; j < inst->GetItem()->BagSlots; j++) {
@@ -436,7 +436,7 @@ void Client::FinishTrade(Mob* tradingWith, ServerPacket* qspack, bool finalizer)
 						if(QSPTL) {
 							qsaudit->trade_items[parent_offset].to_slot = slot_id;
 							
-							if(inst->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+							if(inst->IsType(ItemClassContainer)) {
 								for(uint8 bagslot_idx = 0; bagslot_idx < inst->GetItem()->BagSlots; bagslot_idx++) {
 									const ItemInst* bag_inst = inst->GetItem(bagslot_idx);
 
@@ -456,7 +456,7 @@ void Client::FinishTrade(Mob* tradingWith, ServerPacket* qspack, bool finalizer)
 							qsaudit->trade_items[parent_offset].to_id	= this->character_id;
 							qsaudit->trade_items[parent_offset].to_slot = SLOT_CURSOR;
 							
-							if(inst->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+							if(inst->IsType(ItemClassContainer)) {
 								for(uint8 bagslot_idx = 0; bagslot_idx < inst->GetItem()->BagSlots; bagslot_idx++) {
 									const ItemInst* bag_inst = inst->GetItem(bagslot_idx);
 
@@ -480,7 +480,7 @@ void Client::FinishTrade(Mob* tradingWith, ServerPacket* qspack, bool finalizer)
 						qsaudit->trade_items[parent_offset].to_id	= this->character_id;
 						qsaudit->trade_items[parent_offset].to_slot = SLOT_CURSOR;
 							
-						if(inst->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+						if(inst->IsType(ItemClassContainer)) {
 							for(uint8 bagslot_idx = 0; bagslot_idx < inst->GetItem()->BagSlots; bagslot_idx++) {
 								const ItemInst* bag_inst = inst->GetItem(bagslot_idx);
 
