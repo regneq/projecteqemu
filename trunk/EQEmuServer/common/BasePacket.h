@@ -58,6 +58,9 @@ public:
 
 	void WriteUInt8(uint8 value) { *(uint8 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint8); }
 	void WriteUInt32(uint32 value) { *(uint32 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint32); }
+	void WriteUInt16(uint32 value) { *(uint16 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint16); }
+	void WriteSInt32(sint32 value) { *(sint32 *)(pBuffer + _wpos) = value; _wpos += sizeof(sint32); }
+	void WriteFloat(float value) { *(float *)(pBuffer + _wpos) = value; _wpos += sizeof(float); }
 	void WriteString(const char * str) { uint32 len = strlen(str) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
 
 	uint8 ReadUInt8() { uint8 value = *(uint8 *)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }

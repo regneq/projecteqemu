@@ -273,6 +273,9 @@ sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 struct Spawn_Struct_Bitfields
 {
 
+	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
+	unsigned   unknown:30;
+	/*
 	unsigned   ispet:1;		// Could be 'is summoned pet' rather than just is pet.
 	unsigned   afk:1;		// 0=no, 1=afk
 	unsigned   sneak:1;
@@ -294,24 +297,44 @@ struct Spawn_Struct_Bitfields
 	unsigned   showname:1;			// 1	Show first name
 	unsigned   trader:1;			// 0	Unk in RoF
 	unsigned   buyer:1;			// 0	Unk in RoF
+	*/
 };
 
 struct Spawn_Struct_Position
 {
-/*0000*/ signed   padding0000:12; // ***Placeholder
+/*000*/	signed	padding0000:12;
+	signed	y:19;
+	signed	padding0001:1;
+
+/*001*/	signed	padding0002:32;
+
+/*002*/	signed	padding0003:13;
+	signed	z:19;
+
+/*003*/	signed	x:19;
+	signed	padding0004:13;
+
+/*004*/	signed	heading:12;
+	signed	padding0005:20;
+};
+
+/*	
+struct Spawn_Struct_Position
+{
+	signed   padding0000:12; // ***Placeholder
          signed   deltaX:13;      // change in x
          signed   padding0005:7;  // ***Placeholder
-/*0000*/ signed   deltaHeading:10;// change in heading
+ signed   deltaHeading:10;// change in heading
          signed   deltaY:13;      // change in y
          signed   padding0006:9;  // ***Placeholder
-/*0000*/ signed   y:19;           // y coord
+ signed   y:19;           // y coord
          signed   animation:13;   // animation
-/*0000*/ unsigned heading:12;     // heading
+ unsigned heading:12;     // heading
          signed   x:19;           // x coord
          signed   padding0014:1;  // ***Placeholder
-/*0000*/ signed   z:19;           // z coord
+ signed   z:19;           // z coord
          signed   deltaZ:13;      // change in z
-};
+}; */
 
 struct Spawn_Struct
 {

@@ -689,262 +689,721 @@ ENCODE(OP_LeadershipExpUpdate) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_PlayerProfile) {
-	SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
-	_log(NET__ERROR, "Player Profile is %i bytes", sizeof(structs::PlayerProfile_Struct));	
 
-	uint32 r;
+ENCODE(OP_PlayerProfile)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+	PlayerProfile_Struct *emu = (PlayerProfile_Struct *) __emu_buffer;
+
+	uint32 PacketSize = 40000;	// Calculate this later
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayerProfile, PacketSize);
+
+	outapp->WriteUInt32(0);		// Checksum, we will update this later
+	outapp->WriteUInt32(0);		// Checksum size, we will update this later
+
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+
+
+	outapp->WriteUInt8(emu->gender);	// Gender
+	outapp->WriteUInt32(emu->race);		// Race
+	outapp->WriteUInt8(emu->class_);	// Class
+	outapp->WriteUInt8(emu->level);		// Level
+	outapp->WriteUInt8(emu->level);		// Level1
+
 	
-	//eq->available_slots=0xffffffff;
-	//memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
-	//memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
+	outapp->WriteUInt32(5);			// Bind count
 	
-//	OUT(checksum);
-	eq->checksum_size = (sizeof(structs::PlayerProfile_Struct) - 9);	// Was 18404
-	OUT(gender);
-	OUT(race);
-	OUT(class_);
-	OUT(level);
-	eq->level1 = emu->level;
-	eq->bind_count = 5;
-	for(r = 0; r < 5; r++) {
-		OUT(binds[r].zoneId);
-		OUT(binds[r].x);
-		OUT(binds[r].y);
-		OUT(binds[r].z);
-		OUT(binds[r].heading);
-	}
-	OUT(deity);
-	eq->unknown4_count = 10;
-	eq->equip_count = 22;
-	for(r = 0; r < 9; r++) {
-		if (r > 0)
-		{
-			eq->equipment[r].equip0 = emu->item_material[r];
-			eq->equipment[r].equip1 = 0;
-			eq->equipment[r].itemId = 0;
-		}
-	}
-	eq->equip2_count = 9;
-	//OUT(intoxication);
-	//OUT_array(spellSlotRefresh, structs::MAX_PP_MEMSPELL);
-	//OUT(abilitySlotRefresh);
-	eq->tint_count = 9;
-	for(r = 0; r < 7; r++) {
-		OUT(item_tint[r].color);
-	}
-	eq->tint_count2 = 9;
-	for(r = 0; r < 7; r++) {
-		eq->item_tint2[r].color = emu->item_tint[r].color;
-	}
-	
-	OUT(haircolor);
-	OUT(beardcolor);
-	OUT(eyecolor1);
-	OUT(eyecolor2);
-	OUT(hairstyle);
-	OUT(beard);
-	OUT(face);
-	eq->unknown_rof8 = -1;
-	eq->height = 5.0;
-	eq->unknown_rof11 = 3.0;
-	eq->unknown_rof12 = 2.5;
-	eq->unknown_rof13 = 5.5;
-	OUT(points);
-	OUT(mana);
-	OUT(cur_hp);
-	OUT(STR);
-	OUT(STA);
-	OUT(CHA);
-	OUT(AGI);
-	OUT(INT);
-	OUT(DEX);
-	OUT(WIS);
-	
-	//NOTE: new client supports 300 AAs, our internal rep/PP
-	//only supports 240..
-	eq->aa_count = 300;
-	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
-		OUT(aa_array[r].AA);
-		OUT(aa_array[r].value);
-	}
-	eq->skill_count = 100;
-	OUT_array(skills, structs::MAX_PP_SKILL);
-	eq->unknown15_count = 25;
-	eq->discipline_count = 200;
-	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
-		OUT(disciplines.values[r]);
-	}
-	eq->timestamp_count = 20;
-	eq->recast_count = structs::MAX_RECAST_TYPES;
-	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
-	eq->timestamp2_count = 100;
-	eq->spell_book_count = structs::MAX_PP_SPELLBOOK;
-	OUT_array(spell_book, structs::MAX_PP_SPELLBOOK);
-	eq->mem_spell_count = structs::MAX_PP_MEMSPELL;
-	OUT_array(mem_spells, structs::MAX_PP_MEMSPELL);
-	eq->unknown16_count = 13;
-	eq->buff_count = structs::BUFF_COUNT;
-	//PS this needs to be figured out more; but it was 'good enough'
-	for(r = 0; r < structs::BUFF_COUNT; r++) 
+	for(int r = 0; r < 5; r++)
 	{
+		outapp->WriteUInt32(emu->binds[r].zoneId);
+		outapp->WriteFloat(emu->binds[r].x);
+		outapp->WriteFloat(emu->binds[r].y);
+		outapp->WriteFloat(emu->binds[r].z);
+		outapp->WriteFloat(emu->binds[r].heading);
+	}
+
+	outapp->WriteUInt32(emu->deity);
+	outapp->WriteUInt32(emu->intoxication);
+
+	outapp->WriteUInt32(10);		// Unknown count
+	
+	for(int r = 0; r < 10; r++)
+	{
+		outapp->WriteUInt32(0);		// Unknown
+	}
+
+	outapp->WriteUInt32(22);		// Equipment count
+
+	for(int r = 0; r < 9; r++)
+	{
+		outapp->WriteUInt32(emu->item_material[r]);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	// Write zeroes for the next 13 equipment slots
+
+	for(int r = 0; r < 13; r++)
+	{
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(9);		// Equipment2 count
+
+	for(int r = 0; r < 9; r++)
+	{
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(9);		// Tint Count
+
+	for(int r = 0; r < 7; r++)
+	{
+		outapp->WriteUInt32(emu->item_tint[r].color);
+	}
+	// Write zeroes for extra two tint values
+	outapp->WriteUInt32(0);
+	outapp->WriteUInt32(0);
+
+	outapp->WriteUInt32(9);		// Tint2 Count
+
+	for(int r = 0; r < 7; r++)
+	{
+		outapp->WriteUInt32(emu->item_tint[r].color);
+	}
+	// Write zeroes for extra two tint values
+	outapp->WriteUInt32(0);
+	outapp->WriteUInt32(0);
+
+
+	outapp->WriteUInt8(emu->haircolor);
+	outapp->WriteUInt8(emu->beardcolor);
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt8(emu->eyecolor1);
+	outapp->WriteUInt8(emu->eyecolor2);
+	outapp->WriteUInt8(emu->hairstyle);
+	outapp->WriteUInt8(emu->beard);
+	outapp->WriteUInt8(emu->face);
+
+
+	outapp->WriteUInt32(emu->drakkin_heritage);
+	outapp->WriteUInt32(emu->drakkin_tattoo);
+	outapp->WriteUInt32(emu->drakkin_details);
+
+
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+
+	outapp->WriteFloat(5.0f);		// Height ?
+
+	outapp->WriteFloat(3.0f);			// Unknown
+	outapp->WriteFloat(2.5f);			// Unknown
+	outapp->WriteFloat(5.5f);			// Unknown
+
+	outapp->WriteUInt32(0);			// Primary ?
+	outapp->WriteUInt32(0);			// Secondary ?
+
+	outapp->WriteUInt32(emu->points);	// Unspent skill points
+	outapp->WriteUInt32(emu->mana);
+	outapp->WriteUInt32(emu->cur_hp);
+
+	outapp->WriteUInt32(emu->STR);
+	outapp->WriteUInt32(emu->STA);
+	outapp->WriteUInt32(emu->CHA);
+	outapp->WriteUInt32(emu->DEX);
+	outapp->WriteUInt32(emu->INT);
+	outapp->WriteUInt32(emu->AGI);
+	outapp->WriteUInt32(emu->WIS);
+
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+
+
+	outapp->WriteUInt32(300);		// AA Count
+
+	for(int r = 0; r < MAX_PP_AA_ARRAY; r++)
+	{
+		outapp->WriteUInt32(emu->aa_array[r].AA);
+		outapp->WriteUInt32(emu->aa_array[r].value);
+		outapp->WriteUInt32(0);
+	}
+
+	// Fill the other 60 AAs with zeroes
+
+	for(int r = 0; r < structs::MAX_PP_AA_ARRAY - MAX_PP_AA_ARRAY; r++)
+	{
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+
+	outapp->WriteUInt32(structs::MAX_PP_SKILL);
+
+	for(int r = 0; r < MAX_PP_SKILL; r++)
+	{
+		outapp->WriteUInt32(emu->skills[r]);
+	}
+
+	// Write zeroes for the rest of the skills
+	for(int r = 0; r < structs::MAX_PP_SKILL - MAX_PP_SKILL; r++)
+	{
+		outapp->WriteUInt32(emu->skills[r]);
+	}
+
+	outapp->WriteUInt32(25);			// Unknown count
+
+	for(int r = 0; r < 25; r++)
+	{
+		outapp->WriteUInt32(0);			// Unknown
+	}
+
+	outapp->WriteUInt32(structs::MAX_PP_DISCIPLINES);	// Discipline count
+
+	for(int r = 0; r < MAX_PP_DISCIPLINES; r++)
+	{
+		outapp->WriteUInt32(emu->disciplines.values[r]);
+	}
+
+	// Write zeroes for the rest of the disciplines
+	for(int r = 0; r < structs::MAX_PP_DISCIPLINES - MAX_PP_DISCIPLINES; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(20);			// Timestamp count
+
+	for(int r = 0; r < 20; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(MAX_RECAST_TYPES);			// Timestamp count
+
+	for(int r = 0; r < MAX_RECAST_TYPES; r++)
+	{
+		outapp->WriteUInt32(emu->recastTimers[r]);
+	}
+
+	outapp->WriteUInt32(100);			// Timestamp2 count
+
+	for(int r = 0; r < 100; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(structs::MAX_PP_SPELLBOOK);		// Spellbook slots
+	
+	for(int r = 0; r < MAX_PP_SPELLBOOK; r++)
+	{
+		outapp->WriteUInt32(emu->spell_book[r]);
+	}
+	// zeroes for the rest of the spellbook slots
+	for(int r = 0; r < structs::MAX_PP_SPELLBOOK - MAX_PP_SPELLBOOK; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(structs::MAX_PP_MEMSPELL);		// Memorised spell slots
+
+	for(int r = 0; r < MAX_PP_MEMSPELL; r++)
+	{
+		outapp->WriteUInt32(emu->mem_spells[r]);
+	}
+	// zeroes for the rest of the slots
+	for(int r = 0; r < structs::MAX_PP_MEMSPELL - MAX_PP_MEMSPELL; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(13);			// Unknown count
+
+	for(int r = 0; r < 13; r++)
+	{
+		outapp->WriteUInt32(0);			// Unknown
+	}
+
+	outapp->WriteUInt8(0);			// Unknown
+
+	outapp->WriteUInt32(structs::BUFF_COUNT);
+
+	//*000*/ int8 slotid;				// badly named... seems to be 2 for a real buff, 0 otherwise
+	//*001*/ float unknown004;			// Seen 1 for no buff
+	//*005*/ int32 player_id;			// 'global' ID of the caster, for wearoff messages
+	//*009*/ int32 unknown016;
+	//*013*/ int8 bard_modifier;
+	//*014*/ int32 duration;
+	//*018*/ int8 level;
+	//*019*/ int32 spellid;
+	//*023*/ int32 counters;
+	//*027*/ uint8 unknown0028[53];
+	//*080*/
+
+	for(int r = 0; r < BUFF_COUNT; r++)
+	{
+		float unknown004 = 0.0f;
+		uint8 slotid = emu->buffs[r].slotid;
+		int32 player_id = emu->buffs[r].player_id;;
+
 		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
 		{
-			eq->buffs[r].unknown004 = 0x3f800000;
-			eq->buffs[r].slotid = 2;
-			eq->buffs[r].player_id = 0x000717fd;
+			unknown004 = 0x3f800000;
+			slotid = 2;
+			player_id = 0x000717fd;
 		}
 		else
 		{
-			eq->buffs[r].slotid = 0;
+			slotid = 0;
 		}
-		OUT(buffs[r].level);
-		OUT(buffs[r].spellid);
-		OUT(buffs[r].duration);
+		outapp->WriteUInt8(emu->buffs[r].slotid);
+		outapp->WriteFloat(unknown004);
+		outapp->WriteUInt32(player_id);
+		outapp->WriteUInt32(0);		// Unknown016
+		outapp->WriteUInt8(emu->buffs[r].bard_modifier);
+		outapp->WriteUInt32(emu->buffs[r].duration);
+		outapp->WriteUInt8(emu->buffs[r].level);
+		outapp->WriteUInt32(emu->buffs[r].spellid);
+		outapp->WriteUInt32(emu->buffs[r].counters);
+
+		for(int j = 0; j < 53; ++j)
+			outapp->WriteUInt8(0);	// Unknown
 	}
 
-	OUT(platinum);
-	OUT(gold);
-	OUT(silver);
-	OUT(copper);
-	OUT(platinum_cursor);
-	OUT(gold_cursor);
-	OUT(silver_cursor);
-	OUT(copper_cursor);
-	
-	OUT(thirst_level);
-	OUT(hunger_level);
-	
-	
-	OUT(aapoints_spent);
-	eq->aapoint_count = 5;
-	eq->aapoints_assigned = emu->aapoints_spent + emu->aapoints;
-	OUT(aapoints);
+	for(int r = 0; r < structs::BUFF_COUNT - BUFF_COUNT; r++)
+	{
+		// 80 bytes of zeroes
+		for(int j = 0; j < 20; ++j)
+			outapp->WriteUInt32(0);
 
-	//NOTE: new client supports 20 bandoliers, our internal rep 
-	//only supports 4..
-	eq->bandolier_count = 20;
-	for(r = 0; r < 4; r++) {
-		OUT_str(bandoliers[r].name);
-		uint32 k;
-		for(k = 0; k < structs::MAX_PLAYER_BANDOLIER_ITEMS; k++) {
-			OUT(bandoliers[r].items[k].item_id);
-			OUT(bandoliers[r].items[k].icon);
-			OUT_str(bandoliers[r].items[k].item_name);
+	}
+
+	outapp->WriteUInt32(emu->platinum);
+	outapp->WriteUInt32(emu->gold);
+	outapp->WriteUInt32(emu->silver);
+	outapp->WriteUInt32(emu->copper);
+
+	outapp->WriteUInt32(emu->platinum_cursor);
+	outapp->WriteUInt32(emu->gold_cursor);
+	outapp->WriteUInt32(emu->silver_cursor);
+	outapp->WriteUInt32(emu->copper_cursor);
+
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(emu->toxicity);
+
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(emu->thirst_level);
+	outapp->WriteUInt32(emu->hunger_level);
+
+	outapp->WriteUInt32(emu->aapoints_spent);
+
+	outapp->WriteUInt32(5);				// AA Points count ??
+	outapp->WriteUInt32(1234);			// AA Points assigned
+	outapp->WriteUInt32(0);				// AA Points in General ?
+	outapp->WriteUInt32(0);				// AA Points in Class ?
+	outapp->WriteUInt32(0);				// AA Points in Archetype ?
+	outapp->WriteUInt32(0);				// AA Points in Special ?
+	outapp->WriteUInt32(emu->aapoints);		// AA Points unspent
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+
+	outapp->WriteUInt32(structs::MAX_PLAYER_BANDOLIER);
+
+	for(int r = 0; r < MAX_PLAYER_BANDOLIER; r++)
+	{
+		outapp->WriteString(emu->bandoliers[r].name);
+
+		for(int j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
+		{
+			outapp->WriteString(emu->bandoliers[r].items[j].item_name);
+			outapp->WriteUInt32(emu->bandoliers[r].items[j].item_id);
+			outapp->WriteUInt32(emu->bandoliers[r].items[j].icon);
 		}
 	}
-	eq->potionbelt_count = 5;
-	for(r = 0; r < structs::MAX_POTIONS_IN_BELT; r++) {
-		OUT(potionbelt.items[r].item_id);
-		OUT(potionbelt.items[r].icon);
-		OUT_str(potionbelt.items[r].item_name);
+
+	for(int r = 0; r < structs::MAX_PLAYER_BANDOLIER - MAX_PLAYER_BANDOLIER; r++)
+	{
+		outapp->WriteString("");
+
+		for(int j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
+		{
+			outapp->WriteString("");
+			outapp->WriteUInt32(0);
+			outapp->WriteUInt32(0);
+		}
 	}
 
-	//eq->unknown_rof23 = 20;
-	eq->name_str_len = 64;
-	OUT_str(name);
-	eq->last_name_str_len = 32;
-	OUT_str(last_name);
-	OUT(birthday);
-	OUT(lastlogin);
-	OUT(timePlayedMin);
-	OUT(timeentitledonaccount);
-	//OUT(expansions);
-	eq->expansions = 0x1ffff;
-	eq->language_count = MAX_PP_LANGUAGE;
-	OUT_array(languages, structs::MAX_PP_LANGUAGE);
-	OUT_array(spell_book, structs::MAX_PP_SPELLBOOK);
-	
-	OUT(zone_id);
-	OUT(zoneInstance);
-	OUT(y); //reversed x and y
-	OUT(x);
-	OUT(z);
-	OUT(heading);
-	OUT(air_remaining);
-	eq->unknown_rof28 = -1;
-	
-	eq->unknown32_count = 5;
-	eq->unknown33_count = 32;
-	eq->unknown37_count = 5;
-	eq->unknown38_count = 10;
-	eq->unknown_string1_count = 64;
-	eq->unknown_string2_count = 64;
-	eq->unknown_string3_count = 64;
-	
-	eq->unknown_rof47 = 6;
-	eq->unknown_rof49 = 64;
-	eq->unknown_rof51 = 100;
-	eq->unknown_rof53 = 50;
-	
-	OUT(groupAutoconsent);
-	OUT(raidAutoconsent);
-	OUT(guildAutoconsent);
-	eq->level3 = emu->level;
-	eq->showhelm = emu->showhelm;
-	OUT(RestTimer);
-	eq->unknown_rof57 = 49;
-	
-	/*
-	OUT(toxicity);
-	OUT(endurance);
-	OUT(pvp);
-	OUT(anon);
-	OUT(gm);
-	OUT(guild_id);
-	OUT(guildrank);
-	OUT(guildbanker);
-	OUT(exp);
-	OUT(platinum_bank);
-	OUT(gold_bank);
-	OUT(silver_bank);
-	OUT(copper_bank);
-	OUT(platinum_shared);
-	
-	OUT(autosplit);
-	for(r = 0; r < structs::MAX_GROUP_MEMBERS; r++) {
-		OUT_str(groupMembers[r]);
-	}
-	strcpy(eq->groupLeader, emu->groupMembers[0]);
-	OUT(entityid);
-	OUT(leadAAActive);
-	OUT(ldon_points_guk);
-	OUT(ldon_points_mir);
-	OUT(ldon_points_mmc);
-	OUT(ldon_points_ruj);
-	OUT(ldon_points_tak);
-	OUT(ldon_points_available);
-	OUT(tribute_time_remaining);
-	OUT(career_tribute_points);
-	OUT(tribute_points);
-	OUT(tribute_active);
-	for(r = 0; r < structs::MAX_PLAYER_TRIBUTES; r++) {
-		OUT(tributes[r].tribute);
-		OUT(tributes[r].tier);
-	}
-	OUT(group_leadership_exp);
-	OUT(raid_leadership_exp);
-	OUT(group_leadership_points);
-	OUT(raid_leadership_points);
-	OUT_array(leader_abilities.ranks, structs::MAX_LEADERSHIP_AA_ARRAY);
-	OUT(PVPKills);
-	OUT(PVPDeaths);
-	OUT(PVPCurrentPoints);
-	OUT(PVPCareerPoints);
-	OUT(PVPBestKillStreak);
-	OUT(PVPWorstDeathStreak);
-	OUT(PVPCurrentKillStreak);
-	OUT(expAA);
-	OUT(currentRadCrystals);
-	OUT(careerRadCrystals);
-	OUT(currentEbonCrystals);
-	OUT(careerEbonCrystals);
-	*/
 
-	//set the checksum...
-	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-1, 8);
-	_hex(NET__ERROR, eq, sizeof(structs::PlayerProfile_Struct));
-	FINISH_ENCODE();
+	outapp->WriteUInt32(structs::MAX_POTIONS_IN_BELT);
+
+	for(int r = 0; r < MAX_POTIONS_IN_BELT; r++)
+	{
+		outapp->WriteString(emu->potionbelt.items[r].item_name);
+		outapp->WriteUInt32(emu->potionbelt.items[r].item_id);
+		outapp->WriteUInt32(emu->potionbelt.items[r].icon);
+	}
+
+
+	for(int r = 0; r < structs::MAX_POTIONS_IN_BELT - MAX_POTIONS_IN_BELT; r++)
+	{
+		outapp->WriteString("");
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteSInt32(-1);	// Unknown;
+	outapp->WriteSInt32(123);	// HP Total ?
+	outapp->WriteSInt32(234);	// Endurance Total ?
+	outapp->WriteSInt32(345);	// Mana Total ?
+
+
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(20);	// Unknown - Expansion count ?
+
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(64);	// Name Length
+
+	uint32 CurrentPosition = outapp->GetWritePosition();
+
+	outapp->WriteString(emu->name);
+
+	outapp->SetWritePosition(CurrentPosition + 64);
+
+	outapp->WriteUInt32(32);	// Last Name Length
+
+	CurrentPosition = outapp->GetWritePosition();
+
+	outapp->WriteString(emu->last_name);
+
+	outapp->SetWritePosition(CurrentPosition + 32);
+
+	outapp->WriteUInt32(emu->birthday);
+	outapp->WriteUInt32(emu->birthday);		// Account start date ?
+	outapp->WriteUInt32(emu->lastlogin);
+	outapp->WriteUInt32(emu->timePlayedMin);
+	outapp->WriteUInt32(emu->timeentitledonaccount);
+	outapp->WriteUInt32(0x0001ffff);		// Expansion bitmask
+
+	outapp->WriteUInt32(structs::MAX_PP_LANGUAGE);
+
+	for(int r = 0; r < MAX_PP_LANGUAGE; r++)
+	{
+		outapp->WriteUInt8(emu->languages[r]);
+	}
+
+	for(int r = 0; r < structs::MAX_PP_LANGUAGE - MAX_PP_LANGUAGE; r++)
+	{
+		outapp->WriteUInt8(0);
+	}
+
+	outapp->WriteUInt16(emu->zone_id);
+	outapp->WriteUInt16(emu->zoneInstance);
+
+	outapp->WriteFloat(emu->y);
+	outapp->WriteFloat(emu->x);
+	outapp->WriteFloat(emu->z);
+	outapp->WriteFloat(emu->heading);
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(emu->platinum_bank);
+	outapp->WriteUInt32(emu->gold_bank);
+	outapp->WriteUInt32(emu->silver_bank);
+	outapp->WriteUInt32(emu->copper_bank);
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(42);			// The meaning of life ?
+
+	for(int r = 0; r < 42; r++)
+	{
+		outapp->WriteUInt32(0);				// Unknown
+		outapp->WriteUInt32(0);				// Unknown
+	}
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(emu->career_tribute_points);
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->tribute_points);
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(MAX_PLAYER_TRIBUTES);
+
+	for(int r = 0; r < MAX_PLAYER_TRIBUTES; r++)
+	{
+		outapp->WriteUInt32(emu->tributes[r].tribute);
+		outapp->WriteUInt32(emu->tributes[r].tier);
+	}
+
+	outapp->WriteUInt32(10);		// Guild Tribute Count ?
+
+	for(int r = 0; r < 10; r++)
+	{
+		outapp->WriteUInt32(0xffffffff);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Block of 121 unknown bytes
+	for(int r = 0; r < 121; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Unknown String ?
+	outapp->WriteUInt32(64);			// Unknown
+	for(int r = 0; r < 64; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Unknown String ?
+	outapp->WriteUInt32(64);			// Unknown
+	for(int r = 0; r < 64; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	// Unknown String ?
+	outapp->WriteUInt32(64);			// Unknown
+	for(int r = 0; r < 64; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Block of 320 unknown bytes
+	for(int r = 0; r < 320; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	// Block of 343 unknown bytes
+	for(int r = 0; r < 343; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(6);				// Count ... of LDoN stats ?
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->ldon_points_guk);
+	outapp->WriteUInt32(emu->ldon_points_mir);
+	outapp->WriteUInt32(emu->ldon_points_mmc);
+	outapp->WriteUInt32(emu->ldon_points_ruj);
+	outapp->WriteUInt32(emu->ldon_points_tak);
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(64);			// Group of 64 int32s follow
+
+	for(int r = 0; r < 64; r++)
+		outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(emu->air_remaining);		// ?
+
+	// PVP Stats
+	
+	outapp->WriteUInt32(emu->PVPKills);
+	outapp->WriteUInt32(emu->PVPDeaths);
+	outapp->WriteUInt32(emu->PVPCurrentPoints);
+	outapp->WriteUInt32(emu->PVPCareerPoints);
+	outapp->WriteUInt32(emu->PVPBestKillStreak);
+	outapp->WriteUInt32(emu->PVPWorstDeathStreak);
+	outapp->WriteUInt32(emu->PVPCurrentKillStreak);
+
+	// Last PVP Kill
+	
+	outapp->WriteString(emu->PVPLastKill.Name);
+	outapp->WriteUInt32(emu->PVPLastKill.Level);
+	outapp->WriteUInt32(emu->PVPLastKill.Race);
+	outapp->WriteUInt32(emu->PVPLastKill.Class);
+	outapp->WriteUInt32(emu->PVPLastKill.Zone);
+	outapp->WriteUInt32(emu->PVPLastKill.Time);
+	outapp->WriteUInt32(emu->PVPLastKill.Points);
+
+	// Last PVP Death
+	
+	outapp->WriteString(emu->PVPLastDeath.Name);
+	outapp->WriteUInt32(emu->PVPLastDeath.Level);
+	outapp->WriteUInt32(emu->PVPLastDeath.Race);
+	outapp->WriteUInt32(emu->PVPLastDeath.Class);
+	outapp->WriteUInt32(emu->PVPLastDeath.Zone);
+	outapp->WriteUInt32(emu->PVPLastDeath.Time);
+	outapp->WriteUInt32(emu->PVPLastDeath.Points);
+
+	outapp->WriteUInt32(emu->PVPNumberOfKillsInLast24Hours);
+
+	// Last 50 Kills
+	outapp->WriteUInt32(50);
+	for(int r = 0; r < 50; ++r)
+	{
+		outapp->WriteString(emu->PVPRecentKills[r].Name);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Level);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Race);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Class);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Zone);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Time);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Points);
+	}
+
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(emu->groupAutoconsent);
+	outapp->WriteUInt8(emu->raidAutoconsent);
+	outapp->WriteUInt8(emu->guildAutoconsent);
+
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(emu->level);				// Level3 ?
+
+	outapp->WriteUInt8(emu->showhelm);
+
+	outapp->WriteUInt32(emu->RestTimer);
+
+	// Block of 1028 unknown bytes
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(4);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(31);				// Unknown
+
+	for(int r = 0; r < 1023; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Think we need 1 byte of padding at the end
+
+	outapp->WriteUInt8(0);				// Unknown
+
+
+	_log(NET__STRUCTS, "Player Profile Packet is %i bytes", outapp->GetWritePosition());
+
+	unsigned char *NewBuffer = new unsigned char[outapp->GetWritePosition()];
+	memcpy(NewBuffer, outapp->pBuffer, outapp->GetWritePosition());
+	safe_delete_array(outapp->pBuffer);
+	outapp->pBuffer = NewBuffer;
+	outapp->size = outapp->GetWritePosition();
+	outapp->SetWritePosition(4);
+	outapp->WriteUInt32(outapp->size - 9);
+	
+
+	CRC32::SetEQChecksum(outapp->pBuffer, outapp->size - 1, 8);
+	_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+
+	return;
+
 }
 
 ENCODE(OP_NewZone) {
@@ -1220,7 +1679,7 @@ ENCODE(OP_ZoneSpawns) {
 		int k;
 		for(r = 0; r < entrycount; r++, emu++) {
 
-			int PacketSize = sizeof(structs::Spawn_Struct);
+			int PacketSize = 206;
 
 			PacketSize += strlen(emu->name);
 			PacketSize += strlen(emu->lastName);
@@ -1246,7 +1705,7 @@ ENCODE(OP_ZoneSpawns) {
 			float SpawnSize = emu->size;
 			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
 			{
-				PacketSize -= 132;
+				PacketSize += 60;
 
 				if(emu->size == 0)
 				{
@@ -1254,6 +1713,8 @@ ENCODE(OP_ZoneSpawns) {
 					SpawnSize = 6;
 				}
 			}
+			else
+				PacketSize += 216;
 
 			if(SpawnSize == 0)
 			{
@@ -1271,60 +1732,46 @@ ENCODE(OP_ZoneSpawns) {
 
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
-			Bitfields->afk = 0;
-			Bitfields->linkdead = 0;
 			Bitfields->gender = emu->gender;
+			//Bitfields->afk = 0;
+			//Bitfields->linkdead = 0;
 
-			Bitfields->invis = emu->invis;
-			Bitfields->sneak = 0;
-			Bitfields->lfg = emu->lfg;
-			Bitfields->gm = emu->gm;
-			Bitfields->anon = emu->anon;
-			Bitfields->showhelm = emu->showhelm;
-			Bitfields->targetable = 1;
-			Bitfields->targetable_with_hotkey = 1;
+			//Bitfields->invis = emu->invis;
+			//Bitfields->sneak = 0;
+			//Bitfields->lfg = emu->lfg;
+			//Bitfields->gm = emu->gm;
+			//Bitfields->anon = emu->anon;
+			//Bitfields->showhelm = emu->showhelm;
+			//Bitfields->targetable = 1;
+			//Bitfields->targetable_with_hotkey = 1;
 			//Bitfields->statue = 0;
-			Bitfields->trader = 0;
-			Bitfields->buyer = 0;
+			//Bitfields->trader = 0;
+			//Bitfields->buyer = 0;
 
-			Bitfields->showname = ShowName;
+			//Bitfields->showname = ShowName;
 
-			Bitfields->ispet = emu->is_pet;
+			//Bitfields->ispet = emu->is_pet;
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
 			uint8 OtherData = 0;
 
 			if(strlen(emu->title))
-				OtherData = OtherData | 0x04;
+				OtherData = OtherData | 16; 
 
 			if(strlen(emu->suffix))
-				OtherData = OtherData | 0x08;
+				OtherData = OtherData | 32;
 
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, OtherData);
 
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->runspeed);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
-			/*
-			if(emu->bodytype >=66)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// showname
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// showname
-			}*/
 
 			// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
 			// present. Will sort that out later.
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
-		
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->curHp);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->haircolor);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->beardcolor);
@@ -1335,6 +1782,19 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_heritage);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_tattoo);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_details);
+
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->helm); // unknown11
+
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->runspeed);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
+
+		
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// ShowEQ calls this 'Holding'
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->deity);
 			if(emu->NPC)
@@ -1347,44 +1807,29 @@ ENCODE(OP_ZoneSpawns) {
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildID);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildrank);
 			}
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->class_);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->StandState);	// standstate
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->light);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->flymode);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->helm); // unknown11
+
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12
+
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle ??
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown
+
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petOwnerId);
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown13
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown14 - Stance 64 = normal 4 = aggressive 40 = stun/mezzed
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown15
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown16
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown17
-			//Buffer += 1; // New for Live Mar 21 2012 client 
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);  // RoF unkown TEST
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown18
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown19
 
-
-			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
-
-			Position->deltaX = emu->deltaX;
-			Position->deltaHeading = emu->deltaHeading;
-			Position->deltaY = emu->deltaY;
-			Position->y = emu->y;
-			Position->animation = emu->animation;
-			Position->heading = emu->heading;
-			Position->x = emu->x;
-			Position->z = emu->z;
-			Position->deltaZ = emu->deltaZ;
-
-			Buffer += sizeof(structs::Spawn_Struct_Position);
-		
 			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
 			{
 				for(k = 0; k < 9; ++k)
@@ -1400,6 +1845,7 @@ ENCODE(OP_ZoneSpawns) {
 					Equipment[k].equip0 = emu->equipment[k];
 					Equipment[k].equip1 = 0;
 					Equipment[k].equip2 = 0;
+					Equipment[k].equip3 = 0;
 					Equipment[k].itemId = 0;
 				}
 
@@ -1411,8 +1857,10 @@ ENCODE(OP_ZoneSpawns) {
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_PRIMARY]);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
@@ -1421,8 +1869,24 @@ ENCODE(OP_ZoneSpawns) {
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			}
 
+
+			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
+
+			//Position->deltaX = emu->deltaX;
+			//Position->deltaHeading = emu->deltaHeading;
+			//Position->deltaY = emu->deltaY;
+			Position->y = emu->y;
+			//Position->animation = emu->animation;
+			Position->heading = emu->heading;
+			Position->x = emu->x;
+			Position->z = emu->z;
+			//Position->deltaZ = emu->deltaZ;
+
+			Buffer += sizeof(structs::Spawn_Struct_Position);
+		
 			if(strlen(emu->title))
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->title);
@@ -1432,11 +1896,6 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
 			}
-			//Buffer += 37; // Unknown;
-			//_log(NET__ERROR, "Buffer was %8X", Buffer);
-			//Buffer = (char *) outapp->pBuffer + (PacketSize - 53);
-			//_log(NET__ERROR, "Buffer Now %8X", Buffer);
-
 
 			Buffer += 8; 
 			// Buffer should be pointing at Merc flag
