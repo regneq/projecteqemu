@@ -674,6 +674,12 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	outapp = new EQApplicationPacket(OP_SendExpZonein, 0);
 	FastQueuePacket(&outapp);
 
+	if(GetClientVersion() >= EQClientRoF)
+	{
+		outapp = new EQApplicationPacket(OP_ClientReady, 0);
+		FastQueuePacket(&outapp);
+	}
+
 	// New for Secrets of Faydwer - Used in Place of OP_SendExpZonein
 	outapp = new EQApplicationPacket(OP_WorldObjectsSent, 0);
 	QueuePacket(outapp);
@@ -9120,12 +9126,12 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	// Task Packets
 	LoadClientTaskState();
 	
-	//if (GetClientVersion() >= EQClientVoA)
-	//{
-	//	outapp = new EQApplicationPacket(OP_ReqNewZone, 0);
-	//	Handle_Connect_OP_ReqNewZone(outapp);
-	//	safe_delete(outapp);
-	//}
+	if (GetClientVersion() >= EQClientVoA)
+	{
+		outapp = new EQApplicationPacket(OP_ReqNewZone, 0);
+		Handle_Connect_OP_ReqNewZone(outapp);
+		safe_delete(outapp);
+	}
 
 	if(ClientVersionBit & BIT_UnderfootAndLater)
 	{

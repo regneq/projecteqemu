@@ -20,7 +20,7 @@ void RegisterAllPatches(EQStreamIdentifier &into) {
 	Underfoot::Register(into);
 	//HoT::Register(into);
 	//VoA::Register(into);
-	//RoF::Register(into);
+	RoF::Register(into);
 }
 
 void ReloadAllPatches() {
@@ -31,5 +31,5 @@ void ReloadAllPatches() {
 	Underfoot::Reload();
 	//HoT::Reload();
 	//VoA::Reload();
-	//RoF::Reload();
+	RoF::Reload();
 }
