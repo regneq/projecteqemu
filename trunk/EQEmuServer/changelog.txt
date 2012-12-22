@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/22/2012==
+Secrets: Fixed the x64 portability issue reported by Akkadius. No idea how long this has been broke but at least it's fixed.
+
 ==12/21/2012==
 Sorvani: Items with zero charges remaining and located in a bag will no longer get set to MaxCharges when looted from a corpse. Round 2.
 Sorvani: (Hateborne) copy paste issue in Mob::TryDivineSave corrected
