@@ -4953,22 +4953,69 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			other->trade->state = TradeCompleting;
 			trade->state = TradeCompleting;
 
-			if (CheckTradeLoreConflict(other) || other->CheckTradeLoreConflict(this))
-			{
+			if (CheckTradeLoreConflict(other) || other->CheckTradeLoreConflict(this)) {
 				Message_StringID(13,104);
 				other->Message_StringID(13,104);
 				this->FinishTrade(this);
 				other->FinishTrade(other);
 				other->trade->Reset();
 				trade->Reset();
-			} else {
+			}
+			else {
 				// Audit trade to database for both trade streams
 				other->trade->LogTrade();
 				trade->LogTrade();
 
-				// Perform actual trade
-				this->FinishTrade(other);
-				other->FinishTrade(this);
+				// start QS code
+				if(RuleB(QueryServ, PlayerLogTrades)) {
+					int16 trade_count=0;
+
+					// Item trade count for packet sizing
+					for(sint16 slot_id=3000; slot_id<=3007; slot_id++) {
+						ItemInst* other_item = other->GetInv().GetItem(slot_id);
+						if(other_item) {
+							trade_count++;
+
+							if(other_item->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+								for(uint8 bagslot_id=0; bagslot_id<other_item->GetItem()->BagSlots; bagslot_id++) {
+									ItemInst* other_bagitem = other_item->GetItem(bagslot_id);
+
+									if(other_bagitem) { trade_count++; }
+								}
+							}
+						}
+
+						const ItemInst* this_item = this->GetInv().GetItem(slot_id);
+						if(this_item) {
+							trade_count++;
+						
+							if(this_item->GetItem()->ItemClass == ItemClass::ItemClassContainer) {
+								for(uint8 bagslot_id=0; bagslot_id<this_item->GetItem()->BagSlots; bagslot_id++) {
+									ItemInst* this_bagitem = this_item->GetItem(bagslot_id);
+
+									if(this_bagitem) { trade_count++; }
+								}
+							}
+						}
+					}
+
+				
+					ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerTradeLog, sizeof(QSPlayerTradeLog_Struct) + (sizeof(QSItemTrade_Struct) * trade_count));
+
+					// Perform actual trade
+					this->FinishTrade(other, qspack, true);
+					other->FinishTrade(this, qspack, false);
+
+					qspack->Deflate();
+					if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+					safe_delete(qspack);
+					// end QS code
+				}
+				else {
+					this->FinishTrade(other);
+					other->FinishTrade(this);
+				}
+
 				other->trade->Reset();
 				trade->Reset();
 			}
