@@ -182,7 +182,6 @@
 #define ServerOP_ReloadWorld 0x4009
 
 #define ServerOP_QSPlayerTradeLog 0x4010
-#define ServerOP_QSPlayerMoneyTradeLog 0x4011
 #define ServerOP_QSPlayerLogNPCKills 0x4012
 
 enum { QSG_LFGuild = 0 };
@@ -1094,22 +1093,28 @@ struct CZClientSignalByName_Struct {
 	int32 data;
 };
 
-struct QSPlayerTradeLog_Struct {
-	char	from[64];
-	char	to[64];
-	char	ItemName[64];
-	uint32	ItemID;
-	sint16  SlotID;
-	sint16  Charges;
+struct QSItemTrade_Struct {
+	int32 from_id;
+	int16 from_slot;
+	int32 to_id;
+	int16 to_slot;
+	int32 item_id;
+	int16 charges;
+	int32 aug_1;
+	int32 aug_2;
+	int32 aug_3;
+	int32 aug_4;
+	int32 aug_5;
 };
 
-struct QSPlayerMoneyTradeLog_Struct {
-	char	from[64];
-	char	to[64];
-	uint32  Copper;
-	uint32  Silver;
-	uint32  Gold;
-	uint32  Platinum;
+struct QSPlayerTradeLog_Struct {
+	int32			   char1_id;
+	MoneyUpdate_Struct char1_money;
+	int16			   char1_count;
+	int32			   char2_id;
+	MoneyUpdate_Struct char2_money;
+	int16			   char2_count;
+	QSItemTrade_Struct trade_items[0];
 };
 
 struct QSPlayerLogNPCKillSub_Struct{

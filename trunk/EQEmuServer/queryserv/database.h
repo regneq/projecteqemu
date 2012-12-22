@@ -47,8 +47,7 @@ public:
 	
 	bool GetVariable(const char* varname, char* varvalue, int16 varvalue_len);
 	void AddSpeech(const char* from, const char* to, const char* message, int16 minstatus, uint32 guilddbid, int8 type);
-	void LogPlayerTrade(const char* from, const char* to, const char* ItemName, uint32 ItemID, sint16 SlotID, sint16 Charges);
-	void LogPlayerMoneyTrade(const char* from, const char* to, uint32 Copper, uint32 Silver, uint32 Gold, uint32 Platinum);
+	void LogPlayerTrade(QSPlayerTradeLog_Struct* QS, int32 Items);
 	void LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members);
 protected:
 	void HandleMysqlError(int32 errnum);
