@@ -610,7 +610,7 @@ ENCODE(OP_SendZonepoints) {
 	ALLOC_VAR_ENCODE(structs::ZonePoints, sizeof(structs::ZonePoints) + sizeof(structs::ZonePoint_Entry) * (emu->count + 1));
 
 	eq->count = emu->count;
-	for(int i = 0; i < emu->count; ++i)
+	for(int32 i = 0; i < emu->count; ++i)
 	{
 		eq->zpe[i].iterator = emu->zpe[i].iterator;
 		eq->zpe[i].x = emu->zpe[i].x;
@@ -844,7 +844,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(300);		// AA Count
 
-	for(int r = 0; r < MAX_PP_AA_ARRAY; r++)
+	for(uint32 r = 0; r < MAX_PP_AA_ARRAY; r++)
 	{
 		outapp->WriteUInt32(emu->aa_array[r].AA);
 		outapp->WriteUInt32(emu->aa_array[r].value);
@@ -853,7 +853,7 @@ ENCODE(OP_PlayerProfile)
 
 	// Fill the other 60 AAs with zeroes
 
-	for(int r = 0; r < structs::MAX_PP_AA_ARRAY - MAX_PP_AA_ARRAY; r++)
+	for(uint32 r = 0; r < structs::MAX_PP_AA_ARRAY - MAX_PP_AA_ARRAY; r++)
 	{
 		outapp->WriteUInt32(0);
 		outapp->WriteUInt32(0);
@@ -863,85 +863,85 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(structs::MAX_PP_SKILL);
 
-	for(int r = 0; r < MAX_PP_SKILL; r++)
+	for(uint32 r = 0; r < MAX_PP_SKILL; r++)
 	{
 		outapp->WriteUInt32(emu->skills[r]);
 	}
 
 	// Write zeroes for the rest of the skills
-	for(int r = 0; r < structs::MAX_PP_SKILL - MAX_PP_SKILL; r++)
+	for(uint32 r = 0; r < structs::MAX_PP_SKILL - MAX_PP_SKILL; r++)
 	{
 		outapp->WriteUInt32(emu->skills[r]);
 	}
 
 	outapp->WriteUInt32(25);			// Unknown count
 
-	for(int r = 0; r < 25; r++)
+	for(uint32 r = 0; r < 25; r++)
 	{
 		outapp->WriteUInt32(0);			// Unknown
 	}
 
 	outapp->WriteUInt32(structs::MAX_PP_DISCIPLINES);	// Discipline count
 
-	for(int r = 0; r < MAX_PP_DISCIPLINES; r++)
+	for(uint32 r = 0; r < MAX_PP_DISCIPLINES; r++)
 	{
 		outapp->WriteUInt32(emu->disciplines.values[r]);
 	}
 
 	// Write zeroes for the rest of the disciplines
-	for(int r = 0; r < structs::MAX_PP_DISCIPLINES - MAX_PP_DISCIPLINES; r++)
+	for(uint32 r = 0; r < structs::MAX_PP_DISCIPLINES - MAX_PP_DISCIPLINES; r++)
 	{
 		outapp->WriteUInt32(0);
 	}
 
 	outapp->WriteUInt32(20);			// Timestamp count
 
-	for(int r = 0; r < 20; r++)
+	for(uint32 r = 0; r < 20; r++)
 	{
 		outapp->WriteUInt32(0);
 	}
 
 	outapp->WriteUInt32(MAX_RECAST_TYPES);			// Timestamp count
 
-	for(int r = 0; r < MAX_RECAST_TYPES; r++)
+	for(uint32 r = 0; r < MAX_RECAST_TYPES; r++)
 	{
 		outapp->WriteUInt32(emu->recastTimers[r]);
 	}
 
 	outapp->WriteUInt32(100);			// Timestamp2 count
 
-	for(int r = 0; r < 100; r++)
+	for(uint32 r = 0; r < 100; r++)
 	{
 		outapp->WriteUInt32(0);
 	}
 
 	outapp->WriteUInt32(structs::MAX_PP_SPELLBOOK);		// Spellbook slots
 	
-	for(int r = 0; r < MAX_PP_SPELLBOOK; r++)
+	for(uint32 r = 0; r < MAX_PP_SPELLBOOK; r++)
 	{
 		outapp->WriteUInt32(emu->spell_book[r]);
 	}
 	// zeroes for the rest of the spellbook slots
-	for(int r = 0; r < structs::MAX_PP_SPELLBOOK - MAX_PP_SPELLBOOK; r++)
+	for(uint32 r = 0; r < structs::MAX_PP_SPELLBOOK - MAX_PP_SPELLBOOK; r++)
 	{
 		outapp->WriteUInt32(0);
 	}
 
 	outapp->WriteUInt32(structs::MAX_PP_MEMSPELL);		// Memorised spell slots
 
-	for(int r = 0; r < MAX_PP_MEMSPELL; r++)
+	for(uint32 r = 0; r < MAX_PP_MEMSPELL; r++)
 	{
 		outapp->WriteUInt32(emu->mem_spells[r]);
 	}
 	// zeroes for the rest of the slots
-	for(int r = 0; r < structs::MAX_PP_MEMSPELL - MAX_PP_MEMSPELL; r++)
+	for(uint32 r = 0; r < structs::MAX_PP_MEMSPELL - MAX_PP_MEMSPELL; r++)
 	{
 		outapp->WriteUInt32(0);
 	}
 
 	outapp->WriteUInt32(13);			// Unknown count
 
-	for(int r = 0; r < 13; r++)
+	for(uint32 r = 0; r < 13; r++)
 	{
 		outapp->WriteUInt32(0);			// Unknown
 	}
@@ -962,7 +962,7 @@ ENCODE(OP_PlayerProfile)
 	//*027*/ uint8 unknown0028[53];
 	//*080*/
 
-	for(int r = 0; r < BUFF_COUNT; r++)
+	for(uint32 r = 0; r < BUFF_COUNT; r++)
 	{
 		float unknown004 = 0.0f;
 		uint8 slotid = emu->buffs[r].slotid;
@@ -988,14 +988,14 @@ ENCODE(OP_PlayerProfile)
 		outapp->WriteUInt32(emu->buffs[r].spellid);
 		outapp->WriteUInt32(emu->buffs[r].counters);
 
-		for(int j = 0; j < 53; ++j)
+		for(uint32 j = 0; j < 53; ++j)
 			outapp->WriteUInt8(0);	// Unknown
 	}
 
-	for(int r = 0; r < structs::BUFF_COUNT - BUFF_COUNT; r++)
+	for(uint32 r = 0; r < structs::BUFF_COUNT - BUFF_COUNT; r++)
 	{
 		// 80 bytes of zeroes
-		for(int j = 0; j < 20; ++j)
+		for(uint32 j = 0; j < 20; ++j)
 			outapp->WriteUInt32(0);
 
 	}
@@ -1035,11 +1035,11 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(structs::MAX_PLAYER_BANDOLIER);
 
-	for(int r = 0; r < MAX_PLAYER_BANDOLIER; r++)
+	for(uint32 r = 0; r < MAX_PLAYER_BANDOLIER; r++)
 	{
 		outapp->WriteString(emu->bandoliers[r].name);
 
-		for(int j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
+		for(uint32 j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
 		{
 			outapp->WriteString(emu->bandoliers[r].items[j].item_name);
 			outapp->WriteUInt32(emu->bandoliers[r].items[j].item_id);
@@ -1047,11 +1047,11 @@ ENCODE(OP_PlayerProfile)
 		}
 	}
 
-	for(int r = 0; r < structs::MAX_PLAYER_BANDOLIER - MAX_PLAYER_BANDOLIER; r++)
+	for(uint32 r = 0; r < structs::MAX_PLAYER_BANDOLIER - MAX_PLAYER_BANDOLIER; r++)
 	{
 		outapp->WriteString("");
 
-		for(int j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
+		for(uint32 j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
 		{
 			outapp->WriteString("");
 			outapp->WriteUInt32(0);
@@ -1062,7 +1062,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(structs::MAX_POTIONS_IN_BELT);
 
-	for(int r = 0; r < MAX_POTIONS_IN_BELT; r++)
+	for(uint32 r = 0; r < MAX_POTIONS_IN_BELT; r++)
 	{
 		outapp->WriteString(emu->potionbelt.items[r].item_name);
 		outapp->WriteUInt32(emu->potionbelt.items[r].item_id);
@@ -1070,7 +1070,7 @@ ENCODE(OP_PlayerProfile)
 	}
 
 
-	for(int r = 0; r < structs::MAX_POTIONS_IN_BELT - MAX_POTIONS_IN_BELT; r++)
+	for(uint32 r = 0; r < structs::MAX_POTIONS_IN_BELT - MAX_POTIONS_IN_BELT; r++)
 	{
 		outapp->WriteString("");
 		outapp->WriteUInt32(0);
@@ -1131,12 +1131,12 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(structs::MAX_PP_LANGUAGE);
 
-	for(int r = 0; r < MAX_PP_LANGUAGE; r++)
+	for(uint32 r = 0; r < MAX_PP_LANGUAGE; r++)
 	{
 		outapp->WriteUInt8(emu->languages[r]);
 	}
 
-	for(int r = 0; r < structs::MAX_PP_LANGUAGE - MAX_PP_LANGUAGE; r++)
+	for(uint32 r = 0; r < structs::MAX_PP_LANGUAGE - MAX_PP_LANGUAGE; r++)
 	{
 		outapp->WriteUInt8(0);
 	}
@@ -1154,7 +1154,8 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt8(0);				// Unknown
 	outapp->WriteUInt8(0);				// Unknown
 
-	outapp->WriteUInt32(0);				// Unknown
+	//outapp->WriteUInt32(emu->guild_id);
+	outapp->WriteUInt32(0);
 	outapp->WriteUInt8(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 	outapp->WriteUInt8(0);				// Unknown
@@ -1176,7 +1177,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(42);			// The meaning of life ?
 
-	for(int r = 0; r < 42; r++)
+	for(uint32 r = 0; r < 42; r++)
 	{
 		outapp->WriteUInt32(0);				// Unknown
 		outapp->WriteUInt32(0);				// Unknown
@@ -1195,7 +1196,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(MAX_PLAYER_TRIBUTES);
 
-	for(int r = 0; r < MAX_PLAYER_TRIBUTES; r++)
+	for(uint32 r = 0; r < MAX_PLAYER_TRIBUTES; r++)
 	{
 		outapp->WriteUInt32(emu->tributes[r].tribute);
 		outapp->WriteUInt32(emu->tributes[r].tier);
@@ -1203,7 +1204,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(10);		// Guild Tribute Count ?
 
-	for(int r = 0; r < 10; r++)
+	for(uint32 r = 0; r < 10; r++)
 	{
 		outapp->WriteUInt32(0xffffffff);
 		outapp->WriteUInt32(0);
@@ -1217,22 +1218,22 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(0);				// Unknown
 
 	// Block of 121 unknown bytes
-	for(int r = 0; r < 121; r++)
+	for(uint32 r = 0; r < 121; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt32(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->currentRadCrystals);
+	outapp->WriteUInt32(emu->careerRadCrystals);
+	outapp->WriteUInt32(emu->currentEbonCrystals);
+	outapp->WriteUInt32(emu->careerEbonCrystals);
 	outapp->WriteUInt32(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 
 	// Unknown String ?
 	outapp->WriteUInt32(64);			// Unknown
-	for(int r = 0; r < 64; r++)
+	for(uint32 r = 0; r < 64; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt8(0);				// Unknown
@@ -1260,22 +1261,22 @@ ENCODE(OP_PlayerProfile)
 
 	// Unknown String ?
 	outapp->WriteUInt32(64);			// Unknown
-	for(int r = 0; r < 64; r++)
+	for(uint32 r = 0; r < 64; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	// Unknown String ?
 	outapp->WriteUInt32(64);			// Unknown
-	for(int r = 0; r < 64; r++)
+	for(uint32 r = 0; r < 64; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt32(0);				// Unknown
 
 	// Block of 320 unknown bytes
-	for(int r = 0; r < 320; r++)
+	for(uint32 r = 0; r < 320; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	// Block of 343 unknown bytes
-	for(int r = 0; r < 343; r++)
+	for(uint32 r = 0; r < 343; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt32(0);				// Unknown
@@ -1300,7 +1301,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(64);			// Group of 64 int32s follow
 
-	for(int r = 0; r < 64; r++)
+	for(uint32 r = 0; r < 64; r++)
 		outapp->WriteUInt32(0);				// Unknown
 
 	outapp->WriteUInt32(emu->air_remaining);		// ?
@@ -1339,7 +1340,7 @@ ENCODE(OP_PlayerProfile)
 
 	// Last 50 Kills
 	outapp->WriteUInt32(50);
-	for(int r = 0; r < 50; ++r)
+	for(uint32 r = 0; r < 50; ++r)
 	{
 		outapp->WriteString(emu->PVPRecentKills[r].Name);
 		outapp->WriteUInt32(emu->PVPRecentKills[r].Level);
@@ -1367,14 +1368,12 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(emu->RestTimer);
 
-	// Block of 1028 unknown bytes
-	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(4);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt32(1024);			// Unknown Count
+
+	// Block of 1024 unknown bytes
 	outapp->WriteUInt8(31);				// Unknown
 
-	for(int r = 0; r < 1023; r++)
+	for(uint32 r = 0; r < 1023; r++)
 		outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt32(0);				// Unknown
@@ -1733,7 +1732,8 @@ ENCODE(OP_ZoneSpawns) {
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
 			Bitfields->gender = emu->gender;
-			Bitfields->unknown = 0xE300080;
+			if(emu->NPC)
+				Bitfields->unknown = 0xE300080;
 			//Bitfields->afk = 0;
 			//Bitfields->linkdead = 0;
 
@@ -2225,7 +2225,9 @@ ENCODE(OP_RequestClientZoneChange) {
 	OUT(x);
 	OUT(z);
 	OUT(heading);
-	OUT(type);
+	eq->type = 0x0b;
+	eq->unknown004 = 0xffffffff;
+	eq->unknown172 = 0x0168b500;
 	FINISH_ENCODE();
 }
 
@@ -3126,7 +3128,7 @@ ENCODE(OP_DzCompass)
 	ALLOC_VAR_ENCODE(structs::ExpeditionCompass_Struct, sizeof(structs::ExpeditionInfo_Struct) + sizeof(structs::ExpeditionCompassEntry_Struct) * emu->count);
 	OUT(count);
 
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		OUT(entries[i].x);
 		OUT(entries[i].y);
@@ -3145,7 +3147,7 @@ ENCODE(OP_DzMemberList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -3167,7 +3169,7 @@ ENCODE(OP_DzExpeditionList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].expedition, strlen(emu->entries[i].expedition));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -3398,7 +3400,7 @@ ENCODE(OP_RespondAA) {
 
 	eq->aa_count = MAX_PP_AA_ARRAY;
 
-	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
+	for(uint32 i = 0; i < MAX_PP_AA_ARRAY; ++i)
 	{
 		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
 		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
@@ -3438,7 +3440,7 @@ ENCODE(OP_AltCurrency)
 
         out_populate->opcode = populate->opcode;
         out_populate->count = populate->count;
-        for(int i = 0; i < populate->count; ++i) {
+        for(uint32 i = 0; i < populate->count; ++i) {
             out_populate->entries[i].currency_number = populate->entries[i].currency_number;
             out_populate->entries[i].currency_number2 = populate->entries[i].currency_number2;
             out_populate->entries[i].item_id = populate->entries[i].item_id;
@@ -3778,8 +3780,9 @@ DECODE(OP_ClientUpdate) {
 	IN(animation);
 	FINISH_DIRECT_DECODE();
 }
-
+#ifdef _WINDOWS
 #pragma optimize( "", off )
+#endif
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -3815,7 +3818,9 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
+#ifdef _WINDOWS
 #pragma optimize( "", on )
+#endif
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);

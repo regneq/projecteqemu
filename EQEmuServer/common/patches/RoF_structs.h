@@ -1295,17 +1295,17 @@ struct ZoneChange_Struct {
 };
 
 struct RequestClientZoneChange_Struct {
-/*00*/	uint16	zone_id;
-/*02*/	uint16	instance_id;
-/*04*/	uint32	unknown004;
-/*08*/	float	y;
-/*12*/	float	x;
-/*16*/	float	z;
-/*20*/	float	heading;
-/*24*/	uint32	type;	//unknown... values
-/*28*/	float	unknown028;
-/*32*/	uint8	unknown032[64];
-/*96*/
+/*000*/	uint16	zone_id;
+/*002*/	uint16	instance_id;
+/*004*/	uint32	unknown004;
+/*008*/	float	y;
+/*012*/	float	x;
+/*016*/	float	z;
+/*020*/	float	heading;
+/*024*/	uint32	type;	//unknown... values
+/*032*/	uint8	unknown032[144];
+/*172*/	uint32	unknown172;
+/*176*/
 };
 
 struct Animation_Struct {
