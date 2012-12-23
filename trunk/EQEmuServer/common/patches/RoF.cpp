@@ -1733,6 +1733,7 @@ ENCODE(OP_ZoneSpawns) {
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
 			Bitfields->gender = emu->gender;
+			Bitfields->unknown = 0xE300080;
 			//Bitfields->afk = 0;
 			//Bitfields->linkdead = 0;
 
@@ -4155,7 +4156,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	
 	RoF::structs::ItemSerializationHeader hdr;
 
-	sprintf(hdr.unknown000, "tdm006G0002I1G00");
+	sprintf(hdr.unknown000, "06e0002Y1W00");
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
@@ -4182,10 +4183,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown060 = 0;
 	hdr.unknown061 = 0;
 	hdr.unknown062 = 0;
-	hdr.unknown063 = 0;
-	hdr.ItemClass = item->ItemClass;
 	hdr.unknowna1 = 0xffffffff;
 	hdr.unknowna2 = 0;
+	hdr.unknown063 = 0;
+	hdr.unknowna3 = 0;
+	hdr.unknowna4 = 0xffffffff;
+	hdr.unknowna5 = 0;
+	hdr.ItemClass = item->ItemClass;
 
 	ss.write((const char*)&hdr, sizeof(RoF::structs::ItemSerializationHeader));
 
@@ -4312,8 +4316,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.unknown7 = 0;
 	ibs.EliteMaterial = item->EliteMaterial;
 	ibs.unknown_RoF3 = 0;
+	ibs.unknown_RoF4 = 0;
 	ibs.SellRate = item->SellRate;
-
 	ibs.CombatEffects = item->CombatEffects;
 	ibs.Shielding = item->Shielding;
 	ibs.StunResist = item->StunResist;
@@ -4351,6 +4355,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	isbs.augtype = item->AugType;
 	isbs.augrestrict = item->AugRestrict;
+	isbs.augdistiller = 0;
 
 	for(int x = 0; x < 5; ++x)
 	{
@@ -4358,6 +4363,11 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		isbs.augslots[x].visible = item->AugSlotVisible[x];
 		isbs.augslots[x].unknown = item->AugSlotUnk2[x];
 	}
+
+	// Increased to 6 max aug slots
+	isbs.augslots[5].type = 0;
+	isbs.augslots[5].visible = 1;
+	isbs.augslots[5].unknown = 0;
 
 	isbs.ldonpoint_type = item->PointType;
 	isbs.ldontheme = item->LDoNTheme;

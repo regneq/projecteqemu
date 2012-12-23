@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/23/2012==
+Trevius: RoF - Fixed the item struct so items can be loaded properly.
+Trevius: RoF - Added back all of the opcodes that were previously identified and a few more.
+
 ==12/22/2012==
 Secrets: Fixed the x64 portability issue reported by Akkadius. No idea how long this has been broke but at least it's fixed.
 
