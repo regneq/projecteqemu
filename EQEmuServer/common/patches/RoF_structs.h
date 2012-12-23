@@ -4182,7 +4182,7 @@ struct RoFSlotStruct
 
 struct ItemSerializationHeader
 {
-/*000*/	char unknown000[17];	// New for HoT. Looks like a string.
+/*000*/	char unknown000[13];	// New for HoT. Looks like a string.
 /*017*/	uint32 stacksize;
 /*021*/	uint32 unknown004;
 /*025*/	uint8  slot_type;	// 0 = normal, 1 = bank, 2 = shared bank, 9 = merchant, 20 = ?
@@ -4196,19 +4196,22 @@ struct ItemSerializationHeader
 /*048*/	uint32 unknown028; //0
 /*052*/	uint32 last_cast_time;	// Unix Time from PP of last cast for this recast type if recast delay > 0
 /*056*/	uint32 charges; //Total Charges an item has (-1 for unlimited)
-/*060*/	uint32 inst_nodrop; // 1 if the item is no drop (attuned items)
-/*064*/	uint32 unknown044; //0
-/*068*/	uint32 unknown048; //0
-/*072*/	uint32 unknown052; //0
-/*076*/	uint32 unknown056; //0
-/*080*/	uint8 unknown060; //0
-/*081*/	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
-/*082*/	uint8 unknown062; // 0
-/*083*/	uint8 unknown063; // 0
-/*084*/	uint32 unknowna1; // 0xffffffff
-/*088*/	uint32 unknowna2;
-/*092*/	uint8 ItemClass; //0, 1, or 2
-/*093*/
+/*060*/	uint32 inst_nodrop;	// 1 if the item is no drop (attuned items)
+/*064*/	uint32 unknown044;	// 0
+/*068*/	uint32 unknown048;	// 0
+/*072*/	uint32 unknown052;	// 0
+/*076*/	uint32 unknown056;	// 0
+/*080*/	uint8 unknown060;	// 0
+/*081*/	uint8 unknown061;	// 0 - Add Evolving Item struct if this isn't set to 0?
+/*082*/	uint8 unknown062;	// 0
+/*083*/	uint32 unknowna1;	// 0xffffffff
+/*087*/	uint32 unknowna2;	// 0
+/*091*/	uint8 unknown063;	// 0
+/*092*/	uint32 unknowna3;	// 0
+/*096*/	uint32 unknowna4;	// 0xffffffff
+/*100*/	uint32 unknowna5;	// 0
+/*104*/	uint8 ItemClass; //0, 1, or 2
+/*105*/
 };
 
 struct ItemBodyStruct
@@ -4277,7 +4280,8 @@ struct ItemBodyStruct
 	uint32 unknown7;
 	uint32 EliteMaterial;
 	uint32 unknown_RoF3;	// New to March 21 2012 client
-	float SellRate;
+	uint32 unknown_RoF4;	// New to December 10th 2012 client - NEW
+	float  SellRate;
 	sint32 CombatEffects;
 	sint32 Shielding;
 	sint32 StunResist;
@@ -4309,7 +4313,8 @@ struct ItemSecondaryBodyStruct
 {
 	uint32 augtype;
 	uint32 augrestrict;
-	AugSlotStruct augslots[5];
+	uint32 augdistiller;	// New to December 10th 2012 client - NEW
+	AugSlotStruct augslots[6];
 
 	uint32 ldonpoint_type;
 	uint32 ldontheme;
@@ -4435,27 +4440,28 @@ struct ItemQuaternaryBodyStruct
 	uint32 evolve_string; // Some String, but being evolution related is just a guess
 	uint8 unknown19;	
 	uint32 unknown20;	// Bard Stuff?
-	uint32 unknown21;
-	uint32 unknown22;
+	//uint32 unknown21;
+	uint8 unknown22;
 	uint32 unknown23;
 	uint32 unknown24;
 	uint32 unknown25;
-	uint32 unknown26;
-	uint32 unknown27;
-	uint8 unknown_RoF5;		// 0 New to March 21 2012 client
+	float unknown26;
+	float unknown27;
+	uint32 unknown_RoF6;	// 0 New to March 21 2012 client
 	uint32 unknown28;	// 0xffffffff 
 	uint16 unknown29;
 	uint32 unknown30;	// 0xffffffff
 	uint16 unknown31;
 	uint32 unknown32;
-	uint32 unknown33;
+	float  unknown33;
 	uint32 unknown34;
 	uint32 unknown35;
 	uint32 unknown36;
 	uint32 unknown37;
+	uint32 unknown_RoF7;
+	uint32 unknown_RoF8;
 	uint8 unknown38;	// 0
 	uint8 unknown39;	// 1
-
 	uint32 subitem_count;
 };
 
