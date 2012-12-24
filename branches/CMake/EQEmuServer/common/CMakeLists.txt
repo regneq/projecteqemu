@@ -66,6 +66,7 @@ SET(common_sources
     patches/patches.cpp
     patches/SoD.cpp
     patches/SoF.cpp
+    patches/RoF.cpp
     patches/Titanium.cpp
     patches/Underfoot.cpp
     patches/VoA.cpp
@@ -202,6 +203,10 @@ SET(common_headers
     patches/SSDeclare.h
     patches/SSDefine.h
     patches/SSRegister.h
+    patches/RoF.h
+    patches/RoF_itemfields.h
+    patches/RoF_ops.h
+    patches/RoF_structs.h
     patches/Titanium.h
     patches/Titanium_itemfields.h
     patches/Titanium_ops.h
