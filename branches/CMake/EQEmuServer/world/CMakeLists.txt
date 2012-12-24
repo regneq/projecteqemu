@@ -69,10 +69,6 @@ ADD_EXECUTABLE(World ${world_sources} ${world_headers})
 
 ADD_DEFINITIONS(-DWORLD)
 
-IF(UNIX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${perl_ccopts} ${perl_ldopts} ${mysql_ccopts} ${mysql_ldopts}")
-ENDIF(UNIX)
-
 TARGET_LINK_LIBRARIES(World Common ${PERL_LIBRARY} debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
 
 IF(MSVC)
@@ -82,7 +78,17 @@ IF(MSVC)
 ENDIF(MSVC)
 
 IF(MINGW)
-    TARGET_LINK_LIBRARIES(Client "WS2_32")
+    TARGET_LINK_LIBRARIES(World "WS2_32")
 ENDIF(MINGW)
+
+IF(UNIX)
+    TARGET_LINK_LIBRARIES(World "dl")
+    TARGET_LINK_LIBRARIES(World "z")
+    TARGET_LINK_LIBRARIES(World "m")
+    TARGET_LINK_LIBRARIES(World "rt")
+    TARGET_LINK_LIBRARIES(World "pthread")
+    TARGET_LINK_LIBRARIES(World "ssl")
+    TARGET_LINK_LIBRARIES(World "crypto")
+ENDIF(UNIX)
 
 SET(EXECUTABLE_OUTPUT_PATH ../Bin)
