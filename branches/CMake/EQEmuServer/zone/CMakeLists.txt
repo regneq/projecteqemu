@@ -164,6 +164,10 @@ IF(ENABLE_BOTS)
     ADD_DEFINITIONS(-DBOTS)
 ENDIF(ENABLE_BOTS)
 
+IF(UNIX)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${perl_ccopts} ${perl_ldopts} ${mysql_ccopts} ${mysql_ldopts}")
+ENDIF(UNIX)
+
 TARGET_LINK_LIBRARIES(Zone Common ${PERL_LIBRARY} debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
 
 IF(MSVC)
