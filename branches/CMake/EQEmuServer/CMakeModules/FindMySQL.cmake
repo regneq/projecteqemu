@@ -22,7 +22,7 @@ IF(MYSQL_ROOT)
       PATHS ${MYSQL_ROOT}/include
       PATH_SUFFIXES mysql
     )
-ELSEIF(MYSQL_ROOT)
+ELSE(MYSQL_ROOT)
     FIND_PATH(MySQL_INCLUDE_DIR
       NAMES mysql.h
       PATH_SUFFIXES mysql
@@ -43,7 +43,7 @@ IF(MYSQL_ROOT)
       PATHS ${MYSQL_ROOT}/lib /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64
       PATH_SUFFIXES mysql
     )
-ELSEIF(MYSQL_ROOT)
+ELSE(MYSQL_ROOT)
     FIND_LIBRARY(MySQL_LIBRARY_DEBUG
       NAMES ${MySQL_NAMES}
       PATHS /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64

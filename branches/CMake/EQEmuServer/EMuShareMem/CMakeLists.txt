@@ -8,7 +8,6 @@ SET(sharedmem_src
     MMF.cpp
     MMFMutex.cpp
     NPCFactionLists.cpp
-    NPCTypes.cpp
     Opcodes.cpp
     SkillCaps.cpp
     Spells.cpp
@@ -21,7 +20,6 @@ SET(sharedmem_headers
     MMF.h
     MMFMutex.h
     NPCFactionLists.h
-    NPCTypes.h
     Opcodes.h
     SkillCaps.h
     Spells.h
@@ -31,13 +29,7 @@ ADD_LIBRARY(EMuShareMem SHARED ${sharedmem_src} ${sharedmem_headers})
 TARGET_LINK_LIBRARIES(EMuShareMem Common)
 
 IF(UNIX)
-    TARGET_LINK_LIBRARIES(EMuShareMem "dl")
-    TARGET_LINK_LIBRARIES(EMuShareMem "z")
-    TARGET_LINK_LIBRARIES(EMuShareMem "m")
-    TARGET_LINK_LIBRARIES(EMuShareMem "rt")
-    TARGET_LINK_LIBRARIES(EMuShareMem "pthread")
-    TARGET_LINK_LIBRARIES(EMuShareMem "ssl")
-    TARGET_LINK_LIBRARIES(EMuShareMem "crypto")
+    ADD_DEFINITIONS(-fPIC)
 ENDIF(UNIX)
 
 SET(LIBRARY_OUTPUT_PATH ../Bin)
