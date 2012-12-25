@@ -29,6 +29,13 @@ ADD_LIBRARY(EMuShareMem SHARED ${sharedmem_src} ${sharedmem_headers})
 TARGET_LINK_LIBRARIES(EMuShareMem Common)
 
 IF(UNIX)
+    TARGET_LINK_LIBRARIES(World "dl")
+    TARGET_LINK_LIBRARIES(World "z")
+    TARGET_LINK_LIBRARIES(World "m")
+    TARGET_LINK_LIBRARIES(World "rt")
+    TARGET_LINK_LIBRARIES(World "pthread")
+    TARGET_LINK_LIBRARIES(World "ssl")
+    TARGET_LINK_LIBRARIES(World "crypto")
     ADD_DEFINITIONS(-fPIC)
 ENDIF(UNIX)
 
