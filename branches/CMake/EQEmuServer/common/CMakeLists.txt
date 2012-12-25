@@ -24,7 +24,6 @@ SET(common_sources
     EQStreamFactory.cpp
     EQStreamIdent.cpp
     EQStreamProxy.cpp
-    eqstrmgr.cpp
     eqtime.cpp
     extprofile.cpp
     guild_base.cpp
@@ -124,7 +123,6 @@ SET(common_headers
     EQStreamLocator.h
     EQStreamProxy.h
     EQStreamType.h
-    eqstrmgr.h
     eqtime.h
     errmsg.h
     extprofile.h
