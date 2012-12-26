@@ -1876,15 +1876,15 @@ ENCODE(OP_ZoneSpawns) {
 
 			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
 
-			//Position->deltaX = emu->deltaX;
-			//Position->deltaHeading = emu->deltaHeading;
-			//Position->deltaY = emu->deltaY;
+			Position->deltaX = emu->deltaX;
+			Position->deltaHeading = emu->deltaHeading;
+			Position->deltaY = emu->deltaY;
 			Position->y = emu->y;
-			//Position->animation = emu->animation;
+			Position->animation = emu->animation;
 			Position->heading = emu->heading;
 			Position->x = emu->x;
 			Position->z = emu->z;
-			//Position->deltaZ = emu->deltaZ;
+			Position->deltaZ = emu->deltaZ;
 
 			Buffer += sizeof(structs::Spawn_Struct_Position);
 		
@@ -2333,6 +2333,15 @@ ENCODE(OP_LogServer) {
  	eq->unknown263[33] = 1;
 	
  	FINISH_ENCODE();
+}
+
+ENCODE(OP_Animation) {
+	ENCODE_LENGTH_EXACT(Animation_Struct);
+	SETUP_DIRECT_ENCODE(Animation_Struct, structs::Animation_Struct);
+	OUT(spawnid);
+	OUT(value);
+	OUT(action);
+	FINISH_ENCODE();
 }
 
 ENCODE(OP_Damage) {
