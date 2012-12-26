@@ -306,16 +306,20 @@ struct Spawn_Struct_Position
 	signed	y:19;
 	signed	padding0001:1;
 
-/*001*/	signed	padding0002:32;
+/*004*/	signed  deltaX:13;      // change in x
+	signed  deltaHeading:10;// change in heading   
+	signed  padding0008:9;
 
-/*002*/	signed	padding0003:13;
+/*008*/	signed	deltaY:13;
 	signed	z:19;
 
-/*003*/	signed	x:19;
-	signed	padding0004:13;
+/*012*/	signed	x:19;
+	signed  animation:10;   // animation
+	signed  padding0016:3;
 
 /*004*/	signed	heading:12;
-	signed	padding0005:20;
+	signed	deltaZ:13;      // change in z
+	signed	padding0020:7;
 };
 
 /*	
@@ -1310,8 +1314,8 @@ struct RequestClientZoneChange_Struct {
 
 struct Animation_Struct {
 /*00*/	int16 spawnid;
-/*02*/	int8 action;
-/*03*/	int8 value;
+/*02*/	int8 value;
+/*03*/	int8 action;
 /*04*/
 };
 
@@ -1374,12 +1378,12 @@ struct CombatDamage_Struct
 /* 00 */	int16	target;
 /* 02 */	int16	source;
 /* 04 */	int8	type;			//slashing, etc.  231 (0xE7) for spells
-/* 05 */	int16	spellid;
-/* 07 */	sint32	damage;
-/* 11 */	float	unknown11;		// cd cc cc 3d
-/* 15 */	float	sequence;		// see above notes in Action_Struct
-/* 19 */	uint8	unknown19[9];	// was [9]
-/* 28 */
+/* 05 */	int32	spellid;
+/* 09 */	sint32	damage;
+/* 13 */	float	unknown11;		// cd cc cc 3d
+/* 17 */	float	sequence;		// see above notes in Action_Struct
+/* 21 */	uint8	unknown19[9];	// was [9]
+/* 30 */
 };
     
 
@@ -1483,23 +1487,23 @@ struct RespawnWindow_Struct {
 */
 struct PlayerPositionUpdateServer_Struct
 {
-/*0000*/ uint16		spawn_id;
-	 uint8		unk[2];
-/*0002*/ signed		padding0000:12; // ***Placeholder
-         signed		delta_x:13;      // change in x
-         signed		padding0005:7;  // ***Placeholder
-/*0006*/ signed		delta_heading:10;// change in heading
-         signed		delta_y:13;      // change in y
-         signed		padding0006:9;  // ***Placeholder
-/*0010*/ signed		y_pos:19;           // y coord
-         signed		animation:10;   // animation
-         signed		padding0010:3;  // ***Placeholder
-/*0014*/ unsigned	heading:12;     // heading
-         signed		x_pos:19;           // x coord
-         signed		padding0014:1;  // ***Placeholder
-/*0018*/ signed		z_pos:19;           // z coord
-         signed		delta_z:13;      // change in z
-/*0022*/
+/*0000*/ uint16	spawn_id;
+/*0002*/ uint16	spawnId2;
+/*0004*/ signed	padding0004:12;
+         signed	y_pos:19;           // y coord
+	 unsigned padding:1;
+/*0008*/ signed	delta_x:13;      // change in x
+         signed	delta_heading:10;// change in heading   
+         signed	padding0008:9;
+/*0012*/ signed	delta_y:13;      // change in y
+         signed	z_pos:19;           // z coord
+/*0016*/ signed	x_pos:19;           // x coord
+         signed	animation:10;   // animation
+         signed	padding0016:3;
+/*0020*/ unsigned heading:12;     // heading
+         signed	delta_z:13;      // change in z
+         signed	padding0020:7;
+/*0024*/
 };
 
 
@@ -1511,22 +1515,22 @@ struct PlayerPositionUpdateServer_Struct
 */
 struct PlayerPositionUpdateClient_Struct
 {
-/*0000*/ uint16		spawn_id;			// Player's spawn id
-/*0002*/ uint16		sequence;			// increments one each packet - Verified
+/*0000*/ uint16		sequence;			// increments one each packet - Verified
+/*0002*/ uint16		spawn_id;			// Player's spawn id
 /*0004*/ uint8		unknown0004[6];		// ***Placeholder
-/*0008*/ float		x_pos;				// x coord (2nd loc value)
-/*0012*/ float		y_pos;				// y coord (1st loc value)
-/*0016*/ signed		delta_heading:10;	// change in heading
-         unsigned	padding0036:10;		// animation
-         unsigned	padding0016:12;		// ***Placeholder 
-/*0020*/ float		delta_x;			// Change in x
-/*0024*/ float		delta_y;			// Change in y
-/*0028*/ float		z_pos;				// z coord (3rd loc value)
-/*0032*/ float		delta_z;			// Change in z
-/*0036*/ unsigned	animation:10;		// ***Placeholder 
-         unsigned	heading:12;			// Directional heading
-         unsigned	padding0037:10;		// ***Placeholder 
-/*0040*/
+/*0010*/ float		delta_y;			// Change in y
+/*0014*/ float		x_pos;				// x coord (2nd loc value)
+/*0018*/ float		y_pos;				// y coord (1st loc value)
+/*0022*/ signed		delta_heading:10;	// change in heading
+	 unsigned	animation:10;		// ***Placeholder 
+         unsigned	padding0024:12;		// animation
+/*0026*/ float		delta_z;			// Change in z
+/*0030*/ float		delta_x;			// Change in x
+/*0034*/ float		z_pos;				// z coord (3rd loc value)
+/*0038*/ unsigned	heading:12;			// Directional heading
+         unsigned	padding0040:10;		// ***Placeholder 
+         unsigned	padding0041:10;		// ***Placeholder 
+/*0042*/
 };
 
 /*

@@ -82,7 +82,7 @@ E(OP_ShopRequest)
 E(OP_CastSpell)
 E(OP_InterruptCast)
 E(OP_SendMembership)
-
+E(OP_Animation)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
