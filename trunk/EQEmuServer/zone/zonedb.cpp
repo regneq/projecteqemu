@@ -2109,7 +2109,7 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 	}
 	safe_delete_array(query);
 
-	for(i=0; i<BUFF_COUNT; i++) {
+	for(i=0; i < RuleI(Spells, MaxTotalSlotsNPC); i++) {
 		if (petinfo->Buffs[i].spellid != SPELL_UNKNOWN && petinfo->Buffs[i].spellid != 0) {
 			database.RunQuery(query, MakeAnyLenString(&query,
 				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
@@ -2241,7 +2241,7 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
 				continue;
 
 			uint32 slot_id = atoul(row[1]);
-			if(slot_id >= BUFF_COUNT) {
+			if(slot_id >= RuleI(Spells, MaxTotalSlotsNPC)) {
 				continue;
 			}
 

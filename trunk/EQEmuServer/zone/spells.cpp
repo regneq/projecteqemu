@@ -5220,7 +5220,7 @@ void Mob::SendPetBuffsToClient()
 	memset(outapp->pBuffer,0,outapp->size);
 	pbs->petid=GetID();
 
-	for(int buffslot = 0; buffslot < BUFF_COUNT; buffslot++) {
+	for(int buffslot = 0; buffslot < GetMaxTotalSlots(); buffslot++) {
 		if(buffs[buffslot].spellid != SPELL_UNKNOWN) {
 			pbs->spellid[buffslot] = buffs[buffslot].spellid;
 			pbs->ticsremaining[buffslot] = buffs[buffslot].ticsremaining;
