@@ -1732,26 +1732,25 @@ ENCODE(OP_ZoneSpawns) {
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
 			Bitfields->gender = emu->gender;
-			if(emu->NPC)
-				Bitfields->unknown = 0xE300080;
-			//Bitfields->afk = 0;
-			//Bitfields->linkdead = 0;
+			Bitfields->showname = ShowName;
+			Bitfields->afk = 0;
+			Bitfields->anon = emu->anon;
+			Bitfields->lfg = emu->lfg;
+			Bitfields->invis = emu->invis;
+			Bitfields->sneak = 0;
+			Bitfields->linkdead = 0;
+			Bitfields->targetable = 1;
+			Bitfields->targetable_with_hotkey = 1;
+			Bitfields->trader = 0;
+			Bitfields->ispet = emu->is_pet;
 
-			//Bitfields->invis = emu->invis;
-			//Bitfields->sneak = 0;
-			//Bitfields->lfg = emu->lfg;
+
+			// Not currently found
+			//
 			//Bitfields->gm = emu->gm;
-			//Bitfields->anon = emu->anon;
 			//Bitfields->showhelm = emu->showhelm;
-			//Bitfields->targetable = 1;
-			//Bitfields->targetable_with_hotkey = 1;
 			//Bitfields->statue = 0;
-			//Bitfields->trader = 0;
 			//Bitfields->buyer = 0;
-
-			//Bitfields->showname = ShowName;
-
-			//Bitfields->ispet = emu->is_pet;
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
