@@ -227,7 +227,7 @@ void QuestManager::me(const char *str) {
 	entity_list.MessageClose(initiator, false, 200, 10, str);
 }
 
-void QuestManager::summonitem(int32 itemid, uint16 charges) {
+void QuestManager::summonitem(int32 itemid, sint16 charges) {
 	if(!initiator)
 		return;
 	initiator->SummonItem(itemid, charges);
