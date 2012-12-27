@@ -3789,9 +3789,7 @@ DECODE(OP_ClientUpdate) {
 	IN(animation);
 	FINISH_DIRECT_DECODE();
 }
-#ifdef _WINDOWS
-#pragma optimize( "", off )
-#endif
+
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -3827,9 +3825,6 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-#ifdef _WINDOWS
-#pragma optimize( "", on )
-#endif
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);
