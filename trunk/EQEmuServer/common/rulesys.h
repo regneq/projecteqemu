@@ -86,7 +86,7 @@ public:
 	RuleManager();
 	
 	//fetch routines, you should generally use the Rule* macros instead of this
-	inline int32   GetIntRule (IntType  t) const { return(m_RuleIntValues[t]); }
+	inline sint32   GetIntRule (IntType  t) const { return(m_RuleIntValues[t]); }
 	inline float GetRealRule(RealType t) const { return(m_RuleRealValues[t]); }
 	inline bool  GetBoolRule(BoolType t) const { return (m_RuleBoolValues[t] == 1); }
 

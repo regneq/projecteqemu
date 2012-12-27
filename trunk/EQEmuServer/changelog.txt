@@ -6,6 +6,7 @@ Derision: RoF: Updated position/movement related structs (per SEQ), OP_Animation
 Akkadius: Increased max item ID to 300000 (You will need to replace your EmuShareMem.dll for sure next build!
 Akkadius: Fixed an issue where initiating CreateDatabaseEntry() for a door would reset version back to 0, it now grabs the current version the door is saved in.
 Sorvani: Fixed quest::summonitem to summon charged items with max charges if no charge amount specified
+KLS: Fixed an issue with RuleI returning an unsigned int32 instead of a signed int32.  This is a critical vulnerability, please update right away.
 
 ==12/24/2012==
 Akkadius: Fixed an issue where quest::createdoor would return a door id of 0 when doors exist with version -1 (All Zones)

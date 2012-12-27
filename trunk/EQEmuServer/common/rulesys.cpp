@@ -178,7 +178,7 @@ bool RuleManager::SetRule(const char *rule_name, const char *rule_value, Databas
 		_log(RULES__CHANGE, "Set rule %s to value %.13f", rule_name, m_RuleRealValues[index]);
 		break;
 	case BoolRule:
-		bool val = 0;
+		uint32 val = 0;
 		if(!strcasecmp(rule_value, "on") || !strcasecmp(rule_value, "true") || !strcasecmp(rule_value, "yes") || !strcasecmp(rule_value, "enabled") || !strcmp(rule_value, "1"))
 			val = 1;
 		m_RuleBoolValues[index] = val;		
