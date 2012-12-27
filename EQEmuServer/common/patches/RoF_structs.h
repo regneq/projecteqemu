@@ -272,19 +272,42 @@ sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 
 struct Spawn_Struct_Bitfields
 {
-
-	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
-	unsigned   unknown:30;
+/*00*/	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
+/*02*/	unsigned   ispet:1;		// Guessed based on observing live spawns
+/*03*/	unsigned   afk:1;		// 0=no, 1=afk
+/*04*/	unsigned   anon:2;		// 0=normal, 1=anon, 2=roleplay
+/*06*/	unsigned   unknown06:2;
+/*08*/	unsigned   lfg:1;
+/*09*/	unsigned   unknown09:1;
+/*10*/	unsigned   invis:1;		// May have invis & sneak the wrong way around ... not sure how to tell which is which
+/*11*/	unsigned   sneak:1;
+/*12*/	unsigned   invis2:1;		// This one also make the NPC/PC invis
+/*13*/	unsigned   invis3:1;		// This one also make the NPC/PC invis
+/*14*/	unsigned   invis4:1;		// This one also make the NPC/PC invis
+/*15*/	unsigned   invis6:1;		// This one also make the NPC/PC invis
+/*16*/	unsigned   invis7:1;		// This one also make the NPC/PC invis
+/*17*/	unsigned   invis8:1;		// This one also make the NPC/PC invis
+/*18*/	unsigned   invis9:1;		// This one also make the NPC/PC invis
+/*19*/	unsigned   invis10:1;		// This one also make the NPC/PC invis
+/*20*/	unsigned   invis11:1;		// This one also make the NPC/PC invis
+/*21*/	unsigned   invis12:1;		// This one also make the NPC/PC invis
+/*22*/	unsigned   linkdead:1;			// 1	Toggles LD on or off after name. Correct for RoF
+/*23*/	unsigned   unknown23:1;
+/*24*/	unsigned   unknown24:1;		// Prefixes name with !
+/*25*/	unsigned   trader:1;
+/*26*/	unsigned   unknown26:1;
+/*27*/	unsigned   targetable:1;
+/*28*/	unsigned   targetable_with_hotkey:1;
+/*29*/	unsigned   showname:1;
+/*30*/	unsigned   unknown30:2;
 	/*
 	unsigned   ispet:1;		// Could be 'is summoned pet' rather than just is pet.
-	unsigned   afk:1;		// 0=no, 1=afk
 	unsigned   sneak:1;
 	unsigned   lfg:1;
 	unsigned   padding5:1;
 	unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
 	unsigned   padding7:11;
 	unsigned   gm:1;
-	unsigned   anon:2;		// 0=normal, 1=anon, 2=roleplay
 	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
 	//
 	unsigned   linkdead:1;			// 1	Toggles LD on or off after name. Correct for RoF

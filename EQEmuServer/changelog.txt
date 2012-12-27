@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==12/27/2012==
 Sorvani: Removed #PRAGMA statements around OP_CharacterCreate from patch files now that real problem with RuleI is resolved.
+Derision: RoF: Found more of the Spawn_Struct bitfield values.
 
 ==12/26/2102==
 Secrets: Fixed an issue where the pets code was counting the wrong number of buffs to load, resulting in invalid memory. "And no one likes getting in the middle of invalid memory!"
