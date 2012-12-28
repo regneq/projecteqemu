@@ -443,6 +443,20 @@ bool RuleManager::ListRulesets(Database *db, std::map<int, std::string> &into) {
 	return(true);
 }
 
+sint32 RuleManager::GetIntRule(RuleManager::IntType t) const
+{ 
+    return(m_RuleIntValues[t]); 
+}
+
+float RuleManager::GetRealRule(RuleManager::RealType t) const
+{ 
+    return(m_RuleRealValues[t]); 
+}
+
+bool RuleManager::GetBoolRule(RuleManager::BoolType t) const
+{ 
+    return (m_RuleBoolValues[t] == 1); 
+}
 
 
 
