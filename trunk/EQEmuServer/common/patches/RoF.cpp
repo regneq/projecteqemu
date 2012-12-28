@@ -800,6 +800,8 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt8(emu->beard);
 	outapp->WriteUInt8(emu->face);
 
+	// Think there should be an extra byte before the drakkin stuff (referred to as oldface in client)
+	// Then one of the five bytes following the drakkin stuff needs removing.
 
 	outapp->WriteUInt32(emu->drakkin_heritage);
 	outapp->WriteUInt32(emu->drakkin_tattoo);
@@ -1102,7 +1104,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
-	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(emu->endurance);
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
 
@@ -1150,9 +1152,9 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteFloat(emu->heading);
 
 	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(emu->pvp);			// Unknown
+	outapp->WriteUInt8(emu->pvp);
 	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(emu->gm);			// Unknown
+	outapp->WriteUInt8(emu->gm);
 
 	//outapp->WriteUInt32(emu->guild_id);
 	outapp->WriteUInt32(0);
