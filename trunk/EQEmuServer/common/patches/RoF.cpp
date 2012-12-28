@@ -1150,9 +1150,9 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteFloat(emu->heading);
 
 	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->pvp);			// Unknown
 	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->gm);			// Unknown
 
 	//outapp->WriteUInt32(emu->guild_id);
 	outapp->WriteUInt32(0);
