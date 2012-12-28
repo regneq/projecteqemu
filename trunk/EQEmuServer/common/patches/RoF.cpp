@@ -1283,7 +1283,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(0);				// Unknown
 
-	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->leadAAActive);
 
 	outapp->WriteUInt32(6);				// Count ... of LDoN stats ?
 	outapp->WriteUInt32(0);				// Unknown
@@ -1294,14 +1294,14 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(emu->ldon_points_tak);
 
 	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
 
-	outapp->WriteUInt32(64);			// Group of 64 int32s follow
+	outapp->WriteDouble(emu->group_leadership_exp);
+	outapp->WriteDouble(emu->raid_leadership_exp);
+
+	outapp->WriteUInt32(emu->group_leadership_points);
+	outapp->WriteUInt32(emu->raid_leadership_points);
+
+	outapp->WriteUInt32(64);			// Group of 64 int32s follow	Group/Raid Leadership abilities ?
 
 	for(uint32 r = 0; r < 64; r++)
 		outapp->WriteUInt32(0);				// Unknown
