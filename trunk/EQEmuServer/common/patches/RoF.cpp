@@ -1303,8 +1303,11 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(64);			// Group of 64 int32s follow	Group/Raid Leadership abilities ?
 
-	for(uint32 r = 0; r < 64; r++)
-		outapp->WriteUInt32(0);				// Unknown
+	for(uint32 r = 0; r < MAX_LEADERSHIP_AA_ARRAY; r++)
+		outapp->WriteUInt32(emu->leader_abilities.ranks[r]);
+
+	for(uint32 r = 0; r < 64 - MAX_LEADERSHIP_AA_ARRAY; r++)
+		outapp->WriteUInt32(0);				// Unused/unsupported Leadership abilities
 
 	outapp->WriteUInt32(emu->air_remaining);		// ?
 
