@@ -1233,6 +1233,15 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			if (src_inst->GetItem()->Attuneable) {
 				src_inst->SetInstNoDrop(true);
 			}
+			if (src_inst->IsAugmented()) {
+				for(int i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+					if (src_inst->GetAugment(i)) {
+						if (src_inst->GetAugment(i)->GetItem()->Attuneable) {
+							src_inst->GetAugment(i)->SetInstNoDrop(true);
+						}
+					}
+				}
+			}
 			SetMaterial(dst_slot_id,src_inst->GetItem()->ID);
 		}
 		mlog(INVENTORY__SLOTS, "Moving entire item from slot %d to slot %d", src_slot_id, dst_slot_id);

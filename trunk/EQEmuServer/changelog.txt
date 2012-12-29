@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: RoF: Added Leadership AA into the PP. Few opcodes to make Track work.
 Derision: RoF: Some spell related opcodes and PetCommands struct update.
 Vaion: RoF: Fixed OP_PetCommands and OP_TargetCommand to correct opcodes.  Identified OP_Jump.
+Vaion: Fix for an issue with attuneable augments and an issue in guild bank.
 
 ==12/28/2012==
 Derision: RoF: Found GM and PVP flags in PP.

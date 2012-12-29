@@ -1402,7 +1402,7 @@ bool GuildBankManager::SplitStack(uint32 GuildID, uint16 SlotID, uint32 Quantity
 	if(BankArea[SlotID].ItemID == 0)
 		return false;
 
-	if(BankArea[SlotID].Quantity <= Quantity)
+	if(BankArea[SlotID].Quantity <= Quantity || Quantity == 0)
 		return false;
 
 	const Item_Struct *Item = database.GetItem(BankArea[SlotID].ItemID);
