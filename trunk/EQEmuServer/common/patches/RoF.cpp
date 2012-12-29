@@ -3527,7 +3527,6 @@ DECODE(OP_PetCommands)
 		default:
 			emu->command = eq->command;
 	}
-	OUT(unknown);
 
 	FINISH_DIRECT_DECODE();
 }
