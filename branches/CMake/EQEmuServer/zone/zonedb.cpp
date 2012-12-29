@@ -1904,7 +1904,7 @@ void ZoneDatabase::InsertDoor(uint32 ddoordbid, int16 ddoorid, const char* ddoor
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	int32 maxid;
-	if (!RunQuery(query, MakeAnyLenString(&query, "replace into doors (id, doorid,zone,name,pos_x,pos_y,pos_z,heading,opentype,guild,lockpick,keyitem,door_param,invert_state,incline,size) values('%i','%i','%s','%s','%f','%f','%f','%f','%i','%i','%i', '%i','%i','%i','%i','%i')", ddoordbid ,ddoorid ,zone->GetShortName(), ddoor_name, dxpos, dypos, dzpos, dheading, dopentype, dguildid, dlockpick, dkeyitem, ddoor_param, dinvert, dincline, dsize), errbuf))	{
+	if (!RunQuery(query, MakeAnyLenString(&query, "replace into doors (id, doorid,zone,version,name,pos_x,pos_y,pos_z,heading,opentype,guild,lockpick,keyitem,door_param,invert_state,incline,size) values('%i','%i','%s','%i', '%s','%f','%f','%f','%f','%i','%i','%i', '%i','%i','%i','%i','%i')", ddoordbid ,ddoorid ,zone->GetShortName(), zone->GetInstanceVersion(), ddoor_name, dxpos, dypos, dzpos, dheading, dopentype, dguildid, dlockpick, dkeyitem, ddoor_param, dinvert, dincline, dsize), errbuf))	{
 		cerr << "Error in InsertDoor" << query << "' " << errbuf << endl;
 	}
 	safe_delete_array(query);
@@ -2109,7 +2109,7 @@ void ZoneDatabase::SavePetInfo(Client *c) {
 	}
 	safe_delete_array(query);
 
-	for(i=0; i<BUFF_COUNT; i++) {
+	for(i=0; i < RuleI(Spells, MaxTotalSlotsNPC); i++) {
 		if (petinfo->Buffs[i].spellid != SPELL_UNKNOWN && petinfo->Buffs[i].spellid != 0) {
 			database.RunQuery(query, MakeAnyLenString(&query,
 				"INSERT INTO `character_pet_buffs` (`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
@@ -2241,7 +2241,7 @@ void ZoneDatabase::LoadPetInfo(Client *c) {
 				continue;
 
 			uint32 slot_id = atoul(row[1]);
-			if(slot_id >= BUFF_COUNT) {
+			if(slot_id >= RuleI(Spells, MaxTotalSlotsNPC)) {
 				continue;
 			}
 

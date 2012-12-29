@@ -272,19 +272,42 @@ sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 
 struct Spawn_Struct_Bitfields
 {
-
-	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
-	unsigned   unknown:30;
+/*00*/	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
+/*02*/	unsigned   ispet:1;		// Guessed based on observing live spawns
+/*03*/	unsigned   afk:1;		// 0=no, 1=afk
+/*04*/	unsigned   anon:2;		// 0=normal, 1=anon, 2=roleplay
+/*06*/	unsigned   unknown06:2;
+/*08*/	unsigned   lfg:1;
+/*09*/	unsigned   unknown09:1;
+/*10*/	unsigned   invis:1;		// May have invis & sneak the wrong way around ... not sure how to tell which is which
+/*11*/	unsigned   sneak:1;
+/*12*/	unsigned   invis2:1;		// This one also make the NPC/PC invis
+/*13*/	unsigned   invis3:1;		// This one also make the NPC/PC invis
+/*14*/	unsigned   invis4:1;		// This one also make the NPC/PC invis
+/*15*/	unsigned   invis6:1;		// This one also make the NPC/PC invis
+/*16*/	unsigned   invis7:1;		// This one also make the NPC/PC invis
+/*17*/	unsigned   invis8:1;		// This one also make the NPC/PC invis
+/*18*/	unsigned   invis9:1;		// This one also make the NPC/PC invis
+/*19*/	unsigned   invis10:1;		// This one also make the NPC/PC invis
+/*20*/	unsigned   invis11:1;		// This one also make the NPC/PC invis
+/*21*/	unsigned   invis12:1;		// This one also make the NPC/PC invis
+/*22*/	unsigned   linkdead:1;			// 1	Toggles LD on or off after name. Correct for RoF
+/*23*/	unsigned   unknown23:1;
+/*24*/	unsigned   unknown24:1;		// Prefixes name with !
+/*25*/	unsigned   trader:1;
+/*26*/	unsigned   unknown26:1;
+/*27*/	unsigned   targetable:1;
+/*28*/	unsigned   targetable_with_hotkey:1;
+/*29*/	unsigned   showname:1;
+/*30*/	unsigned   unknown30:2;
 	/*
 	unsigned   ispet:1;		// Could be 'is summoned pet' rather than just is pet.
-	unsigned   afk:1;		// 0=no, 1=afk
 	unsigned   sneak:1;
 	unsigned   lfg:1;
 	unsigned   padding5:1;
 	unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
 	unsigned   padding7:11;
 	unsigned   gm:1;
-	unsigned   anon:2;		// 0=normal, 1=anon, 2=roleplay
 	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
 	//
 	unsigned   linkdead:1;			// 1	Toggles LD on or off after name. Correct for RoF
@@ -306,16 +329,20 @@ struct Spawn_Struct_Position
 	signed	y:19;
 	signed	padding0001:1;
 
-/*001*/	signed	padding0002:32;
+/*004*/	signed  deltaX:13;      // change in x
+	signed  deltaHeading:10;// change in heading   
+	signed  padding0008:9;
 
-/*002*/	signed	padding0003:13;
+/*008*/	signed	deltaY:13;
 	signed	z:19;
 
-/*003*/	signed	x:19;
-	signed	padding0004:13;
+/*012*/	signed	x:19;
+	signed  animation:10;   // animation
+	signed  padding0016:3;
 
 /*004*/	signed	heading:12;
-	signed	padding0005:20;
+	signed	deltaZ:13;      // change in z
+	signed	padding0020:7;
 };
 
 /*	
@@ -1310,8 +1337,8 @@ struct RequestClientZoneChange_Struct {
 
 struct Animation_Struct {
 /*00*/	int16 spawnid;
-/*02*/	int8 action;
-/*03*/	int8 value;
+/*02*/	int8 value;
+/*03*/	int8 action;
 /*04*/
 };
 
@@ -1374,12 +1401,12 @@ struct CombatDamage_Struct
 /* 00 */	int16	target;
 /* 02 */	int16	source;
 /* 04 */	int8	type;			//slashing, etc.  231 (0xE7) for spells
-/* 05 */	int16	spellid;
-/* 07 */	sint32	damage;
-/* 11 */	float	unknown11;		// cd cc cc 3d
-/* 15 */	float	sequence;		// see above notes in Action_Struct
-/* 19 */	uint8	unknown19[9];	// was [9]
-/* 28 */
+/* 05 */	int32	spellid;
+/* 09 */	sint32	damage;
+/* 13 */	float	unknown11;		// cd cc cc 3d
+/* 17 */	float	sequence;		// see above notes in Action_Struct
+/* 21 */	uint8	unknown19[9];	// was [9]
+/* 30 */
 };
     
 
@@ -1483,23 +1510,23 @@ struct RespawnWindow_Struct {
 */
 struct PlayerPositionUpdateServer_Struct
 {
-/*0000*/ uint16		spawn_id;
-	 uint8		unk[2];
-/*0002*/ signed		padding0000:12; // ***Placeholder
-         signed		delta_x:13;      // change in x
-         signed		padding0005:7;  // ***Placeholder
-/*0006*/ signed		delta_heading:10;// change in heading
-         signed		delta_y:13;      // change in y
-         signed		padding0006:9;  // ***Placeholder
-/*0010*/ signed		y_pos:19;           // y coord
-         signed		animation:10;   // animation
-         signed		padding0010:3;  // ***Placeholder
-/*0014*/ unsigned	heading:12;     // heading
-         signed		x_pos:19;           // x coord
-         signed		padding0014:1;  // ***Placeholder
-/*0018*/ signed		z_pos:19;           // z coord
-         signed		delta_z:13;      // change in z
-/*0022*/
+/*0000*/ uint16	spawn_id;
+/*0002*/ uint16	spawnId2;
+/*0004*/ signed	padding0004:12;
+         signed	y_pos:19;           // y coord
+	 unsigned padding:1;
+/*0008*/ signed	delta_x:13;      // change in x
+         signed	delta_heading:10;// change in heading   
+         signed	padding0008:9;
+/*0012*/ signed	delta_y:13;      // change in y
+         signed	z_pos:19;           // z coord
+/*0016*/ signed	x_pos:19;           // x coord
+         signed	animation:10;   // animation
+         signed	padding0016:3;
+/*0020*/ unsigned heading:12;     // heading
+         signed	delta_z:13;      // change in z
+         signed	padding0020:7;
+/*0024*/
 };
 
 
@@ -1511,22 +1538,22 @@ struct PlayerPositionUpdateServer_Struct
 */
 struct PlayerPositionUpdateClient_Struct
 {
-/*0000*/ uint16		spawn_id;			// Player's spawn id
-/*0002*/ uint16		sequence;			// increments one each packet - Verified
+/*0000*/ uint16		sequence;			// increments one each packet - Verified
+/*0002*/ uint16		spawn_id;			// Player's spawn id
 /*0004*/ uint8		unknown0004[6];		// ***Placeholder
-/*0008*/ float		x_pos;				// x coord (2nd loc value)
-/*0012*/ float		y_pos;				// y coord (1st loc value)
-/*0016*/ signed		delta_heading:10;	// change in heading
-         unsigned	padding0036:10;		// animation
-         unsigned	padding0016:12;		// ***Placeholder 
-/*0020*/ float		delta_x;			// Change in x
-/*0024*/ float		delta_y;			// Change in y
-/*0028*/ float		z_pos;				// z coord (3rd loc value)
-/*0032*/ float		delta_z;			// Change in z
-/*0036*/ unsigned	animation:10;		// ***Placeholder 
-         unsigned	heading:12;			// Directional heading
-         unsigned	padding0037:10;		// ***Placeholder 
-/*0040*/
+/*0010*/ float		delta_y;			// Change in y
+/*0014*/ float		x_pos;				// x coord (2nd loc value)
+/*0018*/ float		y_pos;				// y coord (1st loc value)
+/*0022*/ signed		delta_heading:10;	// change in heading
+	 unsigned	animation:10;		// ***Placeholder 
+         unsigned	padding0024:12;		// animation
+/*0026*/ float		delta_z;			// Change in z
+/*0030*/ float		delta_x;			// Change in x
+/*0034*/ float		z_pos;				// z coord (3rd loc value)
+/*0038*/ unsigned	heading:12;			// Directional heading
+         unsigned	padding0040:10;		// ***Placeholder 
+         unsigned	padding0041:10;		// ***Placeholder 
+/*0042*/
 };
 
 /*

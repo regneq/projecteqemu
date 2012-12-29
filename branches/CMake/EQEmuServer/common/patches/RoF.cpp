@@ -800,6 +800,8 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt8(emu->beard);
 	outapp->WriteUInt8(emu->face);
 
+	// Think there should be an extra byte before the drakkin stuff (referred to as oldface in client)
+	// Then one of the five bytes following the drakkin stuff needs removing.
 
 	outapp->WriteUInt32(emu->drakkin_heritage);
 	outapp->WriteUInt32(emu->drakkin_tattoo);
@@ -1102,7 +1104,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
-	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(emu->endurance);
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
 
@@ -1150,9 +1152,9 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteFloat(emu->heading);
 
 	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->pvp);
 	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->gm);
 
 	//outapp->WriteUInt32(emu->guild_id);
 	outapp->WriteUInt32(0);
@@ -1281,7 +1283,7 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(0);				// Unknown
 
-	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->leadAAActive);
 
 	outapp->WriteUInt32(6);				// Count ... of LDoN stats ?
 	outapp->WriteUInt32(0);				// Unknown
@@ -1292,14 +1294,14 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(emu->ldon_points_tak);
 
 	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
 
-	outapp->WriteUInt32(64);			// Group of 64 int32s follow
+	outapp->WriteDouble(emu->group_leadership_exp);
+	outapp->WriteDouble(emu->raid_leadership_exp);
+
+	outapp->WriteUInt32(emu->group_leadership_points);
+	outapp->WriteUInt32(emu->raid_leadership_points);
+
+	outapp->WriteUInt32(64);			// Group of 64 int32s follow	Group/Raid Leadership abilities ?
 
 	for(uint32 r = 0; r < 64; r++)
 		outapp->WriteUInt32(0);				// Unknown
@@ -1732,26 +1734,25 @@ ENCODE(OP_ZoneSpawns) {
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
 			Bitfields->gender = emu->gender;
-			if(emu->NPC)
-				Bitfields->unknown = 0xE300080;
-			//Bitfields->afk = 0;
-			//Bitfields->linkdead = 0;
+			Bitfields->showname = ShowName;
+			Bitfields->afk = 0;
+			Bitfields->anon = emu->anon;
+			Bitfields->lfg = emu->lfg;
+			Bitfields->invis = emu->invis;
+			Bitfields->sneak = 0;
+			Bitfields->linkdead = 0;
+			Bitfields->targetable = 1;
+			Bitfields->targetable_with_hotkey = 1;
+			Bitfields->trader = 0;
+			Bitfields->ispet = emu->is_pet;
 
-			//Bitfields->invis = emu->invis;
-			//Bitfields->sneak = 0;
-			//Bitfields->lfg = emu->lfg;
+
+			// Not currently found
+			//
 			//Bitfields->gm = emu->gm;
-			//Bitfields->anon = emu->anon;
 			//Bitfields->showhelm = emu->showhelm;
-			//Bitfields->targetable = 1;
-			//Bitfields->targetable_with_hotkey = 1;
 			//Bitfields->statue = 0;
-			//Bitfields->trader = 0;
 			//Bitfields->buyer = 0;
-
-			//Bitfields->showname = ShowName;
-
-			//Bitfields->ispet = emu->is_pet;
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
@@ -1876,15 +1877,15 @@ ENCODE(OP_ZoneSpawns) {
 
 			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
 
-			//Position->deltaX = emu->deltaX;
-			//Position->deltaHeading = emu->deltaHeading;
-			//Position->deltaY = emu->deltaY;
+			Position->deltaX = emu->deltaX;
+			Position->deltaHeading = emu->deltaHeading;
+			Position->deltaY = emu->deltaY;
 			Position->y = emu->y;
-			//Position->animation = emu->animation;
+			Position->animation = emu->animation;
 			Position->heading = emu->heading;
 			Position->x = emu->x;
 			Position->z = emu->z;
-			//Position->deltaZ = emu->deltaZ;
+			Position->deltaZ = emu->deltaZ;
 
 			Buffer += sizeof(structs::Spawn_Struct_Position);
 		
@@ -2333,6 +2334,15 @@ ENCODE(OP_LogServer) {
  	eq->unknown263[33] = 1;
 	
  	FINISH_ENCODE();
+}
+
+ENCODE(OP_Animation) {
+	ENCODE_LENGTH_EXACT(Animation_Struct);
+	SETUP_DIRECT_ENCODE(Animation_Struct, structs::Animation_Struct);
+	OUT(spawnid);
+	OUT(value);
+	OUT(action);
+	FINISH_ENCODE();
 }
 
 ENCODE(OP_Damage) {
@@ -3780,9 +3790,7 @@ DECODE(OP_ClientUpdate) {
 	IN(animation);
 	FINISH_DIRECT_DECODE();
 }
-#ifdef _WINDOWS
-#pragma optimize( "", off )
-#endif
+
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -3818,9 +3826,6 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-#ifdef _WINDOWS
-#pragma optimize( "", on )
-#endif
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);

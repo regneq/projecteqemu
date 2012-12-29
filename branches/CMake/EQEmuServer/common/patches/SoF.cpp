@@ -2115,7 +2115,6 @@ DECODE(OP_ClientUpdate) {
 	FINISH_DIRECT_DECODE();
 }
 
-#pragma optimize( "", off )
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -2149,7 +2148,6 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-#pragma optimize( "", on )
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);

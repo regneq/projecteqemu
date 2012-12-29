@@ -642,7 +642,7 @@ sint32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, sint16 versio
     MYSQL_RES *result;
     MYSQL_ROW row;
 	query = new char[256];
-	sprintf(query, "SELECT MAX(doorid) FROM doors WHERE zone='%s' AND version=%u", zone_name, version);
+	sprintf(query, "SELECT MAX(doorid) FROM doors WHERE zone='%s' AND (version=%u OR version=-1)", zone_name, version);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
