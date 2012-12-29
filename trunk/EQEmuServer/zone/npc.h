@@ -126,7 +126,7 @@ public:
 	virtual int GetMaxSongSlots() const { return RuleI(Spells, MaxSongSlotsNPC); }
 	virtual int GetMaxDiscSlots() const { return RuleI(Spells, MaxDiscSlotsNPC); }
 	virtual int GetMaxTotalSlots() const { return RuleI(Spells, MaxTotalSlotsNPC); }
-	virtual int GetPetMaxTotalSlots() const { return 25; }
+	virtual int GetPetMaxTotalSlots() const { return RuleI(Spells, MaxTotalSlotsPET); }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
 

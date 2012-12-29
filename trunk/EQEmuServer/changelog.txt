@@ -5,6 +5,8 @@ Derision: RoF: Added Leadership AA into the PP. Few opcodes to make Track work.
 Derision: RoF: Some spell related opcodes and PetCommands struct update.
 Vaion: RoF: Fixed OP_PetCommands and OP_TargetCommand to correct opcodes.  Identified OP_Jump.
 Vaion: Fix for an issue with attuneable augments and an issue in guild bank.
+Sorvani: Fix for pets causing a crash. Do not set rule > 25!
+	REQUIRED SQL: utils/sql/queryserv/2340_required_maxbuffslotspet.sql
 
 ==12/28/2012==
 Derision: RoF: Found GM and PVP flags in PP.
