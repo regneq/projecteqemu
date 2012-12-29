@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==12/28/2012==
 Derision: RoF: Found GM and PVP flags in PP.
 Derision: RoF: Found endurance & some group/raid leadership stuff in PP.
+Sorvani: Restricted pet buffs to 25. could be made a rule when/if the extpp gets changed to handle it.
+Sorvani: Changed a few more VS2010 projects to build as $ProjectName
 
 ==12/27/2012==
 Sorvani: Removed #PRAGMA statements around OP_CharacterCreate from patch files now that real problem with RuleI is resolved.
