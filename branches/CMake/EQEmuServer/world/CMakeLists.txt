@@ -63,8 +63,6 @@ SET(world_headers
     zoneserver.h
 )
 
-INCLUDE_DIRECTORIES()
-
 ADD_EXECUTABLE(World ${world_sources} ${world_headers})
 
 ADD_DEFINITIONS(-DWORLD)

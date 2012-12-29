@@ -25,6 +25,14 @@ SET(sharedmem_headers
     Spells.h
 )
 
+SET(EQEMU_MAX_ITEMS 300000 CACHE STRING "Maxium number of items to load into memory. Make sure this is bigger than the total number of items in the server database")
+SET(EQEMU_MAX_DOORS 30000 CACHE STRING "Maxium number of doors to load into memory. Make sure this is bigger than the total number of doors in the server database")
+SET(EQEMU_MAX_FACTIONLIST_IDS 50000 CACHE STRING "Maxium number of FactionList IDs to load into memory. Make sure this is bigger than the total number of FactionList IDs in the server database")
+
+ADD_DEFINITIONS(-DMMF_EQMAX_ITEMS=${EQEMU_MAX_ITEMS})
+ADD_DEFINITIONS(-DMMF_MAX_Door_ID=${EQEMU_MAX_DOORS})
+ADD_DEFINITIONS(-DMMF_MAX_NPCFactionList_ID=${EQEMU_MAX_FACTIONLIST_IDS})
+
 ADD_LIBRARY(EMuShareMem SHARED ${sharedmem_src} ${sharedmem_headers})
 TARGET_LINK_LIBRARIES(EMuShareMem Common)
 
