@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/30/2012==
+Derision: RoF: Did some work on buffs & buff removal. OP_SetChatServer2 for UCS. Encode for OP_HPUpdate
+
 ==12/29/2012==
 Derision: RoF: Added Leadership AA into the PP. Few opcodes to make Track work.
 Derision: RoF: Some spell related opcodes and PetCommands struct update.

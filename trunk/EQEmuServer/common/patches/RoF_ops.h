@@ -83,6 +83,7 @@ E(OP_CastSpell)
 E(OP_InterruptCast)
 E(OP_SendMembership)
 E(OP_Animation)
+E(OP_HPUpdate)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
