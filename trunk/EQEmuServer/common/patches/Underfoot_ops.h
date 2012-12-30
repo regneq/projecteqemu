@@ -75,6 +75,7 @@ E(OP_RespondAA)
 E(OP_DisciplineUpdate)
 E(OP_AltCurrencySell)
 E(OP_AltCurrency)
+E(OP_WearChange)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)

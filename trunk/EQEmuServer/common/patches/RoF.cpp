@@ -3334,6 +3334,9 @@ ENCODE(OP_WearChange)
 	OUT(elite_material);
 	OUT(color.color);
 	OUT(wear_slot_id);
+	OUT(unknown06);
+	OUT(hero_forge_model);
+	OUT(unknown18);
 	FINISH_ENCODE();
 }
 
