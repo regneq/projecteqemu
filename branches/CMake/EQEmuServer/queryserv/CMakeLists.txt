@@ -15,30 +15,30 @@ SET(qserv_headers
     worldserver.h
 )
 
-ADD_EXECUTABLE(QueryServ ${qserv_sources} ${qserv_headers})
+ADD_EXECUTABLE(queryserv ${qserv_sources} ${qserv_headers})
 
 ADD_DEFINITIONS(-DQSERV)
 
-TARGET_LINK_LIBRARIES(QueryServ Common debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
+TARGET_LINK_LIBRARIES(queryserv Common debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
 
 IF(MSVC)
 	ADD_DEFINITIONS(-D_CONSOLE)
-    SET_TARGET_PROPERTIES(QueryServ PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
-    TARGET_LINK_LIBRARIES(QueryServ "Ws2_32.lib")
+    SET_TARGET_PROPERTIES(queryserv PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
+    TARGET_LINK_LIBRARIES(queryserv "Ws2_32.lib")
 ENDIF(MSVC)
 
 IF(MINGW)
-    TARGET_LINK_LIBRARIES(QueryServ "WS2_32")
+    TARGET_LINK_LIBRARIES(queryserv "WS2_32")
 ENDIF(MINGW)
 
 IF(UNIX)
-    TARGET_LINK_LIBRARIES(QueryServ "dl")
-    TARGET_LINK_LIBRARIES(QueryServ "z")
-    TARGET_LINK_LIBRARIES(QueryServ "m")
-    TARGET_LINK_LIBRARIES(QueryServ "rt")
-    TARGET_LINK_LIBRARIES(QueryServ "pthread")
-    TARGET_LINK_LIBRARIES(QueryServ "ssl")
-    TARGET_LINK_LIBRARIES(QueryServ "crypto")
+    TARGET_LINK_LIBRARIES(queryserv "dl")
+    TARGET_LINK_LIBRARIES(queryserv "z")
+    TARGET_LINK_LIBRARIES(queryserv "m")
+    TARGET_LINK_LIBRARIES(queryserv "rt")
+    TARGET_LINK_LIBRARIES(queryserv "pthread")
+    TARGET_LINK_LIBRARIES(queryserv "ssl")
+    TARGET_LINK_LIBRARIES(queryserv "crypto")
     ADD_DEFINITIONS(-fPIC)
 ENDIF(UNIX)
 
