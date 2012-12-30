@@ -1037,13 +1037,27 @@ void command_wc(Client *c, const Seperator *sep)
 {
 	if(sep->argnum < 2)
 	{
-		c->Message(0, "Usage: #wc [wear slot] [material]");
+		c->Message(0, "Usage: #wc [wear slot] [material] [ [hero_forge_model] [elite_material] [unknown06] [unknown18] ]");
 	}
 	else if(c->GetTarget() == NULL) {
 		c->Message(13, "You must have a target to do a wear change.");
 	}
 	else
 	{
+		uint32 hero_forge_model = 0;
+
+		if (sep->argnum > 2)
+		{
+			hero_forge_model = atoi(sep->arg[3]);
+			if (hero_forge_model > 0)
+			{
+				// Conversion to simplify the command arguments
+				// Hero's Forge model is actually model * 1000 + texture * 100 + wearslot
+				hero_forge_model *= 1000;
+				hero_forge_model += (atoi(sep->arg[2]) * 100);
+				hero_forge_model += atoi(sep->arg[1]);
+			}
+		}
 		/*
 		// Leaving here to add color option to the #wc command eventually
 		int32 Color;
@@ -1052,7 +1066,7 @@ void command_wc(Client *c, const Seperator *sep)
 		else
 			Color = c->GetTarget()->GetArmorTint(atoi(sep->arg[1]));
 		*/
-		c->GetTarget()->SendTextureWC(atoi(sep->arg[1]), atoi(sep->arg[2]));
+		c->GetTarget()->SendTextureWC(atoi(sep->arg[1]), atoi(sep->arg[2]), hero_forge_model, atoi(sep->arg[4]), atoi(sep->arg[5]), atoi(sep->arg[6]));
 	}
 }
 

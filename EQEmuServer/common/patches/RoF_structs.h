@@ -1281,10 +1281,11 @@ struct WearChange_Struct{
 /*002*/ int32 material;
 /*006*/ uint32 unknown06;
 /*010*/ uint32 elite_material;	// 1 for Drakkin Elite Material
-/*014*/ int32 unknown19; // New to RoF
-/*018*/ Color_Struct color;
-/*022*/ int8 wear_slot_id;
-/*023*/
+/*014*/ int32 hero_forge_model; // New to VoA
+/*018*/ int32 unknown18; // New to RoF
+/*022*/ Color_Struct color;
+/*026*/ int8 wear_slot_id;
+/*027*/
 };
 
 /*

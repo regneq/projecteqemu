@@ -2415,6 +2415,18 @@ ENCODE(OP_AltCurrencySell)
     FINISH_ENCODE();
 }
 
+ENCODE(OP_WearChange)
+{
+	ENCODE_LENGTH_EXACT(WearChange_Struct);
+	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
+	OUT(spawn_id);
+	OUT(material);
+	OUT(elite_material);
+	OUT(color.color);
+	OUT(wear_slot_id);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;

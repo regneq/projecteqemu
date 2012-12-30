@@ -1116,7 +1116,7 @@ struct WearChange_Struct{
 /*000*/ int16 spawn_id;
 /*002*/ int32 material;
 /*006*/ uint32 unknown06;
-/*010*/ uint32 c;	// 1 for Drakkin Elite Material
+/*010*/ uint32 elite_material;	// 1 for Drakkin Elite Material
 /*014*/ Color_Struct color;
 /*018*/ int8 wear_slot_id;
 /*019*/

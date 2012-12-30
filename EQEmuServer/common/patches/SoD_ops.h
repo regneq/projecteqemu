@@ -68,6 +68,7 @@ E(OP_DzLeaderStatus)
 E(OP_DzJoinExpeditionConfirm)
 E(OP_TargetBuffs)
 E(OP_AltCurrencySell)
+E(OP_WearChange)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)

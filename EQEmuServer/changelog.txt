@@ -6,7 +6,10 @@ Derision: RoF: Some spell related opcodes and PetCommands struct update.
 Vaion: RoF: Fixed OP_PetCommands and OP_TargetCommand to correct opcodes.  Identified OP_Jump.
 Vaion: Fix for an issue with attuneable augments and an issue in guild bank.
 Sorvani: Fix for pets causing a crash. Do not set rule > 25!
-	REQUIRED SQL: utils/sql/queryserv/2340_required_maxbuffslotspet.sql
+Trevius: RoF: Corrected wearchange packet structure.
+Trevius: RoF: Added new arguments to #wc ( #wc [wear slot] [material] [ [hero_forge_model] [elite_material] ] ) - Example: "#wc 1 5 6"
+
+REQUIRED SQL: utils/sql/queryserv/2340_required_maxbuffslotspet.sql
 
 ==12/28/2012==
 Derision: RoF: Found GM and PVP flags in PP.
@@ -35,7 +38,6 @@ Trevius: RoF - Added back all of the opcodes that were previously identified and
 Derision: RoF - Commented out lots of Guild opcodes that were causing crashes.
 Derision: RoF - Updated RequestClientZoneChange struct and encode. Altered default Bitfields setting to only apply tyo NPCs
 Derision: RoF - Updated RoF.cpp to remove all the warnings in a Linux compile
-
 
 ==12/22/2012==
 Secrets: Fixed the x64 portability issue reported by Akkadius. No idea how long this has been broke but at least it's fixed.

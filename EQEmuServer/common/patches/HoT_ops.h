@@ -75,6 +75,7 @@ E(OP_BuffCreate)
 E(OP_RequestClientZoneChange)
 E(OP_ZoneChange)
 E(OP_SpawnAppearance)
+E(OP_WearChange)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
