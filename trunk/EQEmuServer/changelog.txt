@@ -8,6 +8,7 @@ Vaion: Fix for an issue with attuneable augments and an issue in guild bank.
 Sorvani: Fix for pets causing a crash. Do not set rule > 25!
 Trevius: RoF: Corrected wearchange packet structure.
 Trevius: RoF: Added new arguments to #wc ( #wc [wear slot] [material] [ [hero_forge_model] [elite_material] ] ) - Example: "#wc 1 5 6"
+Akkadius: Guild Bank crash fix, checking for valid items before going through the iterator
 
 REQUIRED SQL: utils/sql/queryserv/2340_required_maxbuffslotspet.sql
 
