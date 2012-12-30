@@ -972,7 +972,7 @@ ENCODE(OP_PlayerProfile)
 
 		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
 		{
-			unknown004 = 0x3f800000;
+			unknown004 = 1;
 			slotid = 2;
 			player_id = 0x000717fd;
 		}
@@ -980,17 +980,21 @@ ENCODE(OP_PlayerProfile)
 		{
 			slotid = 0;
 		}
-		outapp->WriteUInt8(emu->buffs[r].slotid);
+		outapp->WriteUInt8(0);		// Had this as slot, but always appears to be 0 on live.
 		outapp->WriteFloat(unknown004);
 		outapp->WriteUInt32(player_id);
-		outapp->WriteUInt32(0);		// Unknown016
-		outapp->WriteUInt8(emu->buffs[r].bard_modifier);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(emu->buffs[r].counters);
+		//outapp->WriteUInt8(emu->buffs[r].bard_modifier);
 		outapp->WriteUInt32(emu->buffs[r].duration);
 		outapp->WriteUInt8(emu->buffs[r].level);
 		outapp->WriteUInt32(emu->buffs[r].spellid);
-		outapp->WriteUInt32(emu->buffs[r].counters);
+		outapp->WriteUInt32(slotid);			// Only ever seen 2
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(emu->buffs[r].counters);	// Appears twice ?
 
-		for(uint32 j = 0; j < 53; ++j)
+		for(uint32 j = 0; j < 44; ++j)
 			outapp->WriteUInt8(0);	// Unknown
 	}
 
@@ -1401,7 +1405,7 @@ ENCODE(OP_PlayerProfile)
 	
 
 	CRC32::SetEQChecksum(outapp->pBuffer, outapp->size - 1, 8);
-	_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 	dest->FastQueuePacket(&outapp, ack_req);
 
 	delete in;
@@ -1914,8 +1918,8 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				_log(NET__ERROR, "SPAWN ENCODE LOGIC PROBLEM: Buffer pointer is now %i from end", Buffer - (BufferStart + PacketSize));
 			}
-			_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
-			_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+			//_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
+			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
@@ -2402,15 +2406,42 @@ ENCODE(OP_Buff) {
 	ENCODE_LENGTH_EXACT(SpellBuffFade_Struct);
 	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	OUT(entityid);
-	OUT(slot);
+	eq->unknown004 = 2;
+	//eq->level = 80;
+	//eq->effect = 0;
 	OUT(level);
 	OUT(effect);
-	//eq->unknown7 = 10;
+	eq->unknown007 = 0;
+	eq->unknown008 = 1.0f;
 	OUT(spellid);
 	OUT(duration);
+	eq->playerId = 0x7cde;
 	OUT(slotid);
-	OUT(bufffade);
+	if(emu->bufffade == 1)
+		eq->bufffade = 1;
+	else
+		eq->bufffade = 2;
+
+	// Bit of a hack. OP_Buff appears to add/remove the buff while OP_BuffCreate adds/removes the actual buff icon
+	EQApplicationPacket *outapp = NULL;
+	if(eq->bufffade == 1)
+	{
+		outapp = new EQApplicationPacket(OP_BuffCreate, 29);
+		outapp->WriteUInt32(emu->entityid);
+		outapp->WriteUInt32(0x0271);	// Unk
+		outapp->WriteUInt8(0);		// Type of OP_BuffCreate packet ?
+		outapp->WriteUInt16(1);		// 1 buff in this packet
+		outapp->WriteUInt32(emu->slotid);
+		outapp->WriteUInt32(0xffffffff);		// SpellID (0xffff to remove)
+		outapp->WriteUInt32(0);			// Duration
+		outapp->WriteUInt32(0);			// ?
+		outapp->WriteUInt8(0);		// Caster name
+		outapp->WriteUInt8(0);		// Terminating byte
+	}
 	FINISH_ENCODE();
+
+	if(outapp)
+		dest->FastQueuePacket(&outapp);	// Send the OP_BuffCreate to remove the buff
 }
 
 ENCODE(OP_CancelTrade) {
@@ -3249,18 +3280,16 @@ ENCODE(OP_BuffCreate)
 	__packet->size = sz;
 	__packet->pBuffer = new unsigned char[sz];
 	memset(__packet->pBuffer, 0, sz);
-
-	uchar *ptr = __packet->pBuffer;
-	*((uint32*)ptr) = emu->entity_id;
-	ptr += sizeof(uint32);
-	ptr += sizeof(uint32);
-	ptr += sizeof(uchar);
-	*((uint16*)ptr) = emu->count;
-	ptr += sizeof(uint16);
+	
+	__packet->WriteUInt32(emu->entity_id);
+	__packet->WriteUInt32(0);		// PlayerID ?
+	__packet->WriteUInt8(1);			// 1 indicates all buffs on the player (0 to add or remove a single buff)
+	__packet->WriteUInt16(emu->count);
 
 	for(uint16 i = 0; i < emu->count; ++i)
 	{
 		uint16 buffslot = emu->entries[i].buff_slot;
+		// Not sure if this is needs amending for RoF yet.
 		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
 		{
 			buffslot += 5;
@@ -3270,43 +3299,15 @@ ENCODE(OP_BuffCreate)
 			buffslot += 14;
 		}
 
-		*((uint32*)ptr) = buffslot;
-		ptr += sizeof(uint32);
-		*((uint32*)ptr) = emu->entries[i].spell_id;
-		ptr += sizeof(uint32);
-		*((uint32*)ptr) = emu->entries[i].tics_remaining;
-		ptr += sizeof(uint32);
-		ptr += sizeof(uint32);
-		ptr += 1;
+		__packet->WriteUInt32(buffslot);
+		__packet->WriteUInt32(emu->entries[i].spell_id);
+		__packet->WriteUInt32(emu->entries[i].tics_remaining);
+		__packet->WriteUInt32(0); // Unknown
+		__packet->WriteString("");	
 	}
+	__packet->WriteUInt8(0); // Unknown
+
 	FINISH_ENCODE();
-	/*
-	uint32 write_var32 = 60;
-	uint8 write_var8 = 1;
-	ss.write((const char*)&emu->entity_id, sizeof(uint32));
-	ss.write((const char*)&write_var32, sizeof(uint32));
-	ss.write((const char*)&write_var8, sizeof(uint8));
-	ss.write((const char*)&emu->count, sizeof(uint16));
-	write_var32 = 0;
-	write_var8 = 0;
-	for(uint16 i = 0; i < emu->count; ++i)
-	{
-		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
-		{
-			emu->entries[i].buff_slot += 5;
-		}
-		else if(emu->entries[i].buff_slot >= 37)
-		{
-			emu->entries[i].buff_slot += 14;
-		}
-		ss.write((const char*)&emu->entries[i].buff_slot, sizeof(uint32));
-		ss.write((const char*)&emu->entries[i].spell_id, sizeof(uint32));
-		ss.write((const char*)&emu->entries[i].tics_remaining, sizeof(uint32));
-		ss.write((const char*)&write_var32, sizeof(uint32));
-		ss.write((const char*)&write_var8, sizeof(uint8));
-	}
-	ss.write((const char*)&write_var8, sizeof(uint8));
-	*/
 }
 
 ENCODE(OP_ZoneChange)
@@ -3474,6 +3475,15 @@ ENCODE(OP_AltCurrency)
 
     //dest->FastQueuePacket(&outapp, ack_req);
     delete in;
+}
+
+ENCODE(OP_HPUpdate)
+{
+	SETUP_DIRECT_ENCODE(SpawnHPUpdate_Struct, structs::SpawnHPUpdate_Struct);
+	OUT(spawn_id);
+	OUT(cur_hp);
+	OUT(max_hp);
+	FINISH_ENCODE();
 }
 
 DECODE(OP_BuffRemoveRequest)
@@ -3909,10 +3919,10 @@ DECODE(OP_GroupCancelInvite)
 }
 
 DECODE(OP_Buff) {
-	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct);
-	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct);
+	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct_Live);
+	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	IN(entityid);
-	IN(slot);
+	//IN(slot);
 	IN(level);
 	IN(effect);
 	IN(spellid);

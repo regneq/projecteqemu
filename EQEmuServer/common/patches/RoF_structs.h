@@ -702,20 +702,18 @@ struct SpellBuff_Struct_Old
 // Not functional yet, but this is what the packet looks like on Live
 struct SpellBuffFade_Struct_Live {
 /*000*/	uint32 entityid;	// Player id who cast the buff
-/*004*/	int8 slot;
+/*004*/	int8 unknown004;
 /*005*/	int8 level;
 /*006*/	int8 effect;
-/*007*/	int8 unknown7;
+/*007*/	int8 unknown007;
 /*008*/	float unknown008;
 /*012*/	uint32 spellid;
 /*016*/	uint32 duration;
-/*020*/	uint32 unknown016;
-/*024*/ uint32 playerId;	// Global player ID?		
-/*028*/	uint32 unknown020;
-/*032*/ uint8 unknown0028[48];
-/*080*/	uint32 slotid;
-/*084*/	uint32 bufffade;
-/*088*/
+/*020*/ uint32 playerId;	// Global player ID?		
+/*024*/ uint8 unknown0028[68];
+/*092*/	uint32 slotid;
+/*096*/	uint32 bufffade;
+/*100*/
 };
 
 struct SpellBuffFade_Struct {
@@ -1565,9 +1563,9 @@ struct PlayerPositionUpdateClient_Struct
 */
 struct SpawnHPUpdate_Struct
 {
-/*00*/ uint32	cur_hp;               // Id of spawn to update
-/*04*/ sint32	max_hp;                 // Maximum hp of spawn
-/*08*/ sint16	spawn_id;                 // Current hp of spawn
+/*00*/ sint16	spawn_id;
+/*02*/ uint32	cur_hp;
+/*06*/ sint32	max_hp;
 /*10*/
 };
 
