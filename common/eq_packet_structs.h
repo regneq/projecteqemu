@@ -1124,9 +1124,11 @@ struct WearChange_Struct{
 /*002*/ int32 material;
 /*006*/ uint32 unknown06;
 /*010*/ uint32 elite_material;	// 1 for Drakkin Elite Material
-/*014*/ Color_Struct color;
-/*018*/ int8 wear_slot_id;
-/*019*/
+/*014*/ int32 hero_forge_model; // New to VoA
+/*018*/ int32 unknown18; // New to RoF
+/*022*/ Color_Struct color;
+/*026*/ int8 wear_slot_id;
+/*027*/
 };
 
 /*
@@ -2290,14 +2292,21 @@ struct Inspect_Struct {
 	int16 TargetID;
 	int16 PlayerID;
 };
+
 //OP_InspectAnswer - Size: 1860
-struct InspectResponse_Struct{
+struct InspectResponse_Struct {
 /*000*/	int32 TargetID;
 /*004*/	int32 playerid;
 /*008*/	char itemnames[23][64];
 /*1480*/int32 itemicons[23];
-/*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254
+/*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254 // Msg struct property is 256 (254 + '\0' is my guess) -U
 /*1860*/
+};
+
+//OP_InspectMessageUpdate - Size: 256 (SoF+ clients after self-inspect window is closed) -U
+struct InspectMessage_Struct {
+/*000*/ char text[256];
+/*256*/
 };
 
 //OP_SetDataRate
@@ -4777,6 +4786,35 @@ struct Membership_Struct
 struct MercenaryStance_Struct {
 /*0000*/	int32	StanceIndex;	// Index of this stance (sometimes reverse reverse order - 3, 2, 1, 0 for 4 stances etc)
 /*0004*/	int32	Stance;			// From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+};
+
+struct Membership_Entry_Struct
+{
+/*000*/ uint32 purchase_id;		// Seen 1, then increments 90287 to 90300
+/*004*/ uint32 bitwise_entry;	// Seen 16 to 65536 - Skips 4096
+/*008*/ 
+};
+
+struct Membership_Setting_Struct
+{
+/*000*/ uint32 setting_index;	// 0, 1, or 2
+/*004*/ uint32 setting_id;		// 0 to 21
+/*008*/ sint32 setting_value;	// All can be 0, 1, or -1
+/*012*/ 
+};
+
+struct Membership_Details_Struct
+{
+/*0000*/ uint32 membership_setting_count;	// Seen 66
+/*0016*/ Membership_Setting_Struct settings[66];
+/*0012*/ uint32 race_entry_count;	// Seen 15
+/*1044*/ Membership_Entry_Struct membership_races[15];
+/*0012*/ uint32 class_entry_count;	// Seen 15
+/*1044*/ Membership_Entry_Struct membership_classes[15];
+/*1044*/ uint32 exit_url_length;	// Length of the exit_url string (0 for none)
+/*1048*/ //char exit_url[42];		// Upgrade to Silver or Gold Membership URL
+/*1048*/ uint32 exit_url_length2;	// Length of the exit_url2 string (0 for none)
+/*0000*/ //char exit_url2[49];		// Upgrade to Gold Membership URL
 };
 
 //Not an EQ packet, just a single int for the mercenary merchant structure.

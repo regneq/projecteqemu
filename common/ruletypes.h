@@ -105,7 +105,8 @@ RULE_INT (Mercs, SuspendIntervalS, 10)
 RULE_INT (Mercs, UpkeepIntervalS, 180)
 RULE_BOOL ( Mercs, MercGroupXP, false ) // Determines whether client gets xp for bots outside their group.
 RULE_BOOL ( Mercs, AllowMercs, true )
-RULE_INT (Mercs, AggroRadius, 70)
+RULE_INT (Mercs, AggroRadius, 70)		// Determines the distance from which a merc will aggro group member's target(also used to determine the distance at which a healer merc will begin healing a group member)
+RULE_INT (Mercs, AggroRadiusPuller, 15)	// Determines the distance from which a merc will aggro group member's target, if they have the group role of puller (also used to determine the distance at which a healer merc will begin healing a group member, if they have the group role of puller)
 RULE_INT (Mercs, ScaleRate, 100)
 RULE_CATEGORY_END()
 
@@ -272,6 +273,7 @@ RULE_INT ( Spells, MaxBuffSlotsNPC, 25)
 RULE_INT ( Spells, MaxSongSlotsNPC, 10)
 RULE_INT ( Spells, MaxDiscSlotsNPC, 1)
 RULE_INT ( Spells, MaxTotalSlotsNPC, 36)
+RULE_INT ( Spells, MaxTotalSlotsPET, 25)	// do not set this higher than 25 until the player profile is removed from the blob
 RULE_BOOL (Spells, EnableBlockedBuffs, true)
 RULE_INT ( Spells, ReflectType, 1) //0 = disabled, 1 = single target player spells only, 2 = all player spells, 3 = all single target spells, 4 = all spells
 RULE_INT ( Spells, VirusSpreadDistance, 30) // The distance a viral spell will jump to its next victim

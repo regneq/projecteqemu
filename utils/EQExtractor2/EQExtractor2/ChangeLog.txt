@@ -1,5 +1,75 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==12/18/2012==
+Derision: Fixed crash when generating SQL for a spawn that is a destructible object that has no 'bodytype' field.
+
+==12/17/2012==
+Derision: Support for December 10 2012 client.
+
+==08/22/2012==
+Derision: Changed Base1/Base2 in AA dump to signed Int32
+
+==08/17/2012==
+Derision: Support for August 15 2012 client.
+
+==07/19/2012==
+Derision: Support for July 13 2012 client.
+
+==06/30/2012==
+Derision: Support for June 25 2012 client.
+
+==03/24/2012==
+Derision: Corrected spawn packet parsing per post by Razzle on ShowEQ forums.
+
+==03/19/2012==
+Derision: Support for March 15 2012 client. Credit to fransick and Newby on the ShowEQ forums for the PP and most of the opcode changes.
+
+==12/03/2011==
+Derision: Support for November 17 2011 client.
+Derision: Added checkbox on SQL generation form to include invisible NPCs (race 127), default is false.
+
+==08/06/2011==
+Derision: Support for August 04 2011 client (currently on test).
+
+==05/25/2011==
+Derision: Support for May 24 2011 client.
+
+==05/16/2011==
+Derision: Fixed DumpAA option for May 12 client. There are two new uint32s in the SendAATable struct, one after Current Level and one after SpellType.
+
+==05/15/2011==
+Derision: Support for May 12 2011 client. Based on info by posters on the ShowEQ forums.
+
+==03/21/2011==
+Derision: Support for March 15 2011 client
+
+==02/10/2011==
+Derision: Support for Feb 8 2011 client
+Derision: Corrected Identifier for Feb 8 2011 patch
+Derision: Corrected OP_SendAATable for Feb 8 2011 patch
+
+==01/29/2011==
+Derision: Doors with opentype 57 are no longer automatically changed to type 58.
+Derision: Handling of opcodes with zero low-byte (e.g. 0x4200).
+Derision: Band-aid for crash when parsing OP_ZoneEntry for player with Otherdata & 0x01 set.
+
+==12/25/2010==
+Derision: Heading appears to be multiplied by 2 in ZonePoint packets.
+
+==12/21/2010==
+Derision: OP_SendFindableNPCS
+
+==12/08/2010==
+Derision: Added support for client Dec  7 2010 14:04:53
+
+==11/22/2010==
+Derision: Netcode fix highlighted by live patch supplied by robregen.
+Derision: Handled spawns with otherdata & 2 set the same as otherdata & 1 (destructable object data present), based on live patch supplied
+		  by robregen.
+
+==10/23/2010==
+Derision: Support for 20th October Live patch.
+
 ==09/23/2010==
 Derision: Support for 22nd September Test Server client. Don't think I have OP_ShopEnd correct.
 

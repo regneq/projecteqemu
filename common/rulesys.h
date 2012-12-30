@@ -86,9 +86,9 @@ public:
 	RuleManager();
 	
 	//fetch routines, you should generally use the Rule* macros instead of this
-	inline int   GetIntRule (IntType  t) const { return(m_RuleIntValues[t] ); }
-	inline float GetRealRule(RealType t) const { return(m_RuleRealValues[t]); }
-	inline bool  GetBoolRule(BoolType t) const { return(m_RuleBoolValues[t]); }
+	sint32 GetIntRule (IntType  t) const;
+	float GetRealRule(RealType t) const;
+	bool GetBoolRule(BoolType t) const;
 
 	//management routines
 	static const char *GetRuleName(IntType  t) { return(s_RuleInfo[t].name); }
@@ -121,7 +121,7 @@ protected:
 	int m_RuleIntValues [_IntRuleCount ];
 #endif
 	float	m_RuleRealValues[_RealRuleCount];
-	bool	m_RuleBoolValues[_BoolRuleCount];
+	int32	m_RuleBoolValues[_BoolRuleCount];
 
 	typedef enum {
 		IntRule,

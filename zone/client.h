@@ -128,7 +128,8 @@ typedef enum {
 	EQClientSoD,
 	EQClientUnderfoot,
 	EQClientHoT,
-	EQClientVoA
+	EQClientVoA,
+	EQClientRoF
 } EQClientVersion;
 
 enum {
@@ -248,7 +249,7 @@ public:
 	void	TradeRequestFailed(const EQApplicationPacket* app);
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
-	void	FinishTrade(Mob* with);
+	void	FinishTrade(Mob* with, ServerPacket* qspack = NULL, bool finalizer = false);
 	void    SendZonePoints();
 
 	void	SendBuyerResults(char *SearchQuery, uint32 SearchID);
@@ -304,7 +305,10 @@ public:
 	inline ExtendedProfile_Struct& GetEPP()	{ return m_epp; }
 	inline Inventory& GetInv()				{ return m_inv; }
 	inline const Inventory& GetInv() const	{ return m_inv; }
-	inline PetInfo* GetPetInfo(int16 pet) { return (pet==1)?&m_suspendedminion:&m_petinfo; }
+	inline PetInfo* GetPetInfo(int16 pet)	{ return (pet==1)?&m_suspendedminion:&m_petinfo; }
+	inline InspectMessage_Struct& GetInspectMessage()			  { return m_inspect_message; }
+	inline const InspectMessage_Struct& GetInspectMessage() const { return m_inspect_message; }
+
 	bool	CheckAccess(sint16 iDBLevel, sint16 iDefaultLevel);
 
 	void	CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
@@ -1271,6 +1275,7 @@ private:
 	PetInfo						m_petinfo; // current pet data, used while loading from and saving to DB
 	PetInfo						m_suspendedminion; // pet data for our suspended minion.
 	MercInfo					m_mercinfo; // current mercenary
+	InspectMessage_Struct		m_inspect_message;
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);

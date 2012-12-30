@@ -178,11 +178,11 @@ bool RuleManager::SetRule(const char *rule_name, const char *rule_value, Databas
 		_log(RULES__CHANGE, "Set rule %s to value %.13f", rule_name, m_RuleRealValues[index]);
 		break;
 	case BoolRule:
-		bool val = false;
+		uint32 val = 0;
 		if(!strcasecmp(rule_value, "on") || !strcasecmp(rule_value, "true") || !strcasecmp(rule_value, "yes") || !strcasecmp(rule_value, "enabled") || !strcmp(rule_value, "1"))
-			val = true;
-		m_RuleBoolValues[index] = val;
-		_log(RULES__CHANGE, "Set rule %s to value %s", rule_name, m_RuleBoolValues[index]?"true":"false");
+			val = 1;
+		m_RuleBoolValues[index] = val;		
+		_log(RULES__CHANGE, "Set rule %s to value %s", rule_name, m_RuleBoolValues[index] == 1 ?"true":"false");
 		break;
 	}
 	
@@ -443,6 +443,20 @@ bool RuleManager::ListRulesets(Database *db, std::map<int, std::string> &into) {
 	return(true);
 }
 
+sint32 RuleManager::GetIntRule(RuleManager::IntType t) const
+{ 
+    return(m_RuleIntValues[t]); 
+}
+
+float RuleManager::GetRealRule(RuleManager::RealType t) const
+{ 
+    return(m_RuleRealValues[t]); 
+}
+
+bool RuleManager::GetBoolRule(RuleManager::BoolType t) const
+{ 
+    return (m_RuleBoolValues[t] == 1); 
+}
 
 
 

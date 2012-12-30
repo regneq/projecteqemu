@@ -332,52 +332,96 @@ void Client::ResetTrade() {
 	}
 }
 
-void Client::FinishTrade(Mob* tradingWith) {
+void Client::FinishTrade(Mob* tradingWith, ServerPacket* qspack, bool finalizer) {
+
 	if(tradingWith && tradingWith->IsClient()) {
 		Client* other = tradingWith->CastToClient();
+
 		if(other) {
-			sint16 slot_id;
 			mlog(TRADING__CLIENT, "Finishing trade with client %s", other->GetName());
-			const Item_Struct* item = NULL;
+
+			sint16 slot_id;
+			const Item_Struct* item			 = NULL;
+			QSPlayerTradeLog_Struct* qsaudit = NULL;
+			bool QSPTL						 = false;
+
+			// QS code
+			if(qspack && RuleB(QueryServ, PlayerLogTrades)) {
+				qsaudit = (QSPlayerTradeLog_Struct*) qspack->pBuffer;
+				QSPTL	= true;
+
+				if(finalizer) { qsaudit->char2_id = this->character_id; }
+				else		  { qsaudit->char1_id = this->character_id; }
+			}
 
 			// Move each trade slot into free inventory slot
-			for (sint16 i=3000; i<=3007; i++){
-				const ItemInst* inst = m_inv[i];
-				if(inst == NULL)
-					continue;
+			for(sint16 i = 3000; i <= 3007; i++){
+				const ItemInst* inst   = m_inv[i];
+				int16 parent_offset = 0;
+
+				if(inst == NULL) { continue; }
 
 				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
 
 				/// Log Player Trades through QueryServ if Rule Enabled
-				if(RuleB(QueryServ, PlayerLogTrades)){
-						ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerTradeLog, sizeof(QSPlayerTradeLog_Struct));
-						QSPlayerTradeLog_Struct* QSPTL = (QSPlayerTradeLog_Struct*) pack->pBuffer;
+				if(QSPTL) {
+					int16 item_count = qsaudit->char1_count + qsaudit->char2_count;
+					parent_offset	 = item_count;
 
-						strcpy(QSPTL->from, this->GetName());
-						strcpy(QSPTL->to, other->GetName());
-						strcpy(QSPTL->ItemName, inst->GetItem()->Name);
-						QSPTL->Charges = inst->GetCharges();
-						QSPTL->ItemID = inst->GetItem()->ID;
-						QSPTL->SlotID = i;
-						pack->Deflate();
-						if(worldserver.Connected())
-							worldserver.SendPacket(pack);
-						safe_delete(pack);
-						
-						// Todo: Check into why trade slots aren't calculating correctly
-						if (inst->IsType(ItemClassContainer)) {
-							//Message(15, "Yes this is a container");
-							sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
-							int8 BagSize=inst->GetItem()->BagSlots;
-							uint8 BagSlot;
-							for (BagSlot=0; BagSlot<BagSize; BagSlot++) {
-								//Message(15, "This is container slot %i with BaseSlotID %i BagSize %i BagSlot %i", BagSlot, BaseSlotID, BagSize, Inventory::CalcSlotId(i, BagSlot));
-								//if(inst->GetItem(Inventory::CalcSlotId(i, BagSlot))) {
-									//Message(15, "BaseSlotID %i BagSlotId %i BagSize %i ItemID %i ItemName %s", BaseSlotID, BagSlot, BagSize, inst->GetItem()->ID, inst->GetItem()->Name);
-								//}		
-							}
+					qsaudit->trade_items[item_count].from_id   = this->character_id;
+					qsaudit->trade_items[item_count].from_slot = i;
+					qsaudit->trade_items[item_count].to_id	   = other->CharacterID();
+					qsaudit->trade_items[item_count].to_slot   = 0;
+					qsaudit->trade_items[item_count].item_id   = inst->GetID();
+					qsaudit->trade_items[item_count].charges   = inst->GetCharges();
+
+					const ItemInst* inst_aug = inst->GetAugment(1);
+					qsaudit->trade_items[item_count].aug_1 = inst_aug?inst_aug->GetID():0;
+					inst_aug = inst->GetAugment(2);
+					qsaudit->trade_items[item_count].aug_2 = inst_aug?inst_aug->GetID():0;
+					inst_aug = inst->GetAugment(3);
+					qsaudit->trade_items[item_count].aug_3 = inst_aug?inst_aug->GetID():0;
+					inst_aug = inst->GetAugment(4);
+					qsaudit->trade_items[item_count].aug_4 = inst_aug?inst_aug->GetID():0;
+					inst_aug = inst->GetAugment(5);
+					qsaudit->trade_items[item_count].aug_5 = inst_aug?inst_aug->GetID():0;
+
+					if(finalizer) { qsaudit->char2_count++; }
+					else		  { qsaudit->char1_count++; }
+					
+					if(inst->IsType(ItemClassContainer)) {
+						// Slot ID's are generated based on how the db saves bag items...
+						// At this point, items are stored in the container instance -U
+						for(uint8 j = 0; j < inst->GetItem()->BagSlots; j++) {
+							const ItemInst* baginst = inst->GetItem(j);
+
+							if(baginst == NULL) { continue; }
+							
+							sint16 k=Inventory::CalcSlotId(i, j);
+							item_count = qsaudit->char1_count + qsaudit->char2_count;
+							
+							qsaudit->trade_items[item_count].from_id   = this->character_id;
+							qsaudit->trade_items[item_count].from_slot = k;
+							qsaudit->trade_items[item_count].to_id	   = other->CharacterID();
+							qsaudit->trade_items[item_count].to_slot   = 0;
+							qsaudit->trade_items[item_count].item_id   = baginst->GetID();
+							qsaudit->trade_items[item_count].charges   = baginst->GetCharges();
+
+							const ItemInst* baginst_aug = baginst->GetAugment(1);
+							qsaudit->trade_items[item_count].aug_1 = baginst_aug?baginst_aug->GetID():0;
+							baginst_aug = baginst->GetAugment(2);
+							qsaudit->trade_items[item_count].aug_2 = baginst_aug?baginst_aug->GetID():0;
+							baginst_aug = baginst->GetAugment(3);
+							qsaudit->trade_items[item_count].aug_3 = baginst_aug?baginst_aug->GetID():0;
+							baginst_aug = baginst->GetAugment(4);
+							qsaudit->trade_items[item_count].aug_4 = baginst_aug?baginst_aug->GetID():0;
+							baginst_aug = baginst->GetAugment(5);
+							qsaudit->trade_items[item_count].aug_5 = baginst_aug?baginst_aug->GetID():0;
+
+							if(finalizer) { qsaudit->char2_count++; }
+							else		  { qsaudit->char1_count++; }
 						}
-
+					}
 				}
 
 				if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this) {
@@ -385,36 +429,91 @@ void Client::FinishTrade(Mob* tradingWith) {
 					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 
 					mlog(TRADING__CLIENT, "Trying to put %s (%d) into slot %d", inst->GetItem()->Name, inst->GetItem()->ID, slot_id);
-					if (other->PutItemInInventory(slot_id, *inst, true)) {
+
+					if(other->PutItemInInventory(slot_id, *inst, true)) {
 						mlog(TRADING__CLIENT, "Item  %s (%d) successfully transfered, deleting from trade slot.", inst->GetItem()->Name, inst->GetItem()->ID);
-					} else {
+
+						if(QSPTL) {
+							qsaudit->trade_items[parent_offset].to_slot = slot_id;
+							
+							if(inst->IsType(ItemClassContainer)) {
+								for(uint8 bagslot_idx = 0; bagslot_idx < inst->GetItem()->BagSlots; bagslot_idx++) {
+									const ItemInst* bag_inst = inst->GetItem(bagslot_idx);
+
+									if(bag_inst == NULL) { continue; }
+									sint16 to_bagslot_id = Inventory::CalcSlotId(slot_id, bagslot_idx);
+
+									qsaudit->trade_items[++parent_offset].to_slot = to_bagslot_id;
+								}
+							}
+						}
+					}
+					else {
 						PushItemOnCursor(*inst, true);
 						mlog(TRADING__ERROR, "Unable to give item %d (%d) to %s, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
+
+						if(QSPTL) {
+							qsaudit->trade_items[parent_offset].to_id	= this->character_id;
+							qsaudit->trade_items[parent_offset].to_slot = SLOT_CURSOR;
+							
+							if(inst->IsType(ItemClassContainer)) {
+								for(uint8 bagslot_idx = 0; bagslot_idx < inst->GetItem()->BagSlots; bagslot_idx++) {
+									const ItemInst* bag_inst = inst->GetItem(bagslot_idx);
+
+									if(bag_inst == NULL) { continue; }
+									sint16 to_bagslot_id = Inventory::CalcSlotId(SLOT_CURSOR, bagslot_idx);
+
+									qsaudit->trade_items[++parent_offset].to_id = this->character_id;
+									qsaudit->trade_items[parent_offset].to_slot = to_bagslot_id;
+								}
+							}
+						}
 					}
+
 					DeleteItemInInventory(i);
-				} else {
+				}
+				else {
 					PushItemOnCursor(*inst, true);
 					DeleteItemInInventory(i);
+
+					if(QSPTL) {
+						qsaudit->trade_items[parent_offset].to_id	= this->character_id;
+						qsaudit->trade_items[parent_offset].to_slot = SLOT_CURSOR;
+							
+						if(inst->IsType(ItemClassContainer)) {
+							for(uint8 bagslot_idx = 0; bagslot_idx < inst->GetItem()->BagSlots; bagslot_idx++) {
+								const ItemInst* bag_inst = inst->GetItem(bagslot_idx);
+
+								if(bag_inst == NULL) { continue; }
+								sint16 to_bagslot_id = Inventory::CalcSlotId(SLOT_CURSOR, bagslot_idx);
+
+								qsaudit->trade_items[++parent_offset].to_id	  = this->character_id;
+								qsaudit->trade_items[parent_offset].to_slot	  = to_bagslot_id;
+							}
+						}
+					}
 				}
 			}
 
 			// Money - look into how NPC's receive cash
 			this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
 
-			if(RuleB(QueryServ, PlayerLogTrades) && (other->trade->cp != 0 || other->trade->sp != 0 || other->trade->gp != 0 || other->trade->pp != 0)){
-				ServerPacket* pack = new ServerPacket(ServerOP_QSPlayerMoneyTradeLog, sizeof(QSPlayerMoneyTradeLog_Struct));
-				QSPlayerMoneyTradeLog_Struct* QSPTL = (QSPlayerMoneyTradeLog_Struct*) pack->pBuffer;
-				strcpy(QSPTL->from, this->GetName());
-				strcpy(QSPTL->to, other->GetName());
-				QSPTL->Copper = other->trade->cp;
-				QSPTL->Silver = other->trade->sp;
-				QSPTL->Gold = other->trade->gp;
-				QSPTL->Platinum = other->trade->pp;
-				pack->Deflate();
-				if(worldserver.Connected())
-					worldserver.SendPacket(pack);
-				safe_delete(pack);
+			// This is currently setup to show character offers, not receipts
+			if(QSPTL) {
+				if(finalizer) {
+					qsaudit->char2_money.platinum = this->trade->pp;
+					qsaudit->char2_money.gold	  = this->trade->gp;
+					qsaudit->char2_money.silver	  = this->trade->sp;
+					qsaudit->char2_money.copper	  = this->trade->cp;
+				}
+				else {
+					qsaudit->char1_money.platinum = this->trade->pp;
+					qsaudit->char1_money.gold	  = this->trade->gp;
+					qsaudit->char1_money.silver	  = this->trade->sp;
+					qsaudit->char1_money.copper	  = this->trade->cp;
+				}
 			}
+			
 			//Do not reset the trade here, done by the caller.
 		}
 	}

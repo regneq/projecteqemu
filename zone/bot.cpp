@@ -162,6 +162,8 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 
 	strcpy(this->name, this->GetCleanName());
 
+	database.GetBotInspectMessage(this->GetBotID(), &_botInspectMessage);
+
 	LoadGuildMembership(&_guildId, &_guildRank, &_guildName);
 
 	std::string TempErrorMessage;
@@ -11677,6 +11679,8 @@ void Bot::ProcessBotInspectionRequest(Bot* inspectedBot, Client* client) {
 				insr->itemicons[22] = 0xFFFFFFFF;
 		}
 
+		strcpy(insr->text, inspectedBot->GetInspectMessage().text);
+
 		client->QueuePacket(outapp); // Send answer to requester
 	}
 }
@@ -11962,6 +11966,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		c->Message(0, "#bot pull [<bot name>] [target] - Bot Pulling Target NPC's");
+		c->Message(0, "#bot setinspectmessage - Copies your inspect message to a targeted bot that you own");
 		return;
 	}
 	
@@ -16216,6 +16221,39 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 
 		if(!strcasecmp(sep->arg[2], "delete")) {
+		}
+	}
+
+	// #bot setinspectmessage
+	if(!strcasecmp(sep->arg[1], "setinspectmessage")) {
+		if(!strcasecmp(sep->arg[2], "help")) {
+			c->Message(0, "[Titanium clients:]");
+			c->Message(0, "- Self-inspect and type your bot's inspect message");
+			c->Message(0, "- Close the self-inspect window");
+			c->Message(0, "- Self-inspect again to update the server");
+			c->Message(0, "- Target a bot that you own and wish to update");
+			c->Message(0, "- type #bot setinspectmessage to set the bot's message");
+			c->Message(0, "[Secrets of Faydwer and higher clients:]");
+			c->Message(0, "- Self-inspect and type your bot's inspect message");
+			c->Message(0, "- Close the self-inspect window to update the server");
+			c->Message(0, "- Target a bot that you own and wish to update");
+			c->Message(0, "- type #bot setinspectmessage to set the bot's message");
+		}
+		else {
+			Mob *target = c->GetTarget();
+
+			if(target->IsBot() && (c == target->GetOwner()->CastToClient())) {
+				const InspectMessage_Struct& playermessage = c->GetInspectMessage();
+				InspectMessage_Struct& botmessage = target->CastToBot()->GetInspectMessage();
+
+				memcpy(&botmessage, &playermessage, sizeof(InspectMessage_Struct));
+				database.SetBotInspectMessage(target->CastToBot()->GetBotID(), &botmessage);
+
+				c->Message(0, "Bot %s's inspect message now reflects your inspect message.", target->GetName());
+			}
+			else {
+				c->Message(0, "Your target must be a bot that you own.");
+			}
 		}
 	}
 }

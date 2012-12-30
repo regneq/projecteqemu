@@ -1,5 +1,184 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/29/2012==
+Derision: RoF: Added Leadership AA into the PP. Few opcodes to make Track work.
+Derision: RoF: Some spell related opcodes and PetCommands struct update.
+Vaion: RoF: Fixed OP_PetCommands and OP_TargetCommand to correct opcodes.  Identified OP_Jump.
+Vaion: Fix for an issue with attuneable augments and an issue in guild bank.
+Sorvani: Fix for pets causing a crash. Do not set rule > 25!
+Trevius: RoF: Corrected wearchange packet structure.
+Trevius: RoF: Added new arguments to #wc ( #wc [wear slot] [material] [ [hero_forge_model] [elite_material] ] ) - Example: "#wc 1 5 6"
+Trevius: RoF: Hero's Forge Robes can now be used with #wc by using wear slot 7 - Example: "#wc 7 6 11"
+Akkadius: Guild Bank crash fix, checking for valid items before going through the iterator
+
+REQUIRED SQL: utils/sql/queryserv/2340_required_maxbuffslotspet.sql
+
+==12/28/2012==
+Derision: RoF: Found GM and PVP flags in PP.
+Derision: RoF: Found endurance & some group/raid leadership stuff in PP.
+Sorvani: Restricted pet buffs to 25. could be made a rule when/if the extpp gets changed to handle it.
+Sorvani: Changed a few more VS2010 projects to build as $ProjectName
+
+==12/27/2012==
+Sorvani: Removed #PRAGMA statements around OP_CharacterCreate from patch files now that real problem with RuleI is resolved.
+Derision: RoF: Found more of the Spawn_Struct bitfield values.
+
+==12/26/2102==
+Secrets: Fixed an issue where the pets code was counting the wrong number of buffs to load, resulting in invalid memory. "And no one likes getting in the middle of invalid memory!"
+Derision: RoF: Updated position/movement related structs (per SEQ), OP_Animation encode and CombatDamage_Struct
+Akkadius: Increased max item ID to 300000 (You will need to replace your EmuShareMem.dll for sure next build!
+Akkadius: Fixed an issue where initiating CreateDatabaseEntry() for a door would reset version back to 0, it now grabs the current version the door is saved in.
+Sorvani: Fixed quest::summonitem to summon charged items with max charges if no charge amount specified
+KLS: Fixed an issue with RuleI returning an unsigned int32 instead of a signed int32.  This is a critical vulnerability, please update right away.
+
+==12/24/2012==
+Akkadius: Fixed an issue where quest::createdoor would return a door id of 0 when doors exist with version -1 (All Zones)
+
+==12/23/2012==
+Trevius: RoF - Fixed the item struct so items can be loaded properly.
+Trevius: RoF - Added back all of the opcodes that were previously identified and a few more.
+Derision: RoF - Commented out lots of Guild opcodes that were causing crashes.
+Derision: RoF - Updated RequestClientZoneChange struct and encode. Altered default Bitfields setting to only apply tyo NPCs
+Derision: RoF - Updated RoF.cpp to remove all the warnings in a Linux compile
+
+==12/22/2012==
+Secrets: Fixed the x64 portability issue reported by Akkadius. No idea how long this has been broke but at least it's fixed.
+
+==12/21/2012==
+Sorvani: Items with zero charges remaining and located in a bag will no longer get set to MaxCharges when looted from a corpse. Round 2.
+Sorvani: (Hateborne) copy paste issue in Mob::TryDivineSave corrected
+Trevius: RoF - Fixed the Character Select Struct, which should prevent an error when trying to enter world on certain characters.
+Trevius: RoF - Character Creation is now functional.
+Trevius: RoF - Identified more fields in the Player Profile and added the correct checksum so the current packet should work (thanks Derision).
+Trevius: RoF - Added the opcode for max characters to allow up to 10 chars to be created per account instead of 0 (thanks Noport).
+Trevius: RoF - Fixed Drakkin Appearances at Character Select.  Appears that all facial/body features are now perfectly aligned.
+Uleat: QueryServ player trade log code is now enabled. Set the rules_value to true to enable logging.
+
+REQUIRED SQL: utils/sql/queryserv/2304_qs_playertradelog.sql
+
+==12/20/2012==
+Akkadius: Changed maxlevel default value and value for lootdrop_entries, this is a thing more affecting servers with higher than 127 so this doesn't affect many people.
+
+OPTIONAL SQL: utils/sql/svn/2300_optional_loot_changes.sql
+
+==12/19/2012==
+Trevius: RoF - More work on RoF Structs and added the Client Version stuff.
+Trevius: RoF - Removed/Disabled most opcodes until we are further along and then I will add them all back in and populate the rest.
+Trevius: RoF - Added a new packet dealing with membership status, but it may need more work.
+Uleat: Added inspect message functionality for SoF+ clients.
+Uleat: Added bot command #bot setinspectmessage (use #bot setinspectmessage help)
+
+REQUIRED SQL: utils/sql/svn/2299_required_inspectmessage_fields.sql
+
+==12/18/2012==
+Lerxst: Added the RoF.cpp files to the patches folder of the project for the vs2008 people.
+
+==12/17/2012==
+Sorvani: Added the RoF.cpp files to the patches folder of the project for the windows people.
+Akkadius: Added EntityList::GetDoorsByDoorID(int32 id) which is exported to Perl $entity_list->GetDoorsByDoorID
+Akkadius: Added Door Class object $Door->GetDoorID(); to return the obvious Door ID for the entity
+
+==12/15/2012==
+Trevius: Initial addition of the RoF client.  Currently disabled by default.  Uncomment the 2 RoF lines in common/patches/patches.cpp to enable the client.
+
+==12/13/2012==
+Sorvani: (Uleat) Player Inspect works for Titanium users again. Spell casting from a clicky effect checks that the item is still in the slot it was cast from before applying the affect and removing the charge (if applicable).
+
+==12/08/2012==
+Secrets/Akkadius: Implemented the customary ability to scale an NPC's spell damage or healing % by a modifier loaded from the npc data in npc_types
+	This will allow an NPC to do for example 150% of the damage of their damage spells if spellscale is set to '150'
+	'healscale' field needs to be set to affect heals in a similar manner
+	Both of these can also be accessed via ModifyNPCStat through 'healscale' and 'spellscale'
+	
+REQUIRED SQL: utils/sql/svn/2283_required_npc_changes.sql
+
+==12/06/2012==
+Secrets: Fixed OP_PVPStats in HoT to the proper opcode, OP_WebLink. You can use $client->SendWebLink("website"); in perl to use this functionality to pop open a web browser ingame.
+
+==12/05/2012==
+Akkadius: Ability to send signals through the Telnet console to character: signalcharbyname <playername> <id>
+
+==12/04/2012==
+Sorvani: (Uleat) Update to inspect (SoF+) and corpses to related to handling power sources. Titanium inspect still broken.
+Vaion: Renamed the rule for targeting swarm pets so that it make sense with the code.
+
+OPTIONAL SQL: utils/sql/svn/2280_optional_rule_targetableswarmpet-rename.sql
+
+==12/3/2012==
+Vaion: New rule created for handling whether swarm pets are targetable or not.  Set to false for default to allow targeting swarm pets.
+
+OPTIONAL SQL: utils/sql/svn/2278_optional_rule_targetableswarmpet.sql
+
+==12/2/2012==
+Secrets: Pets can no longer proc from any hand other than their primary hand. This fixes an issue where beastlord pets could proc two, three or four from dual wielding/double attacking pets (as well as a general mechanics fix).
+Secrets: NPCs will no longer attempt to heal through walls. There is now a LOS check for friendly NPC heals through walls. This was especially apparent in the PEQ database in Splitpaw, where you could have maybe 10 NPCs healing through walls at a time. I don't recall this ever happening on live past OoW. If this is incorrect revert it and make it a rule.
+
+==12/1/2012==
+Vaion: Swarm Pets are now untargetable.  They still gain aggro, are attackable and can be casted on by NPCs, but clients cannot target them.
+Sorvani: Items with 0 charges will no longer get a free recharge when players die. Changed the TargetName property for all projects to be $(ProjectName). The only project that will have a new name is chatserver. It is now called ucs matching the linux build.
+
+==11/27/2012==
+Sorvani: fix for newly created items with unlmiited charges to actually be usable.
+Sorvani: (Uleat) Lore check is now made for items inside bags being trade before the trade completes.
+Akkadius: Started first works of implementing QueryServ for what it was meant to be used
+Akkadius: Moved QueryServ to it's own configuration block in the eqemu_config.xml (example):
+	<qsdatabase>
+		<host>localhost</host>
+		<port>3306</port>
+		<username>root</username>
+		<password>password</password>
+		<db>queryserv</db>
+	</qsdatabase>
+Akkadius: QueryServ can now be used on a separate server and can use an entirely separate database as it was meant to
+Akkadius: Added 'loottable_id` to NPC::ModifyNPCStat which also changes quest::ModifyNPCStat(identifier, newValue); as well
+Akkadius: Fixed heap corruption in quest_globals that would occur if a value over 64 bytes was created
+Akkadius: Changed value size in qglobals from 64 bytes to 128 bytes
+Akkadius: Added #reloadworld - This command will reload every single zones Perl quests and repop them
+Secrets: Minor code fix for qglobals. Since we removed the id field from qglobals, I suppose we shouldn't use it in code.
+Secrets: Warning fix for a quest function.
+Secrets: Fixed a crash issue where player corpses did not exist at all in a function (ie; they were disabled) yet we are trying to use an invalid pointer
+Secrets: durp, i'm retarded. memleak fix.
+
+Perl Changes:
+Akkadius: Added EVENT_DISCONNECT to global_player.pl/player.pl - Event that triggers whenever a character disconnects from the world
+Akkadius: Added EVENT_CONNECT to global_player.pl/player.pl - Event that triggers whenever a character connects to the world
+Akkadius: Added EVENT_TASK_UPDATE to global_player.pl/player.pl - Event that triggers whenever a donecount is incremented in a task, exports variables: $donecount, $activity_id and $task_id
+Akkadius: Added EVENT_TASK_COMPLETE to global_player.pl/player.pl - Event that triggers whenever a task is complete, this can sort of be checked in EVENT_TASK_STAGE_COMPLETED already but this is more finite, exports variables: $donecount, $activity_id and $task_id
+Akkadius: Added EVENT_TASK_FAIL to global_player.pl/player.pl - Event that triggers whenever a task has failed, exports variables: $task_id
+Akkadius: Added $client->SignalClient($data), it uses the client as the initiator and the client that gets sent the data, good for entity_list iterations through client
+Akkadius: Exported $client->AddAlternateCurrencyValue(currency_id, amount); originally created by KLS
+Akkadius: Added quest::gettaskactivitydonecount(task, activity); which obviously will get the amount done in a task based on task and activity
+Akkadius: Added cross zone client signalling capability by character ID: quest::crosszonesignalclientbycharid(char_id, data);
+Akkadius: Added cross zone client signalling capability by character Name: quest::crosszonesignalclientbyname(Name, data);
+Akkadius: Added cross zone client messaging capability by character Name: quest::crosszonemessageplayerbyname(Type, Name, Message);
+Akkadius: Added the ability to flow #commands through Perl, by flow meaning if the command doesn't process through the traditional command system, it will dump the output to EVENT_SAY in player.pl/global_player.pl based on rule Chat:FlowCommandstoPerl_EVENT_SAY
+
+QueryServ Changes:
+* I plan on adding much more logging to this server, but for now I've started with the following:
+* QueryServ requires rules to be enabled before packets get sent to QueryServ, otherwise World/Zone doesn't need to even craft the packets for logging
+Akkadius: Logging all player kills through QueryServ, you need to have QueryServ:PlayerLogNPCKills Rule Enabled, type: 0 = Solo, 1 = Group, 2 = Raid
+Akkadius: Player trades logging started but definitely not finished
+Akkadius: Removed the rules system from QueryServ, rules should only be read from World/Zone
+
+REQUIRED SQL: utils/sql/queryserv/2268_QueryServ.sql
+
+Database Changes:
+Akkadius: Added a field in `character_` called `firstlogon` that will essentially be booled true when a player logs on, it handles a characters online status between world and zone and ultimately gets used in EVENT_CONNECT
+Akkadius: Completely dropped the `id` column in `quest_globals`, the (`charid`, `npcid`, `zoneid`, `name`) fields will act as the primary keys, tested and working fine. This solves capping out on ID's as they are unecessary.
+Akkadius: Changed value size of `quest_globals` field `value` from 64 bytes to 128 bytes
+Akkadius: Removed an AA that was causing heap corruption
+
+REQUIRED SQL: utils/sql/svn/2268_required_updates.sql
+
+==11/25/2012==
+JJ: Initial fix for /MQZone detection to reduce false positives.
+Sorvani: Corrected Improved Familiar pre-req and commited Vaion's AA update to fix animation Empathy.
+Required SQL: utils/sql/svn/2264_required_aa_updates.sql
+
+==11/24/2012==
+Sorvani: (Vaion) Added /pet no cast and /pet focus
+Required SQL: utils/sql/svn/2262_required_pet_discipline_update.sql
+
 ==11/23/2012==
 cavedude: (Tabasco) Re-added probability, setting it to 100 (default) effectively bypasses probability and no additional roll is made. Setting it to 0 prevents the table from being rolled at all, so you can disable the table but still keep the entries if needed.
 Required SQL: utils/sql/svn/2260_probability.sql

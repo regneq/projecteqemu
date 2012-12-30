@@ -258,6 +258,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GMEmoteZone] = &Client::Handle_OP_GMEmoteZone;
 	ConnectedOpcodes[OP_InspectRequest] = &Client::Handle_OP_InspectRequest;
 	ConnectedOpcodes[OP_InspectAnswer] = &Client::Handle_OP_InspectAnswer;
+	ConnectedOpcodes[OP_InspectMessageUpdate] = &Client::Handle_OP_InspectMessageUpdate;
 	ConnectedOpcodes[OP_DeleteSpell] = &Client::Handle_OP_DeleteSpell;
 	ConnectedOpcodes[OP_PetitionBug] = &Client::Handle_OP_PetitionBug;
 	ConnectedOpcodes[OP_Bug] = &Client::Handle_OP_Bug;
@@ -550,6 +551,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientVoA;
 		ClientVersionBit = BIT_VoA;
 	}
+	else if(StreamDescription == "Patch RoF")
+	{
+		ClientVersion = EQClientRoF;
+		ClientVersionBit = BIT_RoF;
+	}
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
 	Client* client = entity_list.GetClientByName(cze->char_name);
@@ -675,6 +681,12 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	FastQueuePacket(&outapp);
 	outapp = new EQApplicationPacket(OP_SendExpZonein, 0);
 	FastQueuePacket(&outapp);
+
+	if(GetClientVersion() >= EQClientRoF)
+	{
+		outapp = new EQApplicationPacket(OP_ClientReady, 0);
+		FastQueuePacket(&outapp);
+	}
 
 	// New for Secrets of Faydwer - Used in Place of OP_SendExpZonein
 	outapp = new EQApplicationPacket(OP_WorldObjectsSent, 0);
@@ -4958,22 +4970,69 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			other->trade->state = TradeCompleting;
 			trade->state = TradeCompleting;
 
-			if (CheckTradeLoreConflict(other) || other->CheckTradeLoreConflict(this))
-			{
+			if (CheckTradeLoreConflict(other) || other->CheckTradeLoreConflict(this)) {
 				Message_StringID(13,104);
 				other->Message_StringID(13,104);
 				this->FinishTrade(this);
 				other->FinishTrade(other);
 				other->trade->Reset();
 				trade->Reset();
-			} else {
+			}
+			else {
 				// Audit trade to database for both trade streams
 				other->trade->LogTrade();
 				trade->LogTrade();
 
-				// Perform actual trade
-				this->FinishTrade(other);
-				other->FinishTrade(this);
+				// start QS code
+				if(RuleB(QueryServ, PlayerLogTrades)) {
+					int16 trade_count=0;
+
+					// Item trade count for packet sizing
+					for(sint16 slot_id=3000; slot_id<=3007; slot_id++) {
+						ItemInst* other_item = other->GetInv().GetItem(slot_id);
+						if(other_item) {
+							trade_count++;
+
+							if(other_item->IsType(ItemClassContainer)) {
+								for(uint8 bagslot_id=0; bagslot_id<other_item->GetItem()->BagSlots; bagslot_id++) {
+									ItemInst* other_bagitem = other_item->GetItem(bagslot_id);
+
+									if(other_bagitem) { trade_count++; }
+								}
+							}
+						}
+
+						const ItemInst* this_item = this->GetInv().GetItem(slot_id);
+						if(this_item) {
+							trade_count++;
+						
+							if(this_item->IsType(ItemClassContainer)) {
+								for(uint8 bagslot_id=0; bagslot_id<this_item->GetItem()->BagSlots; bagslot_id++) {
+									ItemInst* this_bagitem = this_item->GetItem(bagslot_id);
+
+									if(this_bagitem) { trade_count++; }
+								}
+							}
+						}
+					}
+
+				
+					ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerTradeLog, sizeof(QSPlayerTradeLog_Struct) + (sizeof(QSItemTrade_Struct) * trade_count));
+
+					// Perform actual trade
+					this->FinishTrade(other, qspack, true);
+					other->FinishTrade(this, qspack, false);
+
+					qspack->Deflate();
+					if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+					safe_delete(qspack);
+					// end QS code
+				}
+				else {
+					this->FinishTrade(other);
+					other->FinishTrade(this);
+				}
+
 				other->trade->Reset();
 				trade->Reset();
 			}
@@ -6660,7 +6719,7 @@ void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app) {
 
 	if(tmp != 0 && tmp->IsClient()) {
 		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) { tmp->CastToClient()->QueuePacket(app); } // Send request to target
-		//Inspecting an SoF or later client which make the server handle the request
+		// Inspecting an SoF or later client will make the server handle the request
 		else { ProcessInspectRequest(tmp->CastToClient(), this); }
 	}
 
@@ -6704,9 +6763,27 @@ void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app) {
 	}
 	else { insr->itemicons[22] = 0xFFFFFFFF; }
 
+	InspectMessage_Struct* newmessage = (InspectMessage_Struct*) insr->text;
+	InspectMessage_Struct& playermessage = this->GetInspectMessage();
+	memcpy(&playermessage, newmessage, sizeof(InspectMessage_Struct));
+	database.SetPlayerInspectMessage(name, &playermessage);
+
 	if(tmp != 0 && tmp->IsClient()) { tmp->CastToClient()->QueuePacket(outapp); } // Send answer to requester
 
 	return;
+}
+
+void Client::Handle_OP_InspectMessageUpdate(const EQApplicationPacket *app) {
+
+	if (app->size != sizeof(InspectMessage_Struct)) {
+		LogFile->write(EQEMuLog::Error, "Wrong size: OP_InspectMessageUpdate, size=%i, expected %i", app->size, sizeof(InspectMessage_Struct));
+		return;
+	}
+
+	InspectMessage_Struct* newmessage = (InspectMessage_Struct*) app->pBuffer;
+	InspectMessage_Struct& playermessage = this->GetInspectMessage();
+	memcpy(&playermessage, newmessage, sizeof(InspectMessage_Struct));
+	database.SetPlayerInspectMessage(name, &playermessage);
 }
 
 #if 0	// solar: i dont think there's an op for this now, and we check this
@@ -8582,6 +8659,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		}
 	}
 
+	// This should be a part of the PlayerProfile BLOB, but we don't want to modify that -U
+	// The player inspect message is retrieved from the db on load, then saved as new updates come in..no mods to Client::Save()
+	database.GetPlayerInspectMessage(m_pp.name, &m_inspect_message);
+
 	conn_state = PlayerProfileLoaded;
 
 	m_pp.zone_id = zone->GetZoneID();
@@ -9103,12 +9184,12 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	// Task Packets
 	LoadClientTaskState();
 	
-	//if (GetClientVersion() >= EQClientVoA)
-	//{
-	//	outapp = new EQApplicationPacket(OP_ReqNewZone, 0);
-	//	Handle_Connect_OP_ReqNewZone(outapp);
-	//	safe_delete(outapp);
-	//}
+	if (GetClientVersion() >= EQClientVoA)
+	{
+		outapp = new EQApplicationPacket(OP_ReqNewZone, 0);
+		Handle_Connect_OP_ReqNewZone(outapp);
+		safe_delete(outapp);
+	}
 
 	if(ClientVersionBit & BIT_UnderfootAndLater)
 	{

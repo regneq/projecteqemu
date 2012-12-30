@@ -458,6 +458,9 @@
     <ClCompile Include="..\common\XMLParser.cpp">
       <Filter>Common Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\patches\RoF.cpp">
+      <Filter>Patches</Filter>
+    </ClCompile>
     <ClCompile Include="merc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

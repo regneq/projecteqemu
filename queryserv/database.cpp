@@ -156,40 +156,53 @@ void Database::AddSpeech(const char* from, const char* to, const char* message, 
 	safe_delete_array(S3);
 }
 
-void Database::LogPlayerTrade(const char* from, const char* to, const char* ItemName, uint32 ItemID, sint16 SlotID, sint16 Charges){
+void Database::LogPlayerTrade(QSPlayerTradeLog_Struct* QS, int32 Items) {
+
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	char *S1 = new char[strlen(from) * 2 + 1];
-	char *S2 = new char[strlen(to) * 2 + 1];
-	char *S3 = new char[strlen(ItemName) * 2 + 1];
-
-	DoEscapeString(S1, from, strlen(from));
-	DoEscapeString(S2, to, strlen(to));
-	DoEscapeString(S3, ItemName, strlen(ItemName));
-
-	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_trades` SET `from`='%s', `to`='%s', `item_name`='%s', `item_id`='%i', `slot_id`='%i', `charges`='%i', `time`=NOW()", S1, S2, S3, ItemID, SlotID, Charges), errbuf, 0, 0)) {
-		_log(NET__WORLD, "Failed player log trade Insert: %s", errbuf);
+	int32 lastid = 0;
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_trade_record` SET `time`=NOW(), "
+		"`char1_id`='%i', `char1_pp`='%i', `char1_gp`='%i', `char1_sp`='%i', `char1_cp`='%i', `char1_items`='%i', "
+		"`char2_id`='%i', `char2_pp`='%i', `char2_gp`='%i', `char2_sp`='%i', `char2_cp`='%i', `char2_items`='%i'",
+		QS->char1_id, QS->char1_money.platinum, QS->char1_money.gold, QS->char1_money.silver, QS->char1_money.copper, QS->char1_count,
+		QS->char2_id, QS->char2_money.platinum, QS->char2_money.gold, QS->char2_money.silver, QS->char2_money.copper, QS->char2_count),
+		errbuf, 0, 0, &lastid)) {
+		_log(NET__WORLD, "Failed Trade Log Record Insert: %s", errbuf);
 		_log(NET__WORLD, "%s", query);
 	}
 
-	safe_delete_array(query); safe_delete_array(S1); safe_delete_array(S2); safe_delete_array(S3);
-}
-
-void Database::LogPlayerMoneyTrade(const char* from, const char* to, uint32 Copper, uint32 Silver, uint32 Gold, uint32 Platinum){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	char *S1 = new char[strlen(from) * 2 + 1];
-	char *S2 = new char[strlen(to) * 2 + 1];
-	DoEscapeString(S1, from, strlen(from));
-	DoEscapeString(S2, to, strlen(to));
-
-	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_money_trades` SET `from`='%s', `to`='%s', `copper`='%i', `silver`='%i', `gold`='%i', `platinum`='%i', `time`=NOW()", S1, S2, Copper, Silver, Gold, Platinum), errbuf, 0, 0)) {
-		_log(NET__WORLD, "Failed player money log trade Insert: %s", errbuf);
-		_log(NET__WORLD, "%s", query);
+	if(Items > 0) {
+		for(int i = 0; i < Items; i++) {
+			if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_trade_record_entries` SET `event_id`='%i', "
+				"`from_id`='%i', `from_slot`='%i', `to_id`='%i', `to_slot`='%i', `item_id`='%i', "
+				"`charges`='%i', `aug_1`='%i', `aug_2`='%i', `aug_3`='%i', `aug_4`='%i', `aug_5`='%i'",
+				lastid, QS->trade_items[i].from_id, QS->trade_items[i].from_slot,
+				QS->trade_items[i].to_id, QS->trade_items[i].to_slot,
+				QS->trade_items[i].item_id, QS->trade_items[i].charges,
+				QS->trade_items[i].aug_1, QS->trade_items[i].aug_2, QS->trade_items[i].aug_3,
+				QS->trade_items[i].aug_4, QS->trade_items[i].aug_5, errbuf, 0, 0))) {
+				_log(NET__WORLD, "Failed Trade Log Record Entry Insert: %s", errbuf);
+				_log(NET__WORLD, "%s", query);
+			}
+		}
 	}
-
-	safe_delete_array(query); safe_delete_array(S1); safe_delete_array(S2);
 }
+
+//void Database::LogPlayerMoneyTrade(const char* from, const char* to, uint32 Copper, uint32 Silver, uint32 Gold, uint32 Platinum){
+//	char errbuf[MYSQL_ERRMSG_SIZE];
+//	char* query = 0;
+//	char *S1 = new char[strlen(from) * 2 + 1];
+//	char *S2 = new char[strlen(to) * 2 + 1];
+//	DoEscapeString(S1, from, strlen(from));
+//	DoEscapeString(S2, to, strlen(to));
+//
+//	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_money_trades` SET `from`='%s', `to`='%s', `copper`='%i', `silver`='%i', `gold`='%i', `platinum`='%i', `time`=NOW()", S1, S2, Copper, Silver, Gold, Platinum), errbuf, 0, 0)) {
+//		_log(NET__WORLD, "Failed player money log trade Insert: %s", errbuf);
+//		_log(NET__WORLD, "%s", query);
+//	}
+//
+//	safe_delete_array(query); safe_delete_array(S1); safe_delete_array(S2);
+//}
 
 void Database::LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members){
 	char errbuf[MYSQL_ERRMSG_SIZE];

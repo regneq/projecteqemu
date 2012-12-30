@@ -123,6 +123,10 @@ Client::Client(EQStreamInterface* ieqs)
 	{
 		ClientVersionBit = BIT_VoA;
 	}
+	else if(StreamDescription == "Patch RoF")
+	{
+		ClientVersionBit = BIT_RoF;
+	}
 }
 
 Client::~Client() {
@@ -197,6 +201,7 @@ void Client::SendCharInfo() {
 		// Can make max char per account into a rule - New to VoA
 		SendMaxCharCreate(10);
 		SendMembership();
+		SendMembershipSettings();
 	}
 
 	seencharsel = true;
@@ -249,7 +254,7 @@ void Client::SendMembership() {
 	
 	mc->membership = 2;				//Hardcode to gold for now. We don't use anything else.
 	mc->races = 0x1ffff;			// Available Races (4110 for silver)
-	mc->classes = 0x101ffff;		// Available Classes (4614 for silver)
+	mc->classes = 0x1ffff;			// Available Classes (4614 for silver) - Was 0x101ffff
 	mc->entrysize = 21;				// Number of membership setting entries below
 	mc->entries[0] = 0xffffffff;	// Max AA Restriction
 	mc->entries[1] = 0xffffffff;	// Max Level Restriction
@@ -279,6 +284,114 @@ void Client::SendMembership() {
 	safe_delete(outapp);
 }
 
+void Client::SendMembershipSettings() {
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SendMembershipDetails, sizeof(Membership_Details_Struct));
+	Membership_Details_Struct* mds = (Membership_Details_Struct*)outapp->pBuffer;
+
+	mds->membership_setting_count = 66;
+	uint32 gold_settings[22] = {-1,-1,-1,-1,-1,-1,1,1,1,-1,1,-1,-1,1,1,1,1,1,1,-1,-1,0};
+	uint32 entry_count = 0;
+	for (int setting_id=0; setting_id < 22; setting_id++)
+	{
+		for (int setting_index=0; setting_index < 3; setting_index++)
+		{
+			
+			mds->settings[entry_count].setting_index = setting_index;
+			mds->settings[entry_count].setting_id = setting_id;
+			mds->settings[entry_count].setting_value = gold_settings[setting_id];
+			entry_count++;
+		}
+	}
+
+	mds->race_entry_count = 15;
+	mds->class_entry_count = 15;
+
+	uint32 cur_purchase_id = 90287;
+	uint32 cur_purchase_id2 = 90301;
+	uint32 cur_bitwise_value = 1;
+	for (int entry_id=0; entry_id < 15; entry_id++)
+	{
+		if (entry_id == 0)
+		{
+			mds->membership_races[entry_id].purchase_id = 1;
+			mds->membership_races[entry_id].bitwise_entry = 0x1ffff;
+			mds->membership_classes[entry_id].purchase_id = 1;
+			mds->membership_classes[entry_id].bitwise_entry = 0x1ffff;
+		}
+		else
+		{
+			mds->membership_races[entry_id].purchase_id = cur_purchase_id;
+
+			if (entry_id < 3)
+			{
+				mds->membership_classes[entry_id].purchase_id = cur_purchase_id;
+			}
+			else
+			{
+				mds->membership_classes[entry_id].purchase_id = cur_purchase_id2;
+				cur_purchase_id2++;
+			}
+
+			if (entry_id == 1)
+			{
+				mds->membership_races[entry_id].bitwise_entry = 4110;
+				mds->membership_classes[entry_id].bitwise_entry = 4614;
+			}
+			else if (entry_id == 2)
+			{
+				mds->membership_races[entry_id].bitwise_entry = 4110;
+				mds->membership_classes[entry_id].bitwise_entry = 4614;
+			}
+			else
+			{
+				if (entry_id == 12)
+				{
+					// Live Skips 4096
+					cur_bitwise_value *= 2;
+				}
+				mds->membership_races[entry_id].bitwise_entry = cur_bitwise_value;
+				mds->membership_classes[entry_id].bitwise_entry = cur_bitwise_value;
+			}
+			cur_purchase_id++;
+		}
+		cur_bitwise_value *= 2;
+	}
+	mds->exit_url_length = 0;	// Live uses 42
+	//strcpy(eq->exit_url, "http://www.everquest.com/free-to-play/exit");
+	mds->exit_url_length2 = 0;	// Live uses 49
+	//strcpy(eq->exit_url2, "http://www.everquest.com/free-to-play/exit-silver");	
+
+	/*
+	Account Access Level Settings
+
+	ID	-	Free	Silver	Gold	-	Possible Setting
+	00	-	250		1000	-1		-	Max AA Restriction
+	01	-	-1		-1		-1		-	Max Level Restriction
+	02	-	2		4		-1		-	Max Char Slots per Account
+	03	-	1		1		-1		-	Max Spell Rank
+	04	-	4		6		-1		-	Main Inventory Size
+	05	-	100		500		-1		-	Max Platinum per level
+	06	-	0		0		1		-	Send Mail?
+	07	-	0		0		1		-	Send Parcels?
+	08	-	1		1		1		-	Voice Chat Unlimited?
+	09	-	2		5		-1		-	Mercenary Tiers
+	10	-	0		1		1		-	Create Guilds?
+	11	-	0		0		-1		-	Shared Bank Slots
+	12	-	9		14		-1		-	Max Journal Quests - 1
+	13	-	0		1		1		-	Neighborhood-House Allowed?
+	14	-	0		0		1		-	Prestige Enabled?
+	15	-	0		0		1		-	Broker System Unlimited?
+	16	-	0		1		1		-	Chat UnRestricted?
+	17	-	0		0		1		-	Progression Server Access?
+	18	-	0		0		1		-	Full Customer Support?
+	19	-	0		0		-1		-	0 for Silver
+	20	-	0		0		-1		-	0 for Silver
+	21	-	0		0		0		-	Unknown 0
+	*/
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
 
 void Client::SendPostEnterWorld() {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PostEnterWorld, 1);

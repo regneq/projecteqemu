@@ -1517,19 +1517,24 @@ void Merc::AI_Process() {
 
 	if(!IsEngaged()) {
 		if(GetFollowID()) {
-			if(MercOwner && MercOwner->CastToClient()->AutoAttackEnabled() && MercOwner->GetTarget() &&
-				MercOwner->GetTarget()->IsNPC() && MercOwner->GetTarget()->GetHateAmount(MercOwner)) {
-					AddToHateList(MercOwner->GetTarget(), 1);
-			}
-			else {
-				Group* g = GetGroup();
-
-				if(g) {
+			Group* g = GetGroup();
+			if(g) {
+				if(MercOwner && MercOwner->GetTarget() && MercOwner->GetTarget()->IsNPC() && MercOwner->GetTarget()->GetHateAmount(MercOwner)) {
+						float range = g->HasRole(MercOwner, RolePuller) ? RuleI(Mercs, AggroRadiusPuller) : RuleI(Mercs, AggroRadius);
+						range = range * range;
+						if(MercOwner->GetTarget()->DistNoRootNoZ(*this) < range) {
+							AddToHateList(MercOwner->GetTarget(), 1);
+						}
+				}
+				else {
 					for(int counter = 0; counter < g->GroupCount(); counter++) {
 						if(g->members[counter]) {
-							if(g->members[counter]->IsEngaged() && g->members[counter]->GetTarget()) {
-								AddToHateList(g->members[counter]->GetTarget(), 1);
-								break;
+							if(g->members[counter]->GetTarget()) {
+								float range = g->HasRole(g->members[counter], RolePuller) ? RuleI(Mercs, AggroRadiusPuller) : RuleI(Mercs, AggroRadius);
+								range = range * range;
+								if(g->members[counter]->GetTarget()->DistNoRootNoZ(*this) < range) {
+									AddToHateList(g->members[counter]->GetTarget(), 1);
+								}
 							}
 						}
 					}
@@ -1545,7 +1550,7 @@ void Merc::AI_Process() {
 		if(IsRooted())
 			SetTarget(hate_list.GetClosest(this));
 		else
-			SetTarget(hate_list.GetTop(this));
+			FindTarget();
 
 		if(!GetTarget())
 			return;
@@ -1639,7 +1644,7 @@ void Merc::AI_Process() {
 					SendPosition();
 			}
 
-			if((!(IsMercCaster() && GetLevel() > 12)) && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) {
+			if(!IsMercCaster() && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) {
 				// we can't fight if we don't have a target, are stun/mezzed or dead..
 				// Stop attacking if the target is enraged
 				if(IsEngaged() && !BehindMob(GetTarget(), GetX(), GetY()) && GetTarget()->IsEnraged())
@@ -1947,6 +1952,21 @@ void Merc::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_sk
 	//CommonDamage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
 }
 
+bool Merc::FindTarget() {
+	bool found = false;
+	Mob* target = GetHateTop();
+
+	if(target) {
+		found = true;
+		SetTarget(target);
+	}
+	
+	return found;
+}
+
+void Merc::SetTarget(Mob* mob) {
+	NPC::SetTarget(mob);
+}
 
 Mob* Merc::GetOwnerOrSelf() {
 	Mob* Result = 0;
@@ -2365,7 +2385,7 @@ void Client::SpawnMercOnZone()
 			SendMercPersonalInfo();
 			if(GetEPP().mercSuspendedTime != 0) {
 				if(time(NULL) >= GetEPP().mercSuspendedTime){
-				GetEPP().mercSuspendedTime = 0;
+					GetEPP().mercSuspendedTime = 0;
 				}
 			}
 			SendMercSuspendResponsePacket(GetEPP().mercSuspendedTime);
@@ -2486,15 +2506,10 @@ bool Merc::Dismiss() {
 }
 
 void Merc::Zone() {
+	Group* g;
 	if(HasGroup()) {
-		GetGroup()->MemberZoned(this);
-	}
-
-	if(IsGrouped()) { //Names and IDs will change as a result of mercs being in a group.
 		RemoveMercFromGroup(this, GetGroup());
 	}
-
-	SetMercID(0);
 
 	//Save();
 	Depop();
@@ -2565,7 +2580,8 @@ bool Merc::AddMercToGroup(Merc* merc, Group* group) {
 	bool Result = false;
 
 	if(merc && group) {
-		if(!merc->HasGroup()) {
+		Group* g = merc->GetGroup();
+		if(!g) {
 			// Add merc to this group
 			if(group->AddMember(merc)) {
 				if(group->GetLeader()) {
@@ -2625,6 +2641,7 @@ void Client::SetMerc(Merc* newmerc) {
 		GetEPP().mercSuspendedTime = 0;
 		GetEPP().mercGender = 0;
 		GetEPP().mercState = 0;
+		memset(GetEPP().merc_name, 0, 64);
 	} else {
 		SetMercID(newmerc->GetID());
 		Client* oldowner = entity_list.GetClientByID(newmerc->GetOwnerID());

@@ -582,7 +582,7 @@ bool logpos;
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)
 	virtual void SendWearChange(int8 material_slot);
-	virtual void SendTextureWC(int8 slot, int16 texture);
+	virtual void SendTextureWC(int8 slot, int16 texture, int32 hero_forge_model=0, int32 elite_material=0, int32 unknown06=0, int32 unknown18=0);
 	virtual void SetSlotTint(int8 material_slot, int8 red_tint, int8 green_tint, int8 blue_tint);
 	virtual void WearChange(int8 material_slot, int16 texture, uint32 color);
 	virtual int32 GetEquipment(int8 material_slot) const { return(0); }

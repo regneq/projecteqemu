@@ -39,6 +39,10 @@ public:
 	int32	SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets);
 	sint32	DeleteStalePlayerCorpses();
 	sint32	DeleteStalePlayerBackups();
+	void	GetPlayerInspectMessage(char* playername, InspectMessage_Struct* message);
+	void	SetPlayerInspectMessage(char* playername, const InspectMessage_Struct* message);
+	void	GetBotInspectMessage(uint32 botid, InspectMessage_Struct* message);
+	void	SetBotInspectMessage(uint32 botid, const InspectMessage_Struct* message);
 
 	int32	GetTotalTimeEntitledOnAccount(uint32 AccountID);
 
@@ -63,7 +67,6 @@ public:
 	 */
 	ItemInst* CreateItem(uint32 item_id, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	ItemInst* CreateItem(const Item_Struct* item, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
-	ItemInst* CreateCorpseItem(const Item_Struct* item, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	ItemInst* CreateBaseItem(const Item_Struct* item, sint16 charges=0);
 	
 	/*

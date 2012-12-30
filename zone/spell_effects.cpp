@@ -5114,10 +5114,10 @@ bool Mob::TryDivineSave() {
 					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
 
 				if (itembonuses.DivineSaveChance[1])
-					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
+					SpellOnTarget(itembonuses.DivineSaveChance[1], this);
 
 				if (spellbonuses.DivineSaveChance[1])
-					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
+					SpellOnTarget(spellbonuses.DivineSaveChance[1], this);
 
 				SpellOnTarget(4789, this);
 				SendHPUpdate();

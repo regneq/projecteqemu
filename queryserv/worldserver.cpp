@@ -91,11 +91,8 @@ void WorldServer::Process()
 			case ServerOP_QSPlayerTradeLog:
 			{
 				QSPlayerTradeLog_Struct *QS = (QSPlayerTradeLog_Struct*)pack->pBuffer;
-				string from = QS->from;
-				string to = QS->to;
-				string ItemName = QS->ItemName;
-
-				database.LogPlayerTrade(from.c_str(), to.c_str(), ItemName.c_str(), QS->ItemID, QS->SlotID, QS->Charges);
+				int32 Items = QS->char1_count + QS->char2_count;
+				database.LogPlayerTrade(QS, Items);
 				break;
 			}
 			case ServerOP_QSPlayerLogNPCKills:

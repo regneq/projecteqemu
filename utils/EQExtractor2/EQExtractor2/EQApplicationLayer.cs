@@ -69,6 +69,32 @@ namespace EQApplicationLayer
 
             PatchList.Add(new PatchTestSep222010Decoder());
 
+            PatchList.Add(new PatchOct202010Decoder());
+
+            PatchList.Add(new PatchDec072010Decoder());
+
+            PatchList.Add(new PatchFeb082011Decoder());
+
+            PatchList.Add(new PatchMarch152011Decoder());
+
+            PatchList.Add(new PatchMay122011Decoder());
+
+            PatchList.Add(new PatchMay242011Decoder());
+
+            PatchList.Add(new PatchAug042011Decoder());
+
+            PatchList.Add(new PatchNov172011Decoder());
+
+            PatchList.Add(new PatchMar152012Decoder());
+
+            PatchList.Add(new PatchJune252012Decoder());
+
+            PatchList.Add(new PatchJuly132012Decoder());
+
+            PatchList.Add(new PatchAugust152012Decoder());
+            
+            PatchList.Add(new PatchDecember102012Decoder());
+            
             PatchList.Add(new PatchSoD());
 
         }        
@@ -94,6 +120,7 @@ namespace EQApplicationLayer
 
             foreach (PatchSpecficDecoder p in PatchList)
             {
+                Logger("Initialising patch " + p.GetVersion());
                 if (!p.Init(ConfDirectory, ref ErrorMessage))
                     Logger(ErrorMessage);
                 else
@@ -223,7 +250,6 @@ namespace EQApplicationLayer
                                     
                     if (zp != null)
                     {                        
-                        d.OpenType = 58;
                         d.DestZone = ZoneNumberToName(zp.Value.TargetZoneID);
                         d.DestX = zp.Value.TargetX;
                         d.DestY = zp.Value.TargetY;
@@ -243,7 +269,7 @@ namespace EQApplicationLayer
         public void GenerateSpawnSQL(bool GenerateSpawns, bool GenerateGrids, bool GenerateMerchants,
                                             string ZoneName, UInt32 ZoneID, UInt32 SpawnVersion,
                                             bool UpdateExistingNPCTypes, bool UseNPCTypesTint, string SpawnNameFilter,
-                                            bool CoalesceWaypoints, SQLDestination SQLOut)
+                                            bool CoalesceWaypoints, bool IncludeInvisibleMen, SQLDestination SQLOut)
         {
             UInt32 NPCTypeDBID = 0;
             UInt32 SpawnGroupID = 0;
@@ -289,6 +315,9 @@ namespace EQApplicationLayer
             foreach(ZoneEntryStruct Spawn in ZoneSpawns)
             {                
                 if (NPCType.IsMount(Spawn.SpawnName))
+                    continue;
+
+                if (!IncludeInvisibleMen && (Spawn.Race == 127))
                     continue;
                                 
                 Spawn.Findable = (FindableEntities.IndexOf(Spawn.SpawnID) >= 0);
