@@ -33,6 +33,11 @@ SET(eqlogin_headers
     WorldServer.h
 )
 
+IF(UNIX)
+    SET(EQEMU_UNIX_ENC_LIBRARY_LOC "${CMAKE_SOURCE_DIR}/EQEmuLoginServer" CACHE PATH "Location of EQEmuAuthCrypto and cryptopp")
+    LINK_DIRECTORIES(${EQEMU_UNIX_ENC_LIBRARY_LOC})
+ENDIF(UNIX)
+
 ADD_EXECUTABLE(LoginServer ${eqlogin_sources} ${eqlogin_headers})
 
 TARGET_LINK_LIBRARIES(LoginServer Common debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
@@ -48,8 +53,6 @@ IF(MINGW)
 ENDIF(MINGW)
 
 IF(UNIX)
-    SET(EQEMU_UNIX_ENC_LIBRARY_LOC "${CMAKE_SOURCE_DIR}/EQEmuLoginServer" CACHE PATH "Location of EQEmuAuthCrypto and cryptopp")
-    LINK_DIRECTORIES(${EQEMU_UNIX_ENC_LIBRARY_LOC})
     TARGET_LINK_LIBRARIES(LoginServer "dl")
     TARGET_LINK_LIBRARIES(LoginServer "z")
     TARGET_LINK_LIBRARIES(LoginServer "m")
