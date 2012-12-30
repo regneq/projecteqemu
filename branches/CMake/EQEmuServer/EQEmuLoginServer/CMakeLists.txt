@@ -6,12 +6,15 @@ SET(eqlogin_sources
     Config.cpp
     DatabaseMySQL.cpp
     DatabasePostgreSQL.cpp
-    Encryption.cpp
     ErrorLog.cpp
     Main.cpp
     ServerManager.cpp
     WorldServer.cpp
 )
+
+IF(MSVC OR MINGW)
+    SET(eqlogin_sources ${eqlogin_sources} Encryption.cpp)
+ENDIF(MSVC OR MINGW)
 
 SET(eqlogin_headers
     Client.h
