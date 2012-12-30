@@ -69,6 +69,7 @@ public:
 	uint32 GetMercNameType() { return _NameType; }
 	inline const uint8 GetClientVersion() const { return _OwnerClientVersion; }
 
+	virtual void SetTarget(Mob* mob);
 	bool	HasSkill(SkillType skill_id) const;
 	bool	CanHaveSkill(SkillType skill_id) const;
 	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
@@ -155,6 +156,7 @@ public:
 	bool IsMercCasterCombatRange(Mob *target);
 	virtual float GetMaxMeleeRangeToTarget(Mob* target);
 	virtual void MercMeditate(bool isSitting);
+	bool FindTarget();
 
 protected:
 	void CalcItemBonuses(StatBonuses* newbon);

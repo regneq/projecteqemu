@@ -7,7 +7,7 @@ public:
 	// one buffer CRC32
 	static uint32			Generate(const int8* buf, uint32 bufsize);
 	static uint32			GenerateNoFlip(const int8* buf, uint32 bufsize); // Same as Generate(), but without the ~
-	static void				SetEQChecksum(uchar* in_data, int32 in_length);
+	static void				SetEQChecksum(uchar* in_data, int32 in_length, int32 start_at=4);
 	
 	// Multiple buffer CRC32
 	static uint32			Update(const int8* buf, uint32 bufsize, uint32 crc32 = 0xFFFFFFFF);

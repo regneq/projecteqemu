@@ -68,6 +68,7 @@ E(OP_DzLeaderStatus)
 E(OP_DzJoinExpeditionConfirm)
 E(OP_TargetBuffs)
 E(OP_AltCurrencySell)
+E(OP_WearChange)
 E(OP_MercenaryDataResponse)
 E(OP_MercenaryDataUpdate)
 //list of packets we need to decode on the way in:

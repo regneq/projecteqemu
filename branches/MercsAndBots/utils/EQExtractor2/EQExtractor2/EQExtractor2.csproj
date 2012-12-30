@@ -72,6 +72,11 @@
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OpcodeManager.cs" />
+    <Compile Include="PatchAug04-2011.cs" />
+    <Compile Include="PatchAugust15-2012.cs" />
+    <Compile Include="PatchDec7-2010.cs" />
+    <Compile Include="PatchDecember10-2012.cs" />
+    <Compile Include="PatchFeb8-2011.cs" />
     <Compile Include="PatchGeneric.cs" />
     <Compile Include="EQApplicationLayer.cs" />
     <Compile Include="EQPacket.cs" />
@@ -82,7 +87,15 @@
       <DependentUpon>EQExtractor2Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="InternalTypes.cs" />
+    <Compile Include="PatchJuly13-2012.cs" />
+    <Compile Include="PatchJune25-2012.cs" />
+    <Compile Include="PatchMar15-2012.cs" />
+    <Compile Include="PatchMarch15-2011.cs" />
     <Compile Include="PatchMay12-2010.cs" />
+    <Compile Include="PatchMay12-2011.cs" />
+    <Compile Include="PatchMay24-2011.cs" />
+    <Compile Include="PatchNov17-2011.cs" />
+    <Compile Include="PatchOct20-2010.cs" />
     <Compile Include="PatchSoD.cs" />
     <Compile Include="PatchJuly13-2010.cs" />
     <Compile Include="PatchTestSep1-2010.cs" />
@@ -119,6 +132,39 @@
       <DependentUpon>UserOptions.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="patch_Aug04-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_August15-2012.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_Dec10-2012.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_Dec7-2010.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_Feb8-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_July13-2012.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_June25-2012.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_Mar15-2012.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_March15-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_May12-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="patch_Nov17-2011.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="patch_Sep01-2010.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

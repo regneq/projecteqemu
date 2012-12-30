@@ -1107,6 +1107,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\common\patches\RoF.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\common\patches\SoD.cpp"
 				>
 			</File>

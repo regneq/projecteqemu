@@ -994,7 +994,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		if(tCanLoot==5){
 			int pkitem = GetPKItem();
 			const Item_Struct* item = database.GetItem(pkitem);
-			ItemInst* inst = database.CreateCorpseItem(item, item->MaxCharges);
+			ItemInst* inst = database.CreateItem(item, item->MaxCharges);
 			if (inst)
 			{
 				client->SendItemPacket(22, inst, ItemPacketLoot);
@@ -1034,7 +1034,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 					item = database.GetItem(item_data->item_id);
 					if (client && item)
 					{
-						ItemInst* inst = database.CreateCorpseItem(item, item_data->charges, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
+						ItemInst* inst = database.CreateItem(item, item_data->charges, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
 						if (inst)
 						{
 							client->SendItemPacket(i + 22, inst, ItemPacketLoot);
@@ -1134,30 +1134,9 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 	if (item != 0)
 	{
 		if(item_data)
-			inst = database.CreateCorpseItem(item, item_data?item_data->charges:0, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
+			inst = database.CreateItem(item, item_data?item_data->charges:0, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
 		else
 			inst = database.CreateItem(item);
-
-		if(inst->IsStackable()) {
-			if(item_data) 
-				//Restore charges from the original item.
-				inst->SetCharges(item_data->charges);
-			else
-				inst->SetCharges(1);
-		} else {
-			//default changes
-			if(item->MaxCharges == -1)
-				inst->SetCharges(1);
-			else {
-				if(item_data) {
-					//Restore charges from the original item.
-					inst->SetCharges(item_data->charges);
-				}
-				else {
-					inst->SetCharges(item->MaxCharges);
-				}
-			}
-		}
 	}
 
 	if (client && inst)

@@ -204,6 +204,10 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 	if (item == NULL) {
 		Message(0, "No such item: %i", item_id);
 		return;
+	} else {
+		// if 0 or no charge value was passed, set the created item charge to max charges
+		if(charges == 0)
+			charges = item->MaxCharges;
 	}
 	// Checking to see if the Item is lore or not.
 	bool foundlore = CheckLoreConflict(item);
@@ -217,12 +221,6 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 	if (!foundlore && !foundgm) { // Okay, It isn't LORE, or if it is, it is not in player's inventory.
 		ItemInst* inst = database.CreateItem(item, charges);
 		if (inst) {
-			// Custom logic for SummonItem
-			if ((inst->GetCharges()==0))// && inst->IsStackable())
-				inst->SetCharges(1);
-			if ((inst->GetCharges()>0))
-				inst->SetCharges(inst->GetCharges());
-
 			// Corrected the augment references to reflect augment name/id instead of base item name/id
 			if (aug1) {
 				const Item_Struct* augitem1 = database.GetItem(aug1);
@@ -1234,6 +1232,15 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		if(src_inst && (dst_slot_id < 22 || dst_slot_id == 9999) && dst_slot_id >= 0) {
 			if (src_inst->GetItem()->Attuneable) {
 				src_inst->SetInstNoDrop(true);
+			}
+			if (src_inst->IsAugmented()) {
+				for(int i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+					if (src_inst->GetAugment(i)) {
+						if (src_inst->GetAugment(i)->GetItem()->Attuneable) {
+							src_inst->GetAugment(i)->SetInstNoDrop(true);
+						}
+					}
+				}
 			}
 			SetMaterial(dst_slot_id,src_inst->GetItem()->ID);
 		}

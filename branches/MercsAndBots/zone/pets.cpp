@@ -538,7 +538,7 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 	memcpy(items, equipment, sizeof(int32)*MAX_WORN_INVENTORY);
 	
 	//save their buffs.
-	for (int i=0; i < BUFF_COUNT; i++) {
+	for (int i=0; i < GetPetMaxTotalSlots(); i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			pet_buffs[i].spellid = buffs[i].spellid;
 			pet_buffs[i].slotid = i+1;
@@ -561,8 +561,8 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 	//restore their buffs...
 	
 	int i;
-	for (i = 0; i < BUFF_COUNT; i++) {
-		for(int z = 0; z < BUFF_COUNT; z++) {
+	for (i = 0; i < GetPetMaxTotalSlots(); i++) {
+		for(int z = 0; z < GetPetMaxTotalSlots(); z++) {
 		// check for duplicates
 			if(buffs[z].spellid != SPELL_UNKNOWN && buffs[z].spellid == pet_buffs[i].spellid) {
 				buffs[z].spellid = SPELL_UNKNOWN;
@@ -589,7 +589,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 			pet_buffs[i].effect = 0;
 		}
 	}
-	for (int j1=0; j1 < BUFF_COUNT; j1++) {
+	for (int j1=0; j1 < GetPetMaxTotalSlots(); j1++) {
 		if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
 			for (int x1=0; x1 < EFFECT_COUNT; x1++) {
 				switch (spells[buffs[j1].spellid].effectid[x1]) {

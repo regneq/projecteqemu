@@ -1267,7 +1267,7 @@ bool ZoneServer::Process() {
 
 		case ServerOP_QueryServGeneric:
 		case ServerOP_Speech:
-		case ServerOP_QSPlayerMoneyTradeLog:
+//		case ServerOP_QSPlayerMoneyTradeLog:
 		case ServerOP_QSPlayerTradeLog:
 		case ServerOP_QSPlayerLogNPCKills:
 		{

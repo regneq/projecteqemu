@@ -81,14 +81,14 @@ uint32 CRC32::GenerateNoFlip(const int8* buf, uint32 bufsize) {
 	return Update(buf, bufsize);
 }
 
-void CRC32::SetEQChecksum(uchar* in_data, int32 in_length)
+void CRC32::SetEQChecksum(uchar* in_data, int32 in_length, int32 start_at)
 {
 	unsigned long data;
     unsigned long check = 0xffffffff;
 	
-	assert(in_length >= 4 && in_data);
+	assert(in_length >= start_at && in_data);
 	
-    for(int32 i=4; i<in_length; i++)
+    for(int32 i=start_at; i<in_length; i++)
     {
         data = in_data[i];
         data = data ^ (check);

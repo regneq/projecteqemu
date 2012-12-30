@@ -774,7 +774,7 @@ void GuildBankManager::SendGuildBank(Client *c)
 		if((*Iterator)->Items.DepositArea[i].ItemID > 0)
 		{
 			const Item_Struct *Item = database.GetItem((*Iterator)->Items.DepositArea[i].ItemID);
-
+			if(!Item){ continue; } // Why don't we even check for valid items
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankItemUpdate_Struct));
 	
 			GuildBankItemUpdate_Struct *gbius = (GuildBankItemUpdate_Struct*)outapp->pBuffer;
@@ -1402,7 +1402,7 @@ bool GuildBankManager::SplitStack(uint32 GuildID, uint16 SlotID, uint32 Quantity
 	if(BankArea[SlotID].ItemID == 0)
 		return false;
 
-	if(BankArea[SlotID].Quantity <= Quantity)
+	if(BankArea[SlotID].Quantity <= Quantity || Quantity == 0)
 		return false;
 
 	const Item_Struct *Item = database.GetItem(BankArea[SlotID].ItemID);

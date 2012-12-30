@@ -269,6 +269,9 @@ namespace EQExtractor2.Patches
 
                 Heading = Buffer.ReadSingle();
 
+                if (Heading != 999)
+                    Heading = Heading / 2;
+
                 ZoneID = Buffer.ReadUInt16();
 
                 Instance = Buffer.ReadUInt16();
@@ -969,8 +972,8 @@ namespace EQExtractor2.Patches
                 for (int i = 0; i < TotalAbilities; ++i)
                 {
                     UInt32 Ability = BitConverter.ToUInt32(Packet, 104 + (i * 16));
-                    UInt32 Base1 = BitConverter.ToUInt32(Packet, 108 + (i * 16));
-                    UInt32 Base2 = BitConverter.ToUInt32(Packet, 112 + (i * 16));
+                    Int32 Base1 = BitConverter.ToInt32(Packet, 108 + (i * 16));
+                    Int32 Base2 = BitConverter.ToInt32(Packet, 112 + (i * 16));
                     UInt32 Slot = BitConverter.ToUInt32(Packet, 116 + (i * 16));
 
                     OutputFile.WriteLine(String.Format("    Ability:\t{0}\tBase1:\t{1}\tBase2:\t{2}\tSlot:\t{3}", Ability, Base1, Base2, Slot));

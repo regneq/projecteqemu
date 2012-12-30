@@ -1385,32 +1385,12 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 {
 	ItemInst* inst = NULL;
 	if (item) {
-		if (charges == 0)
-			charges = item->MaxCharges;
 		inst = CreateBaseItem(item, charges);
 		inst->PutAugment(this, 0, aug1);
 		inst->PutAugment(this, 1, aug2);
 		inst->PutAugment(this, 2, aug3);
 		inst->PutAugment(this, 3, aug4);
 		inst->PutAugment(this, 4, aug5);
-		inst->SetCharges(charges);
-	}
-	
-	return inst;
-}
-
-// Create appropriate ItemInst class
-ItemInst* SharedDatabase::CreateCorpseItem(const Item_Struct* item, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
-{
-	ItemInst* inst = NULL;
-	if (item) {
-		inst = CreateBaseItem(item, charges);
-		inst->PutAugment(this, 0, aug1);
-		inst->PutAugment(this, 1, aug2);
-		inst->PutAugment(this, 2, aug3);
-		inst->PutAugment(this, 3, aug4);
-		inst->PutAugment(this, 4, aug5);
-		inst->SetCharges(charges);
 	}
 	
 	return inst;
@@ -1419,13 +1399,10 @@ ItemInst* SharedDatabase::CreateCorpseItem(const Item_Struct* item, sint16 charg
 ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges) {
 	ItemInst* inst = NULL;
 	if (item) {
-		if (charges == 0) {
-			charges = item->MaxCharges;
-			// if maxcharges was -1 that means it is an unlimited use item. 
-			// set it to 1 charge so that it is usable on creation
-			if (charges == -1)
-				charges = 1;
-		}
+		// if maxcharges is -1 that means it is an unlimited use item. 
+		// set it to 1 charge so that it is usable on creation
+		if (charges == 0 && item->MaxCharges == -1)
+			charges = 1;
 
 		if(item->CharmFileID != 0 || (item->LoreGroup >= 1000 && item->LoreGroup != -1)) {
 			inst = new EvoItemInst(item, charges);
@@ -1658,4 +1635,74 @@ void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMax
 
 const EvolveInfo* SharedDatabase::GetEvolveInfo(uint32 loregroup) {
 	return NULL;	// nothing here for now... database and/or sharemem pulls later
+}
+
+void SharedDatabase::GetPlayerInspectMessage(char* playername, InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT inspectmessage FROM character_ WHERE name='%s'", playername), errbuf, &result)) {
+		safe_delete_array(query);
+
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			memcpy(message, row[0], sizeof(InspectMessage_Struct));
+		}
+
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetPlayerInspectMessage query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}
+
+void SharedDatabase::SetPlayerInspectMessage(char* playername, const InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET inspectmessage='%s' WHERE name='%s'", message->text, playername), errbuf)) {
+		cerr << "Error in SetPlayerInspectMessage query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
+}
+
+void SharedDatabase::GetBotInspectMessage(uint32 botid, InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT BotInspectMessage FROM bots WHERE BotID=%i", botid), errbuf, &result)) {
+		safe_delete_array(query);
+
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			memcpy(message, row[0], sizeof(InspectMessage_Struct));
+		}
+
+		mysql_free_result(result);
+	}
+	else {
+		cerr << "Error in GetBotInspectMessage query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}
+
+void SharedDatabase::SetBotInspectMessage(uint32 botid, const InspectMessage_Struct* message) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE bots SET BotInspectMessage='%s' WHERE BotID=%i", message->text, botid), errbuf)) {
+		cerr << "Error in SetBotInspectMessage query '" << query << "' " << errbuf << endl;
+	}
+	
+	safe_delete_array(query);
 }

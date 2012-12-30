@@ -2536,6 +2536,18 @@ ENCODE(OP_AltCurrencySell)
     FINISH_ENCODE();
 }
 
+ENCODE(OP_WearChange)
+{
+	ENCODE_LENGTH_EXACT(WearChange_Struct);
+	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
+	OUT(spawn_id);
+	OUT(material);
+	OUT(elite_material);
+	OUT(color.color);
+	OUT(wear_slot_id);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -2720,7 +2732,6 @@ DECODE(OP_ClientUpdate) {
 	FINISH_DIRECT_DECODE();
 }
 
-#pragma optimize( "", off )
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
@@ -2754,7 +2765,6 @@ DECODE(OP_CharacterCreate) {
 
 	FINISH_DIRECT_DECODE();
 }
-#pragma optimize( "", on )
 
 DECODE(OP_WhoAllRequest) {
 	DECODE_LENGTH_EXACT(structs::Who_All_Struct);

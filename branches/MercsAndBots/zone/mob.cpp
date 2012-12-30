@@ -2426,7 +2426,7 @@ void Mob::SendWearChange(int8 material_slot)
 	safe_delete(outapp);
 }
 
-void Mob::SendTextureWC(int8 slot, int16 texture)
+void Mob::SendTextureWC(int8 slot, int16 texture, int32 hero_forge_model, int32 elite_material, int32 unknown06, int32 unknown18)
 {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
 	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
@@ -2438,6 +2438,12 @@ void Mob::SendTextureWC(int8 slot, int16 texture)
 	else
 		wc->color.color = this->GetArmorTint(slot);
 	wc->wear_slot_id = slot;
+
+	wc->unknown06 = unknown06;
+	wc->elite_material = elite_material;
+	wc->hero_forge_model = hero_forge_model;
+	wc->unknown18 = unknown18;
+
 
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);
