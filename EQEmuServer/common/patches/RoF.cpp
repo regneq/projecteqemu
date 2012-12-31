@@ -1133,7 +1133,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(emu->lastlogin);
 	outapp->WriteUInt32(emu->timePlayedMin);
 	outapp->WriteUInt32(emu->timeentitledonaccount);
-	outapp->WriteUInt32(0x0001ffff);		// Expansion bitmask
+	outapp->WriteUInt32(0x0007ffff);		// Expansion bitmask
 
 	outapp->WriteUInt32(structs::MAX_PP_LANGUAGE);
 
@@ -3486,6 +3486,30 @@ ENCODE(OP_HPUpdate)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_RemoveBlockedBuffs) { ENCODE_FORWARD(OP_BlockedBuffs); }
+
+ENCODE(OP_BlockedBuffs)
+{
+	ENCODE_LENGTH_EXACT(BlockedBuffs_Struct);
+	SETUP_DIRECT_ENCODE(BlockedBuffs_Struct, structs::BlockedBuffs_Struct);
+
+	for(uint32 i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		eq->SpellID[i] = emu->SpellID[i];
+
+	// -1 for the extra 10 added in RoF. We should really be encoding for the older clients, not RoF, but
+	// we can sort that out later.
+
+	for(uint32 i = BLOCKED_BUFF_COUNT; i < structs::BLOCKED_BUFF_COUNT; ++i)
+		eq->SpellID[i] = -1;
+
+	OUT(Count);
+	OUT(Pet);
+	OUT(Initialise);
+	OUT(Flags);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BuffRemoveRequest)
 {
 	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
@@ -4148,6 +4172,24 @@ DECODE(OP_ZoneEntry)
 	DECODE_LENGTH_EXACT(structs::ClientZoneEntry_Struct);
 	SETUP_DIRECT_DECODE(ClientZoneEntry_Struct, structs::ClientZoneEntry_Struct);
 	memcpy(emu->char_name, eq->char_name, sizeof(emu->char_name));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_RemoveBlockedBuffs) { DECODE_FORWARD(OP_BlockedBuffs); }
+
+DECODE(OP_BlockedBuffs)
+{
+	DECODE_LENGTH_EXACT(structs::BlockedBuffs_Struct);
+	SETUP_DIRECT_DECODE(BlockedBuffs_Struct, structs::BlockedBuffs_Struct);
+
+	for(uint32 i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		emu->SpellID[i] = eq->SpellID[i];
+
+	IN(Count);
+	IN(Pet);
+	IN(Initialise);
+	IN(Flags);
+
 	FINISH_DIRECT_DECODE();
 }
 

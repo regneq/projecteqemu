@@ -81,6 +81,7 @@ static const uint32 ADVENTURE_NAMED			= 2;
 static const uint32 ADVENTURE_RESCUE		= 3;
 
 static const uint32 BUFF_COUNT = 42;			// was 25
+static const uint32 BLOCKED_BUFF_COUNT = 30;		// was 20
 
 static const uint32 MAX_PLAYER_TRIBUTES = 5;
 static const uint32 MAX_TRIBUTE_TIERS = 10;
@@ -3530,9 +3531,14 @@ struct FindPerson_Point {
 };
 
 struct FindPersonRequest_Struct {
-	uint32	unknown000;
-	uint32	npc_id;
-	FindPerson_Point client_pos;
+/*00*/	uint32	unknown00;
+/*04*/	uint32	npc_id;
+/*08*/	uint32	unknown08;
+/*12*/	uint32	unknown12;
+/*16*/	FindPerson_Point client_pos;
+/*28*/	uint32	unknown28;
+/*32*/	uint32	unknown32;
+/*36*/	uint32	unknown36;
 };
 
 //variable length packet of points
@@ -4149,17 +4155,13 @@ struct LoadSpellSet_Struct {
       uint32 unknown;	//there seems to be an extra field in this packet...
 };
 
-struct BlockedBuffs_Struct {
-/*000*/	uint8	unknown000[80];
-/*080*/	uint8	unknown081;
-/*081*/	uint8	unknown082;
-/*082*/	uint8	unknown083;
-/*083*/	uint8	unknown084;
-/*084*/	uint8	unknown085;
-/*085*/	uint8	unknown086;
-/*086*/	uint8	unknown087;
-/*087*/	uint8	unknown088;
-/*088*/
+struct BlockedBuffs_Struct
+{
+/*000*/ sint32 SpellID[BLOCKED_BUFF_COUNT];
+/*120*/ uint32 Count;
+/*124*/ uint8 Pet;
+/*125*/ uint8 Initialise;
+/*126*/ uint16 Flags;
 };
 
 //Size 24 Bytes
