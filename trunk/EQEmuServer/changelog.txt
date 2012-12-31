@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/31/2012==
+Derision: RoF: Added encode/decode for BlockedBuffs and OP_FindPerson. Added opcodes for FindPerson and RestState
+
 ==12/30/2012==
 Derision: RoF: Did some work on buffs & buff removal. OP_SetChatServer2 for UCS. Encode for OP_HPUpdate
 
