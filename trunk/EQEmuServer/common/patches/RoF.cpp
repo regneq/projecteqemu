@@ -1167,8 +1167,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt8(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt64(emu->exp);
 	outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt32(emu->platinum_bank);
@@ -1361,7 +1360,7 @@ ENCODE(OP_PlayerProfile)
 	}
 
 
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->expAA);
 	outapp->WriteUInt32(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 
