@@ -3331,12 +3331,12 @@ ENCODE(OP_WearChange)
 	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
 	OUT(spawn_id);
 	OUT(material);
-	OUT(elite_material);
-	OUT(color.color);
-	OUT(wear_slot_id);
 	OUT(unknown06);
+	OUT(elite_material);
 	OUT(hero_forge_model);
 	OUT(unknown18);
+	OUT(color.color);
+	OUT(wear_slot_id);
 	FINISH_ENCODE();
 }
 
