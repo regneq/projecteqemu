@@ -205,8 +205,11 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 		Message(0, "No such item: %i", item_id);
 		return;
 	} else {
+		// if 0 and max charges 0 and stackable, set the created item charge to 1
+		if (charges == 0 && item->MaxCharges == 0 && item->Stackable)
+			charges = 1;
 		// if 0 or no charge value was passed, set the created item charge to max charges
-		if(charges == 0)
+		else if(charges == 0)
 			charges = item->MaxCharges;
 	}
 	// Checking to see if the Item is lore or not.
