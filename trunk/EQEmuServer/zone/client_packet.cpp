@@ -13168,169 +13168,172 @@ void Client::Handle_OP_ItemPreview(const EQApplicationPacket *app)
 
 	const Item_Struct* item = database.GetItem(ips->itemid);
 
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_ItemPreview, strlen(item->Name) + strlen(item->Lore) + strlen(item->IDFile) + 898);
+	if (item) {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ItemPreview, strlen(item->Name) + strlen(item->Lore) + strlen(item->IDFile) + 898);
 
-	int spacer;
-	for (spacer = 0; spacer < 16; spacer++) {
-		outapp->WriteUInt8(48);
-	}
-	outapp->WriteUInt16(256);
-	for (spacer = 0; spacer < 7; spacer++) {
+		int spacer;
+		for (spacer = 0; spacer < 16; spacer++) {
+			outapp->WriteUInt8(48);
+		}
+		outapp->WriteUInt16(256);
+		for (spacer = 0; spacer < 7; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 7; spacer++) {
+			outapp->WriteUInt8(255);
+		}
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(1);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt8(237); // Seems to be some kind of counter? increases by 1 for each preview that you do.
+		outapp->WriteUInt16(2041); //F907
+		for (spacer = 0; spacer < 36; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 4; spacer++) {
+			outapp->WriteUInt8(255);
+		}
+		for (spacer = 0; spacer < 9; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 5; spacer++) {
+			outapp->WriteUInt8(255);
+		}
+		for (spacer = 0; spacer < 5; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteString(item->Name);
+		outapp->WriteString(item->Lore);
 		outapp->WriteUInt8(0);
-	}
-	for (spacer = 0; spacer < 7; spacer++) {
-		outapp->WriteUInt8(255);
-	}
-	outapp->WriteUInt32(0);
-	outapp->WriteUInt32(1);
-	outapp->WriteUInt32(0);
-	outapp->WriteUInt8(237); // Seems to be some kind of counter? increases by 1 for each preview that you do.
-	outapp->WriteUInt16(2041); //F907
-	for (spacer = 0; spacer < 36; spacer++) {
-		outapp->WriteUInt8(0);
-	}
-	for (spacer = 0; spacer < 4; spacer++) {
-		outapp->WriteUInt8(255);
-	}
-	for (spacer = 0; spacer < 9; spacer++) {
-		outapp->WriteUInt8(0);
-	}
-	for (spacer = 0; spacer < 5; spacer++) {
-		outapp->WriteUInt8(255);
-	}
-	for (spacer = 0; spacer < 5; spacer++) {
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteString(item->Name);
-	outapp->WriteString(item->Lore);
-	outapp->WriteUInt8(0);
-	outapp->WriteUInt32(ips->itemid);
-	outapp->WriteUInt32(item->Weight);
-	outapp->WriteUInt8(item->NoRent);
-	outapp->WriteUInt8(item->NoDrop);
-	outapp->WriteUInt8(item->Attuneable);
-	outapp->WriteUInt8(item->Size);
-	outapp->WriteUInt32(item->Slots);
-	outapp->WriteUInt32(item->Price);
-	outapp->WriteUInt32(item->Icon);
-	outapp->WriteUInt8(0); //Unknown?
-	outapp->WriteUInt8(0); //Placeable flag?
-	outapp->WriteUInt32(item->BenefitFlag);
-	outapp->WriteUInt8(item->Tradeskills);
-	outapp->WriteUInt8(item->CR);
-	outapp->WriteUInt8(item->DR);
-	outapp->WriteUInt8(item->PR);
-	outapp->WriteUInt8(item->MR);
-	outapp->WriteUInt8(item->FR); 
-	outapp->WriteUInt8(item->AStr);
-	outapp->WriteUInt8(item->ASta);
-	outapp->WriteUInt8(item->AAgi);
-	outapp->WriteUInt8(item->ADex);
-	outapp->WriteUInt8(item->ACha);
-	outapp->WriteUInt8(item->AInt);
-	outapp->WriteUInt8(item->AWis);
-	outapp->WriteSInt32(item->HP);
-	outapp->WriteSInt32(item->Mana);
-	outapp->WriteSInt32(item->Endur);
-	outapp->WriteSInt32(item->AC);
-	outapp->WriteUInt32(item->Regen);
-	outapp->WriteUInt32(item->ManaRegen);
-	outapp->WriteSInt32(item->EnduranceRegen);
-	outapp->WriteUInt32(item->Classes);
-	outapp->WriteUInt32(item->Races);
-	outapp->WriteUInt32(item->Deity);
-	outapp->WriteUInt32(item->SkillModValue);
-	outapp->WriteUInt32(0); //SkillModValue
-	outapp->WriteUInt32(item->SkillModType);
-	outapp->WriteUInt32(0); //SkillModExtra
-	outapp->WriteUInt32(item->BaneDmgRace);
-	outapp->WriteUInt32(item->BaneDmgBody);
-	outapp->WriteUInt32(item->BaneDmgRaceAmt);
-	outapp->WriteUInt32(item->BaneDmgAmt);
-	outapp->WriteUInt8(item->Magic);
-	outapp->WriteUInt32(item->CastTime_);
-	outapp->WriteUInt32(item->ReqLevel);
-	outapp->WriteUInt32(item->RecLevel);
-	outapp->WriteUInt32(item->RecSkill);
-	outapp->WriteUInt32(item->BardType);
-	outapp->WriteUInt32(item->BardValue);
-	outapp->WriteUInt8(item->Light);
-	outapp->WriteUInt8(item->Delay);
-	outapp->WriteUInt8(item->ElemDmgType);
-	outapp->WriteUInt8(item->ElemDmgAmt);
-	outapp->WriteUInt8(item->Range);
-	outapp->WriteUInt32(item->Damage);
-	outapp->WriteUInt32(item->Color);
-	outapp->WriteUInt32(0);	// Prestige
-	outapp->WriteUInt8(item->ItemType);
-	outapp->WriteUInt32(item->Material);
-	outapp->WriteUInt32(0); //unknown
-	outapp->WriteUInt32(item->EliteMaterial);
-	outapp->WriteUInt32(0);	// unknown
-	outapp->WriteUInt32(0);	// unknown
-	outapp->WriteUInt32(0); //This is unknown057 from lucy
-	for (spacer = 0; spacer < 77; spacer++) { //More Item stats, but some seem to be off based on packet check
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
-	outapp->WriteUInt32(0); //Unknown
-	for (spacer = 0; spacer < 5; spacer++) { //Augment stuff
-		outapp->WriteUInt32(item->AugSlotType[spacer]);
-		outapp->WriteUInt8(item->AugSlotVisible[spacer]);
-		outapp->WriteUInt8(item->AugSlotUnk2[spacer]);
-	}
-	outapp->WriteUInt32(0); //New RoF 6th Aug Slot
-	outapp->WriteUInt8(1); //^
-	outapp->WriteUInt8(0); //^^
-	outapp->WriteUInt32(item->LDoNSold);
-	outapp->WriteUInt32(item->LDoNTheme);
-	outapp->WriteUInt32(item->LDoNPrice);
-	outapp->WriteUInt32(item->LDoNSellBackRate);
-	for (spacer = 0; spacer < 11; spacer++) { //unknowns
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
-	outapp->WriteUInt16(0); //Unknown
-	outapp->WriteUInt32(item->Favor); // Tribute
-	for (spacer = 0; spacer < 17; spacer++) { //unknowns
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteUInt32(item->GuildFavor); // Tribute
-	outapp->WriteUInt32(0); //Unknown
-	outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
-	for (spacer = 0; spacer < 11; spacer++) { //unknowns
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteUInt8(1);
-	for (spacer = 0; spacer < 25; spacer++) { //unknowns
-		outapp->WriteUInt8(0);
-	}
-	for (spacer = 0; spacer < 304; spacer++) { //Cast stuff and whole bunch of unknowns
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteUInt8(142); // Always seen not in the item structure though 8E
-	outapp->WriteUInt32(0); //unknown
-	outapp->WriteUInt32(1); // Always seen as 1
-	outapp->WriteUInt32(0); //unknown
-	outapp->WriteUInt32(3452750909); //0x3DCCCCCD/3452750909
-	outapp->WriteUInt32(0);
-	outapp->WriteUInt16(8256); //0x4020/8256
-	outapp->WriteUInt16(0);
-	outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
-	outapp->WriteUInt16(0);
-	outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
-	outapp->WriteUInt32(0); //unknown
-	outapp->WriteUInt32(0); //unknown
-	outapp->WriteUInt16(0); //unknown
-	outapp->WriteUInt32(32831); //0x3F80
-	for (spacer = 0; spacer < 24; spacer++) { //whole bunch of unknowns always 0's
-		outapp->WriteUInt8(0);
-	}
-	outapp->WriteUInt8(1);
-	for (spacer = 0; spacer < 6; spacer++) { //whole bunch of unknowns always 0's
-		outapp->WriteUInt8(0);
-	}
+		outapp->WriteUInt32(ips->itemid);
+		outapp->WriteUInt32(item->Weight);
+		outapp->WriteUInt8(item->NoRent);
+		outapp->WriteUInt8(item->NoDrop);
+		outapp->WriteUInt8(item->Attuneable);
+		outapp->WriteUInt8(item->Size);
+		outapp->WriteUInt32(item->Slots);
+		outapp->WriteUInt32(item->Price);
+		outapp->WriteUInt32(item->Icon);
+		outapp->WriteUInt8(0); //Unknown?
+		outapp->WriteUInt8(0); //Placeable flag?
+		outapp->WriteUInt32(item->BenefitFlag);
+		outapp->WriteUInt8(item->Tradeskills);
+		outapp->WriteUInt8(item->CR);
+		outapp->WriteUInt8(item->DR);
+		outapp->WriteUInt8(item->PR);
+		outapp->WriteUInt8(item->MR);
+		outapp->WriteUInt8(item->FR); 
+		outapp->WriteUInt8(item->AStr);
+		outapp->WriteUInt8(item->ASta);
+		outapp->WriteUInt8(item->AAgi);
+		outapp->WriteUInt8(item->ADex);
+		outapp->WriteUInt8(item->ACha);
+		outapp->WriteUInt8(item->AInt);
+		outapp->WriteUInt8(item->AWis);
+		outapp->WriteSInt32(item->HP);
+		outapp->WriteSInt32(item->Mana);
+		outapp->WriteSInt32(item->Endur);
+		outapp->WriteSInt32(item->AC);
+		outapp->WriteUInt32(item->Regen);
+		outapp->WriteUInt32(item->ManaRegen);
+		outapp->WriteSInt32(item->EnduranceRegen);
+		outapp->WriteUInt32(item->Classes);
+		outapp->WriteUInt32(item->Races);
+		outapp->WriteUInt32(item->Deity);
+		outapp->WriteUInt32(item->SkillModValue);
+		outapp->WriteUInt32(0); //SkillModValue
+		outapp->WriteUInt32(item->SkillModType);
+		outapp->WriteUInt32(0); //SkillModExtra
+		outapp->WriteUInt32(item->BaneDmgRace);
+		outapp->WriteUInt32(item->BaneDmgBody);
+		outapp->WriteUInt32(item->BaneDmgRaceAmt);
+		outapp->WriteUInt32(item->BaneDmgAmt);
+		outapp->WriteUInt8(item->Magic);
+		outapp->WriteUInt32(item->CastTime_);
+		outapp->WriteUInt32(item->ReqLevel);
+		outapp->WriteUInt32(item->RecLevel);
+		outapp->WriteUInt32(item->RecSkill);
+		outapp->WriteUInt32(item->BardType);
+		outapp->WriteUInt32(item->BardValue);
+		outapp->WriteUInt8(item->Light);
+		outapp->WriteUInt8(item->Delay);
+		outapp->WriteUInt8(item->ElemDmgType);
+		outapp->WriteUInt8(item->ElemDmgAmt);
+		outapp->WriteUInt8(item->Range);
+		outapp->WriteUInt32(item->Damage);
+		outapp->WriteUInt32(item->Color);
+		outapp->WriteUInt32(0);	// Prestige
+		outapp->WriteUInt8(item->ItemType);
+		outapp->WriteUInt32(item->Material);
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(item->EliteMaterial);
+		outapp->WriteUInt32(0);	// unknown
+		outapp->WriteUInt32(0);	// unknown
+		outapp->WriteUInt32(0); //This is unknown057 from lucy
+		for (spacer = 0; spacer < 77; spacer++) { //More Item stats, but some seem to be off based on packet check
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt32(0); //Unknown
+		for (spacer = 0; spacer < 5; spacer++) { //Augment stuff
+			outapp->WriteUInt32(item->AugSlotType[spacer]);
+			outapp->WriteUInt8(item->AugSlotVisible[spacer]);
+			outapp->WriteUInt8(item->AugSlotUnk2[spacer]);
+		}
+		outapp->WriteUInt32(0); //New RoF 6th Aug Slot
+		outapp->WriteUInt8(1); //^
+		outapp->WriteUInt8(0); //^^
+		outapp->WriteUInt32(item->LDoNSold);
+		outapp->WriteUInt32(item->LDoNTheme);
+		outapp->WriteUInt32(item->LDoNPrice);
+		outapp->WriteUInt32(item->LDoNSellBackRate);
+		for (spacer = 0; spacer < 11; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt16(0); //Unknown
+		outapp->WriteUInt32(item->Favor); // Tribute
+		for (spacer = 0; spacer < 17; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt32(item->GuildFavor); // Tribute
+		outapp->WriteUInt32(0); //Unknown
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		for (spacer = 0; spacer < 11; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt8(1);
+		for (spacer = 0; spacer < 25; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 304; spacer++) { //Cast stuff and whole bunch of unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt8(142); // Always seen not in the item structure though 8E
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(1); // Always seen as 1
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(3452750909); //0x3DCCCCCD/3452750909
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt16(8256); //0x4020/8256
+		outapp->WriteUInt16(0);
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt16(0);
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt16(0); //unknown
+		outapp->WriteUInt32(32831); //0x3F80
+		for (spacer = 0; spacer < 24; spacer++) { //whole bunch of unknowns always 0's
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt8(1);
+		for (spacer = 0; spacer < 6; spacer++) { //whole bunch of unknowns always 0's
+			outapp->WriteUInt8(0);
+		}
 
-	QueuePacket(outapp);
-	safe_delete(outapp);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	} else
+		return;
 }
