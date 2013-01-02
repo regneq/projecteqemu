@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/02/2013 ==
 Vaion: RoF: Crash prevention for Item Preview window.
+Trevius: RoF: Finished identifying basically all of the remaining RoF opcodes.
 
 ==01/01/2013==
 Uleat: Fixed the wear change issue where the server was not translating the SoF, SoD and UF clients' update request properly.
