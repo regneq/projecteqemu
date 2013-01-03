@@ -28,9 +28,10 @@ struct EnterWorld_Struct {
 struct WorldObjectsSent_Struct {
 };
 
-// New for RoF
+// New for RoF - Size: 12
 struct ItemSlotStruct {
-/*000*/	sint32	SlotType;	// Worn and Normal inventory = 0, Bank = 1, Shared Bank = 2, Delete Item = -1
+/*000*/	sint16	SlotType;	// Worn and Normal inventory = 0, Bank = 1, Shared Bank = 2, Delete Item = -1
+/*002*/	sint16	Unknown02;
 /*004*/	sint16	MainSlot;	
 /*006*/	sint16	SubSlot;
 /*008*/	sint16	AugSlot;	// Guessing - Seen 0xffff
@@ -38,6 +39,15 @@ struct ItemSlotStruct {
 /*012*/	
 };
 
+// New for RoF - Used for Merchant_Purchase_Struct
+// Can't sellfrom other than main inventory so Slot Type is not needed.
+struct MainInvItemSlotStruct {
+/*000*/	sint16	MainSlot;	
+/*002*/	sint16	SubSlot;
+/*004*/	sint16	AugSlot;
+/*006*/	sint16	Unknown01;
+/*008*/	
+};
 
 /* Name Approval Struct */
 /* Len: */
@@ -1220,13 +1230,14 @@ struct PetCommand_Struct {
 
 /*
 ** Delete Spawn
-** Length: 4 Bytes
+** Length: 5 Bytes
 ** OpCode: OP_DeleteSpawn
 */
 struct DeleteSpawn_Struct
 {
-/*00*/ int32 spawn_id;             // Spawn ID to delete
-/*04*/
+/*00*/ int32 spawn_id;		// Spawn ID to delete
+/*04*/ uint8 unknown04;		// Seen 1
+/*05*/
 };
 
 /*
@@ -1665,11 +1676,11 @@ struct BulkItemPacket_Struct
 
 struct Consume_Struct
 {
-/*0000*/ ItemSlotStruct slot;
-/*0012*/ int32	auto_consumed; // 0xffffffff when auto eating e7030000 when right click
-/*0016*/ int32	c_unknown1;	// Seen 2
-/*0020*/ int32	type; // 0x01=Food 0x02=Water
-/*0024*/
+/*000*/ ItemSlotStruct slot;
+/*012*/ int32	auto_consumed;	// 0xffffffff when auto eating e7030000 when right click
+/*016*/ int32	type;			// 0x01=Food 0x02=Water
+/*020*/ int32	c_unknown1;		// Seen 2
+/*024*/
 };
 
 struct ItemNamePacket_Struct {
@@ -2010,27 +2021,25 @@ Unknowns:
 */
 
 struct Merchant_Sell_Struct {
-/*000*/	int32	npcid;			// Merchant NPC's entity id
-/*004*/	int32	playerid;		// Player's entity id
-/*008*/	int32	itemslot;
-/*012*/	int32	unknown12;
-/*016*/	int8	quantity;		// Already sold
-/*017*/ int8	unknown17[3];
-/*020*/	uint32	unknown20;
-/*024*/	uint32	price;
-/*028*/	uint32	pricehighorderbits;	// It appears the price is 64 bits in Live+
+/*000*/ uint32 npcid;		// Merchant NPC's entity id
+/*004*/ uint32 playerid;	// Player's entity id
+/*008*/ uint32 itemslot;	// Merchant Slot / Item Instance ID
+/*012*/ uint32 unknown12;
+/*016*/ uint32 quantity;	// Already sold
+/*020*/ uint32 unknown20;
+/*024*/ uint32 price;
+/*028*/ uint32 unknown28;	// Normally 0, but seen 84 c5 63 00 as well
 /*032*/
 };
 
 struct Merchant_Purchase_Struct {
 /*000*/	int32	npcid;			// Merchant NPC's entity id
-/*004*/	int32	itemslot;		// Player's entity id
-		//ItemSlotStruct itemslot;
-/*008*/	int32	unknown08;
+/*004*/	MainInvItemSlotStruct itemslot;
 /*012*/	int32	quantity;
 /*016*/	int32	price;
 /*020*/
 };
+
 struct Merchant_DelItem_Struct{
 /*000*/	int32	npcid;			// Merchant NPC's entity id
 /*004*/	int32	playerid;		// Player's entity id
@@ -2224,31 +2233,34 @@ struct AdventureLeaderboard_Struct
 	int8 iss_unknown001[6];
 };*/
 
-struct Illusion_Struct {  //size: 256
-/*000*/	uint32	spawnid;
-/*004*/	char	charname[64];	//
-/*068*/	uint16	race;			//
-/*070*/	char	unknown006[2];	// Weird green name
-/*072*/	uint8	gender;
-/*073*/	uint8	texture;
-/*074*/	uint8	unknown074;		//
-/*075*/	uint8	unknown075;		//
-/*076*/	uint8	helmtexture;	//
-/*077*/	uint8	unknown077;		//
-/*078*/	uint8	unknown078;		//
-/*079*/	uint8	unknown079;		//
-/*080*/	uint32	face;			//
-/*084*/	uint8	hairstyle;		// Some Races don't change Hair Style Properly in SoF
-/*085*/	uint8	haircolor;		// 
-/*086*/	uint8	beard;			// 
-/*087*/	uint8	beardcolor;		// 
-/*088*/ float	size;			// 
-/*092*/	uint8	unknown092[148];
-/*240*/ int32	unknown240;		// Removes armor?
-/*244*/ int32	drakkin_heritage;	// 
-/*248*/ int32	drakkin_tattoo;		// 
-/*252*/ int32	drakkin_details;	// 
-/*256*/
+struct Illusion_Struct { // Was size: 336
+/*000*/ uint32 spawnid;
+/*004*/ char charname[64];
+/*068*/ uint16 race;
+/*070*/ char unknown006[2];		// Weird green name
+/*072*/ uint8 gender;
+/*073*/ uint8 texture;
+/*074*/ uint8 unknown074;
+/*075*/ uint8 unknown075;
+/*076*/ uint8 helmtexture;
+/*077*/ uint8 unknown077;
+/*078*/ uint8 unknown078;
+/*079*/ uint8 unknown079;
+/*080*/ uint32 face;
+/*084*/ uint8 hairstyle;		// Some Races don't change Hair Style Properly in SoF
+/*085*/ uint8 haircolor;
+/*086*/ uint8 beard;
+/*087*/ uint8 beardcolor;
+/*088*/ float size;
+/*092*/ uint8 unknown092[148];
+/*240*/ int32 unknown240;		// Removes armor?
+/*244*/ int32 drakkin_heritage;
+/*248*/ int32 drakkin_tattoo;
+/*252*/ int32 drakkin_details;
+/*256*/ uint8 unknown256[60];	// This and below are new to RoF
+/*316*/ sint32 unknown316;		// Seen -1
+/*320*/ uint8 unknown320[16];
+/*336*/
 };
 
 struct ZonePoint_Entry { //32 octets
@@ -2895,19 +2907,20 @@ int8	npccastfilters;		 // 0) No, 1) Ignore NPC Casts (all), 2) Ignore NPC Casts 
 
 /*
 ** Client requesting item statistics
-** Size: 48 bytes
+** Size: 52 bytes
 ** Used In: OP_ItemLinkClick
-** Last Updated: 2/15/2009
+** Last Updated: 01/03/2012
 **
 */
 struct	ItemViewRequest_Struct {
 /*000*/	uint32	item_id;
-/*004*/	uint32	augments[5];
-/*024*/ uint32	link_hash;
-/*028*/	uint32	unknown028;	//seems to always be 4 on SoF client
-/*032*/	char	unknown032[12];	//probably includes loregroup & evolving info. see Client::MakeItemLink() in zone/inventory.cpp:469
-/*044*/	uint16	icon;
-/*046*/	char	unknown046[2];
+/*004*/	uint32	augments[6];
+/*028*/ uint32	link_hash;
+/*032*/	uint32	unknown028;	//seems to always be 4 on SoF client
+/*036*/	char	unknown032[12];	//probably includes loregroup & evolving info. see Client::MakeItemLink() in zone/inventory.cpp:469
+/*048*/	uint16	icon;
+/*050*/	char	unknown046[2];
+/*052*/
 };
 
 /*
@@ -4187,18 +4200,16 @@ struct ApplyPoison_Struct {
 };
 
 struct ItemVerifyRequest_Struct {
-/*000*/	//sint32	slot;		// Slot being Right Clicked
-		ItemSlotStruct slot;
-/*004*/	uint32	target;		// Target Entity ID
-/*008*/
+/*000*/	ItemSlotStruct slot;
+/*012*/	uint32	target;		// Target Entity ID
+/*016*/
 };
 
 struct ItemVerifyReply_Struct {
-/*000*/	//sint32	slot;		// Slot being Right Clicked
-		ItemSlotStruct slot;
-/*004*/	uint32	spell;		// Spell ID to cast if different than item effect
-/*008*/	uint32	target;		// Target Entity ID
-/*012*/
+/*000*/	ItemSlotStruct slot;
+/*012*/	uint32	spell;		// Spell ID to cast if different than item effect
+/*016*/	uint32	target;		// Target Entity ID
+/*020*/
 };
 
 

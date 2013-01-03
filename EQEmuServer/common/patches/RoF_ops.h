@@ -86,6 +86,8 @@ E(OP_Animation)
 E(OP_HPUpdate)
 E(OP_BlockedBuffs)
 E(OP_RemoveBlockedBuffs)
+E(OP_DeleteSpawn)
+
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)

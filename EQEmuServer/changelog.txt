@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/03/2013 ==
+Trevius: RoF: Fixed slot conversion issues for Bank and Shared Bank
+Trevius: RoF: Normal Merchants are now fully functional for buy/sell
+Trevius: RoF: Item Links now display item stats when clicked, but the links are still truncated.
+Trevius: RoF: Corrected the Illusion Struct and corrected some opcodes.
+Trevius: RoF: Updated the DeleteSpawn struct and added an encode for it.
+Trevius: RoF: Hopefully fixed Consuming food/drink.
+
 == 01/02/2013 ==
 Vaion: RoF: Crash prevention for Item Preview window.
 Trevius: RoF: Finished identifying basically all of the remaining RoF opcodes.
