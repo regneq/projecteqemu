@@ -103,152 +103,12 @@ std::string Strategy::Describe() const {
 
 #include "SSDefine.h"
 
-
-// Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
-static inline structs::RoFSlotStruct TitaniumToRoFSlot2(int32 TitaniumSlot)
-{
-	structs::RoFSlotStruct RoFSlot;
-
-	// Power Source
-	if(TitaniumSlot == 9999)
-	{
-		RoFSlot.Bank = 0;
-		RoFSlot.MainSlot = 21;
-		RoFSlot.SubSlot = 0xffff;
-
-		return RoFSlot;
-	}
-
-	// Ammo
-	if(TitaniumSlot == 21)
-	{
-		RoFSlot.Bank = 0;
-		RoFSlot.MainSlot = 22;
-		RoFSlot.SubSlot = 0xffff;
-
-		return RoFSlot;
-	}
-
-	if((TitaniumSlot >= 22) && (TitaniumSlot <= 29))
-	{
-		RoFSlot.Bank = 0;
-		RoFSlot.SubSlot = 0xffff;
-		switch(TitaniumSlot)
-		{
-			case 22:
-				RoFSlot.MainSlot = 23;
-				break;
-			case 23:
-				RoFSlot.MainSlot = 25;
-				break;
-			case 24:
-				RoFSlot.MainSlot = 27;
-				break;
-			case 25:
-				RoFSlot.MainSlot = 29;
-				break;
-			case 26:
-				RoFSlot.MainSlot = 24;
-				break;
-			case 27:
-				RoFSlot.MainSlot = 26;
-				break;
-			case 28:
-				RoFSlot.MainSlot = 28;
-				break;
-			case 29:
-				RoFSlot.MainSlot = 30;
-				break;
-
-			default:	// Shouldn't get here
-				RoFSlot.MainSlot = TitaniumSlot;
-		}
-		//_log(NET__ERROR, "Main Inv TitaniumSlot is %i, RoFSlot is %i, %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot);
-		return RoFSlot;
-	}
-
-	if((TitaniumSlot >= 2000) && (TitaniumSlot <= 2023))
-	{
-		RoFSlot.Bank = 1;
-		RoFSlot.MainSlot = TitaniumSlot - 2000;
-		RoFSlot.SubSlot = 0xffff;
-
-		return RoFSlot;
-	}
-
-	if((TitaniumSlot >= 2031) && (TitaniumSlot <= 2270))
-	{
-		RoFSlot.Bank = 1;
-		RoFSlot.MainSlot = (TitaniumSlot - 2031) / 10;
-		RoFSlot.SubSlot = (TitaniumSlot - 2031) - (RoFSlot.MainSlot * 10);
-		//_log(NET__ERROR, "Converted bank bag slot %i to %i, %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot);
-
-		return RoFSlot;
-	}
-
-	RoFSlot.Bank = 0;
-
-	if(TitaniumSlot == 30)
-	{
-		RoFSlot.MainSlot = 33;
-		RoFSlot.SubSlot = 0xffff;
-	}
-	else if((TitaniumSlot >= 251) && (TitaniumSlot <= 260))
-	{
-		RoFSlot.MainSlot = 23;
-		RoFSlot.SubSlot = TitaniumSlot - 251;
-	}
-	else if((TitaniumSlot >= 261) && (TitaniumSlot <= 270))
-	{
-		RoFSlot.MainSlot = 24;
-		RoFSlot.SubSlot = TitaniumSlot - 261;
-	}
-	else if((TitaniumSlot >= 271) && (TitaniumSlot <= 280))
-	{
-		RoFSlot.MainSlot = 25;
-		RoFSlot.SubSlot = TitaniumSlot - 271;
-	}
-	else if((TitaniumSlot >= 281) && (TitaniumSlot <= 290))
-	{
-		RoFSlot.MainSlot = 26;
-		RoFSlot.SubSlot = TitaniumSlot - 281;
-	}
-	else if((TitaniumSlot >= 291) && (TitaniumSlot <= 300))
-	{
-		RoFSlot.MainSlot = 27;
-		RoFSlot.SubSlot = TitaniumSlot - 291;
-	}
-	else if((TitaniumSlot >= 301) && (TitaniumSlot <= 310))
-	{
-		RoFSlot.MainSlot = 28;
-		RoFSlot.SubSlot = TitaniumSlot - 301;
-	}
-	else if((TitaniumSlot >= 311) && (TitaniumSlot <= 320))
-	{
-		RoFSlot.MainSlot = 29;
-		RoFSlot.SubSlot = TitaniumSlot - 311;
-	}
-	else if((TitaniumSlot >= 321) && (TitaniumSlot <= 330))
-	{
-		RoFSlot.MainSlot = 30;
-		RoFSlot.SubSlot = TitaniumSlot - 321;
-	}
-	else
-	{
-		RoFSlot.MainSlot = TitaniumSlot;
-		RoFSlot.SubSlot = 0xffff;
-	}
-
-	//_log(NET__ERROR, "HotSlot is %i, RoFSlot is %i, %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot);
-
-	return RoFSlot;
-}
-
 // Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
 static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 {
 	structs::ItemSlotStruct RoFSlot;
 	RoFSlot.SlotType = 0xffff;
+	RoFSlot.Unknown02 = 0;
 	RoFSlot.MainSlot = 0xffff;
 	RoFSlot.SubSlot = 0xffff;
 	RoFSlot.AugSlot = 0xffff;
@@ -302,6 +162,8 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 		}
 	}
 
+	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
+
 	return RoFSlot;
 }
 
@@ -310,11 +172,15 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 	int32 TitaniumSlot = 0xffffffff;
 	int32 TempSlot = 0;
 
-	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 33)	// Worn and Personal Inventory
+	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 34)	// Worn/Personal Inventory and Cursor
 	{
 		if (RoFSlot.MainSlot == 21)
 		{
 			TempSlot = 9999;
+		}
+		else if (RoFSlot.MainSlot == 33)	// Cursor
+		{
+			TempSlot = 30;
 		}
 		else if (RoFSlot.MainSlot >= 22)
 		{
@@ -332,69 +198,116 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 
 		TitaniumSlot = TempSlot;
 	}
-	else if (RoFSlot.MainSlot == 33)	// Cursor
-	{
-		TempSlot = 30;
-		if (RoFSlot.SubSlot >= 0)
-		{
-			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
-		}
-		TitaniumSlot = TempSlot;
-	}
 	else if (RoFSlot.SlotType == 1)		// Bank Slots
 	{
-		TempSlot = RoFSlot.MainSlot + 2000;
+		TempSlot = 2000;
 		if (RoFSlot.SubSlot >= 0)
 		{
-			TempSlot = TempSlot + 30 + RoFSlot.SubSlot + 1;
+			TempSlot += ((RoFSlot.MainSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
 		}
 		TitaniumSlot = TempSlot;
 	}
 	else if (RoFSlot.SlotType == 2)		// Shared Bank Slots
 	{
-		TempSlot = RoFSlot.MainSlot + 2500;
+		TempSlot = 2500;
 		if (RoFSlot.SubSlot >= 0)
 		{
-			TempSlot = TempSlot + 30 + RoFSlot.SubSlot + 1;
+			TempSlot += ((RoFSlot.MainSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
 		}
 		TitaniumSlot = TempSlot;
 	}
 
-	return TitaniumSlot;
-}
-
-// Converts RoF Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 RoFToTitaniumSlot2(int32 RoFSlot) {
-	int32 TitaniumSlot = 0;
-	
-	if(RoFSlot >= 22 && RoFSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
-	{
-		TitaniumSlot = RoFSlot - 1;
-	}
-	else if(RoFSlot >= 262 && RoFSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
-	{
-		TitaniumSlot = RoFSlot - 11;
-	}
-	else if(RoFSlot >= 2032 && RoFSlot <= 2271)	// Bank Bag Slots
-	{
-		TitaniumSlot = RoFSlot - 1;
-	}
-	else if(RoFSlot >= 2532 && RoFSlot <= 2551)	// Shared Bank Bag Slots
-	{
-		TitaniumSlot = RoFSlot - 1;
-	}
-	else if(RoFSlot == 21)
-	{
-		TitaniumSlot = 9999;	//Unused slot ID to give a place to save Power Slot
-	}
-	else
-	{
-		TitaniumSlot = RoFSlot;
-	}
+	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
 	return TitaniumSlot;
 }
 
+static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFSlot)
+{
+	int32 TitaniumSlot = 0xffffffff;
+	int32 TempSlot = 0;
+
+	if (RoFSlot.MainSlot < 33)	// Worn/Personal Inventory and Cursor
+	{
+		if (RoFSlot.MainSlot == 21)
+		{
+			TempSlot = 9999;
+		}
+		else if (RoFSlot.MainSlot == 33)	// Cursor
+		{
+			TempSlot = 30;
+		}
+		else if (RoFSlot.MainSlot >= 22)
+		{
+			TempSlot = RoFSlot.MainSlot - 1;
+		}
+		else
+		{
+			TempSlot = RoFSlot.MainSlot;
+		}
+
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+
+		TitaniumSlot = TempSlot;
+	}
+
+	_log(NET__ERROR, "Convert RoF Slots: Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
+
+	return TitaniumSlot;
+}
+
+// Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
+static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 TitaniumSlot)
+{
+	structs::MainInvItemSlotStruct RoFSlot;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	int32 TempSlot = 0;
+
+	if (TitaniumSlot < 52)
+	{
+		RoFSlot.MainSlot = TitaniumSlot;
+		if (TitaniumSlot == 9999)
+		{
+			RoFSlot.MainSlot = 21;
+		}
+		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
+		{
+			RoFSlot.MainSlot += 1;
+		}
+		else if (TitaniumSlot > 29)	// Cursor
+		{
+			RoFSlot.MainSlot = 33;
+			if (TitaniumSlot > 30)
+			{
+				RoFSlot.SubSlot = (TitaniumSlot + 3) - 33;
+			}
+		}
+	}
+	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
+	{
+		TempSlot = TitaniumSlot - 1;
+		RoFSlot.MainSlot = int(TempSlot / 10) - 2;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 2) * 10);
+	}
+
+	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
+
+	return RoFSlot;
+}
 
 ENCODE(OP_OpenNewTasksWindow) {
 
@@ -2273,6 +2186,7 @@ ENCODE(OP_Illusion) {
 	OUT(drakkin_heritage);
 	OUT(drakkin_tattoo);
 	OUT(drakkin_details);
+	eq->unknown316 = -1;	// Observed
 
 	FINISH_ENCODE();
 }
@@ -2289,6 +2203,17 @@ ENCODE(OP_ShopPlayerBuy)
 
 	FINISH_ENCODE();
 }
+
+ENCODE(OP_DeleteSpawn)
+{
+	ENCODE_LENGTH_EXACT(DeleteSpawn_Struct);
+	SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
+	OUT(spawn_id);
+	eq->unknown04 = 1;	// Observed
+
+	FINISH_ENCODE();
+}
+
 
 ENCODE(OP_ClientUpdate) {
 	ENCODE_LENGTH_EXACT(PlayerPositionUpdateServer_Struct);
@@ -2463,8 +2388,8 @@ ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	//eq->itemslot = TitaniumToRoFSlot(emu->itemslot);
-	OUT(itemslot);
+	eq->itemslot = MainInvTitaniumToRoFSlot(emu->itemslot);
+	//OUT(itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -3766,6 +3691,7 @@ DECODE(OP_ItemLinkClick) {
 	for (r = 0; r < 5; r++) {
 		IN(augments[r]);
 	}
+	// Max Augs is now 6, but no code to support that many yet
 	IN(link_hash);
 	IN(icon);
 	
@@ -3960,8 +3886,8 @@ DECODE(OP_ShopPlayerSell) {
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 
 	IN(npcid);
-	//emu->itemslot = RoFToTitaniumSlot(eq->itemslot);
-	IN(itemslot);
+	emu->itemslot = MainInvRoFToTitaniumSlot(eq->itemslot);
+	//IN(itemslot);
 	IN(quantity);
 	IN(price);
 
