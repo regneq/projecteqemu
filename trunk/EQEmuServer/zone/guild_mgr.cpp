@@ -807,7 +807,7 @@ void GuildBankManager::SendGuildBank(Client *c)
 		if((*Iterator)->Items.MainArea[i].ItemID > 0)
 		{
 			const Item_Struct *Item = database.GetItem((*Iterator)->Items.MainArea[i].ItemID);
-
+			if(!Item){ continue; } // Why don't we even check for valid items
 			bool Useable = Item->IsEquipable(c->GetBaseRace(), c->GetBaseClass());
 
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankItemUpdate_Struct));
