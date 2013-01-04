@@ -6,6 +6,15 @@ Trevius: RoF: Trading to NPCs and Players is now functional.
 Trevius: RoF: AA Purchases are now functional.
 Trevius: RoF: Opening Tradeskill Objects is now possible.
 Trevius: RoF: Moving items into Tradeskill Objects is now possible, but combines will bug the client.
+Uleat: QS: Added 4 additional logging options [MerchantLogTransactions], [PlayerLogDeletes], [PlayerLogHandins], [PlayerLogMoves]
+Uleat: QS: PlayerLogHandins is partially enabled..currently logs NPCtypeID and Client-side trade information only.
+Uleat: QS: Renamed 1 existing source files to maintain logging name continuity [PlayerLogTrades].
+Uleat: Fixed minor issue that was causing armor glitches with RoF clients from UF and lower clients.
+Uleat: Fixed minor bug in the #iteminfo command where the material value reported 0x20xx.
+
+REQUIRED SQL: utils/sql/svn/2361_required_qs_rule_values.sql
+REQUIRED SQL: utils/sql/queryserv/2361_QueryServ.sql
+REQUIRED SQL: utils/sql/queryserv/2304_QueryServ.sql (rename '2304_qs_playertradelog.sql' - Does not need to be re-sourced)
 
 == 01/03/2013 ==
 Trevius: RoF: Fixed slot conversion issues for Bank and Shared Bank

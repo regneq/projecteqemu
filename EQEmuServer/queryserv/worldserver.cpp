@@ -88,11 +88,18 @@ void WorldServer::Process()
 				database.AddSpeech(tmp1.c_str(), tmp2.c_str(), SSS->message, SSS->minstatus, SSS->guilddbid, SSS->type);
 				break;
 			}
-			case ServerOP_QSPlayerTradeLog:
+			case ServerOP_QSPlayerLogTrades:
 			{
-				QSPlayerTradeLog_Struct *QS = (QSPlayerTradeLog_Struct*)pack->pBuffer;
+				QSPlayerLogTrade_Struct *QS = (QSPlayerLogTrade_Struct*)pack->pBuffer;
 				int32 Items = QS->char1_count + QS->char2_count;
 				database.LogPlayerTrade(QS, Items);
+				break;
+			}
+			case ServerOP_QSPlayerLogHandins:
+			{
+				QSPlayerLogHandin_Struct *QS = (QSPlayerLogHandin_Struct*)pack->pBuffer;
+				int32 Items = QS->char_count + QS->npc_count;
+				database.LogPlayerHandin(QS, Items);
 				break;
 			}
 			case ServerOP_QSPlayerLogNPCKills:
@@ -101,6 +108,27 @@ void WorldServer::Process()
 				int32 Members = pack->size - sizeof(QSPlayerLogNPCKill_Struct);
 				if (Members > 0) Members = Members / sizeof(QSPlayerLogNPCKillsPlayers_Struct);
 				database.LogPlayerNPCKill(QS, Members);
+				break;
+			}
+			case ServerOP_QSPlayerLogDeletes:
+			{
+				QSPlayerLogDelete_Struct *QS = (QSPlayerLogDelete_Struct*)pack->pBuffer;
+				int32 Items = QS->char_count;
+				database.LogPlayerDelete(QS, Items);
+				break;
+			}
+			case ServerOP_QSPlayerLogMoves:
+			{
+				QSPlayerLogMove_Struct *QS = (QSPlayerLogMove_Struct*)pack->pBuffer;
+				int32 Items = QS->char_count;
+				database.LogPlayerMove(QS, Items);
+				break;
+			}
+			case ServerOP_QSMerchantLogTransactions:
+			{
+				QSMerchantLogTransaction_Struct *QS = (QSMerchantLogTransaction_Struct*)pack->pBuffer;
+				int32 Items = QS->char_count + QS->merchant_count;
+				database.LogMerchantTransaction(QS, Items);
 				break;
 			}
 			case ServerOP_QueryServGeneric:

@@ -1,4 +1,7 @@
--- Needed Query Tables --
+SET FOREIGN_KEY_CHECKS=0;
+-- ----------------------------
+-- Table structure for `qs_player_npc_kill_record`
+-- ----------------------------
 DROP TABLE IF EXISTS `qs_player_trade_record`;
 CREATE TABLE `qs_player_trade_record` (
   `trade_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -18,6 +21,9 @@ CREATE TABLE `qs_player_trade_record` (
   PRIMARY KEY (`trade_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+-- ----------------------------
+-- Table structure for `qs_player_npc_kill_record_entries`
+-- ----------------------------
 DROP TABLE IF EXISTS `qs_player_trade_record_entries`;
 CREATE TABLE `qs_player_trade_record_entries` (
   `event_id` int(11) DEFAULT '0',

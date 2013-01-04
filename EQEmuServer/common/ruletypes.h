@@ -489,8 +489,11 @@ RULE_CATEGORY_END()
 RULE_CATEGORY( QueryServ )
 RULE_BOOL( QueryServ, PlayerChatLogging, false) // Logs Player Chat
 RULE_BOOL( QueryServ, PlayerLogTrades, false) // Logs Player Trades
-RULE_BOOL( QueryServ, PlayerLogMoneyTrades, false) // Logs Player Money Trades
+RULE_BOOL( QueryServ, PlayerLogHandins, false) // Logs Player Handins
 RULE_BOOL( QueryServ, PlayerLogNPCKills, false) // Logs Player NPC Kills
+RULE_BOOL( QueryServ, PlayerLogDeletes, false) // Logs Player Deletes
+RULE_BOOL( QueryServ, PlayerLogMoves, false) // Logs Player Moves
+RULE_BOOL( QueryServ, MerchantLogTransactions, false) // Logs Merchant Transactions
 RULE_BOOL( QueryServ, PlayerLogPCCoordinates, false) // Logs Player Coordinates with certain events
 RULE_CATEGORY_END()
 
