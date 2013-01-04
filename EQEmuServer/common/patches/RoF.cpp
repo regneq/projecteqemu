@@ -161,6 +161,30 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 			RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
 		}
 	}
+	else if (TitaniumSlot > 2999 && TitaniumSlot < 3180)
+	{
+		RoFSlot.SlotType = 3;
+		TempSlot = TitaniumSlot - 3000;
+		RoFSlot.MainSlot = TempSlot;
+		if (TempSlot > 99)
+		{
+			if (TempSlot > 100)
+			{
+				RoFSlot.MainSlot = int((TempSlot - 100) / 10);
+			}
+			else
+			{
+				RoFSlot.MainSlot = 0;
+			}
+			RoFSlot.SubSlot = TempSlot - (100 + RoFSlot.MainSlot);
+		}
+	}
+	else if (TitaniumSlot > 3999 && TitaniumSlot < 4009)
+	{
+		RoFSlot.SlotType = 4;
+		TempSlot = TitaniumSlot - 4000;
+		RoFSlot.MainSlot = TempSlot;
+	}
 
 	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
 
@@ -224,6 +248,25 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 		}
 		TitaniumSlot = TempSlot;
 	}
+	else if (RoFSlot.SlotType == 3)		// Trade Slots
+	{
+		TempSlot = 3000;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += 100 + (RoFSlot.MainSlot * 10) + RoFSlot.SubSlot;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
+	else if (RoFSlot.SlotType == 4)		// Tradeskill Container Slots
+	{
+		TempSlot = 4000;
+		TempSlot += RoFSlot.MainSlot;
+		TitaniumSlot = TempSlot;
+	}
 
 	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
@@ -235,7 +278,7 @@ static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFS
 	int32 TitaniumSlot = 0xffffffff;
 	int32 TempSlot = 0;
 
-	if (RoFSlot.MainSlot < 33)	// Worn/Personal Inventory and Cursor
+	if (RoFSlot.MainSlot < 33)				// Worn/Personal Inventory and Cursor
 	{
 		if (RoFSlot.MainSlot == 21)
 		{
@@ -245,7 +288,7 @@ static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFS
 		{
 			TempSlot = 30;
 		}
-		else if (RoFSlot.MainSlot >= 22)
+		else if (RoFSlot.MainSlot >= 22)	// Main Inventory Slots
 		{
 			TempSlot = RoFSlot.MainSlot - 1;
 		}
@@ -254,7 +297,7 @@ static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFS
 			TempSlot = RoFSlot.MainSlot;
 		}
 
-		if (RoFSlot.SubSlot >= 0)
+		if (RoFSlot.SubSlot >= 0)			// Bag Slots
 		{
 			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
 		}
@@ -288,7 +331,7 @@ static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 Tita
 		{
 			RoFSlot.MainSlot += 1;
 		}
-		else if (TitaniumSlot > 29)	// Cursor
+		else if (TitaniumSlot > 29)		// Cursor
 		{
 			RoFSlot.MainSlot = 33;
 			if (TitaniumSlot > 30)
@@ -2109,6 +2152,19 @@ ENCODE(OP_GroundSpawn)
 	dest->FastQueuePacket(&in, ack_req);
 }
 
+ENCODE(OP_ClickObjectAction) {
+	ENCODE_LENGTH_EXACT(ClickObjectAction_Struct);
+	SETUP_DIRECT_ENCODE(ClickObjectAction_Struct, structs::ClickObjectAction_Struct);
+	OUT(drop_id);
+	eq->unknown04 = -1;
+	eq->unknown08 = -1;
+	OUT(type);
+	OUT(icon);
+	eq->unknown16 = 0;
+	OUT_str(object_name);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_SendMembership) {
 	ENCODE_LENGTH_EXACT(Membership_Struct);
 	SETUP_DIRECT_ENCODE(Membership_Struct, structs::Membership_Struct);
@@ -2717,12 +2773,11 @@ ENCODE(OP_WhoAllResponse)
 
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
 
-		InBuffer += 4;
+		InBuffer += 8;
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);
 
 		char Name[64];
-
 
 		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Char Name
 		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
@@ -3339,14 +3394,19 @@ ENCODE(OP_DisciplineUpdate)
 ENCODE(OP_RespondAA) {
 	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
 
-	eq->aa_count = MAX_PP_AA_ARRAY;
+	eq->aa_spent = emu->aa_spent;
+	// These fields may need to be correctly populated at some point
+	eq->aapoints_assigned = emu->aa_spent + 1;
+	eq->aa_spent_general = 0;
+	eq->aa_spent_archetype = 0;
+	eq->aa_spent_class = 0;
+	eq->aa_spent_special = 0;
 
 	for(uint32 i = 0; i < MAX_PP_AA_ARRAY; ++i)
 	{
 		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
 		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
 		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
-		eq->aa_list[i].unknown12 = 0;
 	}
 
 	FINISH_ENCODE();

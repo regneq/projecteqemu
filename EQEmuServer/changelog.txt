@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/04/2013 ==
+Trevius: RoF: Looting items and loot all are now functional.
+Trevius: RoF: Trading to NPCs and Players is now functional.
+Trevius: RoF: AA Purchases are now functional.
+Trevius: RoF: Opening Tradeskill Objects is now possible.
+Trevius: RoF: Moving items into Tradeskill Objects is now possible, but combines will bug the client.
+
 == 01/03/2013 ==
 Trevius: RoF: Fixed slot conversion issues for Bank and Shared Bank
 Trevius: RoF: Normal Merchants are now fully functional for buy/sell

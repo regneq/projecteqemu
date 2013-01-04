@@ -1811,7 +1811,7 @@ struct LootingItem_Struct {
 /*008*/	int16	slot_id;
 /*010*/	int16	unknown10;
 /*012*/	int32	auto_loot;
-/*016*/	//int32	unknown16;
+/*016*/	int32	unknown16;
 /*020*/
 };
 
@@ -2478,17 +2478,17 @@ struct Petition_Struct {
 };
 
 
-struct Who_All_Struct { // 76 length total
+struct Who_All_Struct { // 156 length total
 /*000*/	char	whom[64];
 /*064*/	int32	wrace;		// FF FF = no race
-
 /*068*/	int32	wclass;		// FF FF = no class
 /*072*/	int32	lvllow;		// FF FF = no numbers
 /*076*/	int32	lvlhigh;	// FF FF = no numbers
 /*080*/	int32	gmlookup;	// FF FF = not doing /who all gm
 /*084*/	int32	guildid;	// Also used for Buyer/Trader/LFG
 /*088*/	int8	unknown088[64];
-/*156*/	int32	type;		// 0 = /who 3 = /who all
+/*152*/	int32	type;		// 0 = /who 3 = /who all
+/*156*/	
 };
 
 struct Stun_Struct { // 8 bytes total
@@ -2660,7 +2660,7 @@ struct Object_Struct {
 **
 */
 struct ClickObject_Struct {
-/*00*/	uint32 drop_id;
+/*00*/	uint32 drop_id;		// Appears to use the Object Count field now
 /*04*/	uint32 player_id;
 /*08*/
 };
@@ -2675,9 +2675,11 @@ struct Shielding_Struct {
 **
 */
 struct ClickObjectAction_Struct {
-/*00*/	uint32	player_id;	// Entity Id of player who clicked object
-/*04*/	uint32	drop_id;	// Zone-specified unique object identifier
-/*08*/	uint32	open;		// 1=opening, 0=closing
+/*00*/  //uint32 player_id;	// Appears to have been removed
+/*00*/	uint32	drop_id;	// Appears to use the object_count field now
+/*04*/	sint32	unknown04;	// Seen -1
+/*08*/	sint32	unknown08;	// Seen -1
+/*08*/	//uint32 open;		// 1=opening, 0=closing - Removed?
 /*12*/	uint32	type;		// See object.h, "Object Types"
 /*16*/	uint32	unknown16;	//
 /*20*/	uint32	icon;		// Icon to display for tradeskill containers
@@ -3045,6 +3047,7 @@ struct ZoneServerInfo_Struct
 struct WhoAllPlayer{
 	int32	formatstring;
 	int32	pidstring;
+	sint32	unknown64;		// Seen -1
 	char*	name;
 	int32	rankstring;
 	char*	guild;
@@ -3062,13 +3065,13 @@ struct WhoAllReturnStruct {
 	int32	id;
 	int32	playerineqstring;
 	char	line[27];
-	int8	unknown35; //0A
-	int32	unknown36;//0s
+	int8	unknown35;			// 0A
+	int32	unknown36;			// Seen 208243456
 	int32	playersinzonestring;
-	int32	unknown44[2]; //0s
-	int32	unknown52;//1
-	int32	unknown56;//1
-	int32	playercount;//1
+	int32	unknown52;			// Same as playercount?
+	int32	unknown44[2];		// 0s
+	int32	unknown56;			// Same as playercount?
+	int32	playercount;		// Player Count in the who list
 	struct WhoAllPlayer player[0];
 };
 
@@ -4106,14 +4109,6 @@ struct AA_Skills {		//this should be removed and changed to AA_Array
 /*12*/
 };
 
-struct AA_Values {
-/*00*/	int32	aa_skill;
-/*04*/  int32	aa_value;
-/*08*/  int32	unknown08;
-/*12*/  int32	unknown12;
-/*16*/
-};
-
 struct AAExpUpdate_Struct {
 /*00*/	int32 unknown00;	//seems to be a value from AA_Action.ability
 /*04*/	int32 aapoints_unspent;
@@ -4121,7 +4116,6 @@ struct AAExpUpdate_Struct {
 /*09*/	int8 unknown09[3];	//live doesn't always zero these, so they arnt part of aaxp_percent
 /*12*/
 };
-
 
 struct AltAdvStats_Struct {
 /*000*/  uint32 experience;
@@ -4136,9 +4130,21 @@ struct PlayerAA_Struct {						// Is this still used?
 	AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
+struct AA_Values {
+/*00*/	int32	aa_skill;
+/*04*/  int32	aa_value;
+/*08*/  int32	unknown08;
+/*12*/
+};
+
 struct AATable_Struct {
-/*00*/ int32	aa_count;	// Total AAs being sent
-/*04*/ AA_Values aa_list[MAX_PP_AA_ARRAY];
+/*00*/ uint32 aa_spent;				// Total AAs Spent
+/*04*/ uint32 aapoints_assigned;	// Number of Assigned AA points - Seen 206 (total of the 4 fields below)
+/*08*/ uint32 aa_spent_general;		// Seen 63
+/*12*/ uint32 aa_spent_archetype;	// Seen 40
+/*16*/ uint32 aa_spent_class;		// Seen 103
+/*20*/ uint32 aa_spent_special;		// Seen 0
+/*24*/ AA_Values aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {

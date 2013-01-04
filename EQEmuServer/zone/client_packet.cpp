@@ -5925,26 +5925,37 @@ void Client::Handle_OP_CloseContainer(const EQApplicationPacket *app)
 
 void Client::Handle_OP_ClickObjectAction(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(ClickObjectAction_Struct)) {
-		LogFile->write(EQEMuLog::Error, "Invalid size on OP_ClickObjectAction: Expected %i, Got %i",
-			sizeof(ClickObjectAction_Struct), app->size);
-		return;
-	}
-
-	SetTradeskillObject(NULL);
-
-	ClickObjectAction_Struct* oos = (ClickObjectAction_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetEntityObject(oos->drop_id);
-	if (entity && entity->IsObject()) {
-		Object* object = entity->CastToObject();
-		if(oos->open == 0) {
-			object->Close();
-		} else {
-			LogFile->write(EQEMuLog::Error, "Unsupported action %d in OP_ClickObjectAction", oos->open);
+	if (app->size == 0) {
+		// RoF sends a 0 sized packet for closing objects
+		Object* object = GetTradeskillObject();
+		if (object) {
+			object->CastToObject()->Close();
 		}
-	} else {
-		LogFile->write(EQEMuLog::Error, "Invalid object %d in OP_ClickObjectAction", oos->drop_id);
 	}
+	else
+	{
+		if (app->size != sizeof(ClickObjectAction_Struct)) {
+			LogFile->write(EQEMuLog::Error, "Invalid size on OP_ClickObjectAction: Expected %i, Got %i",
+				sizeof(ClickObjectAction_Struct), app->size);
+			return;
+		}
+		
+		ClickObjectAction_Struct* oos = (ClickObjectAction_Struct*)app->pBuffer;
+		Entity* entity = entity_list.GetEntityObject(oos->drop_id);
+		if (entity && entity->IsObject()) {
+			Object* object = entity->CastToObject();
+			if(oos->open == 0) {
+				object->Close();
+			} else {
+				LogFile->write(EQEMuLog::Error, "Unsupported action %d in OP_ClickObjectAction", oos->open);
+			}
+		} else {
+			LogFile->write(EQEMuLog::Error, "Invalid object %d in OP_ClickObjectAction", oos->drop_id);
+		}
+	}
+	
+	SetTradeskillObject(NULL);
+	
 	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
 	QueuePacket(&end_trade1);
 
@@ -5973,6 +5984,10 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		buf[9] = '\0';
 		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0);
 	}
+	
+	// Observed in RoF after OP_ClickObjectAction:
+	//EQApplicationPacket end_trade2(OP_FinishWindow2, 0);
+	//QueuePacket(&end_trade2);
 	return;
 }
 
