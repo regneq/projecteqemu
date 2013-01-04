@@ -31,7 +31,7 @@
 #include "../common/logsys.h"
 #include "StringIDs.h"
 #include "NpcAI.h"
-
+extern WorldServer worldserver;
 
 // @merth: this needs to be touched up
 uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
