@@ -4975,39 +4975,15 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 
 				// start QS code
 				if(RuleB(QueryServ, PlayerLogTrades)) {
-					int16 trade_count=0;
+					int16 trade_count = 0;
 
 					// Item trade count for packet sizing
 					for(sint16 slot_id=3000; slot_id<=3007; slot_id++) {
-						ItemInst* other_item = other->GetInv().GetItem(slot_id);
-						if(other_item) {
-							trade_count++;
-
-							if(other_item->IsType(ItemClassContainer)) {
-								for(uint8 bagslot_id=0; bagslot_id<other_item->GetItem()->BagSlots; bagslot_id++) {
-									ItemInst* other_bagitem = other_item->GetItem(bagslot_id);
-
-									if(other_bagitem) { trade_count++; }
-								}
-							}
-						}
-
-						const ItemInst* this_item = this->GetInv().GetItem(slot_id);
-						if(this_item) {
-							trade_count++;
-						
-							if(this_item->IsType(ItemClassContainer)) {
-								for(uint8 bagslot_id=0; bagslot_id<this_item->GetItem()->BagSlots; bagslot_id++) {
-									ItemInst* this_bagitem = this_item->GetItem(bagslot_id);
-
-									if(this_bagitem) { trade_count++; }
-								}
-							}
-						}
+						if(other->GetInv().GetItem(slot_id)) { trade_count += other->GetInv().GetItem(slot_id)->GetTotalItemCount(); }
+						if(m_inv[slot_id]) { trade_count += m_inv[slot_id]->GetTotalItemCount(); }
 					}
-
-				
-					ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerTradeLog, sizeof(QSPlayerTradeLog_Struct) + (sizeof(QSItemTrade_Struct) * trade_count));
+					
+					ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerLogTrades, sizeof(QSPlayerLogTrade_Struct) + (sizeof(QSTradeItems_Struct) * trade_count));
 
 					// Perform actual trade
 					this->FinishTrade(other, qspack, true);
@@ -5032,13 +5008,31 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			this->FastQueuePacket(&outapp);
 		}
 	}
+	// Trading with a Mob object that is not a Client.
 	else if(with) {
-		// Trading with a Mob object that is not a Client.
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade,0);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade, 0);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 		if(with->IsNPC())
-			FinishTrade(with->CastToNPC());
+			// Audit trade to database for player trade stream
+			if(RuleB(QueryServ, PlayerLogHandins)) {
+				int16 handin_count = 0;
+
+				for(sint16 slot_id=3000; slot_id<=3003; slot_id++) {
+					if(m_inv[slot_id]) { handin_count += m_inv[slot_id]->GetTotalItemCount(); }
+				}
+
+				ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerLogHandins, sizeof(QSPlayerLogHandin_Struct) + (sizeof(QSHandinItems_Struct) * handin_count));
+				
+				FinishTrade(with->CastToNPC(), qspack);
+
+				qspack->Deflate();
+				if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+				safe_delete(qspack);
+			}
+			else { 
+				FinishTrade(with->CastToNPC());
+			}
 #ifdef BOTS
 		else if(with->IsBot())
 			with->CastToBot()->FinishTrade(this, Bot::BotTradeClientNormal);
@@ -5764,6 +5758,40 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	safe_delete(inst);
 	safe_delete(outapp);
 
+	// start QS code
+	if(RuleB(QueryServ, MerchantLogTransactions)) {
+		ServerPacket* qspack = new ServerPacket(ServerOP_QSMerchantLogTransactions, sizeof(QSMerchantLogTransaction_Struct) + sizeof(QSTransactionItems_Struct));
+		QSMerchantLogTransaction_Struct* qsaudit = (QSMerchantLogTransaction_Struct*)qspack->pBuffer;
+
+		qsaudit->zone_id				 = zone->GetZoneID();
+		qsaudit->merchant_id			 = tmp->CastToNPC()->MerchantType;
+		qsaudit->merchant_money.platinum = 0;
+		qsaudit->merchant_money.gold	 = 0;
+		qsaudit->merchant_money.silver	 = 0;
+		qsaudit->merchant_money.copper	 = 0;
+		qsaudit->merchant_count			 = 1;
+		qsaudit->char_id				 = character_id;
+		qsaudit->char_money.platinum	 = (mpo->price / 1000);
+		qsaudit->char_money.gold		 = (mpo->price / 100) % 10;
+		qsaudit->char_money.silver		 = (mpo->price / 10) % 10;
+		qsaudit->char_money.copper		 = mpo->price % 10;
+		qsaudit->char_count				 = 0;
+
+		qsaudit->items[0].char_slot	 = freeslotid;
+		qsaudit->items[0].item_id	 = m_inv[freeslotid]->GetID();
+		qsaudit->items[0].charges	 = mpo->quantity;
+		qsaudit->items[0].aug_1		 = m_inv[freeslotid]->GetAugmentItemID(1);
+		qsaudit->items[0].aug_2		 = m_inv[freeslotid]->GetAugmentItemID(2);
+		qsaudit->items[0].aug_3		 = m_inv[freeslotid]->GetAugmentItemID(3);
+		qsaudit->items[0].aug_4		 = m_inv[freeslotid]->GetAugmentItemID(4);
+		qsaudit->items[0].aug_5		 = m_inv[freeslotid]->GetAugmentItemID(5);
+
+		qspack->Deflate();
+		if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+		safe_delete(qspack);
+	}
+	// end QS code
+
 	if (RuleB(EventLog, RecordBuyFromMerchant))
 		LogMerchant(this, tmp, mpo->quantity, mpo->price, item, true);
 
@@ -5867,7 +5895,41 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 		safe_delete(inst2);
 	}
 
-	// Now remove the item from the player, this happens irrguardless of outcome
+	// start QS code
+	if(RuleB(QueryServ, MerchantLogTransactions)) {
+		ServerPacket* qspack = new ServerPacket(ServerOP_QSMerchantLogTransactions, sizeof(QSMerchantLogTransaction_Struct) + sizeof(QSTransactionItems_Struct));
+		QSMerchantLogTransaction_Struct* qsaudit = (QSMerchantLogTransaction_Struct*)qspack->pBuffer;
+
+		qsaudit->zone_id				 = zone->GetZoneID();
+		qsaudit->merchant_id			 = vendor->CastToNPC()->MerchantType;
+		qsaudit->merchant_money.platinum = (price / 1000);
+		qsaudit->merchant_money.gold	 = (price / 100) % 10;
+		qsaudit->merchant_money.silver	 = (price / 10) % 10;
+		qsaudit->merchant_money.copper	 = price % 10;
+		qsaudit->merchant_count			 = 0;
+		qsaudit->char_id				 = character_id;
+		qsaudit->char_money.platinum	 = 0;
+		qsaudit->char_money.gold		 = 0;
+		qsaudit->char_money.silver		 = 0;
+		qsaudit->char_money.copper		 = 0;
+		qsaudit->char_count				 = 1;
+
+		qsaudit->items[0].char_slot	 = mp->itemslot;
+		qsaudit->items[0].item_id	 = itemid;
+		qsaudit->items[0].charges	 = charges;
+		qsaudit->items[0].aug_1		 = m_inv[mp->itemslot]->GetAugmentItemID(1);
+		qsaudit->items[0].aug_2		 = m_inv[mp->itemslot]->GetAugmentItemID(2);
+		qsaudit->items[0].aug_3		 = m_inv[mp->itemslot]->GetAugmentItemID(3);
+		qsaudit->items[0].aug_4		 = m_inv[mp->itemslot]->GetAugmentItemID(4);
+		qsaudit->items[0].aug_5		 = m_inv[mp->itemslot]->GetAugmentItemID(5);
+
+		qspack->Deflate();
+		if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+		safe_delete(qspack);
+	}
+	// end QS code
+
+	// Now remove the item from the player, this happens regardless of outcome
 	if (!inst->IsStackable())
 		this->DeleteItemInInventory(mp->itemslot,0,false);
 	else
