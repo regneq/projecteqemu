@@ -5988,11 +5988,23 @@ void Client::Handle_OP_CloseContainer(const EQApplicationPacket *app)
 void Client::Handle_OP_ClickObjectAction(const EQApplicationPacket *app)
 {
 	if (app->size == 0) {
+		// RoF sends this packet 0 sized when switching from auto-combine to experiment windows.
+		// Not completely sure if 0 sized is for this or for closing objects as commented out below
+		EQApplicationPacket end_trade1(OP_FinishWindow, 0);
+		QueuePacket(&end_trade1);
+
+		EQApplicationPacket end_trade2(OP_FinishWindow2, 0);
+		QueuePacket(&end_trade2);
+
+		return;
+
 		// RoF sends a 0 sized packet for closing objects
+		/*
 		Object* object = GetTradeskillObject();
 		if (object) {
 			object->CastToObject()->Close();
 		}
+		*/
 	}
 	else
 	{
