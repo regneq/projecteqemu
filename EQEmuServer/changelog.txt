@@ -7,6 +7,7 @@ Trevius: RoF: Increased the max race id for #race to 724 (the max for RoF).
 Trevius: RoF: Corrected the opcode for Augmenting Items and adjusted the struct, but it looks like it may require considerable work to implement the new augment system.
 Akkadius: Trap Zone Crash issue where message is empty
 Akkadius: Fixed a warning regarding AC
+Vaion: RoF: Books now work properly.
 
 == 01/04/2013 ==
 Trevius: RoF: Looting items and loot all are now functional.
