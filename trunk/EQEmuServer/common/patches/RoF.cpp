@@ -4083,7 +4083,7 @@ DECODE(OP_AugmentItem) {
 	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
 
 	emu->container_slot = RoFToTitaniumSlot(eq->container_slot);
-	emu->augment_slot = eq->augment_slot;
+	//emu->augment_slot = eq->augment_slot;
 
 	FINISH_DIRECT_DECODE();
 }
