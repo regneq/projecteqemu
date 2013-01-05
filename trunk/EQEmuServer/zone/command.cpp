@@ -4886,7 +4886,7 @@ void command_iteminfo(Client *c, const Seperator *sep)
 			c->Message(0, "  equipableSlots: %u equipable Classes: %u", item->Slots, item->Classes);
 			c->Message(0, "  Magic: %i  SpellID: %i  Proc Level: %i DBCharges: %i  CurCharges: %i", item->Magic, item->Click.Effect, item->Click.Level, item->MaxCharges, inst->GetCharges());
 			c->Message(0, "  EffectType: 0x%02x  CastTime: %.2f", (int8) item->Click.Type, (double) item->CastTime/1000);
-			c->Message(0, "  Material: 0x02%x  Color: 0x%08x  Skill: %i", item->Material, item->Color, item->ItemType);
+			c->Message(0, "  Material: 0x%02x  Color: 0x%08x  Skill: %i", item->Material, item->Color, item->ItemType);
 			c->Message(0, " Required level: %i Required skill: %i Recommended level:%i", item->ReqLevel,  item->RecSkill, item->RecLevel);
 			c->Message(0, " Skill mod: %i percent: %i", item->SkillModType, item->SkillModValue);
 			c->Message(0, " BaneRace: %i BaneBody: %i BaneDMG: %i", item->BaneDmgRace, item->BaneDmgBody, item->BaneDmgAmt);
