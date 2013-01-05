@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 == 01/05/2013 ==
 Trevius: RoF: Tradeskill combines (auto-combine and experiment) are now functional.
 Trevius: RoF: The Popup Message window is now functional.
+Akkadius: Trap Zone Crash issue where message is empty
+Akkadius: Fixed a warning regarding AC
 
 == 01/04/2013 ==
 Trevius: RoF: Looting items and loot all are now functional.
