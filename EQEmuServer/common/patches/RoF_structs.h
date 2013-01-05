@@ -1899,17 +1899,23 @@ struct GMLastName_Struct {
 };
 
 struct OnLevelMessage_Struct {
+/*0000*/	uint32  Title_Count;
 /*0000*/	char    Title[128];
-/*0128*/	char    Text[4096];
-/*4224*/	char	ButtonName0[25];	// If Buttons = 1, these two are the text for the left and right buttons respectively
-/*4249*/	char	ButtonName1[25];
-/*4274*/	uint8	Buttons;
-/*4275*/	uint8	Unknown4275;	// Something to do with audio controls
-/*4276*/	uint32  Duration;
-/*4280*/	uint32  PopupID;	// If none zero, a response packet with 00 00 00 00 <PopupID> is returned on clicking the left button
-/*4284*/	uint32  NegativeID;	// If none zero, a response packet with 01 00 00 00 <NegativeID> is returned on clicking the right button
-/*4288*/	uint32  Unknown4288;
-/*4292*/
+/*0000*/	uint32  Text_Count;
+/*0000*/	char    Text[4096];
+/*0000*/	uint32  ButtonName0_Count;
+/*0000*/	char	ButtonName0[25];	// If Buttons = 1, these two are the text for the left and right buttons respectively
+/*0000*/	uint32  ButtonName1_Count;
+/*0000*/	char	ButtonName1[25];
+/*0000*/	uint8	Buttons;
+/*0000*/	uint8	Unknown4275;	// Something to do with audio controls
+/*0000*/	uint32  Duration;
+/*0000*/	uint32  PopupID;	// If none zero, a response packet with 00 00 00 00 <PopupID> is returned on clicking the left button
+/*0000*/	uint32  NegativeID;	// If none zero, a response packet with 01 00 00 00 <NegativeID> is returned on clicking the right button
+/*0000*/	uint32  Unknown4288;
+/*0000*/	uint8	Unknown4276;
+/*0000*/	uint8	Unknown4277;
+/*0000*/
 };
 
 //Combat Abilities
@@ -3453,16 +3459,14 @@ struct Split_Struct
 /*
 ** New Combine Struct
 ** Client requesting to perform a tradeskill combine
-** Size: 4 bytes
+** Size: 24 bytes
 ** Used In: OP_TradeSkillCombine
-** Last Updated: Oct-15-2003
-**
+** Last Updated: 01-05-2013
 */
 struct NewCombine_Struct {
-/*00*/	//sint16	container_slot;
-/*08*/	ItemSlotStruct container_slot;
-/*02*/	//char	unknown02[2];
-/*04*/
+/*00*/	ItemSlotStruct container_slot;
+/*12*/	ItemSlotStruct unknown_slot;	// Slot type is 8?
+/*24*/
 };
 
 
@@ -3498,13 +3502,13 @@ struct RecipeReply_Struct {
 
 //received and sent back as an ACK with different reply_code
 struct RecipeAutoCombine_Struct {
-	uint32 object_type;
-	uint32 some_id;
-	uint32 unknown1;		//echoed in reply
-	uint32 recipe_id;
-	uint32 reply_code;		// 93 64 e1 00 (junk) in request
-								// 00 00 00 00 in successful reply
-								// f5 ff ff ff in 'you dont have all the stuff' reply
+/*00*/	uint32 object_type;
+/*04*/	uint32 some_id;
+/*08*/	ItemSlotStruct container_slot;		//echoed in reply - Was uint32 unknown1
+/*20*/	ItemSlotStruct unknown_slot;		//echoed in reply
+/*32*/	uint32 recipe_id;
+/*36*/	uint32 reply_code;
+/*40*/
 };
 
 struct LevelAppearance_Struct { //Sends a little graphic on level up

@@ -264,7 +264,10 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 	else if (RoFSlot.SlotType == 4)		// Tradeskill Container Slots
 	{
 		TempSlot = 4000;
-		TempSlot += RoFSlot.MainSlot;
+		if (RoFSlot.MainSlot >= 0)
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
 		TitaniumSlot = TempSlot;
 	}
 
@@ -2211,14 +2214,22 @@ ENCODE(OP_OnLevelMessage)
 {
 	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
 	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+
+	// This packet is variable sized now, but forcing it to the old packet size for now.
+	eq->Title_Count = 128;
 	memcpy(eq->Title, emu->Title, sizeof(eq->Title));
+	eq->Text_Count = 4096;
 	memcpy(eq->Text, emu->Text, sizeof(eq->Text));
 	OUT(Buttons);
 	OUT(Duration);
 	OUT(PopupID);
+	OUT(NegativeID);
 	// These two field names are used if Buttons == 1. We should add an interface to them via Perl.
-	sprintf(eq->ButtonName0, "Yes");
-	sprintf(eq->ButtonName1, "No");
+	eq->ButtonName0_Count = 25;
+	OUT_str(ButtonName0);
+	eq->ButtonName1_Count = 25;
+	OUT_str(ButtonName1);
+
 	FINISH_ENCODE();
 }
 
@@ -2456,6 +2467,25 @@ ENCODE(OP_ApplyPoison) {
 	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
 	eq->inventorySlot = TitaniumToRoFSlot(emu->inventorySlot);
 	OUT(success);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RecipeAutoCombine) {
+	ENCODE_LENGTH_EXACT(RecipeAutoCombine_Struct);
+	SETUP_DIRECT_ENCODE(RecipeAutoCombine_Struct, structs::RecipeAutoCombine_Struct);
+	OUT(object_type);
+	OUT(some_id);
+	eq->container_slot = TitaniumToRoFSlot(emu->unknown1);
+	structs::ItemSlotStruct RoFSlot;
+	RoFSlot.SlotType = 8;	// Observed
+	RoFSlot.Unknown02 = 0;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	eq->unknown_slot = RoFSlot;
+	OUT(recipe_id);
+	OUT(reply_code);
 	FINISH_ENCODE();
 }
 
@@ -4026,7 +4056,24 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = RoFToTitaniumSlot(eq->container_slot);
+	sint16 slot_id = RoFToTitaniumSlot(eq->container_slot);
+	if (slot_id == 4000) {
+		slot_id = SLOT_TRADESKILL;	// 1000
+	}
+	emu->container_slot = slot_id;
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_RecipeAutoCombine) {
+	DECODE_LENGTH_EXACT(structs::RecipeAutoCombine_Struct);
+	SETUP_DIRECT_DECODE(RecipeAutoCombine_Struct, structs::RecipeAutoCombine_Struct);
+
+	IN(object_type);
+	IN(some_id);
+	emu->unknown1 = RoFToTitaniumSlot(eq->container_slot);
+	IN(recipe_id);
+	IN(reply_code);
 
 	FINISH_DIRECT_DECODE();
 }
