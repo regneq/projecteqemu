@@ -2612,8 +2612,8 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	eq->invslot = TitaniumToRoFSlot(emu->invslot);
-	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
+	eq->invslot = 0; // Set to hard 0 since it's not required for the structure to work
+	memcpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
 
@@ -4045,7 +4045,7 @@ DECODE(OP_ReadBook) {
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
 	IN(type);
-	emu->invslot = RoFToTitaniumSlot(eq->invslot);
+	emu->invslot = 0; // Set to hard 0 since it's not required for the structure to work
 	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 

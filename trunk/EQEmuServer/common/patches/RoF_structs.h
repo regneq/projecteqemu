@@ -2628,12 +2628,13 @@ struct BookText_Struct {
 // or in our case, the 'name' column in our books table.
 struct BookRequest_Struct {
 /*0000*/	uint32 window;		// where to display the text (0xFFFFFFFF means new window).
-/*0004*/	//uint32 invslot;		// The inventory slot the book is in. Not used, but echoed in the response packet.
-			ItemSlotStruct invslot;
-/*0008*/	uint32 type;		// 0 = Scroll, 1 = Book, 2 = Item Info. Possibly others
-/*0012*/	uint32 unknown0012;	
-/*0016*/	uint16 unknown0016;
-/*0018*/	char txtfile[8194];
+/*0004*/	uint16 invslot;		// Is the slot, but the RoF conversion causes it to fail.  Turned to 0 since it isnt required anyway.
+/*0008*/	uint32 unknown006;	// Seen FFFFFFFF
+/*0010*/	uint16 unknown008;	// seen 0000	
+/*0012*/	uint32 type;		// 0 = Scroll, 1 = Book, 2 = Item Info. Possibly others
+/*0016*/	uint32 unknown0012;	
+/*0020*/	uint16 unknown0016;
+/*0022*/	char txtfile[8194];
 };
 
 /*
