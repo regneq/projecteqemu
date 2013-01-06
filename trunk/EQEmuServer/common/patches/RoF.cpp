@@ -3298,13 +3298,9 @@ ENCODE(OP_BuffCreate)
 	{
 		uint16 buffslot = emu->entries[i].buff_slot;
 		// Not sure if this is needs amending for RoF yet.
-		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
+		if(emu->entries[i].buff_slot >= 25)
 		{
-			buffslot += 5;
-		}
-		else if(emu->entries[i].buff_slot >= 37)
-		{
-			buffslot += 14;
+			buffslot += 17;
 		}
 
 		__packet->WriteUInt32(buffslot);
@@ -3530,7 +3526,7 @@ DECODE(OP_BuffRemoveRequest)
 	DECODE_LENGTH_EXACT(structs::BuffRemoveRequest_Struct);
 	SETUP_DIRECT_DECODE(BuffRemoveRequest_Struct, structs::BuffRemoveRequest_Struct);
 
-	emu->SlotID = (eq->SlotID < 30 ) ? eq->SlotID : (eq->SlotID - 5);
+	emu->SlotID = (eq->SlotID < 42 ) ? eq->SlotID : (eq->SlotID - 17);
 
 	IN(EntityID);
 
