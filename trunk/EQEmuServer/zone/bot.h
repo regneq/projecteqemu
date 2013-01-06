@@ -127,7 +127,9 @@ public:
 		ExpansionSoF,
 		ExpansionSoD,
 		ExpansionUF,
-		ExpansionHoT
+		ExpansionHoT,
+		ExpansionVoA,
+		ExpansionRoF
 	};
 
 	// Class Constructors

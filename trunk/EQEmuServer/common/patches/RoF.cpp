@@ -504,8 +504,7 @@ ENCODE(OP_SendCharInfo) {
 	for(r = 0; r < char_count; r++) {
 		{	//pre-name section...
 			structs::CharacterSelectEntry_Struct *eq2 = (structs::CharacterSelectEntry_Struct *) bufptr;
-			//memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
-			strcpy(eq2->name, emu->name[r]);
+			memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
 		}
 		//adjust for name.
 		bufptr += strlen(emu->name[r]);
