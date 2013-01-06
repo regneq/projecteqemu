@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Kayen: Fix for missing and incorrect Healing Adept AA values.
 Trevius: RoF: Possible crash fix for logging in on some server builds.
 Trevius: RoF: Added VoA to the #cvs command output.
+Derision: RoF: Short buffs should appear in the song/short buff box.
 
 REQUIRED SQL: utils/sql/svn/2370_required_aa_updates.sql
 
