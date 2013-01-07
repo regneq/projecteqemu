@@ -5,6 +5,7 @@ Kayen: Fix for missing and incorrect Healing Adept AA values.
 Trevius: RoF: Possible crash fix for logging in on some server builds.
 Trevius: RoF: Added VoA to the #cvs command output.
 Derision: RoF: Short buffs should appear in the song/short buff box.
+Lerxst/Hateborne: Updated Mob::TryDivineSave to allow someone to be saved even if there are no additional effects to be cast and rearranged the buff fading so the spell effect isn't lost before it can be cast.
 
 REQUIRED SQL: utils/sql/svn/2370_required_aa_updates.sql
 
