@@ -1,6 +1,6 @@
 
 #include "../debug.h"
-#include "Underfoot.h"
+#include "RoF.h"
 #include "../opcodemgr.h"
 #include "../logsys.h"
 #include "../EQStreamIdent.h"
@@ -9,16 +9,15 @@
 #include "../eq_packet_structs.h"
 #include "../MiscFunctions.h"
 #include "../Item.h"
-#include "Underfoot_structs.h"
+#include "RoF_structs.h"
 #include "../rulesys.h"
 
 #include <iostream>
 #include <sstream>
 
-namespace Underfoot
-{
+namespace RoF {
 
-static const char *name = "Underfoot";
+static const char *name = "RoF";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
@@ -90,7 +89,7 @@ Strategy::Strategy()
 {
 	//all opcodes default to passthrough.
 	#include "SSRegister.h"
-	#include "Underfoot_ops.h"
+	#include "RoF_ops.h"
 }
 
 std::string Strategy::Describe() const {
@@ -104,71 +103,261 @@ std::string Strategy::Describe() const {
 
 #include "SSDefine.h"
 
+// Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
+static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
+{
+	structs::ItemSlotStruct RoFSlot;
+	RoFSlot.SlotType = 0xffff;
+	RoFSlot.Unknown02 = 0;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	int32 TempSlot = 0;
 
-// Converts Titanium Slot IDs to Underfoot Slot IDs for use in Encodes
-static inline int32 TitaniumToUnderfootSlot(int32 TitaniumSlot) {
-	int32 UnderfootSlot = 0;
+	if (TitaniumSlot < 52)
+	{
+		RoFSlot.SlotType = 0;
+		RoFSlot.MainSlot = TitaniumSlot;
+		if (TitaniumSlot == 9999)
+		{
+			RoFSlot.MainSlot = 21;
+		}
+		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
+		{
+			RoFSlot.MainSlot += 1;
+		}
+		else if (TitaniumSlot > 29)	// Cursor
+		{
+			RoFSlot.MainSlot += 3;
+		}
+	}
+	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
+	{
+		RoFSlot.SlotType = 0;
+		TempSlot = TitaniumSlot - 1;
+		RoFSlot.MainSlot = int(TempSlot / 10) - 3;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
+		if (RoFSlot.MainSlot > 29)
+		{
+			RoFSlot.MainSlot = 33;
+		}
+	}
+	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
+	{
+		RoFSlot.SlotType = 1;
+		TempSlot = TitaniumSlot - 2000;
+		RoFSlot.MainSlot = TempSlot;
+		if (TempSlot > 30)
+		{
+			RoFSlot.MainSlot = int(TempSlot / 10) - 3;
+			RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
+		}
+	}
+	else if (TitaniumSlot > 2499 && TitaniumSlot < 2551)
+	{
+		RoFSlot.SlotType = 2;
+		TempSlot = TitaniumSlot - 2500;
+		RoFSlot.MainSlot = TempSlot;
+		if (TempSlot > 30)
+		{
+			RoFSlot.MainSlot = int(TempSlot / 10) - 3;
+			RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
+		}
+	}
+	else if (TitaniumSlot > 2999 && TitaniumSlot < 3180)
+	{
+		RoFSlot.SlotType = 3;
+		TempSlot = TitaniumSlot - 3000;
+		RoFSlot.MainSlot = TempSlot;
+		if (TempSlot > 99)
+		{
+			if (TempSlot > 100)
+			{
+				RoFSlot.MainSlot = int((TempSlot - 100) / 10);
+			}
+			else
+			{
+				RoFSlot.MainSlot = 0;
+			}
+			RoFSlot.SubSlot = TempSlot - (100 + RoFSlot.MainSlot);
+		}
+	}
+	else if (TitaniumSlot > 3999 && TitaniumSlot < 4009)
+	{
+		RoFSlot.SlotType = 4;
+		TempSlot = TitaniumSlot - 4000;
+		RoFSlot.MainSlot = TempSlot;
+	}
 
-	if(TitaniumSlot >= 21 && TitaniumSlot <= 53)	// Cursor/Ammo/Power Source and Normal Inventory Slots
-	{
-		UnderfootSlot = TitaniumSlot + 1;
-	}
-	else if(TitaniumSlot >= 251 && TitaniumSlot <= 340)		// Bag Slots for Normal Inventory and Cursor 
-	{
-		UnderfootSlot = TitaniumSlot + 11;
-	}
-	else if(TitaniumSlot >= 2031 && TitaniumSlot <= 2270)	// Bank Bag Slots
-	{
-		UnderfootSlot = TitaniumSlot + 1;
-	}
-	else if(TitaniumSlot >= 2531 && TitaniumSlot <= 2550)	// Shared Bank Bag Slots
-	{
-		UnderfootSlot = TitaniumSlot + 1;
-	}
-	else if(TitaniumSlot == 9999)	//Unused slot ID to give a place to save Power Slot
-	{
-		UnderfootSlot = 21;
-	}
-	else
-	{
-		UnderfootSlot = TitaniumSlot;
-	}	
-	
-	return UnderfootSlot;
+	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
+
+	return RoFSlot;
 }
 
-// Converts Underfoot Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 UnderfootToTitaniumSlot(int32 UnderfootSlot) {
-	int32 TitaniumSlot = 0;
-	
-	if(UnderfootSlot >= 22 && UnderfootSlot <= 54)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
+{
+	int32 TitaniumSlot = 0xffffffff;
+	int32 TempSlot = 0;
+
+	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 51)	// Worn/Personal Inventory and Cursor
 	{
-		TitaniumSlot = UnderfootSlot - 1;
+		if (RoFSlot.MainSlot == 21)			// Power Source
+		{
+			TempSlot = 9999;
+		}
+		else if (RoFSlot.MainSlot >= 33 && RoFSlot.MainSlot < 51)	// Cursor
+		{
+			TempSlot = RoFSlot.MainSlot - 3;
+		}
+		else if (RoFSlot.MainSlot >= 22)	// Ammo and Main Inventory
+		{
+			TempSlot = RoFSlot.MainSlot - 1;
+		}
+		else								// Worn Slots
+		{
+			TempSlot = RoFSlot.MainSlot;
+		}
+
+		if (RoFSlot.SubSlot >= 0)			// Bag Slots
+		{
+			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+
+		TitaniumSlot = TempSlot;
 	}
-	else if(UnderfootSlot >= 262 && UnderfootSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
+	else if (RoFSlot.SlotType == 1)		// Bank Slots
 	{
-		TitaniumSlot = UnderfootSlot - 11;
+		TempSlot = 2000;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += ((RoFSlot.MainSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
 	}
-	else if(UnderfootSlot >= 2032 && UnderfootSlot <= 2271)	// Bank Bag Slots
+	else if (RoFSlot.SlotType == 2)		// Shared Bank Slots
 	{
-		TitaniumSlot = UnderfootSlot - 1;
+		TempSlot = 2500;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += ((RoFSlot.MainSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
 	}
-	else if(UnderfootSlot >= 2532 && UnderfootSlot <= 2551)	// Shared Bank Bag Slots
+	else if (RoFSlot.SlotType == 3)		// Trade Slots
 	{
-		TitaniumSlot = UnderfootSlot - 1;
+		TempSlot = 3000;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += 100 + (RoFSlot.MainSlot * 10) + RoFSlot.SubSlot;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
 	}
-	else if(UnderfootSlot == 21)
+	else if (RoFSlot.SlotType == 4)		// Tradeskill Container Slots
 	{
-		TitaniumSlot = 9999;	//Unused slot ID to give a place to save Power Slot
+		TempSlot = 4000;
+		if (RoFSlot.MainSlot >= 0)
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
 	}
-	else
-	{
-		TitaniumSlot = UnderfootSlot;
-	}
+
+	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
 	return TitaniumSlot;
 }
 
+static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFSlot)
+{
+	int32 TitaniumSlot = 0xffffffff;
+	int32 TempSlot = 0;
+
+	if (RoFSlot.MainSlot < 33)				// Worn/Personal Inventory and Cursor
+	{
+		if (RoFSlot.MainSlot == 21)
+		{
+			TempSlot = 9999;
+		}
+		else if (RoFSlot.MainSlot == 33)	// Cursor
+		{
+			TempSlot = 30;
+		}
+		else if (RoFSlot.MainSlot >= 22)	// Main Inventory Slots
+		{
+			TempSlot = RoFSlot.MainSlot - 1;
+		}
+		else
+		{
+			TempSlot = RoFSlot.MainSlot;
+		}
+
+		if (RoFSlot.SubSlot >= 0)			// Bag Slots
+		{
+			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+
+		TitaniumSlot = TempSlot;
+	}
+
+	_log(NET__ERROR, "Convert RoF Slots: Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
+
+	return TitaniumSlot;
+}
+
+// Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
+static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 TitaniumSlot)
+{
+	structs::MainInvItemSlotStruct RoFSlot;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	int32 TempSlot = 0;
+
+	if (TitaniumSlot < 52)
+	{
+		RoFSlot.MainSlot = TitaniumSlot;
+		if (TitaniumSlot == 9999)
+		{
+			RoFSlot.MainSlot = 21;
+		}
+		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
+		{
+			RoFSlot.MainSlot += 1;
+		}
+		else if (TitaniumSlot > 29)		// Cursor
+		{
+			RoFSlot.MainSlot = 33;
+			if (TitaniumSlot > 30)
+			{
+				RoFSlot.SubSlot = (TitaniumSlot + 3) - 33;
+			}
+		}
+	}
+	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
+	{
+		TempSlot = TitaniumSlot - 1;
+		RoFSlot.MainSlot = int(TempSlot / 10) - 2;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 2) * 10);
+	}
+
+	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
+
+	return RoFSlot;
+}
 
 ENCODE(OP_OpenNewTasksWindow) {
 
@@ -219,7 +408,7 @@ ENCODE(OP_OpenNewTasksWindow) {
 
 		__eq_AvailableTaskData1->TaskID = __emu_AvailableTaskData1->TaskID;
 		// This next unknown seems to affect the colour of the task title. 0x3f80000 is what I have seen
-		// in Underfoot packets. Changing it to 0x3f000000 makes the title red.
+		// in RoF packets. Changing it to 0x3f000000 makes the title red.
 		__eq_AvailableTaskData1->unknown1 = 0x3f800000; 
 		__eq_AvailableTaskData1->TimeLimit = __emu_AvailableTaskData1->TimeLimit;
 		__eq_AvailableTaskData1->unknown2 = __emu_AvailableTaskData1->unknown2;
@@ -312,48 +501,57 @@ ENCODE(OP_SendCharInfo) {
 	//structs::CharacterSelect_Struct *eq_head = (structs::CharacterSelect_Struct *) eq_buffer;
 	
 	eq->char_count = char_count;
-	eq->total_chars = 10;
+	//eq->total_chars = 10;
 
 	unsigned char *bufptr = (unsigned char *) eq->entries;
 	int r;
 	for(r = 0; r < char_count; r++) {
 		{	//pre-name section...
 			structs::CharacterSelectEntry_Struct *eq2 = (structs::CharacterSelectEntry_Struct *) bufptr;
-			eq2->level = emu->level[r];
-			eq2->hairstyle = emu->hairstyle[r];
-			eq2->gender = emu->gender[r];
 			memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
 		}
 		//adjust for name.
 		bufptr += strlen(emu->name[r]);
 		{	//post-name section...
 			structs::CharacterSelectEntry_Struct *eq2 = (structs::CharacterSelectEntry_Struct *) bufptr;
-			eq2->beard = emu->beard[r];
-			eq2->haircolor = emu->haircolor[r];
+			eq2->class_ = emu->class_[r];
+			eq2->race = emu->race[r];
+			eq2->level = emu->level[r];
+			eq2->class_2 = emu->class_[r];
+			eq2->race2 = emu->race[r];
+			eq2->zone = emu->zone[r];
+			eq2->instance = 0;
+			eq2->gender = emu->gender[r];
 			eq2->face = emu->face[r];
 			int k;
 			for(k = 0; k < MAX_MATERIALS; k++) {
 				eq2->equip[k].equip0 = emu->equip[r][k];
 				eq2->equip[k].equip1 = 0;
+				eq2->equip[k].equip2 = 0;
 				eq2->equip[k].itemid = 0;
+				eq2->equip[k].equip3 = emu->equip[r][k];
 				eq2->equip[k].color.color = emu->cs_colors[r][k].color;
 			}
-			eq2->primary = emu->primary[r];
-			eq2->secondary = emu->secondary[r];
-			eq2->tutorial = emu->tutorial[r]; // was u15
 			eq2->u15 = 0xff;
-			eq2->deity = emu->deity[r];
-			eq2->zone = emu->zone[r];
 			eq2->u19 = 0xFF;
-			eq2->race = emu->race[r];
-			eq2->gohome = emu->gohome[r];
-			eq2->class_ = emu->class_[r];
-			eq2->eyecolor1 = emu->eyecolor1[r];
-			eq2->beardcolor = emu->beardcolor[r];
-			eq2->eyecolor2 = emu->eyecolor2[r];
-			eq2->drakkin_heritage = emu->drakkin_heritage[r];
 			eq2->drakkin_tattoo = emu->drakkin_tattoo[r];
 			eq2->drakkin_details = emu->drakkin_details[r];
+			eq2->deity = emu->deity[r];
+			eq2->primary = emu->primary[r];
+			eq2->secondary = emu->secondary[r];
+			eq2->haircolor = emu->haircolor[r];
+			eq2->beardcolor = emu->beardcolor[r];
+			eq2->eyecolor1 = emu->eyecolor1[r];
+			eq2->eyecolor2 = emu->eyecolor2[r];
+			eq2->hairstyle = emu->hairstyle[r];
+			eq2->beard = emu->beard[r];
+			eq2->char_enabled = 1;
+			eq2->tutorial = emu->tutorial[r];
+			eq2->drakkin_heritage = emu->drakkin_heritage[r];
+			eq2->unknown1 = 0;
+			eq2->gohome = emu->gohome[r];
+			eq2->LastLogin = 1212696584;
+			eq2->unknown2 = 0;
 		}
 		bufptr += sizeof(structs::CharacterSelectEntry_Struct);
 	}
@@ -374,7 +572,7 @@ ENCODE(OP_SendZonepoints) {
 	ALLOC_VAR_ENCODE(structs::ZonePoints, sizeof(structs::ZonePoints) + sizeof(structs::ZonePoint_Entry) * (emu->count + 1));
 
 	eq->count = emu->count;
-	for(int i = 0; i < emu->count; ++i)
+	for(int32 i = 0; i < emu->count; ++i)
 	{
 		eq->zpe[i].iterator = emu->zpe[i].iterator;
 		eq->zpe[i].x = emu->zpe[i].x;
@@ -395,8 +593,8 @@ ENCODE(OP_SendAATable) {
 	ALLOC_VAR_ENCODE(structs::SendAA_Struct, sizeof(structs::SendAA_Struct) + emu->total_abilities*sizeof(structs::AA_Ability));
 	
 	// Check clientver field to verify this AA should be sent for SoF
-	// clientver 1 is for all clients and 6 is for Underfoot
-	if (emu->clientver <= 6 )
+	// clientver 1 is for all clients and 5 is for Live
+	if (emu->clientver <= 5 )
 	{
 		OUT(id);
 		eq->unknown004 = 1;
@@ -404,18 +602,21 @@ ENCODE(OP_SendAATable) {
 		//eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->id - emu->current_level + 1);
 		//eq->title_sid = emu->id - emu->current_level + 1;
 		//eq->desc_sid = emu->id - emu->current_level + 1;
-		eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?0:(emu->sof_next_skill);
-		eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->sof_next_skill);
+		eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?-1:(emu->sof_next_skill);
+		eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?-1:(emu->sof_next_skill);
 		eq->title_sid = emu->sof_next_skill;
 		eq->desc_sid = emu->sof_next_skill;
 		OUT(class_type);
 		OUT(cost);
 		OUT(seq);
 		OUT(current_level);
+		eq->unknown037 = 1;	// Introduced during HoT
 		OUT(prereq_skill);
+		eq->unknown045 = 1;	// New Mar 21 2012 - Seen 1
 		OUT(prereq_minpoints);
 		eq->type = emu->sof_type;
 		OUT(spellid);
+		eq->unknown057 = 1;	// Introduced during HoT
 		OUT(spell_type);
 		OUT(spell_refresh);
 		OUT(classes);
@@ -436,6 +637,8 @@ ENCODE(OP_SendAATable) {
 			OUT(abilities[r].slot);
 		}
 	}
+
+	_hex(NET__ERROR, eq, sizeof(structs::SendAA_Struct) + emu->total_abilities*sizeof(structs::AA_Ability));
 	FINISH_ENCODE();
 }
 
@@ -448,267 +651,728 @@ ENCODE(OP_LeadershipExpUpdate) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_RespondAA) {
-	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
 
-	eq->aa_spent = emu->aa_spent;
-	eq->aa_assigned = emu->aa_spent;
-	eq->aa_spent3 = emu->aa_spent;
-	eq->unknown012 = 0;
-	eq->unknown016 = 0;
-	eq->unknown020 = 0;
+ENCODE(OP_PlayerProfile)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
 
-	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
+	unsigned char *__emu_buffer = in->pBuffer;
+	PlayerProfile_Struct *emu = (PlayerProfile_Struct *) __emu_buffer;
+
+	uint32 PacketSize = 40000;	// Calculate this later
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayerProfile, PacketSize);
+
+	outapp->WriteUInt32(0);		// Checksum, we will update this later
+	outapp->WriteUInt32(0);		// Checksum size, we will update this later
+
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+
+
+	outapp->WriteUInt8(emu->gender);	// Gender
+	outapp->WriteUInt32(emu->race);		// Race
+	outapp->WriteUInt8(emu->class_);	// Class
+	outapp->WriteUInt8(emu->level);		// Level
+	outapp->WriteUInt8(emu->level);		// Level1
+
+	
+	outapp->WriteUInt32(5);			// Bind count
+	
+	for(int r = 0; r < 5; r++)
 	{
-		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
-		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
-		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
+		outapp->WriteUInt32(emu->binds[r].zoneId);
+		outapp->WriteFloat(emu->binds[r].x);
+		outapp->WriteFloat(emu->binds[r].y);
+		outapp->WriteFloat(emu->binds[r].z);
+		outapp->WriteFloat(emu->binds[r].heading);
 	}
 
-	FINISH_ENCODE();
-}
+	outapp->WriteUInt32(emu->deity);
+	outapp->WriteUInt32(emu->intoxication);
 
-ENCODE(OP_PlayerProfile) {
-	SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
+	outapp->WriteUInt32(10);		// Unknown count
 	
-	uint32 r;
-	
-	eq->available_slots=0xffffffff;
-	memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
-	memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
-	
-//	OUT(checksum);
-	OUT(gender);
-	OUT(race);
-	OUT(class_);
-//	OUT(unknown00016);
-	OUT(level);
-	eq->level1 = emu->level;
-//	OUT(unknown00022[2]);
-	for(r = 0; r < 5; r++) {
-		OUT(binds[r].zoneId);
-		OUT(binds[r].x);
-		OUT(binds[r].y);
-		OUT(binds[r].z);
-		OUT(binds[r].heading);
-	}
-	OUT(deity);
-	OUT(intoxication);
-	OUT_array(spellSlotRefresh, structs::MAX_PP_MEMSPELL);
-	OUT(abilitySlotRefresh);
-	OUT(points); // Relocation Test
-//	OUT(unknown0166[4]);
-	OUT(haircolor);
-	OUT(beardcolor);
-	OUT(eyecolor1);
-	OUT(eyecolor2);
-	OUT(hairstyle);
-	OUT(beard);
-//	OUT(unknown00178[10]);
-	for(r = 0; r < 9; r++) {
-		eq->equipment[r].equip0 = emu->item_material[r];
-		eq->equipment[r].equip1 = 0;
-		eq->equipment[r].itemId = 0;
-		//eq->colors[r].color = emu->colors[r].color;
-	}
-	for(r = 0; r < 7; r++) {
-		OUT(item_tint[r].color);
-	}
-//	OUT(unknown00224[48]);
-	//NOTE: new client supports 300 AAs, our internal rep/PP
-	//only supports 240..
-	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
-		OUT(aa_array[r].AA);
-		OUT(aa_array[r].value);
-	}
-//	OUT(unknown02220[4]);
-	OUT(mana);
-	OUT(cur_hp);
-	OUT(STR);
-	OUT(STA);
-	OUT(CHA);
-	OUT(AGI);
-	OUT(INT);
-	OUT(DEX);
-	OUT(WIS);
-	OUT(face);
-//	OUT(unknown02264[47]);
-	OUT_array(spell_book, structs::MAX_PP_SPELLBOOK);
-//	OUT(unknown4184[128]);
-	OUT_array(mem_spells, structs::MAX_PP_MEMSPELL);
-//	OUT(unknown04396[32]);
-	OUT(platinum);
-	OUT(gold);
-	OUT(silver);
-	OUT(copper);
-	OUT(platinum_cursor);
-	OUT(gold_cursor);
-	OUT(silver_cursor);
-	OUT(copper_cursor);
-	OUT_array(skills, structs::MAX_PP_SKILL);
-//	OUT(unknown04760[236]);
-	OUT(toxicity);
-	OUT(thirst_level);
-	OUT(hunger_level);
-	//PS this needs to be figured out more; but it was 'good enough'
-	for(r = 0; r < structs::BUFF_COUNT; r++) 
+	for(int r = 0; r < 10; r++)
 	{
+		outapp->WriteUInt32(0);		// Unknown
+	}
+
+	outapp->WriteUInt32(22);		// Equipment count
+
+	for(int r = 0; r < 9; r++)
+	{
+		outapp->WriteUInt32(emu->item_material[r]);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	// Write zeroes for the next 13 equipment slots
+
+	for(int r = 0; r < 13; r++)
+	{
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(9);		// Equipment2 count
+
+	for(int r = 0; r < 9; r++)
+	{
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(9);		// Tint Count
+
+	for(int r = 0; r < 7; r++)
+	{
+		outapp->WriteUInt32(emu->item_tint[r].color);
+	}
+	// Write zeroes for extra two tint values
+	outapp->WriteUInt32(0);
+	outapp->WriteUInt32(0);
+
+	outapp->WriteUInt32(9);		// Tint2 Count
+
+	for(int r = 0; r < 7; r++)
+	{
+		outapp->WriteUInt32(emu->item_tint[r].color);
+	}
+	// Write zeroes for extra two tint values
+	outapp->WriteUInt32(0);
+	outapp->WriteUInt32(0);
+
+
+	outapp->WriteUInt8(emu->haircolor);
+	outapp->WriteUInt8(emu->beardcolor);
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt8(emu->eyecolor1);
+	outapp->WriteUInt8(emu->eyecolor2);
+	outapp->WriteUInt8(emu->hairstyle);
+	outapp->WriteUInt8(emu->beard);
+	outapp->WriteUInt8(emu->face);
+
+	// Think there should be an extra byte before the drakkin stuff (referred to as oldface in client)
+	// Then one of the five bytes following the drakkin stuff needs removing.
+
+	outapp->WriteUInt32(emu->drakkin_heritage);
+	outapp->WriteUInt32(emu->drakkin_tattoo);
+	outapp->WriteUInt32(emu->drakkin_details);
+
+
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+	outapp->WriteUInt8(0);			// Unknown
+
+	outapp->WriteFloat(5.0f);		// Height ?
+
+	outapp->WriteFloat(3.0f);			// Unknown
+	outapp->WriteFloat(2.5f);			// Unknown
+	outapp->WriteFloat(5.5f);			// Unknown
+
+	outapp->WriteUInt32(0);			// Primary ?
+	outapp->WriteUInt32(0);			// Secondary ?
+
+	outapp->WriteUInt32(emu->points);	// Unspent skill points
+	outapp->WriteUInt32(emu->mana);
+	outapp->WriteUInt32(emu->cur_hp);
+
+	outapp->WriteUInt32(emu->STR);
+	outapp->WriteUInt32(emu->STA);
+	outapp->WriteUInt32(emu->CHA);
+	outapp->WriteUInt32(emu->DEX);
+	outapp->WriteUInt32(emu->INT);
+	outapp->WriteUInt32(emu->AGI);
+	outapp->WriteUInt32(emu->WIS);
+
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+	outapp->WriteUInt32(0);			// Unknown
+
+
+	outapp->WriteUInt32(300);		// AA Count
+
+	for(uint32 r = 0; r < MAX_PP_AA_ARRAY; r++)
+	{
+		outapp->WriteUInt32(emu->aa_array[r].AA);
+		outapp->WriteUInt32(emu->aa_array[r].value);
+		outapp->WriteUInt32(0);
+	}
+
+	// Fill the other 60 AAs with zeroes
+
+	for(uint32 r = 0; r < structs::MAX_PP_AA_ARRAY - MAX_PP_AA_ARRAY; r++)
+	{
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+
+	outapp->WriteUInt32(structs::MAX_PP_SKILL);
+
+	for(uint32 r = 0; r < MAX_PP_SKILL; r++)
+	{
+		outapp->WriteUInt32(emu->skills[r]);
+	}
+
+	// Write zeroes for the rest of the skills
+	for(uint32 r = 0; r < structs::MAX_PP_SKILL - MAX_PP_SKILL; r++)
+	{
+		outapp->WriteUInt32(emu->skills[r]);
+	}
+
+	outapp->WriteUInt32(25);			// Unknown count
+
+	for(uint32 r = 0; r < 25; r++)
+	{
+		outapp->WriteUInt32(0);			// Unknown
+	}
+
+	outapp->WriteUInt32(structs::MAX_PP_DISCIPLINES);	// Discipline count
+
+	for(uint32 r = 0; r < MAX_PP_DISCIPLINES; r++)
+	{
+		outapp->WriteUInt32(emu->disciplines.values[r]);
+	}
+
+	// Write zeroes for the rest of the disciplines
+	for(uint32 r = 0; r < structs::MAX_PP_DISCIPLINES - MAX_PP_DISCIPLINES; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(20);			// Timestamp count
+
+	for(uint32 r = 0; r < 20; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(MAX_RECAST_TYPES);			// Timestamp count
+
+	for(uint32 r = 0; r < MAX_RECAST_TYPES; r++)
+	{
+		outapp->WriteUInt32(emu->recastTimers[r]);
+	}
+
+	outapp->WriteUInt32(100);			// Timestamp2 count
+
+	for(uint32 r = 0; r < 100; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(structs::MAX_PP_SPELLBOOK);		// Spellbook slots
+	
+	for(uint32 r = 0; r < MAX_PP_SPELLBOOK; r++)
+	{
+		outapp->WriteUInt32(emu->spell_book[r]);
+	}
+	// zeroes for the rest of the spellbook slots
+	for(uint32 r = 0; r < structs::MAX_PP_SPELLBOOK - MAX_PP_SPELLBOOK; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(structs::MAX_PP_MEMSPELL);		// Memorised spell slots
+
+	for(uint32 r = 0; r < MAX_PP_MEMSPELL; r++)
+	{
+		outapp->WriteUInt32(emu->mem_spells[r]);
+	}
+	// zeroes for the rest of the slots
+	for(uint32 r = 0; r < structs::MAX_PP_MEMSPELL - MAX_PP_MEMSPELL; r++)
+	{
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(13);			// Unknown count
+
+	for(uint32 r = 0; r < 13; r++)
+	{
+		outapp->WriteUInt32(0);			// Unknown
+	}
+
+	outapp->WriteUInt8(0);			// Unknown
+
+	outapp->WriteUInt32(structs::BUFF_COUNT);
+
+	//*000*/ int8 slotid;				// badly named... seems to be 2 for a real buff, 0 otherwise
+	//*001*/ float unknown004;			// Seen 1 for no buff
+	//*005*/ int32 player_id;			// 'global' ID of the caster, for wearoff messages
+	//*009*/ int32 unknown016;
+	//*013*/ int8 bard_modifier;
+	//*014*/ int32 duration;
+	//*018*/ int8 level;
+	//*019*/ int32 spellid;
+	//*023*/ int32 counters;
+	//*027*/ uint8 unknown0028[53];
+	//*080*/
+
+	for(uint32 r = 0; r < BUFF_COUNT; r++)
+	{
+		float unknown004 = 0.0f;
+		uint8 slotid = emu->buffs[r].slotid;
+		int32 player_id = emu->buffs[r].player_id;;
+
 		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
 		{
-			eq->buffs[r].unknown004 = 0x3f800000;
-			eq->buffs[r].slotid = 2;
-			eq->buffs[r].player_id = 0x000717fd;
+			unknown004 = 1;
+			slotid = 2;
+			player_id = 0x000717fd;
 		}
 		else
 		{
-			eq->buffs[r].slotid = 0;
+			slotid = 0;
 		}
-		//OUT(buffs[r].slotid);
-		OUT(buffs[r].level);
-		//OUT(buffs[r].bard_modifier);
-		//OUT(buffs[r].effect);
-		OUT(buffs[r].spellid);
-		OUT(buffs[r].duration);
-		OUT(buffs[r].counters);
-		//OUT(buffs[r].player_id);
+		outapp->WriteUInt8(0);		// Had this as slot, but always appears to be 0 on live.
+		outapp->WriteFloat(unknown004);
+		outapp->WriteUInt32(player_id);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(emu->buffs[r].counters);
+		//outapp->WriteUInt8(emu->buffs[r].bard_modifier);
+		outapp->WriteUInt32(emu->buffs[r].duration);
+		outapp->WriteUInt8(emu->buffs[r].level);
+		outapp->WriteUInt32(emu->buffs[r].spellid);
+		outapp->WriteUInt32(slotid);			// Only ever seen 2
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(emu->buffs[r].counters);	// Appears twice ?
+
+		for(uint32 j = 0; j < 44; ++j)
+			outapp->WriteUInt8(0);	// Unknown
 	}
-	for(r = 0; r < MAX_PP_DISCIPLINES; r++) {
-		OUT(disciplines.values[r]);
+
+	for(uint32 r = 0; r < structs::BUFF_COUNT - BUFF_COUNT; r++)
+	{
+		// 80 bytes of zeroes
+		for(uint32 j = 0; j < 20; ++j)
+			outapp->WriteUInt32(0);
+
 	}
-	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
-//	OUT(unknown08124[360]);
-	OUT(endurance);
-	OUT(aapoints_spent);
-	OUT(aapoints);
-//	OUT(unknown06160[4]);
-	//NOTE: new client supports 20 bandoliers, our internal rep 
-	//only supports 4..
-	for(r = 0; r < 4; r++) {
-		OUT_str(bandoliers[r].name);
-		uint32 k;
-		for(k = 0; k < structs::MAX_PLAYER_BANDOLIER_ITEMS; k++) {
-			OUT(bandoliers[r].items[k].item_id);
-			OUT(bandoliers[r].items[k].icon);
-			OUT_str(bandoliers[r].items[k].item_name);
+
+	outapp->WriteUInt32(emu->platinum);
+	outapp->WriteUInt32(emu->gold);
+	outapp->WriteUInt32(emu->silver);
+	outapp->WriteUInt32(emu->copper);
+
+	outapp->WriteUInt32(emu->platinum_cursor);
+	outapp->WriteUInt32(emu->gold_cursor);
+	outapp->WriteUInt32(emu->silver_cursor);
+	outapp->WriteUInt32(emu->copper_cursor);
+
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(emu->toxicity);
+
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(emu->thirst_level);
+	outapp->WriteUInt32(emu->hunger_level);
+
+	outapp->WriteUInt32(emu->aapoints_spent);
+
+	outapp->WriteUInt32(5);				// AA Points count ??
+	outapp->WriteUInt32(1234);			// AA Points assigned
+	outapp->WriteUInt32(0);				// AA Points in General ?
+	outapp->WriteUInt32(0);				// AA Points in Class ?
+	outapp->WriteUInt32(0);				// AA Points in Archetype ?
+	outapp->WriteUInt32(0);				// AA Points in Special ?
+	outapp->WriteUInt32(emu->aapoints);		// AA Points unspent
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+
+	outapp->WriteUInt32(structs::MAX_PLAYER_BANDOLIER);
+
+	for(uint32 r = 0; r < MAX_PLAYER_BANDOLIER; r++)
+	{
+		outapp->WriteString(emu->bandoliers[r].name);
+
+		for(uint32 j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
+		{
+			outapp->WriteString(emu->bandoliers[r].items[j].item_name);
+			outapp->WriteUInt32(emu->bandoliers[r].items[j].item_id);
+			outapp->WriteUInt32(emu->bandoliers[r].items[j].icon);
 		}
 	}
-//	OUT(unknown07444[5120]);
-	for(r = 0; r < structs::MAX_POTIONS_IN_BELT; r++) {
-		OUT(potionbelt.items[r].item_id);
-		OUT(potionbelt.items[r].icon);
-		OUT_str(potionbelt.items[r].item_name);
+
+	for(uint32 r = 0; r < structs::MAX_PLAYER_BANDOLIER - MAX_PLAYER_BANDOLIER; r++)
+	{
+		outapp->WriteString("");
+
+		for(uint32 j = 0; j < MAX_PLAYER_BANDOLIER_ITEMS; ++j)
+		{
+			outapp->WriteString("");
+			outapp->WriteUInt32(0);
+			outapp->WriteUInt32(0);
+		}
 	}
-//	OUT(unknown12852[8]);
-//	OUT(unknown12864[76]);
-	OUT_str(name);
-	OUT_str(last_name);
-	OUT(guild_id);
-	OUT(birthday);
-	OUT(lastlogin);
-	OUT(timePlayedMin);
-	OUT(pvp);
-	OUT(anon);
-	OUT(gm);
-	OUT(guildrank);
-	OUT(guildbanker);
-//	OUT(unknown13054[12]);
-	OUT(exp);
-//	OUT(unknown13072[8]);
-	OUT(timeentitledonaccount);
-	OUT_array(languages, structs::MAX_PP_LANGUAGE);
-//	OUT(unknown13109[7]);
-	OUT(y); //reversed x and y
-	OUT(x);
-	OUT(z);
-	OUT(heading);
-//	OUT(unknown13132[4]);
-	OUT(platinum_bank);
-	OUT(gold_bank);
-	OUT(silver_bank);
-	OUT(copper_bank);
-	OUT(platinum_shared);
-//	OUT(unknown13156[84]);
-	//OUT(expansions);
-	eq->expansions = 0xffff;
-//	OUT(unknown13244[12]);
-	OUT(autosplit);
-//	OUT(unknown13260[16]);
-	OUT(zone_id);
-	OUT(zoneInstance);
-	for(r = 0; r < structs::MAX_GROUP_MEMBERS; r++) {
-		OUT_str(groupMembers[r]);
-	}
-	strcpy(eq->groupLeader, emu->groupMembers[0]);
-//	OUT_str(groupLeader);
-//	OUT(unknown13728[660]);
-	OUT(entityid);
-	OUT(leadAAActive);
-//	OUT(unknown14392[4]);
-	OUT(ldon_points_guk);
-	OUT(ldon_points_mir);
-	OUT(ldon_points_mmc);
-	OUT(ldon_points_ruj);
-	OUT(ldon_points_tak);
-	OUT(ldon_points_available);
-//	OUT(unknown14420[132]);
-	OUT(tribute_time_remaining);
-	OUT(career_tribute_points);
-//	OUT(unknown7208);
-	OUT(tribute_points);
-//	OUT(unknown7216);
-	OUT(tribute_active);
-	for(r = 0; r < structs::MAX_PLAYER_TRIBUTES; r++) {
-		OUT(tributes[r].tribute);
-		OUT(tributes[r].tier);
-	}
-//	OUT(unknown14616[8]);
-	OUT(group_leadership_exp);
-//	OUT(unknown14628);
-	OUT(raid_leadership_exp);
-	OUT(group_leadership_points);
-	OUT(raid_leadership_points);
-	OUT_array(leader_abilities.ranks, structs::MAX_LEADERSHIP_AA_ARRAY);
-//	OUT(unknown14772[128]);
-	OUT(air_remaining);
-	OUT(PVPKills);
-	OUT(PVPDeaths);
-	OUT(PVPCurrentPoints);
-	OUT(PVPCareerPoints);
-	OUT(PVPBestKillStreak);
-	OUT(PVPWorstDeathStreak);
-	OUT(PVPCurrentKillStreak);
-//	OUT(unknown17892[4580]);
-	OUT(expAA);
-//	OUT(unknown19516[40]);
-	OUT(currentRadCrystals);
-	OUT(careerRadCrystals);
-	OUT(currentEbonCrystals);
-	OUT(careerEbonCrystals);
-	OUT(groupAutoconsent);
-	OUT(raidAutoconsent);
-	OUT(guildAutoconsent);
-//	OUT(unknown19575[5]);
-	eq->level3 = emu->level;
-	eq->showhelm = emu->showhelm;
-	OUT(RestTimer);
-//	OUT(unknown19584[4]);
-//	OUT(unknown19588);
 
 
-const uint8 bytes[] = {
-0xa3,0x02,0x00,0x00,0x95,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x19,0x00,0x00,0x00,
-0x19,0x00,0x00,0x00,0x19,0x00,0x00,0x00,0x0F,0x00,0x00,0x00,0x0F,0x00,0x00,0x00,
-0x0F,0x00,0x00,0x00,0x0F,0x00,0x00,0x00,0x1F,0x85,0xEB,0x3E,0x33,0x33,0x33,0x3F,
-0x04,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x07,0x00,0x00,0x00,
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
-};
+	outapp->WriteUInt32(structs::MAX_POTIONS_IN_BELT);
 
-	memcpy(eq->unknown18020, bytes, sizeof(bytes));
-		
-	//set the checksum...
-	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
+	for(uint32 r = 0; r < MAX_POTIONS_IN_BELT; r++)
+	{
+		outapp->WriteString(emu->potionbelt.items[r].item_name);
+		outapp->WriteUInt32(emu->potionbelt.items[r].item_id);
+		outapp->WriteUInt32(emu->potionbelt.items[r].icon);
+	}
+
+
+	for(uint32 r = 0; r < structs::MAX_POTIONS_IN_BELT - MAX_POTIONS_IN_BELT; r++)
+	{
+		outapp->WriteString("");
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteSInt32(-1);	// Unknown;
+	outapp->WriteSInt32(123);	// HP Total ?
+	outapp->WriteSInt32(234);	// Endurance Total ?
+	outapp->WriteSInt32(345);	// Mana Total ?
+
+
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(20);	// Unknown - Expansion count ?
+
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(emu->endurance);
+	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown
+
+	outapp->WriteUInt32(64);	// Name Length
+
+	uint32 CurrentPosition = outapp->GetWritePosition();
+
+	outapp->WriteString(emu->name);
+
+	outapp->SetWritePosition(CurrentPosition + 64);
+
+	outapp->WriteUInt32(32);	// Last Name Length
+
+	CurrentPosition = outapp->GetWritePosition();
+
+	outapp->WriteString(emu->last_name);
+
+	outapp->SetWritePosition(CurrentPosition + 32);
+
+	outapp->WriteUInt32(emu->birthday);
+	outapp->WriteUInt32(emu->birthday);		// Account start date ?
+	outapp->WriteUInt32(emu->lastlogin);
+	outapp->WriteUInt32(emu->timePlayedMin);
+	outapp->WriteUInt32(emu->timeentitledonaccount);
+	outapp->WriteUInt32(0x0007ffff);		// Expansion bitmask
+
+	outapp->WriteUInt32(structs::MAX_PP_LANGUAGE);
+
+	for(uint32 r = 0; r < MAX_PP_LANGUAGE; r++)
+	{
+		outapp->WriteUInt8(emu->languages[r]);
+	}
+
+	for(uint32 r = 0; r < structs::MAX_PP_LANGUAGE - MAX_PP_LANGUAGE; r++)
+	{
+		outapp->WriteUInt8(0);
+	}
+
+	outapp->WriteUInt16(emu->zone_id);
+	outapp->WriteUInt16(emu->zoneInstance);
+
+	outapp->WriteFloat(emu->y);
+	outapp->WriteFloat(emu->x);
+	outapp->WriteFloat(emu->z);
+	outapp->WriteFloat(emu->heading);
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->pvp);
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(emu->gm);
+
+	//outapp->WriteUInt32(emu->guild_id);
+	outapp->WriteUInt32(0);
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt64(emu->exp);
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(emu->platinum_bank);
+	outapp->WriteUInt32(emu->gold_bank);
+	outapp->WriteUInt32(emu->silver_bank);
+	outapp->WriteUInt32(emu->copper_bank);
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(42);			// The meaning of life ?
+
+	for(uint32 r = 0; r < 42; r++)
+	{
+		outapp->WriteUInt32(0);				// Unknown
+		outapp->WriteUInt32(0);				// Unknown
+	}
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt32(emu->career_tribute_points);
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->tribute_points);
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(MAX_PLAYER_TRIBUTES);
+
+	for(uint32 r = 0; r < MAX_PLAYER_TRIBUTES; r++)
+	{
+		outapp->WriteUInt32(emu->tributes[r].tribute);
+		outapp->WriteUInt32(emu->tributes[r].tier);
+	}
+
+	outapp->WriteUInt32(10);		// Guild Tribute Count ?
+
+	for(uint32 r = 0; r < 10; r++)
+	{
+		outapp->WriteUInt32(0xffffffff);
+		outapp->WriteUInt32(0);
+	}
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Block of 121 unknown bytes
+	for(uint32 r = 0; r < 121; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->currentRadCrystals);
+	outapp->WriteUInt32(emu->careerRadCrystals);
+	outapp->WriteUInt32(emu->currentEbonCrystals);
+	outapp->WriteUInt32(emu->careerEbonCrystals);
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Unknown String ?
+	outapp->WriteUInt32(64);			// Unknown
+	for(uint32 r = 0; r < 64; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Unknown String ?
+	outapp->WriteUInt32(64);			// Unknown
+	for(uint32 r = 0; r < 64; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	// Unknown String ?
+	outapp->WriteUInt32(64);			// Unknown
+	for(uint32 r = 0; r < 64; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Block of 320 unknown bytes
+	for(uint32 r = 0; r < 320; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	// Block of 343 unknown bytes
+	for(uint32 r = 0; r < 343; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(emu->leadAAActive);
+
+	outapp->WriteUInt32(6);				// Count ... of LDoN stats ?
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->ldon_points_guk);
+	outapp->WriteUInt32(emu->ldon_points_mir);
+	outapp->WriteUInt32(emu->ldon_points_mmc);
+	outapp->WriteUInt32(emu->ldon_points_ruj);
+	outapp->WriteUInt32(emu->ldon_points_tak);
+
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteDouble(emu->group_leadership_exp);
+	outapp->WriteDouble(emu->raid_leadership_exp);
+
+	outapp->WriteUInt32(emu->group_leadership_points);
+	outapp->WriteUInt32(emu->raid_leadership_points);
+
+	outapp->WriteUInt32(64);			// Group of 64 int32s follow	Group/Raid Leadership abilities ?
+
+	for(uint32 r = 0; r < MAX_LEADERSHIP_AA_ARRAY; r++)
+		outapp->WriteUInt32(emu->leader_abilities.ranks[r]);
+
+	for(uint32 r = 0; r < 64 - MAX_LEADERSHIP_AA_ARRAY; r++)
+		outapp->WriteUInt32(0);				// Unused/unsupported Leadership abilities
+
+	outapp->WriteUInt32(emu->air_remaining);		// ?
+
+	// PVP Stats
 	
-	FINISH_ENCODE();
+	outapp->WriteUInt32(emu->PVPKills);
+	outapp->WriteUInt32(emu->PVPDeaths);
+	outapp->WriteUInt32(emu->PVPCurrentPoints);
+	outapp->WriteUInt32(emu->PVPCareerPoints);
+	outapp->WriteUInt32(emu->PVPBestKillStreak);
+	outapp->WriteUInt32(emu->PVPWorstDeathStreak);
+	outapp->WriteUInt32(emu->PVPCurrentKillStreak);
+
+	// Last PVP Kill
+	
+	outapp->WriteString(emu->PVPLastKill.Name);
+	outapp->WriteUInt32(emu->PVPLastKill.Level);
+	outapp->WriteUInt32(emu->PVPLastKill.Race);
+	outapp->WriteUInt32(emu->PVPLastKill.Class);
+	outapp->WriteUInt32(emu->PVPLastKill.Zone);
+	outapp->WriteUInt32(emu->PVPLastKill.Time);
+	outapp->WriteUInt32(emu->PVPLastKill.Points);
+
+	// Last PVP Death
+	
+	outapp->WriteString(emu->PVPLastDeath.Name);
+	outapp->WriteUInt32(emu->PVPLastDeath.Level);
+	outapp->WriteUInt32(emu->PVPLastDeath.Race);
+	outapp->WriteUInt32(emu->PVPLastDeath.Class);
+	outapp->WriteUInt32(emu->PVPLastDeath.Zone);
+	outapp->WriteUInt32(emu->PVPLastDeath.Time);
+	outapp->WriteUInt32(emu->PVPLastDeath.Points);
+
+	outapp->WriteUInt32(emu->PVPNumberOfKillsInLast24Hours);
+
+	// Last 50 Kills
+	outapp->WriteUInt32(50);
+	for(uint32 r = 0; r < 50; ++r)
+	{
+		outapp->WriteString(emu->PVPRecentKills[r].Name);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Level);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Race);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Class);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Zone);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Time);
+		outapp->WriteUInt32(emu->PVPRecentKills[r].Points);
+	}
+
+
+	outapp->WriteUInt32(emu->expAA);
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	outapp->WriteUInt8(emu->groupAutoconsent);
+	outapp->WriteUInt8(emu->raidAutoconsent);
+	outapp->WriteUInt8(emu->guildAutoconsent);
+
+	outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(emu->level);				// Level3 ?
+
+	outapp->WriteUInt8(emu->showhelm);
+
+	outapp->WriteUInt32(emu->RestTimer);
+
+	outapp->WriteUInt32(1024);			// Unknown Count
+
+	// Block of 1024 unknown bytes
+	outapp->WriteUInt8(31);				// Unknown
+
+	for(uint32 r = 0; r < 1023; r++)
+		outapp->WriteUInt8(0);				// Unknown
+
+	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(0);				// Unknown
+
+	// Think we need 1 byte of padding at the end
+
+	outapp->WriteUInt8(0);				// Unknown
+
+
+	_log(NET__STRUCTS, "Player Profile Packet is %i bytes", outapp->GetWritePosition());
+
+	unsigned char *NewBuffer = new unsigned char[outapp->GetWritePosition()];
+	memcpy(NewBuffer, outapp->pBuffer, outapp->GetWritePosition());
+	safe_delete_array(outapp->pBuffer);
+	outapp->pBuffer = NewBuffer;
+	outapp->size = outapp->GetWritePosition();
+	outapp->SetWritePosition(4);
+	outapp->WriteUInt32(outapp->size - 9);
+	
+
+	CRC32::SetEQChecksum(outapp->pBuffer, outapp->size - 1, 8);
+	//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+
+	return;
+
 }
 
 ENCODE(OP_NewZone) {
@@ -764,6 +1428,9 @@ ENCODE(OP_NewZone) {
 	eq->unknown904 = 180;
 	eq->unknown908 = 2;
 	eq->unknown912 = 2;
+	eq->unknown932 = -1;	// Set from PoK Example
+	eq->unknown936 = -1;	// Set from PoK Example
+	eq->unknown944 = 1.0;	// Set from PoK Example
 
 	FINISH_ENCODE();
 }
@@ -824,7 +1491,7 @@ ENCODE(OP_PetBuffWindow)
 
 	PetBuff_Struct *emu = (PetBuff_Struct *) __emu_buffer;
 
-	int PacketSize = 12 + (emu->buffcount * 17);
+	int PacketSize = 7 + (emu->buffcount * 13);
 
 	in->size = PacketSize;
 
@@ -833,8 +1500,6 @@ ENCODE(OP_PetBuffWindow)
 	char *Buffer = (char *)in->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petid);
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);
 	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, emu->buffcount);
 
 	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
@@ -844,13 +1509,13 @@ ENCODE(OP_PetBuffWindow)
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spellid[i]);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->ticsremaining[i]);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string. Name of the caster of the buff.
 		}
 	}
 	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->buffcount);
 
 	delete[] __emu_buffer;
+
 	dest->FastQueuePacket(&in, ack_req);
 }
 
@@ -952,6 +1617,7 @@ ENCODE(OP_BazaarSearch)
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {
+	_log(NET__ERROR, "Sending OP_ZoneEntry");
 		//consume the packet
 		EQApplicationPacket *in = *p;
 		*p = NULL;
@@ -975,33 +1641,27 @@ ENCODE(OP_ZoneSpawns) {
 
 		//_log(NET__STRUCTS, "Spawn packet size is %i, entries = %i", in->size, entrycount);
 
-		char *Buffer = (char *) in->pBuffer;
+		char *Buffer = (char *) in->pBuffer, *BufferStart;
 
 		
 		int r;
 		int k;
 		for(r = 0; r < entrycount; r++, emu++) {
 
-			int PacketSize = sizeof(structs::Spawn_Struct);
+			int PacketSize = 206;
 
 			PacketSize += strlen(emu->name);
 			PacketSize += strlen(emu->lastName);
+
+			emu->title[0] = 0;
+			emu->suffix[0] = 0;
 
 			if(strlen(emu->title))
 				PacketSize += strlen(emu->title) + 1;
 
 			if(strlen(emu->suffix))
 				PacketSize += strlen(emu->suffix) + 1;
-
-			if(emu->DestructibleObject)
-			{
-				PacketSize = PacketSize - 4;	// No bodytype
-				PacketSize += 53;	// Fixed portion
-				PacketSize += strlen(emu->DestructibleModel) + 1;
-				PacketSize += strlen(emu->DestructibleName2) + 1;
-				PacketSize += strlen(emu->DestructibleString) + 1;
-			}
-
+		
 			bool ShowName = 1;
 			if(emu->bodytype >= 66)
 			{
@@ -1014,7 +1674,7 @@ ENCODE(OP_ZoneSpawns) {
 			float SpawnSize = emu->size;
 			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
 			{
-				PacketSize -= (sizeof(structs::EquipStruct) * 9);
+				PacketSize += 60;
 
 				if(emu->size == 0)
 				{
@@ -1022,6 +1682,8 @@ ENCODE(OP_ZoneSpawns) {
 					SpawnSize = 6;
 				}
 			}
+			else
+				PacketSize += 216;
 
 			if(SpawnSize == 0)
 			{
@@ -1030,127 +1692,56 @@ ENCODE(OP_ZoneSpawns) {
 
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_ZoneEntry, PacketSize);
 			Buffer = (char *) outapp->pBuffer;
-
+			BufferStart = Buffer;
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-
-			if(emu->DestructibleObject)
-			{
-				VARSTRUCT_ENCODE_TYPE(float, Buffer, 10);	// was int and 0x41200000
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(float, Buffer, SpawnSize - 0.7);	// Eye Height?
-			}
-
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, SpawnSize - 0.7);	// Eye Height?
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
-			Bitfields->afk = 0;
-			Bitfields->linkdead = 0;
 			Bitfields->gender = emu->gender;
-
+			Bitfields->showname = ShowName;
+			Bitfields->afk = 0;
+			Bitfields->anon = emu->anon;
+			Bitfields->lfg = emu->lfg;
 			Bitfields->invis = emu->invis;
 			Bitfields->sneak = 0;
-			Bitfields->lfg = emu->lfg;
-			Bitfields->gm = emu->gm;
-			Bitfields->anon = emu->anon;
-			Bitfields->showhelm = emu->showhelm;
+			Bitfields->linkdead = 0;
 			Bitfields->targetable = 1;
 			Bitfields->targetable_with_hotkey = 1;
-			Bitfields->statue = 0;
 			Bitfields->trader = 0;
-			Bitfields->buyer = 0;
-
-			Bitfields->showname = ShowName;
-
-			if(emu->DestructibleObject)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x1d600000);
-				Buffer = Buffer -4;
-			}
-
 			Bitfields->ispet = emu->is_pet;
+
+
+			// Not currently found
+			//
+			//Bitfields->gm = emu->gm;
+			//Bitfields->showhelm = emu->showhelm;
+			//Bitfields->statue = 0;
+			//Bitfields->buyer = 0;
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
 			uint8 OtherData = 0;
 
 			if(strlen(emu->title))
-				OtherData = OtherData | 0x04;
+				OtherData = OtherData | 16; 
 
 			if(strlen(emu->suffix))
-				OtherData = OtherData | 0x08;
-
-			if(emu->DestructibleObject)
-				OtherData = OtherData | 0xd1;	// Live has 0xe1 for OtherData
+				OtherData = OtherData | 32;
 
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, OtherData);
 
-			if(emu->DestructibleObject)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x00000000);
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
-			}
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
 
-			if(emu->DestructibleObject)
-			{
-				VARSTRUCT_ENCODE_STRING(Buffer, emu->DestructibleModel);
-				VARSTRUCT_ENCODE_STRING(Buffer, emu->DestructibleName2);
-				VARSTRUCT_ENCODE_STRING(Buffer, emu->DestructibleString);
+			// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
+			// present. Will sort that out later.
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
 
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleAppearance);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk1);
-
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID1);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID2);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID3);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleID4);
-
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk2);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk3);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk4);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk5);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk6);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk7);
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->DestructibleUnk8);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->DestructibleUnk9);
-			}
-
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->runspeed);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
-			/*
-			if(emu->bodytype >=66)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// showname
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// showname
-			}*/
-
-
-			if(!emu->DestructibleObject)
-			{
-				// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
-				// present. Will sort that out later.
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
-			}
-		
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->curHp);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->haircolor);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->beardcolor);
@@ -1161,6 +1752,19 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_heritage);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_tattoo);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_details);
+
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->helm); // unknown11
+
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->runspeed);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
+
+		
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// ShowEQ calls this 'Holding'
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->deity);
 			if(emu->NPC)
@@ -1173,19 +1777,21 @@ ENCODE(OP_ZoneSpawns) {
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildID);
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildrank);
 			}
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->class_);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->StandState);	// standstate
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->light);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->flymode);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->helm); // unknown11
+
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12
+
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle ??
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown
+
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petOwnerId);
+
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown13
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown14 - Stance 64 = normal 4 = aggressive 40 = stun/mezzed
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown15
@@ -1193,6 +1799,48 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown17
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown18
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown19
+
+			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
+			{
+				for(k = 0; k < 9; ++k)
+				{
+					{
+						VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
+					}
+				}
+
+				structs::EquipStruct *Equipment = (structs::EquipStruct *)Buffer;
+
+				for(k = 0; k < 9; k++) {
+					Equipment[k].equip0 = emu->equipment[k];
+					Equipment[k].equip1 = 0;
+					Equipment[k].equip2 = 0;
+					Equipment[k].equip3 = 0;
+					Equipment[k].itemId = 0;
+				}
+
+				Buffer += (sizeof(structs::EquipStruct) * 9);
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_PRIMARY]);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_SECONDARY]);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			}
 
 
 			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
@@ -1209,43 +1857,6 @@ ENCODE(OP_ZoneSpawns) {
 
 			Buffer += sizeof(structs::Spawn_Struct_Position);
 		
-			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
-			{
-				for(k = 0; k < 9; ++k)
-				{
-					{
-						VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
-					}
-				}
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_PRIMARY]);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_SECONDARY]);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-			}
-
-
-			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
-			{
-				structs::EquipStruct *Equipment = (structs::EquipStruct *)Buffer;
-
-				for(k = 0; k < 9; k++) {
-					Equipment[k].equip0 = emu->equipment[k];
-					Equipment[k].equip1 = 0;
-					Equipment[k].itemId = 0;
-				}
-
-				Buffer += (sizeof(structs::EquipStruct) * 9);
-			}
 			if(strlen(emu->title))
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->title);
@@ -1255,132 +1866,24 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
 			}
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown;
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown;
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->IsMercenary); //IsMercenary
-			Buffer += 28; // Unknown;
 
+			Buffer += 8; 
+			// Buffer should be pointing at Merc flag
+			++Buffer;
+			VARSTRUCT_ENCODE_STRING(Buffer, "0000000000000000");
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
+			// 29 zero bytes follow
+			Buffer += 29;
+			if(Buffer != (BufferStart + PacketSize))
+			{
+				_log(NET__ERROR, "SPAWN ENCODE LOGIC PROBLEM: Buffer pointer is now %i from end", Buffer - (BufferStart + PacketSize));
+			}
+			//_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
+			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
-	delete in;
-}
-
-ENCODE(OP_MercenaryDataResponse) {
-	//consume the packet
-	EQApplicationPacket *in = *p;
-	*p = NULL;
-	
-	//store away the emu struct
-	unsigned char *__emu_buffer = in->pBuffer;
-	MercenaryMerchantList_Struct *emu = (MercenaryMerchantList_Struct *) __emu_buffer;
-
-	char *Buffer = (char *) in->pBuffer;
-
-	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
-	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
-
-	int r;
-	int k;
-	for(r = 0; r < emu->MercCount; r++)
-	{
-		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
-	}
-
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, PacketSize);
-	Buffer = (char *) outapp->pBuffer;
-
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypeCount);
-
-	for(r = 0; r < emu->MercTypeCount; r++)
-	{
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercGrades[r].GradeCountEntry);
-	}
-
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
-
-	for(r = 0; r < emu->MercCount; r++)
-	{
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercID);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercSubType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].PurchaseCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].UpkeepCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk01);
-		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MerchantSlot);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk02);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk03);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk04);
-		for(k = 0; k < emu->Mercs[r].StanceCount; k++)
-		{
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].StanceIndex);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].Stance);
-		}
-	}
-
-	dest->FastQueuePacket(&outapp, ack_req);
-
-	delete in;
-}
-
-ENCODE(OP_MercenaryDataUpdate) {
-	//consume the packet
-	EQApplicationPacket *in = *p;
-	*p = NULL;
-	
-	//store away the emu struct
-	unsigned char *__emu_buffer = in->pBuffer;
-	MercenaryDataUpdate_Struct *emu = (MercenaryDataUpdate_Struct *) __emu_buffer;
-
-	char *Buffer = (char *) in->pBuffer;
-
-	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
-
-	int r;
-	int k;
-	for(r = 0; r < emu->MercCount; r++)
-	{
-		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
-	}
-
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
-	Buffer = (char *) outapp->pBuffer;
-
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercStatus);
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
-
-	for(r = 0; r < emu->MercCount; r++)
-	{
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercID);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercSubType);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].PurchaseCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].UpkeepCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyCost);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyUpkeep);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyType);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk01);
-		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->MercData[r].TimeLeft);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MerchantSlot);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk02);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk03);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk04);
-		for(k = 0; k < emu->MercData[r].StanceCount; k++)
-		{
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].Stance);
-		}
-		//VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
-	}
-
-	dest->FastQueuePacket(&outapp, ack_req);
-
 	delete in;
 }
 
@@ -1551,7 +2054,7 @@ ENCODE(OP_GuildMemberList) {
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			memcpy(e->field, str, sl+1); \
+			strcpy(e->field, str); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}
@@ -1606,13 +2109,13 @@ ENCODE(OP_SpawnDoor) {
 		eq[r].state_at_spawn = emu[r].state_at_spawn;
 		eq[r].invert_state = emu[r].invert_state;
 		eq[r].door_param = emu[r].door_param;
-		eq[r].unknown0076 = 0;
-		eq[r].unknown0077 = 1; // Both must be 1 to allow clicking doors
-		eq[r].unknown0078 = 0;
-		eq[r].unknown0079 = 1; // Both must be 1 to allow clicking doors
 		eq[r].unknown0080 = 0;
-		eq[r].unknown0081 = 0;
+		eq[r].unknown0081 = 1; // Both must be 1 to allow clicking doors
 		eq[r].unknown0082 = 0;
+		eq[r].unknown0083 = 1; // Both must be 1 to allow clicking doors
+		eq[r].unknown0084 = 0;
+		eq[r].unknown0085 = 0;
+		eq[r].unknown0086 = 0;
 	}
 	FINISH_ENCODE();
 }
@@ -1620,7 +2123,7 @@ ENCODE(OP_SpawnDoor) {
 ENCODE(OP_GroundSpawn)
 {
 
-	// We are not encoding the spawn_id field here, or a size but it doesn't appear to matter.
+	// We are not encoding the spawn_id field here, but it doesn't appear to matter.
 	//
 	EQApplicationPacket *in = *p;
 	*p = NULL;
@@ -1629,7 +2132,7 @@ ENCODE(OP_GroundSpawn)
 
 	unsigned char *__emu_buffer = in->pBuffer;
 
-	in->size = strlen(emu->object_name) + 58;
+	in->size = strlen(emu->object_name) + sizeof(Object_Struct) - 1;
 
 	in->pBuffer = new unsigned char[in->size];
 	
@@ -1639,26 +2142,50 @@ ENCODE(OP_GroundSpawn)
 	VARSTRUCT_ENCODE_STRING(OutBuffer, emu->object_name);
 	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, emu->zone_id);
 	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, emu->zone_instance);
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00006762
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observer 0x7fffbb64
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->drop_id);	// Some unique id
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Same for all objects in the zone
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->heading);
-	// This next field is actually a float. There is a groundspawn in freeportwest (sack of money sitting on some barrels) which requires this
-	// field to be set to (float)255.0 to appear at all, and also the size field below to be 5, to be the correct size. I think SoD has the same
-	// issue.
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// This appears to be the size field.
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, 0);	// Normally 0, but seen (float)255.0 as well
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, 1);	// Need to add emu->size to struct
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->y);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->x);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->z);
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);	// Unknown, observed 0xffffffff
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00000014
-	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, 0);	// Unknown, observed 0x00
+	VARSTRUCT_ENCODE_TYPE(sint32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
 
 	delete[] __emu_buffer;
 	
 	dest->FastQueuePacket(&in, ack_req);
+}
+
+ENCODE(OP_ClickObjectAction) {
+	ENCODE_LENGTH_EXACT(ClickObjectAction_Struct);
+	SETUP_DIRECT_ENCODE(ClickObjectAction_Struct, structs::ClickObjectAction_Struct);
+	OUT(drop_id);
+	eq->unknown04 = -1;
+	eq->unknown08 = -1;
+	OUT(type);
+	OUT(icon);
+	eq->unknown16 = 0;
+	OUT_str(object_name);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_SendMembership) {
+	ENCODE_LENGTH_EXACT(Membership_Struct);
+	SETUP_DIRECT_ENCODE(Membership_Struct, structs::Membership_Struct);
+	
+	eq->membership = emu->membership;
+	eq->races = emu->races;
+	eq->classes = emu->classes;
+	eq->entrysize = 22;
+	for (int i=0; i<21; i++)
+	{
+		eq->entries[i] = emu->entries[i];
+	}
+	eq->entries[21] = 0;
+
+	FINISH_ENCODE();
 }
 
 ENCODE(OP_ManaChange) {
@@ -1671,19 +2198,41 @@ ENCODE(OP_ManaChange) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_RequestClientZoneChange) {
+	ENCODE_LENGTH_EXACT(RequestClientZoneChange_Struct);
+	SETUP_DIRECT_ENCODE(RequestClientZoneChange_Struct, structs::RequestClientZoneChange_Struct);
+	OUT(zone_id);
+	OUT(instance_id);
+	OUT(y);
+	OUT(x);
+	OUT(z);
+	OUT(heading);
+	eq->type = 0x0b;
+	eq->unknown004 = 0xffffffff;
+	eq->unknown172 = 0x0168b500;
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_OnLevelMessage)
 {
 	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
 	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+
+	// This packet is variable sized now, but forcing it to the old packet size for now.
+	eq->Title_Count = 128;
 	memcpy(eq->Title, emu->Title, sizeof(eq->Title));
+	eq->Text_Count = 4096;
 	memcpy(eq->Text, emu->Text, sizeof(eq->Text));
 	OUT(Buttons);
 	OUT(Duration);
 	OUT(PopupID);
 	OUT(NegativeID);
-	// These two field names are used if Buttons == 1.
+	// These two field names are used if Buttons == 1. We should add an interface to them via Perl.
+	eq->ButtonName0_Count = 25;
 	OUT_str(ButtonName0);
+	eq->ButtonName1_Count = 25;
 	OUT_str(ButtonName1);
+
 	FINISH_ENCODE();
 }
 
@@ -1707,6 +2256,7 @@ ENCODE(OP_Illusion) {
 	OUT(drakkin_heritage);
 	OUT(drakkin_tattoo);
 	OUT(drakkin_details);
+	eq->unknown316 = -1;	// Observed
 
 	FINISH_ENCODE();
 }
@@ -1723,6 +2273,17 @@ ENCODE(OP_ShopPlayerBuy)
 
 	FINISH_ENCODE();
 }
+
+ENCODE(OP_DeleteSpawn)
+{
+	ENCODE_LENGTH_EXACT(DeleteSpawn_Struct);
+	SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
+	OUT(spawn_id);
+	eq->unknown04 = 1;	// Observed
+
+	FINISH_ENCODE();
+}
+
 
 ENCODE(OP_ClientUpdate) {
 	ENCODE_LENGTH_EXACT(PlayerPositionUpdateServer_Struct);
@@ -1776,6 +2337,15 @@ ENCODE(OP_LogServer) {
  	FINISH_ENCODE();
 }
 
+ENCODE(OP_Animation) {
+	ENCODE_LENGTH_EXACT(Animation_Struct);
+	SETUP_DIRECT_ENCODE(Animation_Struct, structs::Animation_Struct);
+	OUT(spawnid);
+	OUT(value);
+	OUT(action);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_Damage) {
 	ENCODE_LENGTH_EXACT(CombatDamage_Struct);
 	SETUP_DIRECT_ENCODE(CombatDamage_Struct, structs::CombatDamage_Struct);
@@ -1805,47 +2375,67 @@ ENCODE(OP_Action) {
 	OUT(target);
 	OUT(source);
 	OUT(level);
-	eq->instrument_mod = 1.0f + (emu->instrument_mod - 10) / 10.0f;
+	eq->unknown06 = 0;
+	eq->instrument_mod = emu->instrument_mod;
+	eq->bard_focus_id = emu->bard_focus_id;
 	eq->knockback_angle = emu->sequence;
+	eq->unknown22 = 0;
 	OUT(type);
+	eq->damage = 0;
+	eq->unknown31 = 0;
 	OUT(spell);
 	eq->level2 = eq->level;
 	eq->effect_flag = emu->buff_unknown;
-	eq->unknown37 = 0x01;
-	eq->unknown44 = 0xFFFFFFFF;
-	eq->unknown48 = 0xFFFFFFFF;
-	eq->unknown52 = 0xFFFFFFFF;
-
-	/*OUT(target);
-	OUT(source);
-	OUT(level);
-	OUT(instrument_mod);
-	eq->sequence = emu->sequence;
-	OUT(type);
-	//OUT(damage);
-	OUT(spell);
-	eq->level2 = emu->level;
-	OUT(buff_unknown); // if this is 4, a buff icon is made
-	//eq->unknown0036 = -1;
-	//eq->unknown0040 = -1;
-	//eq->unknown0044 = -1;*/
+	eq->unknown39 = 14;
+	eq->unknown43 = 0;
+	eq->unknown44 = 17;
+	eq->unknown45 = 0;
+	eq->unknown46 = -1;
+	eq->unknown50 = 0;
+	eq->unknown54 = 0;
 	FINISH_ENCODE();
 }
 
 ENCODE(OP_Buff) {
 	ENCODE_LENGTH_EXACT(SpellBuffFade_Struct);
-	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Underfoot);
+	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	OUT(entityid);
-	OUT(slot);
+	eq->unknown004 = 2;
+	//eq->level = 80;
+	//eq->effect = 0;
 	OUT(level);
 	OUT(effect);
-	//eq->unknown7 = 10;
+	eq->unknown007 = 0;
+	eq->unknown008 = 1.0f;
 	OUT(spellid);
 	OUT(duration);
+	eq->playerId = 0x7cde;
 	OUT(slotid);
-	OUT(bufffade);	// Live (October 2011) sends a 2 rather than 0 when a buff is created, but it doesn't seem to matter.
-	eq->unknown008 = 1.0f;
+	if(emu->bufffade == 1)
+		eq->bufffade = 1;
+	else
+		eq->bufffade = 2;
+
+	// Bit of a hack. OP_Buff appears to add/remove the buff while OP_BuffCreate adds/removes the actual buff icon
+	EQApplicationPacket *outapp = NULL;
+	if(eq->bufffade == 1)
+	{
+		outapp = new EQApplicationPacket(OP_BuffCreate, 29);
+		outapp->WriteUInt32(emu->entityid);
+		outapp->WriteUInt32(0x0271);	// Unk
+		outapp->WriteUInt8(0);		// Type of OP_BuffCreate packet ?
+		outapp->WriteUInt16(1);		// 1 buff in this packet
+		outapp->WriteUInt32(emu->slotid);
+		outapp->WriteUInt32(0xffffffff);		// SpellID (0xffff to remove)
+		outapp->WriteUInt32(0);			// Duration
+		outapp->WriteUInt32(0);			// ?
+		outapp->WriteUInt8(0);		// Caster name
+		outapp->WriteUInt8(0);		// Terminating byte
+	}
 	FINISH_ENCODE();
+
+	if(outapp)
+		dest->FastQueuePacket(&outapp);	// Send the OP_BuffCreate to remove the buff
 }
 
 ENCODE(OP_CancelTrade) {
@@ -1856,11 +2446,20 @@ ENCODE(OP_CancelTrade) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_InterruptCast) {
+	ENCODE_LENGTH_EXACT(InterruptCast_Struct);
+	SETUP_DIRECT_ENCODE(InterruptCast_Struct, structs::InterruptCast_Struct);
+	OUT(spawnid);
+	OUT(messageid);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	eq->itemslot = TitaniumToUnderfootSlot(emu->itemslot);
+	eq->itemslot = MainInvTitaniumToRoFSlot(emu->itemslot);
+	//OUT(itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -1869,8 +2468,27 @@ ENCODE(OP_ShopPlayerSell) {
 ENCODE(OP_ApplyPoison) {
 	ENCODE_LENGTH_EXACT(ApplyPoison_Struct);
 	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
-	eq->inventorySlot = TitaniumToUnderfootSlot(emu->inventorySlot);
+	eq->inventorySlot = TitaniumToRoFSlot(emu->inventorySlot);
 	OUT(success);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RecipeAutoCombine) {
+	ENCODE_LENGTH_EXACT(RecipeAutoCombine_Struct);
+	SETUP_DIRECT_ENCODE(RecipeAutoCombine_Struct, structs::RecipeAutoCombine_Struct);
+	OUT(object_type);
+	OUT(some_id);
+	eq->container_slot = TitaniumToRoFSlot(emu->unknown1);
+	structs::ItemSlotStruct RoFSlot;
+	RoFSlot.SlotType = 8;	// Observed
+	RoFSlot.Unknown02 = 0;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	eq->unknown_slot = RoFSlot;
+	OUT(recipe_id);
+	OUT(reply_code);
 	FINISH_ENCODE();
 }
 
@@ -1878,8 +2496,8 @@ ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
 
-	eq->from_slot = TitaniumToUnderfootSlot(emu->from_slot);
-	eq->to_slot = TitaniumToUnderfootSlot(emu->to_slot);
+	eq->from_slot = TitaniumToRoFSlot(emu->from_slot);
+	eq->to_slot = TitaniumToRoFSlot(emu->to_slot);
 	OUT(number_in_stack);
 
 	FINISH_ENCODE();
@@ -1890,10 +2508,9 @@ ENCODE(OP_MoveItem) {
 	ENCODE_LENGTH_EXACT(MoveItem_Struct);
 	SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
 
-	eq->from_slot = TitaniumToUnderfootSlot(emu->from_slot);
-	eq->to_slot = TitaniumToUnderfootSlot(emu->to_slot);
+	eq->from_slot = TitaniumToRoFSlot(emu->from_slot);
+	eq->to_slot = TitaniumToRoFSlot(emu->to_slot);
 	OUT(number_in_stack);
-
 	FINISH_ENCODE();
 }
 
@@ -1901,7 +2518,7 @@ ENCODE(OP_ItemVerifyReply) {
 	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
 	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
 
-	eq->slot = TitaniumToUnderfootSlot(emu->slot);
+	eq->slot = TitaniumToRoFSlot(emu->slot);
 	OUT(spell);
 	OUT(target);
 
@@ -1951,7 +2568,7 @@ ENCODE(OP_TributeItem) {
 	ENCODE_LENGTH_EXACT(TributeItem_Struct);
 	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	eq->slot = TitaniumToUnderfootSlot(emu->slot);
+	eq->slot = TitaniumToRoFSlot(emu->slot);
 	OUT(quantity);
 	OUT(tribute_master_id);
 	OUT(tribute_points);
@@ -1978,7 +2595,7 @@ ENCODE(OP_SomeItemPacketMaybe) {
 	OUT(target_id);
 	OUT(item_id);
 
-	eq->unknown070 = 135; // This needs to be set to something, else we get a 1HS animation instead of ranged.
+	eq->unknown070 = 175; // This needs to be set to something, else we get a 1HS animation instead of ranged.
 
 	OUT(item_type);
 	OUT(skill);
@@ -1998,8 +2615,8 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	eq->invslot = TitaniumToUnderfootSlot(emu->invslot);
-	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
+	eq->invslot = 0; // Set to hard 0 since it's not required for the structure to work
+	memcpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
 
@@ -2031,7 +2648,7 @@ ENCODE(OP_ZonePlayerToBind)
 	zph->y = zps->y;
 	zph->z = zps->z;
 	zph->heading = zps->heading;
-	zph->bind_zone_id = zps->bind_zone_id;
+	zph->bind_zone_id = 0;
 	zph->bind_instance_id = zps->bind_instance_id;
 	strcpy(zph->zone_name, zps->zone_name);
 
@@ -2060,7 +2677,7 @@ ENCODE(OP_AdventureMerchantSell) {
 
 	eq->unknown000 = 1;
 	OUT(npcid);
-	eq->slot = TitaniumToUnderfootSlot(emu->slot);
+	eq->slot = TitaniumToRoFSlot(emu->slot);
 	OUT(charges);
 	OUT(sell_price);
 
@@ -2195,7 +2812,6 @@ ENCODE(OP_WhoAllResponse)
 
 		char Name[64];
 
-
 		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Char Name
 		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
 
@@ -2223,6 +2839,41 @@ ENCODE(OP_WhoAllResponse)
 
 	delete in;
 }
+
+ENCODE(OP_InspectRequest) {
+	ENCODE_LENGTH_EXACT(Inspect_Struct);
+	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
+	OUT(TargetID);
+	OUT(PlayerID);
+	FINISH_ENCODE();
+}
+
+/*ENCODE(OP_InspectAnswer) {
+	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
+	SETUP_DIRECT_ENCODE(InspectResponse_Struct, structs::InspectResponse_Struct);
+
+	OUT(TargetID);
+	OUT(playerid);
+
+	int r;
+	for (r = 0; r < 21; r++) {
+		strn0cpy(eq->itemnames[r], emu->itemnames[r], sizeof(eq->itemnames[r]));
+	}
+	// Swap last 2 slots for Arrow and Power Source
+	strn0cpy(eq->itemnames[21], emu->itemnames[22], sizeof(eq->itemnames[21]));
+	strn0cpy(eq->unknown_zero, emu->itemnames[21], sizeof(eq->unknown_zero));
+
+	int k;
+	for (k = 0; k < 21; k++) {
+		OUT(itemicons[k]);
+	}
+	// Swap last 2 slots for Arrow and Power Source
+	eq->itemicons[21] = emu->itemicons[22];
+	eq->unknown_zero2 = emu->itemicons[21];
+	strn0cpy(eq->text, emu->text, sizeof(eq->text));
+
+	FINISH_ENCODE();
+}*/
 
 ENCODE(OP_GroupInvite) {
 	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
@@ -2533,7 +3184,7 @@ ENCODE(OP_DzCompass)
 	ALLOC_VAR_ENCODE(structs::ExpeditionCompass_Struct, sizeof(structs::ExpeditionInfo_Struct) + sizeof(structs::ExpeditionCompassEntry_Struct) * emu->count);
 	OUT(count);
 
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		OUT(entries[i].x);
 		OUT(entries[i].y);
@@ -2552,7 +3203,7 @@ ENCODE(OP_DzMemberList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -2574,7 +3225,7 @@ ENCODE(OP_DzExpeditionList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].expedition, strlen(emu->entries[i].expedition));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -2641,65 +3292,46 @@ ENCODE(OP_BuffCreate)
 	__packet->size = sz;
 	__packet->pBuffer = new unsigned char[sz];
 	memset(__packet->pBuffer, 0, sz);
-
-	uchar *ptr = __packet->pBuffer;
-	*((uint32*)ptr) = emu->entity_id;
-	ptr += sizeof(uint32);
-	ptr += sizeof(uint32);
-	*((uint8*)ptr) = 1;
-	ptr += sizeof(uchar);
-	*((uint16*)ptr) = emu->count;
-	ptr += sizeof(uint16);
+	
+	__packet->WriteUInt32(emu->entity_id);
+	__packet->WriteUInt32(0);		// PlayerID ?
+	__packet->WriteUInt8(1);			// 1 indicates all buffs on the player (0 to add or remove a single buff)
+	__packet->WriteUInt16(emu->count);
 
 	for(uint16 i = 0; i < emu->count; ++i)
 	{
 		uint16 buffslot = emu->entries[i].buff_slot;
-		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
+		// Not sure if this is needs amending for RoF yet.
+		if(emu->entries[i].buff_slot >= 25)
 		{
-			buffslot += 5;
-		}
-		else if(emu->entries[i].buff_slot >= 37)
-		{
-			buffslot += 14;
+			buffslot += 17;
 		}
 
-		*((uint32*)ptr) = buffslot;
-		ptr += sizeof(uint32);
-		*((uint32*)ptr) = emu->entries[i].spell_id;
-		ptr += sizeof(uint32);
-		*((uint32*)ptr) = emu->entries[i].tics_remaining;
-		ptr += sizeof(uint32);
-		ptr += sizeof(uint32);
-		ptr += 1;
+		__packet->WriteUInt32(buffslot);
+		__packet->WriteUInt32(emu->entries[i].spell_id);
+		__packet->WriteUInt32(emu->entries[i].tics_remaining);
+		__packet->WriteUInt32(0); // Unknown
+		__packet->WriteString("");	
 	}
+	__packet->WriteUInt8(0); // Unknown
+
 	FINISH_ENCODE();
-	/*
-	uint32 write_var32 = 60;
-	uint8 write_var8 = 1;
-	ss.write((const char*)&emu->entity_id, sizeof(uint32));
-	ss.write((const char*)&write_var32, sizeof(uint32));
-	ss.write((const char*)&write_var8, sizeof(uint8));
-	ss.write((const char*)&emu->count, sizeof(uint16));
-	write_var32 = 0;
-	write_var8 = 0;
-	for(uint16 i = 0; i < emu->count; ++i)
-	{
-		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
-		{
-			emu->entries[i].buff_slot += 5;
-		}
-		else if(emu->entries[i].buff_slot >= 37)
-		{
-			emu->entries[i].buff_slot += 14;
-		}
-		ss.write((const char*)&emu->entries[i].buff_slot, sizeof(uint32));
-		ss.write((const char*)&emu->entries[i].spell_id, sizeof(uint32));
-		ss.write((const char*)&emu->entries[i].tics_remaining, sizeof(uint32));
-		ss.write((const char*)&write_var32, sizeof(uint32));
-		ss.write((const char*)&write_var8, sizeof(uint8));
-	}
-	ss.write((const char*)&write_var8, sizeof(uint8));
-	*/
+}
+
+ENCODE(OP_ZoneChange)
+{
+	ENCODE_LENGTH_EXACT(ZoneChange_Struct);
+	SETUP_DIRECT_ENCODE(ZoneChange_Struct, structs::ZoneChange_Struct);
+
+	memcpy(eq->char_name, emu->char_name, sizeof(emu->char_name));
+	OUT(zoneID);
+	OUT(instanceID);
+	OUT(y);
+	OUT(x);
+	OUT(z)
+	OUT(zone_reason);
+	OUT(success);
+	FINISH_ENCODE();
 }
 
 ENCODE(OP_WearChange)
@@ -2710,6 +3342,8 @@ ENCODE(OP_WearChange)
 	OUT(material);
 	OUT(unknown06);
 	OUT(elite_material);
+	OUT(hero_forge_model);
+	OUT(unknown18);
 	OUT(color.color);
 	OUT(wear_slot_id);
 	FINISH_ENCODE();
@@ -2744,6 +3378,38 @@ ENCODE(OP_SpawnAppearance)
 	delete in;
 }
 
+ENCODE(OP_CastSpell)
+{
+	ENCODE_LENGTH_EXACT(CastSpell_Struct);
+	SETUP_DIRECT_ENCODE(CastSpell_Struct, structs::CastSpell_Struct);
+	if(emu->slot == 10)
+	{
+		eq->slot = 13;
+	}
+	else
+	{
+		OUT(slot);
+	}
+	OUT(spell_id);
+	eq->inventoryslot = TitaniumToRoFSlot(emu->inventoryslot);
+	//OUT(inventoryslot);
+	OUT(target_id);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_ShopRequest)
+{
+	ENCODE_LENGTH_EXACT(Merchant_Click_Struct);
+	SETUP_DIRECT_ENCODE(Merchant_Click_Struct, structs::Merchant_Click_Struct);
+	OUT(npcid);
+	OUT(playerid);
+	OUT(command);
+	OUT(rate);
+	eq->unknown01 = 3;	// Not sure what these values do yet, but list won't display without them
+	eq->unknown02 = 2592000;
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_DisciplineUpdate)
 {
 	ENCODE_LENGTH_EXACT(Disciplines_Struct);
@@ -2754,13 +3420,34 @@ ENCODE(OP_DisciplineUpdate)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_RespondAA) {
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
+
+	eq->aa_spent = emu->aa_spent;
+	// These fields may need to be correctly populated at some point
+	eq->aapoints_assigned = emu->aa_spent + 1;
+	eq->aa_spent_general = 0;
+	eq->aa_spent_archetype = 0;
+	eq->aa_spent_class = 0;
+	eq->aa_spent_special = 0;
+
+	for(uint32 i = 0; i < MAX_PP_AA_ARRAY; ++i)
+	{
+		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
+		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
+		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
+	}
+
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_AltCurrencySell) 
 {
     ENCODE_LENGTH_EXACT(AltCurrencySellItem_Struct);
 	SETUP_DIRECT_ENCODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
 
     OUT(merchant_entity_id);
-    eq->slot_id = TitaniumToUnderfootSlot(emu->slot_id);
+    eq->slot_id = TitaniumToRoFSlot(emu->slot_id);
     OUT(charges);
     OUT(cost);
     FINISH_ENCODE();
@@ -2783,7 +3470,7 @@ ENCODE(OP_AltCurrency)
 
         out_populate->opcode = populate->opcode;
         out_populate->count = populate->count;
-        for(int i = 0; i < populate->count; ++i) {
+        for(uint32 i = 0; i < populate->count; ++i) {
             out_populate->entries[i].currency_number = populate->entries[i].currency_number;
             out_populate->entries[i].currency_number2 = populate->entries[i].currency_number2;
             out_populate->entries[i].item_id = populate->entries[i].item_id;
@@ -2803,19 +3490,124 @@ ENCODE(OP_AltCurrency)
     delete in;
 }
 
-ENCODE(OP_InspectRequest) {
-	ENCODE_LENGTH_EXACT(Inspect_Struct);
-	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
-	OUT(TargetID);
-	OUT(PlayerID);
+ENCODE(OP_HPUpdate)
+{
+	SETUP_DIRECT_ENCODE(SpawnHPUpdate_Struct, structs::SpawnHPUpdate_Struct);
+	OUT(spawn_id);
+	OUT(cur_hp);
+	OUT(max_hp);
 	FINISH_ENCODE();
 }
 
-DECODE(OP_InspectRequest) {
-	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
-	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
-	IN(TargetID);
-	IN(PlayerID);
+ENCODE(OP_RemoveBlockedBuffs) { ENCODE_FORWARD(OP_BlockedBuffs); }
+
+ENCODE(OP_BlockedBuffs)
+{
+	ENCODE_LENGTH_EXACT(BlockedBuffs_Struct);
+	SETUP_DIRECT_ENCODE(BlockedBuffs_Struct, structs::BlockedBuffs_Struct);
+
+	for(uint32 i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		eq->SpellID[i] = emu->SpellID[i];
+
+	// -1 for the extra 10 added in RoF. We should really be encoding for the older clients, not RoF, but
+	// we can sort that out later.
+
+	for(uint32 i = BLOCKED_BUFF_COUNT; i < structs::BLOCKED_BUFF_COUNT; ++i)
+		eq->SpellID[i] = -1;
+
+	OUT(Count);
+	OUT(Pet);
+	OUT(Initialise);
+	OUT(Flags);
+
+	FINISH_ENCODE();
+}
+
+DECODE(OP_BuffRemoveRequest)
+{
+	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
+	//
+	DECODE_LENGTH_EXACT(structs::BuffRemoveRequest_Struct);
+	SETUP_DIRECT_DECODE(BuffRemoveRequest_Struct, structs::BuffRemoveRequest_Struct);
+
+	emu->SlotID = (eq->SlotID < 42 ) ? eq->SlotID : (eq->SlotID - 17);
+
+	IN(EntityID);
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_PetCommands)
+{
+	DECODE_LENGTH_EXACT(structs::PetCommand_Struct);
+	SETUP_DIRECT_DECODE(PetCommand_Struct, structs::PetCommand_Struct);
+
+	switch(eq->command)
+	{
+		case 0x00:
+			emu->command = 0x04;	// Health
+			break;
+		case 0x01:
+			emu->command = 0x10;	// Leader
+			break;
+		case 0x02:
+			emu->command = 0x07;	// Attack
+			break;
+		case 0x04:
+			emu->command = 0x08;	// Follow
+			break;
+		case 0x05:
+			emu->command = 0x05;	// Guard
+			break;
+		case 0x06:
+			emu->command = 0x09;	// Sit. Needs work. This appears to be a toggle between Sit/Stand now.
+			break;
+		case 0x0c:
+			emu->command = 0x0b;	// Taunt
+			break;
+		case 0x0f:
+			emu->command = 0x0c;	// Hold
+			break;
+		case 0x1c:
+			emu->command = 0x01;	// Back
+			break;
+		case 0x1d:
+			emu->command = 0x02;	// Leave/Go Away
+			break;
+		default:
+			emu->command = eq->command;
+	}
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySellSelection) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySelectItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySelectItem_Struct, structs::AltCurrencySelectItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = RoFToTitaniumSlot(eq->slot_id);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AltCurrencySell) 
+{
+    DECODE_LENGTH_EXACT(structs::AltCurrencySellItem_Struct);
+	SETUP_DIRECT_DECODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
+    IN(merchant_entity_id);
+    emu->slot_id = RoFToTitaniumSlot(eq->slot_id);
+    IN(charges);
+    IN(cost);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_ShopRequest) {
+	DECODE_LENGTH_EXACT(structs::Merchant_Click_Struct);
+	SETUP_DIRECT_DECODE(Merchant_Click_Struct, structs::Merchant_Click_Struct);
+	IN(npcid);
+	IN(playerid);
+	IN(command);
+	IN(rate);
 	FINISH_DIRECT_DECODE();
 }
 
@@ -2837,6 +3629,44 @@ DECODE(OP_BazaarSearch)
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_InspectRequest) {
+	DECODE_LENGTH_EXACT(structs::Inspect_Struct);
+	SETUP_DIRECT_DECODE(Inspect_Struct, structs::Inspect_Struct);
+	IN(TargetID);
+	IN(PlayerID);
+	FINISH_DIRECT_DECODE();
+}
+
+/*DECODE(OP_InspectAnswer) {
+	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
+	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
+	
+	IN(TargetID);
+	IN(playerid);
+
+	int r;
+	for (r = 0; r < 21; r++) {
+		strn0cpy(emu->itemnames[r], eq->itemnames[r], sizeof(emu->itemnames[r]));
+	}
+	// Swap last 2 slots for Arrow and Power Source
+	strn0cpy(emu->itemnames[22], eq->itemnames[21], sizeof(emu->itemnames[22]));
+	strn0cpy(emu->itemnames[21], eq->unknown_zero, sizeof(emu->itemnames[21]));
+	strn0cpy(emu->unknown_zero, eq->unknown_zero, sizeof(emu->unknown_zero));
+
+	int k;
+	for (k = 0; k < 21; k++) {
+		IN(itemicons[k]);
+	}
+	// Swap last 2 slots for Arrow and Power Source
+	emu->itemicons[22] = eq->itemicons[21];
+	emu->itemicons[21] = eq->unknown_zero2;
+	emu->unknown_zero2 = eq->unknown_zero2;
+	strn0cpy(emu->text, eq->text, sizeof(emu->text));
+	//emu->unknown1772 = 0;
+
+	FINISH_DIRECT_DECODE();
+}*/
+
 DECODE(OP_RaidInvite) {
 	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
 	SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
@@ -2854,7 +3684,7 @@ DECODE(OP_AdventureMerchantSell) {
 	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
 
 	IN(npcid);
-	emu->slot = UnderfootToTitaniumSlot(eq->slot);
+	emu->slot = RoFToTitaniumSlot(eq->slot);
 	IN(charges);
 	IN(sell_price);
 
@@ -2866,7 +3696,7 @@ DECODE(OP_ApplyPoison) {
 	DECODE_LENGTH_EXACT(structs::ApplyPoison_Struct);
 	SETUP_DIRECT_DECODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
 
-	emu->inventorySlot = UnderfootToTitaniumSlot(eq->inventorySlot);
+	emu->inventorySlot = RoFToTitaniumSlot(eq->inventorySlot);
 	IN(success);
 
 	FINISH_DIRECT_DECODE();
@@ -2876,7 +3706,7 @@ DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
 
-	emu->slot = UnderfootToTitaniumSlot(eq->slot);
+	emu->slot = RoFToTitaniumSlot(eq->slot);
 	IN(target);
 
 	FINISH_DIRECT_DECODE();
@@ -2886,7 +3716,7 @@ DECODE(OP_Consume) {
 	DECODE_LENGTH_EXACT(structs::Consume_Struct);
 	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);
 
-	emu->slot = UnderfootToTitaniumSlot(eq->slot);
+	emu->slot = RoFToTitaniumSlot(eq->slot);
 	IN(auto_consumed);
 	IN(type);
 
@@ -2906,7 +3736,8 @@ DECODE(OP_CastSpell) {
 		IN(slot);
 	}
 	IN(spell_id);
-	emu->inventoryslot = UnderfootToTitaniumSlot(eq->inventoryslot);
+	emu->inventoryslot = RoFToTitaniumSlot(eq->inventoryslot);
+	//IN(inventoryslot);
 	IN(target_id);
 
 	FINISH_DIRECT_DECODE();
@@ -2917,8 +3748,8 @@ DECODE(OP_DeleteItem)
 	DECODE_LENGTH_EXACT(structs::DeleteItem_Struct);
 	SETUP_DIRECT_DECODE(DeleteItem_Struct, structs::DeleteItem_Struct);
 
-	emu->from_slot = UnderfootToTitaniumSlot(eq->from_slot);
-	emu->to_slot = UnderfootToTitaniumSlot(eq->to_slot);
+	emu->from_slot = RoFToTitaniumSlot(eq->from_slot);
+	emu->to_slot = RoFToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
 	FINISH_DIRECT_DECODE();
@@ -2929,12 +3760,13 @@ DECODE(OP_MoveItem)
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);
 	SETUP_DIRECT_DECODE(MoveItem_Struct, structs::MoveItem_Struct);
 
-	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot, eq->to_slot);
-
-	emu->from_slot = UnderfootToTitaniumSlot(eq->from_slot);
-	emu->to_slot = UnderfootToTitaniumSlot(eq->to_slot);
+	//_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot.MainSlot, eq->to_slot.MainSlot);
+	_log(NET__ERROR, "MoveItem SlotType from %u to %u, MainSlot from %u to %u, SubSlot from %u to %u, AugSlot from %u to %u, Unknown01 from %u to %u, Number %u", eq->from_slot.SlotType, eq->to_slot.SlotType, eq->from_slot.MainSlot, eq->to_slot.MainSlot, eq->from_slot.SubSlot, eq->to_slot.SubSlot, eq->from_slot.AugSlot, eq->to_slot.AugSlot, eq->from_slot.Unknown01, eq->to_slot.Unknown01, eq->number_in_stack);
+	emu->from_slot = RoFToTitaniumSlot(eq->from_slot);
+	emu->to_slot = RoFToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
+	_hex(NET__ERROR, eq, sizeof(structs::MoveItem_Struct));
 	FINISH_DIRECT_DECODE();
 }
 
@@ -2948,6 +3780,7 @@ DECODE(OP_ItemLinkClick) {
 	for (r = 0; r < 5; r++) {
 		IN(augments[r]);
 	}
+	// Max Augs is now 6, but no code to support that many yet
 	IN(link_hash);
 	IN(icon);
 	
@@ -2959,6 +3792,7 @@ DECODE(OP_SetServerFilter) {
 	SETUP_DIRECT_DECODE(SetServerFilter_Struct, structs::SetServerFilter_Struct);
 	int r;
 	for(r = 0; r < 29; r++) {
+		// Size 40 in RoF
 		IN(filters[r]);
 	}
 	FINISH_DIRECT_DECODE();
@@ -3013,20 +3847,27 @@ DECODE(OP_ClientUpdate) {
 DECODE(OP_CharacterCreate) {
 	DECODE_LENGTH_EXACT(structs::CharCreate_Struct);
 	SETUP_DIRECT_DECODE(CharCreate_Struct, structs::CharCreate_Struct);
-	IN(class_);
-	IN(beardcolor);
-	IN(beard);
-	IN(hairstyle);
+	
 	IN(gender);
 	IN(race);
+	IN(class_);
+	IN(deity);
 
 	if(RuleB(World, EnableTutorialButton) && eq->tutorial)
 		emu->start_zone = RuleI(World, TutorialZoneID);
 	else
 		emu->start_zone = eq->start_zone;
-		
+	
 	IN(haircolor);
-	IN(deity);
+	IN(beard);
+	IN(beardcolor);
+	IN(hairstyle);
+	IN(face);
+	IN(eyecolor1);
+	IN(eyecolor2);
+	IN(drakkin_heritage);
+	IN(drakkin_tattoo);
+	IN(drakkin_details);
 	IN(STR);
 	IN(STA);
 	IN(AGI);
@@ -3034,12 +3875,7 @@ DECODE(OP_CharacterCreate) {
 	IN(WIS);
 	IN(INT);
 	IN(CHA);
-	IN(face);
-	IN(eyecolor1);
-	IN(eyecolor2);
-	IN(drakkin_heritage);
-	IN(drakkin_tattoo);
-	IN(drakkin_details);
+	//IN(tutorial);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3121,10 +3957,10 @@ DECODE(OP_GroupCancelInvite)
 }
 
 DECODE(OP_Buff) {
-	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct_Underfoot);
-	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Underfoot);
+	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct_Live);
+	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	IN(entityid);
-	IN(slot);
+	//IN(slot);
 	IN(level);
 	IN(effect);
 	IN(spellid);
@@ -3139,7 +3975,8 @@ DECODE(OP_ShopPlayerSell) {
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 
 	IN(npcid);
-	emu->itemslot = UnderfootToTitaniumSlot(eq->itemslot);
+	emu->itemslot = MainInvRoFToTitaniumSlot(eq->itemslot);
+	//IN(itemslot);
 	IN(quantity);
 	IN(price);
 
@@ -3160,20 +3997,6 @@ DECODE(OP_FindPersonRequest) {
 	IN(client_pos.x);
 	IN(client_pos.y);
 	IN(client_pos.z);
-	FINISH_DIRECT_DECODE();
-}
-
-DECODE(OP_WearChange) {
-	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
-	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
-	IN(spawn_id);
-	IN(material);
-	IN(unknown06);
-	IN(elite_material);
-	IN(color.color);
-	IN(wear_slot_id);
-	emu->hero_forge_model = 0;
-	emu->unknown18		  = 0;
 	FINISH_DIRECT_DECODE();
 }
 
@@ -3208,7 +4031,7 @@ DECODE(OP_TributeItem) {
 	DECODE_LENGTH_EXACT(structs::TributeItem_Struct);
 	SETUP_DIRECT_DECODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	emu->slot = UnderfootToTitaniumSlot(eq->slot);
+	emu->slot = RoFToTitaniumSlot(eq->slot);
 	IN(quantity);
 	IN(tribute_master_id);
 	IN(tribute_points);
@@ -3221,7 +4044,7 @@ DECODE(OP_ReadBook) {
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
 	IN(type);
-	emu->invslot = UnderfootToTitaniumSlot(eq->invslot);
+	emu->invslot = 0; // Set to hard 0 since it's not required for the structure to work
 	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 
@@ -3232,7 +4055,24 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = UnderfootToTitaniumSlot(eq->container_slot);
+	sint16 slot_id = RoFToTitaniumSlot(eq->container_slot);
+	if (slot_id == 4000) {
+		slot_id = SLOT_TRADESKILL;	// 1000
+	}
+	emu->container_slot = slot_id;
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_RecipeAutoCombine) {
+	DECODE_LENGTH_EXACT(structs::RecipeAutoCombine_Struct);
+	SETUP_DIRECT_DECODE(RecipeAutoCombine_Struct, structs::RecipeAutoCombine_Struct);
+
+	IN(object_type);
+	IN(some_id);
+	emu->unknown1 = RoFToTitaniumSlot(eq->container_slot);
+	IN(recipe_id);
+	IN(reply_code);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3241,8 +4081,8 @@ DECODE(OP_AugmentItem) {
 	DECODE_LENGTH_EXACT(structs::AugmentItem_Struct);
 	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
 
-	emu->container_slot = UnderfootToTitaniumSlot(eq->container_slot);
-	emu->augment_slot = eq->augment_slot;
+	emu->container_slot = RoFToTitaniumSlot(eq->container_slot);
+	//emu->augment_slot = eq->augment_slot;
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3281,10 +4121,7 @@ DECODE(OP_LoadSpellSet)
 	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
 
 	for(unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
-		if(eq->spell[i]==0)
-			emu->spell[i] = 0xFFFFFFFF;
-		else
-			emu->spell[i] = eq->spell[i];
+		emu->spell[i] = eq->spell[i];
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3311,57 +4148,18 @@ DECODE(OP_EnvDamage) {
 	FINISH_DIRECT_DECODE();
 }
 
-DECODE(OP_PetCommands)
+DECODE(OP_ZoneChange)
 {
-	DECODE_LENGTH_EXACT(structs::PetCommand_Struct);
-	SETUP_DIRECT_DECODE(PetCommand_Struct, structs::PetCommand_Struct);
-
-	switch(eq->command)
-	{
-		case 0x00:
-			emu->command = 0x04;	// Health
-			break;
-		case 0x01:
-			emu->command = 0x10;	// Leader
-			break;
-		case 0x02:
-			emu->command = 0x07;	// Attack
-			break;
-		case 0x04:
-			emu->command = 0x08;	// Follow
-			break;
-		case 0x05:
-			emu->command = 0x05;	// Guard
-			break;
-		case 0x06:
-			emu->command = 0x09;	// Sit. Needs work. This appears to be a toggle between Sit/Stand now.
-			break;
-		case 0x0c:
-			emu->command = 0x0b;	// Taunt
-			break;
-		case 0x0f:
-			emu->command = 0x0c;	// Hold
-			break;
-		case 0x1c:
-			emu->command = 0x01;	// Back
-			break;
-		case 0x1d:
-			emu->command = 0x02;	// Leave/Go Away
-			break;
-		case 0x15:
-			emu->command = 0x12;	// No Cast - /command
-			break;
-		case 0x16:
-			emu->command = 0x12;	// No Cast - Pet Window
-			break;
-		case 0x18:
-			emu->command = 0x13;	// Focus - Pet Window
-			break;
-		default:
-			emu->command = eq->command;
-	}
-	OUT(unknown);
-
+	DECODE_LENGTH_EXACT(structs::ZoneChange_Struct);
+	SETUP_DIRECT_DECODE(ZoneChange_Struct, structs::ZoneChange_Struct);
+	memcpy(emu->char_name, eq->char_name, sizeof(emu->char_name));
+	IN(zoneID);
+	IN(instanceID);
+	IN(y);
+	IN(x);
+	IN(z)
+	IN(zone_reason);
+	IN(success);
 	FINISH_DIRECT_DECODE();
 }
 
@@ -3400,16 +4198,28 @@ DECODE(OP_ChannelMessage)
 	delete [] __eq_buffer;
 }
 
-DECODE(OP_BuffRemoveRequest)
+DECODE(OP_ZoneEntry)
 {
-	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
-	//
-	DECODE_LENGTH_EXACT(structs::BuffRemoveRequest_Struct);
-	SETUP_DIRECT_DECODE(BuffRemoveRequest_Struct, structs::BuffRemoveRequest_Struct);
+	DECODE_LENGTH_EXACT(structs::ClientZoneEntry_Struct);
+	SETUP_DIRECT_DECODE(ClientZoneEntry_Struct, structs::ClientZoneEntry_Struct);
+	memcpy(emu->char_name, eq->char_name, sizeof(emu->char_name));
+	FINISH_DIRECT_DECODE();
+}
 
-	emu->SlotID = (eq->SlotID < 30 ) ? eq->SlotID : (eq->SlotID - 5);
+DECODE(OP_RemoveBlockedBuffs) { DECODE_FORWARD(OP_BlockedBuffs); }
 
-	IN(EntityID);
+DECODE(OP_BlockedBuffs)
+{
+	DECODE_LENGTH_EXACT(structs::BlockedBuffs_Struct);
+	SETUP_DIRECT_DECODE(BlockedBuffs_Struct, structs::BlockedBuffs_Struct);
+
+	for(uint32 i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		emu->SpellID[i] = eq->SpellID[i];
+
+	IN(Count);
+	IN(Pet);
+	IN(Initialise);
+	IN(Flags);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3441,15 +4251,23 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	const Item_Struct *item = inst->GetItem();
 	//_log(NET__ERROR, "Serialize called for: %s", item->Name);
-	Underfoot::structs::ItemSerializationHeader hdr;
+	
+	RoF::structs::ItemSerializationHeader hdr;
+
+	sprintf(hdr.unknown000, "06e0002Y1W00");
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	sint32 slot_id = TitaniumToUnderfootSlot(slot_id_in);
+	structs::ItemSlotStruct slot_id = TitaniumToRoFSlot(slot_id_in);
 
-	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
+	hdr.slot_type = (merchant_slot == 0) ? slot_id.SlotType : 9; // 9 is merchant 20 is reclaim items?
+	hdr.main_slot = (merchant_slot == 0) ? slot_id.MainSlot : merchant_slot;
+	hdr.sub_slot = (merchant_slot == 0) ? slot_id.SubSlot : 0xffff;
+	hdr.unknown013 = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
+	//hdr.unknown013 = 0xffff;
 	hdr.price = inst->GetPrice();
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
+	//hdr.merchant_slot = (merchant_slot == 0) ? 1 : 0xffffffff;
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.unknown028 = 0;
@@ -3463,9 +4281,16 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown060 = 0;
 	hdr.unknown061 = 0;
 	hdr.unknown062 = 0;
+	hdr.unknowna1 = 0xffffffff;
+	hdr.unknowna2 = 0;
+	hdr.unknown063 = 0;
+	hdr.unknowna3 = 0;
+	hdr.unknowna4 = 0xffffffff;
+	hdr.unknowna5 = 0;
 	hdr.ItemClass = item->ItemClass;
 
-	ss.write((const char*)&hdr, sizeof(Underfoot::structs::ItemSerializationHeader));
+	ss.write((const char*)&hdr, sizeof(RoF::structs::ItemSerializationHeader));
+
 
 	if(strlen(item->Name) > 0)
 	{
@@ -3497,8 +4322,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	Underfoot::structs::ItemBodyStruct ibs;
-	memset(&ibs, 0, sizeof(Underfoot::structs::ItemBodyStruct));
+	ss.write((const char*)&null_term, sizeof(uint8));
+	//_log(NET__ERROR, "ItemBody struct is %i bytes", sizeof(RoF::structs::ItemBodyStruct));
+	RoF::structs::ItemBodyStruct ibs;
+	memset(&ibs, 0, sizeof(RoF::structs::ItemBodyStruct));
 
 	uint32 adjusted_slots = item->Slots;
 
@@ -3560,8 +4387,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Races = item->Races;
 	ibs.Deity = item->Deity;
 	ibs.SkillModValue = item->SkillModValue;
-	ibs.unknown5 = 0;
-	ibs.SkillModType = item->SkillModType;
+	ibs.SkillModMax = 0xffffffff;
+	ibs.SkillModType = (sint8)(item->SkillModType);
+	ibs.SkillModExtra = 0;
 	ibs.BaneDmgRace = item->BaneDmgRace;
 	ibs.BaneDmgBody = item->BaneDmgBody;
 	ibs.BaneDmgRaceAmt = item->BaneDmgRaceAmt;
@@ -3580,12 +4408,14 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Range = item->Range;
 	ibs.Damage = item->Damage;
 	ibs.Color = item->Color;
+	ibs.Prestige = 0;
 	ibs.ItemType = item->ItemType;
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
 	ibs.EliteMaterial = item->EliteMaterial;
+	ibs.unknown_RoF3 = 0;
+	ibs.unknown_RoF4 = 0;
 	ibs.SellRate = item->SellRate;
-
 	ibs.CombatEffects = item->CombatEffects;
 	ibs.Shielding = item->Shielding;
 	ibs.StunResist = item->StunResist;
@@ -3604,7 +4434,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.FactionAmt4 = item->FactionAmt4;
 	ibs.FactionMod4 = item->FactionMod4;
 
-	ss.write((const char*)&ibs, sizeof(Underfoot::structs::ItemBodyStruct));
+	ss.write((const char*)&ibs, sizeof(RoF::structs::ItemBodyStruct));
 
 	//charm text
 	if(strlen(item->CharmFile) > 0)
@@ -3617,11 +4447,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	Underfoot::structs::ItemSecondaryBodyStruct isbs;
-	memset(&isbs, 0, sizeof(Underfoot::structs::ItemSecondaryBodyStruct));
+	//_log(NET__ERROR, "ItemBody secondary struct is %i bytes", sizeof(RoF::structs::ItemSecondaryBodyStruct));
+	RoF::structs::ItemSecondaryBodyStruct isbs;
+	memset(&isbs, 0, sizeof(RoF::structs::ItemSecondaryBodyStruct));
 
 	isbs.augtype = item->AugType;
 	isbs.augrestrict = item->AugRestrict;
+	isbs.augdistiller = 0;
 
 	for(int x = 0; x < 5; ++x)
 	{
@@ -3629,6 +4461,11 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		isbs.augslots[x].visible = item->AugSlotVisible[x];
 		isbs.augslots[x].unknown = item->AugSlotUnk2[x];
 	}
+
+	// Increased to 6 max aug slots
+	isbs.augslots[5].type = 0;
+	isbs.augslots[5].visible = 1;
+	isbs.augslots[5].unknown = 0;
 
 	isbs.ldonpoint_type = item->PointType;
 	isbs.ldontheme = item->LDoNTheme;
@@ -3644,7 +4481,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	isbs.book = item->Book;
 	isbs.booktype = item->BookType;
 
-	ss.write((const char*)&isbs, sizeof(Underfoot::structs::ItemSecondaryBodyStruct));
+	ss.write((const char*)&isbs, sizeof(RoF::structs::ItemSecondaryBodyStruct));
 
 	if(strlen(item->Filename) > 0)
 	{
@@ -3656,8 +4493,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	Underfoot::structs::ItemTertiaryBodyStruct itbs;
-	memset(&itbs, 0, sizeof(Underfoot::structs::ItemTertiaryBodyStruct));
+	//_log(NET__ERROR, "ItemBody tertiary struct is %i bytes", sizeof(RoF::structs::ItemTertiaryBodyStruct));
+	RoF::structs::ItemTertiaryBodyStruct itbs;
+	memset(&itbs, 0, sizeof(RoF::structs::ItemTertiaryBodyStruct));
 	
 	itbs.loregroup = item->LoreGroup;
 	itbs.artifact = item->ArtifactFlag;
@@ -3670,7 +4508,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.damage_shield = item->DamageShield;
 	itbs.guildfavor = item->GuildFavor;
 	itbs.augdistil = item->AugDistiller;
+	itbs.unknown3 = 0xffffffff;
+	itbs.unknown4 = 0;
 	itbs.no_pet = item->NoPet;
+	itbs.unknown5 = 0;
 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
@@ -3678,13 +4519,22 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.no_transfer = item->NoTransfer;
 	itbs.expendablearrow = item->ExpendableArrow;
 
-	ss.write((const char*)&itbs, sizeof(Underfoot::structs::ItemTertiaryBodyStruct));
+	itbs.unknown8 = 0;
+	itbs.unknown9 = 0;
+	itbs.unknown10 = 0;
+	itbs.unknown11 = 0;
+	itbs.unknown12 = 0;
+	itbs.unknown13 = 0;
+	itbs.unknown14 = 0;
+
+	ss.write((const char*)&itbs, sizeof(RoF::structs::ItemTertiaryBodyStruct));
 
 	// Effect Structures Broken down to allow variable length strings for effect names
 	sint32 effect_unknown = 0;
 
-	Underfoot::structs::ClickEffectStruct ices;
-	memset(&ices, 0, sizeof(Underfoot::structs::ClickEffectStruct));
+	//_log(NET__ERROR, "ItemBody Click effect struct is %i bytes", sizeof(RoF::structs::ClickEffectStruct));
+	RoF::structs::ClickEffectStruct ices;
+	memset(&ices, 0, sizeof(RoF::structs::ClickEffectStruct));
 
 	ices.effect = item->Click.Effect;
 	ices.level2 = item->Click.Level2;
@@ -3695,7 +4545,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ices.recast = item->RecastDelay;
 	ices.recast_type = item->RecastType;
 
-	ss.write((const char*)&ices, sizeof(Underfoot::structs::ClickEffectStruct));
+	ss.write((const char*)&ices, sizeof(RoF::structs::ClickEffectStruct));
 
 	if(strlen(item->ClickName) > 0)
 	{
@@ -3709,8 +4559,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// clickunk7
 
-	Underfoot::structs::ProcEffectStruct ipes;
-	memset(&ipes, 0, sizeof(Underfoot::structs::ProcEffectStruct));
+	//_log(NET__ERROR, "ItemBody proc effect struct is %i bytes", sizeof(RoF::structs::ProcEffectStruct));
+	RoF::structs::ProcEffectStruct ipes;
+	memset(&ipes, 0, sizeof(RoF::structs::ProcEffectStruct));
 
 	ipes.effect = item->Proc.Effect;
 	ipes.level2 = item->Proc.Level2;
@@ -3718,7 +4569,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ipes.level = item->Proc.Level;
 	ipes.procrate = item->ProcRate;
 
-	ss.write((const char*)&ipes, sizeof(Underfoot::structs::ProcEffectStruct));
+	ss.write((const char*)&ipes, sizeof(RoF::structs::ProcEffectStruct));
 
 	if(strlen(item->ProcName) > 0)
 	{
@@ -3732,15 +4583,16 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown5
 
-	Underfoot::structs::WornEffectStruct iwes;
-	memset(&iwes, 0, sizeof(Underfoot::structs::WornEffectStruct));
+	//_log(NET__ERROR, "ItemBody worn effect struct is %i bytes", sizeof(RoF::structs::WornEffectStruct));
+	RoF::structs::WornEffectStruct iwes;
+	memset(&iwes, 0, sizeof(RoF::structs::WornEffectStruct));
 
 	iwes.effect = item->Worn.Effect;
 	iwes.level2 = item->Worn.Level2;
 	iwes.type = item->Worn.Type;
 	iwes.level = item->Worn.Level;
 
-	ss.write((const char*)&iwes, sizeof(Underfoot::structs::WornEffectStruct));
+	ss.write((const char*)&iwes, sizeof(RoF::structs::WornEffectStruct));
 
 	if(strlen(item->WornName) > 0)
 	{
@@ -3754,15 +4606,15 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 
-	Underfoot::structs::WornEffectStruct ifes;
-	memset(&ifes, 0, sizeof(Underfoot::structs::WornEffectStruct));
+	RoF::structs::WornEffectStruct ifes;
+	memset(&ifes, 0, sizeof(RoF::structs::WornEffectStruct));
 
 	ifes.effect = item->Focus.Effect;
 	ifes.level2 = item->Focus.Level2;
 	ifes.type = item->Focus.Type;
 	ifes.level = item->Focus.Level;
 
-	ss.write((const char*)&ifes, sizeof(Underfoot::structs::WornEffectStruct));
+	ss.write((const char*)&ifes, sizeof(RoF::structs::WornEffectStruct));
 
 	if(strlen(item->FocusName) > 0)
 	{
@@ -3776,15 +4628,15 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 
-	Underfoot::structs::WornEffectStruct ises;
-	memset(&ises, 0, sizeof(Underfoot::structs::WornEffectStruct));
+	RoF::structs::WornEffectStruct ises;
+	memset(&ises, 0, sizeof(RoF::structs::WornEffectStruct));
 
 	ises.effect = item->Scroll.Effect;
 	ises.level2 = item->Scroll.Level2;
 	ises.type = item->Scroll.Type;
 	ises.level = item->Scroll.Level;
 
-	ss.write((const char*)&ises, sizeof(Underfoot::structs::WornEffectStruct));
+	ss.write((const char*)&ises, sizeof(RoF::structs::WornEffectStruct));
 
 	if(strlen(item->ScrollName) > 0)
 	{
@@ -3799,16 +4651,16 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 
 	// Bard Effect?
-	Underfoot::structs::WornEffectStruct ibes;
-	memset(&ibes, 0, sizeof(Underfoot::structs::WornEffectStruct));
+	RoF::structs::WornEffectStruct ibes;
+	memset(&ibes, 0, sizeof(RoF::structs::WornEffectStruct));
 
-	ibes.effect = item->Bard.Effect;
-	ibes.level2 = item->Bard.Level2;
-	ibes.type = item->Bard.Type;
-	ibes.level = item->Bard.Level;
+	ibes.effect = 0xffffffff;
+	ibes.level2 = 0;
+	ibes.type = 0;
+	ibes.level = 0;
 	//ibes.unknown6 = 0xffffffff;
 
-	ss.write((const char*)&ibes, sizeof(Underfoot::structs::WornEffectStruct));
+	ss.write((const char*)&ibes, sizeof(RoF::structs::WornEffectStruct));
 
 	/*
 	if(strlen(item->BardName) > 0)
@@ -3822,14 +4674,15 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 	// End of Effects
 
-	Underfoot::structs::ItemQuaternaryBodyStruct iqbs;
-	memset(&iqbs, 0, sizeof(Underfoot::structs::ItemQuaternaryBodyStruct));
+	//_log(NET__ERROR, "ItemBody Quaternary effect struct is %i bytes", sizeof(RoF::structs::ItemQuaternaryBodyStruct));
+	RoF::structs::ItemQuaternaryBodyStruct iqbs;
+	memset(&iqbs, 0, sizeof(RoF::structs::ItemQuaternaryBodyStruct));
 
 	iqbs.scriptfileid = item->ScriptFileID;
 	iqbs.quest_item = item->QuestItemFlag;
-	iqbs.unknown15 = 0;
-
+	iqbs.Power = 0;
 	iqbs.Purity = item->Purity;
+	iqbs.unknown16 = 0;
 	iqbs.BackstabDmg = item->BackstabDmg;
 	iqbs.DSMitigation = item->DSMitigation;
 	iqbs.HeroicStr = item->HeroicStr;
@@ -3848,6 +4701,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	iqbs.HealAmt = item->HealAmt;
 	iqbs.SpellDmg = item->SpellDmg;
 	iqbs.clairvoyance = item->Clairvoyance;
+	iqbs.unknown28 = 0;
+	iqbs.unknown30 = 0;
+	iqbs.unknown39 = 1;
 
 	iqbs.subitem_count = 0;
 
@@ -3880,7 +4736,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		}
 	}
 
-	ss.write((const char*)&iqbs, sizeof(Underfoot::structs::ItemQuaternaryBodyStruct));
+	ss.write((const char*)&iqbs, sizeof(RoF::structs::ItemQuaternaryBodyStruct));
 
 	for(int x = 0; x < 10; ++x) {
 
@@ -3902,24 +4758,4 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	return item_serial;
 }
 
-DECODE(OP_AltCurrencySellSelection) 
-{
-    DECODE_LENGTH_EXACT(structs::AltCurrencySelectItem_Struct);
-	SETUP_DIRECT_DECODE(AltCurrencySelectItem_Struct, structs::AltCurrencySelectItem_Struct);
-    IN(merchant_entity_id);
-    emu->slot_id = UnderfootToTitaniumSlot(eq->slot_id);
-    FINISH_DIRECT_DECODE();
-}
-
-DECODE(OP_AltCurrencySell) 
-{
-    DECODE_LENGTH_EXACT(structs::AltCurrencySellItem_Struct);
-	SETUP_DIRECT_DECODE(AltCurrencySellItem_Struct, structs::AltCurrencySellItem_Struct);
-    IN(merchant_entity_id);
-    emu->slot_id = UnderfootToTitaniumSlot(eq->slot_id);
-    IN(charges);
-    IN(cost);
-    FINISH_DIRECT_DECODE();
-}
-
-} //end namespace Underfoot
+} //end namespace RoF

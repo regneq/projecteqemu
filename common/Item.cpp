@@ -1503,6 +1503,17 @@ uint8 ItemInst::FirstOpenSlot() const
 	return (i<slots) ? i : 0xff;
 }
 
+uint8 ItemInst::GetTotalItemCount() const
+{
+	uint8 item_count = 1;
+
+	if(m_item->ItemClass != ItemClassContainer) { return item_count; }
+
+	for(int idx = 0; idx < m_item->BagSlots; idx++) { if(GetItem(idx)) { item_count++; } }
+
+	return item_count;
+}
+
 bool ItemInst::IsNoneEmptyContainer()
 {
 	if(m_item->ItemClass != ItemClassContainer)

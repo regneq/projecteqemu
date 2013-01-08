@@ -105,7 +105,7 @@ void Trap::Trigger(Mob* trigger)
 	switch (effect)
 	{
 		case trapTypeDebuff:
-			if(!message[0])
+			if(message.empty())
 			{
 				entity_list.MessageClose(trigger,false,100,13,"%s triggers a trap!",trigger->GetName());
 			}
@@ -118,7 +118,7 @@ void Trap::Trigger(Mob* trigger)
 			}
 			break;
 		case trapTypeAlarm:
-			if (!message[0])
+			if (message.empty())
 			{
 				entity_list.MessageClose(trigger,false,effectvalue,13,"A loud alarm rings out through the air...");
 			}
@@ -130,7 +130,7 @@ void Trap::Trigger(Mob* trigger)
 			entity_list.SendAlarm(this,trigger,effectvalue);			
 			break;
 		case trapTypeMysticSpawn:
-			if (!message[0])
+			if (message.empty())
 			{
 				entity_list.MessageClose(trigger,false,100,13,"The air shimmers...");
 			}
@@ -151,7 +151,7 @@ void Trap::Trigger(Mob* trigger)
 			}
 			break;
 		case trapTypeBanditSpawn:
-			if (!message[0])
+			if (message.empty())
 			{
 				entity_list.MessageClose(trigger,false,100,13,"A bandit leaps out from behind a tree!");
 			}
@@ -172,7 +172,7 @@ void Trap::Trigger(Mob* trigger)
 			}
 			break;
 		case trapTypeDamage:
-			if (!message[0])
+			if (message.empty())
 			{
 				entity_list.MessageClose(trigger,false,100,13,"%s triggers a trap!",trigger->GetName());
 			}

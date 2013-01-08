@@ -1529,7 +1529,7 @@ void Merc::AI_Process() {
 				else {
 					for(int counter = 0; counter < g->GroupCount(); counter++) {
 						if(g->members[counter]) {
-							if(g->members[counter]->GetTarget()) {
+							if(g->members[counter]->GetTarget() && g->members[counter]->GetTarget()->IsNPC() && g->members[counter]->GetTarget()->GetHateAmount(MercOwner)) {
 								float range = g->HasRole(g->members[counter], RolePuller) ? RuleI(Mercs, AggroRadiusPuller) : RuleI(Mercs, AggroRadius);
 								range = range * range;
 								if(g->members[counter]->GetTarget()->DistNoRootNoZ(*this) < range) {
@@ -2247,6 +2247,9 @@ void Merc::UpdateMercAppearance(Client *c) {
 }
 
 bool Merc::Spawn(Client *owner) {
+	if(!RuleB(Mercs, AllowMercs))
+		return false;
+	
 	if(!owner)
 		return false;
 
@@ -2358,6 +2361,9 @@ void Merc::ProcessClientZoneChange(Client* mercOwner) {
 
 void Client::SpawnMercOnZone()
 {
+	if(!RuleB(Mercs, AllowMercs))
+		return;
+
 	bool ExistsMerc = GetEPP().mercTemplateID != 0;
 	if(ExistsMerc == true)
 	{
