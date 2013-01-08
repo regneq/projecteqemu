@@ -181,8 +181,12 @@
 #define ServerOP_CZMessagePlayer 0x4008
 #define ServerOP_ReloadWorld 0x4009
 
-#define ServerOP_QSPlayerTradeLog 0x4010
-#define ServerOP_QSPlayerLogNPCKills 0x4012
+#define ServerOP_QSPlayerLogTrades		   0x4010
+#define ServerOP_QSPlayerLogHandins		   0x4011
+#define ServerOP_QSPlayerLogNPCKills	   0x4012
+#define ServerOP_QSPlayerLogDeletes		   0x4013
+#define ServerOP_QSPlayerLogMoves		   0x4014
+#define ServerOP_QSMerchantLogTransactions 0x4015
 
 enum { QSG_LFGuild = 0 };
 enum {	QSG_LFGuild_PlayerMatches = 0, QSG_LFGuild_UpdatePlayerInfo, QSG_LFGuild_RequestPlayerInfo, QSG_LFGuild_UpdateGuildInfo, QSG_LFGuild_GuildMatches,
@@ -1093,7 +1097,7 @@ struct CZClientSignalByName_Struct {
 	int32 data;
 };
 
-struct QSItemTrade_Struct {
+struct QSTradeItems_Struct {
 	int32 from_id;
 	int16 from_slot;
 	int32 to_id;
@@ -1107,14 +1111,37 @@ struct QSItemTrade_Struct {
 	int32 aug_5;
 };
 
-struct QSPlayerTradeLog_Struct {
-	int32			   char1_id;
-	MoneyUpdate_Struct char1_money;
-	int16			   char1_count;
-	int32			   char2_id;
-	MoneyUpdate_Struct char2_money;
-	int16			   char2_count;
-	QSItemTrade_Struct trade_items[0];
+struct QSPlayerLogTrade_Struct {
+	int32				char1_id;
+	MoneyUpdate_Struct  char1_money;
+	int16				char1_count;
+	int32				char2_id;
+	MoneyUpdate_Struct	char2_money;
+	int16				char2_count;
+	QSTradeItems_Struct items[0];
+};
+
+struct QSHandinItems_Struct {
+	char action_type[6]; // handin, return or reward
+	int16 char_slot;
+	int32 item_id;
+	int16 charges;
+	int32 aug_1;
+	int32 aug_2;
+	int32 aug_3;
+	int32 aug_4;
+	int32 aug_5;
+};
+
+struct QSPlayerLogHandin_Struct {
+	int32				 quest_id;
+	int32				 char_id;
+	MoneyUpdate_Struct	 char_money;
+	int16				 char_count;
+	int32				 npc_id;
+	MoneyUpdate_Struct	 npc_money;
+	int16				 npc_count;
+	QSHandinItems_Struct items[0];
 };
 
 struct QSPlayerLogNPCKillSub_Struct{
@@ -1130,6 +1157,68 @@ struct QSPlayerLogNPCKillsPlayers_Struct{
 struct QSPlayerLogNPCKill_Struct{
 	QSPlayerLogNPCKillSub_Struct s1;
 	QSPlayerLogNPCKillsPlayers_Struct Chars[0];
+};
+
+struct QSDeleteItems_Struct {
+	int16 char_slot;
+	int32 item_id;
+	int16 charges;
+	int32 aug_1;
+	int32 aug_2;
+	int32 aug_3;
+	int32 aug_4;
+	int32 aug_5;
+};
+
+struct QSPlayerLogDelete_Struct {
+	int32				 char_id;
+	int16				 stack_size; // '0' indicates full stack or non-stackable item move
+	int16				 char_count;
+	QSDeleteItems_Struct items[0];
+};
+
+struct QSMoveItems_Struct {
+	int16 from_slot;
+	int16 to_slot;
+	int32 item_id;
+	int16 charges;
+	int32 aug_1;
+	int32 aug_2;
+	int32 aug_3;
+	int32 aug_4;
+	int32 aug_5;
+};
+
+struct QSPlayerLogMove_Struct {
+	int32			   char_id;
+	int16			   from_slot;
+	int16			   to_slot;
+	int16			   stack_size; // '0' indicates full stack or non-stackable item move
+	int16			   char_count;
+	bool			   postaction;
+	QSMoveItems_Struct items[0];
+};
+
+struct QSTransactionItems_Struct {
+	int16 char_slot;
+	int32 item_id;
+	int16 charges;
+	int32 aug_1;
+	int32 aug_2;
+	int32 aug_3;
+	int32 aug_4;
+	int32 aug_5;
+};
+
+struct QSMerchantLogTransaction_Struct {
+	int32					  zone_id;
+	int32					  merchant_id;
+	MoneyUpdate_Struct		  merchant_money;
+	int16					  merchant_count;
+	int32					  char_id;
+	MoneyUpdate_Struct		  char_money;
+	int16					  char_count;
+	QSTransactionItems_Struct items[0];
 };
 
 struct CZMessagePlayer_Struct {

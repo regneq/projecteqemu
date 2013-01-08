@@ -1123,9 +1123,11 @@ struct WearChange_Struct{
 /*002*/ int32 material;
 /*006*/ uint32 unknown06;
 /*010*/ uint32 elite_material;	// 1 for Drakkin Elite Material
-/*014*/ Color_Struct color;
-/*018*/ int8 wear_slot_id;
-/*019*/
+/*014*/ int32 hero_forge_model; // New to VoA
+/*018*/ int32 unknown18; // New to RoF
+/*022*/ Color_Struct color;
+/*026*/ int8 wear_slot_id;
+/*027*/
 };
 
 /*
@@ -4807,6 +4809,16 @@ struct Membership_Details_Struct
 /*1048*/ //char exit_url[42];		// Upgrade to Silver or Gold Membership URL
 /*1048*/ uint32 exit_url_length2;	// Length of the exit_url2 string (0 for none)
 /*0000*/ //char exit_url2[49];		// Upgrade to Gold Membership URL
+};
+
+struct ItemPreview_Struct
+{
+/*000*/	int32	itemid;
+/*004*/	int32	unknown004[3];
+/*016*/	int32	slot;
+/*020*/	int32	unknown020;
+/*024*/	int16	slot2;
+/*026*/	int8	unknown026[54];
 };
 
 //old structures live here:

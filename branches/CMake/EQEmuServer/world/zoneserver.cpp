@@ -1267,9 +1267,32 @@ bool ZoneServer::Process() {
 
 		case ServerOP_QueryServGeneric:
 		case ServerOP_Speech:
-//		case ServerOP_QSPlayerMoneyTradeLog:
-		case ServerOP_QSPlayerTradeLog:
+		case ServerOP_QSPlayerLogTrades:
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
+		case ServerOP_QSPlayerLogHandins:
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
 		case ServerOP_QSPlayerLogNPCKills:
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
+		case ServerOP_QSPlayerLogDeletes:
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
+		case ServerOP_QSPlayerLogMoves:
+		{
+			QSLink.SendPacket(pack);
+			break;
+		}
+		case ServerOP_QSMerchantLogTransactions:
 		{
 			QSLink.SendPacket(pack);
 			break;

@@ -1037,13 +1037,35 @@ void command_wc(Client *c, const Seperator *sep)
 {
 	if(sep->argnum < 2)
 	{
-		c->Message(0, "Usage: #wc [wear slot] [material]");
+		c->Message(0, "Usage: #wc [wear slot] [material] [ [hero_forge_model] [elite_material] [unknown06] [unknown18] ]");
 	}
 	else if(c->GetTarget() == NULL) {
 		c->Message(13, "You must have a target to do a wear change.");
 	}
 	else
 	{
+		uint32 hero_forge_model = 0;
+		uint32 wearslot = atoi(sep->arg[1]);
+
+		if (sep->argnum > 2)
+		{
+			hero_forge_model = atoi(sep->arg[3]);
+			if (hero_forge_model > 0)
+			{
+				// Conversion to simplify the command arguments
+				// Hero's Forge model is actually model * 1000 + texture * 100 + wearslot
+				hero_forge_model *= 1000;
+				hero_forge_model += (atoi(sep->arg[2]) * 100);
+				hero_forge_model += wearslot;
+
+				// For Hero's Forge, slot 7 is actually for Robes, but it still needs to use slot 1 in the packet
+				if (wearslot == 7)
+				{
+					wearslot = 1;
+				}
+			}
+			
+		}
 		/*
 		// Leaving here to add color option to the #wc command eventually
 		int32 Color;
@@ -1052,7 +1074,7 @@ void command_wc(Client *c, const Seperator *sep)
 		else
 			Color = c->GetTarget()->GetArmorTint(atoi(sep->arg[1]));
 		*/
-		c->GetTarget()->SendTextureWC(atoi(sep->arg[1]), atoi(sep->arg[2]));
+		c->GetTarget()->SendTextureWC(wearslot, atoi(sep->arg[2]), hero_forge_model, atoi(sep->arg[4]), atoi(sep->arg[5]), atoi(sep->arg[6]));
 	}
 }
 
@@ -2750,13 +2772,13 @@ void command_race(Client *c, const Seperator *sep)
   Mob *t=c->CastToMob();
 
 	// @merth: Need to figure out max race for LoY/LDoN: going with upper bound of 500 now for testing
-	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 714) {
+	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 724) {
 		if ((c->GetTarget()) && c->Admin() >= commandRaceOthers)
 			t=c->GetTarget();
 		t->SendIllusionPacket(atoi(sep->arg[1]));
 	}
 	else
-		c->Message(0, "Usage: #race [0-714]  (0 for back to normal)");
+		c->Message(0, "Usage: #race [0-724]  (0 for back to normal)");
 }
 
 void command_gender(Client *c, const Seperator *sep)
@@ -4864,7 +4886,7 @@ void command_iteminfo(Client *c, const Seperator *sep)
 			c->Message(0, "  equipableSlots: %u equipable Classes: %u", item->Slots, item->Classes);
 			c->Message(0, "  Magic: %i  SpellID: %i  Proc Level: %i DBCharges: %i  CurCharges: %i", item->Magic, item->Click.Effect, item->Click.Level, item->MaxCharges, inst->GetCharges());
 			c->Message(0, "  EffectType: 0x%02x  CastTime: %.2f", (int8) item->Click.Type, (double) item->CastTime/1000);
-			c->Message(0, "  Material: 0x02%x  Color: 0x%08x  Skill: %i", item->Material, item->Color, item->ItemType);
+			c->Message(0, "  Material: 0x%02x  Color: 0x%08x  Skill: %i", item->Material, item->Color, item->ItemType);
 			c->Message(0, " Required level: %i Required skill: %i Recommended level:%i", item->ReqLevel,  item->RecSkill, item->RecLevel);
 			c->Message(0, " Skill mod: %i percent: %i", item->SkillModType, item->SkillModValue);
 			c->Message(0, " BaneRace: %i BaneBody: %i BaneDMG: %i", item->BaneDmgRace, item->BaneDmgBody, item->BaneDmgAmt);

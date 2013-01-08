@@ -1,8 +1,86 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/07/2013 ==
+Trevius: RoF: /who and /who all now function properly.
+Trevius: RoF: Adjusted/corrected some of the slot conversion functions.
+
+== 01/06/2013 ==
+Kayen: Fix for missing and incorrect Healing Adept AA values.
+Trevius: RoF: Possible crash fix for logging in on some server builds.
+Trevius: RoF: Added VoA to the #cvs command output.
+Derision: RoF: Short buffs should appear in the song/short buff box.
+Lerxst/Hateborne: Updated Mob::TryDivineSave to allow someone to be saved even if there are no additional effects to be cast and rearranged the buff fading so the spell effect isn't lost before it can be cast.
+
+REQUIRED SQL: utils/sql/svn/2370_required_aa_updates.sql
+
+== 01/05/2013 ==
+Trevius: RoF: Tradeskill combines (auto-combine and experiment) are now functional.
+Trevius: RoF: The Popup Message window is now functional.
+Trevius: RoF: Increased the max race id for #race to 724 (the max for RoF).
+Trevius: RoF: Corrected the opcode for Augmenting Items and adjusted the struct, but it looks like it may require considerable work to implement the new augment system.
+Akkadius: Trap Zone Crash issue where message is empty
+Akkadius: Fixed a warning regarding AC
+Vaion: RoF: Books now work properly.
+
+== 01/04/2013 ==
+Trevius: RoF: Looting items and loot all are now functional.
+Trevius: RoF: Trading to NPCs and Players is now functional.
+Trevius: RoF: AA Purchases are now functional.
+Trevius: RoF: Opening Tradeskill Objects is now possible.
+Trevius: RoF: Moving items into Tradeskill Objects is now possible, but combines will bug the client.
+Uleat: QS: Added 4 additional logging options [MerchantLogTransactions], [PlayerLogDeletes], [PlayerLogHandins], [PlayerLogMoves]
+Uleat: QS: PlayerLogHandins is partially enabled..currently logs NPCtypeID and Client-side trade information only.
+Uleat: QS: Renamed 1 existing source files to maintain logging name continuity [PlayerLogTrades].
+Uleat: Fixed minor issue that was causing armor glitches with RoF clients from UF and lower clients.
+Uleat: Fixed minor bug in the #iteminfo command where the material value reported 0x20xx.
+
+REQUIRED SQL: utils/sql/svn/2361_required_qs_rule_values.sql
+REQUIRED SQL: utils/sql/queryserv/2361_QueryServ.sql
+REQUIRED SQL: utils/sql/queryserv/2304_QueryServ.sql (rename '2304_qs_playertradelog.sql' - Does not need to be re-sourced)
+
+== 01/03/2013 ==
+Trevius: RoF: Fixed slot conversion issues for Bank and Shared Bank
+Trevius: RoF: Normal Merchants are now fully functional for buy/sell
+Trevius: RoF: Item Links now display item stats when clicked, but the links are still truncated.
+Trevius: RoF: Corrected the Illusion Struct and corrected some opcodes.
+Trevius: RoF: Updated the DeleteSpawn struct and added an encode for it.
+Trevius: RoF: Hopefully fixed Consuming food/drink.
+
+== 01/02/2013 ==
+Vaion: RoF: Crash prevention for Item Preview window.
+Trevius: RoF: Finished identifying basically all of the remaining RoF opcodes.
+Akkadius: Fix for Guild Crash again...
+
+==01/01/2013==
+Uleat: Fixed the wear change issue where the server was not translating the SoF, SoD and UF clients' update request properly.
+Uleat: Fixed the non-clickable quest reward bug triggered when the item was in a container and the player traded the item or zoned.
+Vaion: RoF: Found Opcode for Item Previews.  Made base packet support so that Item Preview (Alt+Right Click) works.  Still a few issues to hash out.
+
+==12/31/2012==
+Derision: RoF: Added encode/decode for BlockedBuffs and OP_FindPerson. Added opcodes for FindPerson and RestState
+Derision: RoF: Found XP/AAXP in the PP. Updated OP_ExpUpdate/OP_LevelUpdate.
+
+==12/30/2012==
+Derision: RoF: Did some work on buffs & buff removal. OP_SetChatServer2 for UCS. Encode for OP_HPUpdate
+
+==12/29/2012==
+Derision: RoF: Added Leadership AA into the PP. Few opcodes to make Track work.
+Derision: RoF: Some spell related opcodes and PetCommands struct update.
+Vaion: RoF: Fixed OP_PetCommands and OP_TargetCommand to correct opcodes.  Identified OP_Jump.
+Vaion: Fix for an issue with attuneable augments and an issue in guild bank.
+Sorvani: Fix for pets causing a crash. Do not set rule > 25!
+Trevius: RoF: Corrected wearchange packet structure.
+Trevius: RoF: Added new arguments to #wc ( #wc [wear slot] [material] [ [hero_forge_model] [elite_material] ] ) - Example: "#wc 1 5 6"
+Trevius: RoF: Hero's Forge Robes can now be used with #wc by using wear slot 7 - Example: "#wc 7 6 11"
+Akkadius: Guild Bank crash fix, checking for valid items before going through the iterator
+
+REQUIRED SQL: utils/sql/queryserv/2340_required_maxbuffslotspet.sql
+
 ==12/28/2012==
 Derision: RoF: Found GM and PVP flags in PP.
 Derision: RoF: Found endurance & some group/raid leadership stuff in PP.
+Sorvani: Restricted pet buffs to 25. could be made a rule when/if the extpp gets changed to handle it.
+Sorvani: Changed a few more VS2010 projects to build as $ProjectName
 
 ==12/27/2012==
 Sorvani: Removed #PRAGMA statements around OP_CharacterCreate from patch files now that real problem with RuleI is resolved.
@@ -25,7 +103,6 @@ Trevius: RoF - Added back all of the opcodes that were previously identified and
 Derision: RoF - Commented out lots of Guild opcodes that were causing crashes.
 Derision: RoF - Updated RequestClientZoneChange struct and encode. Altered default Bitfields setting to only apply tyo NPCs
 Derision: RoF - Updated RoF.cpp to remove all the warnings in a Linux compile
-
 
 ==12/22/2012==
 Secrets: Fixed the x64 portability issue reported by Akkadius. No idea how long this has been broke but at least it's fixed.

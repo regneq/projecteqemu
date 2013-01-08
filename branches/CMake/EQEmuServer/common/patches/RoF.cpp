@@ -103,152 +103,12 @@ std::string Strategy::Describe() const {
 
 #include "SSDefine.h"
 
-
-// Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
-static inline structs::RoFSlotStruct TitaniumToRoFSlot2(int32 TitaniumSlot)
-{
-	structs::RoFSlotStruct RoFSlot;
-
-	// Power Source
-	if(TitaniumSlot == 9999)
-	{
-		RoFSlot.Bank = 0;
-		RoFSlot.MainSlot = 21;
-		RoFSlot.SubSlot = 0xffff;
-
-		return RoFSlot;
-	}
-
-	// Ammo
-	if(TitaniumSlot == 21)
-	{
-		RoFSlot.Bank = 0;
-		RoFSlot.MainSlot = 22;
-		RoFSlot.SubSlot = 0xffff;
-
-		return RoFSlot;
-	}
-
-	if((TitaniumSlot >= 22) && (TitaniumSlot <= 29))
-	{
-		RoFSlot.Bank = 0;
-		RoFSlot.SubSlot = 0xffff;
-		switch(TitaniumSlot)
-		{
-			case 22:
-				RoFSlot.MainSlot = 23;
-				break;
-			case 23:
-				RoFSlot.MainSlot = 25;
-				break;
-			case 24:
-				RoFSlot.MainSlot = 27;
-				break;
-			case 25:
-				RoFSlot.MainSlot = 29;
-				break;
-			case 26:
-				RoFSlot.MainSlot = 24;
-				break;
-			case 27:
-				RoFSlot.MainSlot = 26;
-				break;
-			case 28:
-				RoFSlot.MainSlot = 28;
-				break;
-			case 29:
-				RoFSlot.MainSlot = 30;
-				break;
-
-			default:	// Shouldn't get here
-				RoFSlot.MainSlot = TitaniumSlot;
-		}
-		//_log(NET__ERROR, "Main Inv TitaniumSlot is %i, RoFSlot is %i, %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot);
-		return RoFSlot;
-	}
-
-	if((TitaniumSlot >= 2000) && (TitaniumSlot <= 2023))
-	{
-		RoFSlot.Bank = 1;
-		RoFSlot.MainSlot = TitaniumSlot - 2000;
-		RoFSlot.SubSlot = 0xffff;
-
-		return RoFSlot;
-	}
-
-	if((TitaniumSlot >= 2031) && (TitaniumSlot <= 2270))
-	{
-		RoFSlot.Bank = 1;
-		RoFSlot.MainSlot = (TitaniumSlot - 2031) / 10;
-		RoFSlot.SubSlot = (TitaniumSlot - 2031) - (RoFSlot.MainSlot * 10);
-		//_log(NET__ERROR, "Converted bank bag slot %i to %i, %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot);
-
-		return RoFSlot;
-	}
-
-	RoFSlot.Bank = 0;
-
-	if(TitaniumSlot == 30)
-	{
-		RoFSlot.MainSlot = 33;
-		RoFSlot.SubSlot = 0xffff;
-	}
-	else if((TitaniumSlot >= 251) && (TitaniumSlot <= 260))
-	{
-		RoFSlot.MainSlot = 23;
-		RoFSlot.SubSlot = TitaniumSlot - 251;
-	}
-	else if((TitaniumSlot >= 261) && (TitaniumSlot <= 270))
-	{
-		RoFSlot.MainSlot = 24;
-		RoFSlot.SubSlot = TitaniumSlot - 261;
-	}
-	else if((TitaniumSlot >= 271) && (TitaniumSlot <= 280))
-	{
-		RoFSlot.MainSlot = 25;
-		RoFSlot.SubSlot = TitaniumSlot - 271;
-	}
-	else if((TitaniumSlot >= 281) && (TitaniumSlot <= 290))
-	{
-		RoFSlot.MainSlot = 26;
-		RoFSlot.SubSlot = TitaniumSlot - 281;
-	}
-	else if((TitaniumSlot >= 291) && (TitaniumSlot <= 300))
-	{
-		RoFSlot.MainSlot = 27;
-		RoFSlot.SubSlot = TitaniumSlot - 291;
-	}
-	else if((TitaniumSlot >= 301) && (TitaniumSlot <= 310))
-	{
-		RoFSlot.MainSlot = 28;
-		RoFSlot.SubSlot = TitaniumSlot - 301;
-	}
-	else if((TitaniumSlot >= 311) && (TitaniumSlot <= 320))
-	{
-		RoFSlot.MainSlot = 29;
-		RoFSlot.SubSlot = TitaniumSlot - 311;
-	}
-	else if((TitaniumSlot >= 321) && (TitaniumSlot <= 330))
-	{
-		RoFSlot.MainSlot = 30;
-		RoFSlot.SubSlot = TitaniumSlot - 321;
-	}
-	else
-	{
-		RoFSlot.MainSlot = TitaniumSlot;
-		RoFSlot.SubSlot = 0xffff;
-	}
-
-	//_log(NET__ERROR, "HotSlot is %i, RoFSlot is %i, %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot);
-
-	return RoFSlot;
-}
-
 // Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
 static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 {
 	structs::ItemSlotStruct RoFSlot;
 	RoFSlot.SlotType = 0xffff;
+	RoFSlot.Unknown02 = 0;
 	RoFSlot.MainSlot = 0xffff;
 	RoFSlot.SubSlot = 0xffff;
 	RoFSlot.AugSlot = 0xffff;
@@ -276,8 +136,12 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	{
 		RoFSlot.SlotType = 0;
 		TempSlot = TitaniumSlot - 1;
-		RoFSlot.MainSlot = int(TempSlot / 10) - 2;
-		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 2) * 10);
+		RoFSlot.MainSlot = int(TempSlot / 10) - 3;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
+		if (RoFSlot.MainSlot > 29)
+		{
+			RoFSlot.MainSlot == 33;
+		}
 	}
 	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
 	{
@@ -301,6 +165,32 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 			RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
 		}
 	}
+	else if (TitaniumSlot > 2999 && TitaniumSlot < 3180)
+	{
+		RoFSlot.SlotType = 3;
+		TempSlot = TitaniumSlot - 3000;
+		RoFSlot.MainSlot = TempSlot;
+		if (TempSlot > 99)
+		{
+			if (TempSlot > 100)
+			{
+				RoFSlot.MainSlot = int((TempSlot - 100) / 10);
+			}
+			else
+			{
+				RoFSlot.MainSlot = 0;
+			}
+			RoFSlot.SubSlot = TempSlot - (100 + RoFSlot.MainSlot);
+		}
+	}
+	else if (TitaniumSlot > 3999 && TitaniumSlot < 4009)
+	{
+		RoFSlot.SlotType = 4;
+		TempSlot = TitaniumSlot - 4000;
+		RoFSlot.MainSlot = TempSlot;
+	}
+
+	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
 
 	return RoFSlot;
 }
@@ -310,13 +200,102 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 	int32 TitaniumSlot = 0xffffffff;
 	int32 TempSlot = 0;
 
-	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 33)	// Worn and Personal Inventory
+	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 51)	// Worn/Personal Inventory and Cursor
+	{
+		if (RoFSlot.MainSlot == 21)			// Power Source
+		{
+			TempSlot = 9999;
+		}
+		else if (RoFSlot.MainSlot >= 33 && RoFSlot.MainSlot < 51)	// Cursor
+		{
+			TempSlot = RoFSlot.MainSlot - 3;
+		}
+		else if (RoFSlot.MainSlot >= 22)	// Ammo and Main Inventory
+		{
+			TempSlot = RoFSlot.MainSlot - 1;
+		}
+		else								// Worn Slots
+		{
+			TempSlot = RoFSlot.MainSlot;
+		}
+
+		if (RoFSlot.SubSlot >= 0)			// Bag Slots
+		{
+			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+
+		TitaniumSlot = TempSlot;
+	}
+	else if (RoFSlot.SlotType == 1)		// Bank Slots
+	{
+		TempSlot = 2000;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += ((RoFSlot.MainSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
+	else if (RoFSlot.SlotType == 2)		// Shared Bank Slots
+	{
+		TempSlot = 2500;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += ((RoFSlot.MainSlot + 3) * 10) + RoFSlot.SubSlot + 1;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
+	else if (RoFSlot.SlotType == 3)		// Trade Slots
+	{
+		TempSlot = 3000;
+		if (RoFSlot.SubSlot >= 0)
+		{
+			TempSlot += 100 + (RoFSlot.MainSlot * 10) + RoFSlot.SubSlot;
+		}
+		else
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
+	else if (RoFSlot.SlotType == 4)		// Tradeskill Container Slots
+	{
+		TempSlot = 4000;
+		if (RoFSlot.MainSlot >= 0)
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
+
+	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
+
+	return TitaniumSlot;
+}
+
+static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFSlot)
+{
+	int32 TitaniumSlot = 0xffffffff;
+	int32 TempSlot = 0;
+
+	if (RoFSlot.MainSlot < 33)				// Worn/Personal Inventory and Cursor
 	{
 		if (RoFSlot.MainSlot == 21)
 		{
 			TempSlot = 9999;
 		}
-		else if (RoFSlot.MainSlot >= 22)
+		else if (RoFSlot.MainSlot == 33)	// Cursor
+		{
+			TempSlot = 30;
+		}
+		else if (RoFSlot.MainSlot >= 22)	// Main Inventory Slots
 		{
 			TempSlot = RoFSlot.MainSlot - 1;
 		}
@@ -325,76 +304,60 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 			TempSlot = RoFSlot.MainSlot;
 		}
 
-		if (RoFSlot.SubSlot >= 0)
+		if (RoFSlot.SubSlot >= 0)			// Bag Slots
 		{
 			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
 		}
 
 		TitaniumSlot = TempSlot;
 	}
-	else if (RoFSlot.MainSlot == 33)	// Cursor
-	{
-		TempSlot = 30;
-		if (RoFSlot.SubSlot >= 0)
-		{
-			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
-		}
-		TitaniumSlot = TempSlot;
-	}
-	else if (RoFSlot.SlotType == 1)		// Bank Slots
-	{
-		TempSlot = RoFSlot.MainSlot + 2000;
-		if (RoFSlot.SubSlot >= 0)
-		{
-			TempSlot = TempSlot + 30 + RoFSlot.SubSlot + 1;
-		}
-		TitaniumSlot = TempSlot;
-	}
-	else if (RoFSlot.SlotType == 2)		// Shared Bank Slots
-	{
-		TempSlot = RoFSlot.MainSlot + 2500;
-		if (RoFSlot.SubSlot >= 0)
-		{
-			TempSlot = TempSlot + 30 + RoFSlot.SubSlot + 1;
-		}
-		TitaniumSlot = TempSlot;
-	}
+
+	_log(NET__ERROR, "Convert RoF Slots: Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
 	return TitaniumSlot;
 }
 
-// Converts RoF Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 RoFToTitaniumSlot2(int32 RoFSlot) {
-	int32 TitaniumSlot = 0;
-	
-	if(RoFSlot >= 22 && RoFSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+// Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
+static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 TitaniumSlot)
+{
+	structs::MainInvItemSlotStruct RoFSlot;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	int32 TempSlot = 0;
+
+	if (TitaniumSlot < 52)
 	{
-		TitaniumSlot = RoFSlot - 1;
+		RoFSlot.MainSlot = TitaniumSlot;
+		if (TitaniumSlot == 9999)
+		{
+			RoFSlot.MainSlot = 21;
+		}
+		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
+		{
+			RoFSlot.MainSlot += 1;
+		}
+		else if (TitaniumSlot > 29)		// Cursor
+		{
+			RoFSlot.MainSlot = 33;
+			if (TitaniumSlot > 30)
+			{
+				RoFSlot.SubSlot = (TitaniumSlot + 3) - 33;
+			}
+		}
 	}
-	else if(RoFSlot >= 262 && RoFSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
+	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
 	{
-		TitaniumSlot = RoFSlot - 11;
-	}
-	else if(RoFSlot >= 2032 && RoFSlot <= 2271)	// Bank Bag Slots
-	{
-		TitaniumSlot = RoFSlot - 1;
-	}
-	else if(RoFSlot >= 2532 && RoFSlot <= 2551)	// Shared Bank Bag Slots
-	{
-		TitaniumSlot = RoFSlot - 1;
-	}
-	else if(RoFSlot == 21)
-	{
-		TitaniumSlot = 9999;	//Unused slot ID to give a place to save Power Slot
-	}
-	else
-	{
-		TitaniumSlot = RoFSlot;
+		TempSlot = TitaniumSlot - 1;
+		RoFSlot.MainSlot = int(TempSlot / 10) - 2;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 2) * 10);
 	}
 
-	return TitaniumSlot;
+	_log(NET__ERROR, "Convert Titanium Slot %i to RoF Slots: Main %i, Sub %i, Aug %i, Unk1 %i", TitaniumSlot, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01);
+
+	return RoFSlot;
 }
-
 
 ENCODE(OP_OpenNewTasksWindow) {
 
@@ -545,8 +508,7 @@ ENCODE(OP_SendCharInfo) {
 	for(r = 0; r < char_count; r++) {
 		{	//pre-name section...
 			structs::CharacterSelectEntry_Struct *eq2 = (structs::CharacterSelectEntry_Struct *) bufptr;
-			//memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
-			strcpy(eq2->name, emu->name[r]);
+			memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
 		}
 		//adjust for name.
 		bufptr += strlen(emu->name[r]);
@@ -972,7 +934,7 @@ ENCODE(OP_PlayerProfile)
 
 		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
 		{
-			unknown004 = 0x3f800000;
+			unknown004 = 1;
 			slotid = 2;
 			player_id = 0x000717fd;
 		}
@@ -980,17 +942,21 @@ ENCODE(OP_PlayerProfile)
 		{
 			slotid = 0;
 		}
-		outapp->WriteUInt8(emu->buffs[r].slotid);
+		outapp->WriteUInt8(0);		// Had this as slot, but always appears to be 0 on live.
 		outapp->WriteFloat(unknown004);
 		outapp->WriteUInt32(player_id);
-		outapp->WriteUInt32(0);		// Unknown016
-		outapp->WriteUInt8(emu->buffs[r].bard_modifier);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(emu->buffs[r].counters);
+		//outapp->WriteUInt8(emu->buffs[r].bard_modifier);
 		outapp->WriteUInt32(emu->buffs[r].duration);
 		outapp->WriteUInt8(emu->buffs[r].level);
 		outapp->WriteUInt32(emu->buffs[r].spellid);
-		outapp->WriteUInt32(emu->buffs[r].counters);
+		outapp->WriteUInt32(slotid);			// Only ever seen 2
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(emu->buffs[r].counters);	// Appears twice ?
 
-		for(uint32 j = 0; j < 53; ++j)
+		for(uint32 j = 0; j < 44; ++j)
 			outapp->WriteUInt8(0);	// Unknown
 	}
 
@@ -1129,7 +1095,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(emu->lastlogin);
 	outapp->WriteUInt32(emu->timePlayedMin);
 	outapp->WriteUInt32(emu->timeentitledonaccount);
-	outapp->WriteUInt32(0x0001ffff);		// Expansion bitmask
+	outapp->WriteUInt32(0x0007ffff);		// Expansion bitmask
 
 	outapp->WriteUInt32(structs::MAX_PP_LANGUAGE);
 
@@ -1163,8 +1129,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt8(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt64(emu->exp);
 	outapp->WriteUInt8(0);				// Unknown
 
 	outapp->WriteUInt32(emu->platinum_bank);
@@ -1303,8 +1268,11 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(64);			// Group of 64 int32s follow	Group/Raid Leadership abilities ?
 
-	for(uint32 r = 0; r < 64; r++)
-		outapp->WriteUInt32(0);				// Unknown
+	for(uint32 r = 0; r < MAX_LEADERSHIP_AA_ARRAY; r++)
+		outapp->WriteUInt32(emu->leader_abilities.ranks[r]);
+
+	for(uint32 r = 0; r < 64 - MAX_LEADERSHIP_AA_ARRAY; r++)
+		outapp->WriteUInt32(0);				// Unused/unsupported Leadership abilities
 
 	outapp->WriteUInt32(emu->air_remaining);		// ?
 
@@ -1354,7 +1322,7 @@ ENCODE(OP_PlayerProfile)
 	}
 
 
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->expAA);
 	outapp->WriteUInt32(0);				// Unknown
 	outapp->WriteUInt32(0);				// Unknown
 
@@ -1398,7 +1366,7 @@ ENCODE(OP_PlayerProfile)
 	
 
 	CRC32::SetEQChecksum(outapp->pBuffer, outapp->size - 1, 8);
-	_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 	dest->FastQueuePacket(&outapp, ack_req);
 
 	delete in;
@@ -1911,8 +1879,8 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				_log(NET__ERROR, "SPAWN ENCODE LOGIC PROBLEM: Buffer pointer is now %i from end", Buffer - (BufferStart + PacketSize));
 			}
-			_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
-			_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+			//_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
+			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
@@ -2190,6 +2158,19 @@ ENCODE(OP_GroundSpawn)
 	dest->FastQueuePacket(&in, ack_req);
 }
 
+ENCODE(OP_ClickObjectAction) {
+	ENCODE_LENGTH_EXACT(ClickObjectAction_Struct);
+	SETUP_DIRECT_ENCODE(ClickObjectAction_Struct, structs::ClickObjectAction_Struct);
+	OUT(drop_id);
+	eq->unknown04 = -1;
+	eq->unknown08 = -1;
+	OUT(type);
+	OUT(icon);
+	eq->unknown16 = 0;
+	OUT_str(object_name);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_SendMembership) {
 	ENCODE_LENGTH_EXACT(Membership_Struct);
 	SETUP_DIRECT_ENCODE(Membership_Struct, structs::Membership_Struct);
@@ -2236,14 +2217,22 @@ ENCODE(OP_OnLevelMessage)
 {
 	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
 	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+
+	// This packet is variable sized now, but forcing it to the old packet size for now.
+	eq->Title_Count = 128;
 	memcpy(eq->Title, emu->Title, sizeof(eq->Title));
+	eq->Text_Count = 4096;
 	memcpy(eq->Text, emu->Text, sizeof(eq->Text));
 	OUT(Buttons);
 	OUT(Duration);
 	OUT(PopupID);
+	OUT(NegativeID);
 	// These two field names are used if Buttons == 1. We should add an interface to them via Perl.
-	sprintf(eq->ButtonName0, "Yes");
-	sprintf(eq->ButtonName1, "No");
+	eq->ButtonName0_Count = 25;
+	OUT_str(ButtonName0);
+	eq->ButtonName1_Count = 25;
+	OUT_str(ButtonName1);
+
 	FINISH_ENCODE();
 }
 
@@ -2267,6 +2256,7 @@ ENCODE(OP_Illusion) {
 	OUT(drakkin_heritage);
 	OUT(drakkin_tattoo);
 	OUT(drakkin_details);
+	eq->unknown316 = -1;	// Observed
 
 	FINISH_ENCODE();
 }
@@ -2283,6 +2273,17 @@ ENCODE(OP_ShopPlayerBuy)
 
 	FINISH_ENCODE();
 }
+
+ENCODE(OP_DeleteSpawn)
+{
+	ENCODE_LENGTH_EXACT(DeleteSpawn_Struct);
+	SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
+	OUT(spawn_id);
+	eq->unknown04 = 1;	// Observed
+
+	FINISH_ENCODE();
+}
+
 
 ENCODE(OP_ClientUpdate) {
 	ENCODE_LENGTH_EXACT(PlayerPositionUpdateServer_Struct);
@@ -2399,15 +2400,42 @@ ENCODE(OP_Buff) {
 	ENCODE_LENGTH_EXACT(SpellBuffFade_Struct);
 	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	OUT(entityid);
-	OUT(slot);
+	eq->unknown004 = 2;
+	//eq->level = 80;
+	//eq->effect = 0;
 	OUT(level);
 	OUT(effect);
-	//eq->unknown7 = 10;
+	eq->unknown007 = 0;
+	eq->unknown008 = 1.0f;
 	OUT(spellid);
 	OUT(duration);
+	eq->playerId = 0x7cde;
 	OUT(slotid);
-	OUT(bufffade);
+	if(emu->bufffade == 1)
+		eq->bufffade = 1;
+	else
+		eq->bufffade = 2;
+
+	// Bit of a hack. OP_Buff appears to add/remove the buff while OP_BuffCreate adds/removes the actual buff icon
+	EQApplicationPacket *outapp = NULL;
+	if(eq->bufffade == 1)
+	{
+		outapp = new EQApplicationPacket(OP_BuffCreate, 29);
+		outapp->WriteUInt32(emu->entityid);
+		outapp->WriteUInt32(0x0271);	// Unk
+		outapp->WriteUInt8(0);		// Type of OP_BuffCreate packet ?
+		outapp->WriteUInt16(1);		// 1 buff in this packet
+		outapp->WriteUInt32(emu->slotid);
+		outapp->WriteUInt32(0xffffffff);		// SpellID (0xffff to remove)
+		outapp->WriteUInt32(0);			// Duration
+		outapp->WriteUInt32(0);			// ?
+		outapp->WriteUInt8(0);		// Caster name
+		outapp->WriteUInt8(0);		// Terminating byte
+	}
 	FINISH_ENCODE();
+
+	if(outapp)
+		dest->FastQueuePacket(&outapp);	// Send the OP_BuffCreate to remove the buff
 }
 
 ENCODE(OP_CancelTrade) {
@@ -2430,8 +2458,8 @@ ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	//eq->itemslot = TitaniumToRoFSlot(emu->itemslot);
-	OUT(itemslot);
+	eq->itemslot = MainInvTitaniumToRoFSlot(emu->itemslot);
+	//OUT(itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -2442,6 +2470,25 @@ ENCODE(OP_ApplyPoison) {
 	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
 	eq->inventorySlot = TitaniumToRoFSlot(emu->inventorySlot);
 	OUT(success);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RecipeAutoCombine) {
+	ENCODE_LENGTH_EXACT(RecipeAutoCombine_Struct);
+	SETUP_DIRECT_ENCODE(RecipeAutoCombine_Struct, structs::RecipeAutoCombine_Struct);
+	OUT(object_type);
+	OUT(some_id);
+	eq->container_slot = TitaniumToRoFSlot(emu->unknown1);
+	structs::ItemSlotStruct RoFSlot;
+	RoFSlot.SlotType = 8;	// Observed
+	RoFSlot.Unknown02 = 0;
+	RoFSlot.MainSlot = 0xffff;
+	RoFSlot.SubSlot = 0xffff;
+	RoFSlot.AugSlot = 0xffff;
+	RoFSlot.Unknown01 = 0;
+	eq->unknown_slot = RoFSlot;
+	OUT(recipe_id);
+	OUT(reply_code);
 	FINISH_ENCODE();
 }
 
@@ -2568,8 +2615,8 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	eq->invslot = TitaniumToRoFSlot(emu->invslot);
-	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
+	eq->invslot = 0; // Set to hard 0 since it's not required for the structure to work
+	memcpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
 
@@ -2764,7 +2811,6 @@ ENCODE(OP_WhoAllResponse)
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);
 
 		char Name[64];
-
 
 		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Char Name
 		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
@@ -3246,64 +3292,30 @@ ENCODE(OP_BuffCreate)
 	__packet->size = sz;
 	__packet->pBuffer = new unsigned char[sz];
 	memset(__packet->pBuffer, 0, sz);
-
-	uchar *ptr = __packet->pBuffer;
-	*((uint32*)ptr) = emu->entity_id;
-	ptr += sizeof(uint32);
-	ptr += sizeof(uint32);
-	ptr += sizeof(uchar);
-	*((uint16*)ptr) = emu->count;
-	ptr += sizeof(uint16);
+	
+	__packet->WriteUInt32(emu->entity_id);
+	__packet->WriteUInt32(0);		// PlayerID ?
+	__packet->WriteUInt8(1);			// 1 indicates all buffs on the player (0 to add or remove a single buff)
+	__packet->WriteUInt16(emu->count);
 
 	for(uint16 i = 0; i < emu->count; ++i)
 	{
 		uint16 buffslot = emu->entries[i].buff_slot;
-		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
+		// Not sure if this is needs amending for RoF yet.
+		if(emu->entries[i].buff_slot >= 25)
 		{
-			buffslot += 5;
-		}
-		else if(emu->entries[i].buff_slot >= 37)
-		{
-			buffslot += 14;
+			buffslot += 17;
 		}
 
-		*((uint32*)ptr) = buffslot;
-		ptr += sizeof(uint32);
-		*((uint32*)ptr) = emu->entries[i].spell_id;
-		ptr += sizeof(uint32);
-		*((uint32*)ptr) = emu->entries[i].tics_remaining;
-		ptr += sizeof(uint32);
-		ptr += sizeof(uint32);
-		ptr += 1;
+		__packet->WriteUInt32(buffslot);
+		__packet->WriteUInt32(emu->entries[i].spell_id);
+		__packet->WriteUInt32(emu->entries[i].tics_remaining);
+		__packet->WriteUInt32(0); // Unknown
+		__packet->WriteString("");	
 	}
+	__packet->WriteUInt8(0); // Unknown
+
 	FINISH_ENCODE();
-	/*
-	uint32 write_var32 = 60;
-	uint8 write_var8 = 1;
-	ss.write((const char*)&emu->entity_id, sizeof(uint32));
-	ss.write((const char*)&write_var32, sizeof(uint32));
-	ss.write((const char*)&write_var8, sizeof(uint8));
-	ss.write((const char*)&emu->count, sizeof(uint16));
-	write_var32 = 0;
-	write_var8 = 0;
-	for(uint16 i = 0; i < emu->count; ++i)
-	{
-		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
-		{
-			emu->entries[i].buff_slot += 5;
-		}
-		else if(emu->entries[i].buff_slot >= 37)
-		{
-			emu->entries[i].buff_slot += 14;
-		}
-		ss.write((const char*)&emu->entries[i].buff_slot, sizeof(uint32));
-		ss.write((const char*)&emu->entries[i].spell_id, sizeof(uint32));
-		ss.write((const char*)&emu->entries[i].tics_remaining, sizeof(uint32));
-		ss.write((const char*)&write_var32, sizeof(uint32));
-		ss.write((const char*)&write_var8, sizeof(uint8));
-	}
-	ss.write((const char*)&write_var8, sizeof(uint8));
-	*/
 }
 
 ENCODE(OP_ZoneChange)
@@ -3328,7 +3340,10 @@ ENCODE(OP_WearChange)
 	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
 	OUT(spawn_id);
 	OUT(material);
+	OUT(unknown06);
 	OUT(elite_material);
+	OUT(hero_forge_model);
+	OUT(unknown18);
 	OUT(color.color);
 	OUT(wear_slot_id);
 	FINISH_ENCODE();
@@ -3408,14 +3423,19 @@ ENCODE(OP_DisciplineUpdate)
 ENCODE(OP_RespondAA) {
 	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
 
-	eq->aa_count = MAX_PP_AA_ARRAY;
+	eq->aa_spent = emu->aa_spent;
+	// These fields may need to be correctly populated at some point
+	eq->aapoints_assigned = emu->aa_spent + 1;
+	eq->aa_spent_general = 0;
+	eq->aa_spent_archetype = 0;
+	eq->aa_spent_class = 0;
+	eq->aa_spent_special = 0;
 
 	for(uint32 i = 0; i < MAX_PP_AA_ARRAY; ++i)
 	{
 		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
 		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
 		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
-		eq->aa_list[i].unknown12 = 0;
 	}
 
 	FINISH_ENCODE();
@@ -3470,6 +3490,39 @@ ENCODE(OP_AltCurrency)
     delete in;
 }
 
+ENCODE(OP_HPUpdate)
+{
+	SETUP_DIRECT_ENCODE(SpawnHPUpdate_Struct, structs::SpawnHPUpdate_Struct);
+	OUT(spawn_id);
+	OUT(cur_hp);
+	OUT(max_hp);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RemoveBlockedBuffs) { ENCODE_FORWARD(OP_BlockedBuffs); }
+
+ENCODE(OP_BlockedBuffs)
+{
+	ENCODE_LENGTH_EXACT(BlockedBuffs_Struct);
+	SETUP_DIRECT_ENCODE(BlockedBuffs_Struct, structs::BlockedBuffs_Struct);
+
+	for(uint32 i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		eq->SpellID[i] = emu->SpellID[i];
+
+	// -1 for the extra 10 added in RoF. We should really be encoding for the older clients, not RoF, but
+	// we can sort that out later.
+
+	for(uint32 i = BLOCKED_BUFF_COUNT; i < structs::BLOCKED_BUFF_COUNT; ++i)
+		eq->SpellID[i] = -1;
+
+	OUT(Count);
+	OUT(Pet);
+	OUT(Initialise);
+	OUT(Flags);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BuffRemoveRequest)
 {
 	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
@@ -3477,7 +3530,7 @@ DECODE(OP_BuffRemoveRequest)
 	DECODE_LENGTH_EXACT(structs::BuffRemoveRequest_Struct);
 	SETUP_DIRECT_DECODE(BuffRemoveRequest_Struct, structs::BuffRemoveRequest_Struct);
 
-	emu->SlotID = (eq->SlotID < 30 ) ? eq->SlotID : (eq->SlotID - 5);
+	emu->SlotID = (eq->SlotID < 42 ) ? eq->SlotID : (eq->SlotID - 17);
 
 	IN(EntityID);
 
@@ -3524,7 +3577,6 @@ DECODE(OP_PetCommands)
 		default:
 			emu->command = eq->command;
 	}
-	OUT(unknown);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3728,6 +3780,7 @@ DECODE(OP_ItemLinkClick) {
 	for (r = 0; r < 5; r++) {
 		IN(augments[r]);
 	}
+	// Max Augs is now 6, but no code to support that many yet
 	IN(link_hash);
 	IN(icon);
 	
@@ -3904,10 +3957,10 @@ DECODE(OP_GroupCancelInvite)
 }
 
 DECODE(OP_Buff) {
-	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct);
-	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct);
+	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct_Live);
+	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	IN(entityid);
-	IN(slot);
+	//IN(slot);
 	IN(level);
 	IN(effect);
 	IN(spellid);
@@ -3922,8 +3975,8 @@ DECODE(OP_ShopPlayerSell) {
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 
 	IN(npcid);
-	//emu->itemslot = RoFToTitaniumSlot(eq->itemslot);
-	IN(itemslot);
+	emu->itemslot = MainInvRoFToTitaniumSlot(eq->itemslot);
+	//IN(itemslot);
 	IN(quantity);
 	IN(price);
 
@@ -3991,7 +4044,7 @@ DECODE(OP_ReadBook) {
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
 	IN(type);
-	emu->invslot = RoFToTitaniumSlot(eq->invslot);
+	emu->invslot = 0; // Set to hard 0 since it's not required for the structure to work
 	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 
@@ -4002,7 +4055,24 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = RoFToTitaniumSlot(eq->container_slot);
+	sint16 slot_id = RoFToTitaniumSlot(eq->container_slot);
+	if (slot_id == 4000) {
+		slot_id = SLOT_TRADESKILL;	// 1000
+	}
+	emu->container_slot = slot_id;
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_RecipeAutoCombine) {
+	DECODE_LENGTH_EXACT(structs::RecipeAutoCombine_Struct);
+	SETUP_DIRECT_DECODE(RecipeAutoCombine_Struct, structs::RecipeAutoCombine_Struct);
+
+	IN(object_type);
+	IN(some_id);
+	emu->unknown1 = RoFToTitaniumSlot(eq->container_slot);
+	IN(recipe_id);
+	IN(reply_code);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -4012,7 +4082,7 @@ DECODE(OP_AugmentItem) {
 	SETUP_DIRECT_DECODE(AugmentItem_Struct, structs::AugmentItem_Struct);
 
 	emu->container_slot = RoFToTitaniumSlot(eq->container_slot);
-	emu->augment_slot = eq->augment_slot;
+	//emu->augment_slot = eq->augment_slot;
 
 	FINISH_DIRECT_DECODE();
 }
@@ -4133,6 +4203,24 @@ DECODE(OP_ZoneEntry)
 	DECODE_LENGTH_EXACT(structs::ClientZoneEntry_Struct);
 	SETUP_DIRECT_DECODE(ClientZoneEntry_Struct, structs::ClientZoneEntry_Struct);
 	memcpy(emu->char_name, eq->char_name, sizeof(emu->char_name));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_RemoveBlockedBuffs) { DECODE_FORWARD(OP_BlockedBuffs); }
+
+DECODE(OP_BlockedBuffs)
+{
+	DECODE_LENGTH_EXACT(structs::BlockedBuffs_Struct);
+	SETUP_DIRECT_DECODE(BlockedBuffs_Struct, structs::BlockedBuffs_Struct);
+
+	for(uint32 i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		emu->SpellID[i] = eq->SpellID[i];
+
+	IN(Count);
+	IN(Pet);
+	IN(Initialise);
+	IN(Flags);
+
 	FINISH_DIRECT_DECODE();
 }
 

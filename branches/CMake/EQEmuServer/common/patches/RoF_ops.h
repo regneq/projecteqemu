@@ -83,6 +83,13 @@ E(OP_CastSpell)
 E(OP_InterruptCast)
 E(OP_SendMembership)
 E(OP_Animation)
+E(OP_HPUpdate)
+E(OP_BlockedBuffs)
+E(OP_RemoveBlockedBuffs)
+E(OP_DeleteSpawn)
+E(OP_ClickObjectAction)
+E(OP_RecipeAutoCombine)
+
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -131,5 +138,8 @@ D(OP_AltCurrencySell)
 D(OP_ZoneChange)
 D(OP_ZoneEntry)
 D(OP_ShopRequest)
+D(OP_BlockedBuffs)
+D(OP_RemoveBlockedBuffs)
+D(OP_RecipeAutoCombine)
 #undef E
 #undef D

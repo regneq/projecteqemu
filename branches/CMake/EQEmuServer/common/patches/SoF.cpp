@@ -1948,6 +1948,19 @@ ENCODE(OP_AltCurrencySell)
     FINISH_ENCODE();
 }
 
+ENCODE(OP_WearChange)
+{
+	ENCODE_LENGTH_EXACT(WearChange_Struct);
+	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
+	OUT(spawn_id);
+	OUT(material);
+	OUT(unknown06);
+	OUT(elite_material);
+	OUT(color.color);
+	OUT(wear_slot_id);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_InspectRequest) {
 	ENCODE_LENGTH_EXACT(Inspect_Struct);
 	SETUP_DIRECT_ENCODE(Inspect_Struct, structs::Inspect_Struct);
@@ -2221,6 +2234,20 @@ DECODE(OP_FindPersonRequest) {
 	IN(client_pos.x);
 	IN(client_pos.y);
 	IN(client_pos.z);
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_WearChange) {
+	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
+	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
+	IN(spawn_id);
+	IN(material);
+	IN(unknown06);
+	IN(elite_material);
+	IN(color.color);
+	IN(wear_slot_id);
+	emu->hero_forge_model = 0;
+	emu->unknown18		  = 0;
 	FINISH_DIRECT_DECODE();
 }
 

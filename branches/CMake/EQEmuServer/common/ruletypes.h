@@ -261,6 +261,7 @@ RULE_INT ( Spells, MaxBuffSlotsNPC, 25)
 RULE_INT ( Spells, MaxSongSlotsNPC, 10)
 RULE_INT ( Spells, MaxDiscSlotsNPC, 1)
 RULE_INT ( Spells, MaxTotalSlotsNPC, 36)
+RULE_INT ( Spells, MaxTotalSlotsPET, 25)	// do not set this higher than 25 until the player profile is removed from the blob
 RULE_BOOL (Spells, EnableBlockedBuffs, true)
 RULE_INT ( Spells, ReflectType, 1) //0 = disabled, 1 = single target player spells only, 2 = all player spells, 3 = all single target spells, 4 = all spells
 RULE_INT ( Spells, VirusSpreadDistance, 30) // The distance a viral spell will jump to its next victim
@@ -488,8 +489,11 @@ RULE_CATEGORY_END()
 RULE_CATEGORY( QueryServ )
 RULE_BOOL( QueryServ, PlayerChatLogging, false) // Logs Player Chat
 RULE_BOOL( QueryServ, PlayerLogTrades, false) // Logs Player Trades
-RULE_BOOL( QueryServ, PlayerLogMoneyTrades, false) // Logs Player Money Trades
+RULE_BOOL( QueryServ, PlayerLogHandins, false) // Logs Player Handins
 RULE_BOOL( QueryServ, PlayerLogNPCKills, false) // Logs Player NPC Kills
+RULE_BOOL( QueryServ, PlayerLogDeletes, false) // Logs Player Deletes
+RULE_BOOL( QueryServ, PlayerLogMoves, false) // Logs Player Moves
+RULE_BOOL( QueryServ, MerchantLogTransactions, false) // Logs Merchant Transactions
 RULE_BOOL( QueryServ, PlayerLogPCCoordinates, false) // Logs Player Coordinates with certain events
 RULE_CATEGORY_END()
 

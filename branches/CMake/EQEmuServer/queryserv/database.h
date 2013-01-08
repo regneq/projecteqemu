@@ -47,8 +47,12 @@ public:
 	
 	bool GetVariable(const char* varname, char* varvalue, int16 varvalue_len);
 	void AddSpeech(const char* from, const char* to, const char* message, int16 minstatus, uint32 guilddbid, int8 type);
-	void LogPlayerTrade(QSPlayerTradeLog_Struct* QS, int32 Items);
+	void LogPlayerTrade(QSPlayerLogTrade_Struct* QS, int32 Items);
+	void LogPlayerHandin(QSPlayerLogHandin_Struct* QS, int32 Items);
 	void LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members);
+	void LogPlayerDelete(QSPlayerLogDelete_Struct* QS, int32 Items);
+	void LogPlayerMove(QSPlayerLogMove_Struct* QS, int32 Items);
+	void LogMerchantTransaction(QSMerchantLogTransaction_Struct* QS, int32 Items);
 protected:
 	void HandleMysqlError(int32 errnum);
 private:
