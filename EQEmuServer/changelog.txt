@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/08/2013 ==
+Derision: RoF: Marked position of Monk 'Mend' skill cooldown timer in PP. Fixed a typo.
+
 == 01/07/2013 ==
 Trevius: RoF: /who and /who all now function properly.
 Trevius: RoF: Adjusted/corrected some of the slot conversion functions.
