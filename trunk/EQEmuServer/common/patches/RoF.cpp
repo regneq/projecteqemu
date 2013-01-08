@@ -140,7 +140,7 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
 		if (RoFSlot.MainSlot > 29)
 		{
-			RoFSlot.MainSlot == 33;
+			RoFSlot.MainSlot = 33;
 		}
 	}
 	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
@@ -980,7 +980,8 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(0);		// Unknown
 
-	outapp->WriteUInt32(emu->toxicity);
+	outapp->WriteUInt32(0);		// This is the cooldown timer for the monk 'Mend' skill. Client will add 6 minutes to this value the first time the
+					// player logs in. After that it will honour whatever value we send here.
 
 	outapp->WriteUInt32(0);		// Unknown
 
