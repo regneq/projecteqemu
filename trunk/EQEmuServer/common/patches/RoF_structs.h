@@ -2486,13 +2486,13 @@ struct Petition_Struct {
 
 struct Who_All_Struct { // 156 length total
 /*000*/	char	whom[64];
+/*088*/	int8	unknown088[64];
 /*064*/	int32	wrace;		// FF FF = no race
 /*068*/	int32	wclass;		// FF FF = no class
 /*072*/	int32	lvllow;		// FF FF = no numbers
 /*076*/	int32	lvlhigh;	// FF FF = no numbers
 /*080*/	int32	gmlookup;	// FF FF = not doing /who all gm
 /*084*/	int32	guildid;	// Also used for Buyer/Trader/LFG
-/*088*/	int8	unknown088[64];
 /*152*/	int32	type;		// 0 = /who 3 = /who all
 /*156*/	
 };
