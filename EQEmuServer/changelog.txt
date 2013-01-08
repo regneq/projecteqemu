@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 == 01/07/2013 ==
 Trevius: RoF: /who and /who all now function properly.
 Trevius: RoF: Adjusted/corrected some of the slot conversion functions.
+Kayen: Various AA Fixes including a critical crash bug.
+
+REQUIRED SQL: utils/sql/svn/2376_required_aa_updates.sql
 
 == 01/06/2013 ==
 Kayen: Fix for missing and incorrect Healing Adept AA values.
