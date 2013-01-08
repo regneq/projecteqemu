@@ -558,7 +558,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		float mitigation_rating = 0.0;
 		float attack_rating = 0.0;
 		int shield_ac = 0;
-		int armor;
+		int armor = 0;
 		float weight = 0.0;
 		if(IsClient())
 		{
@@ -2063,10 +2063,6 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 			give_exp = NULL;
 		}
 #endif //BOTS
-		if(!RuleB(Mercs, MercGroupXP) && !ownerInGroup) {
-			give_exp = NULL;
-		}
-
 	}
 
 	int PlayerCount = 0; // QueryServ Player Counting

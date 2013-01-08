@@ -22,7 +22,7 @@
 
 RULE_CATEGORY( Character )
 RULE_INT ( Character, MaxLevel, 65 )
-RULE_BOOL( Character, PerCharacterQglobalMaxLevel, false) // This will check for qglobal 'CharMaxLevel' character qglobal (Type 5), if player tries to level beyond that point, it will not go beyond that level
+RULE_BOOL ( Character, PerCharacterQglobalMaxLevel, false) // This will check for qglobal 'CharMaxLevel' character qglobal (Type 5), if player tries to level beyond that point, it will not go beyond that level
 RULE_INT ( Character, MaxExpLevel, 0 ) //Sets the Max Level attainable via Experience
 RULE_INT ( Character, DeathExpLossLevel, 10 )	// Any level greater than this will lose exp on death
 RULE_INT ( Character, DeathExpLossMaxLevel, 255 )	// Any level greater than this will no longer lose exp on death
@@ -103,10 +103,9 @@ RULE_INT (Mercs, SuspendIntervalMS, 10000)
 RULE_INT (Mercs, UpkeepIntervalMS,  180000)
 RULE_INT (Mercs, SuspendIntervalS, 10)
 RULE_INT (Mercs, UpkeepIntervalS, 180)
-RULE_BOOL ( Mercs, MercGroupXP, false ) // Determines whether client gets xp for bots outside their group.
-RULE_BOOL ( Mercs, AllowMercs, true )
-RULE_INT (Mercs, AggroRadius, 70)		// Determines the distance from which a merc will aggro group member's target(also used to determine the distance at which a healer merc will begin healing a group member)
-RULE_INT (Mercs, AggroRadiusPuller, 15)	// Determines the distance from which a merc will aggro group member's target, if they have the group role of puller (also used to determine the distance at which a healer merc will begin healing a group member, if they have the group role of puller)
+RULE_BOOL ( Mercs, AllowMercs, false )
+RULE_INT (Mercs, AggroRadius, 100)		// Determines the distance from which a merc will aggro group member's target(also used to determine the distance at which a healer merc will begin healing a group member)
+RULE_INT (Mercs, AggroRadiusPuller, 25)	// Determines the distance from which a merc will aggro group member's target, if they have the group role of puller (also used to determine the distance at which a healer merc will begin healing a group member, if they have the group role of puller)
 RULE_INT (Mercs, ScaleRate, 100)
 RULE_CATEGORY_END()
 
@@ -501,8 +500,11 @@ RULE_CATEGORY_END()
 RULE_CATEGORY( QueryServ )
 RULE_BOOL( QueryServ, PlayerChatLogging, false) // Logs Player Chat
 RULE_BOOL( QueryServ, PlayerLogTrades, false) // Logs Player Trades
-RULE_BOOL( QueryServ, PlayerLogMoneyTrades, false) // Logs Player Money Trades
+RULE_BOOL( QueryServ, PlayerLogHandins, false) // Logs Player Handins
 RULE_BOOL( QueryServ, PlayerLogNPCKills, false) // Logs Player NPC Kills
+RULE_BOOL( QueryServ, PlayerLogDeletes, false) // Logs Player Deletes
+RULE_BOOL( QueryServ, PlayerLogMoves, false) // Logs Player Moves
+RULE_BOOL( QueryServ, MerchantLogTransactions, false) // Logs Merchant Transactions
 RULE_BOOL( QueryServ, PlayerLogPCCoordinates, false) // Logs Player Coordinates with certain events
 RULE_CATEGORY_END()
 

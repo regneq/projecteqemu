@@ -4817,6 +4817,16 @@ struct Membership_Details_Struct
 /*0000*/ //char exit_url2[49];		// Upgrade to Gold Membership URL
 };
 
+struct ItemPreview_Struct
+{
+/*000*/	int32	itemid;
+/*004*/	int32	unknown004[3];
+/*016*/	int32	slot;
+/*020*/	int32	unknown020;
+/*024*/	int16	slot2;
+/*026*/	int8	unknown026[54];
+};
+
 //Not an EQ packet, just a single int for the mercenary merchant structure.
 struct MercenaryGrade_Struct {
 uint32 GradeCountEntry;	

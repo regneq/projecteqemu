@@ -298,6 +298,7 @@ public:
 	void Clear();
 	void ClearByFlags(byFlagSetting is_nodrop, byFlagSetting is_norent);
 	uint8 FirstOpenSlot() const;
+	uint8 GetTotalItemCount() const;
 	bool IsNoneEmptyContainer();
 	map<uint8, ItemInst*>* GetContents() { return &m_contents; }
 

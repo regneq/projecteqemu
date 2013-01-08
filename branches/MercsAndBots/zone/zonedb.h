@@ -420,6 +420,7 @@ public:
      */
     void LoadAltCurrencyValues(uint32 char_id, std::map<uint32, uint32> &currency);
     void UpdateAltCurrencyValue(uint32 char_id, uint32 currency_id, uint32 value);
+
     
 	/*
 	 * Misc stuff.

@@ -386,6 +386,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LFGuild] = &Client::Handle_OP_LFGuild;
 	ConnectedOpcodes[OP_XTargetRequest] = &Client::Handle_OP_XTargetRequest;
 	ConnectedOpcodes[OP_XTargetAutoAddHaters] = &Client::Handle_OP_XTargetAutoAddHaters;
+	ConnectedOpcodes[OP_ItemPreview] = &Client::Handle_OP_ItemPreview;
 	ConnectedOpcodes[OP_MercenaryDataRequest] = &Client::Handle_OP_MercenaryDataRequest;
 	ConnectedOpcodes[OP_MercenaryHire] = &Client::Handle_OP_MercenaryHire;
 	ConnectedOpcodes[OP_MercenaryCommand] = &Client::Handle_OP_MercenaryCommand;
@@ -4985,39 +4986,15 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 
 				// start QS code
 				if(RuleB(QueryServ, PlayerLogTrades)) {
-					int16 trade_count=0;
+					int16 trade_count = 0;
 
 					// Item trade count for packet sizing
 					for(sint16 slot_id=3000; slot_id<=3007; slot_id++) {
-						ItemInst* other_item = other->GetInv().GetItem(slot_id);
-						if(other_item) {
-							trade_count++;
-
-							if(other_item->IsType(ItemClassContainer)) {
-								for(uint8 bagslot_id=0; bagslot_id<other_item->GetItem()->BagSlots; bagslot_id++) {
-									ItemInst* other_bagitem = other_item->GetItem(bagslot_id);
-
-									if(other_bagitem) { trade_count++; }
-								}
-							}
-						}
-
-						const ItemInst* this_item = this->GetInv().GetItem(slot_id);
-						if(this_item) {
-							trade_count++;
-						
-							if(this_item->IsType(ItemClassContainer)) {
-								for(uint8 bagslot_id=0; bagslot_id<this_item->GetItem()->BagSlots; bagslot_id++) {
-									ItemInst* this_bagitem = this_item->GetItem(bagslot_id);
-
-									if(this_bagitem) { trade_count++; }
-								}
-							}
-						}
+						if(other->GetInv().GetItem(slot_id)) { trade_count += other->GetInv().GetItem(slot_id)->GetTotalItemCount(); }
+						if(m_inv[slot_id]) { trade_count += m_inv[slot_id]->GetTotalItemCount(); }
 					}
-
-				
-					ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerTradeLog, sizeof(QSPlayerTradeLog_Struct) + (sizeof(QSItemTrade_Struct) * trade_count));
+					
+					ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerLogTrades, sizeof(QSPlayerLogTrade_Struct) + (sizeof(QSTradeItems_Struct) * trade_count));
 
 					// Perform actual trade
 					this->FinishTrade(other, qspack, true);
@@ -5042,13 +5019,31 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			this->FastQueuePacket(&outapp);
 		}
 	}
+	// Trading with a Mob object that is not a Client.
 	else if(with) {
-		// Trading with a Mob object that is not a Client.
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade,0);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade, 0);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 		if(with->IsNPC())
-			FinishTrade(with->CastToNPC());
+			// Audit trade to database for player trade stream
+			if(RuleB(QueryServ, PlayerLogHandins)) {
+				int16 handin_count = 0;
+
+				for(sint16 slot_id=3000; slot_id<=3003; slot_id++) {
+					if(m_inv[slot_id]) { handin_count += m_inv[slot_id]->GetTotalItemCount(); }
+				}
+
+				ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerLogHandins, sizeof(QSPlayerLogHandin_Struct) + (sizeof(QSHandinItems_Struct) * handin_count));
+				
+				FinishTrade(with->CastToNPC(), qspack);
+
+				qspack->Deflate();
+				if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+				safe_delete(qspack);
+			}
+			else { 
+				FinishTrade(with->CastToNPC());
+			}
 #ifdef BOTS
 		else if(with->IsBot())
 			with->CastToBot()->FinishTrade(this, Bot::BotTradeClientNormal);
@@ -5774,6 +5769,40 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	safe_delete(inst);
 	safe_delete(outapp);
 
+	// start QS code
+	if(RuleB(QueryServ, MerchantLogTransactions)) {
+		ServerPacket* qspack = new ServerPacket(ServerOP_QSMerchantLogTransactions, sizeof(QSMerchantLogTransaction_Struct) + sizeof(QSTransactionItems_Struct));
+		QSMerchantLogTransaction_Struct* qsaudit = (QSMerchantLogTransaction_Struct*)qspack->pBuffer;
+
+		qsaudit->zone_id				 = zone->GetZoneID();
+		qsaudit->merchant_id			 = tmp->CastToNPC()->MerchantType;
+		qsaudit->merchant_money.platinum = 0;
+		qsaudit->merchant_money.gold	 = 0;
+		qsaudit->merchant_money.silver	 = 0;
+		qsaudit->merchant_money.copper	 = 0;
+		qsaudit->merchant_count			 = 1;
+		qsaudit->char_id				 = character_id;
+		qsaudit->char_money.platinum	 = (mpo->price / 1000);
+		qsaudit->char_money.gold		 = (mpo->price / 100) % 10;
+		qsaudit->char_money.silver		 = (mpo->price / 10) % 10;
+		qsaudit->char_money.copper		 = mpo->price % 10;
+		qsaudit->char_count				 = 0;
+
+		qsaudit->items[0].char_slot	 = freeslotid;
+		qsaudit->items[0].item_id	 = m_inv[freeslotid]->GetID();
+		qsaudit->items[0].charges	 = mpo->quantity;
+		qsaudit->items[0].aug_1		 = m_inv[freeslotid]->GetAugmentItemID(1);
+		qsaudit->items[0].aug_2		 = m_inv[freeslotid]->GetAugmentItemID(2);
+		qsaudit->items[0].aug_3		 = m_inv[freeslotid]->GetAugmentItemID(3);
+		qsaudit->items[0].aug_4		 = m_inv[freeslotid]->GetAugmentItemID(4);
+		qsaudit->items[0].aug_5		 = m_inv[freeslotid]->GetAugmentItemID(5);
+
+		qspack->Deflate();
+		if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+		safe_delete(qspack);
+	}
+	// end QS code
+
 	if (RuleB(EventLog, RecordBuyFromMerchant))
 		LogMerchant(this, tmp, mpo->quantity, mpo->price, item, true);
 
@@ -5877,7 +5906,41 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 		safe_delete(inst2);
 	}
 
-	// Now remove the item from the player, this happens irrguardless of outcome
+	// start QS code
+	if(RuleB(QueryServ, MerchantLogTransactions)) {
+		ServerPacket* qspack = new ServerPacket(ServerOP_QSMerchantLogTransactions, sizeof(QSMerchantLogTransaction_Struct) + sizeof(QSTransactionItems_Struct));
+		QSMerchantLogTransaction_Struct* qsaudit = (QSMerchantLogTransaction_Struct*)qspack->pBuffer;
+
+		qsaudit->zone_id				 = zone->GetZoneID();
+		qsaudit->merchant_id			 = vendor->CastToNPC()->MerchantType;
+		qsaudit->merchant_money.platinum = (price / 1000);
+		qsaudit->merchant_money.gold	 = (price / 100) % 10;
+		qsaudit->merchant_money.silver	 = (price / 10) % 10;
+		qsaudit->merchant_money.copper	 = price % 10;
+		qsaudit->merchant_count			 = 0;
+		qsaudit->char_id				 = character_id;
+		qsaudit->char_money.platinum	 = 0;
+		qsaudit->char_money.gold		 = 0;
+		qsaudit->char_money.silver		 = 0;
+		qsaudit->char_money.copper		 = 0;
+		qsaudit->char_count				 = 1;
+
+		qsaudit->items[0].char_slot	 = mp->itemslot;
+		qsaudit->items[0].item_id	 = itemid;
+		qsaudit->items[0].charges	 = charges;
+		qsaudit->items[0].aug_1		 = m_inv[mp->itemslot]->GetAugmentItemID(1);
+		qsaudit->items[0].aug_2		 = m_inv[mp->itemslot]->GetAugmentItemID(2);
+		qsaudit->items[0].aug_3		 = m_inv[mp->itemslot]->GetAugmentItemID(3);
+		qsaudit->items[0].aug_4		 = m_inv[mp->itemslot]->GetAugmentItemID(4);
+		qsaudit->items[0].aug_5		 = m_inv[mp->itemslot]->GetAugmentItemID(5);
+
+		qspack->Deflate();
+		if(worldserver.Connected()) { worldserver.SendPacket(qspack); }
+		safe_delete(qspack);
+	}
+	// end QS code
+
+	// Now remove the item from the player, this happens regardless of outcome
 	if (!inst->IsStackable())
 		this->DeleteItemInInventory(mp->itemslot,0,false);
 	else
@@ -5935,26 +5998,49 @@ void Client::Handle_OP_CloseContainer(const EQApplicationPacket *app)
 
 void Client::Handle_OP_ClickObjectAction(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(ClickObjectAction_Struct)) {
-		LogFile->write(EQEMuLog::Error, "Invalid size on OP_ClickObjectAction: Expected %i, Got %i",
-			sizeof(ClickObjectAction_Struct), app->size);
+	if (app->size == 0) {
+		// RoF sends this packet 0 sized when switching from auto-combine to experiment windows.
+		// Not completely sure if 0 sized is for this or for closing objects as commented out below
+		EQApplicationPacket end_trade1(OP_FinishWindow, 0);
+		QueuePacket(&end_trade1);
+
+		EQApplicationPacket end_trade2(OP_FinishWindow2, 0);
+		QueuePacket(&end_trade2);
+
 		return;
-	}
 
-	SetTradeskillObject(NULL);
-
-	ClickObjectAction_Struct* oos = (ClickObjectAction_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetEntityObject(oos->drop_id);
-	if (entity && entity->IsObject()) {
-		Object* object = entity->CastToObject();
-		if(oos->open == 0) {
-			object->Close();
-		} else {
-			LogFile->write(EQEMuLog::Error, "Unsupported action %d in OP_ClickObjectAction", oos->open);
+		// RoF sends a 0 sized packet for closing objects
+		/*
+		Object* object = GetTradeskillObject();
+		if (object) {
+			object->CastToObject()->Close();
 		}
-	} else {
-		LogFile->write(EQEMuLog::Error, "Invalid object %d in OP_ClickObjectAction", oos->drop_id);
+		*/
 	}
+	else
+	{
+		if (app->size != sizeof(ClickObjectAction_Struct)) {
+			LogFile->write(EQEMuLog::Error, "Invalid size on OP_ClickObjectAction: Expected %i, Got %i",
+				sizeof(ClickObjectAction_Struct), app->size);
+			return;
+		}
+		
+		ClickObjectAction_Struct* oos = (ClickObjectAction_Struct*)app->pBuffer;
+		Entity* entity = entity_list.GetEntityObject(oos->drop_id);
+		if (entity && entity->IsObject()) {
+			Object* object = entity->CastToObject();
+			if(oos->open == 0) {
+				object->Close();
+			} else {
+				LogFile->write(EQEMuLog::Error, "Unsupported action %d in OP_ClickObjectAction", oos->open);
+			}
+		} else {
+			LogFile->write(EQEMuLog::Error, "Invalid object %d in OP_ClickObjectAction", oos->drop_id);
+		}
+	}
+	
+	SetTradeskillObject(NULL);
+	
 	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
 	QueuePacket(&end_trade1);
 
@@ -5983,6 +6069,10 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		buf[9] = '\0';
 		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0);
 	}
+	
+	// Observed in RoF after OP_ClickObjectAction:
+	//EQApplicationPacket end_trade2(OP_FinishWindow2, 0);
+	//QueuePacket(&end_trade2);
 	return;
 }
 
@@ -6988,7 +7078,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	int32 PetCommand = pet->command;
 
 	// Handle Sit/Stand toggle in UF and later.
-	if(GetClientVersion() > EQClientHoT)
+	if(GetClientVersion() >= EQClientUnderfoot)
 	{
 		if(PetCommand == PET_SITDOWN)
 			if(mypet->GetPetOrder() == SPO_Sit)
@@ -13216,6 +13306,183 @@ void Client::Handle_OP_XTargetAutoAddHaters(const EQApplicationPacket *app)
 	}
 
 	XTargetAutoAddHaters = app->ReadUInt8(0);
+}
+
+void Client::Handle_OP_ItemPreview(const EQApplicationPacket *app)
+{	
+	VERIFY_PACKET_LENGTH(OP_ItemPreview, app, ItemPreview_Struct);
+	ItemPreview_Struct *ips = (ItemPreview_Struct *)app->pBuffer;
+
+	const Item_Struct* item = database.GetItem(ips->itemid);
+
+	if (item) {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ItemPreview, strlen(item->Name) + strlen(item->Lore) + strlen(item->IDFile) + 898);
+
+		int spacer;
+		for (spacer = 0; spacer < 16; spacer++) {
+			outapp->WriteUInt8(48);
+		}
+		outapp->WriteUInt16(256);
+		for (spacer = 0; spacer < 7; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 7; spacer++) {
+			outapp->WriteUInt8(255);
+		}
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(1);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt8(237); // Seems to be some kind of counter? increases by 1 for each preview that you do.
+		outapp->WriteUInt16(2041); //F907
+		for (spacer = 0; spacer < 36; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 4; spacer++) {
+			outapp->WriteUInt8(255);
+		}
+		for (spacer = 0; spacer < 9; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 5; spacer++) {
+			outapp->WriteUInt8(255);
+		}
+		for (spacer = 0; spacer < 5; spacer++) {
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteString(item->Name);
+		outapp->WriteString(item->Lore);
+		outapp->WriteUInt8(0);
+		outapp->WriteUInt32(ips->itemid);
+		outapp->WriteUInt32(item->Weight);
+		outapp->WriteUInt8(item->NoRent);
+		outapp->WriteUInt8(item->NoDrop);
+		outapp->WriteUInt8(item->Attuneable);
+		outapp->WriteUInt8(item->Size);
+		outapp->WriteUInt32(item->Slots);
+		outapp->WriteUInt32(item->Price);
+		outapp->WriteUInt32(item->Icon);
+		outapp->WriteUInt8(0); //Unknown?
+		outapp->WriteUInt8(0); //Placeable flag?
+		outapp->WriteUInt32(item->BenefitFlag);
+		outapp->WriteUInt8(item->Tradeskills);
+		outapp->WriteUInt8(item->CR);
+		outapp->WriteUInt8(item->DR);
+		outapp->WriteUInt8(item->PR);
+		outapp->WriteUInt8(item->MR);
+		outapp->WriteUInt8(item->FR); 
+		outapp->WriteUInt8(item->AStr);
+		outapp->WriteUInt8(item->ASta);
+		outapp->WriteUInt8(item->AAgi);
+		outapp->WriteUInt8(item->ADex);
+		outapp->WriteUInt8(item->ACha);
+		outapp->WriteUInt8(item->AInt);
+		outapp->WriteUInt8(item->AWis);
+		outapp->WriteSInt32(item->HP);
+		outapp->WriteSInt32(item->Mana);
+		outapp->WriteSInt32(item->Endur);
+		outapp->WriteSInt32(item->AC);
+		outapp->WriteUInt32(item->Regen);
+		outapp->WriteUInt32(item->ManaRegen);
+		outapp->WriteSInt32(item->EnduranceRegen);
+		outapp->WriteUInt32(item->Classes);
+		outapp->WriteUInt32(item->Races);
+		outapp->WriteUInt32(item->Deity);
+		outapp->WriteUInt32(item->SkillModValue);
+		outapp->WriteUInt32(0); //SkillModValue
+		outapp->WriteUInt32(item->SkillModType);
+		outapp->WriteUInt32(0); //SkillModExtra
+		outapp->WriteUInt32(item->BaneDmgRace);
+		outapp->WriteUInt32(item->BaneDmgBody);
+		outapp->WriteUInt32(item->BaneDmgRaceAmt);
+		outapp->WriteUInt32(item->BaneDmgAmt);
+		outapp->WriteUInt8(item->Magic);
+		outapp->WriteUInt32(item->CastTime_);
+		outapp->WriteUInt32(item->ReqLevel);
+		outapp->WriteUInt32(item->RecLevel);
+		outapp->WriteUInt32(item->RecSkill);
+		outapp->WriteUInt32(item->BardType);
+		outapp->WriteUInt32(item->BardValue);
+		outapp->WriteUInt8(item->Light);
+		outapp->WriteUInt8(item->Delay);
+		outapp->WriteUInt8(item->ElemDmgType);
+		outapp->WriteUInt8(item->ElemDmgAmt);
+		outapp->WriteUInt8(item->Range);
+		outapp->WriteUInt32(item->Damage);
+		outapp->WriteUInt32(item->Color);
+		outapp->WriteUInt32(0);	// Prestige
+		outapp->WriteUInt8(item->ItemType);
+		outapp->WriteUInt32(item->Material);
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(item->EliteMaterial);
+		outapp->WriteUInt32(0);	// unknown
+		outapp->WriteUInt32(0);	// unknown
+		outapp->WriteUInt32(0); //This is unknown057 from lucy
+		for (spacer = 0; spacer < 77; spacer++) { //More Item stats, but some seem to be off based on packet check
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt32(0); //Unknown
+		for (spacer = 0; spacer < 5; spacer++) { //Augment stuff
+			outapp->WriteUInt32(item->AugSlotType[spacer]);
+			outapp->WriteUInt8(item->AugSlotVisible[spacer]);
+			outapp->WriteUInt8(item->AugSlotUnk2[spacer]);
+		}
+		outapp->WriteUInt32(0); //New RoF 6th Aug Slot
+		outapp->WriteUInt8(1); //^
+		outapp->WriteUInt8(0); //^^
+		outapp->WriteUInt32(item->LDoNSold);
+		outapp->WriteUInt32(item->LDoNTheme);
+		outapp->WriteUInt32(item->LDoNPrice);
+		outapp->WriteUInt32(item->LDoNSellBackRate);
+		for (spacer = 0; spacer < 11; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt16(0); //Unknown
+		outapp->WriteUInt32(item->Favor); // Tribute
+		for (spacer = 0; spacer < 17; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt32(item->GuildFavor); // Tribute
+		outapp->WriteUInt32(0); //Unknown
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		for (spacer = 0; spacer < 11; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt8(1);
+		for (spacer = 0; spacer < 25; spacer++) { //unknowns
+			outapp->WriteUInt8(0);
+		}
+		for (spacer = 0; spacer < 304; spacer++) { //Cast stuff and whole bunch of unknowns
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt8(142); // Always seen not in the item structure though 8E
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(1); // Always seen as 1
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(3452750909); //0x3DCCCCCD/3452750909
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt16(8256); //0x4020/8256
+		outapp->WriteUInt16(0);
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt16(0);
+		outapp->WriteUInt32(4294967295); //Unknown but always seen as FF FF FF FF
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt32(0); //unknown
+		outapp->WriteUInt16(0); //unknown
+		outapp->WriteUInt32(32831); //0x3F80
+		for (spacer = 0; spacer < 24; spacer++) { //whole bunch of unknowns always 0's
+			outapp->WriteUInt8(0);
+		}
+		outapp->WriteUInt8(1);
+		for (spacer = 0; spacer < 6; spacer++) { //whole bunch of unknowns always 0's
+			outapp->WriteUInt8(0);
+		}
+
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	} else
+		return;
 }
 
 void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)

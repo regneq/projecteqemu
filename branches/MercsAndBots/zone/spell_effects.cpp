@@ -5086,44 +5086,41 @@ uint16 Mob::GetProcID(uint16 spell_id, uint8 effect_index) {
 	}
 }
 
-bool Mob::TryDivineSave() {
-
+bool Mob::TryDivineSave() 
+{
 	/*
 	How Touch of the Divine AA works:
 	-Gives chance to avoid death when client is killed.
-	-Chance is determined by the AA value. (base1)
-	-Spell can be triggered from divine save (base2) in this case a Heal
-	Note: Heal value does not and should not increase from more levels of this AA.
-	-If chance is met, a heal is done and a divine aura like effect 'Touch of the Divine'
-	is applied to the client. Determintal spell effects are removed.
+	-Chance is determined by the sum of AA/item/spell chances.
+	-If the chance is met a divine aura like effect 'Touch of the Divine' is applied to the client removing detrimental spell effects.
+	-If desired, additional spells can be triggered from the AA/item/spell effect, generally a heal.
 	*/
-	sint16 SuccessChance = aabonuses.DivineSaveChance[0] + itembonuses.DivineSaveChance[0] + spellbonuses.DivineSaveChance[0];
 
-	if (SuccessChance)
+	sint32 SuccessChance = aabonuses.DivineSaveChance[0] + itembonuses.DivineSaveChance[0] + spellbonuses.DivineSaveChance[0];
+	if (SuccessChance && MakeRandomInt(0, 100) <= SuccessChance)
 	{
-		if (MakeRandomInt(0, 100) <= SuccessChance)
+		SetHP(1);
+
+		int16 EffectsToTry[] = 
+		{ 
+			aabonuses.DivineSaveChance[1],
+			itembonuses.DivineSaveChance[1],
+			spellbonuses.DivineSaveChance[1]
+		};
+		//Fade the divine save effect here after saving the old effects off.
+		//That way, if desired, the effect could apply SE_DivineSave again.
+		BuffFadeByEffect(SE_DivineSave);
+		for(size_t i = 0; i < ( sizeof(EffectsToTry) / sizeof(EffectsToTry[0]) ); ++i)
 		{
-			int32 HealAmt = 0;
-			BuffFadeByEffect(SE_DivineSave);
-			//Touch of the Divine=4789, an Invulnerability/HoT/Purify effect hard coded to trigger if spell effect is defined from base2.
-			if (aabonuses.DivineSaveChance[1] || itembonuses.DivineSaveChance[1] || spellbonuses.DivineSaveChance[1]) {
-			
-				SetHP(1);
-
-				if (aabonuses.DivineSaveChance[1])
-					SpellOnTarget(aabonuses.DivineSaveChance[1], this);
-
-				if (itembonuses.DivineSaveChance[1])
-					SpellOnTarget(itembonuses.DivineSaveChance[1], this);
-
-				if (spellbonuses.DivineSaveChance[1])
-					SpellOnTarget(spellbonuses.DivineSaveChance[1], this);
-
-				SpellOnTarget(4789, this);
-				SendHPUpdate();
-				return true;
+			if( EffectsToTry[i] )
+			{
+				SpellOnTarget(EffectsToTry[i], this);
 			}
 		}
+
+		SpellOnTarget(4789, this); //Touch of the Divine=4789, an Invulnerability/HoT/Purify effect
+		SendHPUpdate();
+		return true;
 	}
 	return false;
 }
