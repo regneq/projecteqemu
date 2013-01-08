@@ -8816,10 +8816,14 @@ void Bot::DoClassAttacks(Mob *target, bool IsRiposte) {
 	if(skill_to_use == FRENZY)
 	{
 		int AtkRounds = 3;
-		int skillmod = 100*GetSkill(FRENZY)/MaxSkill(FRENZY);
+		int skillmod = 0;
+
+        if(MaxSkill(FRENZY) > 0) 
+                skillmod = 100*GetSkill(FRENZY)/MaxSkill(FRENZY);
+
 		sint32 max_dmg = (26 +  ((((GetLevel()-6) * 2)*skillmod)/100))  * ((100+RuleI(Combat, FrenzyBonus))/100);
 		sint32 min_dmg = 0;
-		DoAnim(anim2HSlashing); 
+		DoAnim(anim2HSlashing);
 
 		if (GetLevel() < 51)
 			min_dmg = 1;
@@ -16084,7 +16088,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 						//list leader and number of members
 						c->Message(0, "Bot Heal Rotation- Leader: %s", leaderBot->GetCleanName());
-						c->Message(0, "Bot Heal Rotation- Timer:  %1.1f", (float)(leaderBot->GetHealRotationTimer()/1000));
+						c->Message(0, "Bot Heal Rotation- Timer:  %1.1f", ((float)leaderBot->GetHealRotationTimer()/1000.0f));
 
 						for(list<Bot*>::iterator botListItr = botList.begin(); botListItr != botList.end(); botListItr++) {
 							Bot* tempBot = *botListItr;

@@ -1243,11 +1243,132 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
 			}
-			Buffer += 33; // Unknown;
+
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown;
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown;
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->IsMercenary); //IsMercenary
+			Buffer += 24; // Unknown;
 
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
+	delete in;
+}
+
+ENCODE(OP_MercenaryDataResponse) {
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	MercenaryMerchantList_Struct *emu = (MercenaryMerchantList_Struct *) __emu_buffer;
+
+	char *Buffer = (char *) in->pBuffer;
+
+	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
+
+	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - 4) * emu->MercCount;
+
+
+	int r;
+	int k;
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, PacketSize);
+	Buffer = (char *) outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypeCount);
+	for(r = 0; r < emu->MercTypeCount; r++)
+	{
+		if(emu->MercTypeCount > 0)
+		{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercGrades[r].GradeCountEntry);
+		}
+	}
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
+
+	if(emu->MercCount)
+	{
+		for(r = 0; r < emu->MercCount; r++)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercID);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercType);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercSubType);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].PurchaseCost);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].UpkeepCost);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyCost);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
+			VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
+			if(emu->Mercs[r].StanceCount > 0)
+			{
+				for(k = 0; k < emu->Mercs[r].StanceCount; k++)
+				{
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].StanceIndex);
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].Stance);
+				}
+			}
+		}
+	}
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+}
+
+ENCODE(OP_MercenaryDataUpdate) {
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	MercenaryDataUpdate_Struct *emu = (MercenaryDataUpdate_Struct *) __emu_buffer;
+
+	char *Buffer = (char *) in->pBuffer;
+
+	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
+
+	int r;
+	int k;
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
+	Buffer = (char *) outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercStatus);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
+
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercID);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercSubType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].PurchaseCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].UpkeepCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyUpkeep);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
+		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->MercData[r].TimeLeft);
+		for(k = 0; k < emu->MercData[r].StanceCount; k++)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].Stance);
+		}
+		//VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
+	}
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
 	delete in;
 }
 

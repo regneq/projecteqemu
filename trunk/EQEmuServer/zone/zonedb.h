@@ -93,6 +93,44 @@ struct TraderCharges_Struct {
 	sint32 Charges[80];
 };
 
+const int MaxMercStanceID = 9;
+
+struct MercStanceInfo {
+	uint8	ProficiencyID;
+	uint8	ClassID;	
+	int32	StanceID;
+	uint8	IsDefault;
+};
+
+struct MercTemplate {
+	uint32	MercTemplateID;
+	uint32	MercType;				// From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+	uint32	MercSubType;			// From dbstr_us.txt - 330020105^23^Race: Guktan<br>Type: Healer<br>Confidence: High<br>Proficiency: Apprentice, Tier V...
+	uint16	RaceID;
+	uint8	ClassID;
+	uint32  MercNPCID;
+	uint8	ProficiencyID;
+	uint8	CostFormula;			// To determine cost to client
+	uint32	ClientVersion;				// Only send valid mercs per expansion
+	uint8	MercNameType;			// Determines if merc gets random name or default text
+	char	MercNamePrefix[25];
+	char	MercNameSuffix[25];
+	int32	Stances[MaxMercStanceID];
+};
+
+struct MercInfo {
+	MercTemplate myTemplate;
+	int32	SuspendedTime;
+	bool	IsSuspended;
+	int32	MercTimerRemaining;
+	uint8	Gender;
+	sint32	State;
+};
+
+struct ClientMercEntry {
+	int32 id;
+	int32 npcid;	
+};
 
 class ItemInst;
 struct FactionMods;
@@ -275,6 +313,7 @@ public:
 	 * NPCs
 	 */
 	const NPCType*			GetNPCType(uint32 id);
+	const NPCType*			GetMercType(uint32 id, uint16 raceid, uint32 clientlevel);
 	int32	NPCSpawnDB(int8 command, const char* zone, uint32 zone_version, Client *c, NPC* spawn = 0, int32 extra = 0); // 0 = Create 1 = Add; 2 = Update; 3 = Remove; 4 = Delete
 	bool	SetSpecialAttkFlag(int8 id, const char* flag);
 	bool	GetPetEntry(const char *pet_type, PetRecord *into);

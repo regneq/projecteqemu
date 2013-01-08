@@ -461,6 +461,9 @@
     <ClCompile Include="..\common\patches\RoF.cpp">
       <Filter>Patches</Filter>
     </ClCompile>
+    <ClCompile Include="merc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="beacon.h">
@@ -729,6 +732,9 @@
     </ClInclude>
     <ClInclude Include="..\common\version.h">
       <Filter>Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="merc.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,12 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/08/2013 ==
 Derision: RoF: Marked position of Monk 'Mend' skill cooldown timer in PP. Fixed a typo.
+Bad_Captain: Mercs - Merged from branch. Initial merc commit to trunk with semi-functional tank mercs.
+
+OPTIONAL SQL: utils/sql/svn/2380_optional_merc_rules.sql						-- Contains rules for mercs including rule to enable mercs
+OPTIONAL SQL: utils/sql/svn/2380_optional_merc_merchant_npctypes_update.sql		-- Contains npc_types & spawn updates for merc merchants in PoK
+OPTIONAL SQL: utils/sql/svn/2380_optional_merc_data.sql							-- Contains basic merc data, template info, & merc merchant entries
+OPTIONAL SQL: utils/sql/svn/mercs.sql											-- Contains merc stats & armor - to be replaced as needed with updated stats, spells, etc. Allows a complete resourcing of file	
 
 == 01/07/2013 ==
 Trevius: RoF: /who and /who all now function properly.
