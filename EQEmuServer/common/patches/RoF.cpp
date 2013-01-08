@@ -136,8 +136,12 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	{
 		RoFSlot.SlotType = 0;
 		TempSlot = TitaniumSlot - 1;
-		RoFSlot.MainSlot = int(TempSlot / 10) - 2;
-		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 2) * 10);
+		RoFSlot.MainSlot = int(TempSlot / 10) - 3;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
+		if (RoFSlot.MainSlot > 29)
+		{
+			RoFSlot.MainSlot == 33;
+		}
 	}
 	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
 	{
@@ -196,26 +200,26 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 	int32 TitaniumSlot = 0xffffffff;
 	int32 TempSlot = 0;
 
-	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 34)	// Worn/Personal Inventory and Cursor
+	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 51)	// Worn/Personal Inventory and Cursor
 	{
-		if (RoFSlot.MainSlot == 21)
+		if (RoFSlot.MainSlot == 21)			// Power Source
 		{
 			TempSlot = 9999;
 		}
-		else if (RoFSlot.MainSlot == 33)	// Cursor
+		else if (RoFSlot.MainSlot >= 33 && RoFSlot.MainSlot < 51)	// Cursor
 		{
-			TempSlot = 30;
+			TempSlot = RoFSlot.MainSlot - 3;
 		}
-		else if (RoFSlot.MainSlot >= 22)
+		else if (RoFSlot.MainSlot >= 22)	// Ammo and Main Inventory
 		{
 			TempSlot = RoFSlot.MainSlot - 1;
 		}
-		else
+		else								// Worn Slots
 		{
 			TempSlot = RoFSlot.MainSlot;
 		}
 
-		if (RoFSlot.SubSlot >= 0)
+		if (RoFSlot.SubSlot >= 0)			// Bag Slots
 		{
 			TempSlot = ((TempSlot + 3) * 10) + RoFSlot.SubSlot + 1;
 		}
@@ -2802,7 +2806,7 @@ ENCODE(OP_WhoAllResponse)
 
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
 
-		InBuffer += 8;
+		InBuffer += 4;
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);
 
