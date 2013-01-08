@@ -267,6 +267,17 @@ public:
 	void				AI_SetRoambox(float iDist, float iRoamDist, int32 iDelay = 2500);
 	void				AI_SetRoambox(float iDist, float iMaxX, float iMinX, float iMaxY, float iMinY, int32 iDelay = 2500);
 	
+	//mercenary stuff
+	void	LoadMercTypes();
+	void	LoadMercs();
+	std::list<MercType> GetMercTypesList() {return mercTypeList; };
+	std::list<MercType> GetMercTypesList( int32 expansion );
+	std::list<MercData> GetMercsList() {return mercDataList; };
+	std::list<MercData> GetMercsList( int32 expansion );
+	int		GetNumMercTypes() { return mercTypeList.size(); };
+	int		GetNumMercTypes( int32 expansion );
+	int		GetNumMercs() { return mercDataList.size(); };
+	int		GetNumMercs( int32 expansion );
 	
 	inline bool WillAggroNPCs() const { return(npc_aggro); }
 	
@@ -537,6 +548,10 @@ protected:
 
 	LinkedList<ItemInst*> questItems;
 	LinkedList<ItemInst*> questDeletionItems;
+
+	//mercenary stuff
+	std::list<MercType> mercTypeList;
+	std::list<MercData> mercDataList;
 
 private:
 	int32	loottable_id;
