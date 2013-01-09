@@ -89,6 +89,8 @@ E(OP_RemoveBlockedBuffs)
 E(OP_DeleteSpawn)
 E(OP_ClickObjectAction)
 E(OP_RecipeAutoCombine)
+E(OP_GMTrainSkillConfirm)
+E(OP_SkillUpdate)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
