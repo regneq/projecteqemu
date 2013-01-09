@@ -2183,10 +2183,10 @@ struct Adventure_Purchase_Struct {
 struct Adventure_Sell_Struct {
 /*000*/	int32	unknown000;	//0x01 - Stack Size/Charges?
 /*004*/	int32	npcid;
-/*008*/	//int32	slot;
-		ItemSlotStruct slot;
-/*012*/	int32	charges;
-/*016*/	int32	sell_price;
+/*008*/ MainInvItemSlotStruct slot;
+/*016*/	int32	charges;
+/*020*/	int32	sell_price;
+/*024*/
 };
 
 struct AdventurePoints_Update_Struct {
