@@ -8,6 +8,7 @@ Trevius: RoF: Death no longer crashes players and the respawn window is now func
 Trevius: RoF: More work on slot conversions.  This time for the cursor buffer.
 Trevius: RoF: Some work on Guild Master Training packets, but still only seeing languages displayed.
 
+REQUIRED SQL: utils/sql/svn/2383_required_group_ismerc.sql				-- adds ismerc column to group_id table
 OPTIONAL SQL: utils/sql/svn/2380_optional_merc_rules.sql						-- Contains rules for mercs including rule to enable mercs
 OPTIONAL SQL: utils/sql/svn/2380_optional_merc_merchant_npctypes_update.sql		-- Contains npc_types & spawn updates for merc merchants in PoK
 OPTIONAL SQL: utils/sql/svn/2380_optional_merc_data.sql							-- Contains basic merc data, template info, & merc merchant entries
