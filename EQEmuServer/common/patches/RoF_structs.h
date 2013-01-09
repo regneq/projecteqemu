@@ -773,7 +773,18 @@ struct GMSkillChange_Struct {
 /*002*/ int8		unknown2[2];
 /*008*/ uint16		skill_id;
 /*010*/ int8		unknown3[2];
+/*012*/
 };
+
+struct GMTrainSkillConfirm_Struct {	// SoF+ only
+/*000*/	uint32	SkillID;
+/*004*/	uint32	Cost;
+/*008*/	uint8	NewSkill;	// Set to 1 for 'You have learned the basics' message.
+/*009*/	char	TrainerName[64];
+/*073*/ uint8	Unknown073[3];
+/*076*/
+};
+
 struct ConsentResponse_Struct {
 	char grantname[64];
 	char ownername[64];
@@ -2291,7 +2302,11 @@ struct ZonePoints {
 struct SkillUpdate_Struct {
 /*00*/	uint32 skillId;
 /*04*/	uint32 value;
-/*08*/
+/*08*/	uint8 unknown08;	// Seen 1
+/*09*/	uint8 unknown09;	// Seen 80
+/*10*/	uint8 unknown10;	// Seen 136
+/*11*/	uint8 unknown11;	// Seen 54
+/*12*/
 };
 
 struct ZoneUnavail_Struct {
@@ -3402,6 +3417,7 @@ struct TributeAbility_Struct {
 	int32	tribute_id;	//backwards byte order!
 	int32	tier_count;	//backwards byte order!
 	TributeLevel_Struct tiers[MAX_TRIBUTE_TIERS];
+	//int32	unknown1;	// New to RoF
 	char	name[0];
 };
 
@@ -4034,9 +4050,12 @@ struct AdventureMerchant_Struct {
 	uint32	entity_id;
 };
 
+// OP_Save - Size: 484
 struct Save_Struct {
-	int8	unknown00[192];
-	int8	unknown0192[176];
+/*000*/	int8	unknown00[192];
+/*192*/	int8	unknown0192[176];
+/*368*/	int8	unknown0368[116];
+/*484*/
 };
 
 struct GMToggle_Struct {

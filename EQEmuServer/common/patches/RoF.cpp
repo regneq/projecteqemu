@@ -115,7 +115,7 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	RoFSlot.Unknown01 = 0;
 	int32 TempSlot = 0;
 
-	if (TitaniumSlot < 52)
+	if (TitaniumSlot < 31)	// Main Inventory and Cursor
 	{
 		RoFSlot.SlotType = 0;
 		RoFSlot.MainSlot = TitaniumSlot;
@@ -127,10 +127,15 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 		{
 			RoFSlot.MainSlot += 1;
 		}
-		else if (TitaniumSlot > 29)	// Cursor
+		else if (TitaniumSlot == 30)	// Cursor
 		{
-			RoFSlot.MainSlot += 3;
+			RoFSlot.MainSlot = 33;
 		}
+	}
+	else if (TitaniumSlot < 51)		// Cursor Buffer
+	{
+		RoFSlot.SlotType = 5;
+		RoFSlot.MainSlot = TitaniumSlot - 31;
 	}
 	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
 	{
@@ -206,9 +211,9 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 		{
 			TempSlot = 9999;
 		}
-		else if (RoFSlot.MainSlot >= 33 && RoFSlot.MainSlot < 51)	// Cursor
+		else if (RoFSlot.MainSlot == 33)	// Cursor
 		{
-			TempSlot = RoFSlot.MainSlot - 3;
+			TempSlot = 30;
 		}
 		else if (RoFSlot.MainSlot >= 22)	// Ammo and Main Inventory
 		{
@@ -274,7 +279,15 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 		}
 		TitaniumSlot = TempSlot;
 	}
-
+	else if (RoFSlot.SlotType == 5)		// Cursor Buffer
+	{
+		TempSlot = 31;
+		if (RoFSlot.MainSlot >= 0)
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
 	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
 	return TitaniumSlot;
@@ -981,7 +994,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(0);		// Unknown
 
 	outapp->WriteUInt32(0);		// This is the cooldown timer for the monk 'Mend' skill. Client will add 6 minutes to this value the first time the
-					// player logs in. After that it will honour whatever value we send here.
+								// player logs in. After that it will honour whatever value we send here.
 
 	outapp->WriteUInt32(0);		// Unknown
 
@@ -2186,6 +2199,28 @@ ENCODE(OP_SendMembership) {
 	}
 	eq->entries[21] = 0;
 
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GMTrainSkillConfirm) {
+	ENCODE_LENGTH_EXACT(GMTrainSkillConfirm_Struct);
+	SETUP_DIRECT_ENCODE(GMTrainSkillConfirm_Struct, structs::GMTrainSkillConfirm_Struct);
+	OUT(SkillID);
+	OUT(Cost);
+	OUT(NewSkill);
+	OUT_str(TrainerName);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_SkillUpdate) {
+	ENCODE_LENGTH_EXACT(SkillUpdate_Struct);
+	SETUP_DIRECT_ENCODE(SkillUpdate_Struct, structs::SkillUpdate_Struct);
+	OUT(skillId);
+	OUT(value);
+	eq->unknown08 = 1;		// Observed
+	eq->unknown09 = 80;		// Observed
+	eq->unknown10 = 136;	// Observed
+	eq->unknown11 = 54;		// Observed
 	FINISH_ENCODE();
 }
 
