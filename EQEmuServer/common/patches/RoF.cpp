@@ -1272,7 +1272,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(emu->ldon_points_ruj);
 	outapp->WriteUInt32(emu->ldon_points_tak);
 
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->ldon_points_available);
 
 	outapp->WriteDouble(emu->group_leadership_exp);
 	outapp->WriteDouble(emu->raid_leadership_exp);
@@ -1630,8 +1630,8 @@ ENCODE(OP_BazaarSearch)
 
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
-ENCODE(OP_ZoneSpawns) {
-	_log(NET__ERROR, "Sending OP_ZoneEntry");
+ENCODE(OP_ZoneSpawns)
+{
 		//consume the packet
 		EQApplicationPacket *in = *p;
 		*p = NULL;
@@ -2713,7 +2713,7 @@ ENCODE(OP_AdventureMerchantSell) {
 
 	eq->unknown000 = 1;
 	OUT(npcid);
-	eq->slot = TitaniumToRoFSlot(emu->slot);
+	eq->slot = MainInvTitaniumToRoFSlot(emu->slot);
 	OUT(charges);
 	OUT(sell_price);
 
@@ -3720,7 +3720,7 @@ DECODE(OP_AdventureMerchantSell) {
 	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
 
 	IN(npcid);
-	emu->slot = RoFToTitaniumSlot(eq->slot);
+	emu->slot = MainInvRoFToTitaniumSlot(eq->slot);
 	IN(charges);
 	IN(sell_price);
 
