@@ -14,7 +14,7 @@
 #include "watermap.h"
 
 Merc::Merc(const NPCType* d, float x, float y, float z, float heading) 
-	: NPC(d, 0, x, y, z, heading, 0, false) 
+	: NPC(d, 0, x, y, z, heading, 0, false), endupkeep_timer(1000) 
 {
 	_baseAC = d->AC;
 	_baseSTR = d->STR;
@@ -1283,6 +1283,48 @@ sint32 Merc::CalcEnduranceRegenCap() {
 	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
+void Merc::SetEndurance(sint32 newEnd)
+{
+	/*Endurance can't be less than 0 or greater than max*/
+	if(newEnd < 0)
+		newEnd = 0;
+	else if(newEnd > GetMaxEndurance()){
+		newEnd = GetMaxEndurance();
+	}
+
+	cur_end = newEnd;
+}
+
+void Merc::DoEnduranceUpkeep() {
+	int upkeep_sum = 0;
+
+	int cost_redux = spellbonuses.EnduranceReduction + itembonuses.EnduranceReduction;
+
+	uint32 buffs_i;
+	uint32 buff_count = GetMaxTotalSlots();
+	for (buffs_i = 0; buffs_i < buff_count; buffs_i++) {
+		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
+			int upkeep = spells[buffs[buffs_i].spellid].EndurUpkeep;
+			if(upkeep > 0) {
+				if(cost_redux > 0) {
+					if(upkeep <= cost_redux)
+						continue;	//reduced to 0
+					upkeep -= cost_redux;
+				}
+				if((upkeep+upkeep_sum) > GetEndurance()) {
+					//they do not have enough to keep this one going.
+					BuffFadeBySlot(buffs_i);
+				} else {
+					upkeep_sum += upkeep;
+				}
+			}
+		}
+	}
+	
+	if(upkeep_sum != 0)
+		SetEndurance(GetEndurance() - upkeep_sum);
+}
+
 bool Merc::HasSkill(SkillType skill_id) const {
 	return((GetSkill(skill_id) > 0) && CanHaveSkill(skill_id));
 }
@@ -1448,6 +1490,23 @@ bool Merc::Process()
 		}
 
 		BuffProcess();
+
+		if(GetHP() < GetMaxHP())
+			SetHP(GetHP() + CalcHPRegen());
+
+		if(GetMana() < GetMaxMana())
+			SetMana(GetMana() + CalcManaRegen());
+
+		if(GetEndurance() < GetMaxEndurance())
+			SetEndurance(GetEndurance() + CalcEnduranceRegen());
+	}
+
+	if (sendhpupdate_timer.Check()) {
+		SendHPUpdate();
+	}
+
+	if (endupkeep_timer.Check() && GetHP() > 0){
+		DoEnduranceUpkeep();
 	}
 
 	if (IsStunned() || IsMezzed())

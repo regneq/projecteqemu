@@ -13501,7 +13501,8 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 	uint32 merchant_id = mmsr->MercMerchantID;
 	int32 altCurrentType = 19;
 
-	Message(7, "Mercenary Debug: Data Request for Merchant ID (%i)", merchant_id);
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Data Request for Merchant ID (%i)", merchant_id);
 
 	//client is requesting data about currently owned mercenary
 	if(merchant_id == 0) {
@@ -13621,7 +13622,8 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 
 	DumpPacket(app);
 
-	Message(7, "Mercenary Debug: Template ID (%i), Merchant ID (%i), Unknown1 (%i), Unknown2 (%i)", merc_template_id, merchant_id, merc_unk1, merc_unk2);
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Template ID (%i), Merchant ID (%i), Unknown1 (%i), Unknown2 (%i)", merc_template_id, merchant_id, merc_unk1, merc_unk2);
 
 	//HirePending = true;
 	SetHoTT(0);
@@ -13680,7 +13682,8 @@ void Client::Handle_OP_MercenarySuspendRequest(const EQApplicationPacket *app)
 
 	DumpPacket(app);
 
-	Message(7, "Mercenary Debug: Suspend ( %i ) received.", merc_suspend);
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Suspend ( %i ) received.", merc_suspend);
 	
 	// Check if the merc is suspended and if so, unsuspend, otherwise suspend it
 	SuspendMercCommand();
@@ -13707,7 +13710,8 @@ void Client::Handle_OP_MercenaryCommand(const EQApplicationPacket *app)
 
 	DumpPacket(app);
 
-	Message(7, "Mercenary Debug: Command %i, Option %i received.", merc_command, option);
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Command %i, Option %i received.", merc_command, option);
 	
 	// Handle the Command here...
 	// Will need a list of what every type of command is supposed to do
@@ -13727,7 +13731,8 @@ void Client::Handle_OP_MercenaryDataUpdateRequest(const EQApplicationPacket *app
 
 	DumpPacket(app);
 
-	Message(7, "Mercenary Debug: Data Update Request Received.");
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Data Update Request Received.");
 
 	if(GetMercID())
 	{
@@ -13755,7 +13760,8 @@ void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
 		Command = VARSTRUCT_DECODE_TYPE(uint8, InBuffer);
 	}
 
-	Message(7, "Mercenary Debug: Dismiss Request ( %i ) Received.", Command);
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Dismiss Request ( %i ) Received.", Command);
 
 	// Handle the dismiss here...
 	if(GetMercID()) {
@@ -13782,7 +13788,8 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 	
 	DumpPacket(app);
 
-	Message(7, "Mercenary Debug: Timer Request received.");
+	if(MERC_DEBUG > 0)
+		Message(7, "Mercenary Debug: Timer Request received.");
 
 	if(!RuleB(Mercs, AllowMercs)) {
 		return;

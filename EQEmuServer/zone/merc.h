@@ -5,7 +5,7 @@
 #include "npc.h"
 using namespace std;
 
-
+#define MERC_DEBUG 0
 const int MercAISpellRange = 100; // TODO: Write a method that calcs what the merc's spell range is based on spell, equipment, AA, whatever and replace this
 
 class Merc : public NPC {
@@ -206,8 +206,13 @@ private:
 	sint32	CalcManaRegenCap();
 	void	CalcMaxEndurance();	//This calculates the maximum endurance we can have
 	sint32	CalcBaseEndurance();	//Calculates Base End
+	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
+	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
-	sint32	CalcEnduranceRegenCap();	
+	sint32	CalcEnduranceRegenCap();
+	void	SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
+	void DoEnduranceUpkeep();	//does the endurance upkeep
+
 	int 	GroupLeadershipAAHealthEnhancement();
 	int 	GroupLeadershipAAManaEnhancement();
 	int		GroupLeadershipAAHealthRegeneration();
@@ -252,6 +257,8 @@ private:
 	bool	p_depop;
 	int32	owner_char_id;
 	const NPCType*	ourNPCData;
+
+	Timer	endupkeep_timer;
 };
 
 #endif // MERC_H
