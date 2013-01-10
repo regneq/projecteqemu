@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/09/2013 ==
 Derision: RoF: Corrected LDoN merchant opcodes, added encode for OP_AdventureMerchantSell. Updated PP with available LDoN points.
+Bad_Captain: Mercs - removed debug messages, fixed regen.
 
 == 01/08/2013 ==
 Derision: RoF: Marked position of Monk 'Mend' skill cooldown timer in PP. Fixed a typo.
