@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/10/2013 ==
+Trevius: RoF: Corrected multiple opcodes.
+Trevius: RoF: #finditem now displays itemlinks correctly.
+Trevius: RoF: Started work/testing to get Tasks functioning. Don't click tasks in the history tab or client will freeze.
+Trevius: Added some possible crash fixes.
+
 == 01/09/2013 ==
 Derision: RoF: Corrected LDoN merchant opcodes, added encode for OP_AdventureMerchantSell. Updated PP with available LDoN points.
 Bad_Captain: Mercs - removed debug messages, fixed regen.

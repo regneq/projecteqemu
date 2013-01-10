@@ -1882,8 +1882,7 @@ ENCODE(OP_ZoneSpawns)
 			}
 
 			Buffer += 8; 
-			// Buffer should be pointing at Merc flag
-			++Buffer;
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->IsMercenary);
 			VARSTRUCT_ENCODE_STRING(Buffer, "0000000000000000");
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
@@ -2068,7 +2067,7 @@ ENCODE(OP_GuildMemberList) {
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			strcpy(e->field, str); \
+			strncpy(e->field, str, sizeof(e->field)); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}
@@ -2111,7 +2110,7 @@ ENCODE(OP_SpawnDoor) {
 	ALLOC_VAR_ENCODE(structs::Door_Struct, total_length);
 	int r;
 	for(r = 0; r < door_count; r++) {
-		strcpy(eq[r].name, emu[r].name);
+		strncpy(eq[r].name, emu[r].name, sizeof(eq[r].name));
 		eq[r].xPos = emu[r].xPos;
 		eq[r].yPos = emu[r].yPos;
 		eq[r].zPos = emu[r].zPos;
@@ -2347,7 +2346,7 @@ ENCODE(OP_ExpansionInfo) {
 ENCODE(OP_LogServer) {
 	ENCODE_LENGTH_EXACT(LogServer_Struct);
  	SETUP_DIRECT_ENCODE(LogServer_Struct, structs::LogServer_Struct);
- 	strcpy(eq->worldshortname, emu->worldshortname);
+ 	strncpy(eq->worldshortname, emu->worldshortname, sizeof(eq->worldshortname));
  
  	OUT(enablevoicemacros);
  	OUT(enablemail);
@@ -2636,7 +2635,7 @@ ENCODE(OP_SomeItemPacketMaybe) {
 	OUT(item_type);
 	OUT(skill);
 
-	strcpy(eq->model_name, emu->model_name);
+	strncpy(eq->model_name, emu->model_name, sizeof(eq->model_name));
 
 	FINISH_ENCODE();
 }
@@ -2686,7 +2685,7 @@ ENCODE(OP_ZonePlayerToBind)
 	zph->heading = zps->heading;
 	zph->bind_zone_id = 0;
 	zph->bind_instance_id = zps->bind_instance_id;
-	strcpy(zph->zone_name, zps->zone_name);
+	strncpy(zph->zone_name, zps->zone_name, sizeof(zph->zone_name));
 
 	zpf->unknown021 = 1;
 	zpf->unknown022 = 0;
@@ -2802,7 +2801,7 @@ ENCODE(OP_VetRewardsAvaliable)
 		for(int x = 0; x < 8; ++x)
 		{
 			vr->items[x].item_id = ivr->items[x].item_id;
-			strcpy(vr->items[x].item_name, ivr->items[x].item_name);
+			strncpy(vr->items[x].item_name, ivr->items[x].item_name, sizeof(vr->items[x].item_name));
 			vr->items[x].charges = ivr->items[x].charges;
 		}
 
@@ -3209,8 +3208,8 @@ ENCODE(OP_DzExpeditionInfo)
 	OUT(max_players);
 	eq->unknown004 = 785316192;
 	eq->unknown008 = 435601;
-	strcpy(eq->expedition_name, emu->expedition_name);
-	strcpy(eq->leader_name, emu->leader_name);
+	strncpy(eq->expedition_name, emu->expedition_name, sizeof(eq->expedition_name));
+	strncpy(eq->leader_name, emu->leader_name, sizeof(eq->leader_name));
 	FINISH_ENCODE();
 }
 
@@ -3314,8 +3313,8 @@ ENCODE(OP_DzJoinExpeditionConfirm)
 {
 	ENCODE_LENGTH_EXACT(ExpeditionJoinPrompt_Struct);
 	SETUP_DIRECT_ENCODE(ExpeditionJoinPrompt_Struct, structs::ExpeditionJoinPrompt_Struct);
-	strcpy(eq->expedition_name, emu->expedition_name);
-	strcpy(eq->player_name, emu->player_name);
+	strncpy(eq->expedition_name, emu->expedition_name, sizeof(eq->expedition_name));
+	strncpy(eq->player_name, emu->player_name, sizeof(eq->player_name));
 	FINISH_ENCODE();
 }
 

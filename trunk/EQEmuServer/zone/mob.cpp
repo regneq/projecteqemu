@@ -3911,7 +3911,7 @@ void Mob::InsertQuestGlobal(int charid, int npcid, int zoneid, const char *varna
 		"REPLACE INTO quest_globals (charid, npcid, zoneid, name, value, expdate)"
 		"VALUES (%i, %i, %i, '%s', '%s', %s)",
 		charid, npcid, zoneid, varname, varvalue, duration_ss.str().c_str()
-		), errbuf, NULL, NULL, &last_id))
+		), errbuf))
 	{
 		//_log(QUESTS, "SelGlobal error inserting %s : %s", varname, errbuf);
 	}

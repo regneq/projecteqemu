@@ -4459,7 +4459,7 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 	WARS->playerineqstring = 5001;
 
-	strcpy(WARS->line, "---------------------------");
+	strncpy(WARS->line, "---------------------------", sizeof(WARS->line));
 
 	WARS->unknown35 = 0x0a;
 

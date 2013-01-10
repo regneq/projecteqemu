@@ -2522,7 +2522,11 @@ void TaskManager::SendCompletedTasksToClient(Client *c, ClientTaskState *State) 
 	
 void TaskManager::SendTaskActivityShort(Client *c, int TaskID, int ActivityID, int ClientTaskIndex) {
 
-	// 0x3ba8
+	if (c->GetClientVersion() >= EQClientRoF)
+	{
+		SendTaskActivityNew(c, TaskID, ActivityID, ClientTaskIndex, Tasks[TaskID]->Activity[ActivityID].Optional, 0);
+		return;
+	}
 
 	// This Activity Packet is sent for activities that have not yet been unlocked and appear as ???
 	// in the client.
@@ -2550,6 +2554,12 @@ void TaskManager::SendTaskActivityShort(Client *c, int TaskID, int ActivityID, i
 
 
 void TaskManager::SendTaskActivityLong(Client *c, int TaskID, int ActivityID, int ClientTaskIndex, bool Optional, bool TaskComplete) {
+
+	if (c->GetClientVersion() >= EQClientRoF)
+	{
+		SendTaskActivityNew(c, TaskID, ActivityID, ClientTaskIndex, Optional, TaskComplete);
+		return;
+	}
 
 	char *Ptr;
 
@@ -2628,7 +2638,84 @@ void TaskManager::SendTaskActivityLong(Client *c, int TaskID, int ActivityID, in
 	c->QueuePacket(outapp);
 	safe_delete(outapp);
 
+}
 
+// Used only by RoF+ Clients
+void TaskManager::SendTaskActivityNew(Client *c, int TaskID, int ActivityID, int ClientTaskIndex, bool Optional, bool TaskComplete) {
+	
+	uint32 String2Len = 3;
+	if(TaskComplete)
+		String2Len = 4;
+		
+	long PacketLength = 29 + 4 + 8 + 4 + 4 + 5;
+	PacketLength = PacketLength + strlen(Tasks[TaskID]->Activity[ActivityID].Text1) + 1 + 
+		       strlen(Tasks[TaskID]->Activity[ActivityID].Text2) + 1 +
+		       strlen(Tasks[TaskID]->Activity[ActivityID].Text3) + 1 +
+			   ((strlen(itoa(Tasks[TaskID]->Activity[ActivityID].ZoneID)) + 1) * 2) +
+			   3 + String2Len;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TaskActivity, PacketLength);
+
+	outapp->WriteUInt32(ClientTaskIndex);	// TaskSequenceNumber
+	outapp->WriteUInt32(2);		// unknown2
+	outapp->WriteUInt32(TaskID);
+	outapp->WriteUInt32(ActivityID);
+	outapp->WriteUInt32(0);		// unknown3
+
+	// We send our 'internal' types as ActivityUse1. text3 should be set to the activity description, so it makes
+	// no difference to the client. All activity updates will be done based on our interal activity types.
+	if((Tasks[TaskID]->Activity[ActivityID].Type > 0) &&  Tasks[TaskID]->Activity[ActivityID].Type < 100)
+		outapp->WriteUInt32(Tasks[TaskID]->Activity[ActivityID].Type);
+	else
+		outapp->WriteUInt32(ActivityUse1);
+
+	outapp->WriteUInt32(Optional);
+	outapp->WriteUInt8(0);		// unknown5
+
+	// One of these unknown fields maybe related to the 'Use On' activity types
+	outapp->WriteString(Tasks[TaskID]->Activity[ActivityID].Text1);
+
+	outapp->WriteUInt32((strlen(Tasks[TaskID]->Activity[ActivityID].Text2) + 1));	// String Length - Add in null terminator
+	outapp->WriteString(Tasks[TaskID]->Activity[ActivityID].Text2);
+
+	// Goal Count
+	if(Tasks[TaskID]->Activity[ActivityID].Type != ActivityGiveCash)
+		outapp->WriteUInt32(Tasks[TaskID]->Activity[ActivityID].GoalCount);
+	else
+		outapp->WriteUInt32(1);	// GoalCount
+		
+	outapp->WriteUInt32(3);		// String Length - Add in null terminator
+	outapp->WriteString("-1");
+
+	if(!TaskComplete) {
+		outapp->WriteUInt32(3);	// String Length - Add in null terminator
+		outapp->WriteString("-1");
+	}
+	else
+	{
+		outapp->WriteUInt32(4);	// String Length - Add in null terminator
+		outapp->WriteString("-54");
+	}
+	
+	outapp->WriteString(itoa(Tasks[TaskID]->Activity[ActivityID].ZoneID));
+	outapp->WriteUInt32(0);		// unknown7
+
+	outapp->WriteString(Tasks[TaskID]->Activity[ActivityID].Text3);
+	
+	if(Tasks[TaskID]->Activity[ActivityID].Type != ActivityGiveCash)
+		outapp->WriteUInt32(c->GetTaskActivityDoneCount(ClientTaskIndex, ActivityID));	// DoneCount
+	else
+		// For internal activity types, DoneCount is either 1 if the activity is complete, 0 otherwise.
+		outapp->WriteUInt32((c->GetTaskActivityDoneCount(ClientTaskIndex, ActivityID) >= Tasks[TaskID]->Activity[ActivityID].GoalCount));
+
+	outapp->WriteUInt8(1);	// unknown9
+	
+	outapp->WriteString(itoa(Tasks[TaskID]->Activity[ActivityID].ZoneID));
+
+	_pkt(TASKS__PACKETS, outapp);
+
+	c->QueuePacket(outapp);
+	safe_delete(outapp);
 
 }
 
@@ -2706,7 +2793,12 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 	int PacketLength = sizeof(TaskDescriptionHeader_Struct) + strlen(Tasks[TaskID]->Title) + 1
 	                   + sizeof(TaskDescriptionData1_Struct) + strlen(Tasks[TaskID]->Description) + 1
-			   + sizeof(TaskDescriptionData2_Struct) + + sizeof(TaskDescriptionTrailer_Struct);
+			   + sizeof(TaskDescriptionData2_Struct) + 1 + sizeof(TaskDescriptionTrailer_Struct);
+
+	if (c->GetClientVersion() >= EQClientRoF)
+	{
+		PacketLength += 1;
+	}
 
 	string RewardText;
 	int ItemID = 0;
@@ -2742,6 +2834,12 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 						break;
 					}
+					case EQClientRoF:
+					{
+						MakeAnyLenString(&RewardTmp, "%c%06X0000000000000000000000000000000000000000014505DC2%s%c", 
+								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+						break;
+					}
 					default:
 					{
 						// All clients after Titanium
@@ -2767,6 +2865,12 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 						case EQClientTitanium:
 						{
 							MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
+									 0x12, ItemID, Item->Name ,0x12);
+							break;
+						}
+						case EQClientRoF:
+						{
+							MakeAnyLenString(&RewardTmp, "%c%06X0000000000000000000000000000000000000000014505DC2%s%c", 
 									 0x12, ItemID, Item->Name ,0x12);
 							break;
 						}
@@ -2824,7 +2928,15 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 	tdd1->Duration = Duration;
 	tdd1->unknown2 = 0x00000000;
-	tdd1->StartTime = StartTime;
+	
+	if (c->GetClientVersion() >= EQClientRoF)
+	{
+		tdd1->StartTime = 0x00000000;
+	}
+	else
+	{
+		tdd1->StartTime = StartTime;
+	}
 
 	Ptr = (char *) tdd1 + sizeof(TaskDescriptionData1_Struct);
 
@@ -2834,7 +2946,7 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 	tdd2 = (TaskDescriptionData2_Struct*)Ptr;
 
 	// This next field may not be a reward count. It is always 1 in the packets I have seen. Setting it to 2 and trying
-	// to include multiple item links has so far proven futile.
+	// to include multiple item links has so far proven futile.  Setting it to 0 ends the packet after the next byte.
 	tdd2->RewardCount = 1;  
 	
 	if(Tasks[TaskID]->XPReward)
@@ -2845,11 +2957,17 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 	tdd2->unknown2 = 0x00000000;
 	tdd2->unknown3 = 0x0000;
 	Ptr = (char *) tdd2 + sizeof(TaskDescriptionData2_Struct);
+
 	sprintf(Ptr, "%s", RewardText.c_str());
 	Ptr = Ptr + strlen(Ptr) + 1;
 
 	tdt = (TaskDescriptionTrailer_Struct*)Ptr;
 	tdt->Points = 0x00000000; // Points Count 
+
+	if (c->GetClientVersion() >= EQClientRoF)
+	{
+		outapp->WriteUInt8(0);
+	}
 
 	_pkt(TASKS__PACKETS, outapp);
 
