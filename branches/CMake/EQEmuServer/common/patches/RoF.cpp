@@ -115,7 +115,7 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	RoFSlot.Unknown01 = 0;
 	int32 TempSlot = 0;
 
-	if (TitaniumSlot < 52)
+	if (TitaniumSlot < 31)	// Main Inventory and Cursor
 	{
 		RoFSlot.SlotType = 0;
 		RoFSlot.MainSlot = TitaniumSlot;
@@ -127,10 +127,15 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 		{
 			RoFSlot.MainSlot += 1;
 		}
-		else if (TitaniumSlot > 29)	// Cursor
+		else if (TitaniumSlot == 30)	// Cursor
 		{
-			RoFSlot.MainSlot += 3;
+			RoFSlot.MainSlot = 33;
 		}
+	}
+	else if (TitaniumSlot < 51)		// Cursor Buffer
+	{
+		RoFSlot.SlotType = 5;
+		RoFSlot.MainSlot = TitaniumSlot - 31;
 	}
 	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
 	{
@@ -140,7 +145,7 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
 		if (RoFSlot.MainSlot > 29)
 		{
-			RoFSlot.MainSlot == 33;
+			RoFSlot.MainSlot = 33;
 		}
 	}
 	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
@@ -206,9 +211,9 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 		{
 			TempSlot = 9999;
 		}
-		else if (RoFSlot.MainSlot >= 33 && RoFSlot.MainSlot < 51)	// Cursor
+		else if (RoFSlot.MainSlot == 33)	// Cursor
 		{
-			TempSlot = RoFSlot.MainSlot - 3;
+			TempSlot = 30;
 		}
 		else if (RoFSlot.MainSlot >= 22)	// Ammo and Main Inventory
 		{
@@ -274,7 +279,15 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 		}
 		TitaniumSlot = TempSlot;
 	}
-
+	else if (RoFSlot.SlotType == 5)		// Cursor Buffer
+	{
+		TempSlot = 31;
+		if (RoFSlot.MainSlot >= 0)
+		{
+			TempSlot += RoFSlot.MainSlot;
+		}
+		TitaniumSlot = TempSlot;
+	}
 	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
 	return TitaniumSlot;
@@ -980,7 +993,8 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(0);		// Unknown
 
-	outapp->WriteUInt32(emu->toxicity);
+	outapp->WriteUInt32(0);		// This is the cooldown timer for the monk 'Mend' skill. Client will add 6 minutes to this value the first time the
+								// player logs in. After that it will honour whatever value we send here.
 
 	outapp->WriteUInt32(0);		// Unknown
 
@@ -1258,7 +1272,7 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(emu->ldon_points_ruj);
 	outapp->WriteUInt32(emu->ldon_points_tak);
 
-	outapp->WriteUInt32(0);				// Unknown
+	outapp->WriteUInt32(emu->ldon_points_available);
 
 	outapp->WriteDouble(emu->group_leadership_exp);
 	outapp->WriteDouble(emu->raid_leadership_exp);
@@ -1616,8 +1630,8 @@ ENCODE(OP_BazaarSearch)
 
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
-ENCODE(OP_ZoneSpawns) {
-	_log(NET__ERROR, "Sending OP_ZoneEntry");
+ENCODE(OP_ZoneSpawns)
+{
 		//consume the packet
 		EQApplicationPacket *in = *p;
 		*p = NULL;
@@ -1868,8 +1882,7 @@ ENCODE(OP_ZoneSpawns) {
 			}
 
 			Buffer += 8; 
-			// Buffer should be pointing at Merc flag
-			++Buffer;
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->IsMercenary);
 			VARSTRUCT_ENCODE_STRING(Buffer, "0000000000000000");
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
@@ -2054,7 +2067,7 @@ ENCODE(OP_GuildMemberList) {
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			strcpy(e->field, str); \
+			strncpy(e->field, str, sizeof(e->field)); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}
@@ -2097,7 +2110,7 @@ ENCODE(OP_SpawnDoor) {
 	ALLOC_VAR_ENCODE(structs::Door_Struct, total_length);
 	int r;
 	for(r = 0; r < door_count; r++) {
-		strcpy(eq[r].name, emu[r].name);
+		strncpy(eq[r].name, emu[r].name, sizeof(eq[r].name));
 		eq[r].xPos = emu[r].xPos;
 		eq[r].yPos = emu[r].yPos;
 		eq[r].zPos = emu[r].zPos;
@@ -2185,6 +2198,28 @@ ENCODE(OP_SendMembership) {
 	}
 	eq->entries[21] = 0;
 
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GMTrainSkillConfirm) {
+	ENCODE_LENGTH_EXACT(GMTrainSkillConfirm_Struct);
+	SETUP_DIRECT_ENCODE(GMTrainSkillConfirm_Struct, structs::GMTrainSkillConfirm_Struct);
+	OUT(SkillID);
+	OUT(Cost);
+	OUT(NewSkill);
+	OUT_str(TrainerName);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_SkillUpdate) {
+	ENCODE_LENGTH_EXACT(SkillUpdate_Struct);
+	SETUP_DIRECT_ENCODE(SkillUpdate_Struct, structs::SkillUpdate_Struct);
+	OUT(skillId);
+	OUT(value);
+	eq->unknown08 = 1;		// Observed
+	eq->unknown09 = 80;		// Observed
+	eq->unknown10 = 136;	// Observed
+	eq->unknown11 = 54;		// Observed
 	FINISH_ENCODE();
 }
 
@@ -2311,7 +2346,7 @@ ENCODE(OP_ExpansionInfo) {
 ENCODE(OP_LogServer) {
 	ENCODE_LENGTH_EXACT(LogServer_Struct);
  	SETUP_DIRECT_ENCODE(LogServer_Struct, structs::LogServer_Struct);
- 	strcpy(eq->worldshortname, emu->worldshortname);
+ 	strncpy(eq->worldshortname, emu->worldshortname, sizeof(eq->worldshortname));
  
  	OUT(enablevoicemacros);
  	OUT(enablemail);
@@ -2600,7 +2635,7 @@ ENCODE(OP_SomeItemPacketMaybe) {
 	OUT(item_type);
 	OUT(skill);
 
-	strcpy(eq->model_name, emu->model_name);
+	strncpy(eq->model_name, emu->model_name, sizeof(eq->model_name));
 
 	FINISH_ENCODE();
 }
@@ -2650,7 +2685,7 @@ ENCODE(OP_ZonePlayerToBind)
 	zph->heading = zps->heading;
 	zph->bind_zone_id = 0;
 	zph->bind_instance_id = zps->bind_instance_id;
-	strcpy(zph->zone_name, zps->zone_name);
+	strncpy(zph->zone_name, zps->zone_name, sizeof(zph->zone_name));
 
 	zpf->unknown021 = 1;
 	zpf->unknown022 = 0;
@@ -2677,7 +2712,7 @@ ENCODE(OP_AdventureMerchantSell) {
 
 	eq->unknown000 = 1;
 	OUT(npcid);
-	eq->slot = TitaniumToRoFSlot(emu->slot);
+	eq->slot = MainInvTitaniumToRoFSlot(emu->slot);
 	OUT(charges);
 	OUT(sell_price);
 
@@ -2766,7 +2801,7 @@ ENCODE(OP_VetRewardsAvaliable)
 		for(int x = 0; x < 8; ++x)
 		{
 			vr->items[x].item_id = ivr->items[x].item_id;
-			strcpy(vr->items[x].item_name, ivr->items[x].item_name);
+			strncpy(vr->items[x].item_name, ivr->items[x].item_name, sizeof(vr->items[x].item_name));
 			vr->items[x].charges = ivr->items[x].charges;
 		}
 
@@ -3173,8 +3208,8 @@ ENCODE(OP_DzExpeditionInfo)
 	OUT(max_players);
 	eq->unknown004 = 785316192;
 	eq->unknown008 = 435601;
-	strcpy(eq->expedition_name, emu->expedition_name);
-	strcpy(eq->leader_name, emu->leader_name);
+	strncpy(eq->expedition_name, emu->expedition_name, sizeof(eq->expedition_name));
+	strncpy(eq->leader_name, emu->leader_name, sizeof(eq->leader_name));
 	FINISH_ENCODE();
 }
 
@@ -3278,8 +3313,8 @@ ENCODE(OP_DzJoinExpeditionConfirm)
 {
 	ENCODE_LENGTH_EXACT(ExpeditionJoinPrompt_Struct);
 	SETUP_DIRECT_ENCODE(ExpeditionJoinPrompt_Struct, structs::ExpeditionJoinPrompt_Struct);
-	strcpy(eq->expedition_name, emu->expedition_name);
-	strcpy(eq->player_name, emu->player_name);
+	strncpy(eq->expedition_name, emu->expedition_name, sizeof(eq->expedition_name));
+	strncpy(eq->player_name, emu->player_name, sizeof(eq->player_name));
 	FINISH_ENCODE();
 }
 
@@ -3684,7 +3719,7 @@ DECODE(OP_AdventureMerchantSell) {
 	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
 
 	IN(npcid);
-	emu->slot = RoFToTitaniumSlot(eq->slot);
+	emu->slot = MainInvRoFToTitaniumSlot(eq->slot);
 	IN(charges);
 	IN(sell_price);
 

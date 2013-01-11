@@ -161,6 +161,8 @@ public:
 	void	LoadTempMerchantData_result(MYSQL_RES* result);
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
+	void LoadMercTemplates();
+	MercTemplate* GetMercTemplate( uint32 template_id );
 
 	void SetInstanceTimer(int32 new_duration);
 	void LoadLDoNTraps();
@@ -168,11 +170,14 @@ public:
 	void LoadAdventureFlavor();
 	
 	map<uint32,NPCType *> npctable;
+	map<uint32,NPCType *> merctable;
 	map<uint32,std::list<MerchantList> > merchanttable;
 	map<uint32,std::list<TempMerchantList> > tmpmerchanttable;
 	map<uint32,std::string> adventure_entry_list_flavor;
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
+	map<uint32,std::list<MercStanceInfo> > merc_stance_list;
+	map<uint32, MercTemplate> merc_templates;
 	list<InternalVeteranReward> VeteranRewards;
     list<AltCurrencyDefinition_Struct> AlternateCurrencies;
 	char *adv_data;

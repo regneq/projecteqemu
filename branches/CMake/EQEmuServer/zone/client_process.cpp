@@ -235,6 +235,18 @@ bool Client::Process() {
 //				SpellFinished(bardsong, bardsong_target, bardsong_slot, spells[bardsong].mana);
 			}
 		}
+
+		if(GetMerc())
+		{
+				UpdateMercTimer();
+		}
+
+		if(GetEPP().mercTemplateID != 0)
+		{
+			if(p_timers.Expired(&database, pTimerMercSuspend, false)) {
+					CheckMercSuspendTimer();
+				}
+		}
 		
 		if(IsAIControlled())
 			AI_Process();

@@ -35,6 +35,7 @@ class Client;
 #include "../common/deity.h"
 #include "mob.h"
 #include "npc.h"
+#include "merc.h"
 #include "zone.h"
 #include "AA.h"
 #include "../common/seperator.h"
@@ -1102,7 +1103,21 @@ public:
 	void SendXTargetPacket(uint32 Slot, Mob *m);
 	void RemoveGroupXTargets();
 	void ShowXTargets(Client *c);
-
+	inline int32 GetMercID()	const { return mercid; }
+	void SetMercID( int32 newmercid) { mercid = newmercid; }
+	Merc* GetMerc();
+	void SetMerc(Merc* newmerc);
+	void SendMercMerchantResponsePacket(sint32 response_type);
+	void SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time, sint32 update_interval = 900000, sint32 unk01 = 180000);
+	void SendMercSuspendResponsePacket(int32 suspended_time);
+	void SendMercAssignPacket(int32 entityID, int32 unk01, int32 unk02);
+	void SendMercPersonalInfo();
+	void SuspendMercCommand();
+	void SpawnMercOnZone();
+	void UpdateMercTimer();
+	void UpdateMercLevel();
+	void CheckMercSuspendTimer();
+	Timer GetMercTimer() { return merc_timer; };
 	char* GetRacePlural(Client* client);
 	char* GetClassPlural(Client* client);
 	void  SendWebLink(const char* website);
@@ -1244,6 +1259,7 @@ private:
 	int16				CustomerID;
 	uint32              account_creation;
 	int8				firstlogon;
+	uint32              mercid;
 	bool	Trader;
 	bool	Buyer;
 	string	BuyerWelcomeMessage;
@@ -1259,6 +1275,7 @@ private:
 	Object*						m_tradeskill_object;
 	PetInfo						m_petinfo; // current pet data, used while loading from and saving to DB
 	PetInfo						m_suspendedminion; // pet data for our suspended minion.
+	MercInfo					m_mercinfo; // current mercenary
 	InspectMessage_Struct		m_inspect_message;
 
 	void NPCSpawn(const Seperator* sep);
@@ -1320,6 +1337,7 @@ private:
 	Timer	qglobal_purge_timer;
 	Timer	TrackingTimer;
 	Timer	RespawnFromHoverTimer;
+	Timer	merc_timer;
 
 	float	proximity_x;
 	float	proximity_y;

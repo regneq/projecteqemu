@@ -2049,13 +2049,12 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		give_exp = killer;
 
 	if(give_exp && give_exp->HasOwner()) {
-#ifdef BOTS
+
 		bool ownerInGroup = false;
 		if((give_exp->HasGroup() && give_exp->GetGroup()->IsGroupMember(give_exp->GetUltimateOwner())) 
 			|| (give_exp->IsPet() && (give_exp->GetOwner()->IsClient() 
 			|| ( give_exp->GetOwner()->HasGroup() && give_exp->GetOwner()->GetGroup()->IsGroupMember(give_exp->GetOwner()->GetUltimateOwner())))))
 			ownerInGroup = true;
-#endif //BOTS
 
 		give_exp = give_exp->GetUltimateOwner();
 
@@ -2197,7 +2196,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	if(give_exp_client)
 		hate_list.DoFactionHits(GetNPCFactionID());
 
-	if (!HasOwner() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
+	if (!HasOwner() && !IsMerc() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
 		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetUltimateOwner()->IsClient()) ||
 		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->GetOwner() && killer->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))) 
 	{
@@ -2407,6 +2406,18 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 		}
 	}
 #endif //BOTS
+
+	
+	// if other is a merc, add the merc client to the hate list
+	if(other->IsMerc()) {
+		if(other->CastToMerc()->GetMercOwner() && other->CastToMerc()->GetMercOwner()->CastToClient()->GetFeigned()) {
+			AddFeignMemory(other->CastToMerc()->GetMercOwner()->CastToClient());
+		}
+		else {
+			if(!hate_list.IsOnHateList(other->CastToMerc()->GetMercOwner()))
+				hate_list.Add(other->CastToMerc()->GetMercOwner(), 0, 0, false, true);
+		}
+	} //MERC
 
 	// then add pet owner if there's one
 	if (owner) { // Other is a pet, add him and it

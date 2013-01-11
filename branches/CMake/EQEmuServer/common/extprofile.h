@@ -21,8 +21,8 @@
 #include "eq_packet_structs.h"
 #include "Item.h"
 
-#pragma pack(1)
 
+#pragma pack(1)
 
 /*
 	This is a place to store data that dosent have a home in the
@@ -42,13 +42,19 @@ struct ExtendedProfile_Struct {
 	int16				old_pet_mana;
 	SpellBuff_Struct	pet_buffs[BUFF_COUNT];
 	int32				pet_items[MAX_MATERIALS];
-	char				pet_name[64];
+	char				merc_name[64];
 	
 	uint32				aa_effects;
 	uint32				perAA;		//% of exp going to AAs
 	uint32				expended_aa;		// Total of expended AA
 	uint32				pet_hp;
 	uint32				pet_mana;
+	uint32				mercTemplateID;
+	int32				mercSuspendedTime;
+	bool				mercIsSuspended;
+	int32				mercTimerRemaining;
+	uint8				mercGender;
+	sint32				mercState;
 };
 
 #pragma pack()

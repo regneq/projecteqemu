@@ -206,6 +206,7 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 CharacterID)
 {
         bool InZone = true;
+		bool ismerc = false;
 
         // This method should either be passed a Mob*, if the new member is in this zone, or a NULL Mob*
         // and the name and CharacterID of the new member, if they are out of zone.
@@ -221,6 +222,16 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
 
                 if(newmember->IsClient())
                         CharacterID = newmember->CastToClient()->CharacterID();
+				if(newmember->IsMerc())
+				{
+					Client* owner = newmember->CastToMerc()->GetMercOwner();
+					if(owner)
+					{
+						CharacterID = owner->CastToClient()->CharacterID();
+						NewMemberName = newmember->GetName();
+						ismerc = true;
+					}
+				}
         }
 
         uint32 i = 0;
@@ -262,8 +273,14 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
         for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
                 if (members[i] != NULL && members[i] != newmember) {
                         //fill in group join & send it
-                        strcpy(gj->yourname, members[i]->GetCleanName());
-
+                        if(members[i]->IsMerc())
+						{
+                        strcpy(gj->yourname, members[i]->GetName());
+						}
+						else
+						{
+						strcpy(gj->yourname, members[i]->GetCleanName());
+						}
                         if(members[i]->IsClient()) {
                                 members[i]->CastToClient()->QueuePacket(outapp);
 
@@ -292,13 +309,22 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
                 {
                         strcpy(newmember->CastToClient()->GetPP().groupMembers[x], NewMemberName);
                         newmember->CastToClient()->Save();
-                        database.SetGroupID(NewMemberName, GetID(), newmember->CastToClient()->CharacterID());
+                        database.SetGroupID(NewMemberName, GetID(), newmember->CastToClient()->CharacterID(), false);
                         SendMarkedNPCsToMember(newmember->CastToClient());
 
 						NotifyMainTank(newmember->CastToClient(), 1);
 						NotifyMainAssist(newmember->CastToClient(), 1);
 						NotifyPuller(newmember->CastToClient(), 1);
                 }
+
+				if(newmember->IsMerc())
+				{
+					Client* owner = newmember->CastToMerc()->GetMercOwner();
+					if(owner)
+					{
+						database.SetGroupID(newmember->GetName(), GetID(), owner->CharacterID(), true);
+					}
+				}
 #ifdef BOTS
 				for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
 					if (members[i] != NULL && members[i]->IsBot()) {
@@ -308,7 +334,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 Character
 #endif //BOTS
         }
         else
-                database.SetGroupID(NewMemberName, GetID(), CharacterID);
+                database.SetGroupID(NewMemberName, GetID(), CharacterID, ismerc);
 
         safe_delete(outapp);
 

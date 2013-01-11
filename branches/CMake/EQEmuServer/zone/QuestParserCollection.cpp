@@ -171,7 +171,8 @@ void QuestParserCollection::EventPlayer(QuestEventID evt, Client *client, std::s
     } else { 
         if(_global_player_quest_status != QuestFailedToLoad) {
             std::map<uint32, QuestInterface*>::iterator iter = _interfaces.find(_global_player_quest_status);
-            iter->second->EventGlobalPlayer(evt, client, data, extra_data);
+			if(iter != _interfaces.end())
+            	iter->second->EventGlobalPlayer(evt, client, data, extra_data);
         }
         if(_player_quest_status != QuestFailedToLoad) {
             std::map<uint32, QuestInterface*>::iterator iter = _interfaces.find(_player_quest_status);

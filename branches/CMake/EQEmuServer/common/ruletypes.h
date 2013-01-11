@@ -98,6 +98,17 @@ RULE_BOOL ( Character, EnableXTargetting, true) // Enable Extended Targetting Wi
 
 RULE_CATEGORY_END()
 
+RULE_CATEGORY( Mercs )
+RULE_INT (Mercs, SuspendIntervalMS, 10000)
+RULE_INT (Mercs, UpkeepIntervalMS,  180000)
+RULE_INT (Mercs, SuspendIntervalS, 10)
+RULE_INT (Mercs, UpkeepIntervalS, 180)
+RULE_BOOL ( Mercs, AllowMercs, false )
+RULE_INT (Mercs, AggroRadius, 100)		// Determines the distance from which a merc will aggro group member's target(also used to determine the distance at which a healer merc will begin healing a group member)
+RULE_INT (Mercs, AggroRadiusPuller, 25)	// Determines the distance from which a merc will aggro group member's target, if they have the group role of puller (also used to determine the distance at which a healer merc will begin healing a group member, if they have the group role of puller)
+RULE_INT (Mercs, ScaleRate, 100)
+RULE_CATEGORY_END()
+
 RULE_CATEGORY( Guild )
 RULE_INT ( Guild, MaxMembers, 2048 )
 RULE_BOOL ( Guild, PlayerCreationAllowed, false)	// Allow players to create a guild using the window in Underfoot+

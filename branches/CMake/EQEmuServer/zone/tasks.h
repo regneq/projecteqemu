@@ -238,6 +238,8 @@ public:
 	void SendTaskActivityShort(Client *c, int TaskID, int ActivityID, int ClientTaskIndex);
 	void SendTaskActivityLong(Client *c, int TaskID, int ActivityID, int ClientTaskIndex, 
 				  bool Optional, bool TaskComplete=false);
+	void SendTaskActivityNew(Client *c, int TaskID, int ActivityID, int ClientTaskIndex, 
+				  bool Optional, bool TaskComplete=false);
 	void SendCompletedTasksToClient(Client *c, ClientTaskState *state);
 	void ExplainTask(Client *c, int TaskID);
 	int FirstTaskInSet(int TaskSet);
