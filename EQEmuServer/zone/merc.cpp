@@ -982,9 +982,7 @@ sint16	Merc::CalcDR()
 
 sint16	Merc::CalcPR()
 {
-	PR = _basePR;
-	
-	PR += itembonuses.PR + spellbonuses.PR + aabonuses.PR;
+	PR = _basePR + itembonuses.PR + spellbonuses.PR + aabonuses.PR;
 	
 	if(PR < 1)
 		PR = 1;
@@ -1016,7 +1014,7 @@ sint16 Merc::CalcATK() {
 
 sint16 Merc::CalcAC() {
 	//spell AC bonuses are added directly to natural total
-	AC += spellbonuses.AC;
+	AC = _baseAC + spellbonuses.AC;
 	return(AC);
 }
 
@@ -1069,8 +1067,6 @@ sint32 Merc::CalcMaxHP() {
 
 sint32 Merc::CalcBaseHP()
 {
-	base_hp = max_hp;
-
 	return base_hp;
 }
 
@@ -1116,7 +1112,7 @@ sint32 Merc::CalcMaxMana()
 
 sint32 Merc::CalcBaseMana()
 {
-	return max_mana;
+	return base_mana;
 }
 
 sint32 Merc::CalcBaseManaRegen() 
@@ -1471,8 +1467,8 @@ bool Merc::Process()
     }
 
 	if(!GetMercOwner()) {
-		p_depop = true;
-		return false;
+		//p_depop = true;		//this was causing a crash - removed merc from entity list, but not group
+		//return false;			//merc can live after client dies, not sure how long
 	}
 
 	if(IsSuspended()) {
@@ -2273,7 +2269,9 @@ void Merc::UpdateMercStats(Client *c) {
 	if(c->GetEPP().mercTemplateID >0) {
 		const NPCType* npc_type = database.GetMercType( zone->GetMercTemplate(c->GetEPP().mercTemplateID)->MercNPCID, GetRace(), c->GetLevel()); 
 		max_hp = (npc_type->max_hp * npc_type->scalerate) / 100;
+		base_hp = (npc_type->max_hp * npc_type->scalerate) / 100;
 		max_mana = (npc_type->max_hp * npc_type->scalerate) / 100;
+		base_mana = (npc_type->max_hp * npc_type->scalerate) / 100;
 		level = npc_type->level;
 		max_dmg = (npc_type->max_dmg * npc_type->scalerate) / 100;
 		min_dmg = (npc_type->min_dmg * npc_type->scalerate) / 100;
