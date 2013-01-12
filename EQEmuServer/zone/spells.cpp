@@ -5210,7 +5210,8 @@ void Mob::SendPetBuffsToClient()
 {
 	// Don't really need this check, as it should be checked before this method is called, but it doesn't hurt
 	// too much to check again.
-	if(!(GetOwner() && GetOwner()->IsClient())) return;
+	if(!(GetOwner() && GetOwner()->IsClient()))
+		return;
 
 	int PetBuffCount = 0;
 
@@ -5220,7 +5221,13 @@ void Mob::SendPetBuffsToClient()
 	memset(outapp->pBuffer,0,outapp->size);
 	pbs->petid=GetID();
 
-	for(int buffslot = 0; buffslot < GetMaxTotalSlots(); buffslot++) {
+	int MaxSlots = GetMaxTotalSlots();
+
+	if(MaxSlots > BUFF_COUNT)
+		MaxSlots = BUFF_COUNT;
+
+	for(int buffslot = 0; buffslot < MaxSlots; buffslot++)
+	{
 		if(buffs[buffslot].spellid != SPELL_UNKNOWN) {
 			pbs->spellid[buffslot] = buffs[buffslot].spellid;
 			pbs->ticsremaining[buffslot] = buffs[buffslot].ticsremaining;
