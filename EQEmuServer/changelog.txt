@@ -1,8 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/12/2013 ==
-Derision: RoF: Personal Tribute now works.
-Derision: Fixed potential crash in SendPetBuffsToClient.
+Derision: RoF: Personal Tribute now works and the Pet Buff Window now work.
+Derision: Fixed potential crash in SendPetBuffsToClient. 
 
 == 01/11/2013 ==
 JJ: Added rule check to zone - no need to load Merc Templates if Mercs aren't allowed.

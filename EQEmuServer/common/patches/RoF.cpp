@@ -1503,39 +1503,34 @@ ENCODE(OP_Track)
 
 ENCODE(OP_PetBuffWindow)
 {
-	EQApplicationPacket *in = *p;
-	*p = NULL;
+	// The format of the RoF packet is identical to the OP_BuffCreate packet.
 
-	unsigned char *__emu_buffer = in->pBuffer;
+	SETUP_VAR_ENCODE(PetBuff_Struct);
 
-	PetBuff_Struct *emu = (PetBuff_Struct *) __emu_buffer;
+	uint32 sz = 12 + (17 * emu->buffcount);
+	__packet->size = sz;
+	__packet->pBuffer = new unsigned char[sz];
+	memset(__packet->pBuffer, 0, sz);
+	
+	__packet->WriteUInt32(emu->petid);
+	__packet->WriteUInt32(0);		// PlayerID ?
+	__packet->WriteUInt8(1);		// 1 indicates all buffs on the pet (0 to add or remove a single buff)
+	__packet->WriteUInt16(emu->buffcount);
 
-	int PacketSize = 7 + (emu->buffcount * 13);
-
-	in->size = PacketSize;
-
-	in->pBuffer = new unsigned char[in->size];
-
-	char *Buffer = (char *)in->pBuffer;
-
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petid);
-	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, emu->buffcount);
-
-	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+	for(uint16 i = 0; i < BUFF_COUNT; ++i)
 	{
 		if(emu->spellid[i])
 		{
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spellid[i]);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->ticsremaining[i]);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string. Name of the caster of the buff.
+			__packet->WriteUInt32(i);
+			__packet->WriteUInt32(emu->spellid[i]);
+			__packet->WriteUInt32(emu->ticsremaining[i]);
+			__packet->WriteUInt32(0); // Unknown
+			__packet->WriteString("");	
 		}
 	}
-	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->buffcount);
+	__packet->WriteUInt8(0); // Unknown
 
-	delete[] __emu_buffer;
-
-	dest->FastQueuePacket(&in, ack_req);
+	FINISH_ENCODE();
 }
 
 ENCODE(OP_Barter)
