@@ -231,6 +231,7 @@ public:
 	bool LoadClientState(Client *c, ClientTaskState *state);
 	bool SaveClientState(Client *c, ClientTaskState *state);
 	void SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *TaskList);
+	void SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *TaskList);
 	bool AppropriateLevel(int TaskID, int PlayerLevel);
 	void TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, int TaskSetID);
 	void SendActiveTasksToClient(Client *c, bool TaskComplete=false);

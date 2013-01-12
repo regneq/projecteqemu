@@ -3511,7 +3511,19 @@ struct SetTitleReply_Struct {
 	uint32	entity_id;
 };
 
+struct TaskMemberList_Struct {
+/*00*/  uint32  gopher_id;
+/*04*/  uint32  unknown04;
+/*08*/  uint32  member_count;   //1 less than the number of members
+/*12*/  char	list_pointer[0];
+/*	list is of the form:
+	char member_name[1]	//null terminated string
+	uint8   task_leader	//boolean flag
+*/
+};
+
 #if 0
+
 // Old struct not used by Task System implementation but left for reference
 struct TaskDescription_Struct {
 /*000*/	uint32	activity_count;		//not right.
@@ -3530,20 +3542,7 @@ struct TaskDescription_Struct {
 /*041*/	char	reward_link[1];	//variable length, 0 terminated
 /*042*/	uint32	unknown43;  //maybe crystal count?
 };
-#endif
 
-struct TaskMemberList_Struct {
-/*00*/  uint32  gopher_id;
-/*04*/  uint32  unknown04;
-/*08*/  uint32  member_count;   //1 less than the number of members
-/*12*/  char	list_pointer[0];
-/*	list is of the form:
-	char member_name[1]	//null terminated string
-	uint8   task_leader	//boolean flag
-*/
-};
-
-#if 0
 // Old structs not used by Task System implentation but left for reference
 struct TaskActivity_Struct {
 /*000*/	uint32	activity_count;		//not right
@@ -3565,6 +3564,42 @@ struct TaskActivity_Struct {
 /*055*/	uint32	done_count;
 /*059*/	uint32	unknown59;	//=1 except on unknown and terminal activities?
 /*063*/
+};
+
+struct TaskSelectorWindowHeader_Struct {
+/*000*/	uint32	TaskCount;			// Guessed - Seen 1
+/*000*/	uint32	Unknown2;			// Seen 2
+/*000*/	uint32	TaskGiver;			// Guessed - Seen 1517
+/*000*/	TaskSelectorData_Struct Tasks[1];
+};
+
+struct TaskSelectorData_Struct {
+/*000*/	uint32	TaskID;				// Seen 208
+/*000*/	float	Unknown5;			// Seen 1.0
+/*000*/	uint32	Unknown6;			// Seen 0
+/*000*/	uint32	Unknown7;			// Seen 0
+/*000*/	char	TaskName[1];		// Null Terminated
+/*000*/	char	TaskDescription[1];	// Null Terminated
+/*000*/	uint8	Unknown10;			// Possibly another Null Terminated String?  Seen 0
+/*000*/	uint32	ActivityCount;		// Seen 5
+/*000*/	TaskSelectorActivities_Struct Activities[1];
+};
+
+struct TaskSelectorActivities_Struct {
+/*000*/	uint32	ActivityNumber;			// Seen 0 to 4
+/*000*/	uint32	ActivityType;			// Guessed - 1 = Give? 2 = Kill? 3 = Loot? 5 = Speak?
+/*000*/	uint32	Unknown14;				// Seen 0
+/*000*/	char	Text1;					// Seen 0
+/*000*/	uint32	Text2Len;				// Size of the following string
+/*000*/	char	Text2;					// If the previous field is 0, this field is not send (item name?)
+/*000*/	uint32	GoalCount;				// Seen 1
+/*000*/	uint32	NumString1Len;			// Seen 2
+/*000*/	char	NumString1;				// Seen "-1"
+/*000*/	uint32	NumString2Len;			// Seen 2
+/*000*/	char	NumString2;				// Seen "-1"
+/*000*/	char	ZoneIDString;			// Seen "188" tutoriala
+/*000*/	char	Text3[1];				// Null Terminated
+/*000*/	char	NumString3;				// Null Terminated - Seen "1546"
 };
 
 struct TaskHistoryEntry_Struct {
