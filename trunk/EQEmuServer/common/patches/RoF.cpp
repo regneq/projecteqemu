@@ -141,12 +141,17 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	{
 		RoFSlot.SlotType = 0;
 		TempSlot = TitaniumSlot - 1;
-		RoFSlot.MainSlot = int(TempSlot / 10) - 3;
-		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 3) * 10);
-		if (RoFSlot.MainSlot > 29)
+		RoFSlot.MainSlot = int(TempSlot / 10) - 2;
+		RoFSlot.SubSlot = TempSlot - ((RoFSlot.MainSlot + 2) * 10);
+		if (RoFSlot.MainSlot > 30)
 		{
 			RoFSlot.MainSlot = 33;
 		}
+	}
+	else if (TitaniumSlot > 399 && TitaniumSlot < 405)	// Tribute
+	{
+		RoFSlot.SlotType = 6;
+		RoFSlot.MainSlot = TitaniumSlot - 400;
 	}
 	else if (TitaniumSlot > 1999 && TitaniumSlot < 2271)
 	{
@@ -3554,6 +3559,30 @@ ENCODE(OP_BlockedBuffs)
 	OUT(Pet);
 	OUT(Initialise);
 	OUT(Flags);
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_TributeInfo)
+{
+	ENCODE_LENGTH_ATLEAST(TributeAbility_Struct);
+	SETUP_VAR_ENCODE(TributeAbility_Struct);
+
+	ALLOC_VAR_ENCODE(structs::TributeAbility_Struct, sizeof(structs::TributeAbility_Struct) + strlen(emu->name) + 1);
+
+	OUT(tribute_id);
+	OUT(tier_count);
+
+	for(uint32 i = 0; i < MAX_TRIBUTE_TIERS; ++i)
+	{
+		eq->tiers[i].level = emu->tiers[i].level;
+		eq->tiers[i].tribute_item_id = emu->tiers[i].tribute_item_id;
+		eq->tiers[i].cost = emu->tiers[i].cost;
+	}
+
+	eq->unknown128 = 0;
+
+	strcpy(eq->name, emu->name);
 
 	FINISH_ENCODE();
 }
