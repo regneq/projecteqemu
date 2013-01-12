@@ -1091,7 +1091,9 @@ void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, i
 				Iterator++;
 			}
 			if(TaskListIndex > 0) 
+			{
 				SendTaskSelector(c, mob, TaskListIndex, TaskList);
+			}
 
 			return;
 		}
@@ -1135,6 +1137,11 @@ void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, i
 
 void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *TaskList) {
 
+	if (c->GetClientVersion() >= EQClientRoF)
+	{
+		SendTaskSelectorNew(c, mob, TaskCount, TaskList);
+		return;
+	}
 	// Titanium OpCode: 0x5e7c
 	_log(TASKS__UPDATE, "TaskSelector for %i Tasks", TaskCount);
 	char *Ptr;
@@ -1250,6 +1257,101 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 		// appear anywhere in the client window.
 		sprintf(Ptr, "NULL"); 
 		Ptr = Ptr + strlen(Ptr) + 1;
+	}
+
+	_pkt(TASKS__PACKETS, outapp);
+
+	c->QueuePacket(outapp);
+	safe_delete(outapp);
+
+}
+
+void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *TaskList) {
+
+	_log(TASKS__UPDATE, "TaskSelector for %i Tasks", TaskCount);
+
+	int PlayerLevel = c->GetLevel();
+
+	// Check if any of the  tasks exist
+	for(int i=0; i<TaskCount; i++)
+	{
+		if(Tasks[TaskList[i]] != NULL) break;
+	}
+	
+	int PacketLength = 12;	// Header
+
+	int ValidTasks = 0;
+
+	for(int i=0; i<TaskCount; i++) {
+
+		if(!AppropriateLevel(TaskList[i], PlayerLevel)) continue;
+
+		if(c->IsTaskActive(TaskList[i])) continue;
+
+		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
+
+		ValidTasks++;
+
+		PacketLength += 21;	// Task Data - strings
+		PacketLength += strlen(Tasks[TaskList[i]]->Title) + 1 +
+						strlen(Tasks[TaskList[i]]->Description) + 1;
+						
+		/*
+		PacketLength += strlen(Tasks[TaskList[i]]->Activity[ActivityID].Text1) + 1 + 
+						strlen(Tasks[TaskList[i]]->Activity[ActivityID].Text2) +
+						strlen(Tasks[TaskList[i]]->Activity[ActivityID].Text3) + 1 +
+						strlen(itoa(Tasks[TaskList[i]]->Activity[ActivityID].ZoneID)) + 1 +
+						3 + 3 + 5;	// Other strings (Hard set for now)
+		*/
+		PacketLength += 11 + 11 + 11 + 3 + 3 + 4 + 5;	// Other strings (Hard set for now)
+		PacketLength += 29;	// Activity Data - strings (Hard set for 1 activity per task for now)
+	}
+
+	if(ValidTasks == 0) return;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_OpenNewTasksWindow, PacketLength);
+	
+	outapp->WriteUInt32(ValidTasks);	// TaskCount
+	outapp->WriteUInt32(2);				// Unknown2
+	outapp->WriteUInt32(mob->GetID());	// TaskGiver
+
+	for(int i=0; i<TaskCount;i++) {
+
+		if(!AppropriateLevel(TaskList[i], PlayerLevel)) continue;
+
+		if(c->IsTaskActive(TaskList[i])) continue;
+
+		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
+
+		outapp->WriteUInt32(TaskList[i]);	// TaskID
+		outapp->WriteUInt32(1065353216);	// Unknown5 - Actually Float - Seen 1.0
+		outapp->WriteUInt32(0);				// Unknown6
+		outapp->WriteUInt32(0);				// Unknown7
+		
+		outapp->WriteString(Tasks[TaskList[i]]->Title);
+		outapp->WriteString(Tasks[TaskList[i]]->Description);
+		
+		outapp->WriteUInt8(0);				// Unknown10
+		outapp->WriteUInt32(1);				// ActivityCount - Hard set to 1 for now
+
+		// Activity stuff below - Will need to iterate through each task
+		// Currently hard set for testing
+		
+		outapp->WriteUInt32(0);				// ActivityNumber
+		outapp->WriteUInt32(1);				// ActivityType
+		outapp->WriteUInt32(0);				// Unknown14
+		outapp->WriteString("Text1 Test");
+		outapp->WriteUInt32(11);				// Text2Len
+		outapp->WriteString("Text2 Test");
+		outapp->WriteUInt32(1);				// GoalCount
+		outapp->WriteUInt32(3);				// NumString1Len
+		outapp->WriteString("-1");
+		outapp->WriteUInt32(3);				// NumString2Len
+		outapp->WriteString("-1");
+		//outapp->WriteString(itoa(Tasks[TaskList[i]]->Activity[ActivityID].ZoneID));
+		outapp->WriteString("188");
+		outapp->WriteString("Text3 Test");
+		outapp->WriteString("1546");
 	}
 
 	_pkt(TASKS__PACKETS, outapp);

@@ -377,6 +377,7 @@ static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 Tita
 	return RoFSlot;
 }
 
+/*
 ENCODE(OP_OpenNewTasksWindow) {
 
 	AvailableTaskHeader_Struct*	__emu_AvailableTaskHeader;
@@ -489,7 +490,7 @@ ENCODE(OP_OpenNewTasksWindow) {
 	
 	dest->FastQueuePacket(&in, ack_req);
 }
-
+*/
 
 ENCODE(OP_SendCharInfo) {
 	ENCODE_LENGTH_EXACT(CharacterSelect_Struct);
