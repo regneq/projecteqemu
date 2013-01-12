@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/11/2013 ==
+JJ: Added rule check to zone - no need to load Merc Templates if Mercs aren't allowed.
+
 == 01/10/2013 ==
 Trevius: RoF: Corrected multiple opcodes.
 Trevius: RoF: #finditem now displays itemlinks correctly.
