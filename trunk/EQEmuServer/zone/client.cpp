@@ -5261,6 +5261,7 @@ bool Client::TryReward(int32 claim_id)
 						if(CheckLoreConflict(item_temp->GetItem()))
 						{
 							lore_conflict = true;
+							DuplicateLoreMessage(ivr.items[y].item_id);
 						}
 						claim->PutItem(y-1, *item_temp);
 					}
@@ -5270,7 +5271,6 @@ bool Client::TryReward(int32 claim_id)
 
 		if(lore_conflict)
 		{
-			Message_StringID(0, PICK_LORE);
 			safe_delete(claim);
 			return true;
 		}
@@ -7155,4 +7155,20 @@ void Client::SendMercPersonalInfo()
 			SendMercMerchantResponsePacket(0);
 		}
 		return;
+}
+
+void Client::DuplicateLoreMessage(uint32 ItemID)
+{
+	if(!(ClientVersionBit & BIT_RoFAndLater))
+	{
+		Message_StringID(0, PICK_LORE);
+		return;
+	}
+
+	const Item_Struct *item = database.GetItem(ItemID);
+	
+	if(!item)
+		return;
+
+	Message_StringID(0, PICK_LORE, item->Name);
 }

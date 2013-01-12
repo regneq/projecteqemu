@@ -1083,7 +1083,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else if(IsClient()){
 					Client *c=CastToClient();
 					if (c->CheckLoreConflict(item))  {
-						Message_StringID(0,PICK_LORE);
+						c->DuplicateLoreMessage(spell.base[i]);
 					} else {
 						int charges;
 						if (spell.formula[i] < 100)
@@ -1121,7 +1121,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					if(caster) caster->Message(13,"SE_SummonItemIntoBag but no room in summoned bag!");
 				} else if (IsClient()) {
 					if (CastToClient()->CheckLoreConflict(item))  {
-						Message_StringID(0,PICK_LORE);
+						CastToClient()->DuplicateLoreMessage(spell.base[i]);
 					} else {
 						int charges;
 						if (spell.formula[i] < 100)
