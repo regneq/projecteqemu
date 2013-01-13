@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 == 01/13/2013 ==
 Derision: RoF: Encoded OP_TaskHistoryReply and added temporary handling for short OP_TaskActivity packets until encode is down for that.
 Derision: Deleted Anniversary/HoT/VoA and Live patches.
+Derision: Updated StaticGetZoneName with all zones currently in the PEQ database.
 
 == 01/12/2013 ==
 Derision: RoF: Personal Tribute and the Pet Buff Window now work.
