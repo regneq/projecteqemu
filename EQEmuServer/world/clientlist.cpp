@@ -1304,8 +1304,6 @@ void ClientList::SendClientVersionSummary(const char *Name)
 	uint32 ClientSoFCount = 0;
 	uint32 ClientSoDCount = 0;
 	uint32 ClientUnderfootCount = 0;
-	uint32 ClientHoTCount = 0;
-	uint32 ClientVoACount = 0;
 	uint32 ClientRoFCount = 0;
 
 	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
@@ -1347,16 +1345,6 @@ void ClientList::SendClientVersionSummary(const char *Name)
 				}
 				case 6:
 				{
-					++ClientHoTCount;
-					break;
-				}
-				case 7:
-				{
-					++ClientVoACount;
-					break;
-				}
-				case 8:
-				{
 					++ClientRoFCount;
 					break;
 				}
@@ -1369,6 +1357,6 @@ void ClientList::SendClientVersionSummary(const char *Name)
 
 	}
 
-	zoneserver_list.SendEmoteMessage(Name, 0, 0, 13, "There are %i 6.2, %i Titanium, %i SoF, %i SoD, %i UF, %i HoT, %i VoA, %i RoF clients currently connected.",
-					  Client62Count, ClientTitaniumCount, ClientSoFCount, ClientSoDCount, ClientUnderfootCount, ClientHoTCount, ClientVoACount, ClientRoFCount);
+	zoneserver_list.SendEmoteMessage(Name, 0, 0, 13, "There are %i 6.2, %i Titanium, %i SoF, %i SoD, %i UF, %i RoF clients currently connected.",
+					  Client62Count, ClientTitaniumCount, ClientSoFCount, ClientSoDCount, ClientUnderfootCount, ClientRoFCount);
 }

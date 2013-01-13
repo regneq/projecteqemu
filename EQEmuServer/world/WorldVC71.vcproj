@@ -304,19 +304,10 @@
 			Name="Patches"
 			Filter="*.cpp">
 			<File
-				RelativePath="..\common\patches\Anniversary.cpp">
-			</File>
-			<File
 				RelativePath="..\common\patches\Client62.cpp">
 			</File>
 			<File
 				RelativePath="..\common\patches\Underfoot.cpp">
-			</File>
-			<File
-				RelativePath="..\common\patches\HoT.cpp">
-			</File>
-			<File
-				RelativePath="..\common\patches\VoA.cpp">
 			</File>
 			<File
 				RelativePath="..\common\patches\Patches.cpp">

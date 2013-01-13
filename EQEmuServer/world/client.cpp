@@ -115,14 +115,6 @@ Client::Client(EQStreamInterface* ieqs)
 	{
 		ClientVersionBit = BIT_Underfoot;
 	}
-	else if(StreamDescription == "Patch HoT")
-	{
-		ClientVersionBit = BIT_HoT;
-	}
-	else if(StreamDescription == "Patch VoA")
-	{
-		ClientVersionBit = BIT_VoA;
-	}
 	else if(StreamDescription == "Patch RoF")
 	{
 		ClientVersionBit = BIT_RoF;
@@ -196,7 +188,7 @@ void Client::SendCharInfo() {
 		cle->SetOnline(CLE_Status_CharSelect);
 	}
 
-	if (ClientVersionBit & BIT_VoAAndLater)
+	if (ClientVersionBit & BIT_RoFAndLater)
 	{
 		// Can make max char per account into a rule - New to VoA
 		SendMaxCharCreate(10);
@@ -999,7 +991,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 		case OP_ZoneChange:
 			// HoT sends this to world while zoning and wants it echoed back.
-			if(ClientVersionBit & BIT_HoTAndLater)
+			if(ClientVersionBit & BIT_RoFAndLater)
 			{
 				QueuePacket(app);
 			}

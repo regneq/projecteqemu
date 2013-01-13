@@ -269,13 +269,7 @@
     <ClCompile Include="zoning.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\patches\Anniversary.cpp">
-      <Filter>Patches</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\patches\Client62.cpp">
-      <Filter>Patches</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\patches\HoT.cpp">
       <Filter>Patches</Filter>
     </ClCompile>
     <ClCompile Include="..\common\patches\patches.cpp">
@@ -291,9 +285,6 @@
       <Filter>Patches</Filter>
     </ClCompile>
     <ClCompile Include="..\common\patches\Underfoot.cpp">
-      <Filter>Patches</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\patches\VoA.cpp">
       <Filter>Patches</Filter>
     </ClCompile>
     <ClCompile Include="..\common\BasePacket.cpp">

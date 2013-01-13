@@ -1133,15 +1133,12 @@
     <ClCompile Include="zonedb.cpp" />
     <ClCompile Include="zonedbasync.cpp" />
     <ClCompile Include="zoning.cpp" />
-    <ClCompile Include="..\common\patches\Anniversary.cpp" />
     <ClCompile Include="..\common\patches\Client62.cpp" />
-    <ClCompile Include="..\common\patches\HoT.cpp" />
     <ClCompile Include="..\common\patches\patches.cpp" />
     <ClCompile Include="..\common\patches\SoD.cpp" />
     <ClCompile Include="..\common\patches\SoF.cpp" />
     <ClCompile Include="..\common\patches\Titanium.cpp" />
     <ClCompile Include="..\common\patches\Underfoot.cpp" />
-    <ClCompile Include="..\common\patches\VoA.cpp" />
     <ClCompile Include="..\common\BasePacket.cpp" />
     <ClCompile Include="..\common\classes.cpp" />
     <ClCompile Include="..\common\Condition.cpp" />
