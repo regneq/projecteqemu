@@ -377,6 +377,126 @@ static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 Tita
 	return RoFSlot;
 }
 
+ENCODE(OP_TaskHistoryReply)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	// First we need to calculate the length of the new packet
+	in->SetReadPosition(4);
+	uint32 ActivityCount = in->ReadUInt32();
+
+	uint32 Text1Length = 0;
+	uint32 Text2Length = 0;
+	uint32 Text3Length = 0;
+
+	uint32 OutboundPacketSize = 8;
+
+	for(uint32 i = 0; i < ActivityCount; ++i)
+	{
+		Text1Length = 0;
+		Text2Length = 0;
+		Text3Length = 0;
+
+		in->ReadUInt32(); // Activity type
+
+		// Skip past Text1
+		while(in->ReadUInt8())
+			++Text1Length;
+
+		// Skip past Text2
+		while(in->ReadUInt8())
+			++Text2Length;
+	
+		in->ReadUInt32();
+		in->ReadUInt32();
+		in->ReadUInt32();
+		uint32 ZoneID = in->ReadUInt32();
+		in->ReadUInt32();
+		
+		// Skip past Text3
+		while(in->ReadUInt8())
+			++Text3Length;
+
+		char ZoneNumber[10];
+
+		sprintf(ZoneNumber, "%i", ZoneID);
+	
+		OutboundPacketSize += (24 + Text1Length + 1 + Text2Length + Text3Length + 1 + 7 + (strlen(ZoneNumber) * 2));
+	}
+
+	in->SetReadPosition(0);
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_TaskHistoryReply, OutboundPacketSize);
+
+	outapp->WriteUInt32(in->ReadUInt32());	// Task index
+	outapp->WriteUInt32(in->ReadUInt32());	// Activity count
+
+	for(uint32 i = 0; i < ActivityCount; ++i)
+	{
+		Text1Length = 0;
+		Text2Length = 0;
+		Text3Length = 0;
+
+		outapp->WriteUInt32(in->ReadUInt32()); // ActivityType
+
+		// Copy Text1
+		while(uint8 c = in->ReadUInt8())
+			outapp->WriteUInt8(c);
+
+		outapp->WriteUInt8(0);	// Text1 has a null terminator
+
+		uint32 CurrentPosition = in->GetReadPosition();
+
+		// Determine Length of Text2
+		while(in->ReadUInt8())
+			++Text2Length;
+
+		outapp->WriteUInt32(Text2Length);
+
+		in->SetReadPosition(CurrentPosition);
+	
+		// Copy Text2
+		while(uint8 c = in->ReadUInt8())
+			outapp->WriteUInt8(c);
+
+		outapp->WriteUInt32(in->ReadUInt32()); // Goalcount
+		in->ReadUInt32();
+		in->ReadUInt32();
+		uint32 ZoneID = in->ReadUInt32();
+		in->ReadUInt32();
+
+		char ZoneNumber[10];
+
+		sprintf(ZoneNumber, "%i", ZoneID);
+
+		outapp->WriteUInt32(2);
+		outapp->WriteUInt8(0x2d); // "-"		
+		outapp->WriteUInt8(0x31); // "1"
+
+		outapp->WriteUInt32(2);
+		outapp->WriteUInt8(0x2d); // "-"		
+		outapp->WriteUInt8(0x31); // "1"
+		outapp->WriteString(ZoneNumber);
+
+		outapp->WriteUInt32(0);
+
+		// Copy Tex3t
+		while(uint8 c = in->ReadUInt8())
+			outapp->WriteUInt8(c);
+
+		outapp->WriteUInt8(0);	// Text3 has a null terminator
+	
+		outapp->WriteUInt8(0x31); // "1"
+		outapp->WriteString(ZoneNumber);
+	}
+
+	delete in;
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
+}
+
 /*
 ENCODE(OP_OpenNewTasksWindow) {
 

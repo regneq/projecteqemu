@@ -92,6 +92,7 @@ E(OP_RecipeAutoCombine)
 E(OP_GMTrainSkillConfirm)
 E(OP_SkillUpdate)
 E(OP_TributeInfo)
+E(OP_TaskHistoryReply)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
