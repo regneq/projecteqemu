@@ -2627,18 +2627,27 @@ void TaskManager::SendCompletedTasksToClient(Client *c, ClientTaskState *State) 
 
 
 	
-void TaskManager::SendTaskActivityShort(Client *c, int TaskID, int ActivityID, int ClientTaskIndex) {
-
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		SendTaskActivityNew(c, TaskID, ActivityID, ClientTaskIndex, Tasks[TaskID]->Activity[ActivityID].Optional, 0);
-		return;
-	}
-
+void TaskManager::SendTaskActivityShort(Client *c, int TaskID, int ActivityID, int ClientTaskIndex)
+{
 	// This Activity Packet is sent for activities that have not yet been unlocked and appear as ???
 	// in the client.
 
 	TaskActivityShort_Struct* tass;
+
+	if(c->GetClientVersionBit() & BIT_RoFAndLater)
+	{
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TaskActivity, 25);
+		outapp->WriteUInt32(ClientTaskIndex);
+		outapp->WriteUInt32(2);
+		outapp->WriteUInt32(TaskID);
+		outapp->WriteUInt32(ActivityID);
+		outapp->WriteUInt32(0);
+		outapp->WriteUInt32(0xffffffff);
+		outapp->WriteUInt8(0);
+		c->FastQueuePacket(&outapp);
+		
+		return;
+	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TaskActivity, sizeof(TaskActivityShort_Struct));
 
