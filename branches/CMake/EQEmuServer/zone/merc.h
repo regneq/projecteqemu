@@ -211,7 +211,7 @@ private:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	CalcEnduranceRegenCap();
 	void	SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
-	void DoEnduranceUpkeep();	//does the endurance upkeep
+	void	DoEnduranceUpkeep();	//does the endurance upkeep
 
 	int 	GroupLeadershipAAHealthEnhancement();
 	int 	GroupLeadershipAAManaEnhancement();
@@ -222,6 +222,7 @@ private:
 	void GenerateAppearance();
 
 	// Private "base stats" Members
+	sint32 base_mana;
 	int _baseAC;
 	sint16 _baseSTR;
 	sint16 _baseSTA;

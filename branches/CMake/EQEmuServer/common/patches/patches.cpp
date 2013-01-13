@@ -4,12 +4,9 @@
 
 #include "Client62.h"
 #include "Titanium.h"
-#include "Anniversary.h"
 #include "Underfoot.h"
 #include "SoF.h"
 #include "SoD.h"
-#include "HoT.h"
-#include "VoA.h"
 #include "RoF.h"
 
 void RegisterAllPatches(EQStreamIdentifier &into) {
@@ -18,8 +15,6 @@ void RegisterAllPatches(EQStreamIdentifier &into) {
 	SoF::Register(into);
 	SoD::Register(into);
 	Underfoot::Register(into);
-	//HoT::Register(into);
-	//VoA::Register(into);
 	RoF::Register(into);
 }
 
@@ -29,7 +24,5 @@ void ReloadAllPatches() {
 	SoF::Reload();
 	SoD::Reload();
 	Underfoot::Reload();
-	//HoT::Reload();
-	//VoA::Reload();
 	RoF::Reload();
 }

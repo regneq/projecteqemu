@@ -307,7 +307,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 	}
 	else { // Item was already in inventory & is a LORE item or was a GM only item.  Give them a message about it.
 		if (foundlore){
-			Message_StringID(0,PICK_LORE);
+			DuplicateLoreMessage(item_id);
 			//Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
 		}
 		else if (foundgm)

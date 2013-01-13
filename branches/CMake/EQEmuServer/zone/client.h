@@ -127,8 +127,6 @@ typedef enum {
 	EQClientSoF,
 	EQClientSoD,
 	EQClientUnderfoot,
-	EQClientHoT,
-	EQClientVoA,
 	EQClientRoF
 } EQClientVersion;
 
@@ -1123,6 +1121,7 @@ public:
 	void  SendWebLink(const char* website);
 
 	bool	StoreTurnInItems(Mob* with);
+	void DuplicateLoreMessage(uint32 ItemID);
 
 protected:
 	friend class Mob;

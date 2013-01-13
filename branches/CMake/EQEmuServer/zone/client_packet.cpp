@@ -542,16 +542,6 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientUnderfoot;
 		ClientVersionBit = BIT_Underfoot;
 	}
-	else if(StreamDescription == "Patch HoT")
-	{
-		ClientVersion = EQClientHoT;
-		ClientVersionBit = BIT_HoT;
-	}
-	else if(StreamDescription == "Patch VoA")
-	{
-		ClientVersion = EQClientVoA;
-		ClientVersionBit = BIT_VoA;
-	}
 	else if(StreamDescription == "Patch RoF")
 	{
 		ClientVersion = EQClientRoF;
@@ -9274,7 +9264,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	// Task Packets
 	LoadClientTaskState();
 	
-	if (GetClientVersion() >= EQClientVoA)
+	if (GetClientVersion() >= EQClientRoF)
 	{
 		outapp = new EQApplicationPacket(OP_ReqNewZone, 0);
 		Handle_Connect_OP_ReqNewZone(outapp);

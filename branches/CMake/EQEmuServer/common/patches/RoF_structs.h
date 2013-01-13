@@ -3414,11 +3414,11 @@ struct TributeLevel_Struct {
 };
 
 struct TributeAbility_Struct {
-	int32	tribute_id;	//backwards byte order!
-	int32	tier_count;	//backwards byte order!
-	TributeLevel_Struct tiers[MAX_TRIBUTE_TIERS];
-	//int32	unknown1;	// New to RoF
-	char	name[0];
+/*000*/	int32	tribute_id;	//backwards byte order!
+/*004*/	int32	tier_count;	//backwards byte order!
+/*008*/	TributeLevel_Struct tiers[MAX_TRIBUTE_TIERS];
+/*128*/	int32	unknown128;	// New to RoF
+/*132*/	char	name[0];
 };
 
 struct GuildTributeAbility_Struct {
@@ -3445,12 +3445,13 @@ struct TributeInfo_Struct {
 	int32	tribute_master_id;
 };
 
-struct TributeItem_Struct {
-	//int32   slot;
-	ItemSlotStruct slot;
-	int32   quantity;
-	int32   tribute_master_id;
-	sint32  tribute_points;
+struct TributeItem_Struct
+{
+/*00*/	ItemSlotStruct slot;
+/*12*/	int32   quantity;
+/*16*/	int32   tribute_master_id;
+/*20*/	sint32  tribute_points;
+/*24*/
 };
 
 struct TributePoint_Struct {

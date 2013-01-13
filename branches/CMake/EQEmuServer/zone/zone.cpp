@@ -1054,7 +1054,8 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadTempMerchantData();
 
 	// Merc data
-	zone->LoadMercTemplates();
+	if (RuleB(Mercs, AllowMercs))
+		zone->LoadMercTemplates();
 	
 	adverrornum = 503;
 	petition_list.ClearPetitions();

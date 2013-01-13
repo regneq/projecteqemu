@@ -1,10 +1,25 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/13/2013 ==
+Derision: RoF: Encoded OP_TaskHistoryReply and added temporary handling for short OP_TaskActivity packets until encode is down for that.
+Derision: Deleted Anniversary/HoT/VoA and Live patches.
+Derision: Updated StaticGetZoneName with all zones currently in the PEQ database.
+
+== 01/12/2013 ==
+Derision: RoF: Personal Tribute and the Pet Buff Window now work.
+Derision: Fixed potential crash in SendPetBuffsToClient. 
+Derision: RoF: Accounted for the fact the Duplicate Lore item message now includes the item's name.
+Trevius: RoF: The Task Selector Window is now functional.
+
+== 01/11/2013 ==
+JJ: Added rule check to zone - no need to load Merc Templates if Mercs aren't allowed.
+
 == 01/10/2013 ==
 Trevius: RoF: Corrected multiple opcodes.
 Trevius: RoF: #finditem now displays itemlinks correctly.
 Trevius: RoF: Started work/testing to get Tasks functioning. Don't click tasks in the history tab or client will freeze.
 Trevius: Added some possible crash fixes.
+Bad_Captain: Mercs - temp fix for possible crash when dying with RespawnFromHover on, fixed infinite stats (buffs continually adding to stats).
 
 == 01/09/2013 ==
 Derision: RoF: Corrected LDoN merchant opcodes, added encode for OP_AdventureMerchantSell. Updated PP with available LDoN points.
