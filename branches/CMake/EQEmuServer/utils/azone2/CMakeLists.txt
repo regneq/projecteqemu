@@ -1,5 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
+IF(NOT MSVC)
+    ADD_DEFINITIONS(-fpermissive)
+ENDIF(NOT MSVC)
+
 #azone common
 SET(azone_common_sources
     dat.cpp
