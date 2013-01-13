@@ -1282,6 +1282,8 @@ void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *T
 
 	int ValidTasks = 0;
 
+	char StartZone[10];
+
 	for(int i=0; i<TaskCount; i++) {
 
 		if(!AppropriateLevel(TaskList[i], PlayerLevel)) continue;
@@ -1296,6 +1298,7 @@ void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *T
 		PacketLength += strlen(Tasks[TaskList[i]]->Title) + 1 +
 						strlen(Tasks[TaskList[i]]->Description) + 1;
 						
+		sprintf(StartZone, "%i", Tasks[TaskList[i]]->StartZone);	
 		/*
 		PacketLength += strlen(Tasks[TaskList[i]]->Activity[ActivityID].Text1) + 1 + 
 						strlen(Tasks[TaskList[i]]->Activity[ActivityID].Text2) +
@@ -1303,8 +1306,8 @@ void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *T
 						strlen(itoa(Tasks[TaskList[i]]->Activity[ActivityID].ZoneID)) + 1 +
 						3 + 3 + 5;	// Other strings (Hard set for now)
 		*/
-		PacketLength += 11 + 11 + 11 + 3 + 3 + 4 + 5;	// Other strings (Hard set for now)
-		PacketLength += 29;	// Activity Data - strings (Hard set for 1 activity per task for now)
+		PacketLength += 11 + 11 + 11 + 3 + 3 + (strlen(StartZone) * 2) + 2;	// Other strings (Hard set for now)
+		PacketLength += 28;	// Activity Data - strings (Hard set for 1 activity per task for now)
 	}
 
 	if(ValidTasks == 0) return;
@@ -1312,7 +1315,7 @@ void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *T
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_OpenNewTasksWindow, PacketLength);
 	
 	outapp->WriteUInt32(ValidTasks);	// TaskCount
-	outapp->WriteUInt32(2);				// Unknown2
+	outapp->WriteUInt32(2);			// Unknown2
 	outapp->WriteUInt32(mob->GetID());	// TaskGiver
 
 	for(int i=0; i<TaskCount;i++) {
@@ -1324,24 +1327,27 @@ void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *T
 		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
 
 		outapp->WriteUInt32(TaskList[i]);	// TaskID
-		outapp->WriteUInt32(1065353216);	// Unknown5 - Actually Float - Seen 1.0
-		outapp->WriteUInt32(0);				// Unknown6
+		outapp->WriteFloat(1.0f);
+		outapp->WriteUInt32(Tasks[TaskList[i]]->Duration);
 		outapp->WriteUInt32(0);				// Unknown7
 		
 		outapp->WriteString(Tasks[TaskList[i]]->Title);
 		outapp->WriteString(Tasks[TaskList[i]]->Description);
 		
-		outapp->WriteUInt8(0);				// Unknown10
+		outapp->WriteUInt8(0);				// Unknown10 - Empty string ?
 		outapp->WriteUInt32(1);				// ActivityCount - Hard set to 1 for now
 
 		// Activity stuff below - Will need to iterate through each task
 		// Currently hard set for testing
-		
+	
+
+		sprintf(StartZone, "%i", Tasks[TaskList[i]]->StartZone);
+
 		outapp->WriteUInt32(0);				// ActivityNumber
 		outapp->WriteUInt32(1);				// ActivityType
 		outapp->WriteUInt32(0);				// Unknown14
 		outapp->WriteString("Text1 Test");
-		outapp->WriteUInt32(11);				// Text2Len
+		outapp->WriteUInt32(11);			// Text2Len
 		outapp->WriteString("Text2 Test");
 		outapp->WriteUInt32(1);				// GoalCount
 		outapp->WriteUInt32(3);				// NumString1Len
@@ -1349,11 +1355,10 @@ void TaskManager::SendTaskSelectorNew(Client *c, Mob *mob, int TaskCount, int *T
 		outapp->WriteUInt32(3);				// NumString2Len
 		outapp->WriteString("-1");
 		//outapp->WriteString(itoa(Tasks[TaskList[i]]->Activity[ActivityID].ZoneID));
-		outapp->WriteString("188");
+		outapp->WriteString(StartZone);		// Zone number in ascii
 		outapp->WriteString("Text3 Test");
-		outapp->WriteString("1546");
+		outapp->WriteString(StartZone);		// Zone number in ascii
 	}
-
 	_pkt(TASKS__PACKETS, outapp);
 
 	c->QueuePacket(outapp);
