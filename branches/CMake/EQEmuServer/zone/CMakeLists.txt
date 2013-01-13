@@ -32,6 +32,7 @@ SET(zone_sources
     inventory.cpp
     loottables.cpp
     Map.cpp
+    merc.cpp
     mob.cpp
     MobAI.cpp
     net.cpp
@@ -117,6 +118,7 @@ SET(zone_headers
     masterentity.h
     maxskill.h
     message.h
+    merc.h
     mob.h
     net.h
     npc.h
@@ -166,7 +168,7 @@ ENDIF(EQEMU_ENABLE_BOTS)
 TARGET_LINK_LIBRARIES(zone Common ${PERL_LIBRARY} debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
 
 IF(MSVC)
-	ADD_DEFINITIONS(-D_CONSOLE)
+	
     SET_TARGET_PROPERTIES(zone PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
     TARGET_LINK_LIBRARIES(zone "Ws2_32.lib")
 ENDIF(MSVC)
@@ -181,8 +183,6 @@ IF(UNIX)
     TARGET_LINK_LIBRARIES(zone "m")
     TARGET_LINK_LIBRARIES(zone "rt")
     TARGET_LINK_LIBRARIES(zone "pthread")
-    TARGET_LINK_LIBRARIES(zone "ssl")
-    TARGET_LINK_LIBRARIES(zone "crypto")
     ADD_DEFINITIONS(-fPIC)
 ENDIF(UNIX)
 

@@ -59,16 +59,13 @@ SET(common_sources
     unix.cpp
     worldconn.cpp
     XMLParser.cpp
-    patches/Anniversary.cpp
     patches/Client62.cpp
-    patches/HoT.cpp
     patches/patches.cpp
     patches/SoD.cpp
     patches/SoF.cpp
     patches/RoF.cpp
     patches/Titanium.cpp
     patches/Underfoot.cpp
-    patches/VoA.cpp
     SocketLib/Base64.cpp
     SocketLib/File.cpp
     SocketLib/HttpdCookies.cpp
@@ -176,18 +173,10 @@ SET(common_headers
     worldconn.h
     XMLParser.h
     ZoneNumbers.h
-    patches/Anniversary.h
-    patches/Anniversary_itemfields.h
-    patches/Anniversary_ops.h
-    patches/Anniversary_structs.h
     patches/Client62.h
     patches/Client62_itemfields.h
     patches/Client62_ops.h
     patches/Client62_structs.h
-    patches/HoT.h
-    patches/HoT_itemfields.h
-    patches/HoT_ops.h
-    patches/HoT_structs.h
     patches/patches.h
     patches/SoD.h
     patches/SoD_itemfields.h
@@ -213,10 +202,6 @@ SET(common_headers
     patches/Underfoot_itemfields.h
     patches/Underfoot_ops.h
     patches/Underfoot_structs.h
-    patches/VoA.h
-    patches/VoA_itemfields.h
-    patches/VoA_ops.h
-    patches/VoA_structs.h
     SocketLib/Base64.h
     SocketLib/File.h
     SocketLib/HttpdCookies.h
@@ -258,20 +243,13 @@ source_group(Patches FILES
     patches/Underfoot_itemfields.h
     patches/Underfoot_ops.h
     patches/Underfoot_structs.h
-    patches/VoA.h
-    patches/VoA_itemfields.h
-    patches/VoA_ops.h
-    patches/VoA_structs.h
-    patches/Anniversary.cpp
     patches/Client62.cpp
-    patches/HoT.cpp
     patches/patches.cpp
     patches/SoD.cpp
     patches/SoF.cpp
     patches/RoF.cpp
     patches/Titanium.cpp
     patches/Underfoot.cpp
-    patches/VoA.cpp
 )
 
 source_group(SocketLib FILES
@@ -312,6 +290,7 @@ source_group(TinyXML FILES
 INCLUDE_DIRECTORIES(Patches SocketLib TinyXML)
 
 ADD_LIBRARY(Common ${common_sources} ${common_headers})
+
 
 IF(UNIX)
     ADD_DEFINITIONS(-fPIC)

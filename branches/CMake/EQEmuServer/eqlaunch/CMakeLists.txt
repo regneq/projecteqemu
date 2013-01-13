@@ -16,7 +16,7 @@ ADD_EXECUTABLE(eqlaunch ${eqlaunch_sources} ${eqlaunch_headers})
 TARGET_LINK_LIBRARIES(eqlaunch Common debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
 
 IF(MSVC)
-	ADD_DEFINITIONS(-D_CONSOLE)
+	
     SET_TARGET_PROPERTIES(eqlaunch PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
     TARGET_LINK_LIBRARIES(eqlaunch "Ws2_32.lib")
 ENDIF(MSVC)
@@ -31,8 +31,6 @@ IF(UNIX)
     TARGET_LINK_LIBRARIES(eqlaunch "m")
     TARGET_LINK_LIBRARIES(eqlaunch "rt")
     TARGET_LINK_LIBRARIES(eqlaunch "pthread")
-    TARGET_LINK_LIBRARIES(eqlaunch "ssl")
-    TARGET_LINK_LIBRARIES(eqlaunch "crypto")
     ADD_DEFINITIONS(-fPIC)
 ENDIF(UNIX)
 
