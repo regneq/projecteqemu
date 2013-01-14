@@ -802,7 +802,7 @@ uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
 		{
 			if(IsDiscipline(curspell)){
 				//we may want to come up with a function like Client::GetNextAvailableSpellBookSlot() to help speed this up a little
-				for(int r = 0; r < MAX_PP_DISCIPLINES; r++) {
+				for(uint32 r = 0; r < MAX_PP_DISCIPLINES; r++) {
 					if(initiator->GetPP().disciplines.values[r] == curspell) {
 						initiator->Message(13, "You already know this discipline.");
 						break;	//continue the 1st loop
@@ -1111,8 +1111,6 @@ void QuestManager::signal(int npc_id, int wait_ms) {
 void QuestManager::setglobal(const char *varname, const char *newvalue, int options, const char *duration) {
 // SCORPIOUS2K - qglobal variable commands
 	// setglobal(varname,value,options,duration)
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
 	//MYSQL_ROW row;
 	int qgZoneid=zone->GetZoneID();
 	int qgCharid=0;
@@ -2273,7 +2271,8 @@ int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
 // Item Link for use in Variables - "my $example_link = quest::varlink(item_id);"
 const char* QuestManager::varlink(char* perltext, int item_id) {
 	const ItemInst* inst = database.CreateItem(item_id);
-	if (!inst) return 0;	// return an empty string if the item is invalid
+	if (!inst)
+		return "INVALID ITEM ID IN VARLINK";
 	char* link = 0;
 	char* tempstr = 0;
 	if (initiator->MakeItemLink(link, inst)) {	// make a link to the item
