@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/14/2013 ==
 Derision: RoF: Fixed bug that was causing only one task to show in the Active Task window.
+Derision: Fixed potential crash in QuestManager::varlink. Removed some unused variables that gcc was warning about.
 
 == 01/13/2013 ==
 Derision: RoF: Encoded OP_TaskHistoryReply and added temporary handling for short OP_TaskActivity packets until encode is down for that.
