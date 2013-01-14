@@ -3082,7 +3082,7 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 	if (c->GetClientVersion() >= EQClientRoF)
 	{
-		outapp->WriteUInt8(0);
+		// There is an extra byte at the end in RoF, but it is zero, and our buffer is memset, so do nothing, epscially not a WriteUInt8 :)
 	}
 
 	_pkt(TASKS__PACKETS, outapp);
