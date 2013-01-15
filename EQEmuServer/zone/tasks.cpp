@@ -2911,11 +2911,6 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 	                   + sizeof(TaskDescriptionData1_Struct) + strlen(Tasks[TaskID]->Description) + 1
 			   + sizeof(TaskDescriptionData2_Struct) + 1 + sizeof(TaskDescriptionTrailer_Struct);
 
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		PacketLength += 1;
-	}
-
 	string RewardText;
 	int ItemID = 0;
 
