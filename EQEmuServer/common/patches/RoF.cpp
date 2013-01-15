@@ -494,7 +494,37 @@ ENCODE(OP_TaskHistoryReply)
 	delete in;
 
 	dest->FastQueuePacket(&outapp, ack_req);
+}
 
+ENCODE(OP_TaskDescription)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_TaskDescription, in->size + 1);
+	// Set the Write pointer as we don't know what has been done with the packet before we get it.
+	in->SetWritePosition(0);
+	// Copy the header
+	for(int i = 0; i < 5; ++i)
+		outapp->WriteUInt32(in->ReadUInt32());
+
+	// Copy Title
+	while(uint8 c = in->ReadUInt8())
+		outapp->WriteUInt8(c);
+	outapp->WriteUInt8(0);
+
+	outapp->WriteUInt32(in->ReadUInt32());	// Duration
+	outapp->WriteUInt32(in->ReadUInt32());	// Unknown
+	uint32 StartTime = in->ReadUInt32();
+	outapp->WriteUInt32(time(NULL) - StartTime);	// RoF has elapsed time here rather than starttime
+
+	// Copy the rest of the packet verbatim
+	uint32 BytesLeftToCopy = in->size - in->GetReadPosition();
+	memcpy(outapp->pBuffer + outapp->GetWritePosition(), in->pBuffer + in->GetReadPosition(), BytesLeftToCopy);
+
+	delete in;
+
+	dest->FastQueuePacket(&outapp, ack_req);
 }
 
 /*

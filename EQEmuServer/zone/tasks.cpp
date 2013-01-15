@@ -3045,14 +3045,7 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 	tdd1->Duration = Duration;
 	tdd1->unknown2 = 0x00000000;
 	
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		tdd1->StartTime = 0x00000000;
-	}
-	else
-	{
-		tdd1->StartTime = StartTime;
-	}
+	tdd1->StartTime = StartTime;
 
 	Ptr = (char *) tdd1 + sizeof(TaskDescriptionData1_Struct);
 
@@ -3079,11 +3072,6 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 	tdt = (TaskDescriptionTrailer_Struct*)Ptr;
 	tdt->Points = 0x00000000; // Points Count 
-
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		// There is an extra byte at the end in RoF, but it is zero, and our buffer is memset, so do nothing, epscially not a WriteUInt8 :)
-	}
 
 	_pkt(TASKS__PACKETS, outapp);
 
