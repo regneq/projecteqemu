@@ -503,7 +503,7 @@ ENCODE(OP_TaskDescription)
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_TaskDescription, in->size + 1);
 	// Set the Write pointer as we don't know what has been done with the packet before we get it.
-	in->SetWritePosition(0);
+	in->SetReadPosition(0);
 	// Copy the header
 	for(int i = 0; i < 5; ++i)
 		outapp->WriteUInt32(in->ReadUInt32());
