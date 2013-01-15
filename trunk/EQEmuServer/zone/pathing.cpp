@@ -379,7 +379,7 @@ list<int> PathManager::FindRoute(VERTEX Start, VERTEX End)
 
 	PathNodeSortStruct TempNode;
 
-	for(int i = 0 ; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0 ; i < Head.PathNodeCount; ++i)
 	{
 		if((ABS(Start.x - PathNodes[i].v.x) <= CandidateNodeRangeXY) &&
 		   (ABS(Start.y - PathNodes[i].v.y) <= CandidateNodeRangeXY) &&
@@ -418,7 +418,7 @@ list<int> PathManager::FindRoute(VERTEX Start, VERTEX End)
 
 	SortedByDistance.clear();
 
-	for(int i = 0 ; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0 ; i < Head.PathNodeCount; ++i)
 	{
 		if((ABS(End.x - PathNodes[i].v.x) <= CandidateNodeRangeXY) &&
 		   (ABS(End.y - PathNodes[i].v.y) <= CandidateNodeRangeXY) &&
@@ -557,7 +557,7 @@ const char* DigitToWord(int i)
 void PathManager::SpawnPathNodes()
 {
 
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 	{
 		NPCType* npc_type = new NPCType;
 		memset(npc_type, 0, sizeof(NPCType));
@@ -614,9 +614,9 @@ void PathManager::MeshTest()
 
 	printf("Beginning Pathmanager connectivity tests.\n"); fflush(stdout);
 
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 	{
-		for(int j = 0; j < Head.PathNodeCount; ++j)
+		for(int32 j = 0; j < Head.PathNodeCount; ++j)
 		{
 			if(j == i)
 				continue;
@@ -646,7 +646,7 @@ void PathManager::SimpleMeshTest()
 	printf("Beginning Pathmanager connectivity tests.\n"); 
 	fflush(stdout);
 
-	for(int j = 1; j < Head.PathNodeCount; ++j)
+	for(int32 j = 1; j < Head.PathNodeCount; ++j)
 	{
 		list<int> Route = FindRoute(PathNodes[0].id, PathNodes[j].id);
 
@@ -1119,7 +1119,7 @@ int PathManager::FindNearestPathNode(VERTEX Position)
 
 	PathNodeSortStruct TempNode;
 
-	for(int i = 0 ; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0 ; i < Head.PathNodeCount; ++i)
 	{
 		if((ABS(Position.x - PathNodes[i].v.x) <= CandidateNodeRangeXY) &&
 		   (ABS(Position.y - PathNodes[i].v.y) <= CandidateNodeRangeXY) &&
@@ -1357,7 +1357,7 @@ void Client::SendPathPacket(vector<FindPerson_Point> &points) {
 
 PathNode* PathManager::FindPathNodeByCoordinates(float x, float y, float z)
 {
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 		if((PathNodes[i].v.x == x) && (PathNodes[i].v.y == y) && (PathNodes[i].v.z == z))
 			return &PathNodes[i];
 
@@ -1385,7 +1385,7 @@ void PathManager::ShowPathNodeNeighbours(Client *c)
 	}
 	c->Message(0, "Path node %4i", Node->id);
 
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 	{
 		char Name[64];
 
@@ -1490,7 +1490,7 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 	if(requested_id != 0)
 	{
 		new_id = requested_id;
-		for(int i = 0; i < Head.PathNodeCount; ++i)
+		for(int32 i = 0; i < Head.PathNodeCount; ++i)
 		{
 			if(PathNodes[i].id == requested_id)
 			{
@@ -1502,7 +1502,7 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 	
 	if(new_id == -1)
 	{	
-		for(int i = 0; i < Head.PathNodeCount; ++i)
+		for(int32 i = 0; i < Head.PathNodeCount; ++i)
 		{
 			if(PathNodes[i].id > new_id)
 				new_id = PathNodes[i].id;
@@ -1528,7 +1528,7 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 	if(Head.PathNodeCount > 1)
 	{
 		PathNode *t_PathNodes = new PathNode[Head.PathNodeCount];
-		for(int x = 0; x < (Head.PathNodeCount - 1); ++x)
+		for(int32 x = 0; x < (Head.PathNodeCount - 1); ++x)
 		{
 			t_PathNodes[x].v.x = PathNodes[x].v.x;
 			t_PathNodes[x].v.y = PathNodes[x].v.y;
@@ -1702,7 +1702,7 @@ bool PathManager::DeleteNode(sint32 id)
 	{
 		PathNode *t_PathNodes = new PathNode[Head.PathNodeCount-1];
 		int32 index = 0;
-		for(int x = 0; x < Head.PathNodeCount; x++)
+		for(int32 x = 0; x < Head.PathNodeCount; x++)
 		{
 			if(PathNodes[x].id != id)
 			{
@@ -1725,7 +1725,7 @@ bool PathManager::DeleteNode(sint32 id)
 		delete[] PathNodes;
 		PathNodes = t_PathNodes;
 
-		for(int y = 0; y < Head.PathNodeCount; ++y)
+		for(int32 y = 0; y < Head.PathNodeCount; ++y)
 		{
 			for(int n = 0; n < PATHNODENEIGHBOURS; ++n)
 			{
@@ -1780,7 +1780,7 @@ void PathManager::ConnectNodeToNode(sint32 Node1, sint32 Node2, sint32 teleport,
 {
 	PathNode *a = NULL;
 	PathNode *b = NULL;
-	for(int x = 0; x < Head.PathNodeCount; ++x)
+	for(int32 x = 0; x < Head.PathNodeCount; ++x)
 	{
 		if(PathNodes[x].id == Node1)
 		{
@@ -1870,7 +1870,7 @@ void PathManager::ConnectNode(sint32 Node1, sint32 Node2, sint32 teleport, sint3
 {
 	PathNode *a = NULL;
 	PathNode *b = NULL;
-	for(int x = 0; x < Head.PathNodeCount; ++x)
+	for(int32 x = 0; x < Head.PathNodeCount; ++x)
 	{
 		if(PathNodes[x].id == Node1)
 		{
@@ -1935,7 +1935,7 @@ void PathManager::DisconnectNodeToNode(sint32 Node1, sint32 Node2)
 {
 	PathNode *a = NULL;
 	PathNode *b = NULL;
-	for(int x = 0; x < Head.PathNodeCount; ++x)
+	for(int32 x = 0; x < Head.PathNodeCount; ++x)
 	{
 		if(PathNodes[x].id == Node1)
 		{
@@ -2054,7 +2054,7 @@ void PathManager::DisconnectAll(Client *c)
 		Node->Neighbours[x].id = -1;
 	}
 
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 	{
 		if(PathNodes[i].id == Node->id)
 			continue;
@@ -2093,9 +2093,6 @@ bool PathManager::CheckLosFN(VERTEX a, VERTEX b)
 {
 	if(zone->zonemap)
 	{
-		FACE *onhit;
-		NodeRef mynode;
-		NodeRef onode;
 		VERTEX hit;
 
 		VERTEX myloc; 
@@ -2122,7 +2119,7 @@ void PathManager::ProcessNodesAndSave(string filename)
 {
 	if(zone->zonemap)
 	{
-		for(int i = 0; i < Head.PathNodeCount; ++i)
+		for(int32 i = 0; i < Head.PathNodeCount; ++i)
 		{
 			for(int in = 0; in < PATHNODENEIGHBOURS; ++in)
 			{
@@ -2133,9 +2130,9 @@ void PathManager::ProcessNodesAndSave(string filename)
 			}
 		}
 
-		for(int x = 0; x < Head.PathNodeCount; ++x)
+		for(int32 x = 0; x < Head.PathNodeCount; ++x)
 		{
-			for(int y = 0; y < Head.PathNodeCount; ++y)
+			for(int32 y = 0; y < Head.PathNodeCount; ++y)
 			{
 				if(y == x) //can't connect to ourselves.
 					continue;
@@ -2162,7 +2159,7 @@ void PathManager::ProcessNodesAndSave(string filename)
 void PathManager::ResortConnections()
 {
 	NeighbourNode Neigh[PATHNODENEIGHBOURS];
-	for(int x = 0; x < Head.PathNodeCount; ++x)
+	for(int32 x = 0; x < Head.PathNodeCount; ++x)
 	{
 		int index = 0;
 		for(int y = 0; y < PATHNODENEIGHBOURS; ++y)
@@ -2245,7 +2242,7 @@ struct InternalPathSort
 void PathManager::SortNodes()
 {
 	std::vector<InternalPathSort> sorted_vals;
-	for(int x = 0; x < Head.PathNodeCount; ++x)
+	for(int32 x = 0; x < Head.PathNodeCount; ++x)
 	{
 		InternalPathSort tmp;
 		tmp.old_id = PathNodes[x].id;
@@ -2254,9 +2251,9 @@ void PathManager::SortNodes()
 
 	PathNode *t_PathNodes = new PathNode[Head.PathNodeCount];
 	memcpy(t_PathNodes, PathNodes, sizeof(PathNode)*Head.PathNodeCount);
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 	{
-		for(int j = 0; j < sorted_vals.size(); ++j)
+		for(size_t j = 0; j < sorted_vals.size(); ++j)
 		{
 			if(sorted_vals[j].old_id == PathNodes[i].id)
 			{
@@ -2270,14 +2267,14 @@ void PathManager::SortNodes()
 		t_PathNodes[i].id = i;
 	}
 
-	for(int y = 0; y < Head.PathNodeCount; ++y)
+	for(int32 y = 0; y < Head.PathNodeCount; ++y)
 	{
 		for(int z = 0; z < PATHNODENEIGHBOURS; ++z)
 		{
 			if(PathNodes[y].Neighbours[z].id != -1)
 			{
 				int new_val = -1;
-				for(int c = 0; c < sorted_vals.size(); ++c)
+				for(size_t c = 0; c < sorted_vals.size(); ++c)
 				{
 					if(PathNodes[y].Neighbours[z].id == sorted_vals[c].old_id)
 					{

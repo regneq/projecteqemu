@@ -1271,8 +1271,8 @@ ENCODE(OP_MercenaryDataResponse) {
 	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - 4) * emu->MercCount;
 
 
-	int r;
-	int k;
+	int32 r;
+	int32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
@@ -1334,8 +1334,8 @@ ENCODE(OP_MercenaryDataUpdate) {
 
 	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
 
-	int r;
-	int k;
+	int32 r;
+	int32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
@@ -2224,7 +2224,7 @@ ENCODE(OP_DzCompass)
 	ALLOC_VAR_ENCODE(structs::ExpeditionCompass_Struct, sizeof(structs::ExpeditionInfo_Struct) + sizeof(structs::ExpeditionCompassEntry_Struct) * emu->count);
 	OUT(count);
 
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		OUT(entries[i].x);
 		OUT(entries[i].y);
@@ -2243,7 +2243,7 @@ ENCODE(OP_DzMemberList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -2265,7 +2265,7 @@ ENCODE(OP_DzExpeditionList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].expedition, strlen(emu->entries[i].expedition));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -3003,7 +3003,7 @@ DECODE(OP_LoadSpellSet)
 	DECODE_LENGTH_EXACT(structs::LoadSpellSet_Struct);
 	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
 
-	for(int i = 0; i < MAX_PP_MEMSPELL; ++i)
+	for(uint32 i = 0; i < MAX_PP_MEMSPELL; ++i)
 		emu->spell[i] = eq->spell[i];
 
 	FINISH_DIRECT_DECODE();

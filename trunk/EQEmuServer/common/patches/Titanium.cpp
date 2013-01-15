@@ -899,7 +899,7 @@ ENCODE(OP_VetRewardsAvaliable)
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
 	uchar *old_data = __emu_buffer;
 	uchar *data = outapp_create->pBuffer;
-	for(int i = 0; i < count; ++i)
+	for(uint32 i = 0; i < count; ++i)
 	{
 		structs::VeteranReward *vr = (structs::VeteranReward*)data;
 		InternalVeteranReward *ivr = (InternalVeteranReward*)old_data;
@@ -998,7 +998,7 @@ ENCODE(OP_DzCompass)
 	ALLOC_VAR_ENCODE(structs::ExpeditionCompass_Struct, sizeof(structs::ExpeditionInfo_Struct) + sizeof(structs::ExpeditionCompassEntry_Struct) * emu->count);
 	OUT(count);
 
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		OUT(entries[i].x);
 		OUT(entries[i].y);
@@ -1017,7 +1017,7 @@ ENCODE(OP_DzMemberList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -1039,7 +1039,7 @@ ENCODE(OP_DzExpeditionList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].expedition, strlen(emu->entries[i].expedition));
 		ss.write((const char*)&null_term, sizeof(char));
