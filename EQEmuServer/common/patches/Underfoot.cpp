@@ -374,7 +374,7 @@ ENCODE(OP_SendZonepoints) {
 	ALLOC_VAR_ENCODE(structs::ZonePoints, sizeof(structs::ZonePoints) + sizeof(structs::ZonePoint_Entry) * (emu->count + 1));
 
 	eq->count = emu->count;
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		eq->zpe[i].iterator = emu->zpe[i].iterator;
 		eq->zpe[i].x = emu->zpe[i].x;
@@ -458,7 +458,7 @@ ENCODE(OP_RespondAA) {
 	eq->unknown016 = 0;
 	eq->unknown020 = 0;
 
-	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
+	for(uint32 i = 0; i < MAX_PP_AA_ARRAY; ++i)
 	{
 		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
 		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
@@ -1280,8 +1280,8 @@ ENCODE(OP_MercenaryDataResponse) {
 	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
 	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
 
-	int r;
-	int k;
+	uint32 r;
+	uint32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
@@ -1341,8 +1341,8 @@ ENCODE(OP_MercenaryDataUpdate) {
 
 	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
 
-	int r;
-	int k;
+	uint32 r;
+	uint32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
@@ -2533,7 +2533,7 @@ ENCODE(OP_DzCompass)
 	ALLOC_VAR_ENCODE(structs::ExpeditionCompass_Struct, sizeof(structs::ExpeditionInfo_Struct) + sizeof(structs::ExpeditionCompassEntry_Struct) * emu->count);
 	OUT(count);
 
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		OUT(entries[i].x);
 		OUT(entries[i].y);
@@ -2552,7 +2552,7 @@ ENCODE(OP_DzMemberList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -2574,7 +2574,7 @@ ENCODE(OP_DzExpeditionList)
 	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
-	for(int i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].expedition, strlen(emu->entries[i].expedition));
 		ss.write((const char*)&null_term, sizeof(char));
@@ -2783,7 +2783,7 @@ ENCODE(OP_AltCurrency)
 
         out_populate->opcode = populate->opcode;
         out_populate->count = populate->count;
-        for(int i = 0; i < populate->count; ++i) {
+        for(uint32 i = 0; i < populate->count; ++i) {
             out_populate->entries[i].currency_number = populate->entries[i].currency_number;
             out_populate->entries[i].currency_number2 = populate->entries[i].currency_number2;
             out_populate->entries[i].item_id = populate->entries[i].item_id;
