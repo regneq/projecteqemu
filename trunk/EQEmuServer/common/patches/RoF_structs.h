@@ -2996,17 +2996,16 @@ struct LogServer_Struct {
 /*020*/	uint8	unknown020[12];
 /*032*/ uint32	unknown032;
 /*036*/	char	worldshortname[32];
-/*068*/	uint8	unknown064[32];
-/*100*/	char	unknown096[16];	// 'pacman' on live
-/*116*/	char	unknown112[16];	// '64.37,148,36' on live
-/*132*/	uint8	unknown128[48];
-/*180*/	uint32	unknown176;	// htonl(0x00002695)
-/*184*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
-/*264*/	uint8	unknown260;	// 0x01 on live
-/*265*/	uint8	enablevoicemacros;
-/*266*/	uint8	enablemail;
-/*267*/	uint8	unknown263[41];
-/*308*/
+/*068*/	uint8	unknown068[181];
+/*249*/ uint8	unknown249[27];
+/*276*/	float	unknown276[7];
+/*304*/	uint8	unknown304[256];
+/*560*/
+
+/* 	Currently lost
+	uint8	enablevoicemacros;
+	uint8	enablemail;
+*/
 };
 
 struct ApproveWorld_Struct {
