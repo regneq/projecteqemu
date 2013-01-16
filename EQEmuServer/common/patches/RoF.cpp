@@ -2065,8 +2065,8 @@ ENCODE(OP_MercenaryDataResponse) {
 	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
 	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
 
-	int r;
-	int k;
+	uint32 r;
+	uint32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
@@ -2128,8 +2128,8 @@ ENCODE(OP_MercenaryDataUpdate) {
 
 	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
 
-	int r;
-	int k;
+	uint32 r;
+	uint32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
@@ -2624,27 +2624,28 @@ ENCODE(OP_LogServer) {
  	SETUP_DIRECT_ENCODE(LogServer_Struct, structs::LogServer_Struct);
  	strncpy(eq->worldshortname, emu->worldshortname, sizeof(eq->worldshortname));
  
- 	OUT(enablevoicemacros);
- 	OUT(enablemail);
+ 	//OUT(enablevoicemacros);	// These two are lost, but must be one of the 1s in unknown[249]
+ 	//OUT(enablemail);
 	OUT(enable_pvp);
 	OUT(enable_FV);
 
 	eq->unknown016 = 1;
+	eq->enable_FV = 1;
 	eq->unknown020[0] = 1;
 
- 	// These next two need to be set like this for the Tutorial Button to work.
- 	eq->unknown263[0] = 0;
- 	eq->unknown263[2] = 1;
- 	eq->unknown263[4] = 1;
- 	eq->unknown263[5] = 1;
- 	eq->unknown263[6] = 1;
- 	eq->unknown263[9] = 8;
- 	eq->unknown263[19] = 0x80;
- 	eq->unknown263[20] = 0x3f;
- 	eq->unknown263[23] = 0x80;
- 	eq->unknown263[24] = 0x3f;
- 	eq->unknown263[33] = 1;
-	
+ 	eq->unknown249[0] = 1;
+ 	eq->unknown249[1] = 1;
+ 	eq->unknown249[8] = 1;
+ 	eq->unknown249[9] = 1;
+ 	eq->unknown249[12] = 1;
+ 	eq->unknown249[14] = 1;
+ 	eq->unknown249[15] = 1;
+ 	eq->unknown249[16] = 1;
+
+	eq->unknown276[0] = 1.0f;
+	eq->unknown276[1] = 1.0f;
+	eq->unknown276[6] = 1.0f;
+
  	FINISH_ENCODE();
 }
 
