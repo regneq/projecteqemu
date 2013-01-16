@@ -2451,7 +2451,11 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 
 	if(initiator)
 	{
-		if (initiator->GetClientVersion() >= EQClientSoF)
+		if (initiator->GetClientVersion() >= EQClientRoF)
+		{
+			sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"0000000000000000000000000000000000000000000000000",LinkName,0x12);
+		}
+		else if (initiator->GetClientVersion() >= EQClientSoF)
 		{
 			sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",LinkName,0x12);
 		}
@@ -2460,15 +2464,14 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 			sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"000000000000000000000000000000000000000",LinkName,0x12);
 		}
 	}
-	else {	// If no initiator, create an SoF saylink, since Titanium handles SoF ones better than SoF handles Titanium ones.
-		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",LinkName,0x12);
+	else {	// If no initiator, create an RoF saylink, since older clients handle RoF ones better than RoF handles older ones.
+		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"0000000000000000000000000000000000000000000000000",LinkName,0x12);
 	}
 	strcpy(Phrase,linktext);
 	return Phrase;
 
 }
 
-// Item Link for use in Variables - "my $example_link = quest::varlink(item_id);"
 const char* QuestManager::getguildnamebyid(int guild_id) {
 	if (guild_id > 0)
 		return guild_mgr.GetGuildName(guild_id);

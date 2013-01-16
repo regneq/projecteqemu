@@ -2051,6 +2051,128 @@ ENCODE(OP_ZoneSpawns)
 	delete in;
 }
 
+ENCODE(OP_MercenaryDataResponse) {
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	MercenaryMerchantList_Struct *emu = (MercenaryMerchantList_Struct *) __emu_buffer;
+
+	char *Buffer = (char *) in->pBuffer;
+
+	int PacketSize = sizeof(structs::MercenaryMerchantList_Struct) - 4 + emu->MercTypeCount * 4;
+	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
+
+	int r;
+	int k;
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, PacketSize);
+	Buffer = (char *) outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercTypeCount);
+
+	for(r = 0; r < emu->MercTypeCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercGrades[r].GradeCountEntry);
+	}
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
+
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercID);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercSubType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].PurchaseCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].UpkeepCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Status);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk01);
+		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MerchantSlot);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk02);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk03);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk04);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// MercName
+		for(k = 0; k < emu->Mercs[r].StanceCount; k++)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].StanceIndex);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].Stances[k].Stance);
+		}
+	}
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+}
+
+ENCODE(OP_MercenaryDataUpdate) {
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	MercenaryDataUpdate_Struct *emu = (MercenaryDataUpdate_Struct *) __emu_buffer;
+
+	char *Buffer = (char *) in->pBuffer;
+
+	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
+
+	int r;
+	int k;
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
+	Buffer = (char *) outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercStatus);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
+
+	for(r = 0; r < emu->MercCount; r++)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercID);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercSubType);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].PurchaseCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].UpkeepCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Status);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyCost);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyUpkeep);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyType);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk01);
+		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->MercData[r].TimeLeft);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MerchantSlot);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk02);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk03);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk04);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// MercName
+		for(k = 0; k < emu->MercData[r].StanceCount; k++)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].Stance);
+		}
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1);	// MercUnk05
+	}
+
+	dest->FastQueuePacket(&outapp, ack_req);
+
+	delete in;
+}
+
 ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
 ENCODE(OP_ItemPacket) {
 	//consume the packet
@@ -2189,6 +2311,9 @@ ENCODE(OP_GuildMemberList) {
 	*buffer = '\0';
 	buffer++;
 	
+	// Guild ID
+	buffer += sizeof(uint32);
+
 	//add member count.
 	*((uint32 *) buffer) = htonl( emu->count );
 	buffer += sizeof(uint32);
@@ -2212,13 +2337,10 @@ ENCODE(OP_GuildMemberList) {
 			//the order we set things here must match the struct
 
 //nice helper macro
-/*#define SlideStructString(field, str) \
-		strcpy(e->field, str.c_str()); \
-		e = (GuildMemberEntry_Struct *) ( ((uint8 *)e) + str.length() )*/
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			strncpy(e->field, str, sizeof(e->field)); \
+			memcpy(e->field, str, sl+1); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}
@@ -2232,12 +2354,15 @@ ENCODE(OP_GuildMemberList) {
 			PutFieldN(rank);
 			PutFieldN(time_last_on);
 			PutFieldN(tribute_enable);
+			e->unknown01 = 0;
 			PutFieldN(total_tribute);
 			PutFieldN(last_tribute);
 			e->unknown_one = htonl(1);
 			SlideStructString( public_note, emu_note );
 			e->zoneinstance = 0;
 			e->zone_id = htons(emu_e->zone_id);
+			e->unknown_one2 = htonl(1);
+			e->unknown04 = 0;
 			
 			
 #undef SlideStructString
@@ -3095,6 +3220,19 @@ ENCODE(OP_GroupCancelInvite)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_SetGuildRank)
+{
+	ENCODE_LENGTH_EXACT(GuildSetRank_Struct);
+	SETUP_DIRECT_ENCODE(GuildSetRank_Struct, structs::GuildSetRank_Struct);
+	eq->GuildID = emu->Unknown00;
+	OUT(Rank);
+	memcpy(eq->MemberName, emu->MemberName, sizeof(eq->MemberName));
+	OUT(Banker);
+	eq->Unknown76 = 1;
+	FINISH_ENCODE();
+}
+
+
 ENCODE(OP_GroupUpdate)
 {
 	//_log(NET__ERROR, "OP_GroupUpdate");
@@ -3819,6 +3957,27 @@ DECODE(OP_ShopRequest) {
 	IN(command);
 	IN(rate);
 	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GuildRemove) 
+{
+    DECODE_LENGTH_EXACT(structs::GuildCommand_Struct);
+	SETUP_DIRECT_DECODE(GuildCommand_Struct, structs::GuildCommand_Struct);
+    strn0cpy(emu->othername, eq->othername, sizeof(emu->othername));
+	strn0cpy(emu->myname, eq->myname, sizeof(emu->myname));
+	IN(guildeqid);
+	IN(officer);
+    FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GuildDemote) 
+{
+    DECODE_LENGTH_EXACT(structs::GuildDemoteStruct);
+	SETUP_DIRECT_DECODE(GuildDemoteStruct, structs::GuildDemoteStruct);
+    strn0cpy(emu->target, eq->target, sizeof(emu->target));
+	strn0cpy(emu->name, eq->name, sizeof(emu->name));
+	// IN(rank);
+    FINISH_DIRECT_DECODE();
 }
 
 DECODE(OP_BazaarSearch)

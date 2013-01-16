@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 == 01/15/2013 ==
 Derision: RoF: Added Encode for OP_TaskDescription and removed RoF specific code for it from tasks.cpp
 Derision: Fixed some compiler warnings.
+Trevius: RoF: Varlinks and Saylinks now display properly for RoF.
+Trevius: RoF: Started work on Mercenaries.  They are partially functional but need more work.
+Trevius: RoF: Started work on Guilds.  The guild window can now display members, but the guild name does not yet display.
 
 == 01/14/2013 ==
 Derision: RoF: Fixed bug that was causing only one task to show in the Active Task window.

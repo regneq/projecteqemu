@@ -94,6 +94,9 @@ E(OP_SkillUpdate)
 E(OP_TributeInfo)
 E(OP_TaskHistoryReply)
 E(OP_TaskDescription)
+E(OP_SetGuildRank)
+E(OP_MercenaryDataUpdate)
+E(OP_MercenaryDataResponse)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -146,5 +149,7 @@ D(OP_ShopRequest)
 D(OP_BlockedBuffs)
 D(OP_RemoveBlockedBuffs)
 D(OP_RecipeAutoCombine)
+D(OP_GuildDemote)
+D(OP_GuildRemove)
 #undef E
 #undef D

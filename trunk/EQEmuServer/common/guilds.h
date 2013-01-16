@@ -23,7 +23,7 @@
 
 #define GUILD_NONE		0xFFFFFFFF // user has no guild
 
-#define GUILD_MAX_RANK  2   // 0-2 - some places in the code assume a single digit, dont go above 9
+#define GUILD_MAX_RANK  8   // 0-2 - some places in the code assume a single digit, dont go above 9
 
 //defines for standard ranks
 #define GUILD_MEMBER	0
