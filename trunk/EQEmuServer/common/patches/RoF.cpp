@@ -2630,7 +2630,6 @@ ENCODE(OP_LogServer) {
 	OUT(enable_FV);
 
 	eq->unknown016 = 1;
-	eq->enable_FV = 1;
 	eq->unknown020[0] = 1;
 
  	eq->unknown249[0] = 1;
