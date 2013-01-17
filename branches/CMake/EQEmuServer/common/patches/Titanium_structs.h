@@ -1948,9 +1948,7 @@ struct Object_Struct {
 /*40*/	float	y;					// y coord
 /*44*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF
 /*76*/	uint32	unknown076;			//
-#ifndef WIN32
-#warning ShowEQ shows an extra field in here...
-#endif
+// ShowEQ shows an extra field in here...
 /*80*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
 /*84*/	uint32	unknown084;			//set to 0xFF
 /*88*/	uint32	spawn_id;			// Spawn Id of client interacting with object

@@ -1,9 +1,26 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/16/2013 ==
+Derision: RoF: Updated OP_LogServer encode based on a live packet in order to enable 'Enter Tutorial from character select.
+Secrets: Added five new functions to perl for clients: GetBindX, GetBindY, GetBindZ, GetBindHeading, and GetBindZoneID. They all have an optional parameter of index of playerprofile's bindpoint.
+Secrets: Added an optional parameter to GetBind for index.
+
+== 01/15/2013 ==
+Derision: RoF: Added Encode for OP_TaskDescription and removed RoF specific code for it from tasks.cpp
+Derision: Fixed some compiler warnings.
+Trevius: RoF: Varlinks and Saylinks now display properly for RoF.
+Trevius: RoF: Started work on Mercenaries.  They are partially functional but need more work.
+Trevius: RoF: Started work on Guilds.  The guild window can now display members, but the guild name does not yet display.
+
+== 01/14/2013 ==
+Derision: RoF: Fixed bug that was causing only one task to show in the Active Task window.
+Derision: Fixed potential crash in QuestManager::varlink. Removed some unused variables that gcc was warning about.
+
 == 01/13/2013 ==
 Derision: RoF: Encoded OP_TaskHistoryReply and added temporary handling for short OP_TaskActivity packets until encode is down for that.
 Derision: Deleted Anniversary/HoT/VoA and Live patches.
 Derision: Updated StaticGetZoneName with all zones currently in the PEQ database.
+Trevius: RoF: Disciplines now update without zoning.
 
 == 01/12/2013 ==
 Derision: RoF: Personal Tribute and the Pet Buff Window now work.

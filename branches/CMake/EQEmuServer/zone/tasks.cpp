@@ -2911,11 +2911,6 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 	                   + sizeof(TaskDescriptionData1_Struct) + strlen(Tasks[TaskID]->Description) + 1
 			   + sizeof(TaskDescriptionData2_Struct) + 1 + sizeof(TaskDescriptionTrailer_Struct);
 
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		PacketLength += 1;
-	}
-
 	string RewardText;
 	int ItemID = 0;
 
@@ -3045,14 +3040,7 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 	tdd1->Duration = Duration;
 	tdd1->unknown2 = 0x00000000;
 	
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		tdd1->StartTime = 0x00000000;
-	}
-	else
-	{
-		tdd1->StartTime = StartTime;
-	}
+	tdd1->StartTime = StartTime;
 
 	Ptr = (char *) tdd1 + sizeof(TaskDescriptionData1_Struct);
 
@@ -3079,11 +3067,6 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 
 	tdt = (TaskDescriptionTrailer_Struct*)Ptr;
 	tdt->Points = 0x00000000; // Points Count 
-
-	if (c->GetClientVersion() >= EQClientRoF)
-	{
-		outapp->WriteUInt8(0);
-	}
 
 	_pkt(TASKS__PACKETS, outapp);
 

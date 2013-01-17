@@ -1066,6 +1066,172 @@ XS(XS_Client_SetBindPoint)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_GetBindX); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetBindX)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::GetBindX(index)");
+	{
+		Client *		THIS;
+		int		index = 0;
+		float RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items == 1)
+			index = 0;
+		else if (items == 2) {
+			index = (int32)SvUV(ST(1));
+		}
+
+		RETVAL = THIS->GetBindX(index);
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetBindY); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetBindY)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::GetBindY(index)");
+	{
+		Client *		THIS;
+		int		index = 0;
+		float RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items == 1)
+			index = 0;
+		else if (items == 2) {
+			index = (int32)SvUV(ST(1));;
+		}
+
+		RETVAL = THIS->GetBindY(index);
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetBindZ); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetBindZ)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::GetBindZ(index)");
+	{
+		Client *		THIS;
+		int		index = 0;
+		float RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items == 1)
+			index = 0;
+		else if (items == 2) {
+			index = (int32)SvUV(ST(1));
+		}
+
+		RETVAL = THIS->GetBindZ(index);
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetBindHeading); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetBindHeading)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::GetBindHeading(index)");
+	{
+		Client *		THIS;
+		int		index = 0;
+		float RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items == 1)
+			index = 0;
+		else if (items == 2) {
+			index = (int32)SvUV(ST(1));
+		}
+
+		RETVAL = THIS->GetBindHeading(index);
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetBindZoneID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetBindZoneID)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::GetBindZoneID(index)");
+	{
+		Client *		THIS;
+		int32 index = 0;
+		int32 RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items == 1)
+			index = 0;
+		else if (items == 2) {
+			index = (int32)SvUV(ST(1));
+		}
+
+		RETVAL = THIS->GetBindZoneID(index);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+
 XS(XS_Client_MovePC); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_MovePC)
 {
@@ -5515,6 +5681,11 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "AddEXP"), XS_Client_AddEXP, file, "$$;$$");
 		newXSproto(strcpy(buf, "SetEXP"), XS_Client_SetEXP, file, "$$$;$");
 		newXSproto(strcpy(buf, "SetBindPoint"), XS_Client_SetBindPoint, file, "$;$$$$");
+		newXSproto(strcpy(buf, "GetBindX"), XS_Client_GetBindX, file, "$$");
+		newXSproto(strcpy(buf, "GetBindY"), XS_Client_GetBindY, file, "$$");
+		newXSproto(strcpy(buf, "GetBindZ"), XS_Client_GetBindZ, file, "$$");
+		newXSproto(strcpy(buf, "GetBindHeading"), XS_Client_GetBindHeading, file, "$$");
+		newXSproto(strcpy(buf, "GetBindZoneID"), XS_Client_GetBindX, file, "$$");
 		newXSproto(strcpy(buf, "MovePC"), XS_Client_MovePC, file, "$$$$$$");
 		newXSproto(strcpy(buf, "MovePCInstance"), XS_Client_MovePCInstance, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "ChangeLastName"), XS_Client_ChangeLastName, file, "$$");

@@ -368,7 +368,6 @@ public:
 		iterator.Reset();
 		while(iterator.MoreElements())
 		{
-			ItemInst* inst = iterator.GetData();
 			iterator.RemoveCurrent(delete_);
 		}
 
@@ -381,7 +380,6 @@ public:
 		iterator.Reset();
 		while(iterator.MoreElements())
 		{
-			ItemInst* inst = iterator.GetData();
 			iterator.RemoveCurrent(delete_);
 		}
 

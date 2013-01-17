@@ -1855,11 +1855,13 @@ struct GuildManageRemove_Struct {
 	char member[64];
 };
 struct GuildCommand_Struct {
-	char othername[64];
-	char myname[64];
-	int16 guildeqid;
-	int8 unknown[2]; // for guildinvite all 0's, for remove 0=0x56, 2=0x02
-	int32 officer;
+/*000*/	char othername[64];
+/*064*/	char myname[64];
+/*128*/	int16 guildeqid;
+/*130*/	int8 unknown[2];		// for guildinvite all 0's, for remove 0=0x56, 2=0x02
+/*132*/	int32 officer;
+/*136*/	uint32 unknown136;		// New in RoF
+/*140*/
 };
 
 // Opcode OP_GMZoneRequest
@@ -2994,17 +2996,16 @@ struct LogServer_Struct {
 /*020*/	uint8	unknown020[12];
 /*032*/ uint32	unknown032;
 /*036*/	char	worldshortname[32];
-/*068*/	uint8	unknown064[32];
-/*100*/	char	unknown096[16];	// 'pacman' on live
-/*116*/	char	unknown112[16];	// '64.37,148,36' on live
-/*132*/	uint8	unknown128[48];
-/*180*/	uint32	unknown176;	// htonl(0x00002695)
-/*184*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
-/*264*/	uint8	unknown260;	// 0x01 on live
-/*265*/	uint8	enablevoicemacros;
-/*266*/	uint8	enablemail;
-/*267*/	uint8	unknown263[41];
-/*308*/
+/*068*/	uint8	unknown068[181];
+/*249*/ uint8	unknown249[27];
+/*276*/	float	unknown276[7];
+/*304*/	uint8	unknown304[256];
+/*560*/
+
+/* 	Currently lost
+	uint8	enablevoicemacros;
+	uint8	enablemail;
+*/
 };
 
 struct ApproveWorld_Struct {
@@ -3222,32 +3223,32 @@ struct SimpleMessage_Struct{
 	int32	unknown8;
 };
 
+// Size: 52 + strings
+// Other than the strings, all of this packet is network byte order (reverse from normal)
 struct GuildMemberEntry_Struct {
-	char	name[1];			//variable length
-	int8	unknown03[3];		// Seen 0s
-	int32	level;				//network byte order
-	int32	banker;				//1=yes, 0=no, network byte order
-	int32	class_;				//network byte order
-	int8	rank;				//network byte order
-	int32	time_last_on;		//network byte order
-	int32	tribute_enable;		//network byte order
-	int32	total_tribute;		//total guild tribute donated, network byte order
-	int32	last_tribute;		//unix timestamp
-	int8	unknown04[3];		// Seen 0s
-	int8	unknown_one;		//unknown, set to one. (network byte order)
-	char	public_note[1];		//variable length.
-	int16	zoneinstance;		//network byte order - Seen 0s in RoF
-	int16	zone_id;			//network byte order - Seen 0s in RoF
-	int8	unknown05[3];		// Seen 0s
-	int8	unknown_one2;		//unknown, set to one. (network byte order)
-/* 48 + strings */
+	char	name[1];			// variable length
+	int32	level;
+	int32	banker;				// 1=yes, 0=no
+	int32	class_;				
+	int32	rank;				
+	int32	time_last_on;		
+	int32	tribute_enable;		
+	int32	unknown01;			// Seen 0
+	int32	total_tribute;		// total guild tribute donated, network byte order
+	int32	last_tribute;		// unix timestamp	
+	int32	unknown_one;		// unknown, set to 1
+	char	public_note[1];		// variable length.
+	int16	zoneinstance;		// Seen 0s or -1 in RoF
+	int16	zone_id;			// Seen 0s or -1 in RoF
+	int32	unknown_one2;		// unknown, set to 1
+	int32	unknown04;			// Seen 0
 };
 
-struct GuildMembers_Struct {	//just for display purposes, this is not actually used in the message encoding.
-	char	player_name[1];		//variable length.
-	int8	unknown01[3];		// Seen 00 00 08
-	int32	unknown02;			// Seen 163
-	int8	count;				//network byte order
+//just for display purposes, this is not actually used in the message encoding other than for size.
+struct GuildMembers_Struct {	
+	char	player_name[1];		// variable length.
+	int32	guildid;			// Was unknown02 - network byte order
+	int32	count;				// network byte order
 	GuildMemberEntry_Struct member[0];
 };
 
@@ -3282,30 +3283,45 @@ struct GuildMemberLevelUpdate_Struct {
 /*68*/	uint32	level;	//not sure
 };
 
-
-
-struct GuildUpdate_PublicNote{
+struct GuildUpdate_PublicNote {
 	int32	unknown0;
 	char	name[64];
 	char	target[64];
 	char	note[100]; //we are cutting this off at 100, actually around 252
 };
-struct GuildDemoteStruct{
-	char	name[64];
-	char	target[64];
+
+struct GuildDemoteStruct {
+/*000*/	char	name[64];
+/*064*/	char	target[64];
+/*128*/	uint32	rank;			// New in RoF
+/*132*/
 };
-struct GuildRemoveStruct{
-	char	target[64];
-	char	name[64];
-	int32	unknown128;
-	int32	leaderstatus; //?
+
+struct GuildRemoveStruct {
+/*000*/	char	target[64];
+/*064*/	char	name[64];
+/*128*/	int32	GuildID;		// Was unknown128
+/*132*/	int32	leaderstatus;
+/*136*/	uint32	unknown136;		// New in RoF
+/*140*/
 };
-struct GuildMakeLeader{
+
+struct GuildMakeLeader {
 	char	name[64];
 	char	target[64];
 };
 
-
+// Server -> Client
+// Update a guild members rank and banker status
+struct GuildSetRank_Struct
+{
+/*00*/	uint32	GuildID;	// Was Unknown00
+/*04*/	uint32	Rank;
+/*08*/	char	MemberName[64];
+/*72*/	uint32	Banker;
+/*76*/	uint32	Unknown76;	// Seen 1 - Maybe Banker?
+/*80*/
+};
 
 struct BugStruct{
 /*0000*/	char	chartype[64];
@@ -4618,15 +4634,10 @@ struct MaxCharacters_Struct
 /*008*/ uint32 unknown008;	// Seen 0
 };
 
-//Not an EQ packet, just a single int for the mercenary merchant structure.
-struct MercenaryGrade_Struct {
-uint32 GradeCountEntry;
-};
-
 // Used by MercenaryListEntry_Struct
 struct MercenaryStance_Struct {
 /*0000*/ int32 StanceIndex; // Index of this stance (sometimes reverse reverse order - 3, 2, 1, 0 for 4 stances etc)
-/*0004*/ int32 Stance; // From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0004*/ int32 Stance; // From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc
 };
 // Used by MercenaryMerchantList_Struct
 struct MercenaryListEntry_Struct {
@@ -4647,15 +4658,15 @@ struct MercenaryListEntry_Struct {
 /*0053*/ sint32 MercUnk03; // Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0057*/ int8 MercUnk04; // Seen 1
 /*0058*/ char MercName[1]; // Null Terminated Mercenary Name (00 at merchants)
-/*0000*/ MercenaryStance_Struct* Stances; // Count Varies, but hard set to 5 max for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0000*/ MercenaryStance_Struct Stances[1]; // Count Varies - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc
 };
 
 // Sent by the server when browsing the Mercenary Merchant
 struct MercenaryMerchantList_Struct {
 /*0000*/ int32 MercTypeCount; // Number of Merc Types to follow
-/*0004*/ MercenaryGrade_Struct* MercGrades; // Count varies, but hard set to 3 max for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
+/*0004*/ int32 MercTypes[1]; // Count varies, but hard set to 3 max for now - From dbstr_us.txt - Apprentice (330000100), Journeyman (330000200), Master (330000300)
 /*0016*/ int32 MercCount; // Number of MercenaryInfo_Struct to follow
-/*0020*/ MercenaryListEntry_Struct* Mercs; // Data for individual mercenaries in the Merchant List
+/*0020*/ MercenaryListEntry_Struct Mercs[0]; // Data for individual mercenaries in the Merchant List
 };
 
 // OP_MercenaryDataRequest
@@ -4684,7 +4695,7 @@ struct MercenaryData_Struct {
 /*0053*/ sint32 MercUnk03; // Unknown (always 0 at merchant) - Seen on active merc: 93 a4 03 77, b8 ed 2f 26, 88 d5 8b c3, and 93 a4 ad 77
 /*0057*/ int8 MercUnk04; // Seen 1
 /*0058*/ char MercName[1]; // Null Terminated Mercenary Name (00 at merchants)
-/*0000*/ MercenaryStance_Struct* Stances; // Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
+/*0000*/ MercenaryStance_Struct Stances[1]; // Count Varies, but hard set to 2 for now - From dbstr_us.txt - 1^24^Passive^0, 2^24^Balanced^0, etc (1 to 9 as of April 2012)
 /*0000*/ int32 MercUnk05; // Seen 1 - Extra Merc Data field that differs from MercenaryListEntry_Struct
 // MercUnk05 may be a field that is at the end of the packet only, even if multiple mercs are listed (haven't seen examples of multiple mercs owned at once)
 };
