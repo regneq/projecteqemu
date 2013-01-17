@@ -394,6 +394,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_MercenarySuspendRequest] = &Client::Handle_OP_MercenarySuspendRequest;
 	ConnectedOpcodes[OP_MercenaryDismiss] = &Client::Handle_OP_MercenaryDismiss;
 	ConnectedOpcodes[OP_MercenaryTimerRequest] = &Client::Handle_OP_MercenaryTimerRequest;
+	ConnectedOpcodes[OP_OpenInventory] = &Client::Handle_OP_OpenInventory;
+	ConnectedOpcodes[OP_OpenContainer] = &Client::Handle_OP_OpenContainer;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -3325,57 +3327,32 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 		}
 	}
 
-	// Added checks for illegal bagslot swaps..should help with certain cheats (currently checks personal and cursor bag slots.)
-	// - If a player has used an illegal inventory cheat, they can become bugged at some point (especially concerning lore items.)
-	//* Start
+	// Illegal bagslot useage checks. Currently, user only receives a message if this check is triggered. -U
 	bool mi_hack = false;
 
-	if (mi->from_slot >= 251 && mi->from_slot <= 340) {
-		if (mi->from_slot > 330)
-			mi_hack = true; // why are we moving from a cursor bagslot when you can't open it?
+ 	if(mi->from_slot >= 251 && mi->from_slot <= 340) {
+		if(mi->from_slot > 330) { mi_hack = true; }
+ 		else {			
+			sint16 from_parent = m_inv.CalcSlotId(mi->from_slot);
+			if(!m_inv[from_parent]) { mi_hack = true; }
+			else if(!m_inv[from_parent]->IsType(ItemClassContainer)) { mi_hack = true; }
+			else if(m_inv.CalcBagIdx(mi->from_slot) >= m_inv[from_parent]->GetItem()->BagSlots) { mi_hack = true; }
+ 		}
+ 	}
+ 
+ 	if(mi->to_slot >= 251 && mi->to_slot <= 340) {
+		if(mi->to_slot > 330) { mi_hack = true; }
 		else {			
-			sint16 from_invslot = Inventory::CalcSlotId(mi->from_slot);
-			const ItemInst *from_invslotitem = GetInv().GetItem(from_invslot); 
+			sint16 to_parent = m_inv.CalcSlotId(mi->to_slot);
+			if(!m_inv[to_parent]) { mi_hack = true; }
+			else if(!m_inv[to_parent]->IsType(ItemClassContainer)) { mi_hack = true; }
+			else if(m_inv.CalcBagIdx(mi->to_slot) >= m_inv[to_parent]->GetItem()->BagSlots) { mi_hack = true; }
+ 		}
+ 	}
 
-			if (!from_invslotitem) // trying to move from bag slots when parent inventory slot is empty
-				mi_hack = true;
-			else if (from_invslotitem->GetItem()->ItemClass == 1) { // checking the parent inventory slot for container
-				if ((Inventory::CalcBagIdx(mi->from_slot) + 1) > from_invslotitem->GetItem()->BagSlots)
-					mi_hack = true; // trying to move from slots beyond parent container size
-			}
-			else // trying to move from bag slots when inventory slot item is not a container
-				mi_hack = true;
-		}
-	}
+	if(mi_hack) { Message(15, "Caution: Illegal use of inaccessable bag slots!"); }
 
-	if (mi->to_slot >= 251 && mi->to_slot <= 340) {
-		if (mi->to_slot > 330)
-			mi_hack = true; // why are we moving to a cursor bagslot when you can't open it?
-		else {
-			sint16 to_invslot = Inventory::CalcSlotId(mi->to_slot);
-			const ItemInst *to_invslotitem = GetInv().GetItem(to_invslot);
-
-			if (!to_invslotitem) // trying to move into bag slots when parent inventory slot is empty
-				mi_hack = true;
-			else if (to_invslotitem->GetItem()->ItemClass == 1) { // checking the parent inventory slot for container
-				if ((Inventory::CalcBagIdx(mi->to_slot) + 1) > to_invslotitem->GetItem()->BagSlots)
-					mi_hack = true; // trying to move into slots beyond parent container size
-			}
-			else // trying to move into bag slots when inventory slot item is not a container
-				mi_hack = true;
-		}
-	}
-
-	if (mi_hack) { // a CSD can also cause this condition, but more likely the use of a cheat
-		Message(13, "Hack detected: Illegal use of inventory bag slots!");
-		// TODO: Decide whether to log player as hacker - currently has no teeth...
-		// Kick();
-		// return;
-	} // End */
-
-	// if this swapitem call fails, then the server and client could be de-sync'd
-	if (!SwapItem(mi) && IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot))
-		Message(0, "Client SwapItem request failure - verify inventory integrity.");
+	if(!SwapItem(mi) && IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot)) { SwapItemResync(mi); }
 
 	return;
 }
@@ -13805,4 +13782,23 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 			SendMercTimerPacket(entityID, mercState, suspendedTime, GetEPP().mercSuspendedTime, p_timers.GetRemainingTime(pTimerMercSuspend));
 		}
 	}
+}
+
+void Client::Handle_OP_OpenInventory(const EQApplicationPacket *app) {
+	// Does not exist in Ti, UF or RoF clients
+	// SoF and SoD both send a 4-byte packet with a uint32 value of '8'
+}
+
+void Client::Handle_OP_OpenContainer(const EQApplicationPacket *app) {
+	// Does not exist in Ti client
+	// SoF, SoD and UF clients send a 4-byte packet indicating the 'parent' slot
+	// SoF, SoD and UF slots are defined by a uint32 value and currently untranslated
+	// RoF client sends a 12-byte packet based on the RoF::Structs::ItemSlotStruct
+	// RoF structure types are defined as signed int16 and currently untranslated
+	// RoF::struct.SlotType = {0 - Equipment, 1 - Bank, 2 - Shared Bank} // not tested beyond listed types
+	// RoF::struct.Unknown2 = 0
+	// RoF::struct.MainSlot = { <parent slot range designated by slottype..zero-based> }
+	// RoF::struct.SubSlot  = -1 (non-child)
+	// RoF::struct.AugSlot  = -1 (non-child)
+	// RoF::struct.Unknown1 = 141 (unsure why, but always appears to be this value..combine containers not tested)
 }

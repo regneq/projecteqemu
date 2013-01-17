@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/17/2013 ==
+Uleat: Added opcode handlers for OpenInventory(SoF and SoD) and OpenContainer(SoF, SoD, UF and RoF). Both still need slot translators.
+Uleat: Changed internal SwapItem method from void to bool return. Added appropriate code to handle returns.
+Uleat: Added an abbreviated form of the resync code - SwapItemResync. Handles failed item swaps on a case-by-case basis.
+Uleat: Fixed a bug that allowed duplication of non-stackable, charged items..lore or otherwise. (Sorry cheaters...)
+
 == 01/16/2013 ==
 Derision: RoF: Updated OP_LogServer encode based on a live packet in order to enable 'Enter Tutorial from character select.
 Secrets: Added five new functions to perl for clients: GetBindX, GetBindY, GetBindZ, GetBindHeading, and GetBindZoneID. They all have an optional parameter of index of playerprofile's bindpoint.

@@ -807,6 +807,9 @@ void Client::OnDisconnect(bool hard_disconnect) {
 }
 
 // Sends the client complete inventory used in character login
+
+// DO WE STILL NEED THE 'ITEMCOMBINED' CONDITIONAL CODE? -U
+
 //#ifdef ITEMCOMBINED
 void Client::BulkSendInventoryItems()
 {
@@ -817,6 +820,9 @@ void Client::BulkSendInventoryItems()
 	if(deletenorent){//client was offline for more than 30 minutes, delete no rent items
 		RemoveNoRent();
 	}
+
+	//RemoveDuplicateLore();
+	//MoveSlotNotAllowed();
 	
 	//TODO: this function is just retarded... it re-allocates the buffer for every
 	//new item. It should be changed to loop through once, gather the
