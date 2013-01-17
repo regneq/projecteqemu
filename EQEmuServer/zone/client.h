@@ -347,6 +347,11 @@ public:
 	inline int8		GetBaseHeritage()	const { return m_pp.drakkin_heritage; }
 	inline int8		GetBaseTattoo()		const { return m_pp.drakkin_tattoo; }
 	inline int8		GetBaseDetails()	const { return m_pp.drakkin_details; }
+	inline float	GetBindX(uint32 index = 0)			const { return m_pp.binds[index].x; }
+	inline float	GetBindY(uint32 index = 0)			const { return m_pp.binds[index].y; }
+	inline float	GetBindZ(uint32 index = 0)			const { return m_pp.binds[index].z; }
+	inline float	GetBindHeading(uint32 index = 0)			const { return m_pp.binds[index].heading; }
+	inline uint32	GetBindZoneID(uint32 index = 0)			const { return m_pp.binds[index].zoneId; }
 	sint32			CalcMaxMana();
 	sint32			CalcBaseMana();
 	const sint32&	SetMana(sint32 amount);
