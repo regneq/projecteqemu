@@ -497,12 +497,6 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 				for(int loop=0;loop<quantity;loop++)
 					QueuePacket(outapp);
 				safe_delete(outapp);
-
-				if (slot_id == SLOT_CURSOR) {
-					Message(13, "Server Warning! If you just received a MOVE ITEM FAILED IN CLIENT APPLICATION");
-					Message(13, "error message, then you will need to zone or relog to clear this problem.");
-					Message(0, "Do not perform any inventory actions until you do so or permanent item loss is possible.");
-				}
 		}
 		else {
 			outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
@@ -1098,12 +1092,9 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			move_in->from_slot = dst_slot_check;
 			move_in->to_slot = src_slot_check;
 			move_in->number_in_stack = dst_inst->GetCharges();
-			if (!SwapItem(move_in)) // shouldn't fail because call wouldn't exist otherwise, but just in case...
-				this->Message(13, "Error: Internal SwapItem call returned a failure!");
+			if(!SwapItem(move_in)) { mlog(INVENTORY__ERROR, "Recursive SwapItem call failed due to non-existent destination item (charid: %i, fromslot: %i, toslot: %i)", CharacterID(), src_slot_id, dst_slot_id); }
 		}
-		Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
-		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
-		this->DeleteItemInInventory(dst_slot_id,0,true);
+		
 		return false;
 	}
 	//verify shared bank transactions in the database
@@ -1261,6 +1252,11 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 5: Swap (or stack) items
 	if (move_in->number_in_stack > 0) {
 		// Determine if charged items can stack
+		if(src_inst && !src_inst->IsStackable()) {
+			mlog(INVENTORY__ERROR, "Move from %d to %d with stack size %d. %s is not a stackable item. (charname: %s)", src_slot_id, dst_slot_id, move_in->number_in_stack, src_inst->GetItem()->Name, GetName());
+			return false;
+		}
+
 		if (dst_inst) {
 			if(src_inst->GetID() != dst_inst->GetID()) {
 				mlog(INVENTORY__ERROR, "Move from %d to %d with stack size %d. Incompatible item types: %d != %d", src_slot_id, dst_slot_id, move_in->number_in_stack, src_inst->GetID(), dst_inst->GetID());
@@ -1287,11 +1283,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 					mlog(INVENTORY__SLOTS, "Dest (%d) now has %d charges, source (%d) has %d (%d moved)", dst_slot_id, dst_inst->GetCharges(), src_slot_id, src_inst->GetCharges(), usedcharges);
 				}
 			} else {
-				//stack is full, so
-
-				// there was no action taken here previously. any moveitem action would cause server to fail swapitem request, but
-				// the calling method still processed a success by continuing on to the end of the procedure. affected methods have
-				// been changed to conditional calls. needed to add this:
 				mlog(INVENTORY__ERROR, "Move from %d to %d with stack size %d. Exceeds dest maximum stack size: %d/%d", src_slot_id, dst_slot_id, move_in->number_in_stack, (src_inst->GetCharges()+dst_inst->GetCharges()), dst_inst->GetItem()->StackSize);
 				return false;
 			}
@@ -1299,9 +1290,9 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		else {
 			// Nothing in destination slot: split stack into two
 			if ((sint16)move_in->number_in_stack >= src_inst->GetCharges()) {
-				mlog(INVENTORY__SLOTS, "Move entire stack from %d to %d with stack size %d. Dest empty.", src_slot_id, dst_slot_id, move_in->number_in_stack);
 				// Move entire stack
-				m_inv.SwapItem(src_slot_id, dst_slot_id);
+				if(!m_inv.SwapItem(src_slot_id, dst_slot_id)) { return false; }
+				mlog(INVENTORY__SLOTS, "Move entire stack from %d to %d with stack size %d. Dest empty.", src_slot_id, dst_slot_id, move_in->number_in_stack);
 			}
 			else {
 				// Split into two
@@ -1330,8 +1321,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			}
 			SetMaterial(dst_slot_id,src_inst->GetItem()->ID);
 		}
+		if(!m_inv.SwapItem(src_slot_id, dst_slot_id)) { return false; }
 		mlog(INVENTORY__SLOTS, "Moving entire item from slot %d to slot %d", src_slot_id, dst_slot_id);
-		m_inv.SwapItem(src_slot_id, dst_slot_id);
 	}
 	
 	int matslot = SlotConvert2(dst_slot_id);
@@ -1356,6 +1347,94 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 8: Re-calc stats
 	CalcBonuses();
 	return true;
+}
+
+void Client::SwapItemResync(MoveItem_Struct* move_slots) {
+	// resync the 'from' and 'to' slots on an as-needed basis
+	// Not as effective as the full process, but less intrusive to gameplay -U
+	mlog(INVENTORY__ERROR, "Inventory desyncronization. (charname: %s, source: %i, destination: %i)", GetName(), move_slots->from_slot, move_slots->to_slot);
+	Message(15, "Inventory Desyncronization detected: Resending slot data...");
+
+	if((move_slots->from_slot >= 0 && move_slots->from_slot <= 340) || move_slots->from_slot == 9999) {
+		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
+		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
+			// This prevents the client from generating a 'phantom' bag and crashing when closing it -U
+			const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
+			ItemInst* token_inst = database.CreateItem(token_struct, 1);
+
+			SendItemPacket(resync_slot, token_inst, ItemPacketTrade);
+			
+			if(m_inv[resync_slot]) { SendItemPacket(resync_slot, m_inv[resync_slot], ItemPacketTrade); }
+			else {
+				EQApplicationPacket* outapp		= new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
+				DeleteItem_Struct* delete_slot	= (DeleteItem_Struct*)outapp->pBuffer;
+				delete_slot->from_slot			= resync_slot;
+				delete_slot->to_slot			= 0xFFFFFFFF;
+				delete_slot->number_in_stack	= 0xFFFFFFFF;
+				
+				QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+			Message(14, "Source slot %i resyncronized.", move_slots->from_slot);
+		}
+		else { Message(13, "Could not resyncronize source slot %i.", move_slots->from_slot); }
+	}
+	else {
+		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
+		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
+			if(m_inv[resync_slot]) {
+				const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
+				ItemInst* token_inst = database.CreateItem(token_struct, 1);
+
+				SendItemPacket(resync_slot, token_inst, ItemPacketTrade);
+				SendItemPacket(resync_slot, m_inv[resync_slot], ItemPacketTrade);
+
+				Message(14, "Source slot %i resyncronized.", move_slots->from_slot);
+			}
+			else { Message(13, "Could not resyncronize source slot %i.", move_slots->from_slot); }
+		}
+		else { Message(13, "Could not resyncronize source slot %i.", move_slots->from_slot); }
+	}
+
+	if((move_slots->to_slot >= 0 && move_slots->to_slot <= 340) || move_slots->to_slot == 9999) {
+		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->to_slot) == SLOT_INVALID) ? move_slots->to_slot : Inventory::CalcSlotId(move_slots->to_slot);
+		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
+			const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
+			ItemInst* token_inst = database.CreateItem(token_struct, 1);
+
+			SendItemPacket(resync_slot, token_inst, ItemPacketTrade);
+
+			if(m_inv[resync_slot]) { SendItemPacket(resync_slot, m_inv[resync_slot], ItemPacketTrade); }
+			else {
+				EQApplicationPacket* outapp		= new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
+				DeleteItem_Struct* delete_slot	= (DeleteItem_Struct*)outapp->pBuffer;
+				delete_slot->from_slot			= resync_slot;
+				delete_slot->to_slot			= 0xFFFFFFFF;
+				delete_slot->number_in_stack	= 0xFFFFFFFF;
+				
+				QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+			Message(14, "Destination slot %i resyncronized.", move_slots->to_slot);
+		}
+		else { Message(13, "Could not resyncronize destination slot %i.", move_slots->to_slot); }
+	}
+	else {
+		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->to_slot) == SLOT_INVALID) ? move_slots->to_slot : Inventory::CalcSlotId(move_slots->to_slot);
+		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
+			if(m_inv[resync_slot]) {
+				const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
+				ItemInst* token_inst = database.CreateItem(token_struct, 1);
+
+				SendItemPacket(resync_slot, token_inst, ItemPacketTrade);
+				SendItemPacket(resync_slot, m_inv[resync_slot], ItemPacketTrade);
+
+				Message(14, "Destination slot %i resyncronized.", move_slots->to_slot);
+			}
+			else { Message(13, "Could not resyncronize destination slot %i.", move_slots->to_slot); }
+		}
+		else { Message(13, "Could not resyncronize destination slot %i.", move_slots->to_slot); }
+	}
 }
 
 void Client::QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call) {
@@ -1685,6 +1764,17 @@ void Client::RemoveNoRent() {
 			}
 		}
 	}
+}
+
+// Two new methods to alleviate perpetual login desyncs
+void Client::RemoveDuplicateLore() {
+	// Will add split charges back to non-stackable items up to MaxCharges to avoid penalizing the player
+	// for accidental desync charge splitting. However, additional duplicate items will be deleted. -U
+}
+
+void Client::MoveSlotNotAllowed() {
+	// Will move illegal items out of slot-restricted slots and place them into the inventory or onto cursor.
+	// Action is limited to worn items and not currently planned to include items larger than container size. -U
 }
 
 // these functions operate with a material slot, which is from 0 to 8

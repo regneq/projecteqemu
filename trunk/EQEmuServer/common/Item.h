@@ -155,7 +155,7 @@ public:
 	sint16 PushCursor(const ItemInst& inst);
 	
 	// Swap items in inventory
-	void SwapItem(sint16 slot_a, sint16 slot_b);
+	bool SwapItem(sint16 slot_a, sint16 slot_b);
 
 	// Remove item from inventory
 	bool DeleteItem(sint16 slot_id, uint8 quantity=0);

@@ -764,6 +764,7 @@ public:
 	bool	PushItemOnCursor(const ItemInst& inst, bool client_update = false);
 	void	DeleteItemInInventory(sint16 slot_id, sint8 quantity = 0, bool client_update = false, bool update_db = true);
 	bool	SwapItem(MoveItem_Struct* move_in);
+	void	SwapItemResync(MoveItem_Struct* move_slots);
 	void	QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call = false);
 	void	PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data = 0);
 	bool	AutoPutLootInInventory(ItemInst& inst, bool try_worn = false, bool try_cursor = true, ServerLootItem_Struct** bag_item_data = 0);
@@ -801,6 +802,8 @@ public:
 	int8	SlotConvert2(int8 slot);	//Maybe not needed.
 	void	Escape(); //AA Escape
 	void    RemoveNoRent();
+	void	RemoveDuplicateLore();
+	void	MoveSlotNotAllowed();
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other);
 	void	DoClassAttacks(Mob *ca_target, int16 skill = -1, bool IsRiposte=false);

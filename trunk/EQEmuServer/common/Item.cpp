@@ -668,22 +668,19 @@ sint16 Inventory::PutItem(sint16 slot_id, const ItemInst& inst)
 }
 
 // Swap items in inventory
-void Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
+bool Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
 {
-	// Temp holding area for a
+	// Temp holding areas for a and b
 	ItemInst* inst_a = GetItem(slot_a);
+	ItemInst* inst_b = GetItem(slot_b);
 
-	if(inst_a)
-	{
-		if(!inst_a->IsSlotAllowed(slot_b))
-			return;
-	}
+	if(inst_a) { if(!inst_a->IsSlotAllowed(slot_b)) { return false; } }
+	if(inst_b) { if(!inst_b->IsSlotAllowed(slot_a)) { return false; } }
 
-	// Copy b->a
-	_PutItem(slot_a, GetItem(slot_b));
-	
-	// Copy a->b
-	_PutItem(slot_b, inst_a);
+	_PutItem(slot_a, inst_b); // Copy b->a
+	_PutItem(slot_b, inst_a); // Copy a->b
+
+	return true;
 }
 
 // Checks that user has at least 'quantity' number of items in a given inventory slot
