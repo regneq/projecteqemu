@@ -347,10 +347,10 @@ public:
 	inline int8		GetBaseHeritage()	const { return m_pp.drakkin_heritage; }
 	inline int8		GetBaseTattoo()		const { return m_pp.drakkin_tattoo; }
 	inline int8		GetBaseDetails()	const { return m_pp.drakkin_details; }
-	inline float	GetBindX(uint32 index = 0)			const { return m_pp.binds[index].x; }
-	inline float	GetBindY(uint32 index = 0)			const { return m_pp.binds[index].y; }
-	inline float	GetBindZ(uint32 index = 0)			const { return m_pp.binds[index].z; }
-	inline float	GetBindHeading(uint32 index = 0)			const { return m_pp.binds[index].heading; }
+	inline const float	GetBindX(uint32 index = 0)	const { return m_pp.binds[index].x; }
+	inline const float	GetBindY(uint32 index = 0)			const { return m_pp.binds[index].y; }
+	inline const float	GetBindZ(uint32 index = 0)			const { return m_pp.binds[index].z; }
+	inline const float	GetBindHeading(uint32 index = 0)			const { return m_pp.binds[index].heading; }
 	inline uint32	GetBindZoneID(uint32 index = 0)			const { return m_pp.binds[index].zoneId; }
 	sint32			CalcMaxMana();
 	sint32			CalcBaseMana();
@@ -553,11 +553,6 @@ public:
 	void	SetBindPoint(int to_zone = -1, float new_x = 0.0f, float new_y = 0.0f, float new_z = 0.0f);
 	void	SetStartZone(uint32 zoneid, float x = 0.0f, float y =0.0f, float z = 0.0f);
 	uint32	GetStartZone(void);
-	inline const float	GetBindX() const		{ return m_pp.binds[0].x; }
-	inline const float	GetBindY() const		{ return m_pp.binds[0].y; }
-	inline const float	GetBindZ() const		{ return m_pp.binds[0].z; }
-	inline const float	GetBindHeading() const	{ return m_pp.binds[0].heading; }
-	uint32	GetBindZoneID() const	{ return m_pp.binds[0].zoneId; }
 	void	MovePC(const char* zonename, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
