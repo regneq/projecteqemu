@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/16/2013 ==
 Derision: RoF: Updated OP_LogServer encode based on a live packet in order to enable 'Enter Tutorial from character select.
+Secrets: Added five new functions to perl for clients: GetBindX, GetBindY, GetBindZ, GetBindHeading, and GetBindZoneID. They all have an optional parameter of index of playerprofile's bindpoint.
 
 == 01/15/2013 ==
 Derision: RoF: Added Encode for OP_TaskDescription and removed RoF specific code for it from tasks.cpp
