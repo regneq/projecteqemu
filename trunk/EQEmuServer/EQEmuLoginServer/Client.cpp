@@ -127,7 +127,7 @@ void Client::Handle_SessionReady(const char* data, unsigned int size)
 	}
 
 	unsigned int mode = *((unsigned int*)data);
-	if(mode == (unsigned int)LoginMode::lm_from_world)
+	if(mode == (unsigned int)lm_from_world)
 	{
 		server_log->Log(log_network, "Session ready indicated logged in from world(unsupported feature), disconnecting.");
 		connection->Close();

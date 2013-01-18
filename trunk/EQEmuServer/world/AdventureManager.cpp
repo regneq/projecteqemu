@@ -1,3 +1,4 @@
+#include "../common/debug.h"
 #include "../common/MiscFunctions.h"
 #include "../common/servertalk.h"
 #include "../common/rulesys.h"

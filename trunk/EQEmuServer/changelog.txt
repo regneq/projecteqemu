@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/18/2013 ==
 Akkadius: Fixed an size value of hp_regen_rate for NPC's so values don't roll over into negative values
+KLS: EQEmu has been setup to use CMake, this is mandatory.
+Visit http://www.eqemulator.net/wiki/wikka.php?wakka=CMake for instructions on Windows/GCC.
 
 == 01/17/2013 ==
 Uleat: Added opcode handlers for OpenInventory(SoF and SoD) and OpenContainer(SoF, SoD, UF and RoF). Both still need slot translators.
