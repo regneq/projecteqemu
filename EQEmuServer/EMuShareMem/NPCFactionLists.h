@@ -4,7 +4,9 @@
 #include "../common/EMuShareMem.h"
 
 // MMF_MAX_NPCFactionList_ID:  Make sure this is bigger than the highest NPCFactionList ID#
+#ifndef MMF_MAX_NPCFactionList_ID
 #define MMF_MAX_NPCFactionList_ID		50000
+#endif
 
 struct MMFNPCFactionLists_Struct {
 	uint32			MaxNPCFactionListID;

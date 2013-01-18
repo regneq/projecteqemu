@@ -3,10 +3,11 @@
 #include "../common/EMuShareMem.h"
 
 // MMF_MAX_Door_ID:  Make sure this is bigger than the highest Door ID#
+#ifndef MMF_MAX_Door_ID
 #define MMF_MAX_Door_ID		30000
+#endif
 // MMF_MAX_Door_MEM: Maxium number of Doors to load into memory. Make sure this is bigger
 //                      than the total number of Doors in the server's database!
-//#define MMF_MAX_Door_MEM		15000
 
 struct MMFDoors_Struct {
 	uint32		MaxDoorID;

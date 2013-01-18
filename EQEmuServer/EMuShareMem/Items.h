@@ -3,10 +3,11 @@
 #include "../common/EMuShareMem.h"
 
 // MMF_EQMAX_ITEMS:  Make sure this is bigger than the highest item ID#
+#ifndef MMF_EQMAX_ITEMS
 #define MMF_EQMAX_ITEMS		300000
+#endif
 // MMF_MEMMAX_ITEMS: Maxium number of items to load into memory. Make sure this is bigger
 //                   than the total number of items in the server's database!
-//#define MMF_MEMMAX_ITEMS	32700
 
 struct MMFItems_Struct {
 	uint32		MaxItemID;
