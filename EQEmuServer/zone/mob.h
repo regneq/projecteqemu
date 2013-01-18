@@ -1313,8 +1313,8 @@ protected:
 	sint32	base_hp;
 	sint32	cur_mana;
 	sint32	max_mana;
-	sint16	hp_regen;
-	sint16	mana_regen;
+	sint32	hp_regen;
+	sint32	mana_regen;
 	sint32	oocregen; // Out of Combat Regen, % per tick
 	int8 maxlevel;
 	int32 scalerate;
