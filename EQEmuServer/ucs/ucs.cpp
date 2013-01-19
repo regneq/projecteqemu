@@ -25,6 +25,7 @@
 #include "../common/EQStreamFactory.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
+#include "../common/platform.h"
 #include "database.h"
 #include "ucsconfig.h"
 #include "chatchannel.h"
@@ -69,6 +70,7 @@ string GetMailPrefix() {
 }
 
 int main() {
+    RegisterExecutablePlatform(ExePlatformUCS);
 
 	// Check every minute for unused channels we can delete
 	//

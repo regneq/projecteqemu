@@ -43,6 +43,7 @@ using namespace std;
 #include "../common/EQStreamIdent.h"
 //#include "../common/patches/Client62.h"
 #include "../common/rulesys.h"
+#include "../common/platform.h"
 #ifdef _WINDOWS
 	#include <process.h>
 	#define snprintf	_snprintf
@@ -126,6 +127,8 @@ extern ConsoleList console_list;
 void CatchSignal(int sig_num);
 
 int main(int argc, char** argv) {
+    RegisterExecutablePlatform(ExePlatformWorld);
+
 	// Load server configuration
 	_log(WORLD__INIT, "Loading server configuration..");
 	if (!WorldConfig::LoadConfig()) {

@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "op_codes.h"
 #include "CRC16.h"
+#include "platform.h"
 #ifndef STATIC_OPCODE
 #include "opcodemgr.h"
 #endif
@@ -467,36 +468,36 @@ EQRawApplicationPacket::EQRawApplicationPacket(uint16 opcode, const unsigned cha
 EQRawApplicationPacket::EQRawApplicationPacket(const unsigned char *buf, const uint32 len)
 : EQApplicationPacket(OP_Unknown, buf+sizeof(uint16), len-sizeof(uint16))
 {
-#if !defined(MAIL) && !defined(CHAT) && !defined(UCS)
-	opcode = *((const uint16 *) buf);
-	if(opcode == 0x0000)
-	{
-		if(len >= 3)
-		{
-			opcode = *((const uint16 *) (buf + 1));
-			const unsigned char *packet_start = (buf + 3);
-			const sint32 packet_length = len - 3;
-			safe_delete_array(pBuffer);
-			if(len >= 0)
-			{
-				size = packet_length;
-				pBuffer = new unsigned char[size];
-				memcpy(pBuffer, packet_start, size);
-			}
-			else
-			{
-				size = 0;
-			}
-		}
-		else
-		{
-			safe_delete_array(pBuffer);
-			size = 0;
-		}
-	}
-#else
-	opcode = *((const uint8 *) buf);
-#endif
+    if(GetExecutablePlatform() != ExePlatformUCS) {
+	    opcode = *((const uint16 *) buf);
+	    if(opcode == 0x0000)
+	    {
+	    	if(len >= 3)
+	    	{
+	    		opcode = *((const uint16 *) (buf + 1));
+	    		const unsigned char *packet_start = (buf + 3);
+	    		const sint32 packet_length = len - 3;
+	    		safe_delete_array(pBuffer);
+	    		if(len >= 0)
+	    		{
+	    			size = packet_length;
+	    			pBuffer = new unsigned char[size];
+	    			memcpy(pBuffer, packet_start, size);
+	    		}
+	    		else
+	    		{
+	    			size = 0;
+	    		}
+	    	}
+	    	else
+	    	{
+	    		safe_delete_array(pBuffer);
+	    		size = 0;
+	    	}
+	    }
+    } else {
+	    opcode = *((const uint8 *) buf);
+    }
 }
 
 void DumpPacket(const EQApplicationPacket* app, bool iShowInfo) {

@@ -59,6 +59,7 @@ SET(common_sources
     unix.cpp
     worldconn.cpp
     XMLParser.cpp
+    platform.cpp
     patches/Client62.cpp
     patches/patches.cpp
     patches/SoD.cpp
@@ -173,6 +174,7 @@ SET(common_headers
     worldconn.h
     XMLParser.h
     ZoneNumbers.h
+    platform.h
     patches/Client62.h
     patches/Client62_itemfields.h
     patches/Client62_ops.h

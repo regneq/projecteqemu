@@ -16,10 +16,4 @@ static const char OP_Ack		=	0x15;
 static const char OP_AppCombined	=	0x19;
 static const char OP_OutOfSession	=	0x1d;
 
-#if defined(LS) || defined(CHAT) || defined(MAIL) || defined(UCS)
-	#define APP_OPCODE_SIZE	1
-#else
-	#define APP_OPCODE_SIZE	2
-#endif
-
 #endif

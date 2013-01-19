@@ -21,6 +21,7 @@
 #include "BasePacket.h"
 #include "EQStreamType.h"
 #include "op_codes.h"
+#include "platform.h"
 
 #ifdef STATIC_OPCODE
 	typedef unsigned short EmuOpcode;
@@ -101,10 +102,14 @@ class EQApplicationPacket : public EQPacket {
 //	friend class EQProtocolPacket;
 	friend class EQStream;
 public:
-	EQApplicationPacket() : EQPacket(OP_Unknown,NULL,0) { app_opcode_size = APP_OPCODE_SIZE; }
-	EQApplicationPacket(const EmuOpcode op) : EQPacket(op,NULL,0) { app_opcode_size = APP_OPCODE_SIZE; }
-	EQApplicationPacket(const EmuOpcode op, const uint32 len) : EQPacket(op,NULL,len) { app_opcode_size = APP_OPCODE_SIZE; }
-	EQApplicationPacket(const EmuOpcode op, const unsigned char *buf, const uint32 len) : EQPacket(op,buf,len) { app_opcode_size = APP_OPCODE_SIZE; }
+	EQApplicationPacket() : EQPacket(OP_Unknown,NULL,0) 
+        { app_opcode_size = GetExecutablePlatform() == ExePlatformUCS ? 1 : 2; }
+	EQApplicationPacket(const EmuOpcode op) : EQPacket(op,NULL,0) 
+        { app_opcode_size = GetExecutablePlatform() == ExePlatformUCS ? 1 : 2; }
+	EQApplicationPacket(const EmuOpcode op, const uint32 len) : EQPacket(op,NULL,len) 
+        { app_opcode_size = GetExecutablePlatform() == ExePlatformUCS ? 1 : 2; }
+	EQApplicationPacket(const EmuOpcode op, const unsigned char *buf, const uint32 len) : EQPacket(op,buf,len) 
+        { app_opcode_size = GetExecutablePlatform() == ExePlatformUCS ? 1 : 2; }
 	bool combine(const EQApplicationPacket *rhs);
 	uint32 serialize (uint16 opcode, unsigned char *dest) const;
 	uint32 Size() const { return size+app_opcode_size; }

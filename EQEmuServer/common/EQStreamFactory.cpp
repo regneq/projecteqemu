@@ -55,7 +55,8 @@ ThreadReturnType EQStreamFactoryWriterLoop(void *eqfs)
 	THREAD_RETURN(NULL);
 }
 
-EQStreamFactory::EQStreamFactory(EQStreamType type, int port) : Timeoutable(5000)
+EQStreamFactory::EQStreamFactory(EQStreamType type, int port, uint32 timeout) 
+    : Timeoutable(5000), stream_timeout(timeout)
 {
 	StreamType=type;
 	Port=port;
@@ -231,7 +232,7 @@ void EQStreamFactory::CheckTimeout()
 	for(stream_itr=Streams.begin();stream_itr!=Streams.end();) {
 		EQStream *s = stream_itr->second;
 		
-		s->CheckTimeout(now, STREAM_TIMEOUT);
+		s->CheckTimeout(now, stream_timeout);
 		
 		EQStreamState state = s->GetState();
 		
