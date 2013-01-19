@@ -1241,8 +1241,8 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(0);		// Unknown
 	outapp->WriteUInt32(emu->endurance);
-	outapp->WriteUInt32(0);		// Unknown
-	outapp->WriteUInt32(0);		// Unknown
+	outapp->WriteUInt32(0);		// Unknown - Observed 0x7cde - This is also seen in guild packets sent to this character.
+	outapp->WriteUInt32(0);		// Unknown - Observed 0x64
 
 	outapp->WriteUInt32(64);	// Name Length
 
@@ -1292,11 +1292,10 @@ ENCODE(OP_PlayerProfile)
 	outapp->WriteUInt8(0);				// Unknown
 	outapp->WriteUInt8(emu->gm);
 
-	//outapp->WriteUInt32(emu->guild_id);
-	outapp->WriteUInt32(0);
-	outapp->WriteUInt8(0);				// Unknown
-	outapp->WriteUInt32(0);				// Unknown
-	outapp->WriteUInt8(0);				// Unknown
+	outapp->WriteUInt32(emu->guild_id);
+	outapp->WriteUInt8(0);				// Unknown - observed 1 in a live packet.
+	outapp->WriteUInt32(0);				// Unknown - observed 1 in a live packet.
+	outapp->WriteUInt8(0);				// Unknown - observed 1 in a live packet.
 	outapp->WriteUInt32(0);				// Unknown
 
 	outapp->WriteUInt64(emu->exp);
@@ -1952,7 +1951,7 @@ ENCODE(OP_ZoneSpawns)
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
 
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle ??
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC ? 0 : 1); // unknown - Must be 1 for guild name to be shown abover players head.
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown
 
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petOwnerId);
@@ -3871,6 +3870,19 @@ ENCODE(OP_TributeInfo)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_GuildMemberUpdate)
+{
+	SETUP_DIRECT_ENCODE(GuildMemberUpdate_Struct, structs::GuildMemberUpdate_Struct);
+
+	OUT(GuildID);
+	memcpy(eq->MemberName, emu->MemberName, sizeof(eq->MemberName));
+	OUT(ZoneID);
+	OUT(InstanceID);
+	OUT(LastSeen);
+	eq->Unknown76 = 0;
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BuffRemoveRequest)
 {
 	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.
@@ -4590,6 +4602,15 @@ DECODE(OP_BlockedBuffs)
 	IN(Initialise);
 	IN(Flags);
 
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GuildStatus)
+{
+	DECODE_LENGTH_EXACT(structs::GuildStatus_Struct);
+	SETUP_DIRECT_DECODE(GuildStatus_Struct, structs::GuildStatus_Struct);
+
+	memcpy(emu->Name, eq->Name, sizeof(emu->Name));
 	FINISH_DIRECT_DECODE();
 }
 

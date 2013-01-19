@@ -3264,17 +3264,25 @@ struct GuildURL_Struct{
 /*0000*/	int32	unknown0;	//index? seen server send 0 w/ the Guild URL, followed by 1 with nothing.
 /*0004*/	int32	unknown4;
 /*0008*/	int32	unknown8;	//seen 7
-/*0068*/	char	setby_name[64];
-/*0132*/	int32	unknown132;	//seen 0x167
-/*0136*/	char	url[4080];
+/*0012*/	char	setby_name[64];
+/*0076*/	int32	unknown132;	//seen 0xc7de
+/*0136*/	char	url[4040];
+};
+
+struct GuildStatus_Struct
+{
+/*000*/	char	Name[64];
+/*064*/	uint8	Unknown064[76];
 };
 
 struct GuildMemberUpdate_Struct {
-/*00*/	uint32 guild_id;
-/*04*/	char	member_name[64];
-/*68*/	uint16	zone_id;
-/*70*/	uint16	instance_id;
-/*72*/	uint32	some_timestamp;
+/*00*/	int32	GuildID;
+/*04*/	char	MemberName[64];
+/*68*/	int16	ZoneID;
+/*70*/	int16	InstanceID;	//speculated
+/*72*/	int32	LastSeen;	//unix timestamp
+/*76*/	uint32	Unknown76;
+/*80*/
 };
 
 struct GuildMemberLevelUpdate_Struct {

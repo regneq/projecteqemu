@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Akkadius: Implemented global_npc.pl, this is very similar to global_player.pl where any normal NPC script will run dual-stack or in tandem with the global_npc.pl located in the templates folder
 Akkadius: Implemented the ability to modify EXP and AAEXP modifiers per Level, these are loaded from an optional table (level_exp_mods) that is attached to the commit, you MUST enable the rule first!
 Akkadius: Added #reloadlevelmods - which will reload level mods from the `level_exp_mods` table
+Derision: RoF: Guild name now appears in the Guild Management window and over player's heads. /guildstatus now works. Guild members status now updates in the GMW.
 
 Optional SQL: \utils\sql\svn\2428_optional_levelbasedexpmods.sql
 
