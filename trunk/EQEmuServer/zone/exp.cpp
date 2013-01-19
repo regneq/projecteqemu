@@ -163,6 +163,8 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 		aatotalmod *= zone->newzone_data.zone_exp_multiplier;
 	}
 
+	
+
 	if(RuleB(Character,UseRaceClassExpBonuses))
 	{
 		if(GetBaseRace() == HALFLING){
@@ -171,6 +173,13 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 
 		if(GetClass() == ROGUE || GetClass() == WARRIOR){
 			aatotalmod *= 1.05;
+		}
+	}
+
+	if(RuleB(Zone, LevelBasedEXPMods)){
+		if(zone->level_exp_mod[GetLevel()].ExpMod){
+			add_exp *= zone->level_exp_mod[GetLevel()].ExpMod;
+			add_aaxp *= zone->level_exp_mod[GetLevel()].AAExpMod;
 		}
 	}
 

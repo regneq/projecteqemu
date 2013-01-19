@@ -103,6 +103,7 @@ PerlembParser::PerlembParser(void) : Parser()
 	perl = NULL;
 	eventQueueProcessing = false;
     globalPlayerQuestLoaded = pQuestReadyToLoad;
+	globalNPCQuestLoaded = nQuestReadyToLoad;
 }
 
 PerlembParser::~PerlembParser()
@@ -241,6 +242,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 
 	bool isPlayerQuest = false;
     bool isGlobalPlayerQuest = false;
+	bool isGlobalNPC = false;
 	bool isItemQuest = false;
 	bool isSpellQuest = false;
 	if(event == EVENT_SPELL_EFFECT_CLIENT || 
@@ -268,11 +270,18 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 
 	string packagename;
 	if(!isPlayerQuest && !isGlobalPlayerQuest && !isItemQuest && !isSpellQuest){
-		packagename = GetPkgPrefix(objid);
 
-		if(!isloaded(packagename.c_str()))
-		{
-			LoadScript(objid, zone->GetShortName());
+		if(global){
+			packagename = "global_npc";
+			LoadGlobalNPCScript();
+		}else{
+
+			packagename = GetPkgPrefix(objid);
+	
+			if(!isloaded(packagename.c_str()))
+			{
+				LoadScript(objid, zone->GetShortName());
+			}
 		}
 	}
 	else if(isItemQuest) {
@@ -828,6 +837,10 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 	HandleQueue();
 }
 
+void PerlembParser::EventGlobalNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data) {
+    EventCommon(evt, npc->GetNPCTypeID(), data.c_str(), npc, NULL, init, extra_data, true);
+}
+
 void PerlembParser::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data) {
     EventCommon(evt, npc->GetNPCTypeID(), data.c_str(), npc, NULL, init, extra_data);
 }
@@ -882,7 +895,8 @@ void PerlembParser::ReloadQuests(bool with_timers) {
 
 	hasQuests.clear();
 	playerQuestLoaded.clear();
-    globalPlayerQuestLoaded = pQuestReadyToLoad;
+	globalPlayerQuestLoaded = pQuestReadyToLoad;
+    globalNPCQuestLoaded = nQuestReadyToLoad;
 	itemQuestLoaded.clear();
 	spellQuestLoaded.clear();
 }
@@ -1143,6 +1157,38 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 	return(1);
 }
 
+int PerlembParser::LoadGlobalNPCScript()
+{
+	if(!perl)
+		return 0;
+
+	if(perl->InUse())
+	{
+		return 0;
+	}
+
+	if(globalNPCQuestLoaded != nQuestReadyToLoad) {
+		return 1;
+	}
+
+	string filename = "quests/";
+	filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/global_npc.pl";
+	string packagename = "global_npc";
+
+	try {
+		perl->eval_file(packagename.c_str(), filename.c_str());
+	}
+	catch(const char * err)
+	{
+			LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s", filename.c_str(), err);
+	}
+
+	globalNPCQuestLoaded = nQuestLoaded;
+
+	return 1;
+}
+
 int PerlembParser::LoadPlayerScript(const char *zone_name)
 {
 	if(!perl)
@@ -1377,6 +1423,16 @@ bool PerlembParser::HasQuestSub(int32 npcid, const char *subname) {
 	}
 
 	string packagename = GetPkgPrefix(npcid);
+
+	return(perl->SubExists(packagename.c_str(), subname));
+}
+
+bool PerlembParser::HasGlobalQuestSub(const char *subname) {
+	if(!LoadGlobalNPCScript()) {
+		return(false);
+	}
+
+	string packagename = "global_npc";
 
 	return(perl->SubExists(packagename.c_str(), subname));
 }

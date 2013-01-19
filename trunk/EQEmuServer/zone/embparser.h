@@ -45,6 +45,12 @@ typedef enum {
 } playerQuestMode;
 
 typedef enum {
+	nQuestLoaded = 1,
+	nQuestUnloaded,
+    nQuestReadyToLoad
+} GlobalNPCQuestMode;
+
+typedef enum {
 	spellQuestUnloaded = 1,
 	spellQuestFullyLoaded,
 	spellQuestFailed
@@ -72,6 +78,7 @@ protected:
 	map<int32, questMode> hasQuests;	//npcid -> questMode
 	map<std::string, playerQuestMode> playerQuestLoaded; //zone shortname -> playerQuestMode
     playerQuestMode globalPlayerQuestLoaded;
+	GlobalNPCQuestMode globalNPCQuestLoaded;
 	map<std::string, itemQuestMode> itemQuestLoaded;		// package name - > itemQuestMode
 	map<uint32, spellQuestMode> spellQuestLoaded;
 
@@ -94,12 +101,14 @@ public:
 
     //interface stuff
     virtual void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data);
+	virtual void EventGlobalNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data);
     virtual void EventPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
     virtual void EventGlobalPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data);
     virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data);
     virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data);
 
     virtual bool HasQuestSub(int32 npcid, const char *subname);
+	virtual bool HasGlobalQuestSub(const char *subname);
 	virtual bool PlayerHasQuestSub(const char *subname);
     virtual bool GlobalPlayerHasQuestSub(const char *subname);
 	virtual bool SpellHasQuestSub(uint32 spell_id, const char *subname);
@@ -110,6 +119,7 @@ public:
     virtual uint32 GetIdentifier() { return 0xf8b05c11; }
 
     int LoadScript(int npcid, const char * zone, Mob* activater=0);
+	int LoadGlobalNPCScript();
 	int LoadPlayerScript(const char *zone);
     int LoadGlobalPlayerScript();
 	int LoadItemScript(ItemInst* iteminst, string packagename, itemQuestMode Qtype);

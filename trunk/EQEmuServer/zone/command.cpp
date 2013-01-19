@@ -273,6 +273,7 @@ int command_init(void) {
 		command_add("reloadqst",NULL,0,command_reloadqst) ||
 		command_add("reloadpl",NULL,0,command_reloadqst) ||
 		command_add("reloadworld",NULL,0,command_reloadworld) ||
+		command_add("reloadlevelmods",NULL,0,command_reloadlevelmods) ||
 		command_add("rq",NULL,0,command_reloadqst) ||
 		command_add("reloadzonepoints","- Reload zone points from database",150,command_reloadzps) ||
 		command_add("reloadzps",NULL,0,command_reloadzps) ||
@@ -3537,6 +3538,19 @@ void command_reloadworld(Client *c, const Seperator *sep)
 		RW->Option = 1;
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
+	}
+}
+
+void command_reloadlevelmods(Client *c, const Seperator *sep)
+{
+	if (sep->arg[1][0] == 0)
+	{
+		if(RuleB(Zone, LevelBasedEXPMods)){
+			zone->LoadLevelEXPMods();
+			c->Message(15, "Level based EXP Mods have been reloaded zonewide");
+		}else{
+			c->Message(15, "Level based EXP Mods are disabled in rules!");
+		}
 	}
 }
 

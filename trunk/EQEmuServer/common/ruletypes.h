@@ -189,6 +189,7 @@ RULE_REAL ( Zone, HotZoneBonus, 0.75 )
 RULE_INT ( Zone, ReservedInstances, 30 ) //Will reserve this many instance ids for globals... probably not a good idea to change this while a server is running.
 RULE_INT ( Zone, EbonCrystalItemID, 40902)
 RULE_INT ( Zone, RadiantCrystalItemID, 40903)
+RULE_BOOL ( Zone, LevelBasedEXPMods, false) // Allows you to use the level_exp_mods table in consideration to your players EXP hits
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

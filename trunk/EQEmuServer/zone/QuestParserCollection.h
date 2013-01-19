@@ -36,6 +36,7 @@ public:
 
 private:
     QuestInterface *GetQIByNPCQuest(uint32 npcid);
+	QuestInterface *GetQIByGlobalNPCQuest();
     QuestInterface *GetQIByPlayerQuest();
     QuestInterface *GetQIByGlobalPlayerQuest();
     QuestInterface *GetQIBySpellQuest(uint32 spell_id);
@@ -48,6 +49,7 @@ private:
     //0x00 = Unloaded
     //0xFFFFFFFF = Failed to Load
     std::map<uint32, uint32> _npc_quest_status;
+	uint32 _global_npc_quest_status;
     uint32 _player_quest_status;
     uint32 _global_player_quest_status;
     std::map<uint32, uint32> _spell_quest_status;

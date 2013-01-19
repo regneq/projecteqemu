@@ -52,13 +52,18 @@ bool QuestParserCollection::HasQuestSub(uint32 npcid, const char *subname) {
         //loaded or failed to load
         if(iter->second != QuestFailedToLoad) {
             std::map<uint32, QuestInterface*>::iterator qiter = _interfaces.find(iter->second);
-            return qiter->second->HasQuestSub(npcid, subname);
+            return qiter->second->HasQuestSub(npcid, subname) || qiter->second->HasGlobalQuestSub(subname);
         }
     } else {
-        QuestInterface *qi = GetQIByNPCQuest(npcid);
+		QuestInterface *qi = GetQIByGlobalNPCQuest();
+        if(qi) {
+            _global_npc_quest_status = qi->GetIdentifier();
+        }
+
+        qi = GetQIByNPCQuest(npcid);
         if(qi) {
             _npc_quest_status[npcid] = qi->GetIdentifier();
-            return qi->HasQuestSub(npcid, subname);
+            return qi->HasQuestSub(npcid, subname) ||  qi->HasGlobalQuestSub(subname);
         } else {
             _npc_quest_status[npcid] = QuestFailedToLoad;
         }
@@ -150,6 +155,21 @@ void QuestParserCollection::EventNPC(QuestEventID evt, NPC* npc, Mob *init, std:
             qi->EventNPC(evt, npc, init, data, extra_data);
         } else {
             _npc_quest_status[npc->GetNPCTypeID()] = QuestFailedToLoad;
+        }
+    }
+
+	// K, lets also parse templates/global_npc.pl
+    if(_global_npc_quest_status != QuestUnloaded) {
+		QuestInterface *qi = GetQIByGlobalNPCQuest();
+        if(qi) {
+            _global_npc_quest_status = qi->GetIdentifier();
+            qi->EventGlobalNPC(evt, npc, init, data, extra_data);
+        }
+    } else {
+       if(_global_npc_quest_status != QuestFailedToLoad) {
+            std::map<uint32, QuestInterface*>::iterator iter = _interfaces.find(_global_npc_quest_status);
+			if(iter != _interfaces.end())
+            	iter->second->EventGlobalNPC(evt, npc, init, data, extra_data);
         }
     }
 }
@@ -421,6 +441,33 @@ QuestInterface *QuestParserCollection::GetQIByPlayerQuest() {
     filename += "/";
     filename += "player";
     iter = _load_precedence.begin();
+    while(iter != _load_precedence.end()) {
+        tmp = filename;
+        std::map<uint32, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
+        tmp += ".";
+        tmp += ext->second;
+        f = fopen(tmp.c_str(), "r");
+        if(f) {
+            fclose(f);
+            return (*iter);
+        }
+
+        iter++;
+    }
+
+    return NULL;
+}
+
+QuestInterface *QuestParserCollection::GetQIByGlobalNPCQuest(){
+    // simply look for templates/global_npc.pl
+    std::string filename = "quests/";
+    filename += QUEST_TEMPLATES_DIRECTORY;
+    filename += "/";
+    filename += "global_npc";
+    std::string tmp;
+    FILE *f = NULL;
+
+    std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
     while(iter != _load_precedence.end()) {
         tmp = filename;
         std::map<uint32, std::string>::iterator ext = _extensions.find((*iter)->GetIdentifier());
