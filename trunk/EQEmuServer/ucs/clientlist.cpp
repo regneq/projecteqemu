@@ -476,7 +476,7 @@ static void ProcessCommandIgnore(Client *c, string Ignoree) {
 }
 Clientlist::Clientlist(int ChatPort) {
 
-	chatsf = new EQStreamFactory(ChatStream, ChatPort);
+	chatsf = new EQStreamFactory(ChatStream, ChatPort, 45000);
 
 	ChatOpMgr = new RegularOpcodeManager;
 

@@ -1,7 +1,6 @@
 //Mail and Chat Channels
 N(OP_MailLogin),
 N(OP_Mail),
-N(OP_ChannelMessage),
 N(OP_ChannelAnnounceJoin),
 N(OP_ChannelAnnounceLeave),
 N(OP_Buddy),

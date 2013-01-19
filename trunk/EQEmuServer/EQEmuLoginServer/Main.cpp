@@ -16,11 +16,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "../common/debug.h"
-#include "LoginServer.h"
 #include "../common/types.h"
 #include "../common/opcodemgr.h"
 #include "../common/EQStreamFactory.h"
 #include "../common/timer.h"
+#include "../common/platform.h"
+#include "LoginServer.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string>
@@ -38,6 +39,8 @@ void CatchSignal(int sig_num)
 
 int main()
 {
+    RegisterExecutablePlatform(ExePlatformLogin);
+
 	//Create our error log, is of format login_<number>.log
 	time_t current_time = time(NULL);
 	stringstream log_name(stringstream::in | stringstream::out);

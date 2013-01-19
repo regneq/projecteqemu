@@ -24,6 +24,7 @@
 #include "../common/EQStreamFactory.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
+#include "../common/platform.h"
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
@@ -58,6 +59,7 @@ void CatchSignal(int sig_num) {
 }
 
 int main() {
+    RegisterExecutablePlatform(ExePlatformQueryServ);
 
 	Timer LFGuildExpireTimer(60000);
 

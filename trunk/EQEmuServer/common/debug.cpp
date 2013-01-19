@@ -19,6 +19,7 @@ using namespace std;
 	#include <stdarg.h>
 #endif
 #include "../common/MiscFunctions.h"
+#include "../common/platform.h"
 
 #ifndef va_copy
 	#define va_copy(d,s) ((d) = (s))
@@ -88,21 +89,19 @@ bool EQEMuLog::open(LogIDs id) {
     }
 
 	char exename[200] = "";
-#if defined(WORLD)
-	snprintf(exename, sizeof(exename), "_world");
-#elif defined(ZONE)
-	snprintf(exename, sizeof(exename), "_zone");
-#elif defined(LAUNCHER)
-	snprintf(exename, sizeof(exename), "_launch");
-#elif defined(MAIL)
-	snprintf(exename, sizeof(exename), "_mail");
-#elif defined(CHAT)
-	snprintf(exename, sizeof(exename), "_chatchannels");
-#elif defined(UCS)
-	snprintf(exename, sizeof(exename), "_ucs");
-#elif defined(QUERYSERV)
-	snprintf(exename, sizeof(exename), "_queryserv");
-#endif
+    const EQEmuExePlatform &platform = GetExecutablePlatform();
+    if(platform == ExePlatformWorld) {
+        snprintf(exename, sizeof(exename), "_world");
+    } else if(platform == ExePlatformZone) {
+        snprintf(exename, sizeof(exename), "_zone");
+    } else if(platform == ExePlatformLaunch) {
+        snprintf(exename, sizeof(exename), "_launch");
+    } else if(platform == ExePlatformUCS) {
+        snprintf(exename, sizeof(exename), "_ucs");
+    } else if(platform == ExePlatformQueryServ) {
+        snprintf(exename, sizeof(exename), "_queryserv");
+    }
+
 	char filename[200];
 #ifndef NO_PIDLOG
 	snprintf(filename, sizeof(filename), "%s%s_%04i.log", FileNames[id], exename, getpid());

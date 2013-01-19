@@ -10,12 +10,6 @@
 #include "../common/opcodemgr.h"
 #include "../common/timer.h"
 
-#if !defined(MAIL) && !defined(CHAT) && !defined(UCS)
-#define STREAM_TIMEOUT 45000 //in ms
-#else
-#define STREAM_TIMEOUT 135000
-#endif
-
 class EQStreamFactory : private Timeoutable {
 	private:
 		int sock;
@@ -40,9 +34,11 @@ class EQStreamFactory : private Timeoutable {
 
 		Timer *DecayTimer;
 
+        uint32 stream_timeout;
+
 	public:
-		EQStreamFactory(EQStreamType type) : Timeoutable(5000) { ReaderRunning=false; WriterRunning=false; StreamType=type; sock=-1; }
-		EQStreamFactory(EQStreamType type, int port);
+		EQStreamFactory(EQStreamType type, uint32 timeout = 135000) : Timeoutable(5000), stream_timeout(timeout) { ReaderRunning=false; WriterRunning=false; StreamType=type; sock=-1; }
+		EQStreamFactory(EQStreamType type, int port, uint32 timeout = 135000);
 
 		EQStream *Pop();
 		void Push(EQStream *s);
