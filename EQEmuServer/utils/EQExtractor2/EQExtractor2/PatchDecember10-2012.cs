@@ -105,6 +105,7 @@ namespace EQExtractor2.Patches
 
         override public UInt16 GetZoneNumber()
         {
+
             // A return value of zero from this method should be intepreted as 'Unable to identify patch version'.
 
             // Thanks to ShowEQ team for details on how to parse the variable length PP
@@ -533,8 +534,170 @@ namespace EQExtractor2.Patches
         {
             //OpManager.RegisterExplorer("OP_PlayerProfile", ExplorePlayerProfile);
             //OpManager.RegisterExplorer("OP_ZoneEntry", ExploreZoneEntry);
+            //OpManager.RegisterExplorer("OP_RequestClientZoneChange", ExploreRequestClientZoneChange);
             //OpManager.RegisterExplorer("OP_NPCMoveUpdate", ExploreNPCMoveUpdate);
             //OpManager.RegisterExplorer("OP_MobUpdate", ExploreMobUpdate);
+            //OpManager.RegisterExplorer("OP_ClientUpdate", ExploreClientUpdate);
+            //OpManager.RegisterExplorer("OP_OpenNewTasksWindow", ExploreOpenNewTasksWindow);
+            //OpManager.RegisterExplorer("OP_TaskDescription", ExploreTaskDescription);
+        }
+
+        public void ExploreTaskDescription(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 Seq = Buffer.ReadUInt32();
+            UInt32 TaskID = Buffer.ReadUInt32();
+            UInt32 Unk1 = Buffer.ReadUInt32();
+            UInt32 Unk2 = Buffer.ReadUInt32();
+            byte Unk3 = Buffer.ReadByte();
+
+            OutputStream.WriteLine("Seq: {0}, TaskID: {1}, Unk1: {2:X}, Unk2: {3:X}, Unk3: {4:X}", Seq, TaskID, Unk1, Unk2, Unk3);
+
+            String Title = Buffer.ReadString(false);
+            OutputStream.WriteLine("Title: {0}", Title);
+
+            UInt32 Duration = Buffer.ReadUInt32();
+            UInt32 Unk4 = Buffer.ReadUInt32();
+            UInt32 StartTime = Buffer.ReadUInt32();
+
+            String Desc = Buffer.ReadString(false);
+
+            
+            OutputStream.WriteLine("Duration: {0}, Unk4: {1:X}, StartTime: {2:X}", Duration, Unk4, StartTime);
+
+            OutputStream.WriteLine("Desc: {0}", Desc);
+
+            UInt32 RewardCount = Buffer.ReadUInt32();
+            UInt32 Unk5 = Buffer.ReadUInt32();
+            UInt32 Unk6 = Buffer.ReadUInt32();
+            UInt16 Unk7 = Buffer.ReadUInt16();
+
+            OutputStream.WriteLine("RewardCount: {0}, Unk5: {1:X}, Unk6: {2:X}, Unk7: {3:X}", Duration, Unk5, Unk6, Unk7);
+
+            string MyString = "";
+
+            byte b;
+
+            while ((b = Buffer.ReadByte()) != 0)
+            {
+                if (b == 0x12)
+                    continue;
+
+                MyString += Convert.ToChar(b);
+            }
+
+            OutputStream.WriteLine("RewardString: {0}", MyString);
+
+            UInt32 Unk8 = Buffer.ReadUInt32();
+            byte Unk9 = Buffer.ReadByte();
+
+            OutputStream.WriteLine("Unk8: {0:X}, Unk9: {1:X}", Unk8, Unk9);
+
+        }
+
+        public void ExploreOpenNewTasksWindow(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 NumTasks = Buffer.ReadUInt32();
+            UInt32 Unknown = Buffer.ReadUInt32();
+            UInt32 TaskGiver = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("Number of Tasks: {0}, Given by: {1}", NumTasks, TaskGiver);
+
+            for (int i = 0; i < NumTasks; ++i)
+            {
+                UInt32 TaskID = Buffer.ReadUInt32();
+                float Unk1 = Buffer.ReadSingle();
+                UInt32 TimeLimit = Buffer.ReadUInt32();
+                UInt32 Unk2 = Buffer.ReadUInt32();
+
+                string Title = Buffer.ReadString(false);
+                string Description = Buffer.ReadString(false);
+                string UnkString = Buffer.ReadString(false);
+
+                OutputStream.WriteLine("TaskID: {0}, Title: {1}", TaskID, Title);
+
+                UInt32 ActivityCount = Buffer.ReadUInt32();
+                OutputStream.WriteLine("Unknown: {0}", ActivityCount);
+
+                OutputStream.WriteLine("");
+                for (int j = 0; j < ActivityCount; ++j)
+                {
+                    OutputStream.WriteLine("Activity {0}", i);
+                    OutputStream.WriteLine("");
+                    OutputStream.WriteLine("    Unknown: {0}", Buffer.ReadUInt32());
+                    OutputStream.WriteLine("    Unknown: {0}", Buffer.ReadUInt32());
+                    OutputStream.WriteLine("    Unknown: {0}", Buffer.ReadUInt32());
+
+                    OutputStream.WriteLine("    String: {0}", Buffer.ReadString(false));
+
+                    UInt32 StringLength = Buffer.ReadUInt32();
+                    OutputStream.WriteLine("    StringLength: {0}", StringLength);
+
+                    string MyString = "";
+
+                    for (int k = 0; k < StringLength; ++k)
+                        MyString += Convert.ToChar(Buffer.ReadByte());
+
+                    OutputStream.WriteLine("    Weird String: {0}", MyString);
+
+
+                    OutputStream.WriteLine("    Unknown: {0}", Buffer.ReadUInt32());
+                    OutputStream.WriteLine("    Unknown: {0}", Buffer.ReadUInt32());
+
+                    OutputStream.WriteLine("    String: {0}", Buffer.ReadString(false));
+                    OutputStream.WriteLine("    Unknown 2 bytes: {0}", Buffer.ReadUInt16());
+
+                    //if (i == 3)
+                    //{
+                    //    OutputStream.WriteLine("Offset is now: {0}", Buffer.GetPosition());
+                    //    return;
+                    //}
+                    OutputStream.WriteLine("    String: {0}", Buffer.ReadString(false));
+                    OutputStream.WriteLine("    String: {0}", Buffer.ReadString(false));
+                    OutputStream.WriteLine("    String: {0}", Buffer.ReadString(false));
+                }
+                OutputStream.WriteLine("");
+                //OutputStream.WriteLine("Offset is now: {0}", Buffer.GetPosition());
+                
+            }
+        }
+
+
+        public void ExploreRequestClientZoneChange(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 ZoneID = Buffer.ReadUInt32();
+            UInt32 Unknown = Buffer.ReadUInt32();
+            float y = Buffer.ReadSingle();
+            float x = Buffer.ReadSingle();
+            float z = Buffer.ReadSingle();
+            float heading = Buffer.ReadSingle();
+            Buffer.SkipBytes(148);
+            float uf = Buffer.ReadSingle();
+            OutputStream.WriteLine("UF = {0}", uf);
+
+        }
+
+        public void ExploreClientUpdate(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            if (Direction == PacketDirection.ServerToClient)
+            {
+                UInt32 SpawnID = Buffer.ReadUInt16();
+                UInt32 SpawnID2 = Buffer.ReadUInt16();
+                OutputStream.WriteLine("ClientUpdate S->C SpawnID: {0}, SpawnID2: {1}", SpawnID, SpawnID2);
+
+                UInt32 Word = Buffer.ReadUInt32();
+                float Y = Utils.EQ19ToFloat((int)(Word >> 12));
+                OutputStream.WriteLine("Y = {0}", Y);
+
+                //Buffer.SkipBytes(6);
+                //float DeltaY = Buffer.ReadSingle();
+                //float YPos = Buffer.ReadSingle();
+                //float XPos = Buffer.ReadSingle();
+                //float DeltaHeading = Utils.EQ19ToFloat((int)(Word & 0x3FF));
+            }
+
+            
+
+
         }
 
         public void ExploreNPCMoveUpdate(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
@@ -557,141 +720,220 @@ namespace EQExtractor2.Patches
 
         public void ExplorePlayerProfile(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
         {
-            Buffer.SkipBytes(4);    // Checksum
-            Buffer.SkipBytes(12);   // Unknown
-            Buffer.SkipBytes(8);    // Gender, Race, Class, Level, Level1
-            
+            OutputStream.WriteLine("{0, -5}: Checksum = {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: ChecksumSize = {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("");
+            OutputStream.WriteLine("{0, -5}: Gender = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Race = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Class = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Level = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Level1 = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("");
             UInt32 BindCount = Buffer.ReadUInt32();
-
-            OutputStream.WriteLine("BindCount = {0}", BindCount);
-
+            OutputStream.WriteLine("{0, -5}: BindCount = {1}", Buffer.GetPosition() - 4, BindCount);
+                        
             for (int i = 0; i < BindCount; ++i)
             {
-                Buffer.SkipBytes(20);   // sizeof(Bind Struct)
+                OutputStream.WriteLine("{0, -5}:   Bind: {1} Zone: {2} XYZ: {3},{4},{5} Heading: {6}",
+                    Buffer.GetPosition(), i, Buffer.ReadUInt32(), Buffer.ReadSingle(), Buffer.ReadSingle(),Buffer.ReadSingle(),Buffer.ReadSingle());                
             }
-            Buffer.SkipBytes(8); // Deity, intoxication
 
-            UInt32 SpellRefreshCount = Buffer.ReadUInt32();
+            OutputStream.WriteLine("");
+            OutputStream.WriteLine("{0, -5}: Deity = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Intoxication = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("");
 
-            OutputStream.WriteLine("SpellRefreshCount = {0}", SpellRefreshCount);
+            //Buffer.SkipBytes(8); // Deity, intoxication
 
-            for (int i = 0; i < SpellRefreshCount; ++i)
+            UInt32 UnknownCount = Buffer.ReadUInt32();
+            
+            OutputStream.WriteLine("{0, -5}: Unknown Count = {1}", Buffer.GetPosition() - 4, UnknownCount);
+
+            
+
+            for (int i = 0; i < UnknownCount; ++i)
             {
-                Buffer.SkipBytes(4);
+                OutputStream.WriteLine("{0, -5}: Unknown : {1}, Value = {2}", Buffer.GetPosition(), i, Buffer.ReadUInt32());
+                //Buffer.SkipBytes(4);
             }
 
             UInt32 EquipmentCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("EquipmentCount = {0}", EquipmentCount);
-
+            OutputStream.WriteLine("{0, -5}: EquipmentCount = {1}", Buffer.GetPosition() - 4, EquipmentCount);
+            
             for (int i = 0; i < EquipmentCount; ++i)
             {
-                Buffer.SkipBytes(20);
+                OutputStream.Write("{0, -5}: Equip: {1} Values: ", Buffer.GetPosition(), i);
+                for (int j = 0; j < 5; ++j)
+                    OutputStream.Write("{0} ", Buffer.ReadUInt32());
+
+                OutputStream.WriteLine("");
+                //Buffer.SkipBytes(20);
             }
 
-            UInt32 SomethingCount = Buffer.ReadUInt32();
+            UInt32 EquipmentCount2 = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
+            OutputStream.WriteLine("{0, -5}: EquipmentCount2 = {1}", Buffer.GetPosition() - 4, EquipmentCount2);
 
-            for (int i = 0; i < SomethingCount; ++i)
+            for (int i = 0; i < EquipmentCount2; ++i)
             {
-                Buffer.SkipBytes(20);
+                OutputStream.Write("{0, -5}: Equip2: {1} Values: ", Buffer.GetPosition(), i);
+                for (int j = 0; j < 5; ++j)
+                    OutputStream.Write("{0} ", Buffer.ReadUInt32());
+
+                OutputStream.WriteLine("");
+                //Buffer.SkipBytes(20);
             }
 
-            SomethingCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
 
-            for (int i = 0; i < SomethingCount; ++i)
+            UInt32 TintCount = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("{0, -5}: TintCount = {1}", Buffer.GetPosition() - 4, TintCount);            
+
+            for (int i = 0; i < TintCount; ++i)
             {
-                Buffer.SkipBytes(4);
+                OutputStream.WriteLine("{0, -5}: TintCount : {1}, Value = {2}", Buffer.GetPosition(), i, Buffer.ReadUInt32());
+                //Buffer.SkipBytes(4);
             }
 
-            SomethingCount = Buffer.ReadUInt32();
+            UInt32 TintCount2 = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
+            OutputStream.WriteLine("{0, -5}: TintCount2 = {1}", Buffer.GetPosition() - 4, TintCount2);
 
-            for (int i = 0; i < SomethingCount; ++i)
+            for (int i = 0; i < TintCount; ++i)
             {
-                Buffer.SkipBytes(4);
+                OutputStream.WriteLine("{0, -5}: TintCount2 : {1}, Value = {2}", Buffer.GetPosition(), i, Buffer.ReadUInt32());
+                //Buffer.SkipBytes(4);
             }
 
-            Buffer.SkipBytes(52);   // Per SEQ, this looks like face, haircolor, beardcolor etc.
+            OutputStream.WriteLine("{0, -5}: Hair Color = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Beard Color = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Eye1 Color = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Eye2 Color = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Hairstyle = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Beard = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Face = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Drakkin Heritage = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Drakkin Tattoo = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Drakkin Details = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            UInt32 Points = Buffer.ReadUInt32();
-            UInt32 Mana = Buffer.ReadUInt32();
-            UInt32 CurHP = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Height = {1}", Buffer.GetPosition(), Buffer.ReadSingle());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadSingle());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadSingle());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadSingle());
+            OutputStream.WriteLine("{0, -5}: Primary = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Secondary = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            OutputStream.WriteLine("Points, Mana, CurHP = {0}, {1}, {2}", Points, Mana, CurHP);
 
-            Buffer.SkipBytes(28);
-            Buffer.SkipBytes(28);
+
+            //Buffer.SkipBytes(52);   // Per SEQ, this looks like face, haircolor, beardcolor etc.
+            OutputStream.WriteLine("{0, -5}: Unspent Skill Points = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Mana = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Current HP = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            //UInt32 Points = Buffer.ReadUInt32();
+            //UInt32 Mana = Buffer.ReadUInt32();
+            //UInt32 CurHP = Buffer.ReadUInt32();
+
+            //OutputStream.WriteLine("Points, Mana, CurHP = {0}, {1}, {2}", Points, Mana, CurHP);
+
+            OutputStream.WriteLine("{0, -5}: STR = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: STA = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: CHA = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: DEX = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: INT = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: AGI = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: WIS = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            //Buffer.SkipBytes(28);
+            //Buffer.SkipBytes(28);
 
             UInt32 AACount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("AA Count = {0}", AACount);
+            OutputStream.WriteLine("{0, -5}: AA Count = {1}", Buffer.GetPosition() - 4, AACount);            
+            
 
             for (int i = 0; i < AACount; ++i)
             {
-                Buffer.SkipBytes(12);
+                OutputStream.WriteLine("   AA: {0}, Value: {1}, Unknown08: {2}", Buffer.ReadUInt32(), Buffer.ReadUInt32(), Buffer.ReadUInt32());
+                //Buffer.SkipBytes(12);
             }
 
-            SomethingCount = Buffer.ReadUInt32();
+            UInt32 SkillCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
-
-            for (int i = 0; i < SomethingCount; ++i)
+            OutputStream.WriteLine("{0, -5}: Skill Count = {1}", Buffer.GetPosition() - 4, SkillCount);
+            
+            for (int i = 0; i < SkillCount; ++i)
             {
                 Buffer.SkipBytes(4);
             }
-            SomethingCount = Buffer.ReadUInt32();
+            
+            UInt32 SomethingCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
-
-            for (int i = 0; i < SomethingCount; ++i)
-            {
-                Buffer.SkipBytes(4);
-            }
-            SomethingCount = Buffer.ReadUInt32();
-
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
-
-            for (int i = 0; i < SomethingCount; ++i)
-            {
-                Buffer.SkipBytes(4);
-            }
-
-            SomethingCount = Buffer.ReadUInt32();
-
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
+            OutputStream.WriteLine("{0, -5}: Something Count = {1}", Buffer.GetPosition() - 4, SomethingCount);            
+            
 
             for (int i = 0; i < SomethingCount; ++i)
             {
                 Buffer.SkipBytes(4);
             }
             
-            SomethingCount = Buffer.ReadUInt32();
+            UInt32 DisciplineCount = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Discipline Count = {1}", Buffer.GetPosition() - 4, DisciplineCount);
+            
+            for (int i = 0; i < DisciplineCount; ++i)
+            {
+                Buffer.SkipBytes(4);
+            }
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
-
-            for (int i = 0; i < SomethingCount; ++i)
+            UInt32 TimeStampCount = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: TimeStamp Count = {1}", Buffer.GetPosition() - 4, TimeStampCount);
+            
+            for (int i = 0; i < TimeStampCount; ++i)
             {
                 Buffer.SkipBytes(4);
             }
             
-            SomethingCount = Buffer.ReadUInt32();
+            UInt32 RecastCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
+            OutputStream.WriteLine("{0, -5}: Recast Count = {1}", Buffer.GetPosition() - 4, RecastCount);
 
-            for (int i = 0; i < SomethingCount; ++i)
+            for (int i = 0; i < RecastCount; ++i)
             {
                 Buffer.SkipBytes(4);
             }
 
+            UInt32 TimeStamp2Count = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: TimeStamp2 Count = {1}", Buffer.GetPosition() - 4, TimeStamp2Count);
+
+            for (int i = 0; i < TimeStamp2Count; ++i)
+            {
+                Buffer.SkipBytes(4);
+            }
+
+            
             UInt32 SpellBookSlots = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("Spell Book Slots = {0}", SpellBookSlots);
-
+            OutputStream.WriteLine("{0, -5}: SpellBookSlot Count = {1}", Buffer.GetPosition() - 4, SpellBookSlots);
+            
             for (int i = 0; i < SpellBookSlots; ++i)
             {
                 Buffer.SkipBytes(4);
@@ -699,8 +941,8 @@ namespace EQExtractor2.Patches
 
             UInt32 SpellMemSlots = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("Spell Mem Slots = {0}", SpellMemSlots);
-
+            OutputStream.WriteLine("{0, -5}: Spell Mem Count = {1}", Buffer.GetPosition() - 4, SpellMemSlots);
+            
             for (int i = 0; i < SpellMemSlots; ++i)
             {
                 Buffer.SkipBytes(4);
@@ -708,45 +950,74 @@ namespace EQExtractor2.Patches
 
             SomethingCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("SomethingCount = {0}", SomethingCount);
-
+            OutputStream.WriteLine("{0, -5}: Unknown Count = {1}", Buffer.GetPosition() - 4, SomethingCount);
+            
             for (int i = 0; i < SomethingCount; ++i)
             {
                 Buffer.SkipBytes(4);
             }
 
-            Buffer.SkipBytes(1);
-
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadByte());
+            
             UInt32 BuffCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("BuffCount = {0}", BuffCount);
-
+            OutputStream.WriteLine("{0, -5}: Buff Count = {1}", Buffer.GetPosition() - 4, BuffCount);
+            
             for (int i = 0; i < BuffCount; ++i)
             {
-                Buffer.SkipBytes(80);
+                Buffer.ReadByte();
+                float UnkFloat = Buffer.ReadSingle();
+                UInt32 PlayerID = Buffer.ReadUInt32();
+                Byte UnkByte = Buffer.ReadByte();
+                UInt32 Counters1 = Buffer.ReadUInt32();
+                UInt32 Duration = Buffer.ReadUInt32();
+                Byte Level = Buffer.ReadByte();
+                UInt32 SpellID = Buffer.ReadUInt32();
+                UInt32 SlotID = Buffer.ReadUInt32();
+                Buffer.SkipBytes(5);
+                UInt32 Counters2 = Buffer.ReadUInt32();
+                OutputStream.WriteLine("Sl: {0}, UF: {1}, PID: {2}, UByte: {3}, Cnt1: {4}, Dur: {5}, Lvl: {6} SpellID: {7}, SlotID: {8}, Cnt2: {9}",
+                    i, UnkFloat, PlayerID, UnkByte, Counters1, Duration, Level, SpellID, SlotID, Counters2);
+                Buffer.SkipBytes(44);
             }
 
-            UInt32 Plat = Buffer.ReadUInt32();
-            UInt32 Gold = Buffer.ReadUInt32();
-            UInt32 Silver = Buffer.ReadUInt32();
-            UInt32 Copper = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Plat = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Gold = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Silver = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Copper = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            OutputStream.WriteLine("Plat, Gold, Silver, Copper = {0}, {1}, {2}, {3}", Plat, Gold, Silver, Copper);
+            OutputStream.WriteLine("{0, -5}: Plat Cursor = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Gold Cursor = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Silver Cursor = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Copper Cursor = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            Buffer.SkipBytes(16); // Money on cursor
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Toxicity? = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Thirst? = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Hunger? = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            
+            //Buffer.SkipBytes(20);
 
-            Buffer.SkipBytes(20);
+            OutputStream.WriteLine("{0, -5}: AA Spent = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            UInt32 AASpent = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: AA Point Count? = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            OutputStream.WriteLine("AA Spent = {0}", AASpent);
+            OutputStream.WriteLine("{0, -5}: AA Assigned = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: AA Spent General = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: AA Spent Archetype = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: AA Spent Class = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: AA Spent Special = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: AA Unspent = {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown", Buffer.GetPosition(), Buffer.ReadUInt16());
+            
 
-            Buffer.SkipBytes(30);
+            //Buffer.SkipBytes(30);
 
             UInt32 BandolierCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("BandolierCount = {0}", BandolierCount);
-
+            OutputStream.WriteLine("{0, -5}: Bandolier Count = {1}", Buffer.GetPosition() - 4, BandolierCount);
+            
             for (int i = 0; i < BandolierCount; ++i)
             {
                 Buffer.ReadString(false);
@@ -766,33 +1037,297 @@ namespace EQExtractor2.Patches
 
             UInt32 PotionCount = Buffer.ReadUInt32();
 
-            OutputStream.WriteLine("PotionCount = {0}", PotionCount);
-
+            OutputStream.WriteLine("{0, -5}: Potion Count = {1}", Buffer.GetPosition() - 4, PotionCount);
+            
             for (int i = 0; i < PotionCount; ++i)
             {
                 Buffer.ReadString(false);
                 Buffer.SkipBytes(8);                
             }
 
-            Buffer.SkipBytes(100);
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadInt32());
+            OutputStream.WriteLine("{0, -5}: Item HP Total? {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Endurance Total? {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Mana Total? {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            OutputStream.WriteLine("Buffer position = {0}", Buffer.GetPosition());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Expansion Count {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            UInt32 NameLength = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Name Length: {1}", Buffer.GetPosition() - 4, NameLength);
 
             int CurrentPosition = Buffer.GetPosition();
-
-            String PlayerName = Buffer.ReadString(false);
+            OutputStream.WriteLine("{0, -5}: Name: {1}", Buffer.GetPosition(), Buffer.ReadString(false));
             
-            OutputStream.WriteLine("Player Name = {0}", PlayerName);
+            Buffer.SetPosition(CurrentPosition + (int)NameLength);
 
-            Buffer.SetPosition(CurrentPosition + 64);
+            UInt32 LastNameLength = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: LastName Length: {1}", Buffer.GetPosition() - 4, LastNameLength);
 
-            Buffer.SkipBytes(96);
+            CurrentPosition = Buffer.GetPosition();
+            OutputStream.WriteLine("{0, -5}: Last Name: {1}", Buffer.GetPosition(), Buffer.ReadString(false));
 
-            // This is what I am after ...
+            Buffer.SetPosition(CurrentPosition + (int)LastNameLength);
 
-            UInt16 ZoneID = Buffer.ReadUInt16();
+            OutputStream.WriteLine("{0, -5}: Birthday {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Account Start Date {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Last Login Date {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Time Played Minutes {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Time Entitled On Account {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Expansions {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            OutputStream.WriteLine("Zone ID = {0}", ZoneID);
+            UInt32 LanguageCount = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("{0, -5}: Language Count = {1}", Buffer.GetPosition() - 4, LanguageCount);
+
+            for (int i = 0; i < LanguageCount; ++i)
+            {                
+                Buffer.SkipBytes(1);
+            }
+            
+            OutputStream.WriteLine("{0, -5}: Zone ID {1}", Buffer.GetPosition(), Buffer.ReadUInt16());
+            OutputStream.WriteLine("{0, -5}: Zone Instance {1}", Buffer.GetPosition(), Buffer.ReadUInt16());
+            OutputStream.WriteLine("{0, -5}: Y,X,Z {1},{2},{3} Heading: {4}",
+                Buffer.GetPosition(), Buffer.ReadSingle(), Buffer.ReadSingle(), Buffer.ReadSingle(), Buffer.ReadSingle());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: GuildID? {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Experience {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: Bank Plat {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Bank Gold {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Bank Silver {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Bank Copper {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            UInt32 Unknown42 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown, value 42? {1}", Buffer.GetPosition() - 4, Unknown42);
+
+            Buffer.SkipBytes((int)(Unknown42 * 8));
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Career Tribute Favour {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Current Tribute Favour {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            UInt32 PersonalTributeCount = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Personal Tribute Count {1}", Buffer.GetPosition() - 4, PersonalTributeCount);
+            Buffer.SkipBytes((int)(PersonalTributeCount * 8));
+
+            UInt32 GuildTributeCount = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Guild Tribute Count {1}", Buffer.GetPosition() - 4, GuildTributeCount);
+            Buffer.SkipBytes((int)(GuildTributeCount * 8));
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("Skipping 121 bytes starting at offset {0}", Buffer.GetPosition());
+            Buffer.SkipBytes(121);
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("Position now {0}", Buffer.GetPosition());
+
+            UInt32 Unknown64 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown64 {1}", Buffer.GetPosition() - 4, Unknown64);
+            Buffer.SkipBytes((int)Unknown64);
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            Unknown64 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown64 {1}", Buffer.GetPosition() - 4, Unknown64);
+            Buffer.SkipBytes((int)Unknown64);
+
+            Unknown64 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown64 {1}", Buffer.GetPosition() - 4, Unknown64);
+            Buffer.SkipBytes((int)Unknown64);
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("Skipping 320 bytes starting at offset {0}", Buffer.GetPosition());
+            Buffer.SkipBytes(320);
+
+            OutputStream.WriteLine("Skipping 343 bytes starting at offset {0}", Buffer.GetPosition());
+            Buffer.SkipBytes(343);
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            UInt32 Unknown6 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown6 {1} LDON Stuff ?", Buffer.GetPosition() - 4, Unknown6);
+
+            for(int i = 0; i < Unknown6; ++i)
+                OutputStream.WriteLine("{0, -5}: Unknown LDON? {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+                
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            Unknown64 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown64 {1}", Buffer.GetPosition() - 4, Unknown64);
+            Buffer.SkipBytes((int)Unknown64 * 4);
+
+            // Air remaining ?
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            // Next 7 could be PVP stats, 
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            // PVP LastKill struct ?
+            OutputStream.WriteLine("Skipping string + 24 bytes starting at offset {0}", Buffer.GetPosition());
+            //Buffer.SkipBytes(25);
+
+            Byte b;
+            do
+            {
+                b = Buffer.ReadByte();
+            } while (b != 0);
+
+            Buffer.SkipBytes(24);
+
+            // PVP LastDeath struct ?
+            OutputStream.WriteLine("Skipping string + 24 bytes starting at offset {0}", Buffer.GetPosition());
+            //Buffer.SkipBytes(25);
+            do
+            {
+                b = Buffer.ReadByte();
+            } while (b != 0);
+
+            Buffer.SkipBytes(24);
+
+            // PVP Number of Kills in Last 24 hours ?
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            UInt32 Unknown50 = Buffer.ReadUInt32();
+            OutputStream.WriteLine("{0, -5}: Unknown50 {1}", Buffer.GetPosition() - 4, Unknown50);
+            // PVP Recent Kills ?
+            OutputStream.WriteLine("Skipping 50 x (String + 24 bytes) starting at offset {0}", Buffer.GetPosition());
+            //Buffer.SkipBytes(1338);
+            for (int i = 0; i < 50; ++i)
+            {
+                do
+                {
+                    b = Buffer.ReadByte();
+                } while (b != 0);
+
+                Buffer.SkipBytes(24);
+
+            }
+
+
+
+            //
+
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Group autoconsent? {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Raid autoconsent? {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Guild autoconsent? {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: Level3? {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("{0, -5}: Showhelm? {1}", Buffer.GetPosition(), Buffer.ReadByte());
+
+            OutputStream.WriteLine("{0, -5}: RestTimer? {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            
+            OutputStream.WriteLine("Skipping 1028 bytes starting at offset {0}", Buffer.GetPosition());
+            Buffer.SkipBytes(1028);
+            
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+
+            OutputStream.WriteLine("Pointer is {0} bytes from end.", Buffer.Length() - Buffer.GetPosition());
+
+            
 
         }
 

@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==01/18/2013==
+Derision: Added support for January 16 2013 client (with help from posts on the SEQ boards).
+
 ==12/18/2012==
 Derision: Fixed crash when generating SQL for a spawn that is a destructible object that has no 'bodytype' field.
 
