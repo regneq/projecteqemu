@@ -698,6 +698,37 @@ void Zone::LoadMercTemplates(){
 	}
 }
 
+
+void Zone::LoadLevelEXPMods(){
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+	level_exp_mod.clear();
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT level, exp_mod, aa_exp_mod FROM level_exp_mods"), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			uint32 index = atoi(DataRow[0]);
+			float exp_mod = atof(DataRow[1]);
+			float aa_exp_mod = atof(DataRow[2]);
+			level_exp_mod[index].ExpMod = exp_mod;
+			level_exp_mod[index].AAExpMod = aa_exp_mod;
+		}
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadEXPLevelMods()");
+	}
+}
+
 void Zone::DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) {
 //	LogFile->write(EQEMuLog::Debug, "Zone work complete...");
 	switch (workpt_b1) {
@@ -1056,7 +1087,10 @@ bool Zone::Init(bool iStaticZone) {
 	// Merc data
 	if (RuleB(Mercs, AllowMercs))
 		zone->LoadMercTemplates();
-	
+
+	if (RuleB(Zone, LevelBasedEXPMods))
+		zone->LoadLevelEXPMods();
+
 	adverrornum = 503;
 	petition_list.ClearPetitions();
 	petition_list.ReadDatabase();

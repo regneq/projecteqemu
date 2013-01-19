@@ -64,6 +64,11 @@ struct ZoneClientAuth_Struct {
 	bool	stale;
 };
 
+struct ZoneEXPModInfo {
+	float ExpMod;
+	float AAExpMod; 
+};
+
 extern EntityList entity_list;
 class database;
 class PathManager;
@@ -162,6 +167,7 @@ public:
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
 	void LoadMercTemplates();
+	void LoadLevelEXPMods();
 	MercTemplate* GetMercTemplate( uint32 template_id );
 
 	void SetInstanceTimer(int32 new_duration);
@@ -178,6 +184,7 @@ public:
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 	map<uint32,std::list<MercStanceInfo> > merc_stance_list;
 	map<uint32, MercTemplate> merc_templates;
+	map<uint32, ZoneEXPModInfo> level_exp_mod;
 	list<InternalVeteranReward> VeteranRewards;
     list<AltCurrencyDefinition_Struct> AlternateCurrencies;
 	char *adv_data;
