@@ -97,7 +97,7 @@ E(OP_TaskDescription)
 E(OP_SetGuildRank)
 E(OP_MercenaryDataUpdate)
 E(OP_MercenaryDataResponse)
-
+E(OP_GuildMemberUpdate)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -151,5 +151,6 @@ D(OP_RemoveBlockedBuffs)
 D(OP_RecipeAutoCombine)
 D(OP_GuildDemote)
 D(OP_GuildRemove)
+D(OP_GuildStatus)
 #undef E
 #undef D
