@@ -63,6 +63,7 @@ SET(EQEMU_DEBUG_LEVEL 2 CACHE STRING "EQEmu debug level:
   10 - More errors than you ever wanted to see"
 )
 
+OPTION(EQEMU_ENABLE_BOTS "Enable Bots" OFF)
 OPTION(EQEMU_BUILD_SERVER "Build the game server." ON)
 OPTION(EQEMU_BUILD_LOGIN "Build the login server." OFF)
 OPTION(EQEMU_BUILD_AZONE "Build azone utility." OFF)
