@@ -1473,20 +1473,14 @@ sint16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
 	return SLOT_INVALID;
 }
 
-bool ItemInst::IsSlotAllowed(sint16 slot_id) const
-{
-	if(slot_id == 9999)
-		slot_id = 22;
-	if(!m_item)
-		return false;
-	else if(Inventory::SupportsContainers(slot_id))
-		return true;
-	else if(m_item->Slots & (1 << slot_id))
-		return true;
-	else if(slot_id > 21)
-		return true;
-	else
-		return false;
+bool ItemInst::IsSlotAllowed(sint16 slot_id) const {
+	// 'SupportsContainers' and 'slot_id > 21' previously saw the reassigned PowerSource slot (9999 to 22) as valid -U
+	if(!m_item) { return false; }
+	else if(Inventory::SupportsContainers(slot_id)) { return true; }
+	else if(m_item->Slots & (1 << slot_id)) { return true; }
+	else if(slot_id == 9999 && (m_item->Slots & (1 << 22))) { return true; }
+	else if(slot_id != 9999 && slot_id > 21) { return true; }
+	else { return false; }
 }
 
 uint8 ItemInst::FirstOpenSlot() const

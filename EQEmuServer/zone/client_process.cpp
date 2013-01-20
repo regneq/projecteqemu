@@ -811,19 +811,34 @@ void Client::OnDisconnect(bool hard_disconnect) {
 // DO WE STILL NEED THE 'ITEMCOMBINED' CONDITIONAL CODE? -U
 
 //#ifdef ITEMCOMBINED
-void Client::BulkSendInventoryItems()
-{
-	// Search all inventory buckets for items
-	bool deletenorent=database.NoRentExpired(GetName());
-	// Worn items and Inventory items
+void Client::BulkSendInventoryItems() {
+	// For future reference: Only the parent item needs to be sent..the ItemInst already contains child ItemInst information
 	sint16 slot_id = 0;
-	if(deletenorent){//client was offline for more than 30 minutes, delete no rent items
-		RemoveNoRent();
+
+	// LINKDEAD TRADE ITEMS
+	// Move trade slot items back into normal inventory..need them there now for the proceeding validity checks -U
+	for(slot_id = 3000; slot_id <= 3007; slot_id++) {
+		ItemInst* inst = m_inv.PopItem(slot_id);
+		if(inst) {
+			bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
+			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
+			mlog(INVENTORY__ERROR, "Incomplete Trade Transaction: Moving %s from slot %i to %i", inst->GetItem()->Name, slot_id, free_slot_id);
+			PutItemInInventory(free_slot_id, *inst, false);
+			database.SaveInventory(character_id, NULL, slot_id);
+			safe_delete(inst);
+		}
 	}
 
-	//RemoveDuplicateLore();
-	//MoveSlotNotAllowed();
-	
+	// Where are cursor buffer items processed? They need to be validated as well... -U
+
+	bool deletenorent = database.NoRentExpired(GetName());	
+	if(deletenorent){ RemoveNoRent(false); } //client was offline for more than 30 minutes, delete no rent items
+
+	RemoveDuplicateLore(false);
+	MoveSlotNotAllowed(false);
+
+	// The previous three method calls took care of moving/removing expired/illegal item placements -U
+
 	//TODO: this function is just retarded... it re-allocates the buffer for every
 	//new item. It should be changed to loop through once, gather the
 	//lengths, and item packet pointers into an array (fixed length), and
@@ -841,80 +856,64 @@ void Client::BulkSendInventoryItems()
 	//	put pos[r]->pBuffer into the buffer
 	//for r from 0 to pos
 	//	safe_delete(pos[r]);
-	int32 size=0;
+
+	int32 size = 0;
 	int16 i = 0;
-	map<int16,string> ser_items;
-	map<int16,string>::iterator itr;
+	map<int16, string> ser_items;
+	map<int16, string>::iterator itr;
+
 	//Inventory items
-	for (slot_id=0; slot_id<=30; slot_id++) {
+	for(slot_id = 0; slot_id <= 30; slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
-		if(inst && inst->IsSlotAllowed(slot_id) == 0)
-			inst = NULL;
-		if (inst){
+		if(inst) {
 			string packet = inst->Serialize(slot_id);
 			ser_items[i++] = packet;
-			size+=packet.length();
+			size += packet.length();
 		}
 	}
+
 	// Power Source
-	if(GetClientVersion() >= EQClientSoF)
-	{	
-		slot_id = 9999;
-		const ItemInst* inst = m_inv[slot_id];
-		if(inst && inst->IsSlotAllowed(slot_id) == 0)
-			inst = NULL;
-		if (inst){
-			string packet = inst->Serialize(slot_id);
+	if(GetClientVersion() >= EQClientSoF) {	
+		const ItemInst* inst = m_inv[9999];
+		if(inst) {
+			string packet = inst->Serialize(9999);
 			ser_items[i++] = packet;
-			size+=packet.length();
+			size += packet.length();
 		}
 	}
+
 	// Bank items
-	for (slot_id=2000; slot_id<=2023; slot_id++) {
+	for(slot_id = 2000; slot_id <= 2023; slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
-		if(inst && inst->IsSlotAllowed(slot_id) == 0)
-			inst = NULL;
-		if (inst){
+		if(inst) {
 			string packet = inst->Serialize(slot_id);
 			ser_items[i++] = packet;
-			size+=packet.length();
+			size += packet.length();
 		}
 	}
+
 	// Shared Bank items
-	for (slot_id=2500; slot_id<=2501; slot_id++) {
+	for(slot_id = 2500; slot_id <= 2501; slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
-		if(inst && inst->IsSlotAllowed(slot_id) == 0)
-			inst = NULL;
-		if (inst){
+		if(inst) {
 			string packet = inst->Serialize(slot_id);
 			ser_items[i++] = packet;
-			size+=packet.length();
+			size += packet.length();
 		}
 	}
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CharInventory,size);
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CharInventory, size);
 	uchar* ptr = outapp->pBuffer;
-	for(itr=ser_items.begin();itr!=ser_items.end();itr++){
+	for(itr = ser_items.begin(); itr != ser_items.end(); itr++){
 		int length = itr->second.length();
-		if(length>5){
-			memcpy(ptr,itr->second.c_str(),length);
-			ptr+=length;
+		if(length > 5) {
+			memcpy(ptr, itr->second.c_str(), length);
+			ptr += length;
 		}
 	}
 	//DumpPacket(outapp);
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	// LINKDEAD TRADE ITEMS
-	// If player went LD during a trade, they have items in the trade inventory
-	// slots.  These items are now being put into their inventory (then queue up on cursor)
-	for (sint16 trade_slot_id=3000; trade_slot_id<=3007; trade_slot_id++) {
-		const ItemInst* inst = m_inv[slot_id];
-		if (inst) {
-			bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
-			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
-			DeleteItemInInventory(trade_slot_id, 0, false);
-			PutItemInInventory(free_slot_id, *inst, true);
-		}
-	}
 }
 /*#else
 void Client::BulkSendInventoryItems()

@@ -1358,7 +1358,7 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 	if((move_slots->from_slot >= 0 && move_slots->from_slot <= 340) || move_slots->from_slot == 9999) {
 		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
 		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
-			// This prevents the client from generating a 'phantom' bag and crashing when closing it -U
+			// This prevents the client from crashing when closing any 'phantom' bags -U
 			const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
 			ItemInst* token_inst = database.CreateItem(token_struct, 1);
 
@@ -1671,110 +1671,184 @@ bool Client::DecreaseByID(int32 type, int8 amt) {
 	return true;
 }
 
+void Client::RemoveNoRent(bool client_update) {
 
-void Client::RemoveNoRent() {
-	const Item_Struct* TempItem = 0;
-	ItemInst* ins;
-	int x;
+	sint16 slot_id;
 	
-	//personal inventory
-	for(x=0; x <= 30; x++)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(x);
-		if(!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if(!TempItem)
-			continue;
-		if(TempItem->NoRent == 0)
-			DeleteItemInInventory(x,0,true);
+	// personal
+	for(slot_id = 0; slot_id <= 30; slot_id++) {
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && !inst->GetItem()->NoRent) {
+			mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			DeleteItemInInventory(slot_id, 0, client_update);
+		}
+	}
+
+	// power source
+	const ItemInst* inst = m_inv[9999];
+	if(inst && !inst->GetItem()->NoRent) {
+		mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+		DeleteItemInInventory(9999, 0, (GetClientVersion() >= EQClientSoF) ? client_update : false); // Ti slot non-existent
 	}
 	
-	//containers
-	for(x=251; x <= 330; x++)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(x);
-		if(!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if(!TempItem)
-			continue;
-		if(TempItem->NoRent == 0)
-			DeleteItemInInventory(x,0,true);
+	// containers
+	for(slot_id = 251; slot_id <= 340; slot_id++) {
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && !inst->GetItem()->NoRent) {
+			mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			DeleteItemInInventory(slot_id, 0, client_update);
+		}
 	}
-	for(x=2000; x <= 2023; x++)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(x);
-		if(!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if(!TempItem)
-			continue;
-		if(TempItem->NoRent == 0)
-			DeleteItemInInventory(x,0,true);
+
+	// bank
+	for(slot_id = 2000; slot_id <= 2023; slot_id++) {
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && !inst->GetItem()->NoRent) {
+			mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			DeleteItemInInventory(slot_id, 0, false); // Can't delete from client Bank slots
+		}
 	}
-	for(x=2031; x <= 2270; x++)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(x);
-		if(!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if(!TempItem)
-			continue;
-		if(TempItem->NoRent == 0)
-			DeleteItemInInventory(x,0,true);
+
+	// bank containers
+	for(slot_id = 2031; slot_id <= 2270; slot_id++) {
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && !inst->GetItem()->NoRent) {
+			mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			DeleteItemInInventory(slot_id, 0, false); // Can't delete from client Bank Container slots
+		}
 	}
-	for(x=2500; x <= 2501; x++)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(x);
-		if(!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if(!TempItem)
-			continue;
-		if(TempItem->NoRent == 0)
-			DeleteItemInInventory(x,0,true);
+
+	// shared bank
+	for(slot_id = 2500; slot_id <= 2501; slot_id++) {
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && !inst->GetItem()->NoRent) {
+			mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			DeleteItemInInventory(slot_id, 0, false); // Can't delete from client Shared Bank slots
+		}
 	}
-	for(x=2531; x <= 2550; x++)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(x);
-		if(!ins)
-			continue;
-		TempItem = ins->GetItem();
-		if(!TempItem)
-			continue;
-		if(TempItem->NoRent == 0)
-			DeleteItemInInventory(x,0,true);
-	}
-	if(GetClientVersion() >= EQClientSoF)
-	{
-		TempItem = 0;
-		ins = GetInv().GetItem(9999);
-		if(ins)	{
-			TempItem = ins->GetItem();
-			if(TempItem) {
-				if(TempItem->NoRent == 0)
-					DeleteItemInInventory(9999,0,true);
-			}
+
+	// shared bank containers
+	for(slot_id = 2531; slot_id <= 2550; slot_id++) {
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && !inst->GetItem()->NoRent) {
+			mlog(INVENTORY__SLOTS, "NoRent Timer Lapse: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			DeleteItemInInventory(slot_id, 0, false); // Can't delete from client Shared Bank Container slots
 		}
 	}
 }
 
 // Two new methods to alleviate perpetual login desyncs
-void Client::RemoveDuplicateLore() {
-	// Will add split charges back to non-stackable items up to MaxCharges to avoid penalizing the player
-	// for accidental desync charge splitting. However, additional duplicate items will be deleted. -U
+void Client::RemoveDuplicateLore(bool client_update) {
+	// Split-charge stacking may be added at some point -U
+	sint16 slot_id;
+	
+	// personal
+	for(slot_id = 0; slot_id <= 30; slot_id++) {
+		ItemInst* inst = m_inv.PopItem(slot_id);
+		if(inst) {
+			if(CheckLoreConflict(inst->GetItem())) {
+				mlog(INVENTORY__ERROR, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+				database.SaveInventory(character_id, NULL, slot_id);
+			} 
+			else {
+				m_inv.PutItem(slot_id, *inst);
+			}
+			safe_delete(inst);
+		}
+	}
+
+	// power source
+	ItemInst* inst = m_inv.PopItem(9999);
+	if(inst) {
+		if(CheckLoreConflict(inst->GetItem())) {
+			mlog(INVENTORY__ERROR, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			database.SaveInventory(character_id, NULL, 9999);
+		} 
+		else {
+			m_inv.PutItem(9999, *inst);
+		}
+		safe_delete(inst);
+	}
+	
+	// containers
+	for(slot_id = 251; slot_id <= 340; slot_id++) {
+		ItemInst* inst = m_inv.PopItem(slot_id);
+		if(inst) {
+			if(CheckLoreConflict(inst->GetItem())) {
+				mlog(INVENTORY__ERROR, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+				database.SaveInventory(character_id, NULL, slot_id);
+			} 
+			else {
+				m_inv.PutItem(slot_id, *inst);
+			}
+			safe_delete(inst);
+		}
+	}
+
+	// bank
+	for(slot_id = 2000; slot_id <= 2023; slot_id++) {
+		ItemInst* inst = m_inv.PopItem(slot_id);
+		if(inst) {
+			if(CheckLoreConflict(inst->GetItem())) {
+				mlog(INVENTORY__ERROR, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+				database.SaveInventory(character_id, NULL, slot_id);
+			} 
+			else {
+				m_inv.PutItem(slot_id, *inst);
+			}
+			safe_delete(inst);
+		}
+	}
+
+	// bank containers
+	for(slot_id = 2031; slot_id <= 2270; slot_id++) {
+		ItemInst* inst = m_inv.PopItem(slot_id);
+		if(inst) {
+			if(CheckLoreConflict(inst->GetItem())) {
+				mlog(INVENTORY__ERROR, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+				database.SaveInventory(character_id, NULL, slot_id);
+			} 
+			else {
+				m_inv.PutItem(slot_id, *inst);
+			}
+			safe_delete(inst);
+		}
+	}
+
+	// Shared Bank and Shared Bank Containers are not checked due to their allowing duplicate lore items -U
 }
 
-void Client::MoveSlotNotAllowed() {
-	// Will move illegal items out of slot-restricted slots and place them into the inventory or onto cursor.
-	// Action is limited to worn items and not currently planned to include items larger than container size. -U
+void Client::MoveSlotNotAllowed(bool client_update) {
+
+	sint16 slot_id;
+
+	// equipment
+	for(slot_id = 0; slot_id <= 21; slot_id++) {
+		if(m_inv[slot_id] && !m_inv[slot_id]->IsSlotAllowed(slot_id)) {
+			ItemInst* inst = m_inv.PopItem(slot_id);
+			bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
+			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
+			mlog(INVENTORY__ERROR, "Slot Assignment Error: Moving %s from slot %i to %i", inst->GetItem()->Name, slot_id, free_slot_id);
+			PutItemInInventory(free_slot_id, *inst, client_update);
+			database.SaveInventory(character_id, NULL, slot_id);
+			safe_delete(inst);
+		}
+	}
+
+	// power source
+	slot_id = 9999;
+	if(m_inv[slot_id] && !m_inv[slot_id]->IsSlotAllowed(slot_id)) {
+		ItemInst* inst = m_inv.PopItem(slot_id);
+		bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
+		sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
+		mlog(INVENTORY__ERROR, "Slot Assignment Error: Moving %s from slot %i to %i", inst->GetItem()->Name, slot_id, free_slot_id);
+		PutItemInInventory(free_slot_id, *inst, (GetClientVersion() >= EQClientSoF) ? client_update : false);
+		database.SaveInventory(character_id, NULL, slot_id);
+		safe_delete(inst);
+	}
+
+	// No need to check inventory, cursor, bank or shared bank since they allow max item size and containers -U
+	// Code can be added to check item size vs. container size, but it is left to attrition for now.
 }
 
 // these functions operate with a material slot, which is from 0 to 8
