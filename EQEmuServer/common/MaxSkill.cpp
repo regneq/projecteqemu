@@ -2,7 +2,7 @@
 #include "../common/classes.h"
 #include "../zone/skills.h"
 
-int8 MaxSkillTable(int16 skillid, int16 race, int16 eqclass, int16 level);
+uint8 MaxSkillTable(uint16 skillid, uint16 race, uint16 eqclass, uint16 level);
 /* TODO: 
 	Load MaxSkillTable function into ram as a really big matrix:
 	MaxSkillTable[skillid][race][eqclass][level]
@@ -11,8 +11,8 @@ int8 MaxSkillTable(int16 skillid, int16 race, int16 eqclass, int16 level);
 	that table into MaxSkillTable (ie, AA checks, skill values that
 	depend on other skill values, etc), put it into MaxSkill instead
 */
-int8 MaxSkill(int16 skillid, int16 race, int16 eqclass, int16 level) {
-	int8 ret = MaxSkillTable(skillid, race, eqclass, level);
+uint8 MaxSkill(uint16 skillid, uint16 race, uint16 eqclass, uint16 level) {
+	uint8 ret = MaxSkillTable(skillid, race, eqclass, level);
 	return ret;
 }
 
@@ -31,8 +31,8 @@ int8 MaxSkill(int16 skillid, int16 race, int16 eqclass, int16 level) {
 		"must put one point in at GM", etc
 
 */
-int8 MaxSkillTable(int16 skillid, int16 race, int16 eqclass, int16 level) { 
-	int16 r_value = 0; 
+uint8 MaxSkillTable(uint16 skillid, uint16 race, uint16 eqclass, uint16 level) { 
+	uint16 r_value = 0; 
 	
 	switch (skillid) { 
 		/////////////// 

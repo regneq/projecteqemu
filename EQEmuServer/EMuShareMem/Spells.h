@@ -10,7 +10,7 @@ struct MMFSpells_Struct {
 	SPDat_Spell_Struct spells[0];
 };
 
-bool	pDLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, sint32* oSPDAT_RECORDS, int32 iSPDat_Struct_Size);
+bool	pDLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, int32* oSPDAT_RECORDS, uint32 iSPDat_Struct_Size);
 
 #endif
 

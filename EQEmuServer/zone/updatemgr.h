@@ -63,7 +63,7 @@ protected:
 	static const float level_distances2[UPDATE_LEVELS];
 	
 	//delay between sending packets in each level, in ms
-	static const int32 level_timers[UPDATE_LEVELS+1];
+	static const uint32 level_timers[UPDATE_LEVELS+1];
 	
 public:
 	UpdateManager(EQStream *c);

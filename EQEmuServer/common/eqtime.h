@@ -27,13 +27,13 @@ public:
 	int getEQTimeOfDay( time_t timeConvert, TimeOfDay_Struct *eqTimeOfDay );
 	TimeOfDay_Struct getStartEQTime() { return eqTime.start_eqtime; }
 	time_t getStartRealTime() { return eqTime.start_realtime; }
-	int32 getEQTimeZone() { return timezone; }
-	int32 getEQTimeZoneHr() { return timezone/60; }
-	int32 getEQTimeZoneMin() { return timezone%60; }
+	uint32 getEQTimeZone() { return timezone; }
+	uint32 getEQTimeZoneHr() { return timezone/60; }
+	uint32 getEQTimeZoneMin() { return timezone%60; }
 
 	//Set functions
 	int setEQTimeOfDay(TimeOfDay_Struct start_eq, time_t start_real);
-	void setEQTimeZone(sint32 in_timezone) { timezone=in_timezone; }
+	void setEQTimeZone(int32 in_timezone) { timezone=in_timezone; }
 	
 	//Time math/logic functions
 	static bool IsTimeBefore(TimeOfDay_Struct *base, TimeOfDay_Struct *test);	//is test before base
@@ -51,7 +51,7 @@ private:
 	//This is our reference clock.
 	eqTimeOfDay eqTime;
 	//This is our tz offset
-	sint32 timezone;
+	int32 timezone;
 };
 
 #endif

@@ -37,11 +37,11 @@
 */
 struct ExtendedProfile_Struct {
 	// Pet stuff
-	int16				pet_id;
-	int16				old_pet_hp;
-	int16				old_pet_mana;
+	uint16				pet_id;
+	uint16				old_pet_hp;
+	uint16				old_pet_mana;
 	SpellBuff_Struct	pet_buffs[BUFF_COUNT];
-	int32				pet_items[MAX_MATERIALS];
+	uint32				pet_items[MAX_MATERIALS];
 	char				merc_name[64];
 	
 	uint32				aa_effects;
@@ -50,11 +50,11 @@ struct ExtendedProfile_Struct {
 	uint32				pet_hp;
 	uint32				pet_mana;
 	uint32				mercTemplateID;
-	int32				mercSuspendedTime;
+	uint32				mercSuspendedTime;
 	bool				mercIsSuspended;
-	int32				mercTimerRemaining;
+	uint32				mercTimerRemaining;
 	uint8				mercGender;
-	sint32				mercState;
+	int32				mercState;
 };
 
 #pragma pack()

@@ -84,22 +84,22 @@ CREATE TABLE fishing (
 */
 
 // This allows EqEmu to have zone specific foraging - BoB
-int32 ZoneDatabase::GetZoneForage(int32 ZoneID, int8 skill) {
+uint32 ZoneDatabase::GetZoneForage(uint32 ZoneID, uint8 skill) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	int8 index = 0;
-	int32 item[FORAGE_ITEM_LIMIT];
-	int32 chance[FORAGE_ITEM_LIMIT];
-	int32 ret;
+	uint8 index = 0;
+	uint32 item[FORAGE_ITEM_LIMIT];
+	uint32 chance[FORAGE_ITEM_LIMIT];
+	uint32 ret;
 	
 	for (int c=0; c < FORAGE_ITEM_LIMIT; c++) 	{
 		item[c] = 0;
 	}
 	
-	int32 chancepool = 0;
+	uint32 chancepool = 0;
 	
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT itemid,chance FROM forage WHERE zoneid= '%i' and level <= '%i' LIMIT %i", ZoneID, skill, FORAGE_ITEM_LIMIT), errbuf, &result))
 	{
@@ -129,7 +129,7 @@ LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[ind
 	
 	ret = 0;
 
-	int32 rindex = MakeRandomInt(1, chancepool);
+	uint32 rindex = MakeRandomInt(1, chancepool);
 
 	for(int i = 0; i < index; i++) {
 		if(rindex <= chance[i]) {
@@ -141,20 +141,20 @@ LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[ind
 	return ret;
 }
 
-int32 ZoneDatabase::GetZoneFishing(int32 ZoneID, int8 skill, uint32 &npc_id, uint8 &npc_chance)
+uint32 ZoneDatabase::GetZoneFishing(uint32 ZoneID, uint8 skill, uint32 &npc_id, uint8 &npc_chance)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	int8 index = 0;
-	int32 item[50];
-	int32 chance[50];
-	int32 npc_ids[50];
-	int32 npc_chances[50];
-	int32 chancepool = 0;
-	int32 ret = 0;
+	uint8 index = 0;
+	uint32 item[50];
+	uint32 chance[50];
+	uint32 npc_ids[50];
+	uint32 npc_chances[50];
+	uint32 chancepool = 0;
+	uint32 ret = 0;
 	
 	for (int c=0; c<50; c++) 	{
 		item[c]=0;
@@ -185,7 +185,7 @@ int32 ZoneDatabase::GetZoneFishing(int32 ZoneID, int8 skill, uint32 &npc_id, uin
 	npc_id = 0;
 	npc_chance = 0;
 	if (index>0) {
-		int32 random = MakeRandomInt(1, chancepool);
+		uint32 random = MakeRandomInt(1, chancepool);
 		for (int i = 0; i < index; i++)
 		{
 			if (random <= chance[i])
@@ -207,7 +207,7 @@ int32 ZoneDatabase::GetZoneFishing(int32 ZoneID, int8 skill, uint32 &npc_id, uin
 bool Client::CanFish() {
 	//make sure we still have a fishing pole on:
 	const ItemInst* Pole = m_inv[SLOT_PRIMARY];
-	sint32 bslot = m_inv.HasItemByUse(ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
+	int32 bslot = m_inv.HasItemByUse(ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
 	const ItemInst* Bait = NULL;
 	if(bslot != SLOT_INVALID)
 		Bait = m_inv.GetItem(bslot);
@@ -297,7 +297,7 @@ void Client::GoFish()
 	int fishing_skill = GetSkill(FISHING);	//will take into account skill bonuses on pole & bait
 	
 	//make sure we still have a fishing pole on:
-	sint32 bslot = m_inv.HasItemByUse(ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
+	int32 bslot = m_inv.HasItemByUse(ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
 	const ItemInst* Bait = NULL;
 	if(bslot != SLOT_INVALID)
 		Bait = m_inv.GetItem(bslot);
@@ -419,7 +419,7 @@ void Client::ForageItem() {
 	// these may need to be fine tuned, I am just guessing here
 	if (MakeRandomInt(0,199) < skill_level) {
 		uint32 foragedfood = 0;
-		int32 stringid = FORAGE_NOEAT;
+		uint32 stringid = FORAGE_NOEAT;
 		
 		if (MakeRandomInt(0,99) <= 25) {
 			foragedfood = database.GetZoneForage(m_pp.zone_id, skill_level);
@@ -427,7 +427,7 @@ void Client::ForageItem() {
 		
 		//not an else in case theres no DB food
 		if(foragedfood == 0) {
-			int8 index = 0;
+			uint8 index = 0;
 			index = MakeRandomInt(0, MAX_COMMON_FOOD_IDS-1);
 			foragedfood = common_food_ids[index];
 		}

@@ -136,7 +136,7 @@ IN(OP_SaveOnZoneReq, Save_Struct);		//follows OP_ZoneChange
 IN(OP_Save, Save_Struct);
 IN(OP_WhoAllRequest, Who_All_Struct);
 IN(OP_GMZoneRequest, GMZoneRequest_Struct);
-IN(OP_GMZoneRequest2, int32);
+IN(OP_GMZoneRequest2, uint32);
 IN(OP_EndLootRequest, EntityId_Struct);	//follows OP_LootRequest
 IN(OP_LootRequest, EntityId_Struct);	//entity must be a corpse
 IN(OP_Dye, DyeStruct);
@@ -267,8 +267,8 @@ IN(OP_TributeItem, TributeItem_Struct);
 IN(OP_TributeMoney, TributeMoney_Struct);
 IN(OP_SelectTribute, SelectTributeReq_Struct);
 IN(OP_TributeUpdate, TributeInfo_Struct);
-IN(OP_TributeToggle, int32);	//value is 0 or 1
-IN(OP_TributeNPC, int32);		//contains tribute master entity ID
+IN(OP_TributeToggle, uint32);	//value is 0 or 1
+IN(OP_TributeNPC, uint32);		//contains tribute master entity ID
 INr(OP_CrashDump);
 INr(OP_ControlBoat);
 INr(OP_DumpName);

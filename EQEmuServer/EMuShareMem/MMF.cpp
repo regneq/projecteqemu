@@ -39,7 +39,7 @@ MMF::~MMF() {
 	Close();
 }
 
-bool MMF::Open(const char* iName, int32 iSize) {
+bool MMF::Open(const char* iName, uint32 iSize) {
 	if (iSize < 1) {
 		cout << "Error Loading MMF: " << __FILE__ << ":" << __LINE__ << " OpenMMF: iSize < 1" << endl;
 		return false;
@@ -51,7 +51,7 @@ bool MMF::Open(const char* iName, int32 iSize) {
 	char MMFname[200];
 	memset(MMFname, 0, sizeof(MMFname));
 	snprintf(MMFname, sizeof(MMFname), "memfilemap_%s", iName);
-	int32 tmpSize = sizeof(MMF_Struct) + iSize;
+	uint32 tmpSize = sizeof(MMF_Struct) + iSize;
 	
 #ifdef _WINDOWS
 	char MMFMutexName[200];

@@ -71,10 +71,10 @@ using namespace std;
 extern ZSList zoneserver_list;
 extern ClientList client_list;
 extern uint32 numzones;
-extern int32 numplayers;
+extern uint32 numplayers;
 extern volatile bool	RunLoops;
 
-LoginServer::LoginServer(const char* iAddress, int16 iPort, const char* Account, const char* Password)
+LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account, const char* Password)
 : statusupdate_timer(LoginServer_StatusUpdateInterval)
 {
 	strn0cpy(LoginServerAddress,iAddress,256);
@@ -113,8 +113,8 @@ bool LoginServer::Process() {
 		}
 		case ServerOP_UsertoWorldReq: {
 			UsertoWorldRequest_Struct* utwr = (UsertoWorldRequest_Struct*) pack->pBuffer;	
-			int32 id = database.GetAccountIDFromLSID(utwr->lsaccountid);
-			sint16 status = database.CheckStatus(id);
+			uint32 id = database.GetAccountIDFromLSID(utwr->lsaccountid);
+			int16 status = database.CheckStatus(id);
 
 			ServerPacket* outpack = new ServerPacket;
 			outpack->opcode = ServerOP_UsertoWorldResp;
@@ -136,8 +136,8 @@ bool LoginServer::Process() {
 				utwrs->response = 1;
 			}
 
-			sint32 x = Config->MaxClients;
-			if( (sint32)numplayers >= x && x != -1 && x != 255 && status < 80)
+			int32 x = Config->MaxClients;
+			if( (int32)numplayers >= x && x != -1 && x != 255 && status < 80)
 				utwrs->response = -3;
 
 			if(status == -1)

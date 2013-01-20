@@ -28,10 +28,10 @@ using namespace std;
 
 #include "timer.h"
 
-int32 current_time = 0;
-int32 last_time = 0;
+uint32 current_time = 0;
+uint32 last_time = 0;
 
-Timer::Timer(int32 in_timer_time, bool iUseAcurateTiming) {
+Timer::Timer(uint32 in_timer_time, bool iUseAcurateTiming) {
 	timer_time = in_timer_time;
 	start_time = current_time;
 	set_at_trigger = timer_time;
@@ -44,7 +44,7 @@ Timer::Timer(int32 in_timer_time, bool iUseAcurateTiming) {
 	}
 }
 
-Timer::Timer(int32 start, int32 timer, bool iUseAcurateTiming = false) {
+Timer::Timer(uint32 start, uint32 timer, bool iUseAcurateTiming = false) {
 	timer_time = timer;
 	start_time = start;
 	set_at_trigger = timer_time;
@@ -106,7 +106,7 @@ void Timer::Enable() {
 }
 
 /* This function set the timer and restart it */
-void Timer::Start(int32 set_timer_time, bool ChangeResetTimer) {	
+void Timer::Start(uint32 set_timer_time, bool ChangeResetTimer) {	
     start_time = current_time;
 	enabled = true;
     if (set_timer_time != 0)
@@ -118,7 +118,7 @@ void Timer::Start(int32 set_timer_time, bool ChangeResetTimer) {
 }
 
 /* This timer updates the timer without restarting it */
-void Timer::SetTimer(int32 set_timer_time) {
+void Timer::SetTimer(uint32 set_timer_time) {
     /* If we were disabled before => restart the timer */
     if (!enabled) {
 		start_time = current_time;
@@ -130,7 +130,7 @@ void Timer::SetTimer(int32 set_timer_time) {
     }
 }
 
-int32 Timer::GetRemainingTime() {
+uint32 Timer::GetRemainingTime() {
     if (enabled) {
 	    if (current_time-start_time > timer_time)
 			return 0;
@@ -142,7 +142,7 @@ int32 Timer::GetRemainingTime() {
 	}
 }
 
-void Timer::SetAtTrigger(int32 in_set_at_trigger, bool iEnableIfDisabled) {
+void Timer::SetAtTrigger(uint32 in_set_at_trigger, bool iEnableIfDisabled) {
 	set_at_trigger = in_set_at_trigger;
 	if (!Enabled() && iEnableIfDisabled) {
 		Enable();
@@ -157,23 +157,23 @@ void Timer::Trigger()
 	start_time = current_time-timer_time-1;
 }
 
-const int32 Timer::GetCurrentTime()
+const uint32 Timer::GetCurrentTime()
 {	
     return current_time;
 }
 
 //just to keep all time related crap in one place... not really related to timers.
-const int32 Timer::GetTimeSeconds() {
+const uint32 Timer::GetTimeSeconds() {
     struct timeval read_time;
 
     gettimeofday(&read_time,0);
     return(read_time.tv_sec);
 }
 
-const int32 Timer::SetCurrentTime()
+const uint32 Timer::SetCurrentTime()
 {
     struct timeval read_time;	
-    int32 this_time;
+    uint32 this_time;
 
     gettimeofday(&read_time,0);
     this_time = read_time.tv_sec * 1000 + read_time.tv_usec / 1000;

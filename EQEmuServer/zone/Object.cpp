@@ -68,7 +68,7 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 }
 
 //creating a re-ocurring ground spawn.
-Object::Object(const ItemInst* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,int32 respawntimer)
+Object::Object(const ItemInst* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,uint32 respawntimer)
  : respawn_timer(respawntimer), decay_timer(300000)
 {
 	
@@ -156,7 +156,7 @@ Object::Object(Client* client, const ItemInst* inst)
 	}
 }
 
-Object::Object(const ItemInst *inst, float x, float y, float z, float heading, int32 decay_time)
+Object::Object(const ItemInst *inst, float x, float y, float z, float heading, uint32 decay_time)
  : respawn_timer(0), decay_timer(decay_time)
 {
 	user = NULL;
@@ -212,7 +212,7 @@ Object::Object(const ItemInst *inst, float x, float y, float z, float heading, i
 	}
 }
 
-Object::Object(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time)
+Object::Object(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time)
  : respawn_timer(0), decay_timer(decay_time)
 {
 	user = NULL;
@@ -259,7 +259,7 @@ Object::~Object()
 	}
 }
 
-void Object::SetID(int16 set_id)
+void Object::SetID(uint16 set_id)
 {
 	// Invoke base class
 	Entity::SetID(set_id);
@@ -293,7 +293,7 @@ bool Object::Save()
 	return true;
 }
 
-int16 Object::VarSave()
+uint16 Object::VarSave()
 {
 	if (m_id) {
 		// Update existing
@@ -455,7 +455,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 			// if there is a lore conflict, delete the offending item from the server inventory 
 			// the client updates itself and takes care of sending "duplicate lore item" messages
 			if(sender->CheckLoreConflict(m_inst->GetItem())) {
-				sint16 loreslot = sender->GetInv().HasItem(m_inst->GetItem()->ID, 0, invWhereBank);
+				int16 loreslot = sender->GetInv().HasItem(m_inst->GetItem()->ID, 0, invWhereBank);
 				if(loreslot != SLOT_INVALID) 	// if the duplicate is in the bank, delete it.
 					sender->DeleteItemInInventory(loreslot);
 				else
@@ -563,7 +563,7 @@ uint32 ZoneDatabase::AddObject(uint32 type, uint32 icon, const Object_Struct& ob
 	
 	uint32 database_id = 0;
 	uint32 item_id = 0;
-	sint16 charges = 0;
+	int16 charges = 0;
 	
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
@@ -605,7 +605,7 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
     char* query = 0;
 	
 	uint32 item_id = 0;
-	sint16 charges = 0;
+	int16 charges = 0;
 	
 	if (inst && inst->GetItem()) {
 		item_id = inst->GetItem()->ID;
@@ -638,7 +638,7 @@ void ZoneDatabase::UpdateObject(uint32 id, uint32 type, uint32 icon, const Objec
 	safe_delete_array(object_name);
 	safe_delete_array(query);
 }
-Ground_Spawns* ZoneDatabase::LoadGroundSpawns(int32 zone_id, sint16 version, Ground_Spawns* gs){
+Ground_Spawns* ZoneDatabase::LoadGroundSpawns(uint32 zone_id, int16 version, Ground_Spawns* gs){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -690,12 +690,12 @@ void ZoneDatabase::DeleteObject(uint32 id)
 	safe_delete_array(query);
 }
 
-int32 Object::GetDBID()
+uint32 Object::GetDBID()
 {
 	return this->m_id;
 }
 
-int32 Object::GetType()
+uint32 Object::GetType()
 {
 	return this->m_type;
 }
@@ -706,7 +706,7 @@ void Object::SetType(uint32 type)
 	this->m_data.object_type = type;
 }
 
-int32 Object::GetIcon()
+uint32 Object::GetIcon()
 {
 	return this->m_icon;
 }
@@ -815,12 +815,12 @@ const char* Object::GetModelName()
 	return this->m_data.object_name;
 }
 
-void Object::SetIcon(int32 icon)
+void Object::SetIcon(uint32 icon)
 {
 	this->m_icon = icon;
 }
 
-int32 Object::GetItemID()
+uint32 Object::GetItemID()
 {
 	if (this->m_inst == 0)
 	{
@@ -837,7 +837,7 @@ int32 Object::GetItemID()
 	return item->ID;
 }
 
-void Object::SetItemID(int32 itemid)
+void Object::SetItemID(uint32 itemid)
 {
 	safe_delete(this->m_inst);
   

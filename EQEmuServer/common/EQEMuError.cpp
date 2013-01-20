@@ -43,7 +43,7 @@ Mutex* MEQEMuErrorList;
 AutoDelete< LinkedList<char*> > ADEQEMuErrorList(&EQEMuErrorList);
 AutoDelete<Mutex> ADMEQEMuErrorList(&MEQEMuErrorList);
 
-const char* GetErrorText(int32 iError) {
+const char* GetErrorText(uint32 iError) {
 	if (iError >= EQEMuError_MaxErrorID)
 		return "ErrorID# out of range";
 	else
@@ -64,7 +64,7 @@ void AddEQEMuError(eEQEMuError iError, bool iExitNow) {
 	while (iterator.MoreElements()) {
 		if (iterator.GetData()[0] == 1) {
 //Umm... this gets a big WTF...
-//			if (*((int32*) iterator.GetData()[1]) == iError)
+//			if (*((uint32*) iterator.GetData()[1]) == iError)
 //not sure whats going on, using a character as a pointer....
 			if (*((eEQEMuError*) &(iterator.GetData()[1])) == iError)
 				return;
@@ -75,7 +75,7 @@ void AddEQEMuError(eEQEMuError iError, bool iExitNow) {
 	char* tmp = new char[6];
 	tmp[0] = 1;
 	tmp[5] = 0;
-	*((int32*) &tmp[1]) = iError;
+	*((uint32*) &tmp[1]) = iError;
 	EQEMuErrorList->Append(tmp);
 
 	if (iExitNow)
@@ -97,10 +97,10 @@ void AddEQEMuError(char* iError, bool iExitNow) {
 		CatchSignal(2);
 }
 
-int32 CheckEQEMuError() {
+uint32 CheckEQEMuError() {
 	if (!EQEMuErrorList)
 		return 0;
-	int32 ret = 0;
+	uint32 ret = 0;
 	char* tmp = 0;
 	bool HeaderPrinted = false;
 	LockMutex lock(MEQEMuErrorList);
@@ -111,8 +111,8 @@ int32 CheckEQEMuError() {
 			HeaderPrinted = true;
 		}
 		if (tmp[0] == 1) {
-			fprintf(stdout, "%s\n", GetErrorText(*((int32*) &tmp[1])));
-			fprintf(stdout, "For more information on this error, visit http://www.eqemu.net/eqemuerror.php?id=%u\n\n", *((int32*) &tmp[1]));
+			fprintf(stdout, "%s\n", GetErrorText(*((uint32*) &tmp[1])));
+			fprintf(stdout, "For more information on this error, visit http://www.eqemu.net/eqemuerror.php?id=%u\n\n", *((uint32*) &tmp[1]));
 		}
 		else {
 			fprintf(stdout, "%s\n\n", tmp);

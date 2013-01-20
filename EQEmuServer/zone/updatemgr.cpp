@@ -31,7 +31,7 @@ const float UpdateManager::level_distances2[UPDATE_LEVELS]
 //delay between sending packets in each level, in ms
 //its best if they are all multiples of UPDATE_RESOLUTION
 //these values are pulled out of my ass, should be tuned some day
-const int32 UpdateManager::level_timers[UPDATE_LEVELS+1]
+const uint32 UpdateManager::level_timers[UPDATE_LEVELS+1]
 	= { UPDATE_RESOLUTION,		//.3s
 		2*UPDATE_RESOLUTION, 	//.6s
 		3*UPDATE_RESOLUTION,	//.9s

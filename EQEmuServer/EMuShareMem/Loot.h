@@ -18,12 +18,12 @@ struct MMFLoot_Struct {
 #pragma pack()
 
 bool	pDLLLoadLoot(CALLBACK_DBLoadLoot cbDBLoadLoot, 
-					 int32 iLootTableStructsize, int32 iLootTableCount, int32 iMaxLootTable,
-					 int32 iLootTableEntryStructsize, int32 iLootTableEntryCount,
-					 int32 iLootDropStructsize, int32 iLootDropCount, int32 iMaxLootDrop,
-					 int32 iLootDropEntryStructsize, int32 iLootDropEntryCount
+					 uint32 iLootTableStructsize, uint32 iLootTableCount, uint32 iMaxLootTable,
+					 uint32 iLootTableEntryStructsize, uint32 iLootTableEntryCount,
+					 uint32 iLootDropStructsize, uint32 iLootDropCount, uint32 iMaxLootDrop,
+					 uint32 iLootDropEntryStructsize, uint32 iLootDropEntryCount
 					 );
-bool	pAddLootTable(int32 id, const LootTable_Struct* lts);
-bool	pAddLootDrop(int32, const LootDrop_Struct* lds);
+bool	pAddLootTable(uint32 id, const LootTable_Struct* lts);
+bool	pAddLootDrop(uint32, const LootDrop_Struct* lds);
 const LootTable_Struct*		pGetLootTable(uint32 id);
 const LootDrop_Struct*		pGetLootDrop(uint32 id);

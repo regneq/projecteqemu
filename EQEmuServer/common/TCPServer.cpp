@@ -24,7 +24,7 @@
 
 
 
-BaseTCPServer::BaseTCPServer(int16 in_port) {
+BaseTCPServer::BaseTCPServer(uint16 in_port) {
 	NextID = 1;
 	pPort = in_port;
 	sock = 0;
@@ -131,7 +131,7 @@ void BaseTCPServer::ListenNewConnections() {
 	}
 }
 
-bool BaseTCPServer::Open(int16 in_port, char* errbuf) {
+bool BaseTCPServer::Open(uint16 in_port, char* errbuf) {
 	if (errbuf)
 		errbuf[0] = 0;
 	LockMutex lock(&MSock);

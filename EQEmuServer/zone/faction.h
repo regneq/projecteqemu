@@ -42,36 +42,36 @@ struct NPCFactionList {
 	uint32	primaryfaction;
 	bool	assistprimaryfaction;
 	uint32	factionid[MAX_NPC_FACTIONS];
-	sint32	factionvalue[MAX_NPC_FACTIONS];
-	sint8	factionnpcvalue[MAX_NPC_FACTIONS];
-	int8	factiontemp[MAX_NPC_FACTIONS];
+	int32	factionvalue[MAX_NPC_FACTIONS];
+	int8	factionnpcvalue[MAX_NPC_FACTIONS];
+	uint8	factiontemp[MAX_NPC_FACTIONS];
 };
 
 struct FactionMods
 {
-	sint32 base;
-	sint32 class_mod;
-	sint32 race_mod;
-	sint32 deity_mod;
+	int32 base;
+	int32 class_mod;
+	int32 race_mod;
+	int32 deity_mod;
 };
 struct Faction {
-	sint32	id;
-    std::map<std::string, sint16> mods;
-	sint16	base;
+	int32	id;
+    std::map<std::string, int16> mods;
+	int16	base;
 	char	name[50];
 };
-typedef map<uint32, sint16> faction_map;
+typedef map<uint32, int16> faction_map;
 
 struct NPCFaction    
 {    
 uint32 factionID;
-sint32 value_mod;
-sint8 npc_value;
-int8 temp;
+int32 value_mod;
+int8 npc_value;
+uint8 temp;
 //bool primary;    
 }; 
 
 const char *FactionValueToString(FACTION_VALUE fv);
-char* BuildFactionMessage(sint32 tmpvalue, sint32 faction_id, sint32 totalvalue, int8 temp);
-FACTION_VALUE CalculateFaction(FactionMods* fm, sint32 tmpCharacter_value);
+char* BuildFactionMessage(int32 tmpvalue, int32 faction_id, int32 totalvalue, uint8 temp);
+FACTION_VALUE CalculateFaction(FactionMods* fm, int32 tmpCharacter_value);
 #endif

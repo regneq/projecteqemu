@@ -1848,7 +1848,7 @@ void ClientTaskState::UpdateTasksOnExplore(Client *c, int ExploreID) {
 	return;
 }
 
-bool ClientTaskState::UpdateTasksOnDeliver(Client *c, int32 *Items, int Cash, int NPCTypeID) {
+bool ClientTaskState::UpdateTasksOnDeliver(Client *c, uint32 *Items, int Cash, int NPCTypeID) {
 
 	bool Ret = false;
 
@@ -2111,7 +2111,7 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 		CashMessage += " pieces.";
 		c->Message(15,CashMessage.c_str());
 	}
-	sint32 EXPReward = Task->XPReward;
+	int32 EXPReward = Task->XPReward;
 	if(EXPReward > 0) {
 		c->AddEXP(EXPReward);
 	}

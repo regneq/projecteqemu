@@ -29,7 +29,7 @@
 class Seperator
 {
 public:
-	Seperator(const char* message_in, char div = ' ', int16 in_maxargnum = 10, int16 arglen = 100, bool iObeyQuotes = false, char div2 = '\t', char div3 = 0, bool iSkipEmpty = true) {
+	Seperator(const char* message_in, char div = ' ', uint16 in_maxargnum = 10, uint16 arglen = 100, bool iObeyQuotes = false, char div2 = '\t', char div3 = 0, bool iSkipEmpty = true) {
 		int i;
 		argnum = 0;
 		int len = strlen(message_in);
@@ -104,7 +104,7 @@ public:
 		safe_delete_array(argplus);
 		safe_delete_array(msg);
 	}
-	int16 argnum;
+	uint16 argnum;
 	char** arg;
 	const char** argplus;
 	char * msg;
@@ -148,9 +148,9 @@ public:
 		}
 		return true;
 	}
-	inline int16 GetMaxArgNum() const { return maxargnum; }
+	inline uint16 GetMaxArgNum() const { return maxargnum; }
 private:
-	int16 maxargnum;
+	uint16 maxargnum;
 };
 
 #endif

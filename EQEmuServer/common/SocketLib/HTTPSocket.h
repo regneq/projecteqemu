@@ -57,7 +57,7 @@ class HTTPSocket : public TCPConnection
 	/** map to hold http header values. */
 	typedef std::map<std::string,std::string> string_m;
 public:
-	HTTPSocket(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort);
+	HTTPSocket(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort);
 	virtual ~HTTPSocket();
 
 	void OnLine(const std::string& line);

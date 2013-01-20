@@ -21,7 +21,7 @@ static const char *name = "RoF";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
-char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth);
+char* SerializeItem(const ItemInst *inst, int16 slot_id, uint32 *length, uint8 depth);
 	
 void Register(EQStreamIdentifier &into) {
 	//create our opcode manager if we havent already
@@ -104,7 +104,7 @@ std::string Strategy::Describe() const {
 #include "SSDefine.h"
 
 // Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
-static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
+static inline structs::ItemSlotStruct TitaniumToRoFSlot(uint32 TitaniumSlot)
 {
 	structs::ItemSlotStruct RoFSlot;
 	RoFSlot.SlotType = 0xffff;
@@ -113,7 +113,7 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	RoFSlot.SubSlot = 0xffff;
 	RoFSlot.AugSlot = 0xffff;
 	RoFSlot.Unknown01 = 0;
-	int32 TempSlot = 0;
+	uint32 TempSlot = 0;
 
 	if (TitaniumSlot < 31)	// Main Inventory and Cursor
 	{
@@ -205,10 +205,10 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(int32 TitaniumSlot)
 	return RoFSlot;
 }
 
-static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
+static inline uint32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 {
-	int32 TitaniumSlot = 0xffffffff;
-	int32 TempSlot = 0;
+	uint32 TitaniumSlot = 0xffffffff;
+	uint32 TempSlot = 0;
 
 	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 51)	// Worn/Personal Inventory and Cursor
 	{
@@ -298,10 +298,10 @@ static inline int32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 	return TitaniumSlot;
 }
 
-static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFSlot)
+static inline uint32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFSlot)
 {
-	int32 TitaniumSlot = 0xffffffff;
-	int32 TempSlot = 0;
+	uint32 TitaniumSlot = 0xffffffff;
+	uint32 TempSlot = 0;
 
 	if (RoFSlot.MainSlot < 33)				// Worn/Personal Inventory and Cursor
 	{
@@ -336,14 +336,14 @@ static inline int32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoFS
 }
 
 // Converts Titanium Slot IDs to RoF Slot IDs for use in Encodes
-static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(int32 TitaniumSlot)
+static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(uint32 TitaniumSlot)
 {
 	structs::MainInvItemSlotStruct RoFSlot;
 	RoFSlot.MainSlot = 0xffff;
 	RoFSlot.SubSlot = 0xffff;
 	RoFSlot.AugSlot = 0xffff;
 	RoFSlot.Unknown01 = 0;
-	int32 TempSlot = 0;
+	uint32 TempSlot = 0;
 
 	if (TitaniumSlot < 52)
 	{
@@ -741,7 +741,7 @@ ENCODE(OP_SendZonepoints) {
 	ALLOC_VAR_ENCODE(structs::ZonePoints, sizeof(structs::ZonePoints) + sizeof(structs::ZonePoint_Entry) * (emu->count + 1));
 
 	eq->count = emu->count;
-	for(int32 i = 0; i < emu->count; ++i)
+	for(uint32 i = 0; i < emu->count; ++i)
 	{
 		eq->zpe[i].iterator = emu->zpe[i].iterator;
 		eq->zpe[i].x = emu->zpe[i].x;
@@ -1083,15 +1083,15 @@ ENCODE(OP_PlayerProfile)
 
 	outapp->WriteUInt32(structs::BUFF_COUNT);
 
-	//*000*/ int8 slotid;				// badly named... seems to be 2 for a real buff, 0 otherwise
+	//*000*/ uint8 slotid;				// badly named... seems to be 2 for a real buff, 0 otherwise
 	//*001*/ float unknown004;			// Seen 1 for no buff
-	//*005*/ int32 player_id;			// 'global' ID of the caster, for wearoff messages
-	//*009*/ int32 unknown016;
-	//*013*/ int8 bard_modifier;
-	//*014*/ int32 duration;
-	//*018*/ int8 level;
-	//*019*/ int32 spellid;
-	//*023*/ int32 counters;
+	//*005*/ uint32 player_id;			// 'global' ID of the caster, for wearoff messages
+	//*009*/ uint32 unknown016;
+	//*013*/ uint8 bard_modifier;
+	//*014*/ uint32 duration;
+	//*018*/ uint8 level;
+	//*019*/ uint32 spellid;
+	//*023*/ uint32 counters;
 	//*027*/ uint8 unknown0028[53];
 	//*080*/
 
@@ -1099,7 +1099,7 @@ ENCODE(OP_PlayerProfile)
 	{
 		float unknown004 = 0.0f;
 		uint8 slotid = emu->buffs[r].slotid;
-		int32 player_id = emu->buffs[r].player_id;;
+		uint32 player_id = emu->buffs[r].player_id;;
 
 		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
 		{
@@ -2095,7 +2095,7 @@ ENCODE(OP_MercenaryDataResponse) {
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->Mercs[r].MercUnk01);
-		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
+		VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->Mercs[r].TimeLeft);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MerchantSlot);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].MercUnk02);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
@@ -2152,7 +2152,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyUpkeep);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyType);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk01);
-		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->MercData[r].TimeLeft);
+		VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->MercData[r].TimeLeft);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MerchantSlot);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk02);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
@@ -2292,7 +2292,7 @@ ENCODE(OP_GuildMemberList) {
 	
 	
 	//make a new EQ buffer.
-	int32 pnl = strlen(emu->player_name);
+	uint32 pnl = strlen(emu->player_name);
 	uint32 length = sizeof(structs::GuildMembers_Struct) + pnl + 
 		emu->count*sizeof(structs::GuildMemberEntry_Struct)
 		+ emu->name_length + emu->note_length;
@@ -2439,7 +2439,7 @@ ENCODE(OP_GroundSpawn)
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->y);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->x);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->z);
-	VARSTRUCT_ENCODE_TYPE(sint32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
+	VARSTRUCT_ENCODE_TYPE(int32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
 
 	delete[] __emu_buffer;
 	
@@ -3060,7 +3060,7 @@ ENCODE(OP_VetRewardsAvaliable)
 	EQApplicationPacket *inapp = *p;
 	unsigned char * __emu_buffer = inapp->pBuffer;
 
-	int32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
+	uint32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
 
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
 	uchar *old_data = __emu_buffer;
@@ -4436,7 +4436,7 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	sint16 slot_id = RoFToTitaniumSlot(eq->container_slot);
+	int16 slot_id = RoFToTitaniumSlot(eq->container_slot);
 	if (slot_id == 4000) {
 		slot_id = SLOT_TRADESKILL;	// 1000
 	}
@@ -4614,10 +4614,10 @@ DECODE(OP_GuildStatus)
 	FINISH_DIRECT_DECODE();
 }
 
-int32 NextItemInstSerialNumber = 1;
-int32 MaxInstances = 2000000000;
+uint32 NextItemInstSerialNumber = 1;
+uint32 MaxInstances = 2000000000;
 
-static inline sint32 GetNextItemInstSerialNumber() {
+static inline int32 GetNextItemInstSerialNumber() {
 
 	if(NextItemInstSerialNumber >= MaxInstances)
 		NextItemInstSerialNumber = 1;
@@ -4628,7 +4628,7 @@ static inline sint32 GetNextItemInstSerialNumber() {
 }
 
 
-char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uint8 depth) {
+char* SerializeItem(const ItemInst *inst, int16 slot_id_in, uint32 *length, uint8 depth) {
 	uint8 null_term = 0;
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
@@ -4778,7 +4778,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Deity = item->Deity;
 	ibs.SkillModValue = item->SkillModValue;
 	ibs.SkillModMax = 0xffffffff;
-	ibs.SkillModType = (sint8)(item->SkillModType);
+	ibs.SkillModType = (int8)(item->SkillModType);
 	ibs.SkillModExtra = 0;
 	ibs.BaneDmgRace = item->BaneDmgRace;
 	ibs.BaneDmgBody = item->BaneDmgBody;
@@ -4920,7 +4920,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ss.write((const char*)&itbs, sizeof(RoF::structs::ItemTertiaryBodyStruct));
 
 	// Effect Structures Broken down to allow variable length strings for effect names
-	sint32 effect_unknown = 0;
+	int32 effect_unknown = 0;
 
 	//_log(NET__ERROR, "ItemBody Click effect struct is %i bytes", sizeof(RoF::structs::ClickEffectStruct));
 	RoF::structs::ClickEffectStruct ices;
@@ -4947,7 +4947,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// clickunk7
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// clickunk7
 
 	//_log(NET__ERROR, "ItemBody proc effect struct is %i bytes", sizeof(RoF::structs::ProcEffectStruct));
 	RoF::structs::ProcEffectStruct ipes;
@@ -4971,7 +4971,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown5
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown5
 
 	//_log(NET__ERROR, "ItemBody worn effect struct is %i bytes", sizeof(RoF::structs::WornEffectStruct));
 	RoF::structs::WornEffectStruct iwes;
@@ -4994,7 +4994,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 
 	RoF::structs::WornEffectStruct ifes;
 	memset(&ifes, 0, sizeof(RoF::structs::WornEffectStruct));
@@ -5016,7 +5016,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 
 	RoF::structs::WornEffectStruct ises;
 	memset(&ises, 0, sizeof(RoF::structs::WornEffectStruct));
@@ -5038,7 +5038,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 
 	// Bard Effect?
 	RoF::structs::WornEffectStruct ibes;
@@ -5061,7 +5061,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	else */
 		ss.write((const char*)&null_term, sizeof(uint8));
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 	// End of Effects
 
 	//_log(NET__ERROR, "ItemBody Quaternary effect struct is %i bytes", sizeof(RoF::structs::ItemQuaternaryBodyStruct));

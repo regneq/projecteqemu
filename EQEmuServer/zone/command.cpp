@@ -815,7 +815,7 @@ void command_sendop(Client *c,const Seperator *sep){
 		c->Message(0,"type,string id, message1...");*/
 	/*
 		clientupdate lvl and such
-			int32	level; //new level
+			uint32	level; //new level
 
 
 	*/
@@ -839,7 +839,7 @@ void command_sendop(Client *c,const Seperator *sep){
 		else{
 			EQApplicationPacket* outapp = new EQApplicationPacket(121,atoi(sep->arg[2]));
 			memset(outapp->pBuffer,0,outapp->size);
-			int8 offset=atoi(sep->arg[3]);
+			uint8 offset=atoi(sep->arg[3]);
 			if(offset<outapp->size && sep->arg[4][0])
 				outapp->pBuffer[offset]=atoi(sep->arg[4]);
 			offset++;
@@ -1016,16 +1016,16 @@ void command_testspawn(Client *c, const Seperator *sep)
 		ns->spawn.NPC = 1;
 		if (sep->IsHexNumber(2)) {
 			if (strlen(sep->arg[2]) >= 3) // 0x00, 1 byte
-				*(&((int8*) &ns->spawn)[atoi(sep->arg[1])]) = hextoi(sep->arg[2]);
+				*(&((uint8*) &ns->spawn)[atoi(sep->arg[1])]) = hextoi(sep->arg[2]);
 			else if (strlen(sep->arg[2]) >= 5) // 0x0000, 2 bytes
-				*((int16*) &(((int8*) &ns->spawn)[atoi(sep->arg[1])])) = hextoi(sep->arg[2]);
+				*((uint16*) &(((uint8*) &ns->spawn)[atoi(sep->arg[1])])) = hextoi(sep->arg[2]);
 			else if (strlen(sep->arg[2]) >= 9) // 0x0000, 2 bytes
-				*((int32*) &(((int8*) &ns->spawn)[atoi(sep->arg[1])])) = hextoi(sep->arg[2]);
+				*((uint32*) &(((uint8*) &ns->spawn)[atoi(sep->arg[1])])) = hextoi(sep->arg[2]);
 			else
 				c->Message(0, "Error: unexpected hex string length");
 		}
 		else {
-			strcpy((char*) (&((int8*) &ns->spawn)[atoi(sep->arg[1])]), sep->argplus[2]);
+			strcpy((char*) (&((uint8*) &ns->spawn)[atoi(sep->arg[1])]), sep->argplus[2]);
 		}
 		EncryptSpawnPacket(outapp);
 		c->FastQueuePacket(&outapp);
@@ -1069,7 +1069,7 @@ void command_wc(Client *c, const Seperator *sep)
 		}
 		/*
 		// Leaving here to add color option to the #wc command eventually
-		int32 Color;
+		uint32 Color;
 		if (c->GetTarget()->IsClient())
 			Color = c->GetTarget()->GetEquipmentColor(atoi(sep->arg[1]));
 		else
@@ -1237,7 +1237,7 @@ void command_npcloot(Client *c, const Seperator *sep)
 		// #npcloot add item
 		if (c->GetTarget()->IsNPC() && sep->IsNumber(2))
 		{
-			int32 item = atoi(sep->arg[2]);
+			uint32 item = atoi(sep->arg[2]);
 			if (database.GetItem(item))
 			{
 				if (sep->arg[3][0] != 0 && sep->IsNumber(3))
@@ -1265,7 +1265,7 @@ void command_npcloot(Client *c, const Seperator *sep)
 		{
 			if(c->GetTarget()->IsNPC() && sep->IsNumber(2))
 			{
-				int32 item = atoi(sep->arg[2]);
+				uint32 item = atoi(sep->arg[2]);
 				c->GetTarget()->CastToNPC()->RemoveItem(item);
 				c->Message(0, "Removed item(%i) from the %s's loot.", item, c->GetTarget()->GetName());
 			}
@@ -1322,7 +1322,7 @@ void command_log(Client *c, const Seperator *sep)
 	}
 	if(cel->count != 0)
 	{
-		int32 count = 0;
+		uint32 count = 0;
 		bool cont = true;
 		while(cont)
 		{
@@ -1565,7 +1565,7 @@ void command_showbuffs(Client *c, const Seperator *sep)
 
 void command_peqzone(Client *c, const Seperator *sep)
 {
-       int32 timeleft = c->GetPTimers().GetRemainingTime(pTimerPeqzoneReuse)/60;
+       uint32 timeleft = c->GetPTimers().GetRemainingTime(pTimerPeqzoneReuse)/60;
 
        if(!c->GetPTimers().Expired(&database, pTimerPeqzoneReuse, false)) {
                c->Message(13,"You must wait %i minute(s) before using this ability again.", timeleft);
@@ -1641,7 +1641,7 @@ void command_movechar(Client *c, const Seperator *sep)
 		c->Message(0, "Invalid zone name");
 	else
 	{
-		int32 tmp = database.GetAccountIDByChar(sep->arg[1]);
+		uint32 tmp = database.GetAccountIDByChar(sep->arg[1]);
 		if (tmp)
 		{
 			if (c->Admin() >= commandMovecharSelfOnly || tmp == c->AccountID())
@@ -1780,7 +1780,7 @@ void command_timezone(Client *c, const Seperator *sep)
 		if(sep->arg[2]=="")
 			strcpy(sep->arg[2], "0");
 		c->Message(13, "Setting timezone to %s h %s m", sep->arg[1], sep->arg[2]);
-		int32 ntz=(atoi(sep->arg[1])*60)+atoi(sep->arg[2]);
+		uint32 ntz=(atoi(sep->arg[1])*60)+atoi(sep->arg[2]);
 		zone->zone_time.setEQTimeZone(ntz);
 		database.SetZoneTZ(zone->GetZoneID(), zone->GetInstanceVersion(), ntz);
 
@@ -1991,7 +1991,7 @@ void command_permarace(Client *c, const Seperator *sep)
 	else {
 		c->Message(0, "Setting %s's race - zone to take effect",t->GetName());
 		LogFile->write(EQEMuLog::Normal,"Permanant race change request from %s for %s, requested race:%i", c->GetName(), t->GetName(), atoi(sep->arg[1]) );
-		int32 tmp = Mob::GetDefaultGender(atoi(sep->arg[1]), t->GetBaseGender());
+		uint32 tmp = Mob::GetDefaultGender(atoi(sep->arg[1]), t->GetBaseGender());
 		t->SetBaseRace(atoi(sep->arg[1]));
 		t->SetBaseGender(tmp);
 		t->Save();
@@ -2199,7 +2199,7 @@ void command_gassign(Client *c, const Seperator *sep)
 void command_setitemstatus(Client *c, const Seperator *sep)
 {
 	if (sep->IsNumber(1) && sep->IsNumber(2)) {
-		int32 tmp = atoi(sep->arg[1]);
+		uint32 tmp = atoi(sep->arg[1]);
 		if (tmp >= 0xFFFF)
 			c->Message(0, "Item# out of range");
 		else if (!database.DBSetItemStatus(tmp, atoi(sep->arg[2])))
@@ -2207,8 +2207,8 @@ void command_setitemstatus(Client *c, const Seperator *sep)
 		else {
 			c->Message(0, "Item updated");
 			ServerPacket* pack = new ServerPacket(ServerOP_ItemStatus, 5);
-			*((int32*) &pack->pBuffer[0]) = tmp;
-			*((int8*) &pack->pBuffer[4]) = atoi(sep->arg[2]);
+			*((uint32*) &pack->pBuffer[0]) = tmp;
+			*((uint8*) &pack->pBuffer[4]) = atoi(sep->arg[2]);
 			worldserver.SendPacket(pack);
 			delete pack;
 		}
@@ -2261,13 +2261,13 @@ void command_ai(Client *c, const Seperator *sep)
 	else if (strcasecmp(sep->arg[1], "roambox") == 0) {
 		if (target && target->IsAIControlled() && target->IsNPC()) {
 			if ((sep->argnum == 6 || sep->argnum == 7) && sep->IsNumber(2) && sep->IsNumber(3) && sep->IsNumber(4) && sep->IsNumber(5) && sep->IsNumber(6)) {
-				int32 tmp = 2500;
+				uint32 tmp = 2500;
 				if (sep->IsNumber(7))
 					tmp = atoi(sep->arg[7]);
 				target->CastToNPC()->AI_SetRoambox(atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), atof(sep->arg[5]), atof(sep->arg[6]), tmp);
 			}
 			else if ((sep->argnum == 3 || sep->argnum == 4) && sep->IsNumber(2) && sep->IsNumber(3)) {
-				int32 tmp = 2500;
+				uint32 tmp = 2500;
 				if (sep->IsNumber(4))
 					tmp = atoi(sep->arg[4]);
 				target->CastToNPC()->AI_SetRoambox(atof(sep->arg[2]), atof(sep->arg[3]), tmp);
@@ -2312,8 +2312,8 @@ void command_ai(Client *c, const Seperator *sep)
 void command_worldshutdown(Client *c, const Seperator *sep)
 {
 	// GM command to shutdown world server and all zone servers
-	int32 time=0;
-	int32 interval=0;
+	uint32 time=0;
+	uint32 interval=0;
 	if (worldserver.Connected()) {
 		if(sep->IsNumber(1) && sep->IsNumber(2) && ((time=atoi(sep->arg[1]))>0) && ((interval=atoi(sep->arg[2]))>0)) {
 			worldserver.SendEmoteMessage(0,0,15,"<SYSTEMWIDE MESSAGE>:SYSTEM MSG:World coming down in %i seconds, everyone log out before this time.",time);
@@ -2373,7 +2373,7 @@ void command_dbspawn2(Client *c, const Seperator *sep)
 	if (sep->IsNumber(1) && sep->IsNumber(2) && sep->IsNumber(3)) {
 		LogFile->write(EQEMuLog::Normal,"Spawning database spawn");
 		uint16 cond = 0;
-		sint16 cond_min = 0;
+		int16 cond_min = 0;
 		if(sep->IsNumber(4)) {
 			cond = atoi(sep->arg[4]);
 			if(sep->IsNumber(5))
@@ -2429,8 +2429,8 @@ void command_setpass(Client *c, const Seperator *sep)
 	if(sep->argnum != 2)
 		c->Message(0, "Format: #setpass accountname password");
 	else {
-		sint16 tmpstatus = 0;
-		int32 tmpid = database.GetAccountIDByName(sep->arg[1], &tmpstatus);
+		int16 tmpstatus = 0;
+		uint32 tmpid = database.GetAccountIDByName(sep->arg[1], &tmpstatus);
 		if (!tmpid)
 			c->Message(0, "Error: Account not found");
 		else if (tmpstatus > c->Admin())
@@ -2518,20 +2518,20 @@ void command_size(Client *c, const Seperator *sep)
 		else if (!target)
 			c->Message(0,"Error: this command requires a target");
 		else {
-			int16 Race = target->GetRace();
-			int8 Gender = target->GetGender();
-			int8 Texture = 0xFF;
-			int8 HelmTexture = 0xFF;
-			int8 HairColor = target->GetHairColor();
-			int8 BeardColor = target->GetBeardColor();
-			int8 EyeColor1 = target->GetEyeColor1();
-			int8 EyeColor2 = target->GetEyeColor2();
-			int8 HairStyle = target->GetHairStyle();
-			int8 LuclinFace = target->GetLuclinFace();
-			int8 Beard = target->GetBeard();
-			int32 DrakkinHeritage = target->GetDrakkinHeritage();
-			int32 DrakkinTattoo = target->GetDrakkinTattoo();
-			int32 DrakkinDetails = target->GetDrakkinDetails();
+			uint16 Race = target->GetRace();
+			uint8 Gender = target->GetGender();
+			uint8 Texture = 0xFF;
+			uint8 HelmTexture = 0xFF;
+			uint8 HairColor = target->GetHairColor();
+			uint8 BeardColor = target->GetBeardColor();
+			uint8 EyeColor1 = target->GetEyeColor1();
+			uint8 EyeColor2 = target->GetEyeColor2();
+			uint8 HairStyle = target->GetHairStyle();
+			uint8 LuclinFace = target->GetLuclinFace();
+			uint8 Beard = target->GetBeard();
+			uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+			uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+			uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 			target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 										EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -2633,7 +2633,7 @@ void command_castspell(Client *c, const Seperator *sep)
 	if (!sep->IsNumber(1))
 		c->Message(0, "Usage: #CastSpell spellid");
 	else {
-		int16 spellid = atoi(sep->arg[1]);
+		uint16 spellid = atoi(sep->arg[1]);
 		/*
 		Spell restrictions.
 		*/
@@ -2713,8 +2713,8 @@ void command_setlanguage(Client *c, const Seperator *sep)
 	else
 	{
 		LogFile->write(EQEMuLog::Normal,"Set language request from %s, target:%s lang_id:%i value:%i", c->GetName(), c->GetTarget()->GetName(), atoi(sep->arg[1]), atoi(sep->arg[2]) );
-		int8 langid = (int8)atoi(sep->arg[1]);
-		int8 value = (int8)atoi(sep->arg[2]);
+		uint8 langid = (uint8)atoi(sep->arg[1]);
+		uint8 value = (uint8)atoi(sep->arg[2]);
 		c->GetTarget()->CastToClient()->SetLanguageSkill( langid, value );
 	}
 }
@@ -2739,7 +2739,7 @@ void command_setskill(Client *c, const Seperator *sep)
 	else {
 		LogFile->write(EQEMuLog::Normal,"Set skill request from %s, target:%s skill_id:%i value:%i", c->GetName(), c->GetTarget()->GetName(), atoi(sep->arg[1]), atoi(sep->arg[2]) );
 		int skill_num = atoi(sep->arg[1]);
-		int16 skill_value = atoi(sep->arg[2]);
+		uint16 skill_value = atoi(sep->arg[2]);
 		if(skill_num < HIGHEST_SKILL)
 			c->GetTarget()->CastToClient()->SetSkill((SkillType)skill_num, skill_value);
 	}
@@ -2758,7 +2758,7 @@ void command_setskillall(Client *c, const Seperator *sep)
 	else {
 		if (c->Admin() >= commandSetSkillsOther || c->GetTarget()==c || c->GetTarget()==0) {
 			LogFile->write(EQEMuLog::Normal,"Set ALL skill request from %s, target:%s", c->GetName(), c->GetTarget()->GetName());
-			int16 level = atoi(sep->arg[1]);
+			uint16 level = atoi(sep->arg[1]);
 			for(SkillType skill_num=_1H_BLUNT;skill_num <= HIGHEST_SKILL;skill_num=(SkillType)(skill_num+1)) {
 				c->GetTarget()->CastToClient()->SetSkill(skill_num, level);
 			}
@@ -2805,7 +2805,7 @@ void command_makepet(Client *c, const Seperator *sep)
 
 void command_level(Client *c, const Seperator *sep)
 {
-	int16 level = atoi(sep->arg[1]);
+	uint16 level = atoi(sep->arg[1]);
 	if ((level <= 0) || ((level > RuleI(Character, MaxLevel)) && (c->Admin() < commandLevelAboveCap)) )
 		c->Message(0, "Error: #Level: Invalid Level");
 	else if (c->Admin() < 100)
@@ -2954,7 +2954,7 @@ void command_charbackup(Client *c, const Seperator *sep)
 	MYSQL_RES* result;
 	MYSQL_ROW row;
 	if (strcasecmp(sep->arg[1], "list") == 0) {
-		int32 charid = 0;
+		uint32 charid = 0;
 		if (sep->IsNumber(2))
 			charid = atoi(sep->arg[2]);
 		else
@@ -2964,7 +2964,7 @@ void command_charbackup(Client *c, const Seperator *sep)
 				"Select id, backupreason, charid, account_id, zoneid, DATE_FORMAT(ts, '%%m/%%d/%%Y %%H:%%i:%%s') "
 				" from character_backup where charid=%u", charid), errbuf, &result)) {
 				safe_delete(query);
-				int32 x = 0;
+				uint32 x = 0;
 				while ((row = mysql_fetch_row(result))) {
 					c->Message(0, " %u: %s, %s (%u), reason=%u", atoi(row[0]), row[5], database.GetZoneName(atoi(row[4])), atoi(row[4]), atoi(row[1]));
 					x++;
@@ -2981,14 +2981,14 @@ void command_charbackup(Client *c, const Seperator *sep)
 			c->Message(0, "Usage: #charbackup list [char name/id]");
 	}
 	else if (strcasecmp(sep->arg[1], "restore") == 0) {
-		int32 charid = 0;
+		uint32 charid = 0;
 		if (sep->IsNumber(2))
 			charid = atoi(sep->arg[2]);
 		else
 			database.GetAccountIDByChar(sep->arg[2], &charid);
 		
 		if (charid && sep->IsNumber(3)) {
-			int32 cbid = atoi(sep->arg[3]);
+			uint32 cbid = atoi(sep->arg[3]);
 			if (database.RunQuery(query, MakeAnyLenString(&query, 
 				"Insert into character_backup (backupreason, charid, account_id, name, profile, level, class, x, y, z, zoneid, alt_adv) "
 				" select 1, id, account_id, name, profile, level, class, x, y, z, zoneid, alt_adv from character_ where id=%u", charid), errbuf)) {
@@ -3056,7 +3056,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	if (bAll || (strcasecmp(sep->arg[1], "worn")==0)) {
 		// Worn items
 		bFound = true;
-		for (sint16 i=0; i<=21; i++) {
+		for (int16 i=0; i<=21; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
@@ -3078,7 +3078,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	if (bAll || (strcasecmp(sep->arg[1], "inv")==0)) {
 		// Personal inventory items
 		bFound = true;
-		for (sint16 i=22; i<=29; i++) {
+		for (int16 i=22; i<=29; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
@@ -3198,7 +3198,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	if (bAll || (strcasecmp(sep->arg[1], "trib")==0)) {
 		// Active tribute effect items
 		bFound = true;
-		for (sint16 i=TRIBUTE_SLOT_START; i<(TRIBUTE_SLOT_START + MAX_PLAYER_TRIBUTES); i++) {
+		for (int16 i=TRIBUTE_SLOT_START; i<(TRIBUTE_SLOT_START + MAX_PLAYER_TRIBUTES); i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
@@ -3221,7 +3221,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	if (bAll || (strcasecmp(sep->arg[1], "bank")==0)) {
 		// Bank and shared bank items
 		bFound = true;
-		sint16 i = 0;
+		int16 i = 0;
 		for (i=2000; i<=2023; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
@@ -3308,7 +3308,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	if (bAll || (strcasecmp(sep->arg[1], "trade")==0)) {
 		// Items in trade window (current trader only, not the other trader)
 		bFound = true;
-		for (sint16 i=3000; i<=3007; i++) {
+		for (int16 i=3000; i<=3007; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
 			if (c->GetClientVersion() >= EQClientSoF)
@@ -3698,7 +3698,7 @@ void command_equipitem(Client *c, const Seperator *sep)
 		const ItemInst* from_inst = c->GetInv().GetItem(SLOT_CURSOR);
 		const ItemInst* to_inst = c->GetInv().GetItem(slot_id); // added (desync issue when forcing stack to stack)
 		bool partialmove = false;
-		sint16 movecount;
+		int16 movecount;
 
 		if (from_inst && from_inst->IsType(ItemClassCommon)) {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
@@ -3741,7 +3741,7 @@ void command_equipitem(Client *c, const Seperator *sep)
 
 				//	c->Message(0, "Deleting %i charges from stack", movecount); // debug line..delete
 
-				//	for (sint16 deletecount=0; deletecount < movecount; deletecount++)
+				//	for (int16 deletecount=0; deletecount < movecount; deletecount++)
 						// have to use 'movecount' because mi->number_in_stack is 'ENCODED' at this point (i.e., 99 charges returns 22...)
 				//		c->QueuePacket(outapp2);
 
@@ -3774,7 +3774,7 @@ void command_zonelock(Client *c, const Seperator *sep)
 		worldserver.SendPacket(pack);
 	}
 	else if (strcasecmp(sep->arg[1], "lock") == 0 && c->Admin() >= commandLockZones) {
-		int16 tmp = database.GetZoneID(sep->arg[2]);
+		uint16 tmp = database.GetZoneID(sep->arg[2]);
 		if (tmp) {
 			s->op = 1;
 			s->zoneID = tmp;
@@ -3784,7 +3784,7 @@ void command_zonelock(Client *c, const Seperator *sep)
 			c->Message(0, "Usage: #zonelock lock [zonename]");
 	}
 	else if (strcasecmp(sep->arg[1], "unlock") == 0 && c->Admin() >= commandLockZones) {
-		int16 tmp = database.GetZoneID(sep->arg[2]);
+		uint16 tmp = database.GetZoneID(sep->arg[2]);
 		if (tmp) {
 			s->op = 2;
 			s->zoneID = tmp;
@@ -3810,7 +3810,7 @@ void command_corpse(Client *c, const Seperator *sep)
 	Mob *target=c->GetTarget();
 
 	if (strcasecmp(sep->arg[1], "DeletePlayerCorpses") == 0 && c->Admin() >= commandEditPlayerCorpses) {
-		sint32 tmp = entity_list.DeletePlayerCorpses();
+		int32 tmp = entity_list.DeletePlayerCorpses();
 		if (tmp >= 0)
 			c->Message(0, "%i corpses deleted.", tmp);
 		else
@@ -3838,7 +3838,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		entity_list.ListPlayerCorpses(c);
 	}
 	else if (strcasecmp(sep->arg[1], "DeleteNPCCorpses") == 0) {
-		sint32 tmp = entity_list.DeleteNPCCorpses();
+		int32 tmp = entity_list.DeleteNPCCorpses();
 		if (tmp >= 0)
 			c->Message(0, "%d corpses deleted.", tmp);
 		else
@@ -3949,7 +3949,7 @@ void command_fixmob(Client *c, const Seperator *sep)
 	else
 	{
 		
-		int32 Adjustment = 1;	// Previous or Next
+		uint32 Adjustment = 1;	// Previous or Next
 		char codeMove;
 
 		if (sep->arg[2]) 
@@ -3962,23 +3962,23 @@ void command_fixmob(Client *c, const Seperator *sep)
 				Adjustment = -1;
 		}
 	
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		char* ChangeType = NULL; // If it's still NULL after processing, they didn't send a valid command
-		int32 ChangeSetting;
+		uint32 ChangeSetting;
 		char* command = sep->arg[1];
 			
 		if (strcasecmp(command, "race") == 0)
@@ -4350,7 +4350,7 @@ void command_lastname(Client *c, const Seperator *sep)
 void command_memspell(Client *c, const Seperator *sep)
 {
 	uint32 slot;
-	int16 spell_id;
+	uint16 spell_id;
 
 	if (!(sep->IsNumber(1) && sep->IsNumber(2)))
 	{
@@ -4697,7 +4697,7 @@ void command_haste(Client *c, const Seperator *sep)
 {
 	// Kaiyodo - #haste command to set client attack speed. Takes a percentage (100 = twice normal attack speed)
 	if(sep->arg[1][0] != 0) {
-		int16 Haste = atoi(sep->arg[1]);
+		uint16 Haste = atoi(sep->arg[1]);
 		if(Haste > 85)
 			Haste = 85;
 		c->SetExtraHaste(Haste);
@@ -4717,7 +4717,7 @@ void command_damage(Client *c, const Seperator *sep)
 		c->Message(0, "Usage: #damage x");
 	}
 	else {
-		sint32 nkdmg = atoi(sep->arg[1]);
+		int32 nkdmg = atoi(sep->arg[1]);
 		if (nkdmg > 2100000000)
 			c->Message(0, "Enter a value less then 2,100,000,000.");
 		else
@@ -4899,7 +4899,7 @@ void command_iteminfo(Client *c, const Seperator *sep)
 		else {
 			c->Message(0, "  equipableSlots: %u equipable Classes: %u", item->Slots, item->Classes);
 			c->Message(0, "  Magic: %i  SpellID: %i  Proc Level: %i DBCharges: %i  CurCharges: %i", item->Magic, item->Click.Effect, item->Click.Level, item->MaxCharges, inst->GetCharges());
-			c->Message(0, "  EffectType: 0x%02x  CastTime: %.2f", (int8) item->Click.Type, (double) item->CastTime/1000);
+			c->Message(0, "  EffectType: 0x%02x  CastTime: %.2f", (uint8) item->Click.Type, (double) item->CastTime/1000);
 			c->Message(0, "  Material: 0x%02x  Color: 0x%08x  Skill: %i", item->Material, item->Color, item->ItemType);
 			c->Message(0, " Required level: %i Required skill: %i Recommended level:%i", item->ReqLevel,  item->RecSkill, item->RecLevel);
 			c->Message(0, " Skill mod: %i percent: %i", item->SkillModType, item->SkillModValue);
@@ -4949,8 +4949,8 @@ void command_flag(Client *c, const Seperator *sep)
 		else {
 			c->Message(0, "Set GM Flag on account.");
 			ServerPacket* pack = new ServerPacket(ServerOP_FlagUpdate, 6);
-			*((int32*) pack->pBuffer) = database.GetAccountIDByName(sep->argplus[2]);
-			*((sint16*) &pack->pBuffer[4]) = atoi(sep->arg[1]);
+			*((uint32*) pack->pBuffer) = database.GetAccountIDByName(sep->argplus[2]);
+			*((int16*) &pack->pBuffer[4]) = atoi(sep->arg[1]);
 			worldserver.SendPacket(pack);
 			delete pack;
 		}
@@ -5046,7 +5046,7 @@ void command_guild(Client *c, const Seperator *sep)
 				c->Message(0, "You're not in a guild");
 		}
 		else {
-			int32 tmp = GUILD_NONE;
+			uint32 tmp = GUILD_NONE;
 			if (sep->arg[2][0] == 0)
 				tmp = c->GuildID();
 			else if (admin >= minStatusToEditOtherGuilds)
@@ -5075,7 +5075,7 @@ void command_guild(Client *c, const Seperator *sep)
 			}
 			else {
 				ServerPacket* pack = new ServerPacket(ServerOP_RefreshGuild, 5);
-				sint32 geqid=c->GuildEQID();
+				int32 geqid=c->GuildEQID();
 				memcpy(pack->pBuffer, &geqid, 4);
 				worldserver.SendPacket(pack);
 				safe_delete(pack);
@@ -5092,7 +5092,7 @@ void command_guild(Client *c, const Seperator *sep)
 		else if (!worldserver.Connected())
 			c->Message(0, "Error: World server dirconnected");
 		else {
-			int32 eqid = database.GetGuildEQID(atoi(sep->arg[2]));
+			uint32 eqid = database.GetGuildEQID(atoi(sep->arg[2]));
 			if (eqid == GUILD_NONE)
 				c->Message(0, "Error: Guild not found");
 			else if (!helper_guild_edit(c, atoi(sep->arg[2]), eqid, atoi(sep->arg[3]), sep->arg[4], sep->argplus[5])) {
@@ -5121,7 +5121,7 @@ void command_guild(Client *c, const Seperator *sep)
 				return;
 			}
 			
-			int32 charid = database.GetCharacterID(sep->arg[2]);
+			uint32 charid = database.GetCharacterID(sep->arg[2]);
 			if(charid == 0) {
 				c->Message(13, "Unable to find character '%s'", charid);
 				return;
@@ -5174,7 +5174,7 @@ void command_guild(Client *c, const Seperator *sep)
 		else if (rank < 0 || rank > GUILD_MAX_RANK)
 			c->Message(0, "Error: invalid rank #.");
 		else {
-			int32 charid = database.GetCharacterID(sep->arg[2]);
+			uint32 charid = database.GetCharacterID(sep->arg[2]);
 			if(charid == 0) {
 				c->Message(13, "Unable to find character '%s'", charid);
 				return;
@@ -5201,7 +5201,7 @@ void command_guild(Client *c, const Seperator *sep)
 		else if (!worldserver.Connected())
 			c->Message(0, "Error: World server dirconnected");
 		else {
-			int32 leader = 0;
+			uint32 leader = 0;
 			if (sep->IsNumber(2)) {
 				leader = atoi(sep->arg[2]);
 			} else if((leader=database.GetCharacterID(sep->arg[2])) != 0) {
@@ -5215,7 +5215,7 @@ void command_guild(Client *c, const Seperator *sep)
 				return;
 			}
 
-			int32 tmp = guild_mgr.FindGuildByLeader(leader);
+			uint32 tmp = guild_mgr.FindGuildByLeader(leader);
 			if (tmp != GUILD_NONE) {
 				c->Message(0, "Error: %s already is the leader of DB# %i '%s'.", sep->arg[2], tmp, guild_mgr.GetGuildName(tmp));
 			}
@@ -5226,7 +5226,7 @@ void command_guild(Client *c, const Seperator *sep)
 					return;
 				}
 				
-				int32 id = guild_mgr.CreateGuild(sep->argplus[3], leader);
+				uint32 id = guild_mgr.CreateGuild(sep->argplus[3], leader);
 				
 				_log(GUILDS__ACTIONS, "%s: Creating guild %s with leader %d with GM command. It was given id %lu.", c->GetName(),
 					sep->argplus[3], leader, (unsigned long)id);
@@ -5249,7 +5249,7 @@ void command_guild(Client *c, const Seperator *sep)
 		else if (!worldserver.Connected())
 			c->Message(0, "Error: World server dirconnected");
 		else {
-			int32 id = atoi(sep->arg[2]);
+			uint32 id = atoi(sep->arg[2]);
 			
 			if(!guild_mgr.GuildExists(id)) {
 				c->Message(0, "Guild %d does not exist!", id);
@@ -5283,7 +5283,7 @@ void command_guild(Client *c, const Seperator *sep)
 		else if (!worldserver.Connected())
 			c->Message(0, "Error: World server dirconnected");
 		else {
-			int32 id = atoi(sep->arg[2]);
+			uint32 id = atoi(sep->arg[2]);
 			
 			if(!guild_mgr.GuildExists(id)) {
 				c->Message(0, "Guild %d does not exist!", id);
@@ -5317,7 +5317,7 @@ void command_guild(Client *c, const Seperator *sep)
 		else if (!worldserver.Connected())
 			c->Message(0, "Error: World server dirconnected");
 		else {
-			int32 leader = 0;
+			uint32 leader = 0;
 			if (sep->IsNumber(2)) {
 				leader = atoi(sep->arg[2]);
 			} else if((leader=database.GetCharacterID(sep->arg[2])) != 0) {
@@ -5327,14 +5327,14 @@ void command_guild(Client *c, const Seperator *sep)
 				return;
 			}
 
-			int32 tmpdb = guild_mgr.FindGuildByLeader(leader);
+			uint32 tmpdb = guild_mgr.FindGuildByLeader(leader);
 			if (leader == 0)
 				c->Message(0, "New leader not found.");
 			else if (tmpdb != 0) {
 				c->Message(0, "Error: %s already is the leader of guild # %i", sep->arg[2], tmpdb);
 			}
 			else {
-				int32 id = atoi(sep->arg[2]);
+				uint32 id = atoi(sep->arg[2]);
 				
 				if(!guild_mgr.GuildExists(id)) {
 					c->Message(0, "Guild %d does not exist!", id);
@@ -5375,7 +5375,7 @@ void command_guild(Client *c, const Seperator *sep)
 	}
 }
 /*
-bool helper_guild_edit(Client *c, int32 dbid, int32 eqid, int8 rank, const char* what, const char* value) {
+bool helper_guild_edit(Client *c, uint32 dbid, uint32 eqid, uint8 rank, const char* what, const char* value) {
 	struct GuildRankLevel_Struct grl;
 	strcpy(grl.rankname, guild_mgr.GetRankName(eqid, rank));
 	grl.demote = guilds[eqid].rank[rank].demote;
@@ -5430,7 +5430,7 @@ void command_zonestatus(Client *c, const Seperator *sep)
 		c->Message(0, "Error: World server disconnected");
 	else {
 		ServerPacket* pack = new ServerPacket(ServerOP_ZoneStatus, strlen(c->GetName())+2);
-		memset(pack->pBuffer, (int8) c->Admin(), 1);
+		memset(pack->pBuffer, (uint8) c->Admin(), 1);
 		strcpy((char *) &pack->pBuffer[1], c->GetName());
 		worldserver.SendPacket(pack);
 		delete pack;
@@ -5535,22 +5535,22 @@ void command_randomfeatures(Client *c, const Seperator *sep)
 		c->Message(0,"Error: This command requires a target");
 	else
 	{
-		int16 Race = target->GetRace();
+		uint16 Race = target->GetRace();
 		if (Race <= 12 || Race == 128 || Race == 130 || Race == 330 || Race == 522) {
 			
-			int8 Gender = target->GetGender();
-			int8 Texture = 0xFF;
-			int8 HelmTexture = 0xFF;
-			int8 HairColor = 0xFF;
-			int8 BeardColor = 0xFF;
-			int8 EyeColor1 = 0xFF;
-			int8 EyeColor2 = 0xFF;
-			int8 HairStyle = 0xFF;
-			int8 LuclinFace = 0xFF;
-			int8 Beard = 0xFF;
-			int32 DrakkinHeritage = 0xFFFFFFFF;
-			int32 DrakkinTattoo = 0xFFFFFFFF;
-			int32 DrakkinDetails = 0xFFFFFFFF;
+			uint8 Gender = target->GetGender();
+			uint8 Texture = 0xFF;
+			uint8 HelmTexture = 0xFF;
+			uint8 HairColor = 0xFF;
+			uint8 BeardColor = 0xFF;
+			uint8 EyeColor1 = 0xFF;
+			uint8 EyeColor2 = 0xFF;
+			uint8 HairStyle = 0xFF;
+			uint8 LuclinFace = 0xFF;
+			uint8 Beard = 0xFF;
+			uint32 DrakkinHeritage = 0xFFFFFFFF;
+			uint32 DrakkinTattoo = 0xFFFFFFFF;
+			uint32 DrakkinDetails = 0xFFFFFFFF;
 			
 			// Set some common feature settings
 			EyeColor1 = MakeRandomInt(0, 9);
@@ -5729,20 +5729,20 @@ void command_face(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = atoi(sep->arg[1]);
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = atoi(sep->arg[1]);
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5760,20 +5760,20 @@ void command_details(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = atoi(sep->arg[1]);
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = atoi(sep->arg[1]);
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5791,20 +5791,20 @@ void command_heritage(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = atoi(sep->arg[1]);
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = atoi(sep->arg[1]);
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5822,20 +5822,20 @@ void command_tattoo(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = atoi(sep->arg[1]);
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = atoi(sep->arg[1]);
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5853,20 +5853,20 @@ void command_helm(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = atoi(sep->arg[1]);
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = atoi(sep->arg[1]);
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5884,20 +5884,20 @@ void command_hair(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = atoi(sep->arg[1]);
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = atoi(sep->arg[1]);
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5915,20 +5915,20 @@ void command_haircolor(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = atoi(sep->arg[1]);
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = atoi(sep->arg[1]);
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5946,20 +5946,20 @@ void command_beard(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = target->GetBeardColor();
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = atoi(sep->arg[1]);
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = target->GetBeardColor();
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = atoi(sep->arg[1]);
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -5977,20 +5977,20 @@ void command_beardcolor(Client *c, const Seperator *sep)
 	else if (!target)
 		c->Message(0,"Error: this command requires a target");
 	else {
-		int16 Race = target->GetRace();
-		int8 Gender = target->GetGender();
-		int8 Texture = 0xFF;
-		int8 HelmTexture = 0xFF;
-		int8 HairColor = target->GetHairColor();
-		int8 BeardColor = atoi(sep->arg[1]);
-		int8 EyeColor1 = target->GetEyeColor1();
-		int8 EyeColor2 = target->GetEyeColor2();
-		int8 HairStyle = target->GetHairStyle();
-		int8 LuclinFace = target->GetLuclinFace();
-		int8 Beard = target->GetBeard();
-		int32 DrakkinHeritage = target->GetDrakkinHeritage();
-		int32 DrakkinTattoo = target->GetDrakkinTattoo();
-		int32 DrakkinDetails = target->GetDrakkinDetails();
+		uint16 Race = target->GetRace();
+		uint8 Gender = target->GetGender();
+		uint8 Texture = 0xFF;
+		uint8 HelmTexture = 0xFF;
+		uint8 HairColor = target->GetHairColor();
+		uint8 BeardColor = atoi(sep->arg[1]);
+		uint8 EyeColor1 = target->GetEyeColor1();
+		uint8 EyeColor2 = target->GetEyeColor2();
+		uint8 HairStyle = target->GetHairStyle();
+		uint8 LuclinFace = target->GetLuclinFace();
+		uint8 Beard = target->GetBeard();
+		uint32 DrakkinHeritage = target->GetDrakkinHeritage();
+		uint32 DrakkinTattoo = target->GetDrakkinTattoo();
+		uint32 DrakkinDetails = target->GetDrakkinDetails();
 
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
@@ -6003,7 +6003,7 @@ void command_beardcolor(Client *c, const Seperator *sep)
 void command_scribespells(Client *c, const Seperator *sep)
 {
 	uint8 max_level, min_level;
-	int16 book_slot, curspell, count;
+	uint16 book_slot, curspell, count;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -6073,8 +6073,8 @@ void command_scribespells(Client *c, const Seperator *sep)
 }
 
 void command_scribespell(Client *c, const Seperator *sep) {
-	int16 spell_id = 0;
-	int16 book_slot = -1;
+	uint16 spell_id = 0;
+	uint16 book_slot = -1;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -6115,8 +6115,8 @@ void command_scribespell(Client *c, const Seperator *sep) {
 }
 
 void command_unscribespell(Client *c, const Seperator *sep) {
-	int16 spell_id = 0;
-	int16 book_slot = -1;
+	uint16 spell_id = 0;
+	uint16 book_slot = -1;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -6204,7 +6204,7 @@ void command_wpadd(Client *c, const Seperator *sep)
 		}
 		if (strcmp("-h",sep->arg[2]) == 0)
 			heading = c->GetHeading();
-		int32 tmp_grid = database.AddWPForSpawn(c, s2info->GetID(), c->GetX(),c->GetY(),c->GetZ(), pause, type1, type2, zone->GetZoneID(), heading);
+		uint32 tmp_grid = database.AddWPForSpawn(c, s2info->GetID(), c->GetX(),c->GetY(),c->GetZ(), pause, type1, type2, zone->GetZoneID(), heading);
 		if (tmp_grid)
 			t->CastToNPC()->SetGrid(tmp_grid);
 
@@ -6218,7 +6218,7 @@ void command_wpadd(Client *c, const Seperator *sep)
 
 void command_interrupt(Client *c, const Seperator *sep)
 {
-	int16 ci_message=0x01b7, ci_color=0x0121;
+	uint16 ci_message=0x01b7, ci_color=0x0121;
 
 	if(sep->arg[1][0])
 		ci_message=atoi(sep->arg[1]);
@@ -6246,7 +6246,7 @@ void command_summonitem(Client *c, const Seperator *sep)
 	if (!sep->IsNumber(1))
 		c->Message(0, "Usage: #summonitem [item id] [charges], charges are optional");
 	else {
-		int32 itemid = atoi(sep->arg[1]);
+		uint32 itemid = atoi(sep->arg[1]);
 		if (database.GetItemStatus(itemid) > c->Admin())
 			c->Message(13, "Error: Insufficient status to summon this item.");
 		else if (sep->argnum==2 && sep->IsNumber(2)) {
@@ -6277,7 +6277,7 @@ void command_giveitem(Client *c, const Seperator *sep)
 		c->Message(13, "You can only give items to players with this command.");
 	} else {
 		Client *t = c->GetTarget()->CastToClient();
-		int32 itemid = atoi(sep->arg[1]);
+		uint32 itemid = atoi(sep->arg[1]);
 		if (database.GetItemStatus(itemid) > c->Admin())
 			c->Message(13, "Error: Insufficient status to summon this item.");
 		else if (sep->argnum==2 && sep->IsNumber(2)) {
@@ -6352,7 +6352,7 @@ void command_itemsearch(Client *c, const Seperator *sep)
 		strn0cpy(sCriteria, search_criteria, sizeof(sCriteria));
 		strupr(sCriteria);
 		char* pdest;
-		int32 it = 0;
+		uint32 it = 0;
 		while ((item = database.IterateItems(&it))) {
 			strn0cpy(sName, item->Name, sizeof(sName));
 			strupr(sName);
@@ -6472,7 +6472,7 @@ void command_setcrystals(Client *c, const Seperator *sep)
 void command_stun(Client *c, const Seperator *sep)
 {
 	Mob *t=c->CastToMob();
-	int32 duration;
+	uint32 duration;
 
 	if(sep->arg[1][0])
 	{
@@ -6609,8 +6609,8 @@ void command_ban(Client *c, const Seperator *sep)
 			c->Message(13,"Account number %i with the character %s has been banned.", atoi(row[0]), sep->arg[1]);
 
 			ServerPacket* pack = new ServerPacket(ServerOP_FlagUpdate, 6);
-			*((int32*) pack->pBuffer) = atoi(row[0]);
-			*((sint16*) &pack->pBuffer[4]) = -2;
+			*((uint32*) pack->pBuffer) = atoi(row[0]);
+			*((int16*) &pack->pBuffer[4]) = -2;
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
 
@@ -6727,7 +6727,7 @@ void command_revoke(Client *c, const Seperator *sep)
 	}
 	else
 	{
-		int32 tmp = database.GetAccountIDByChar(sep->arg[1]);
+		uint32 tmp = database.GetAccountIDByChar(sep->arg[1]);
 		if(tmp)
 		{
 			int flag = sep->arg[2][0] == '1' ? true : false;
@@ -7643,8 +7643,8 @@ void command_fear(Client *c, const Seperator *sep) {
 			return;
 		}
 		
-		int32 count = zone->pathing->CountNodes();
-		int32 r;
+		uint32 count = zone->pathing->CountNodes();
+		uint32 r;
 		char buf[128];
 		PathNode_Struct *node = zone->pathing->GetNode(0); //assumes nodes are stored in a linear array
 		for(r = 0; r < count; r++, node++) {
@@ -7852,7 +7852,7 @@ void command_path(Client *c, const Seperator *sep)
 			{
 				best_z = pz;
 			}
-			sint32 res = zone->pathing->AddNode(px, py, pz, best_z, atoi(sep->arg[2]));
+			int32 res = zone->pathing->AddNode(px, py, pz, best_z, atoi(sep->arg[2]));
 			if(res >= 0)
 			{
 				c->Message(0, "Added Path Node: %i", res);
@@ -7879,7 +7879,7 @@ void command_path(Client *c, const Seperator *sep)
 			{
 				best_z = pz;
 			}
-			sint32 res = zone->pathing->AddNode(px, py, pz, best_z, atoi(sep->arg[2]));
+			int32 res = zone->pathing->AddNode(px, py, pz, best_z, atoi(sep->arg[2]));
 			if(res >= 0)
 			{
 				c->Message(0, "Added Path Node: %i", res);
@@ -8100,7 +8100,7 @@ void command_path(Client *c, const Seperator *sep)
 
 void Client::Undye() {
 	for (int cur_slot = 0; cur_slot < 9 ; cur_slot++ ){
-		int8 slot2=SlotConvert(cur_slot);
+		uint8 slot2=SlotConvert(cur_slot);
 		ItemInst* inst = m_inv.GetItem(slot2);
 		if(inst != NULL) {
 			inst->SetColor(inst->GetItem()->Color);
@@ -9023,7 +9023,7 @@ void command_refundaa(Client *c, const Seperator *sep){
 void command_traindisc(Client *c, const Seperator *sep)
 {
 	uint8 max_level, min_level;
-	int16 curspell, count;
+	uint16 curspell, count;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -9098,8 +9098,8 @@ void command_traindisc(Client *c, const Seperator *sep)
 
 void command_setgraveyard(Client *c, const Seperator *sep)
 {
-	int32 zoneid = 0;
-	int32 graveyard_id = 0;
+	uint32 zoneid = 0;
+	uint32 graveyard_id = 0;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -9138,8 +9138,8 @@ void command_setgraveyard(Client *c, const Seperator *sep)
 
 void command_deletegraveyard(Client *c, const Seperator *sep)
 {
-	int32 zoneid = 0;
-	int32 graveyard_id = 0;
+	uint32 zoneid = 0;
+	uint32 graveyard_id = 0;
 	
 	if(!sep->arg[1][0]) {
 		c->Message(0, "Usage: #deletegraveyard [zonename]");
@@ -9195,7 +9195,7 @@ void command_getplayerburriedcorpsecount(Client *c, const Seperator *sep)
 		return;
 	}
 	
-	int32 CorpseCount = database.GetPlayerBurriedCorpseCount(t->CharacterID());
+	uint32 CorpseCount = database.GetPlayerBurriedCorpseCount(t->CharacterID());
 
 	if(CorpseCount > 0)
 		c->Message(0, "Your target has a total of %u burried corpses.", CorpseCount);
@@ -9224,7 +9224,7 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  	Mob *target=c->GetTarget();
  	char errbuf[MYSQL_ERRMSG_SIZE];
  	char *query = 0;
-	int32 last_insert_id = 0;
+	uint32 last_insert_id = 0;
  
  		if (strcasecmp(sep->arg[1], "maketype") == 0){
  			if(target && target->IsNPC())
@@ -9378,8 +9378,8 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  			else {
  				Spawn2* s2 = target->CastToNPC()->respawn2;
 
-				int32 new_rs = 0;
-				int32 new_var = s2->GetVariance();
+				uint32 new_rs = 0;
+				uint32 new_var = s2->GetVariance();
 				if(!sep->IsNumber(2))
 				{
 					c->Message(0, "editrespawn FAILED -- cannot set respawn to be 0");
@@ -9417,7 +9417,7 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  			} 
  		}
 		else if (strcasecmp(sep->arg[1], "setversion") == 0) {
-			sint16 Version = 0;
+			int16 Version = 0;
  			if (!target || !target->IsNPC())
  				c->Message(0, "Error: Need an NPC target.");
  			else {
@@ -9524,7 +9524,7 @@ void command_instance(Client *c, const Seperator *sep)
 		}
 
 		const char * zn = NULL;
-		int32 zone_id = 0;
+		uint32 zone_id = 0;
 
 		if(sep->IsNumber(2))
 		{
@@ -9535,8 +9535,8 @@ void command_instance(Client *c, const Seperator *sep)
 			zone_id = database.GetZoneID(sep->arg[2]);
 		}
 
-		int32 version = atoi(sep->arg[3]);
-		int32 duration = atoi(sep->arg[4]);
+		uint32 version = atoi(sep->arg[3]);
+		uint32 duration = atoi(sep->arg[4]);
 		zn = database.GetZoneName(zone_id);
 
 		if(!zn)
@@ -9545,7 +9545,7 @@ void command_instance(Client *c, const Seperator *sep)
 			return;
 		}
 
-		int16 id = 0;
+		uint16 id = 0;
 		if(!database.GetUnusedInstanceID(id))
 		{
 			c->Message(0, "Server was unable to find a free instance id.");
@@ -9581,8 +9581,8 @@ void command_instance(Client *c, const Seperator *sep)
 			return;
 		}
 
-		int16 id = atoi(sep->arg[2]);
-		int32 charid = database.GetCharacterID(sep->arg[3]);
+		uint16 id = atoi(sep->arg[2]);
+		uint32 charid = database.GetCharacterID(sep->arg[3]);
 
 		if(id <= 0 || charid <= 0)
 		{
@@ -9596,9 +9596,9 @@ void command_instance(Client *c, const Seperator *sep)
 			return;
 		}
 
-		int32 zone_id = database.ZoneIDFromInstanceID(id);
-		int32 version = database.VersionFromInstanceID(id);
-		int32 cur_id = database.GetInstanceID(zone_id, charid, version);
+		uint32 zone_id = database.ZoneIDFromInstanceID(id);
+		uint32 version = database.VersionFromInstanceID(id);
+		uint32 cur_id = database.GetInstanceID(zone_id, charid, version);
 		if(cur_id == 0)
 		{
 			if(database.AddClientToInstance(id, charid))
@@ -9624,8 +9624,8 @@ void command_instance(Client *c, const Seperator *sep)
 			return;
 		}
 
-		int16 id = atoi(sep->arg[2]);
-		int32 charid = database.GetCharacterID(sep->arg[3]);
+		uint16 id = atoi(sep->arg[2]);
+		uint32 charid = database.GetCharacterID(sep->arg[3]);
 
 		if(id <= 0 || charid <= 0)
 		{
@@ -9643,7 +9643,7 @@ void command_instance(Client *c, const Seperator *sep)
 	}
 	else if(strcasecmp(sep->arg[1], "list") == 0)
 	{
-		int32 charid = database.GetCharacterID(sep->arg[2]);
+		uint32 charid = database.GetCharacterID(sep->arg[2]);
 		if(charid <= 0)
 		{
 			if(c->GetTarget() == NULL || (c->GetTarget() && !c->GetTarget()->IsClient()))
@@ -9747,8 +9747,8 @@ void command_object(Client *c, const Seperator *sep)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char query[512];
 	char line[256];
-	int32 col;
-	int32 lastid;
+	uint32 col;
+	uint32 lastid;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 	int iObjectsFound = 0;
@@ -9759,12 +9759,12 @@ void command_object(Client *c, const Seperator *sep)
 	Door door;
 	Doors* doors;
 	Door_Struct* ds;
-	int32 id = 0;
-	int32 itemid = 0;
-	int32 icon = 0;
-	int32 instance = 0;
-	int32 newid = 0;
-	int16 radius;
+	uint32 id = 0;
+	uint32 itemid = 0;
+	uint32 icon = 0;
+	uint32 instance = 0;
+	uint32 newid = 0;
+	uint16 radius;
 	EQApplicationPacket* app;
 
 	bool bNewObject = false;
@@ -9775,8 +9775,8 @@ void command_object(Client *c, const Seperator *sep)
 	float y2;
 
 	// Temporary object type for static objects to allow manipulation
-	// NOTE: Zone::LoadZoneObjects() currently loads this as an int8, so max value is 255!
-	static const int32 TempStaticType = 255;
+	// NOTE: Zone::LoadZoneObjects() currently loads this as an uint8, so max value is 255!
+	static const uint32 TempStaticType = 255;
 
 	// Case insensitive commands (List == list == LIST)
 	strlwr(sep->arg[1]);
@@ -10061,7 +10061,7 @@ void command_object(Client *c, const Seperator *sep)
 			strn0cpy(od.object_name, sep->arg[3 + col], sizeof(od.object_name));
 
 			len = strlen(od.object_name);
-			for (col = 0; col < (int32)len; col++)
+			for (col = 0; col < (uint32)len; col++)
 			{
 				if (od.object_name[col] == '\'')
 				{
@@ -11233,7 +11233,7 @@ void command_emotesearch(Client *c, const Seperator *sep)
 
 		if (Seperator::IsNumber(search_criteria)) 
 		{
-			int16 emoteid = atoi(search_criteria);
+			uint16 emoteid = atoi(search_criteria);
 			LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
 			iterator.Reset();
 			while(iterator.MoreElements())
@@ -11735,9 +11735,9 @@ void command_zopp(Client *c, const Seperator *sep)
 			packettype = ItemPacketSummonItem;
 		}
 
-		sint16 slotid = atoi(sep->arg[2]);
+		int16 slotid = atoi(sep->arg[2]);
 		uint32 itemid = atoi(sep->arg[3]);
-		sint16 charges = sep->argnum == 4 ? atoi(sep->arg[4]) : 1; // defaults to 1 charge if not specified
+		int16 charges = sep->argnum == 4 ? atoi(sep->arg[4]) : 1; // defaults to 1 charge if not specified
 
 		const Item_Struct* FakeItem = database.GetItem(itemid);
 		

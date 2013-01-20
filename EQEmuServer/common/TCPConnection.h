@@ -78,30 +78,30 @@ protected:
 	
 public:
 	//socket created by a server (incoming)
-	TCPConnection(int32 ID, SOCKET iSock, int32 irIP, int16 irPort);
+	TCPConnection(uint32 ID, SOCKET iSock, uint32 irIP, uint16 irPort);
 	//socket created to connect to a server (outgoing)
 	TCPConnection();	// for outgoing connections
 	
 	virtual ~TCPConnection();
 	
 	// Functions for outgoing connections
-	bool			Connect(const char* irAddress, int16 irPort, char* errbuf = 0);
-	virtual bool	ConnectIP(int32 irIP, int16 irPort, char* errbuf = 0);
-	void			AsyncConnect(const char* irAddress, int16 irPort);
-	void			AsyncConnect(int32 irIP, int16 irPort);
+	bool			Connect(const char* irAddress, uint16 irPort, char* errbuf = 0);
+	virtual bool	ConnectIP(uint32 irIP, uint16 irPort, char* errbuf = 0);
+	void			AsyncConnect(const char* irAddress, uint16 irPort);
+	void			AsyncConnect(uint32 irIP, uint16 irPort);
 	virtual void	Disconnect();
 
-	bool			Send(const uchar* data, sint32 size);
+	bool			Send(const uchar* data, int32 size);
 	
 	char*			PopLine();		//returns ownership of allocated byte array
-	inline int32	GetrIP()	const		{ return rIP; }
-	inline int16	GetrPort()		const	{ return rPort; }
+	inline uint32	GetrIP()	const		{ return rIP; }
+	inline uint16	GetrPort()		const	{ return rPort; }
 	virtual State_t	GetState() const;
 	inline bool		Connected()	const	{ return (GetState() == TCPS_Connected); }
 	bool		ConnectReady() const;
 	void			Free();		// Inform TCPServer that this connection object is no longer referanced
 
-	inline int32	GetID()	const		{ return id; }
+	inline uint32	GetID()	const		{ return id; }
 
 	bool			GetEcho();
 	void			SetEcho(bool iValue);
@@ -140,9 +140,9 @@ protected:
 	bool	pRunLoop;
 
 	SOCKET	connection_socket;
-	int32	id;
-	int32	rIP;
-	int16	rPort; // host byte order
+	uint32	id;
+	uint32	rIP;
+	uint16	rPort; // host byte order
 	bool	pFree;
 	
 	mutable Mutex	MState;
@@ -154,21 +154,21 @@ protected:
 	MyQueue<char> LineOutQueue;
 	
 	uchar*	recvbuf;
-	sint32	recvbuf_size;
-	sint32	recvbuf_used;
+	int32	recvbuf_size;
+	int32	recvbuf_used;
 	
-	sint32	recvbuf_echo;
+	int32	recvbuf_echo;
 	volatile bool	pEcho;
 	
 	Mutex	MSendQueue;
 	uchar*	sendbuf;
-	sint32	sendbuf_size;
-	sint32	sendbuf_used;
-	bool	ServerSendQueuePop(uchar** data, sint32* size);
-	bool	ServerSendQueuePopForce(uchar** data, sint32* size);		//does a lock() instead of a trylock()
-	void	ServerSendQueuePushEnd(const uchar* data, sint32 size);
-	void	ServerSendQueuePushEnd(uchar** data, sint32 size);
-	void	ServerSendQueuePushFront(uchar* data, sint32 size);
+	int32	sendbuf_size;
+	int32	sendbuf_used;
+	bool	ServerSendQueuePop(uchar** data, int32* size);
+	bool	ServerSendQueuePopForce(uchar** data, int32* size);		//does a lock() instead of a trylock()
+	void	ServerSendQueuePushEnd(const uchar* data, int32 size);
+	void	ServerSendQueuePushEnd(uchar** data, int32 size);
+	void	ServerSendQueuePushFront(uchar* data, int32 size);
 	
 private:
 	void FinishDisconnect();

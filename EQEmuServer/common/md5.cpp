@@ -24,7 +24,7 @@ MD5::MD5(const char* buf, uint32 len) {
 	Generate((const uchar*) buf, len, pMD5);
 }
 
-MD5::MD5(const int8 buf[16]) {
+MD5::MD5(const uint8 buf[16]) {
 	Set(buf);
 }
 
@@ -36,11 +36,11 @@ void MD5::Generate(const char* iString) {
 	Generate((const uchar*) iString, strlen(iString));
 }
 
-void MD5::Generate(const int8* buf, uint32 len) {
+void MD5::Generate(const uint8* buf, uint32 len) {
 	Generate(buf, len, pMD5);
 }
 
-bool MD5::Set(const int8 buf[16]) {
+bool MD5::Set(const uint8 buf[16]) {
 	memcpy(pMD5, buf, 16);
 	return true;
 }
@@ -69,7 +69,7 @@ bool MD5::operator== (const MD5& iMD5) {
 		return false;
 }
 
-bool MD5::operator== (const int8* iMD5) {
+bool MD5::operator== (const uint8* iMD5) {
 	if (memcmp(pMD5, iMD5, 16) == 0)
 		return true;
 	else
@@ -99,7 +99,7 @@ MD5* MD5::operator= (const MD5* iMD5) {
 
 /* Byte-swap an array of words to little-endian. (Byte-sex independent) */
 void MD5::byteSwap(uint32 *buf, uint32 words) {
-   int8 *p = (int8 *)buf;
+   uint8 *p = (uint8 *)buf;
    do {
        *buf++ = (uint32)((uint32)p[3]<<8 | p[2]) << 16 |
                 ((uint32)p[1]<<8 | p[0]);
@@ -107,7 +107,7 @@ void MD5::byteSwap(uint32 *buf, uint32 words) {
    } while (--words);
 }
 
-void MD5::Generate(const int8* buf, uint32 len, int8 digest[16]) {
+void MD5::Generate(const uint8* buf, uint32 len, uint8 digest[16]) {
 	MD5Context ctx;
 	Init(&ctx);
 	Update(&ctx, buf, len);
@@ -124,7 +124,7 @@ void MD5::Init(struct MD5Context *ctx) {
 }
 
 /* Update ctx to reflect the addition of another buffer full of bytes. */
-void MD5::Update(struct MD5Context *ctx, int8 const *buf, uint32 len) {
+void MD5::Update(struct MD5Context *ctx, uint8 const *buf, uint32 len) {
    uint32 t = ctx->bytes[0];
    if ((ctx->bytes[0] = t + len) < t)  /* Update 64-bit byte count */
        ctx->bytes[1]++;    /* Carry from low to high */
@@ -133,11 +133,11 @@ void MD5::Update(struct MD5Context *ctx, int8 const *buf, uint32 len) {
 
    t = 64 - (t & 0x3f);    /* Bytes available in ctx->input (>= 1) */
    if (t > len) {
-       memcpy((int8*)ctx->input+64-t, buf, len);
+       memcpy((uint8*)ctx->input+64-t, buf, len);
        return;
    }
    /* First chunk is an odd size */
-   memcpy((int8*)ctx->input+64-t, buf, t);
+   memcpy((uint8*)ctx->input+64-t, buf, t);
    byteSwap(ctx->input, 16);
    Transform(ctx->hash, ctx->input);
    buf += t;
@@ -156,9 +156,9 @@ void MD5::Update(struct MD5Context *ctx, int8 const *buf, uint32 len) {
 
 /* Final wrapup - pad to 64-byte boundary with the bit pattern
 * 1 0* (64-bit count of bits processed, LSB-first) */
-void MD5::Final(int8 digest[16], MD5Context *ctx) {
+void MD5::Final(uint8 digest[16], MD5Context *ctx) {
    int count = ctx->bytes[0] & 0x3F;   /* Bytes mod 64 */
-   int8 *p = (int8*)ctx->input + count;
+   uint8 *p = (uint8*)ctx->input + count;
    /* Set the first byte of padding to 0x80.  There is always room. */
    *p++ = 0x80;
    /* Bytes of zero padding needed to make 56 bytes (-8..55) */
@@ -167,7 +167,7 @@ void MD5::Final(int8 digest[16], MD5Context *ctx) {
        memset(p, 0, count+8);
        byteSwap(ctx->input, 16);
        Transform(ctx->hash, ctx->input);
-       p = (int8*)ctx->input;
+       p = (uint8*)ctx->input;
        count = 56;
    }
    memset(p, 0, count);

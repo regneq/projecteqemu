@@ -50,7 +50,7 @@ DBcore::~DBcore() {
 }
 
 
-bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, int32 &port, bool &compress, bool *items) {
+bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, uint32 &port, bool &compress, bool *items) {
 	char buf[200], type[200];
 	char linebuf[512];
 	char cport[6]={0};
@@ -140,7 +140,7 @@ void DBcore::ping() {
 	MDatabase.unlock();
 }
 
-bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES** result, int32* affected_rows, int32* last_insert_id, int32* errnum, bool retry) {
+bool DBcore::RunQuery(const char* query, uint32 querylen, char* errbuf, MYSQL_RES** result, uint32* affected_rows, uint32* last_insert_id, uint32* errnum, bool retry) {
 	_CP(DBcore_RunQuery);
 	if (errnum)
 		*errnum = 0;
@@ -234,13 +234,13 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
 	return ret;
 }
 
-int32 DBcore::DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen) {
+uint32 DBcore::DoEscapeString(char* tobuf, const char* frombuf, uint32 fromlen) {
 //	No good reason to lock the DB, we only need it in the first place to check char encoding.
 //	LockMutex lock(&MDatabase);
 	return mysql_real_escape_string(&mysql, tobuf, frombuf, fromlen);
 }
 
-bool DBcore::Open(const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase,int32 iPort, int32* errnum, char* errbuf, bool iCompress, bool iSSL) {
+bool DBcore::Open(const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase,uint32 iPort, uint32* errnum, char* errbuf, bool iCompress, bool iSSL) {
 	LockMutex lock(&MDatabase);
 	safe_delete(pHost);
 	safe_delete(pUser);
@@ -256,7 +256,7 @@ bool DBcore::Open(const char* iHost, const char* iUser, const char* iPassword, c
 	return Open(errnum, errbuf);
 }
 
-bool DBcore::Open(int32* errnum, char* errbuf) {
+bool DBcore::Open(uint32* errnum, char* errbuf) {
 	if (errbuf)
 		errbuf[0] = 0;
 	LockMutex lock(&MDatabase);
@@ -272,7 +272,7 @@ bool DBcore::Open(int32* errnum, char* errbuf) {
 	otherwise DB update calls would say 0 rows affected when the value already equalled
 	what the function was tring to set it to, therefore the function would think it failed 
 	*/
-	int32 flags = CLIENT_FOUND_ROWS;
+	uint32 flags = CLIENT_FOUND_ROWS;
 	if (pCompress)
 		flags |= CLIENT_COMPRESS;
 	if (pSSL)

@@ -28,10 +28,10 @@ public:
 	virtual bool CheckState(EQStreamState state);
 	virtual std::string Describe() const;
 	
-	virtual const int32 GetBytesSent() const;
-	virtual const int32 GetBytesRecieved() const;
-	virtual const int32 GetBytesSentPerSecond() const;
-	virtual const int32 GetBytesRecvPerSecond() const;
+	virtual const uint32 GetBytesSent() const;
+	virtual const uint32 GetBytesRecieved() const;
+	virtual const uint32 GetBytesSentPerSecond() const;
+	virtual const uint32 GetBytesRecvPerSecond() const;
 
 protected:
 	EQStream *const 				m_stream;	//we own this stream object.

@@ -109,11 +109,11 @@ void Client::CalcBonuses()
 	XPRate = 100 + spellbonuses.XPRateMod;
 }
 
-int Client::CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat)
+int Client::CalcRecommendedLevelBonus(uint8 level, uint8 reclevel, int basestat)
 {
 	if( (reclevel > 0) && (level < reclevel) )
 	{
-		sint32 statmod = (level * 10000 / reclevel) * basestat;
+		int32 statmod = (level * 10000 / reclevel) * basestat;
 	
 		if( statmod < 0 )
 		{
@@ -301,7 +301,7 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 	}
 	
 	//FatherNitwit: New style haste, shields, and regens
-	if(newbon->haste < (sint16)item->Haste) {
+	if(newbon->haste < (int16)item->Haste) {
 		newbon->haste = item->Haste;
 	}
 	if(item->Regen > 0)
@@ -603,10 +603,10 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 		return;
 
 	//from AA_Ability struct
-	int32 effect = 0;
-	sint32 base1 = 0;
-	sint32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
-	int32 slot = 0;
+	uint32 effect = 0;
+	int32 base1 = 0;
+	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
+	uint32 slot = 0;
 
 	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aaid);
 	if(find_iter == aa_effects.end())
@@ -1183,7 +1183,7 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	newbon->AC = newbon->AC * 10 / 34;	//ratio determined impirically from client.
 }
 
-void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId, bool item_bonus, int32 ticsremaining, int buffslot)
+void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* newbon, uint16 casterId, bool item_bonus, uint32 ticsremaining, int buffslot)
 {
 	int i, effect_value;
 	Mob *caster = NULL;
@@ -2412,7 +2412,7 @@ void Client::CalcItemScale(bool login)
 	}
 }
 
-bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
+bool Client::CalcItemScale(uint32 slot_x, uint32 slot_y, bool login)
 {
 	bool changed = false;
 	int i;
@@ -2473,9 +2473,9 @@ bool Client::CalcItemScale(int32 slot_x, int32 slot_y, bool login)
 	return changed;
 }
 
-uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index, bool AA,int32 aa_effect)
+uint8 Mob::IsFocusEffect(uint16 spell_id,int effect_index, bool AA,uint32 aa_effect)
 {
-	int16 effect = 0;
+	uint16 effect = 0;
 
 	if (!AA)
 		effect = spells[spell_id].effectid[effect_index];
@@ -2545,7 +2545,7 @@ uint8 Mob::IsFocusEffect(int16 spell_id,int effect_index, bool AA,int32 aa_effec
 	return 0;
 }
 
-void Mob::NegateSpellsBonuses(int16 spell_id)
+void Mob::NegateSpellsBonuses(uint16 spell_id)
 {
 	if(!IsValidSpell(spell_id))
 		return;

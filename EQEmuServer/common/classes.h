@@ -85,8 +85,8 @@
 #define berserker_1 32768
 #define call_1 65536
 
-const char* GetEQClassName(int8 class_, int8 level = 0);
-int32 GetArrayEQClass(int8 eqclass);
-int8 GetEQArrayEQClass(int8 eqclass);
+const char* GetEQClassName(uint8 class_, uint8 level = 0);
+uint32 GetArrayEQClass(uint8 eqclass);
+uint8 GetEQArrayEQClass(uint8 eqclass);
 #endif
 

@@ -85,9 +85,9 @@ enum { //raid command types
 struct RaidMember{
 	char membername[64];
 	Client *member;
-	int32 GroupNumber;
-	int8 _class;
-	int8 level;
+	uint32 GroupNumber;
+	uint8 _class;
+	uint8 level;
 	bool IsGroupLeader;
 	bool IsRaidLeader;
 	bool IsLooter;
@@ -108,36 +108,36 @@ public:
 	bool	Process();
 	bool	IsRaid() { return true; }
 
-	void	AddMember(Client *c, int32 group = 0xFFFFFFFF, bool rleader=false, bool groupleader=false, bool looter=false);
+	void	AddMember(Client *c, uint32 group = 0xFFFFFFFF, bool rleader=false, bool groupleader=false, bool looter=false);
 	void	RemoveMember(const char *c);
 	void	DisbandRaid();
-	void	MoveMember(const char *name, int32 newGroup);
+	void	MoveMember(const char *name, uint32 newGroup);
 	void	SetGroupLeader(const char *who, bool glFlag = true);
 	void	RemoveGroupLeader(const char *who);
 	bool	IsGroupLeader(const char *who);
 	bool	IsRaidMember(const char *name);
 	void	UpdateLevel(const char *name, int newLevel);
 
-	int32	GetFreeGroup();
-	int8	GroupCount(int32 gid);
-	int8	RaidCount();
-	int32	GetHighestLevel();
-	int32	GetLowestLevel();
-	int32	GetGroup(const char *name);
-	int32	GetGroup(Client *c);
+	uint32	GetFreeGroup();
+	uint8	GroupCount(uint32 gid);
+	uint8	RaidCount();
+	uint32	GetHighestLevel();
+	uint32	GetLowestLevel();
+	uint32	GetGroup(const char *name);
+	uint32	GetGroup(Client *c);
       uint16 GetAvgLevel();
 
-	int32	GetLootType() { return LootType; }
-	void	ChangeLootType(int32 type);
+	uint32	GetLootType() { return LootType; }
+	void	ChangeLootType(uint32 type);
 	void	AddRaidLooter(const char* looter);
 	void	RemoveRaidLooter(const char* looter);
 
 	//util func
 	//keeps me from having to keep iterating through the list 
 	//when I want lots of data from the same entry
-	int32	GetPlayerIndex(const char *name);
+	uint32	GetPlayerIndex(const char *name);
 	//for perl interface
-	Client *GetClientByIndex(int16 index);
+	Client *GetClientByIndex(uint16 index);
 	const char *GetClientNameByIndex(uint8 index);
 
 	void	LockRaid(bool lockFlag);
@@ -147,18 +147,18 @@ public:
 	 *  Actual Implementation Stuff
 	 */
 
-	void	RaidMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
-	void	CastGroupSpell(Mob* caster,uint16 spellid, int32 gid);
+	void	RaidMessage_StringID(Mob* sender, uint32 type, uint32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, uint32 distance = 0);
+	void	CastGroupSpell(Mob* caster,uint16 spellid, uint32 gid);
 	void	SplitExp(uint32 exp, Mob* other);
-	int32	GetTotalRaidDamage(Mob* other);
-	void	BalanceHP(sint32 penalty, int32 gid);
-	void	BalanceMana(sint32 penalty, int32 gid);
-	void	HealGroup(uint32 heal_amt, Mob* caster, int32 gid);
+	uint32	GetTotalRaidDamage(Mob* other);
+	void	BalanceHP(int32 penalty, uint32 gid);
+	void	BalanceMana(int32 penalty, uint32 gid);
+	void	HealGroup(uint32 heal_amt, Mob* caster, uint32 gid);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
-	void	GroupBardPulse(Mob* caster, uint16 spellid, int32 gid);
+	void	GroupBardPulse(Mob* caster, uint16 spellid, uint32 gid);
 
-	void	TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading, int32 gid);
-	void	TeleportRaid(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading);
+	void	TeleportGroup(Mob* sender, uint32 zoneID, uint16 instance_id, float x, float y, float z, float heading, uint32 gid);
+	void	TeleportRaid(Mob* sender, uint32 zoneID, uint16 instance_id, float x, float y, float z, float heading);
 
 	//updates the list of Client* objects based on who's in and not in the zone.
 	//also learns raid structure based on db.
@@ -184,15 +184,15 @@ public:
 	void	SendRaidMoveAll(const char* who);
 	void	SendBulkRaid(Client *to);
 
-	void	GroupUpdate(int32 gid, bool initial = true);
+	void	GroupUpdate(uint32 gid, bool initial = true);
 	void	SendGroupUpdate(Client *to);
 	void	SendGroupDisband(Client *to);
 	void	SendRaidLock();
 	void	SendRaidUnlock();
 	void	SendRaidLockTo(Client *c);
 	void	SendRaidUnlockTo(Client *c);
-	void	SendRaidGroupAdd(const char *who, int32 gid);
-	void	SendRaidGroupRemove(const char *who, int32 gid);
+	void	SendRaidGroupAdd(const char *who, uint32 gid);
+	void	SendRaidGroupRemove(const char *who, uint32 gid);
 	void	SendMakeLeaderPacket(const char *who); //30
 	void	SendMakeLeaderPacketTo(const char *who, Client *to);
 	void	SendMakeGroupLeaderPacketAll();
@@ -206,8 +206,8 @@ public:
 protected:
 	Client *leader;
 	bool locked;
-	int16 numMembers;
-	int32 LootType;
+	uint16 numMembers;
+	uint32 LootType;
 	bool disbandCheck;
 	bool forceDisband;
 };

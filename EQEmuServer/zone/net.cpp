@@ -108,12 +108,12 @@ TimeoutManager          timeout_manager;
 NetConnection		net;
 EntityList			entity_list;
 WorldServer			worldserver;
-int32				numclients = 0;
+uint32				numclients = 0;
 #ifdef CATCH_CRASH
-int8			error = 0;
+uint8			error = 0;
 #endif
 char errorname[32];
-int16 adverrornum = 0;
+uint16 adverrornum = 0;
 extern Zone* zone;
 EQStreamFactory eqsf(ZoneStream);
 npcDecayTimes_Struct npcCorpseDecayTimes[100];
@@ -130,12 +130,12 @@ bool zoneprocess;
 	// For NewLoadSPDat function
 	const SPDat_Spell_Struct* spells; 
 	SPDat_Spell_Struct* spells_delete; 
-	sint32 GetMaxSpellID();
+	int32 GetMaxSpellID();
 
 
 	void LoadSPDat();
-	bool FileLoadSPDat(SPDat_Spell_Struct* sp, sint32 iMaxSpellID);
-	sint32 SPDAT_RECORDS = -1;
+	bool FileLoadSPDat(SPDat_Spell_Struct* sp, int32 iMaxSpellID);
+	int32 SPDAT_RECORDS = -1;
 #else
 	#define SPDat_Location	"spdat.eff"
 	SPDat_Spell_Struct spells[SPDAT_RECORDS];
@@ -154,7 +154,7 @@ bool zoneprocess;
 void Shutdown();
 extern void MapOpcodes();
 
-//bool ZoneBootup(int32 iZoneID, bool iStaticZone = false);
+//bool ZoneBootup(uint32 iZoneID, bool iStaticZone = false);
 //char *strsep(char **stringp, const char *delim);
 
 #ifdef ADDONCMD
@@ -454,7 +454,7 @@ int main(int argc, char** argv) {
 		}
 		if (ZoneLoaded && temp_timer.Check()) {
 			{
-				int8 error2 = 4;
+				uint8 error2 = 4;
 #ifdef CATCH_CRASH
 				try{
 #endif
@@ -644,7 +644,7 @@ void Shutdown()
 	_log(ZONE__INIT, "Shutting down...");
 }
 
-int32 NetConnection::GetIP()
+uint32 NetConnection::GetIP()
 {
 	char     name[255+1];
 	size_t   len = 0;
@@ -664,7 +664,7 @@ int32 NetConnection::GetIP()
 	return inet_addr(host->h_addr);
 }
 
-int32 NetConnection::GetIP(char* name)
+uint32 NetConnection::GetIP(char* name)
 {
 	hostent* host = 0;
 	
@@ -678,7 +678,7 @@ int32 NetConnection::GetIP(char* name)
 	
 }
 
-void NetConnection::SaveInfo(char* address, int32 port, char* waddress, char* filename) {
+void NetConnection::SaveInfo(char* address, uint32 port, char* waddress, char* filename) {
 
 	ZoneAddress = new char[strlen(address)+1];
 	strcpy(ZoneAddress, address);
@@ -725,7 +725,7 @@ bool chrcmpI(const char* a, const char* b) {
 }
 
 #if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
-sint32 GetMaxSpellID() {
+int32 GetMaxSpellID() {
 #ifdef NEW_LoadSPDat
 	int tempid=0, oldid=-1;
 	char spell_line_start[2048];
@@ -797,7 +797,7 @@ sint32 GetMaxSpellID() {
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	sint32 ret = 0;
+	int32 ret = 0;
 	if (database.RunQuery(query, MakeAnyLenString(&query, 
 		"SELECT MAX(id) FROM spells_new"), 
 		errbuf, &result)) {
@@ -814,14 +814,14 @@ sint32 GetMaxSpellID() {
 #endif
 }
 #ifdef SHAREMEM
-extern "C" bool extFileLoadSPDat(void* sp, sint32 iMaxSpellID) { return FileLoadSPDat((SPDat_Spell_Struct*) sp, iMaxSpellID); }
+extern "C" bool extFileLoadSPDat(void* sp, int32 iMaxSpellID) { return FileLoadSPDat((SPDat_Spell_Struct*) sp, iMaxSpellID); }
 #endif
 
 void LoadSPDat() {
 	if (SPDAT_RECORDS != -1) {
 		_log(SPELLS__LOAD, "LoadSPDat() SPDAT_RECORDS:%i != -1, spells already loaded?", SPDAT_RECORDS);
 	}
-	sint32 MaxSpellID = GetMaxSpellID();
+	int32 MaxSpellID = GetMaxSpellID();
 	if (MaxSpellID == -1) {
 #ifdef NEW_LoadSPDat
 		_log(SPELLS__LOAD, "LoadSPDat() MaxSpellID == -1, %s missing?", ZoneConfig::get()->SpellsFile.c_str());
@@ -857,10 +857,10 @@ void LoadSPDat() {
 #endif
 }
 
-bool FileLoadSPDat(SPDat_Spell_Struct* sp, sint32 iMaxSpellID) {
+bool FileLoadSPDat(SPDat_Spell_Struct* sp, int32 iMaxSpellID) {
 #ifdef NEW_LoadSPDat
 	int tempid=0;
-	int16 counter=0;
+	uint16 counter=0;
 	char spell_line[2048];
 	const char *spells_file=ZoneConfig::get()->SpellsFile.c_str();
 	_log(SPELLS__LOAD,"FileLoadSPDat() Loading spells from %s", spells_file);
@@ -1113,7 +1113,7 @@ This is hanging on freebsd for me, not sure why...
 		safe_delete_array(query);
 
 		int tempid = 0;
-		int16 counter = 0;
+		uint16 counter = 0;
 
 		while (row = mysql_fetch_row(result)) {
 
@@ -1325,7 +1325,7 @@ void UpdateWindowTitle(char* iNewTitle) {
 #endif
 }
 
-/*bool ZoneBootup(int32 iZoneID, bool iStaticZone) {
+/*bool ZoneBootup(uint32 iZoneID, bool iStaticZone) {
 	const char* zonename = database.GetZoneName(iStaticZone);
 	if (iZoneID == 0 || zonename == 0)
 		return false;

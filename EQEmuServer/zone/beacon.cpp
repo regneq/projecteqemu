@@ -118,7 +118,7 @@ bool Beacon::Process()
 	return true;
 }
 
-void Beacon::AELocationSpell(Mob *caster, int16 cast_spell_id, sint16 resist_adjust)
+void Beacon::AELocationSpell(Mob *caster, uint16 cast_spell_id, int16 resist_adjust)
 {
 	if(!IsValidSpell(cast_spell_id) || !caster)
 		return;

@@ -131,11 +131,11 @@ class Object: public Entity
 public:
 	// Loading object from database
 	Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& data, const ItemInst* inst);
-	Object(const ItemInst* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,int32 respawntimer);
+	Object(const ItemInst* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,uint32 respawntimer);
 	// Loading object from client dropping item on ground
 	Object(Client* client, const ItemInst* inst);
-	Object(const ItemInst *inst, float x, float y, float z, float heading, int32 decay_time = 300000);
-	Object(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time = 0);
+	Object(const ItemInst *inst, float x, float y, float z, float heading, uint32 decay_time = 300000);
+	Object(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time = 0);
 	
 	// Destructor
 	~Object();
@@ -168,19 +168,19 @@ public:
 	// Override base class implementations
 	virtual bool IsObject()	const { return true; }
 	virtual bool Save();
-	virtual int16 VarSave();
-	virtual void SetID(int16 set_id);
+	virtual uint16 VarSave();
+	virtual void SetID(uint16 set_id);
 	
 	void ClearUser() { user = NULL; }
 
-	int32 GetDBID();
-	int32 GetType();
-	void  SetType(int32 type);
-	void  SetDBID(int32 dbid);
-	int32 GetIcon();
-	void  SetIcon(int32 icon);
-	int32 GetItemID();
-	void  SetItemID(int32 itemid);
+	uint32 GetDBID();
+	uint32 GetType();
+	void  SetType(uint32 type);
+	void  SetDBID(uint32 dbid);
+	uint32 GetIcon();
+	void  SetIcon(uint32 icon);
+	uint32 GetItemID();
+	void  SetItemID(uint32 itemid);
 	void GetObjectData(Object_Struct* Data);
 	void SetObjectData(Object_Struct* Data);
 	void GetLocation(float* x, float* y, float* z);

@@ -33,7 +33,7 @@ using namespace std;
 
 extern ConsoleList		console_list;
 extern ZSList			zoneserver_list;
-int32 numplayers = 0;	//this really wants to be a member variable of ClientList...
+uint32 numplayers = 0;	//this really wants to be a member variable of ClientList...
 
 
 ClientList::ClientList()
@@ -83,7 +83,7 @@ void ClientList::CLERemoveZSRef(ZoneServer* iZS) {
 	}
 }
 
-ClientListEntry* ClientList::GetCLE(int32 iID) {
+ClientListEntry* ClientList::GetCLE(uint32 iID) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
 
@@ -98,7 +98,7 @@ ClientListEntry* ClientList::GetCLE(int32 iID) {
 }
 
 //Account Limiting Code to limit the number of characters allowed on from a single account at once.
-void ClientList::EnforceSessionLimit(int32 iLSAccountID) {
+void ClientList::EnforceSessionLimit(uint32 iLSAccountID) {
 
 	ClientListEntry* ClientEntry = 0;
 
@@ -144,7 +144,7 @@ void ClientList::EnforceSessionLimit(int32 iLSAccountID) {
 
 //Check current CLE Entry IPs against incoming connection
 
-void ClientList::GetCLEIP(int32 iIP) {
+void ClientList::GetCLEIP(uint32 iIP) {
 
 	ClientListEntry* countCLEIPs = 0;
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
@@ -219,7 +219,7 @@ void ClientList::GetCLEIP(int32 iIP) {
 	}
 }
 
-void ClientList::DisconnectByIP(int32 iIP) {
+void ClientList::DisconnectByIP(uint32 iIP) {
 	ClientListEntry* countCLEIPs = 0;
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 	iterator.Reset();
@@ -258,7 +258,7 @@ ClientListEntry* ClientList::FindCharacter(const char* name) {
 }
 
 
-ClientListEntry* ClientList::FindCLEByAccountID(int32 iAccID) {
+ClientListEntry* ClientList::FindCLEByAccountID(uint32 iAccID) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
 	iterator.Reset();
@@ -271,7 +271,7 @@ ClientListEntry* ClientList::FindCLEByAccountID(int32 iAccID) {
 	return 0;
 }
 
-ClientListEntry* ClientList::FindCLEByCharacterID(int32 iCharID) {
+ClientListEntry* ClientList::FindCLEByCharacterID(uint32 iCharID) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
  
 	iterator.Reset();
@@ -284,10 +284,10 @@ ClientListEntry* ClientList::FindCLEByCharacterID(int32 iCharID) {
 	return 0;
 }
 
-void ClientList::SendCLEList(const sint16& admin, const char* to, WorldTCPConnection* connection, const char* iName) {
+void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnection* connection, const char* iName) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 	char* output = 0;
-	int32 outsize = 0, outlen = 0;
+	uint32 outsize = 0, outlen = 0;
 	int x = 0, y = 0;
 	int namestrlen = iName == 0 ? 0 : strlen(iName);
 	bool addnewline = false;
@@ -332,7 +332,7 @@ void ClientList::SendCLEList(const sint16& admin, const char* to, WorldTCPConnec
 }
 
 
-void ClientList::CLEAdd(int32 iLSID, const char* iLoginName, const char* iLoginKey, sint16 iWorldAdmin, int32 ip, uint8 local) {
+void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local) {
 	ClientListEntry* tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iLoginKey, iWorldAdmin, ip, local);
 
 	clientlist.Append(tmp);
@@ -379,9 +379,9 @@ void ClientList::ClientUpdate(ZoneServer* zoneserver, ServerClientList_Struct* s
 	zoneserver->ChangeWID(scl->charid, cle->GetID());
 }
 
-void ClientList::CLEKeepAlive(int32 numupdates, int32* wid) {
+void ClientList::CLEKeepAlive(uint32 numupdates, uint32* wid) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
-	int32 i;
+	uint32 i;
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -394,7 +394,7 @@ void ClientList::CLEKeepAlive(int32 numupdates, int32* wid) {
 }
 
 
-ClientListEntry* ClientList::CheckAuth(int32 id, const char* iKey, int32 ip ) {
+ClientListEntry* ClientList::CheckAuth(uint32 id, const char* iKey, uint32 ip ) {
   LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
 	iterator.Reset();
@@ -405,7 +405,7 @@ ClientListEntry* ClientList::CheckAuth(int32 id, const char* iKey, int32 ip ) {
 	}
 	return 0;
 }
-ClientListEntry* ClientList::CheckAuth(int32 iLSID, const char* iKey) {
+ClientListEntry* ClientList::CheckAuth(uint32 iLSID, const char* iKey) {
   LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
 	iterator.Reset();
@@ -427,11 +427,11 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 			return iterator.GetData();
 		iterator.Advance();
 	}
-	sint16 tmpadmin;
+	int16 tmpadmin;
 	
 	_log(WORLD__ZONELIST,"Login with '%s' and '%s'", iName, iPassword);
 	
-	int32 accid = database.CheckLogin(iName, iPassword, &tmpadmin);
+	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin);
 	if (accid) {
 		ClientListEntry* tmp = new ClientListEntry(GetNextCLEID(), accid, iName, tmpMD5, tmpadmin);
 		clientlist.Append(tmp);
@@ -497,7 +497,7 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID)
 }
 
 
-void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection) {
+void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_Struct* whom, WorldTCPConnection* connection) {
 	try{
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 	LinkedListIterator<ClientListEntry*> countclients(clientlist);
@@ -508,7 +508,7 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 	char line[300] = "";
 	//char tmpguild[50] = "";
 	//char LFG[10] = "";
-	//int32 x = 0;
+	//uint32 x = 0;
 	int whomlen = 0;
 	if (whom) {
 		whomlen = strlen(whom->whom);
@@ -517,9 +517,9 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 	}
 
 	char* output = 0;
-	int32 outsize = 0, outlen = 0;
-	int32 totalusers=0;
-	int32 totallength=0;
+	uint32 outsize = 0, outlen = 0;
+	uint32 totalusers=0;
+	uint32 totallength=0;
 	AppendAnyLenString(&output, &outsize, &outlen, "Players on server:");
 	if (connection->IsConsole())
 		AppendAnyLenString(&output, &outsize, &outlen, "\r\n");
@@ -558,50 +558,50 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 		}
 		countclients.Advance();
 	}
-	int32 plid=fromid;
-	int32 playerineqstring=5001;
+	uint32 plid=fromid;
+	uint32 playerineqstring=5001;
 	const char line2[]="---------------------------";
-	int8 unknown35=0x0A;
-	int32 unknown36=0;
-	int32 playersinzonestring=5028;
+	uint8 unknown35=0x0A;
+	uint32 unknown36=0;
+	uint32 playersinzonestring=5028;
 	if(totalusers>20 && admin<100){
 		totalusers=20;
 		playersinzonestring=5033;
 	}
 	else if(totalusers>1)
 		playersinzonestring=5036;
-	int32 unknown44[2];
+	uint32 unknown44[2];
 	unknown44[0]=0;
 	unknown44[1]=0;
-	int32 unknown52=totalusers;
-	int32 unknown56=1;
+	uint32 unknown52=totalusers;
+	uint32 unknown56=1;
 	ServerPacket* pack2 = new ServerPacket(ServerOP_WhoAllReply,64+totallength+(49*totalusers));
 	memset(pack2->pBuffer,0,pack2->size);
 	uchar *buffer=pack2->pBuffer;
 	uchar *bufptr=buffer;
 	//memset(buffer,0,pack2->size);
-	memcpy(bufptr,&plid, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&playerineqstring, sizeof(int32));
-	bufptr+=sizeof(int32);
+	memcpy(bufptr,&plid, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&playerineqstring, sizeof(uint32));
+	bufptr+=sizeof(uint32);
 	memcpy(bufptr,&line2, strlen(line2));
 	bufptr+=strlen(line2);
-	memcpy(bufptr,&unknown35, sizeof(int8));
-	bufptr+=sizeof(int8);
-	memcpy(bufptr,&unknown36, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&playersinzonestring, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&unknown44[0], sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&unknown44[1], sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&unknown52, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&unknown56, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&totalusers, sizeof(int32));
-	bufptr+=sizeof(int32);
+	memcpy(bufptr,&unknown35, sizeof(uint8));
+	bufptr+=sizeof(uint8);
+	memcpy(bufptr,&unknown36, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&playersinzonestring, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&unknown44[0], sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&unknown44[1], sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&unknown52, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&unknown56, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&totalusers, sizeof(uint32));
+	bufptr+=sizeof(uint32);
 
 	iterator.Reset();
 	int idx=-1;
@@ -626,7 +626,7 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 	))
 ) {
 			line[0] = 0;
-			int32 rankstring=0xFFFFFFFF;
+			uint32 rankstring=0xFFFFFFFF;
 				if((cle->Anon()==1 && cle->GetGM() && cle->Admin()>admin) || (idx>=20 && admin<100)){ //hide gms that are anon from lesser gms and normal players, cut off at 20
 					rankstring=0;
 					iterator.Advance();
@@ -667,7 +667,7 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 			char guildbuffer[67]={0};
 			if (cle->GuildID() != GUILD_NONE && cle->GuildID()>0)
 				sprintf(guildbuffer,"<%s>", guild_mgr.GetGuildName(cle->GuildID()));
-			int32 formatstring=5025;
+			uint32 formatstring=5025;
 			if(cle->Anon()==1 && (admin<cle->Admin() || admin==0))
 				formatstring=5024;
 			else if(cle->Anon()==1 && admin>=cle->Admin() && admin>0)
@@ -679,13 +679,13 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 	
 	//war* wars2 = (war*)pack2->pBuffer;
 
-	int32 plclass_=0;
-	int32 pllevel=0;
-	int32 pidstring=0xFFFFFFFF;//5003;
-	int32 plrace=0;
-	int32 zonestring=0xFFFFFFFF;
-	int32 plzone=0;
-	int32 unknown80[2];
+	uint32 plclass_=0;
+	uint32 pllevel=0;
+	uint32 pidstring=0xFFFFFFFF;//5003;
+	uint32 plrace=0;
+	uint32 zonestring=0xFFFFFFFF;
+	uint32 plzone=0;
+	uint32 unknown80[2];
 	if(cle->Anon()==0 || (admin>=cle->Admin() && admin>0)){
 		plclass_=cle->class_();
 		pllevel=cle->level();
@@ -713,36 +713,36 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 	if(admin>=cle->Admin() && admin>0)
 		strcpy(placcount,cle->AccountName());
 
-	memcpy(bufptr,&formatstring, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&pidstring, sizeof(int32));
-	bufptr+=sizeof(int32);
+	memcpy(bufptr,&formatstring, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&pidstring, sizeof(uint32));
+	bufptr+=sizeof(uint32);
 	memcpy(bufptr,&plname, strlen(plname)+1);
 	bufptr+=strlen(plname)+1;
-	memcpy(bufptr,&rankstring, sizeof(int32));
-	bufptr+=sizeof(int32);
+	memcpy(bufptr,&rankstring, sizeof(uint32));
+	bufptr+=sizeof(uint32);
 	memcpy(bufptr,&guildbuffer, strlen(guildbuffer)+1);
 	bufptr+=strlen(guildbuffer)+1;
-	memcpy(bufptr,&unknown80[0], sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&unknown80[1], sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&zonestring, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&plzone, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&plclass_, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&pllevel, sizeof(int32));
-	bufptr+=sizeof(int32);
-	memcpy(bufptr,&plrace, sizeof(int32));
-	bufptr+=sizeof(int32);
-	int32 ending=0;
+	memcpy(bufptr,&unknown80[0], sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&unknown80[1], sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&zonestring, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&plzone, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&plclass_, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&pllevel, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	memcpy(bufptr,&plrace, sizeof(uint32));
+	bufptr+=sizeof(uint32);
+	uint32 ending=0;
 	memcpy(bufptr,&placcount, strlen(placcount)+1);
 	bufptr+=strlen(placcount)+1;
 	ending=207;
-	memcpy(bufptr,&ending, sizeof(int32));
-	bufptr+=sizeof(int32);
+	memcpy(bufptr,&ending, sizeof(uint32));
+	bufptr+=sizeof(uint32);
 		}
 		iterator.Advance();
 	}
@@ -774,7 +774,7 @@ void ClientList::SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPCon
 	Seperator = strchr(FriendsPointer, ',');
 	if(!Seperator) Seperator = strchr(FriendsPointer, '\0');
 
-	int32 TotalLength=0;
+	uint32 TotalLength=0;
 
 	while(Seperator != NULL) {
 
@@ -837,17 +837,17 @@ void ClientList::SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPCon
 			char GuildName[67]={0};
 			if (cle->GuildID() != GUILD_NONE && cle->GuildID()>0)
 				sprintf(GuildName,"<%s>", guild_mgr.GetGuildName(cle->GuildID()));
-			int32 FormatMSGID=5025; // 5025 %T1[%2 %3] %4 (%5) %6 %7 %8 %9
+			uint32 FormatMSGID=5025; // 5025 %T1[%2 %3] %4 (%5) %6 %7 %8 %9
 			if(cle->Anon()==1)
 				FormatMSGID=5024; // 5024 %T1[ANONYMOUS] %2 %3
 			else if(cle->Anon()==2)
 				FormatMSGID=5023; // 5023 %T1[ANONYMOUS] %2 %3 %4
 
-			int32 PlayerClass=0;
-			int32 PlayerLevel=0;
-			int32 PlayerRace=0;
-			int32 ZoneMSGID=0xffffffff;
-			int32 PlayerZone=0;
+			uint32 PlayerClass=0;
+			uint32 PlayerLevel=0;
+			uint32 PlayerRace=0;
+			uint32 ZoneMSGID=0xffffffff;
+			uint32 PlayerZone=0;
 
 			if(cle->Anon()==0) {
 				PlayerClass=cle->class_();
@@ -938,7 +938,7 @@ void ClientList::SendLFGMatches(ServerLFGMatchesRequest_Struct *smrs) {
 
 	char *Buf = (char *)Pack->pBuffer;
 	// FromID is the Entity ID of the player doing the search.
-	VARSTRUCT_ENCODE_TYPE(int32, Buf, smrs->FromID);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buf, smrs->FromID);
 
 	ServerLFGMatchesResponse_Struct* Buffer = (ServerLFGMatchesResponse_Struct*)Buf;
 
@@ -973,7 +973,7 @@ void ClientList::SendLFGMatches(ServerLFGMatchesRequest_Struct *smrs) {
 	safe_delete(Pack);
 }
 
-void ClientList::ConsoleSendWhoAll(const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection) {
+void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* whom, WorldTCPConnection* connection) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 	ClientListEntry* cle = 0;
 	char tmpgm[25] = "";
@@ -981,13 +981,13 @@ void ClientList::ConsoleSendWhoAll(const char* to, sint16 admin, Who_All_Struct*
 	char line[300] = "";
 	char tmpguild[50] = "";
 	char LFG[10] = "";
-	int32 x = 0;
+	uint32 x = 0;
 	int whomlen = 0;
 	if (whom)
 		whomlen = strlen(whom->whom);
 
 	char* output = 0;
-	int32 outsize = 0, outlen = 0;
+	uint32 outsize = 0, outlen = 0;
 	AppendAnyLenString(&output, &outsize, &outlen, "Players on server:");
 	if (connection->IsConsole())
 		AppendAnyLenString(&output, &outsize, &outlen, "\r\n");
@@ -1127,7 +1127,7 @@ void ClientList::Add(Client* client) {
 	list.Insert(client);
 }
 
-Client* ClientList::FindByAccountID(int32 account_id) {
+Client* ClientList::FindByAccountID(uint32 account_id) {
 	LinkedListIterator<Client*> iterator(list);
 
 	iterator.Reset();
@@ -1157,7 +1157,7 @@ Client* ClientList::FindByName(char* charname) {
 	return 0;
 }
 
-Client* ClientList::Get(int32 ip, int16 port) {
+Client* ClientList::Get(uint32 ip, uint16 port) {
 	LinkedListIterator<Client*> iterator(list);
 
 	iterator.Reset();
@@ -1234,8 +1234,8 @@ bool ClientList::SendPacket(const char* to, ServerPacket* pack) {
 	return false;
 }
 
-void ClientList::SendGuildPacket(int32 guild_id, ServerPacket* pack) {
-	set<int32> zone_ids;
+void ClientList::SendGuildPacket(uint32 guild_id, ServerPacket* pack) {
+	set<uint32> zone_ids;
 	
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
@@ -1249,7 +1249,7 @@ void ClientList::SendGuildPacket(int32 guild_id, ServerPacket* pack) {
 	
 	//now we know all the zones, send it to each one... this is kinda a shitty way to do this
 	//since its basically O(n^2)
-	set<int32>::iterator cur, end;
+	set<uint32>::iterator cur, end;
 	cur = zone_ids.begin();
 	end = zone_ids.end();
 	for(; cur != end; cur++) {
@@ -1257,7 +1257,7 @@ void ClientList::SendGuildPacket(int32 guild_id, ServerPacket* pack) {
 	}
 }
 
-void ClientList::UpdateClientGuild(int32 char_id, int32 guild_id) {
+void ClientList::UpdateClientGuild(uint32 char_id, uint32 guild_id) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
 	iterator.Reset();

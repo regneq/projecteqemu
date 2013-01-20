@@ -97,7 +97,7 @@ enum {	//leadership AA indexes
 
 #define MAX_LEADERSHIP_TIERS 6
 //each progression should be 0 terminated to mark it as the end.
-static const int8 LeadershipAACosts[_maxLeaderAA][MAX_LEADERSHIP_TIERS] = { 
+static const uint8 LeadershipAACosts[_maxLeaderAA][MAX_LEADERSHIP_TIERS] = { 
 { 1, 2, 3, 0, 0, 0 },	//groupAAMarkNPC
 { 2, 0, 0, 0, 0, 0 },	//groupAANPCHealth
 { 4, 0, 0, 0, 0, 0 },	//groupAADelegateMainAssist - Have seen DelegateMainAssist come in with two different codes.
@@ -2113,22 +2113,22 @@ typedef enum {	//AA IDs
 //Structure representing the database's AA actions
 struct AA_DBAction {
 	uint32 reuse_time;			//in seconds
-	int16 spell_id;				//spell to cast, SPELL_UNKNOWN=no spell
+	uint16 spell_id;				//spell to cast, SPELL_UNKNOWN=no spell
 	aaTargetType target;		//from aaTargetType
 	aaNonspellAction action;	//non-spell action to take
 	uint16 mana_cost;			//mana the NON-SPELL action costs
 	uint16 duration;			//duration of NON-SPELL effect, 0=N/A
 	aaID redux_aa;				//AA which reduces reuse time
-	sint32 redux_rate;			//%/point in redux_aa reduction in reuse time
+	int32 redux_rate;			//%/point in redux_aa reduction in reuse time
 	aaID redux_aa2;				//AA which reduces reuse time
-	sint32 redux_rate2;			//%/point in redux_aa reduction in reuse time
+	int32 redux_rate2;			//%/point in redux_aa reduction in reuse time
 };
 
 //Structure representing the database's swarm pet configs
 struct AA_SwarmPet {
 	uint8 count;		//number to summon
 	uint32 npc_id;		//id from npc_types to represent it.
-	int16 duration;		//how long they last, in seconds
+	uint16 duration;		//how long they last, in seconds
 };
 
 struct AALevelCost_Struct
@@ -2140,11 +2140,11 @@ struct AALevelCost_Struct
 //assumes that no activatable AA has more than 5 ranks
 #define MAX_AA_ACTION_RANKS 20
 extern AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
-extern map<int16, AA_SwarmPet> AA_SwarmPets;	//key=spell_id
+extern map<uint16, AA_SwarmPet> AA_SwarmPets;	//key=spell_id
 
 #define AA_Choose3(val, v1, v2, v3) (val==1?v1:(val==2?v2:v3))
 
-extern map<int32,SendAA_Struct*>aas_send;
+extern map<uint32,SendAA_Struct*>aas_send;
 extern std::map<uint32, std::map<uint32, AA_Ability> > aa_effects;
 extern std::map<uint32, AALevelCost_Struct> AARequiredLevelAndCost;
 

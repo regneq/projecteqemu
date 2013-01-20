@@ -56,13 +56,13 @@ DLLFUNC void ClearEQOpcodes() {
 	
 }
 
-DLLFUNC bool DLLLoadOpcodes(CALLBACK_DBLoadOpcodes cb, int32 opsize, int32 eq_count, int32 emu_count, const char *filename) {
+DLLFUNC bool DLLLoadOpcodes(CALLBACK_DBLoadOpcodes cb, uint32 opsize, uint32 eq_count, uint32 emu_count, const char *filename) {
 	if(opsize != sizeof(uint16)) {
 		cout << "Error: EMuShareMem: DLLLoadOpcodes: opsize != sizeof(uint16)" << endl;
 		cout << "Opcode size has changed, EMuShareMem.dll needs to be recompiled." << endl;
 		return false;
 	}
-	int32 tmpMemSize = sizeof(MMFOpcodes_Struct) + opsize * (eq_count+emu_count);
+	uint32 tmpMemSize = sizeof(MMFOpcodes_Struct) + opsize * (eq_count+emu_count);
 	if (OpcodesMMF.Open("EQEMuOpcodes", tmpMemSize)) {
 		if (OpcodesMMF.CanWrite()) {
 			MMFOpcodesData_Writable = (MMFOpcodes_Struct*) OpcodesMMF.GetWriteableHandle();
@@ -100,7 +100,7 @@ DLLFUNC bool DLLLoadOpcodes(CALLBACK_DBLoadOpcodes cb, int32 opsize, int32 eq_co
 		} else {
 			if (!OpcodesMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!OpcodesMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(10);
 					Timer::SetCurrentTime();

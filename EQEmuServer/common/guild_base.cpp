@@ -309,7 +309,7 @@ bool BaseGuildManager::_StoreGuildDB(uint32 guild_id) {
 	return(true);
 }
 
-int32 BaseGuildManager::_GetFreeGuildID() {
+uint32 BaseGuildManager::_GetFreeGuildID() {
 	if(m_db == NULL) {
 		_log(GUILDS__DB, "Requested find a free guild ID when we have no database object.");
 		return(GUILD_NONE);
@@ -345,8 +345,8 @@ int32 BaseGuildManager::_GetFreeGuildID() {
 
 
 	
-int32 BaseGuildManager::CreateGuild(const char* name, int32 leader_char_id) {
-	int32 gid = DBCreateGuild(name, leader_char_id);
+uint32 BaseGuildManager::CreateGuild(const char* name, uint32 leader_char_id) {
+	uint32 gid = DBCreateGuild(name, leader_char_id);
 	if(gid == GUILD_NONE)
 		return(GUILD_NONE);
 	
@@ -356,7 +356,7 @@ int32 BaseGuildManager::CreateGuild(const char* name, int32 leader_char_id) {
 	return(gid);
 }
 
-bool BaseGuildManager::DeleteGuild(int32 guild_id) {
+bool BaseGuildManager::DeleteGuild(uint32 guild_id) {
 	if(!DBDeleteGuild(guild_id))
 		return(false);
 	
@@ -365,7 +365,7 @@ bool BaseGuildManager::DeleteGuild(int32 guild_id) {
 	return(true);
 }
 
-bool BaseGuildManager::RenameGuild(int32 guild_id, const char* name) {
+bool BaseGuildManager::RenameGuild(uint32 guild_id, const char* name) {
 	if(!DBRenameGuild(guild_id, name))
 		return(false);
 	
@@ -374,14 +374,14 @@ bool BaseGuildManager::RenameGuild(int32 guild_id, const char* name) {
 	return(true);
 }
 
-bool BaseGuildManager::SetGuildLeader(int32 guild_id, int32 leader_char_id) {
+bool BaseGuildManager::SetGuildLeader(uint32 guild_id, uint32 leader_char_id) {
 	//get old leader first.
 	map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(guild_id);
 	if(res == m_guilds.end())
 		return(false);
 	GuildInfo *info = res->second;
-	int32 old_leader = info->leader_char_id;
+	uint32 old_leader = info->leader_char_id;
 	
 	if(!DBSetGuildLeader(guild_id, leader_char_id))
 		return(false);
@@ -393,7 +393,7 @@ bool BaseGuildManager::SetGuildLeader(int32 guild_id, int32 leader_char_id) {
 	return(true);
 }
 
-bool BaseGuildManager::SetGuildMOTD(int32 guild_id, const char* motd, const char *setter) {
+bool BaseGuildManager::SetGuildMOTD(uint32 guild_id, const char* motd, const char *setter) {
 	if(!DBSetGuildMOTD(guild_id, motd, setter))
 		return(false);
 	
@@ -402,7 +402,7 @@ bool BaseGuildManager::SetGuildMOTD(int32 guild_id, const char* motd, const char
 	return(true);
 }
 
-bool BaseGuildManager::SetGuildURL(int32 GuildID, const char* URL)
+bool BaseGuildManager::SetGuildURL(uint32 GuildID, const char* URL)
 {
 	if(!DBSetGuildURL(GuildID, URL))
 		return(false);
@@ -412,7 +412,7 @@ bool BaseGuildManager::SetGuildURL(int32 GuildID, const char* URL)
 	return(true);
 }
 
-bool BaseGuildManager::SetGuildChannel(int32 GuildID, const char* Channel)
+bool BaseGuildManager::SetGuildChannel(uint32 GuildID, const char* Channel)
 {
 	if(!DBSetGuildChannel(GuildID, Channel))
 		return(false);
@@ -422,12 +422,12 @@ bool BaseGuildManager::SetGuildChannel(int32 GuildID, const char* Channel)
 	return(true);
 }
 
-bool BaseGuildManager::SetGuild(int32 charid, int32 guild_id, int8 rank) {
+bool BaseGuildManager::SetGuild(uint32 charid, uint32 guild_id, uint8 rank) {
 	if(rank > GUILD_MAX_RANK && guild_id != GUILD_NONE)
 		return(false);
 	
 	//lookup their old guild, if they had one.
-	int32 old_guild = GUILD_NONE;
+	uint32 old_guild = GUILD_NONE;
 	CharGuildInfo gci;
 	if(GetCharInfo(charid, gci)) {
 		old_guild = gci.guild_id;
@@ -442,7 +442,7 @@ bool BaseGuildManager::SetGuild(int32 charid, int32 guild_id, int8 rank) {
 }
 
 //changes rank, but not guild.
-bool BaseGuildManager::SetGuildRank(int32 charid, int8 rank) {
+bool BaseGuildManager::SetGuildRank(uint32 charid, uint8 rank) {
 	if(rank > GUILD_MAX_RANK)
 		return(false);
 	
@@ -455,7 +455,7 @@ bool BaseGuildManager::SetGuildRank(int32 charid, int8 rank) {
 }
 
 
-bool BaseGuildManager::SetBankerFlag(int32 charid, bool is_banker) {
+bool BaseGuildManager::SetBankerFlag(uint32 charid, bool is_banker) {
 	if(!DBSetBankerFlag(charid, is_banker))
 		return(false);
 	
@@ -464,7 +464,7 @@ bool BaseGuildManager::SetBankerFlag(int32 charid, bool is_banker) {
 	return(true);
 }
 
-bool BaseGuildManager::SetAltFlag(int32 charid, bool is_alt)
+bool BaseGuildManager::SetAltFlag(uint32 charid, bool is_alt)
 {
 	if(!DBSetAltFlag(charid, is_alt))
 		return(false);
@@ -474,7 +474,7 @@ bool BaseGuildManager::SetAltFlag(int32 charid, bool is_alt)
 	return(true);
 }
 
-bool BaseGuildManager::SetTributeFlag(int32 charid, bool enabled) {
+bool BaseGuildManager::SetTributeFlag(uint32 charid, bool enabled) {
 	if(!DBSetTributeFlag(charid, enabled))
 		return(false);
 	
@@ -483,7 +483,7 @@ bool BaseGuildManager::SetTributeFlag(int32 charid, bool enabled) {
 	return(true);
 }
 
-bool BaseGuildManager::SetPublicNote(int32 charid, const char *note) {
+bool BaseGuildManager::SetPublicNote(uint32 charid, const char *note) {
 	if(!DBSetPublicNote(charid, note))
 		return(false);
 	
@@ -492,9 +492,9 @@ bool BaseGuildManager::SetPublicNote(int32 charid, const char *note) {
 	return(true);
 }
 
-int32 BaseGuildManager::DBCreateGuild(const char* name, int32 leader) {
+uint32 BaseGuildManager::DBCreateGuild(const char* name, uint32 leader) {
 	//first try to find a free ID.
-	int32 new_id = _GetFreeGuildID();
+	uint32 new_id = _GetFreeGuildID();
 	if(new_id == GUILD_NONE)
 		return(GUILD_NONE);
 	
@@ -513,7 +513,7 @@ int32 BaseGuildManager::DBCreateGuild(const char* name, int32 leader) {
 	return(new_id);
 }
 
-bool BaseGuildManager::DBDeleteGuild(int32 guild_id) {
+bool BaseGuildManager::DBDeleteGuild(uint32 guild_id) {
 	
 	//remove the local entry
 	map<uint32, GuildInfo *>::iterator res;
@@ -551,7 +551,7 @@ bool BaseGuildManager::DBDeleteGuild(int32 guild_id) {
 	return(true);
 }
 
-bool BaseGuildManager::DBRenameGuild(int32 guild_id, const char* name) {
+bool BaseGuildManager::DBRenameGuild(uint32 guild_id, const char* name) {
 	if(m_db == NULL) {
 		_log(GUILDS__DB, "Requested to rename guild %d when we have no database object.", guild_id);
 		return(false);
@@ -591,7 +591,7 @@ bool BaseGuildManager::DBRenameGuild(int32 guild_id, const char* name) {
 	return(true);
 }
 
-bool BaseGuildManager::DBSetGuildLeader(int32 guild_id, int32 leader) {
+bool BaseGuildManager::DBSetGuildLeader(uint32 guild_id, uint32 leader) {
 	if(m_db == NULL) {
 		_log(GUILDS__DB, "Requested to set the leader for guild %d when we have no database object.", guild_id);
 		return(false);
@@ -631,7 +631,7 @@ bool BaseGuildManager::DBSetGuildLeader(int32 guild_id, int32 leader) {
 	return(true);
 }
 
-bool BaseGuildManager::DBSetGuildMOTD(int32 guild_id, const char* motd, const char *setter) {
+bool BaseGuildManager::DBSetGuildMOTD(uint32 guild_id, const char* motd, const char *setter) {
 	if(m_db == NULL) {
 		_log(GUILDS__DB, "Requested to set the MOTD for guild %d when we have no database object.", guild_id);
 		return(false);
@@ -677,7 +677,7 @@ bool BaseGuildManager::DBSetGuildMOTD(int32 guild_id, const char* motd, const ch
 	return(true);
 }
 
-bool BaseGuildManager::DBSetGuildURL(int32 GuildID, const char* URL)
+bool BaseGuildManager::DBSetGuildURL(uint32 GuildID, const char* URL)
 {
 	if(m_db == NULL)
 		return(false);
@@ -718,7 +718,7 @@ bool BaseGuildManager::DBSetGuildURL(int32 GuildID, const char* URL)
 	return(true);
 }
 
-bool BaseGuildManager::DBSetGuildChannel(int32 GuildID, const char* Channel)
+bool BaseGuildManager::DBSetGuildChannel(uint32 GuildID, const char* Channel)
 {
 	if(m_db == NULL)
 		return(false);
@@ -759,7 +759,7 @@ bool BaseGuildManager::DBSetGuildChannel(int32 GuildID, const char* Channel)
 	return(true);
 }
 
-bool BaseGuildManager::DBSetGuild(int32 charid, int32 guild_id, int8 rank) {
+bool BaseGuildManager::DBSetGuild(uint32 charid, uint32 guild_id, uint8 rank) {
 	if(m_db == NULL) {
 		_log(GUILDS__DB, "Requested to set char to guild %d when we have no database object.", guild_id);
 		return(false);
@@ -794,21 +794,21 @@ bool BaseGuildManager::DBSetGuild(int32 charid, int32 guild_id, int8 rank) {
 	return(true);
 }
 
-bool BaseGuildManager::DBSetGuildRank(int32 charid, int8 rank) {
+bool BaseGuildManager::DBSetGuildRank(uint32 charid, uint8 rank) {
 	char *query = 0;
 	return(_RunQuery(query, MakeAnyLenString(&query, 
 		"UPDATE guild_members SET rank=%d WHERE char_id=%d", 
 		rank, charid), "setting a guild member's rank"));
 }
 
-bool BaseGuildManager::DBSetBankerFlag(int32 charid, bool is_banker) {
+bool BaseGuildManager::DBSetBankerFlag(uint32 charid, bool is_banker) {
 	char *query = 0;
 	return(_RunQuery(query, MakeAnyLenString(&query, 
 		"UPDATE guild_members SET banker=%d WHERE char_id=%d", 
 		is_banker?1:0, charid), "setting a guild member's banker flag"));
 }
 
-bool BaseGuildManager::GetBankerFlag(int32 CharID)
+bool BaseGuildManager::GetBankerFlag(uint32 CharID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
@@ -841,7 +841,7 @@ bool BaseGuildManager::GetBankerFlag(int32 CharID)
 	return IsBanker;
 }
 
-bool BaseGuildManager::DBSetAltFlag(int32 charid, bool is_alt)
+bool BaseGuildManager::DBSetAltFlag(uint32 charid, bool is_alt)
 {
 	char *query = 0;
 
@@ -850,7 +850,7 @@ bool BaseGuildManager::DBSetAltFlag(int32 charid, bool is_alt)
 		is_alt?1:0, charid), "setting a guild member's alt flag"));
 }
 
-bool BaseGuildManager::GetAltFlag(int32 CharID)
+bool BaseGuildManager::GetAltFlag(uint32 CharID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
@@ -883,14 +883,14 @@ bool BaseGuildManager::GetAltFlag(int32 CharID)
 	return IsAlt;
 }
 
-bool BaseGuildManager::DBSetTributeFlag(int32 charid, bool enabled) {
+bool BaseGuildManager::DBSetTributeFlag(uint32 charid, bool enabled) {
 	char *query = 0;
 	return(_RunQuery(query, MakeAnyLenString(&query, 
 		"UPDATE guild_members SET tribute_enable=%d WHERE char_id=%d", 
 		enabled?1:0, charid), "setting a guild member's tribute flag"));
 }
 
-bool BaseGuildManager::DBSetPublicNote(int32 charid, const char* note) {
+bool BaseGuildManager::DBSetPublicNote(uint32 charid, const char* note) {
 	if(m_db == NULL)
 		return(false);
 	
@@ -1023,7 +1023,7 @@ bool BaseGuildManager::GetCharInfo(const char *char_name, CharGuildInfo &into) {
 	MYSQL_ROW row;
 	
 	//escape our strings.
-	int32 nl = strlen(char_name);
+	uint32 nl = strlen(char_name);
 	char *esc = new char[nl*2+1];
 	m_db->DoEscapeString(esc, char_name, nl);
 	
@@ -1139,7 +1139,7 @@ const char *BaseGuildManager::GetGuildName(uint32 guild_id) const {
 	return(res->second->name.c_str());
 }
 
-bool BaseGuildManager::GetGuildNameByID(int32 guild_id, std::string &into) const {
+bool BaseGuildManager::GetGuildNameByID(uint32 guild_id, std::string &into) const {
 	map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(guild_id);
 	if(res == m_guilds.end())
@@ -1161,7 +1161,7 @@ uint32 BaseGuildManager::GetGuildIDByName(const char *GuildName)
 	return GUILD_NONE;
 }
 
-bool BaseGuildManager::GetGuildMOTD(int32 guild_id, char *motd_buffer, char *setter_buffer) const {
+bool BaseGuildManager::GetGuildMOTD(uint32 guild_id, char *motd_buffer, char *setter_buffer) const {
 	map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(guild_id);
 	if(res == m_guilds.end())
@@ -1171,7 +1171,7 @@ bool BaseGuildManager::GetGuildMOTD(int32 guild_id, char *motd_buffer, char *set
 	return(true);
 }
 	
-bool BaseGuildManager::GetGuildURL(int32 GuildID, char *URLBuffer) const
+bool BaseGuildManager::GetGuildURL(uint32 GuildID, char *URLBuffer) const
 {
 	map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(GuildID);
@@ -1182,7 +1182,7 @@ bool BaseGuildManager::GetGuildURL(int32 GuildID, char *URLBuffer) const
 	return(true);
 }
 	
-bool BaseGuildManager::GetGuildChannel(int32 GuildID, char *ChannelBuffer) const
+bool BaseGuildManager::GetGuildChannel(uint32 GuildID, char *ChannelBuffer) const
 {
 	map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(GuildID);
@@ -1213,7 +1213,7 @@ bool BaseGuildManager::IsGuildLeader(uint32 guild_id, uint32 char_id) const {
 	return(char_id == res->second->leader_char_id);
 }
 
-int32 BaseGuildManager::FindGuildByLeader(int32 leader) const {
+uint32 BaseGuildManager::FindGuildByLeader(uint32 leader) const {
 	map<uint32, GuildInfo *>::const_iterator cur, end;
 	cur = m_guilds.begin();
 	end = m_guilds.end();
@@ -1283,7 +1283,7 @@ bool BaseGuildManager::CheckPermission(uint32 guild_id, uint8 rank, GuildAction 
 	return(granted);
 }
 
-bool BaseGuildManager::LocalDeleteGuild(int32 guild_id) {
+bool BaseGuildManager::LocalDeleteGuild(uint32 guild_id) {
 	map<uint32, GuildInfo *>::iterator res;
 	res = m_guilds.find(guild_id);
 	if(res == m_guilds.end())
@@ -1313,7 +1313,7 @@ BaseGuildManager::GuildInfo::GuildInfo() {
 	minstatus = 0;
 }
 
-uint32 BaseGuildManager::DoesAccountContainAGuildLeader(int32 AccountID)
+uint32 BaseGuildManager::DoesAccountContainAGuildLeader(uint32 AccountID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -1381,7 +1381,7 @@ bool Database::LoadGuilds(GuildRanks_Struct* guilds) {
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, eqid, name, leader, minstatus, rank0title, rank1, rank1title, rank2, rank2title, rank3, rank3title, rank4, rank4title, rank5, rank5title from guilds"), errbuf, &result)) {
 
 		safe_delete_array(query);
-		int32 guildeqid = 0xFFFFFFFF;
+		uint32 guildeqid = 0xFFFFFFFF;
 		while ((row = mysql_fetch_row(result))) {
 			guildeqid = atoi(row[1]);
 			if (guildeqid < 512) {
@@ -1444,7 +1444,7 @@ bool Database::LoadGuilds(GuildRanks_Struct* guilds) {
 }
 
 
-void Database::SetPublicNote(int32 guild_id,char* charname, char* note){
+void Database::SetPublicNote(uint32 guild_id,char* charname, char* note){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	char* notebuf = new char[(strlen(note)*2)+3];
@@ -1458,7 +1458,7 @@ void Database::SetPublicNote(int32 guild_id,char* charname, char* note){
 
 
 
-bool Database::GetGuildRanks(int32 guildeqid, GuildRanks_Struct* gr) {
+bool Database::GetGuildRanks(uint32 guildeqid, GuildRanks_Struct* gr) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;

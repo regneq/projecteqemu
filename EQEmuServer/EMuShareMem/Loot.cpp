@@ -9,8 +9,8 @@ using namespace std;
 MMF LootMMF;
 const MMFLoot_Struct* MMFLootData = 0;
 MMFLoot_Struct* MMFLootData_Writable = 0;
-int32* LootTable;
-int32* LootDrop;
+uint32* LootTable;
+uint32* LootDrop;
 
 #ifdef _WINDOWS
 	#define exportfunc extern "C" __declspec(dllexport)
@@ -33,10 +33,10 @@ exportfunc bool AddLootDrop(uint32 id, const LootDrop_Struct* lds) {
 };
 
 exportfunc bool DLLLoadLoot(CALLBACK_DBLoadLoot cbDBLoadLoot, 
-					 int32 iLootTableStructsize, int32 iLootTableCount, int32 iMaxLootTable,
-					 int32 iLootTableEntryStructsize, int32 iLootTableEntryCount,
-					 int32 iLootDropStructsize, int32 iLootDropCount, int32 iMaxLootDrop,
-					 int32 iLootDropEntryStructsize, int32 iLootDropEntryCount
+					 uint32 iLootTableStructsize, uint32 iLootTableCount, uint32 iMaxLootTable,
+					 uint32 iLootTableEntryStructsize, uint32 iLootTableEntryCount,
+					 uint32 iLootDropStructsize, uint32 iLootDropCount, uint32 iMaxLootDrop,
+					 uint32 iLootDropEntryStructsize, uint32 iLootDropEntryCount
 					 ) {
 	return pDLLLoadLoot(cbDBLoadLoot, 
 					 iLootTableStructsize, iLootTableCount, iMaxLootTable,
@@ -46,7 +46,7 @@ exportfunc bool DLLLoadLoot(CALLBACK_DBLoadLoot cbDBLoadLoot,
 };
 
 
-bool pAddLootTable(int32 id, const LootTable_Struct* lts) {
+bool pAddLootTable(uint32 id, const LootTable_Struct* lts) {
 	if (!MMFLootData_Writable)
 		return false;
 	if (id > MMFLootData_Writable->MaxLootTableID)
@@ -54,7 +54,7 @@ bool pAddLootTable(int32 id, const LootTable_Struct* lts) {
 	if (!LootTable || LootTable[id] != 0)
 		return false;
 	
-	int32 tmp = sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * lts->NumEntries);
+	uint32 tmp = sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * lts->NumEntries);
 	if (MMFLootData_Writable->dataindex + tmp >= MMFLootData_Writable->datamax)
 		return false;
 	LootTable[id] = MMFLootData_Writable->dataindex;
@@ -64,7 +64,7 @@ bool pAddLootTable(int32 id, const LootTable_Struct* lts) {
 	return true;
 }
 
-bool pAddLootDrop(int32 id, const LootDrop_Struct* lds) {
+bool pAddLootDrop(uint32 id, const LootDrop_Struct* lds) {
 	if (!MMFLootData_Writable)
 		return false;
 	if (id > MMFLootData_Writable->MaxLootDropID)
@@ -72,7 +72,7 @@ bool pAddLootDrop(int32 id, const LootDrop_Struct* lds) {
 	if (!LootDrop || LootDrop[id] != 0)
 		return false;
 	
-	int32 tmp = sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * lds->NumEntries);
+	uint32 tmp = sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * lds->NumEntries);
 	if (MMFLootData_Writable->dataindex + tmp >= MMFLootData_Writable->datamax)
 		return false;
 	LootDrop[id] = MMFLootData_Writable->dataindex;
@@ -83,10 +83,10 @@ bool pAddLootDrop(int32 id, const LootDrop_Struct* lds) {
 }
 
 bool pDLLLoadLoot(CALLBACK_DBLoadLoot cbDBLoadLoot, 
-					 int32 iLootTableStructsize, int32 iLootTableCount, int32 iMaxLootTable,
-					 int32 iLootTableEntryStructsize, int32 iLootTableEntryCount,
-					 int32 iLootDropStructsize, int32 iLootDropCount, int32 iMaxLootDrop,
-					 int32 iLootDropEntryStructsize, int32 iLootDropEntryCount
+					 uint32 iLootTableStructsize, uint32 iLootTableCount, uint32 iMaxLootTable,
+					 uint32 iLootTableEntryStructsize, uint32 iLootTableEntryCount,
+					 uint32 iLootDropStructsize, uint32 iLootDropCount, uint32 iMaxLootDrop,
+					 uint32 iLootDropEntryStructsize, uint32 iLootDropEntryCount
 					 ) {
 #if 0
 cout << "iLootTableCount: " << iLootTableCount << endl;
@@ -117,10 +117,10 @@ cout << "iLootDropEntryCount: " << iLootDropEntryCount << endl;
 		return false;
 	}
 
-	int32 tmpMemSize = sizeof(MMFLoot_Struct) + 256
-		+ (sizeof(int32) * (iMaxLootTable+1))
+	uint32 tmpMemSize = sizeof(MMFLoot_Struct) + 256
+		+ (sizeof(uint32) * (iMaxLootTable+1))
 		+ (sizeof(LootTable_Struct) * iLootTableCount) + (sizeof(LootTableEntries_Struct) * iLootTableEntryCount)
-		+ (sizeof(int32) * (iMaxLootDrop+1))
+		+ (sizeof(uint32) * (iMaxLootDrop+1))
 		+ (sizeof(LootDrop_Struct) * iLootDropCount) + (sizeof(LootDropEntries_Struct) * iLootDropEntryCount)
 		;
 	if (LootMMF.Open("EQEMuLoot", tmpMemSize)) {
@@ -140,12 +140,12 @@ cout << "iLootDropEntryCount: " << iLootDropEntryCount << endl;
 
 			MMFLootData_Writable->dataindex = 0;
 			MMFLootData_Writable->LootTableOffset = MMFLootData_Writable->dataindex;
-			MMFLootData_Writable->dataindex += (sizeof(int32) * (iMaxLootTable+1));
+			MMFLootData_Writable->dataindex += (sizeof(uint32) * (iMaxLootTable+1));
 			MMFLootData_Writable->LootDropOffset = MMFLootData_Writable->dataindex;
-			MMFLootData_Writable->dataindex += (sizeof(int32) * (iMaxLootDrop+1));
+			MMFLootData_Writable->dataindex += (sizeof(uint32) * (iMaxLootDrop+1));
 
-			LootTable = (int32*) &MMFLootData_Writable->data[MMFLootData_Writable->LootTableOffset];
-			LootDrop = (int32*) &MMFLootData_Writable->data[MMFLootData_Writable->LootDropOffset];
+			LootTable = (uint32*) &MMFLootData_Writable->data[MMFLootData_Writable->LootTableOffset];
+			LootDrop = (uint32*) &MMFLootData_Writable->data[MMFLootData_Writable->LootDropOffset];
 
 			// use a callback so the DB functions are done in the main exe
 			// this way the DLL doesnt have to open a connection to mysql
@@ -160,7 +160,7 @@ cout << "iLootDropEntryCount: " << iLootDropEntryCount << endl;
 		else {
 			if (!LootMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!LootMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(10);
 					Timer::SetCurrentTime();
@@ -190,8 +190,8 @@ cout << "iLootDropEntryCount: " << iLootDropEntryCount << endl;
 		MMFLootData = 0;
 		return false;
 	}
-	LootTable = (int32*) &MMFLootData->data[MMFLootData->LootTableOffset];
-	LootDrop = (int32*) &MMFLootData->data[MMFLootData->LootDropOffset];
+	LootTable = (uint32*) &MMFLootData->data[MMFLootData->LootTableOffset];
+	LootDrop = (uint32*) &MMFLootData->data[MMFLootData->LootDropOffset];
 	return true;
 };
 

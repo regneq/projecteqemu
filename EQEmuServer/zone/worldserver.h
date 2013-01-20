@@ -35,25 +35,25 @@ public:
 	virtual void Process();
 	
 	void SendGuildJoin(GuildJoin_Struct* gj);
-	bool SendChannelMessage(Client* from, const char* to, int8 chan_num, int32 guilddbid, int8 language, const char* message, ...);
-	bool SendEmoteMessage(const char* to, int32 to_guilddbid, int32 type, const char* message, ...);
-	bool SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...);
-	bool SendVoiceMacro(Client* From, int32 Type, char* Target, int32 MacroNumber, int32 GroupOrRaidID = 0);
-	void SetZone(int32 iZoneID, int32 iInstanceID = 0);
-	int32 SendGroupIdRequest();
-	bool RezzPlayer(EQApplicationPacket* rpack, int32 rezzexp, int32 dbid, int16 opcode);
+	bool SendChannelMessage(Client* from, const char* to, uint8 chan_num, uint32 guilddbid, uint8 language, const char* message, ...);
+	bool SendEmoteMessage(const char* to, uint32 to_guilddbid, uint32 type, const char* message, ...);
+	bool SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...);
+	bool SendVoiceMacro(Client* From, uint32 Type, char* Target, uint32 MacroNumber, uint32 GroupOrRaidID = 0);
+	void SetZone(uint32 iZoneID, uint32 iInstanceID = 0);
+	uint32 SendGroupIdRequest();
+	bool RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 dbid, uint16 opcode);
 	bool IsOOCMuted() const { return(oocmuted); }
 	
-	int32 NextGroupID();
+	uint32 NextGroupID();
 	
 	void SetLaunchedName(const char *n) { m_launchedName = n; }
 	void SetLauncherName(const char *n) { m_launcherName = n; }
 	void SendReloadTasks(int Command, int TaskID=0);
 	void HandleReloadTasks(ServerPacket *pack);
-	void UpdateLFP(int32 LeaderID, int8 Action, int8 MatchFilter, uint32 FromLevel, uint32 ToLevel, uint32 Classes, const char *Comments,
+	void UpdateLFP(uint32 LeaderID, uint8 Action, uint8 MatchFilter, uint32 FromLevel, uint32 ToLevel, uint32 Classes, const char *Comments,
 		       GroupLFPMemberEntry *LFPMembers);
-	void UpdateLFP(int32 LeaderID, GroupLFPMemberEntry *LFPMembers);
-	void StopLFP(int32 LeaderID);
+	void UpdateLFP(uint32 LeaderID, GroupLFPMemberEntry *LFPMembers);
+	void StopLFP(uint32 LeaderID);
 	void HandleLFGMatches(ServerPacket *pack);
 	void HandleLFPMatches(ServerPacket *pack);
 	
@@ -65,8 +65,8 @@ private:
 	
 	bool oocmuted;
 	
-	int32 cur_groupid;
-	int32 last_groupid;
+	uint32 cur_groupid;
+	uint32 last_groupid;
 };
 #endif
 

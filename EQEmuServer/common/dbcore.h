@@ -22,16 +22,16 @@ public:
 	DBcore();
 	~DBcore();
 	eStatus	GetStatus() { return pStatus; }
-	bool	RunQuery(const char* query, int32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, int32* affected_rows = 0, int32* last_insert_id = 0, int32* errnum = 0, bool retry = true);
-	int32	DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen);
+	bool	RunQuery(const char* query, uint32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, uint32* affected_rows = 0, uint32* last_insert_id = 0, uint32* errnum = 0, bool retry = true);
+	uint32	DoEscapeString(char* tobuf, const char* frombuf, uint32 fromlen);
 	void	ping();
 	MYSQL*	getMySQL(){ return &mysql; }
 	
-	static bool	ReadDBINI(char *host, char *user, char *pass, char *db, int32 &port, bool &compress, bool *items);
+	static bool	ReadDBINI(char *host, char *user, char *pass, char *db, uint32 &port, bool &compress, bool *items);
 protected:
-	bool	Open(const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase, int32 iPort, int32* errnum = 0, char* errbuf = 0, bool iCompress = false, bool iSSL = false);
+	bool	Open(const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase, uint32 iPort, uint32* errnum = 0, char* errbuf = 0, bool iCompress = false, bool iSSL = false);
 private:
-	bool	Open(int32* errnum = 0, char* errbuf = 0);
+	bool	Open(uint32* errnum = 0, char* errbuf = 0);
 
 	MYSQL	mysql;
 	Mutex	MDatabase;
@@ -42,7 +42,7 @@ private:
 	char*	pPassword;
 	char*	pDatabase;
 	bool	pCompress;
-	int32	pPort;
+	uint32	pPort;
 	bool	pSSL;
 
 };

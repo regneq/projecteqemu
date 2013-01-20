@@ -44,7 +44,7 @@ XS(XS_Doors_GetDoorDBID)
 		Perl_croak(aTHX_ "Usage: Doors::GetDoorDBID(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -70,7 +70,7 @@ XS(XS_Doors_GetDoorID)
 		Perl_croak(aTHX_ "Usage: Doors::GetDoorID(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -96,7 +96,7 @@ XS(XS_Doors_GetID)
 		Perl_croak(aTHX_ "Usage: Doors::GetID(THIS)");
 	{
 		Doors *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -226,7 +226,7 @@ XS(XS_Doors_GetOpenType)
 		Perl_croak(aTHX_ "Usage: Doors::GetOpenType(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -252,7 +252,7 @@ XS(XS_Doors_GetLockpick)
 		Perl_croak(aTHX_ "Usage: Doors::GetLockpick(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -278,7 +278,7 @@ XS(XS_Doors_GetKeyItem)
 		Perl_croak(aTHX_ "Usage: Doors::GetKeyItem(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -304,7 +304,7 @@ XS(XS_Doors_GetNoKeyring)
 		Perl_croak(aTHX_ "Usage: Doors::GetNoKeyring(THIS, type)");
 	{
 		Doors *		THIS;
-		int8		type = (int8)SvUV(ST(1));
+		uint8		type = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Doors")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -328,7 +328,7 @@ XS(XS_Doors_GetIncline)
 		Perl_croak(aTHX_ "Usage: Doors::GetIncline(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -354,7 +354,7 @@ XS(XS_Doors_GetSize)
 		Perl_croak(aTHX_ "Usage: Doors::GetIncline(THIS)");
 	{
 		Doors *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Doors")) {
@@ -382,7 +382,7 @@ XS(XS_Doors_SetOpenType)
 		Perl_croak(aTHX_ "Usage: Doors::SetOpenType(THIS, type)");
 	{
 		Doors *		THIS;
-		int32		type = (int32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Doors")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -406,7 +406,7 @@ XS(XS_Doors_SetLockpick)
 		Perl_croak(aTHX_ "Usage: Doors::SetLockpick(THIS, type)");
 	{
 		Doors *		THIS;
-		int32		type = (int32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Doors")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -454,7 +454,7 @@ XS(XS_Doors_SetNoKeyring)
 		Perl_croak(aTHX_ "Usage: Doors::SetNoKeyring(THIS, type)");
 	{
 		Doors *		THIS;
-		int8		type = (int8)SvUV(ST(1));
+		uint8		type = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Doors")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -478,7 +478,7 @@ XS(XS_Doors_SetIncline)
 		Perl_croak(aTHX_ "Usage: Doors::SetIncline(THIS, type)");
 	{
 		Doors *		THIS;
-		int32		type = (int32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Doors")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -502,7 +502,7 @@ XS(XS_Doors_SetSize)
 		Perl_croak(aTHX_ "Usage: Doors::SetSize(THIS, size)");
 	{
 		Doors *		THIS;
-		int32		type = (int32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Doors")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));

@@ -661,7 +661,7 @@ enum InventorySlot
 	
 	SLOT_CURSOR		= 30,
 	
-	SLOT_CURSOR_END	= (sint16)0xFFFE,	// Last item on cursor queue
+	SLOT_CURSOR_END	= (int16)0xFFFE,	// Last item on cursor queue
 	// Cursor bag slots are 331->340 (10 slots)
 	
 	// Personal Inventory Slots
@@ -689,7 +689,7 @@ enum InventorySlot
 	SLOT_AUGMENT = 1001,
 	// SLOT_POWER_SOURCE = 9999,
 	// Value recognized by client for destroying an item
-	SLOT_INVALID = (sint16)0xFFFF
+	SLOT_INVALID = (int16)0xFFFF
 };
 
 

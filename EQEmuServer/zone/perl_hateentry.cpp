@@ -63,7 +63,7 @@ XS(XS_HateEntry_GetHate)
 		Perl_croak(aTHX_ "Usage: HateEntry::GetHate(THIS)");
 	{
 		tHateEntry * THIS;
-		sint32 RETVAL;
+		int32 RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "HateEntry")) {
@@ -89,7 +89,7 @@ XS(XS_HateEntry_GetDamage)
 		Perl_croak(aTHX_ "Usage: HateEntry::GetDamage(THIS)");
 	{
 		tHateEntry * THIS;
-		sint32 RETVAL;
+		int32 RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "HateEntry")) {

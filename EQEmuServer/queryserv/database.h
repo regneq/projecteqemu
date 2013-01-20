@@ -35,26 +35,26 @@
 #include <map>
 using namespace std;
 
-//atoi is not int32 or uint32 safe!!!!
+//atoi is not uint32 or uint32 safe!!!!
 #define atoul(str) strtoul(str, NULL, 10)
 
 class Database : public DBcore {
 public:
 	Database();
-	Database(const char* host, const char* user, const char* passwd, const char* database,int32 port);
-	bool Connect(const char* host, const char* user, const char* passwd, const char* database,int32 port);
+	Database(const char* host, const char* user, const char* passwd, const char* database,uint32 port);
+	bool Connect(const char* host, const char* user, const char* passwd, const char* database,uint32 port);
 	~Database();
 	
-	bool GetVariable(const char* varname, char* varvalue, int16 varvalue_len);
-	void AddSpeech(const char* from, const char* to, const char* message, int16 minstatus, uint32 guilddbid, int8 type);
-	void LogPlayerTrade(QSPlayerLogTrade_Struct* QS, int32 Items);
-	void LogPlayerHandin(QSPlayerLogHandin_Struct* QS, int32 Items);
-	void LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members);
-	void LogPlayerDelete(QSPlayerLogDelete_Struct* QS, int32 Items);
-	void LogPlayerMove(QSPlayerLogMove_Struct* QS, int32 Items);
-	void LogMerchantTransaction(QSMerchantLogTransaction_Struct* QS, int32 Items);
+	bool GetVariable(const char* varname, char* varvalue, uint16 varvalue_len);
+	void AddSpeech(const char* from, const char* to, const char* message, uint16 minstatus, uint32 guilddbid, uint8 type);
+	void LogPlayerTrade(QSPlayerLogTrade_Struct* QS, uint32 Items);
+	void LogPlayerHandin(QSPlayerLogHandin_Struct* QS, uint32 Items);
+	void LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, uint32 Members);
+	void LogPlayerDelete(QSPlayerLogDelete_Struct* QS, uint32 Items);
+	void LogPlayerMove(QSPlayerLogMove_Struct* QS, uint32 Items);
+	void LogMerchantTransaction(QSMerchantLogTransaction_Struct* QS, uint32 Items);
 protected:
-	void HandleMysqlError(int32 errnum);
+	void HandleMysqlError(uint32 errnum);
 private:
 	void DBInitVars();
 	

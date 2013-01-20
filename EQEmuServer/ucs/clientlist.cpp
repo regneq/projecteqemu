@@ -60,14 +60,14 @@ int LookupCommand(const char *ChatCommand) {
 
 void Client::SendUptime() {
 
-	int32 ms = Timer::GetCurrentTime();
-	int32 d = ms / 86400000;
+	uint32 ms = Timer::GetCurrentTime();
+	uint32 d = ms / 86400000;
 	ms -= d * 86400000;
-	int32 h = ms / 3600000;
+	uint32 h = ms / 3600000;
 	ms -= h * 3600000;
-	int32 m = ms / 60000;
+	uint32 m = ms / 60000;
 	ms -= m * 60000;
-	int32 s = ms / 1000;
+	uint32 s = ms / 1000;
 
 	char *Buffer = NULL;
 

@@ -7,9 +7,9 @@
 //moved out of TCPConnection:: to be more exportable
 #pragma pack(1)
 	struct EmuTCPNetPacket_Struct {
-		int32	size;
+		uint32	size;
 		struct {
-			int8
+			uint8
 				compressed : 1,
 				destination : 1,
 				flag3 : 1,
@@ -19,7 +19,7 @@
 				flag7 : 1,
 				flag8 : 1;
 		} flags;
-		int16	opcode;
+		uint16	opcode;
 		uchar	buffer[0];
 	};
 #pragma pack()
@@ -32,18 +32,18 @@ public:
 	enum eTCPMode { modeConsole, modeTransition, modePacket };
 	enum ePacketMode { packetModeZone, packetModeLauncher, packetModeLogin, packetModeUCS, packetModeQueryServ };
 	
-	EmuTCPConnection(int32 ID, EmuTCPServer* iServer, SOCKET iSock, int32 irIP, int16 irPort, bool iOldFormat = false);
+	EmuTCPConnection(uint32 ID, EmuTCPServer* iServer, SOCKET iSock, uint32 irIP, uint16 irPort, bool iOldFormat = false);
 	EmuTCPConnection(bool iOldFormat = false, EmuTCPServer* iRelayServer = 0, eTCPMode iMode = modePacket);	// for outgoing connections
-	EmuTCPConnection(int32 ID, EmuTCPServer* iServer, EmuTCPConnection* iRelayLink, int32 iRemoteID, int32 irIP, int16 irPort);				// for relay connections
+	EmuTCPConnection(uint32 ID, EmuTCPServer* iServer, EmuTCPConnection* iRelayLink, uint32 iRemoteID, uint32 irIP, uint16 irPort);				// for relay connections
 	virtual ~EmuTCPConnection();
 	
-	virtual bool	ConnectIP(int32 irIP, int16 irPort, char* errbuf = 0);
+	virtual bool	ConnectIP(uint32 irIP, uint16 irPort, char* errbuf = 0);
 	virtual void	Disconnect(bool iSendRelayDisconnect = true);
 	
-	static EmuTCPNetPacket_Struct* MakePacket(ServerPacket* pack, int32 iDestination = 0);
+	static EmuTCPNetPacket_Struct* MakePacket(ServerPacket* pack, uint32 iDestination = 0);
 	static SPackSendQueue* MakeOldPacket(ServerPacket* pack);
 	
-	virtual bool	SendPacket(ServerPacket* pack, int32 iDestination = 0);
+	virtual bool	SendPacket(ServerPacket* pack, uint32 iDestination = 0);
 	virtual bool	SendPacket(EmuTCPNetPacket_Struct* tnps);
 	ServerPacket*	PopPacket(); // OutQueuePop()
 	void SetPacketMode(ePacketMode mode) { PacketMode = mode; }
@@ -54,7 +54,7 @@ public:
 	//relay crap:
 	inline bool		IsRelayServer() const { return RelayServer; }
 	inline TCPConnection* GetRelayLink() const	{ return RelayLink; }
-	inline int32	GetRemoteID() const	{ return RemoteID; }
+	inline uint32	GetRemoteID() const	{ return RemoteID; }
 	
 protected:
 	void	OutQueuePush(ServerPacket* pack);
@@ -84,9 +84,9 @@ protected:
 	
 	//relay crap:
 	EmuTCPConnection*	RelayLink;
-	sint32			RelayCount;
+	int32			RelayCount;
 	bool	RelayServer;
-	int32			RemoteID;
+	uint32			RemoteID;
 	
 	//input queue...
 	void	InModeQueuePush(EmuTCPNetPacket_Struct* tnps);

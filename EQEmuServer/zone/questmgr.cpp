@@ -217,7 +217,7 @@ void QuestManager::say(const char *str) {
                owner->Say(str);
 }
 
-void QuestManager::say(const char *str, int8 language) {
+void QuestManager::say(const char *str, uint8 language) {
 	entity_list.ChannelMessage(owner, 8, language, str);
 }
 
@@ -227,7 +227,7 @@ void QuestManager::me(const char *str) {
 	entity_list.MessageClose(initiator, false, 200, 10, str);
 }
 
-void QuestManager::summonitem(int32 itemid, sint16 charges) {
+void QuestManager::summonitem(uint32 itemid, int16 charges) {
 	if(!initiator)
 		return;
 	initiator->SummonItem(itemid, charges);
@@ -242,7 +242,7 @@ void QuestManager::write(const char *file, const char *str) {
 	fclose (pFile);
 }
 
-int16 QuestManager::spawn2(int npc_type, int grid, int unused, float x, float y, float z, float heading) {
+uint16 QuestManager::spawn2(int npc_type, int grid, int unused, float x, float y, float z, float heading) {
 	const NPCType* tmp = 0;
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
@@ -263,7 +263,7 @@ int16 QuestManager::spawn2(int npc_type, int grid, int unused, float x, float y,
 	return(0);
 }
 
-int16 QuestManager::unique_spawn(int npc_type, int grid, int unused, float x, float y, float z, float heading) {
+uint16 QuestManager::unique_spawn(int npc_type, int grid, int unused, float x, float y, float z, float heading) {
 	Mob *other = entity_list.GetMobByNpcTypeID(npc_type);
 	if(other != NULL) {
 		return(other->GetID());
@@ -289,7 +289,7 @@ int16 QuestManager::unique_spawn(int npc_type, int grid, int unused, float x, fl
 	return(0);
 }
 
-int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
+uint16 QuestManager::spawn_from_spawn2(uint32 spawn2_id)
 {
 	LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
 	iterator.Reset();
@@ -318,7 +318,7 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 				return 0;
 			}
 		}
-		int32 npcid = sg->GetNPCType();
+		uint32 npcid = sg->GetNPCType();
 		if(npcid == 0)
 		{
 			return 0;
@@ -370,7 +370,7 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 	return 0;
 }
 
-void QuestManager::enable_spawn2(int32 spawn2_id)
+void QuestManager::enable_spawn2(uint32 spawn2_id)
 {
 	database.UpdateSpawn2Status(spawn2_id, 1);
 	ServerPacket* pack = new ServerPacket(ServerOP_SpawnStatusChange, sizeof(ServerSpawnStatusChange_Struct));
@@ -381,7 +381,7 @@ void QuestManager::enable_spawn2(int32 spawn2_id)
 	safe_delete(pack);
 }
 
-void QuestManager::disable_spawn2(int32 spawn2_id)
+void QuestManager::disable_spawn2(uint32 spawn2_id)
 {
 	database.UpdateSpawn2Status(spawn2_id, 0);
 	ServerPacket* pack = new ServerPacket(ServerOP_SpawnStatusChange, sizeof(ServerSpawnStatusChange_Struct));
@@ -527,7 +527,7 @@ void QuestManager::shout2(const char *str) {
 	worldserver.SendEmoteMessage(0,0,0,13, "%s shouts, '%s'", owner->GetCleanName(), str);
 }
 
-void QuestManager::gmsay(const char *str, int32 color, bool send_to_world) {
+void QuestManager::gmsay(const char *str, uint32 color, bool send_to_world) {
 	if(send_to_world) {
         worldserver.SendEmoteMessage(0, 0, 80, color, "%s", str);
 	}
@@ -664,7 +664,7 @@ bool QuestManager::isdisctome(int item_id) {
 		return(false);
 	}
 
-	int32 spell_id = item->Scroll.Effect;
+	uint32 spell_id = item->Scroll.Effect;
 	if(!IsValidSpell(spell_id)) {
 		return(false);
 	}
@@ -691,7 +691,7 @@ void QuestManager::safemove() {
 void QuestManager::rain(int weather) {
 	zone->zone_weather = weather;
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Weather, 8);
-	*((int32*) &outapp->pBuffer[4]) = (int32) weather; // Why not just use 0x01/2/3?
+	*((uint32*) &outapp->pBuffer[4]) = (uint32) weather; // Why not just use 0x01/2/3?
 	entity_list.QueueClients(owner, outapp);
 	safe_delete(outapp);
 }
@@ -700,7 +700,7 @@ void QuestManager::snow(int weather) {
 	zone->zone_weather = weather + 1;
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Weather, 8);
 	outapp->pBuffer[0] = 0x01;
-	*((int32*) &outapp->pBuffer[4]) = (int32)weather;
+	*((uint32*) &outapp->pBuffer[4]) = (uint32)weather;
 	entity_list.QueueClients(initiator, outapp);
 	safe_delete(outapp);
 }
@@ -744,9 +744,9 @@ void QuestManager::permagender(int gender_id) {
 
 uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
 	uint16 book_slot, count;
-	int16 curspell;
+	uint16 curspell;
       
-	int16 Char_ID = initiator->CharacterID();
+	uint16 Char_ID = initiator->CharacterID();
 	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
 	bool SpellGlobalCheckResult = 0;
 
@@ -784,9 +784,9 @@ uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
 
 uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
 	uint16 count;
-	int16 curspell;
+	uint16 curspell;
 	
-	int16 Char_ID = initiator->CharacterID();
+	uint16 Char_ID = initiator->CharacterID();
 	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
 	bool SpellGlobalCheckResult = 0;
 	
@@ -920,7 +920,7 @@ void QuestManager::movegrp(int zoneid, float x, float y, float z) {
 		} else {
 			Raid *r = entity_list.GetRaidByClient(initiator);
                         if (r != NULL){
-				int32 gid = r->GetGroup(initiator);
+				uint32 gid = r->GetGroup(initiator);
 				if (gid >= 0 && gid < 12) {
 					r->TeleportGroup(owner, zoneid, 0, x, y, z, 0.0f, gid);
 				} else {
@@ -1038,27 +1038,27 @@ void QuestManager::setsky(uint8 new_sky) {
 	safe_delete(outapp);
 }
 
-void QuestManager::setguild(int32 new_guild_id, int8 new_rank) {
+void QuestManager::setguild(uint32 new_guild_id, uint8 new_rank) {
 	if (initiator && initiator->IsClient()) {
 		guild_mgr.SetGuild(initiator->CharacterID(), new_guild_id, new_rank);
 	}
 }
 
 void QuestManager::CreateGuild(const char *guild_name, const char *leader) {
-	int32 cid = database.GetCharacterID(leader); 
+	uint32 cid = database.GetCharacterID(leader); 
 	char hString[250];
 			if (cid == 0) {
 				worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", "Guild Creation: Guild leader not found.");
 				return;
 			}
 
-			int32 tmp = guild_mgr.FindGuildByLeader(cid);
+			uint32 tmp = guild_mgr.FindGuildByLeader(cid);
 			if (tmp != GUILD_NONE) {
 				sprintf(hString, "Guild Creation: Error: %s already is the leader of DB# %i '%s'.", leader, tmp, guild_mgr.GetGuildName(tmp));
 				worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", hString);
 			}
 			else {		
-				int32 gid = guild_mgr.CreateGuild(guild_name, cid);
+				uint32 gid = guild_mgr.CreateGuild(guild_name, cid);
 				if (gid == GUILD_NONE)
 					worldserver.SendEmoteMessage(0, 0, 80, 15, "%s", "Guild Creation: Guild creation failed");
 				else {
@@ -1071,7 +1071,7 @@ void QuestManager::CreateGuild(const char *guild_name, const char *leader) {
 			}
 }
 
-void QuestManager::settime(int8 new_hour, int8 new_min) {
+void QuestManager::settime(uint8 new_hour, uint8 new_min) {
 	if (zone)
 		zone->SetTime(new_hour + 1, new_min);
 }
@@ -1363,7 +1363,7 @@ void QuestManager::rebind(int zoneid, float x, float y, float z) {
 	}
 }
 
-void QuestManager::start(sint32 wp) {
+void QuestManager::start(int32 wp) {
 	if(!owner->IsNPC())
 		return;
 	owner->CastToNPC()->AssignWaypoints(wp);
@@ -1393,17 +1393,17 @@ void QuestManager::resume() {
 	owner->CastToNPC()->ResumeWandering();
 }
 
-void QuestManager::addldonpoints(sint32 points, int32 theme) {
+void QuestManager::addldonpoints(int32 points, uint32 theme) {
 	if(initiator)
 		initiator->UpdateLDoNPoints(points, theme);
 }
 
-void QuestManager::addldonwin(sint32 wins, int32 theme) {
+void QuestManager::addldonwin(int32 wins, uint32 theme) {
 	if(initiator)
 		initiator->UpdateLDoNWins(theme, wins);
 }
 
-void QuestManager::addldonloss(sint32 losses, int32 theme) {
+void QuestManager::addldonloss(int32 losses, uint32 theme) {
 	if(initiator)
 		initiator->UpdateLDoNLosses(theme, losses);
 }
@@ -1562,7 +1562,7 @@ void QuestManager::sethp(int hpperc) {
 	owner->Damage(owner, newhp, SPELL_UNKNOWN, HAND_TO_HAND, false, 0, false);
 }
 
-bool QuestManager::summonburriedplayercorpse(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading) {
+bool QuestManager::summonburriedplayercorpse(uint32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading) {
 	bool Result = false;
 
 	if(char_id > 0) {
@@ -1574,7 +1574,7 @@ bool QuestManager::summonburriedplayercorpse(int32 char_id, float dest_x, float 
 	return Result;
 }
 
-bool QuestManager::summonallplayercorpses(int32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading) {
+bool QuestManager::summonallplayercorpses(uint32 char_id, float dest_x, float dest_y, float dest_z, float dest_heading) {
 	bool Result = false;
 
 	if(char_id > 0) {
@@ -1585,8 +1585,8 @@ bool QuestManager::summonallplayercorpses(int32 char_id, float dest_x, float des
 	return Result;
 }
 
-int32 QuestManager::getplayerburriedcorpsecount(int32 char_id) {
-	int32 Result = 0;
+uint32 QuestManager::getplayerburriedcorpsecount(uint32 char_id) {
+	uint32 Result = 0;
 
 	if(char_id > 0) {
 		Result = database.GetPlayerBurriedCorpseCount(char_id);
@@ -1594,13 +1594,13 @@ int32 QuestManager::getplayerburriedcorpsecount(int32 char_id) {
 	return Result;
 }
 
-bool QuestManager::buryplayercorpse(int32 char_id) 
+bool QuestManager::buryplayercorpse(uint32 char_id) 
 {
 	bool Result = false;
 
 	if(char_id > 0) 
 	{
-		int32 PlayerCorpse = database.GetFirstCorpseID(char_id);
+		uint32 PlayerCorpse = database.GetFirstCorpseID(char_id);
 		if(PlayerCorpse > 0)
 		{
 			database.BuryPlayerCorpse(PlayerCorpse);
@@ -1621,7 +1621,7 @@ bool QuestManager::buryplayercorpse(int32 char_id)
 	return Result;
 }
 
-void QuestManager::forcedooropen(int32 doorid, bool altmode) {
+void QuestManager::forcedooropen(uint32 doorid, bool altmode) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){
 		if(GetInitiator())
@@ -1631,7 +1631,7 @@ void QuestManager::forcedooropen(int32 doorid, bool altmode) {
 	}
 }
 
-void QuestManager::forcedoorclose(int32 doorid, bool altmode) {
+void QuestManager::forcedoorclose(uint32 doorid, bool altmode) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){
 		if(GetInitiator())
@@ -1641,7 +1641,7 @@ void QuestManager::forcedoorclose(int32 doorid, bool altmode) {
 	}
 }
 
-void QuestManager::toggledoorstate(int32 doorid) {
+void QuestManager::toggledoorstate(uint32 doorid) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){
 		if(GetInitiator())
@@ -1651,7 +1651,7 @@ void QuestManager::toggledoorstate(int32 doorid) {
 	}
 }
 
-bool QuestManager::isdooropen(int32 doorid) {
+bool QuestManager::isdooropen(uint32 doorid) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){
 		return d->IsDoorOpen();
@@ -1698,20 +1698,20 @@ void QuestManager::playertexture(int newtexture)
 
 void QuestManager::playerfeature(char *feature, int setting)
 {
-	int16 Race = initiator->GetRace();
-	int8 Gender = initiator->GetGender();
-	int8 Texture = 0xFF;
-	int8 HelmTexture = 0xFF;
-	int8 HairColor = initiator->GetHairColor();
-	int8 BeardColor = initiator->GetBeardColor();
-	int8 EyeColor1 = initiator->GetEyeColor1();
-	int8 EyeColor2 = initiator->GetEyeColor2();
-	int8 HairStyle = initiator->GetHairStyle();
-	int8 LuclinFace = initiator->GetLuclinFace();
-	int8 Beard = initiator->GetBeard();
-	int32 DrakkinHeritage = initiator->GetDrakkinHeritage();
-	int32 DrakkinTattoo = initiator->GetDrakkinTattoo();
-	int32 DrakkinDetails = initiator->GetDrakkinDetails();
+	uint16 Race = initiator->GetRace();
+	uint8 Gender = initiator->GetGender();
+	uint8 Texture = 0xFF;
+	uint8 HelmTexture = 0xFF;
+	uint8 HairColor = initiator->GetHairColor();
+	uint8 BeardColor = initiator->GetBeardColor();
+	uint8 EyeColor1 = initiator->GetEyeColor1();
+	uint8 EyeColor2 = initiator->GetEyeColor2();
+	uint8 HairStyle = initiator->GetHairStyle();
+	uint8 LuclinFace = initiator->GetLuclinFace();
+	uint8 Beard = initiator->GetBeard();
+	uint32 DrakkinHeritage = initiator->GetDrakkinHeritage();
+	uint32 DrakkinTattoo = initiator->GetDrakkinTattoo();
+	uint32 DrakkinDetails = initiator->GetDrakkinDetails();
 	float Size = initiator->GetSize();
 
 	if (!strcasecmp(feature,"race"))
@@ -1754,20 +1754,20 @@ void QuestManager::playerfeature(char *feature, int setting)
 
 void QuestManager::npcfeature(char *feature, int setting)
 {
-	int16 Race = owner->GetRace();
-	int8 Gender = owner->GetGender();
-	int8 Texture = 0xFF;
-	int8 HelmTexture = 0xFF;
-	int8 HairColor = owner->GetHairColor();
-	int8 BeardColor = owner->GetBeardColor();
-	int8 EyeColor1 = owner->GetEyeColor1();
-	int8 EyeColor2 = owner->GetEyeColor2();
-	int8 HairStyle = owner->GetHairStyle();
-	int8 LuclinFace = owner->GetLuclinFace();
-	int8 Beard = owner->GetBeard();
-	int32 DrakkinHeritage = owner->GetDrakkinHeritage();
-	int32 DrakkinTattoo = owner->GetDrakkinTattoo();
-	int32 DrakkinDetails = owner->GetDrakkinDetails();
+	uint16 Race = owner->GetRace();
+	uint8 Gender = owner->GetGender();
+	uint8 Texture = 0xFF;
+	uint8 HelmTexture = 0xFF;
+	uint8 HairColor = owner->GetHairColor();
+	uint8 BeardColor = owner->GetBeardColor();
+	uint8 EyeColor1 = owner->GetEyeColor1();
+	uint8 EyeColor2 = owner->GetEyeColor2();
+	uint8 HairStyle = owner->GetHairStyle();
+	uint8 LuclinFace = owner->GetLuclinFace();
+	uint8 Beard = owner->GetBeard();
+	uint32 DrakkinHeritage = owner->GetDrakkinHeritage();
+	uint32 DrakkinTattoo = owner->GetDrakkinTattoo();
+	uint32 DrakkinDetails = owner->GetDrakkinDetails();
 	float Size = owner->GetSize();
 
 	if (!strcasecmp(feature,"race"))
@@ -1808,7 +1808,7 @@ void QuestManager::npcfeature(char *feature, int setting)
 										DrakkinHeritage, DrakkinTattoo, DrakkinDetails, Size);
 }
 
-void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration)
+void QuestManager::popup(char *title, char *text, uint32 popupid, uint32 buttons, uint32 Duration)
 {
          if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons, Duration);
 }
@@ -1831,7 +1831,7 @@ bool QuestManager::botquest()
 bool QuestManager::createBot(const char *name, const char *lastname, uint8 level, uint16 race, uint8 botclass, uint8 gender)
 {
 	std::string TempErrorMessage;
-	int32 MaxBotCreate = RuleI(Bots, CreateBotCount);
+	uint32 MaxBotCreate = RuleI(Bots, CreateBotCount);
 
 	if (initiator && initiator->IsClient())
 	{
@@ -2118,16 +2118,16 @@ int QuestManager::getlevel(uint8 type)
 		return 0;
 }
 
-int16 QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
+uint16 QuestManager::CreateGroundObject(uint32 itemid, float x, float y, float z, float heading, uint32 decay_time)
 {
-	int16 entid = 0; //safety check
+	uint16 entid = 0; //safety check
 	entid = entity_list.CreateGroundObject(itemid, x, y, z, heading, decay_time);
 	return entid;
 }
 
-int16 QuestManager::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time)
+uint16 QuestManager::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time)
 {
-	int16 entid = 0; //safety check
+	uint16 entid = 0; //safety check
 	entid = entity_list.CreateGroundObjectFromModel(model, x, y, z, heading, type, decay_time);
 	return entid;
 }
@@ -2142,7 +2142,7 @@ void QuestManager::ModifyNPCStat(const char *identifier, const char *newValue)
 	}
 }
 
-int QuestManager::collectitems_processSlot(sint16 slot_id, uint32 item_id,
+int QuestManager::collectitems_processSlot(int16 slot_id, uint32 item_id,
 	bool remove)
 {
 	ItemInst *item;
@@ -2193,7 +2193,7 @@ int QuestManager::collectitems(uint32 item_id, bool remove)
 	return quantity;
 }
 
-void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
+void QuestManager::UpdateSpawnTimer(uint32 id, uint32 newTime)
 {
 	bool found = false;
 
@@ -2228,7 +2228,7 @@ void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
 }
 
 // used to set the number of an item in the selected merchant's temp item list.  Defaults to zero if no quantity is specified.
-void QuestManager::MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity) {
+void QuestManager::MerchantSetItem(uint32 NPCid, uint32 itemid, uint32 quantity) {
 	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
 
 	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
@@ -2241,7 +2241,7 @@ void QuestManager::MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity) {
 	zone->SaveTempItem(merchant->CastToNPC()->MerchantType, NPCid, itemid, quantity);
 }
 
-int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
+uint32 QuestManager::MerchantCountItem(uint32 NPCid, uint32 itemid) {
 	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
 
 	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
@@ -2255,7 +2255,7 @@ int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
 	std::list<TempMerchantList> MerchList = zone->tmpmerchanttable[NPCid];
 	std::list<TempMerchantList>::const_iterator itr;
 	TempMerchantList ml;
-	int32 Quant = 0;
+	uint32 Quant = 0;
 
 	for(itr = MerchList.begin(); itr != MerchList.end(); itr++){
 		ml = *itr;
@@ -2285,15 +2285,15 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 	return perltext;
 }
 
-int16 QuestManager::CreateInstance(const char *zone, sint16 version, int32 duration)
+uint16 QuestManager::CreateInstance(const char *zone, int16 version, uint32 duration)
 {
 	if(initiator)
 	{
-		int32 zone_id = database.GetZoneID(zone);
+		uint32 zone_id = database.GetZoneID(zone);
 		if(zone_id == 0)
 			return 0;
 
-		int16 id = 0;
+		uint16 id = 0;
 		if(!database.GetUnusedInstanceID(id))
 		{
 			initiator->Message(13, "Server was unable to find a free instance id.");
@@ -2310,12 +2310,12 @@ int16 QuestManager::CreateInstance(const char *zone, sint16 version, int32 durat
 	return 0;
 }
 
-void QuestManager::DestroyInstance(int16 instance_id)
+void QuestManager::DestroyInstance(uint16 instance_id)
 {
 	database.DeleteInstance(instance_id);
 }
 
-int16 QuestManager::GetInstanceID(const char *zone, sint16 version)
+uint16 QuestManager::GetInstanceID(const char *zone, int16 version)
 {
 	if(initiator)
 	{
@@ -2324,7 +2324,7 @@ int16 QuestManager::GetInstanceID(const char *zone, sint16 version)
 	return 0;
 }
 
-void QuestManager::AssignToInstance(int16 instance_id)
+void QuestManager::AssignToInstance(uint16 instance_id)
 {
 	if(initiator)
 	{
@@ -2332,27 +2332,27 @@ void QuestManager::AssignToInstance(int16 instance_id)
 	}
 }
 
-void QuestManager::AssignGroupToInstance(int16 instance_id)
+void QuestManager::AssignGroupToInstance(uint16 instance_id)
 {
 	if(initiator)
 	{
 		Group *g = initiator->GetGroup();
 		if(g)
 		{
-			int32 gid = g->GetID();
+			uint32 gid = g->GetID();
 			database.AssignGroupToInstance(gid, instance_id);
 		}
 	}
 }
 
-void QuestManager::AssignRaidToInstance(int16 instance_id)
+void QuestManager::AssignRaidToInstance(uint16 instance_id)
 {
 	if(initiator)
 	{
 		Raid *r = initiator->GetRaid();
 		if(r)
 		{
-			int32 rid = r->GetID();
+			uint32 rid = r->GetID();
 			database.AssignRaidToInstance(rid, instance_id);
 		}
 	}
@@ -2366,7 +2366,7 @@ void QuestManager::MovePCInstance(int zone_id, int instance_id, float x, float y
 	}
 }
 
-void QuestManager::FlagInstanceByGroupLeader(int32 zone, sint16 version)
+void QuestManager::FlagInstanceByGroupLeader(uint32 zone, int16 version)
 {
 	if(initiator)
 	{
@@ -2377,7 +2377,7 @@ void QuestManager::FlagInstanceByGroupLeader(int32 zone, sint16 version)
 	}
 }
 
-void QuestManager::FlagInstanceByRaidLeader(int32 zone, sint16 version)
+void QuestManager::FlagInstanceByRaidLeader(uint32 zone, int16 version)
 {
 	if(initiator)
 	{
@@ -2493,7 +2493,7 @@ bool QuestManager::IsRunning()
 	return owner->IsRunning();
 }
 
-void QuestManager::FlyMode(int8 flymode)
+void QuestManager::FlyMode(uint8 flymode)
 {
 	if(initiator)
 	{
@@ -2567,7 +2567,7 @@ void QuestManager::removetitle(int titleset) {
    initiator->RemoveTitle(titleset);
 }
 
-void QuestManager::wearchange(int8 slot, int16 texture)
+void QuestManager::wearchange(uint8 slot, uint16 texture)
 {
 	if(owner){
 		owner->SendTextureWC(slot, texture);
@@ -2630,15 +2630,15 @@ void QuestManager::SendMail(const char *to, const char *from, const char *subjec
 	safe_delete(pack);
 }
 
-int16 QuestManager::CreateDoor(const char* model, float x, float y, float z, float heading, int8 opentype, int16 size)
+uint16 QuestManager::CreateDoor(const char* model, float x, float y, float z, float heading, uint8 opentype, uint16 size)
 {
-	int16 entid = 0; //safety check
+	uint16 entid = 0; //safety check
 	entid = entity_list.CreateDoor(model, x, y, z, heading, opentype, size);
 	return entid;
 }
 
-sint32 QuestManager::GetZoneID(const char *zone) {
-    return static_cast<sint32>(database.GetZoneID(zone));
+int32 QuestManager::GetZoneID(const char *zone) {
+    return static_cast<int32>(database.GetZoneID(zone));
 }
 
 const char* QuestManager::GetZoneLongName(const char *zone) {
@@ -2650,7 +2650,7 @@ const char* QuestManager::GetZoneLongName(const char *zone) {
     return ln.c_str();
 }
 
-bool QuestManager::TurnInItem(int32 itm, int charges)
+bool QuestManager::TurnInItem(uint32 itm, int charges)
 {
 	if ( owner && owner->IsNPC() )
 	{
@@ -2685,7 +2685,7 @@ void QuestManager::ClearHandIn()
 	}
 }
 
-void QuestManager::CrossZoneSignalPlayerByCharID(int charid, int32 data){
+void QuestManager::CrossZoneSignalPlayerByCharID(int charid, uint32 data){
 	ServerPacket* pack = new ServerPacket(ServerOP_CZSignalClient, sizeof(CZClientSignal_Struct));
 	CZClientSignal_Struct* CZSC = (CZClientSignal_Struct*) pack->pBuffer;
 	CZSC->charid = charid;
@@ -2694,7 +2694,7 @@ void QuestManager::CrossZoneSignalPlayerByCharID(int charid, int32 data){
 	safe_delete(pack);
 }
 
-void QuestManager::CrossZoneSignalPlayerByName(const char *CharName, int32 data){
+void QuestManager::CrossZoneSignalPlayerByName(const char *CharName, uint32 data){
 	uint32 message_len = strlen(CharName) + 1;
 	ServerPacket* pack = new ServerPacket(ServerOP_CZSignalClientByName, sizeof(CZClientSignalByName_Struct) + message_len);
 	CZClientSignalByName_Struct* CZSC = (CZClientSignalByName_Struct*) pack->pBuffer;
@@ -2705,7 +2705,7 @@ void QuestManager::CrossZoneSignalPlayerByName(const char *CharName, int32 data)
 }
 
 
-void QuestManager::CrossZoneMessagePlayerByName(int32 Type, const char *CharName, const char *Message){
+void QuestManager::CrossZoneMessagePlayerByName(uint32 Type, const char *CharName, const char *Message){
 	uint32 message_len = strlen(CharName) + 1;
 	uint32 message_len2 = strlen(Message) + 1;
 	ServerPacket* pack = new ServerPacket(ServerOP_CZMessagePlayer, sizeof(CZMessagePlayer_Struct) + message_len + message_len2);

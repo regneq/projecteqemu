@@ -18,7 +18,7 @@
 #include "../common/debug.h"
 #include "../common/classes.h"
 
-const char* GetEQClassName(int8 class_, int8 level) {
+const char* GetEQClassName(uint8 class_, uint8 level) {
 	switch(class_) {
       case WARRIOR: 
 		 if (level >= 70) 
@@ -290,7 +290,7 @@ const char* GetEQClassName(int8 class_, int8 level) {
 	}
 }
 
-int32 GetArrayEQClass(int8 eqclass) {
+uint32 GetArrayEQClass(uint8 eqclass) {
 	switch (eqclass) {
 		case WARRIOR:
 			return WARRIOR;
@@ -329,7 +329,7 @@ int32 GetArrayEQClass(int8 eqclass) {
 	}
 }
 
-int8 GetEQArrayEQClass(int8 eqclass) {
+uint8 GetEQArrayEQClass(uint8 eqclass) {
 	if (eqclass >= WARRIOR && eqclass <= BERSERKER)
 		return eqclass - WARRIOR;
 	if (eqclass >= WARRIORGM && eqclass <= BERSERKERGM)

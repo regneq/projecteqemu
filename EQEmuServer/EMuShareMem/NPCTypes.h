@@ -13,6 +13,6 @@ struct MMFNPCTypes_Struct {
 	NPCType		NPCTypes[0];
 };
 
-//bool	pDLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, int32 iNPCTypeStructSize, sint32* iNPCTypesCount, int32* iMaxNPCTypeID);
+//bool	pDLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, uint32 iNPCTypeStructSize, int32* iNPCTypesCount, uint32* iMaxNPCTypeID);
 bool	pAddNPCType(uint32 id, const NPCType* npctype);
 const NPCType* pGetNPCType(uint32 id);

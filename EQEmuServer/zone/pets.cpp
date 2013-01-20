@@ -215,7 +215,7 @@ const char *GetRandPetName()
 }
 */
 
-void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
+void Mob::MakePet(uint16 spell_id, const char* pettype, const char *petname) {
 	// petpower of -1 is used to get the petpower based on whichever focus is currently
 	// equipped. This should replicate the old functionality for the most part.
 	MakePoweredPet(spell_id, pettype, -1, petname);
@@ -225,12 +225,12 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 // making it possible for petpower to be retained without the focus item having to
 // stay equipped when the character zones. petpower of -1 means that the currently equipped petfocus
 // of a client is searched for and used instead.
-void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, const char *petname) {
+void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower, const char *petname) {
 	// Sanity and early out checking first.
 	if(HasPet() || pettype == NULL)
 		return;
 
-	sint16 act_power = 0; // The actual pet power we'll use.
+	int16 act_power = 0; // The actual pet power we'll use.
 	if (petpower == -1) {
 		if (this->IsClient())
 			act_power = CastToClient()->GetFocusEffect(focusPetPower, spell_id);
@@ -280,7 +280,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 	}
 
 	//Live AA - Elemental Durability
-	sint16 MaxHP = aabonuses.PetMaxHP + itembonuses.PetMaxHP + spellbonuses.PetMaxHP;
+	int16 MaxHP = aabonuses.PetMaxHP + itembonuses.PetMaxHP + spellbonuses.PetMaxHP;
 
 	if (MaxHP){
 		npc_type->max_hp += (npc_type->max_hp*MaxHP)/100;
@@ -406,7 +406,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 	// the base items for the pet. These are always loaded
 	// so that a rank 1 suspend minion does not kill things
 	// like the special back items some focused pets may receive.
-	int32 petinv[MAX_WORN_INVENTORY];
+	uint32 petinv[MAX_WORN_INVENTORY];
 	memset(petinv, 0, sizeof(petinv));
 	const Item_Struct *item = 0;
 
@@ -426,7 +426,7 @@ void Mob::MakePoweredPet(int16 spell_id, const char* pettype, sint16 petpower, c
 /* This is why the pets ghost - pets were being spawned too far away from its npc owner and some
 into walls or objects (+10), this sometimes creates the "ghost" effect. I changed to +2 (as close as I 
 could get while it still looked good). I also noticed this can happen if an NPC is spawned on the same spot of another or in a related bad spot.*/
-Pet::Pet(NPCType *type_data, Mob *owner, PetType type, int16 spell_id, sint16 power)
+Pet::Pet(NPCType *type_data, Mob *owner, PetType type, uint16 spell_id, int16 power)
 : NPC(type_data, 0, owner->GetX()+2, owner->GetY()+2, owner->GetZ(), owner->GetHeading(), FlyMode3)
 {
 	GiveNPCTypeData(type_data);
@@ -441,10 +441,10 @@ bool ZoneDatabase::GetPetEntry(const char *pet_type, PetRecord *into) {
 	return GetPoweredPetEntry(pet_type, 0, into);
 }
 
-bool ZoneDatabase::GetPoweredPetEntry(const char *pet_type, sint16 petpower, PetRecord *into) {
+bool ZoneDatabase::GetPoweredPetEntry(const char *pet_type, int16 petpower, PetRecord *into) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 querylen = 0;
+	uint32 querylen = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 
@@ -518,7 +518,7 @@ void Mob::SetPet(Mob* newpet) {
 	}
 }
 
-void Mob::SetPetID(int16 NewPetID) {
+void Mob::SetPetID(uint16 NewPetID) {
 	if (NewPetID == GetID() && NewPetID != 0)
 		return;
 	petid = NewPetID;
@@ -530,12 +530,12 @@ void Mob::SetPetID(int16 NewPetID) {
 	}
 }
 
-void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
+void NPC::GetPetState(SpellBuff_Struct *pet_buffs, uint32 *items, char *name) {
 	//save the pet name
 	strn0cpy(name, GetName(), 64);
 	
 	//save their items, we only care about what they are actually wearing
-	memcpy(items, equipment, sizeof(int32)*MAX_WORN_INVENTORY);
+	memcpy(items, equipment, sizeof(uint32)*MAX_WORN_INVENTORY);
 	
 	//save their buffs.
 	for (int i=0; i < GetPetMaxTotalSlots(); i++) {
@@ -557,7 +557,7 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 	}
 }
 
-void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
+void NPC::SetPetState(SpellBuff_Struct *pet_buffs, uint32 *items) {
 	//restore their buffs...
 	
 	int i;
@@ -570,7 +570,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 			}
 		}
 		
-		if (pet_buffs[i].spellid <= (int32)SPDAT_RECORDS && pet_buffs[i].spellid != 0 && pet_buffs[i].duration > 0) {
+		if (pet_buffs[i].spellid <= (uint32)SPDAT_RECORDS && pet_buffs[i].spellid != 0 && pet_buffs[i].duration > 0) {
 			if(pet_buffs[i].level == 0 || pet_buffs[i].level > 100)
 				pet_buffs[i].level = 1;
 			buffs[i].spellid			= pet_buffs[i].spellid;
@@ -590,7 +590,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 		}
 	}
 	for (int j1=0; j1 < GetPetMaxTotalSlots(); j1++) {
-		if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
+		if (buffs[j1].spellid <= (uint32)SPDAT_RECORDS) {
 			for (int x1=0; x1 < EFFECT_COUNT; x1++) {
 				switch (spells[buffs[j1].spellid].effectid[x1]) {
 					case SE_WeaponProc:
@@ -638,7 +638,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 // Load the equipmentset from the DB. Might be worthwhile to load these into
 // shared memory at some point due to the number of queries needed to load a
 // nested set.
-bool ZoneDatabase::GetBasePetItems(sint32 equipmentset, int32 *items) {
+bool ZoneDatabase::GetBasePetItems(int32 equipmentset, uint32 *items) {
 	if (equipmentset < 0 || items == NULL)
 		return false;
 
@@ -652,13 +652,13 @@ bool ZoneDatabase::GetBasePetItems(sint32 equipmentset, int32 *items) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 querylen = 0;
+	uint32 querylen = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	int depth = 0;
-	sint32 curset = equipmentset;
-	sint32 nextset = -1;
-	int32 slot;
+	int32 curset = equipmentset;
+	int32 nextset = -1;
+	uint32 slot;
 
 	// outline:
 	// get equipmentset from DB. (Mainly check if we exist and get the

@@ -34,15 +34,15 @@ struct SpawnedBotsList {
 };
 
 struct BotSpell {
-	int16 SpellId;
+	uint16 SpellId;
 	int SpellIndex;
-	sint16 ManaCost;
+	int16 ManaCost;
 };
 
 struct BotAA {
-	int32 aa_id;
-	int8 req_level;
-	int8 total_levels;
+	uint32 aa_id;
+	uint8 req_level;
+	uint8 total_levels;
 };
 
 #endif // BOTS

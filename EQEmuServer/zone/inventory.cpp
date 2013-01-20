@@ -198,7 +198,7 @@ bool Client::CheckLoreConflict(const Item_Struct* item) {
 	return (m_inv.HasItemByLoreGroup(item->LoreGroup, ~invWhereSharedBank) != SLOT_INVALID);
 }
 
-void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned, uint16 to_slot) {
+void Client::SummonItem(uint32 item_id, int16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned, uint16 to_slot) {
 	const Item_Struct* item = database.GetItem(item_id);
 	
 	if (item == NULL) {
@@ -316,7 +316,7 @@ void Client::SummonItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2
 }
 
 // Drop item from inventory to ground (generally only dropped from SLOT_CURSOR)
-void Client::DropItem(sint16 slot_id)
+void Client::DropItem(int16 slot_id)
 {
 
 	if (GetInv().CheckNoDrop(slot_id) && RuleI(World, FVNoDropFlag) == 0 || RuleI(Character, MinStatusForNoDropExemptions) < Admin() && RuleI(World, FVNoDropFlag) == 2) {
@@ -373,7 +373,7 @@ void Client::DropInst(const ItemInst* inst)
 }
 
 // Returns a slot's item ID (returns INVALID_ID if not found)
-uint32 Client::GetItemIDAt(sint16 slot_id) {
+uint32 Client::GetItemIDAt(int16 slot_id) {
 	const ItemInst* inst = m_inv[slot_id];
 	if (inst)
 		return inst->GetItem()->ID;
@@ -384,7 +384,7 @@ uint32 Client::GetItemIDAt(sint16 slot_id) {
 
 // Returns an augment's ID that's in an item (returns INVALID_ID if not found)
 // Pass in the slot ID of the item and which augslot you want to check (0-4)
-uint32 Client::GetAugmentIDAt(sint16 slot_id, uint8 augslot) {
+uint32 Client::GetAugmentIDAt(int16 slot_id, uint8 augslot) {
 	const ItemInst* inst = m_inv[slot_id];
 	if (inst)
 		if (inst->GetAugmentItemID(augslot))
@@ -395,7 +395,7 @@ uint32 Client::GetAugmentIDAt(sint16 slot_id, uint8 augslot) {
 }
 
 // Remove item from inventory
-void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_update, bool update_db) {
+void Client::DeleteItemInInventory(int16 slot_id, int8 quantity, bool client_update, bool update_db) {
 	#if (EQDEBUG >= 5)
 		LogFile->write(EQEMuLog::Debug, "DeleteItemInInventory(%i, %i, %s)", slot_id, quantity, (client_update) ? "true":"false");
 	#endif
@@ -419,13 +419,13 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 
 	// start QS code
 	if(RuleB(QueryServ, PlayerLogDeletes)) {
-		int16 delete_count = 0;
+		uint16 delete_count = 0;
 
 		if(m_inv[slot_id]) { delete_count += m_inv.GetItem(slot_id)->GetTotalItemCount(); }
 
 		ServerPacket* qspack = new ServerPacket(ServerOP_QSPlayerLogDeletes, sizeof(QSPlayerLogDelete_Struct) + (sizeof(QSDeleteItems_Struct) * delete_count));
 		QSPlayerLogDelete_Struct* qsaudit = (QSPlayerLogDelete_Struct*)qspack->pBuffer;
-		int16 parent_offset = 0;
+		uint16 parent_offset = 0;
 
 		qsaudit->char_id	= character_id;
 		qsaudit->stack_size = quantity;
@@ -445,7 +445,7 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 				ItemInst* bagitem = m_inv[slot_id]->GetItem(bag_idx);
 				
 				if(bagitem) {
-					sint16 bagslot_id = Inventory::CalcSlotId(slot_id, bag_idx);
+					int16 bagslot_id = Inventory::CalcSlotId(slot_id, bag_idx);
 
 					qsaudit->items[++parent_offset].char_slot = bagslot_id;
 					qsaudit->items[parent_offset].item_id	  = bagitem->GetID();
@@ -527,7 +527,7 @@ bool Client::PushItemOnCursor(const ItemInst& inst, bool client_update)
 	return database.SaveCursor(CharacterID(), s, e);
 }
 
-bool Client::PutItemInInventory(sint16 slot_id, const ItemInst& inst, bool client_update)
+bool Client::PutItemInInventory(int16 slot_id, const ItemInst& inst, bool client_update)
 {
 	mlog(INVENTORY__SLOTS, "Putting item %s (%d) into slot %d", inst.GetItem()->Name, inst.GetItem()->ID, slot_id);
 	if (slot_id==SLOT_CURSOR) 
@@ -550,7 +550,7 @@ bool Client::PutItemInInventory(sint16 slot_id, const ItemInst& inst, bool clien
 	CalcBonuses();
 }
 
-void Client::PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data)
+void Client::PutLootInInventory(int16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data)
 {
 	mlog(INVENTORY__SLOTS, "Putting loot item %s (%d) into slot %d", inst.GetItem()->Name, inst.GetItem()->ID, slot_id);
 	m_inv.PutItem(slot_id, inst);
@@ -565,7 +565,7 @@ void Client::PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLoot
 
 	if(bag_item_data)	// bag contents
 	{
-		sint16 interior_slot;
+		int16 interior_slot;
 		// solar: our bag went into slot_id, now let's pack the contents in
 		for(int i = 0; i < 10; i++)
 		{
@@ -581,11 +581,11 @@ void Client::PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLoot
 	
 	CalcBonuses();
 }
-bool Client::TryStacking(ItemInst* item, int8 type, bool try_worn, bool try_cursor){
+bool Client::TryStacking(ItemInst* item, uint8 type, bool try_worn, bool try_cursor){
 	if(!item || !item->IsStackable() || item->GetCharges()>=item->GetItem()->StackSize)
 		return false;
-	sint16 i;
-	int32 item_id = item->GetItem()->ID;
+	int16 i;
+	uint32 item_id = item->GetItem()->ID;
 	for (i = 22; i <= 29; i++)
 	{
 		ItemInst* tmp_inst = m_inv.GetItem(i);	
@@ -601,7 +601,7 @@ bool Client::TryStacking(ItemInst* item, int8 type, bool try_worn, bool try_curs
 	{
 		for (uint8 j = 0; j < 10; j++)
 		{
-			int16 slotid = Inventory::CalcSlotId(i, j);
+			uint16 slotid = Inventory::CalcSlotId(i, j);
 			ItemInst* tmp_inst = m_inv.GetItem(slotid);
 
 			if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
@@ -623,7 +623,7 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 	// #1: Try to auto equip
 	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level && !inst.GetItem()->Attuneable && inst.GetItem()->ItemType != ItemTypeAugment)
 	{
-		for (sint16 i = 0; i < 9999; i++) // originally (i < 22)
+		for (int16 i = 0; i < 9999; i++) // originally (i < 22)
 		{
 			if (i == 22) {
 				if(this->GetClientVersion() >= EQClientSoF) { i = 9999; } // added power source check for SoF+ clients
@@ -644,7 +644,7 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 				}
 				if( i== SLOT_SECONDARY && m_inv[SLOT_PRIMARY]) // check to see if primary slot is a two hander
 				{
-					int8 use = m_inv[SLOT_PRIMARY]->GetItem()->ItemType;
+					uint8 use = m_inv[SLOT_PRIMARY]->GetItem()->ItemType;
 					if(use == ItemType2HS || use == ItemType2HB || use == ItemType2HPierce)
 						continue;
 				}
@@ -662,7 +662,7 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 				{
 					//send worn to everyone...
 					PutLootInInventory(i, inst);
-					int8 worn_slot_material = Inventory::CalcMaterialFromSlot(i);
+					uint8 worn_slot_material = Inventory::CalcMaterialFromSlot(i);
 					if(worn_slot_material != 0xFF)
 					{
 						SendWearChange(worn_slot_material);
@@ -682,7 +682,7 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 
 	// #3: put it in inventory
 	bool is_arrow = (inst.GetItem()->ItemType == ItemTypeArrow) ? true : false;
-	sint16 slot_id = m_inv.FindFreeSlot(inst.IsType(ItemClassContainer), try_cursor, inst.GetItem()->Size, is_arrow);
+	int16 slot_id = m_inv.FindFreeSlot(inst.IsType(ItemClassContainer), try_cursor, inst.GetItem()->Size, is_arrow);
 	if (slot_id != SLOT_INVALID)
 	{
 		PutLootInInventory(slot_id, inst, bag_item_data);
@@ -693,7 +693,7 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 }
 
 // solar: helper function for AutoPutLootInInventory
-void Client::MoveItemCharges(ItemInst &from, sint16 to_slot, int8 type)
+void Client::MoveItemCharges(ItemInst &from, int16 to_slot, uint8 type)
 {
 	ItemInst *tmp_inst = m_inv.GetItem(to_slot);
 
@@ -742,9 +742,9 @@ bool Client::MakeItemLink(char* &ret_link, const ItemInst *inst) {
 	//length:
 	//1	5		5		5		5		5		5		1			4			1				8		= 45
 	//evolving item info: http://eqitems.13th-floor.org/phpBB2/viewtopic.php?t=145#558
-	int8 evolving = 0;
+	uint8 evolving = 0;
 	uint16 loregroup = 0;
-	int8 evolvedlevel = 0;
+	uint8 evolvedlevel = 0;
 	int hash = 0;
 	//int hash = GetItemLinkHash(inst);	//eventually this will work (currently crashes zone), but for now we'll skip the extra overhead
 	if (GetClientVersion() >= EQClientRoF)
@@ -930,7 +930,7 @@ packet with the item number in it, but I cant seem to find it right now
 	safe_delete(outapp);
 }
 
-void Client::SendLootItemInPacket(const ItemInst* inst, sint16 slot_id)
+void Client::SendLootItemInPacket(const ItemInst* inst, int16 slot_id)
 {
 	SendItemPacket(slot_id,inst, ItemPacketTrade);
 }
@@ -978,7 +978,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	uint32 stack_count_check = move_in->number_in_stack;
 
 	if(!IsValidSlot(src_slot_check)){
-		// SoF+ sends a Unix timestamp (should be sint32) for src and dst slots every 10 minutes for some reason.
+		// SoF+ sends a Unix timestamp (should be int32) for src and dst slots every 10 minutes for some reason.
 		if(src_slot_check < 2147483647)
 			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
 		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
@@ -986,7 +986,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	}
 
 	if(!IsValidSlot(dst_slot_check)) {
-		// SoF+ sends a Unix timestamp (should be sint32) for src and dst slots every 10 minutes for some reason.
+		// SoF+ sends a Unix timestamp (should be int32) for src and dst slots every 10 minutes for some reason.
 		if(src_slot_check < 2147483647)
 			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
 		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
@@ -1019,8 +1019,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	else if(auto_attack && (move_in->to_slot == SLOT_PRIMARY || move_in->to_slot == SLOT_SECONDARY || move_in->to_slot == SLOT_RANGE))
 		SetAttackTimer();
 	// Step 1: Variables
-	sint16 src_slot_id = (sint16)move_in->from_slot;
-	sint16 dst_slot_id = (sint16)move_in->to_slot;
+	int16 src_slot_id = (int16)move_in->from_slot;
+	int16 dst_slot_id = (int16)move_in->to_slot;
 
 	if(IsBankSlot(src_slot_id) || 
 		IsBankSlot(dst_slot_id) || 
@@ -1051,7 +1051,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		mlog(INVENTORY__SLOTS, "Src slot %d has item %s (%d) with %d charges in it.", src_slot_id, src_inst->GetItem()->Name, src_inst->GetItem()->ID, src_inst->GetCharges());
 		srcitemid = src_inst->GetItem()->ID;
 		//SetTint(dst_slot_id,src_inst->GetColor());
-		if (src_inst->GetCharges() > 0 && (src_inst->GetCharges() < (sint16)move_in->number_in_stack || move_in->number_in_stack > src_inst->GetItem()->StackSize))
+		if (src_inst->GetCharges() > 0 && (src_inst->GetCharges() < (int16)move_in->number_in_stack || move_in->number_in_stack > src_inst->GetItem()->StackSize))
 		{
 			Message(13,"Error: Insufficent number in stack.");
 			return false;
@@ -1171,8 +1171,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				if (world_item && src_item) {
 					// Case 2: Same item on cursor, stacks, transfer of charges needed
 					if ((world_item->ID == src_item->ID) && src_inst->IsStackable()) {
-						sint16 world_charges = world_inst->GetCharges();
-						sint16 src_charges = src_inst->GetCharges();
+						int16 world_charges = world_inst->GetCharges();
+						int16 src_charges = src_inst->GetCharges();
 						
 						// Fill up destination stack as much as possible
 						world_charges += src_charges;
@@ -1289,7 +1289,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		}
 		else {
 			// Nothing in destination slot: split stack into two
-			if ((sint16)move_in->number_in_stack >= src_inst->GetCharges()) {
+			if ((int16)move_in->number_in_stack >= src_inst->GetCharges()) {
 				// Move entire stack
 				if(!m_inv.SwapItem(src_slot_id, dst_slot_id)) { return false; }
 				mlog(INVENTORY__SLOTS, "Move entire stack from %d to %d with stack size %d. Dest empty.", src_slot_id, dst_slot_id, move_in->number_in_stack);
@@ -1356,7 +1356,7 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 	Message(15, "Inventory Desyncronization detected: Resending slot data...");
 
 	if((move_slots->from_slot >= 0 && move_slots->from_slot <= 340) || move_slots->from_slot == 9999) {
-		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
+		int16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
 		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
 			// This prevents the client from crashing when closing any 'phantom' bags -U
 			const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
@@ -1380,7 +1380,7 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 		else { Message(13, "Could not resyncronize source slot %i.", move_slots->from_slot); }
 	}
 	else {
-		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
+		int16 resync_slot = (Inventory::CalcSlotId(move_slots->from_slot) == SLOT_INVALID) ? move_slots->from_slot : Inventory::CalcSlotId(move_slots->from_slot);
 		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
 			if(m_inv[resync_slot]) {
 				const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
@@ -1397,7 +1397,7 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 	}
 
 	if((move_slots->to_slot >= 0 && move_slots->to_slot <= 340) || move_slots->to_slot == 9999) {
-		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->to_slot) == SLOT_INVALID) ? move_slots->to_slot : Inventory::CalcSlotId(move_slots->to_slot);
+		int16 resync_slot = (Inventory::CalcSlotId(move_slots->to_slot) == SLOT_INVALID) ? move_slots->to_slot : Inventory::CalcSlotId(move_slots->to_slot);
 		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
 			const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
 			ItemInst* token_inst = database.CreateItem(token_struct, 1);
@@ -1420,7 +1420,7 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 		else { Message(13, "Could not resyncronize destination slot %i.", move_slots->to_slot); }
 	}
 	else {
-		sint16 resync_slot = (Inventory::CalcSlotId(move_slots->to_slot) == SLOT_INVALID) ? move_slots->to_slot : Inventory::CalcSlotId(move_slots->to_slot);
+		int16 resync_slot = (Inventory::CalcSlotId(move_slots->to_slot) == SLOT_INVALID) ? move_slots->to_slot : Inventory::CalcSlotId(move_slots->to_slot);
 		if(IsValidSlot(resync_slot) && resync_slot != SLOT_INVALID) {
 			if(m_inv[resync_slot]) {
 				const Item_Struct* token_struct = database.GetItem(22292); // 'Copper Coin'
@@ -1438,13 +1438,13 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 }
 
 void Client::QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call) {
-	sint16 from_slot_id = static_cast<sint16>(move_in->from_slot);
-	sint16 to_slot_id	= static_cast<sint16>(move_in->to_slot);
-	sint16 move_amount	= static_cast<sint16>(move_in->number_in_stack);
+	int16 from_slot_id = static_cast<int16>(move_in->from_slot);
+	int16 to_slot_id	= static_cast<int16>(move_in->to_slot);
+	int16 move_amount	= static_cast<int16>(move_in->number_in_stack);
 
 	if(!m_inv[from_slot_id] && !m_inv[to_slot_id]) { return; }
 
-	int16 move_count = 0;
+	uint16 move_count = 0;
 
 	if(m_inv[from_slot_id]) { move_count += m_inv[from_slot_id]->GetTotalItemCount(); }
 	if(to_slot_id != from_slot_id) { if(m_inv[to_slot_id]) { move_count += m_inv[to_slot_id]->GetTotalItemCount(); } }
@@ -1536,7 +1536,7 @@ void Client::QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call) {
 }
 
 void Client::DyeArmor(DyeStruct* dye){
-	sint16 slot=0;
+	int16 slot=0;
 	for(int i=0;i<7;i++){
 		if(m_pp.item_tint[i].rgb.blue!=dye->dye[i].rgb.blue ||
 			m_pp.item_tint[i].rgb.red!=dye->dye[i].rgb.red ||
@@ -1544,7 +1544,7 @@ void Client::DyeArmor(DyeStruct* dye){
 			slot = m_inv.HasItem(32557, 1, invWherePersonal);
 			if(slot != SLOT_INVALID){
 				DeleteItemInInventory(slot,1,true);
-				int8 slot2=SlotConvert(i);
+				uint8 slot2=SlotConvert(i);
 				ItemInst* inst = this->m_inv.GetItem(slot2);
 				if(inst){
 					inst->SetColor((dye->dye[i].rgb.red*65536)+(dye->dye[i].rgb.green*256)+(dye->dye[i].rgb.blue));
@@ -1571,7 +1571,7 @@ void Client::DyeArmor(DyeStruct* dye){
 	Save();
 }
 
-/*bool Client::DecreaseByItemType(int32 type, int8 amt) {
+/*bool Client::DecreaseByItemType(uint32 type, uint8 amt) {
 	const Item_Struct* TempItem = 0;
 	ItemInst* ins;
 	int x;
@@ -1622,7 +1622,7 @@ void Client::DyeArmor(DyeStruct* dye){
 	return false;
 }*/
 
-bool Client::DecreaseByID(int32 type, int8 amt) {
+bool Client::DecreaseByID(uint32 type, uint8 amt) {
 	const Item_Struct* TempItem = 0;
 	ItemInst* ins;
 	int x;
@@ -1673,7 +1673,7 @@ bool Client::DecreaseByID(int32 type, int8 amt) {
 
 void Client::RemoveNoRent(bool client_update) {
 
-	sint16 slot_id;
+	int16 slot_id;
 	
 	// personal
 	for(slot_id = 0; slot_id <= 30; slot_id++) {
@@ -1740,7 +1740,7 @@ void Client::RemoveNoRent(bool client_update) {
 // Two new methods to alleviate perpetual login desyncs
 void Client::RemoveDuplicateLore(bool client_update) {
 	// Split-charge stacking may be added at some point -U
-	sint16 slot_id;
+	int16 slot_id;
 	
 	// personal
 	for(slot_id = 0; slot_id <= 30; slot_id++) {
@@ -1820,14 +1820,14 @@ void Client::RemoveDuplicateLore(bool client_update) {
 
 void Client::MoveSlotNotAllowed(bool client_update) {
 
-	sint16 slot_id;
+	int16 slot_id;
 
 	// equipment
 	for(slot_id = 0; slot_id <= 21; slot_id++) {
 		if(m_inv[slot_id] && !m_inv[slot_id]->IsSlotAllowed(slot_id)) {
 			ItemInst* inst = m_inv.PopItem(slot_id);
 			bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
-			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
+			int16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 			mlog(INVENTORY__ERROR, "Slot Assignment Error: Moving %s from slot %i to %i", inst->GetItem()->Name, slot_id, free_slot_id);
 			PutItemInInventory(free_slot_id, *inst, client_update);
 			database.SaveInventory(character_id, NULL, slot_id);
@@ -1840,7 +1840,7 @@ void Client::MoveSlotNotAllowed(bool client_update) {
 	if(m_inv[slot_id] && !m_inv[slot_id]->IsSlotAllowed(slot_id)) {
 		ItemInst* inst = m_inv.PopItem(slot_id);
 		bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
-		sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
+		int16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 		mlog(INVENTORY__ERROR, "Slot Assignment Error: Moving %s from slot %i to %i", inst->GetItem()->Name, slot_id, free_slot_id);
 		PutItemInInventory(free_slot_id, *inst, (GetClientVersion() >= EQClientSoF) ? client_update : false);
 		database.SaveInventory(character_id, NULL, slot_id);
@@ -1852,7 +1852,7 @@ void Client::MoveSlotNotAllowed(bool client_update) {
 }
 
 // these functions operate with a material slot, which is from 0 to 8
-int32 Client::GetEquipment(int8 material_slot) const
+uint32 Client::GetEquipment(uint8 material_slot) const
 {
 	int invslot;
 	const ItemInst *item;
@@ -1879,7 +1879,7 @@ int32 Client::GetEquipment(int8 material_slot) const
 }
 
 /*
-sint32 Client::GetEquipmentMaterial(int8 material_slot)
+int32 Client::GetEquipmentMaterial(uint8 material_slot)
 {
 	const Item_Struct *item;
 	
@@ -1893,7 +1893,7 @@ sint32 Client::GetEquipmentMaterial(int8 material_slot)
 }
 */
 
-uint32 Client::GetEquipmentColor(int8 material_slot) const
+uint32 Client::GetEquipmentColor(uint8 material_slot) const
 {
 	const Item_Struct *item;
 
@@ -1913,7 +1913,7 @@ uint32 Client::GetEquipmentColor(int8 material_slot) const
 	return 0;
 }
 
-bool Client::LootToStack(int32 itemid) {  //Loots stackable items to existing stacks - Wiz
+bool Client::LootToStack(uint32 itemid) {  //Loots stackable items to existing stacks - Wiz
 	// @merth: Need to do loot code with new inventory struct
 	/*
 	const Item_Struct* item;
@@ -1958,7 +1958,7 @@ bool Client::LootToStack(int32 itemid) {  //Loots stackable items to existing st
 }
 
 // Send an item packet (including all subitems of the item)
-void Client::SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type)
+void Client::SendItemPacket(int16 slot_id, const ItemInst* inst, ItemPacketType packet_type)
 {
 	if (!inst)
 		return;
@@ -1984,7 +1984,7 @@ void Client::SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType
 	FastQueuePacket(&outapp);
 }
 
-EQApplicationPacket* Client::ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type)
+EQApplicationPacket* Client::ReturnItemPacket(int16 slot_id, const ItemInst* inst, ItemPacketType packet_type)
 {
 	if (!inst)
 		return 0;
@@ -2009,7 +2009,7 @@ EQApplicationPacket* Client::ReturnItemPacket(sint16 slot_id, const ItemInst* in
 	return outapp;
 }
 
-static sint16 BandolierSlotToWeaponSlot(int BandolierSlot) {
+static int16 BandolierSlotToWeaponSlot(int BandolierSlot) {
 
 	switch(BandolierSlot) {
 		case bandolierMainHand:
@@ -2037,7 +2037,7 @@ void Client::CreateBandolier(const EQApplicationPacket *app) {
 
 	const Item_Struct *BaseItem;
 
-	sint16 WeaponSlot;
+	int16 WeaponSlot;
 
 	for(int BandolierSlot = bandolierMainHand; BandolierSlot <= bandolierAmmo; BandolierSlot++) {
 		WeaponSlot = BandolierSlotToWeaponSlot(BandolierSlot);
@@ -2078,8 +2078,8 @@ void Client::SetBandolier(const EQApplicationPacket *app) {
 
 	BandolierSet_Struct *bss = (BandolierSet_Struct*)app->pBuffer;
 	_log(INVENTORY__BANDOLIER, "Char: %s activating set %i", GetName(), bss->number);
-	sint16 slot;
-	sint16 WeaponSlot;
+	int16 slot;
+	int16 WeaponSlot;
 	ItemInst *BandolierItems[4];  // Temporary holding area for the weapons we pull out of their inventory
 
 	// First we pull the items for this bandolier set out of their inventory, this makes space to put the
@@ -2101,7 +2101,7 @@ void Client::SetBandolier(const EQApplicationPacket *app) {
 						m_inv.GetItem(SLOT_CURSOR)->GetCharges() >= 1) // '> 0' the same, but this matches Inventory::_HasItem conditional check
 							slot = SLOT_CURSOR;
 					else if (m_inv.GetItem(SLOT_CURSOR)->GetItem()->ItemClass == 1) {
-						for(sint16 CursorBagSlot = 331; CursorBagSlot <= 340; CursorBagSlot++) {
+						for(int16 CursorBagSlot = 331; CursorBagSlot <= 340; CursorBagSlot++) {
 							if (m_inv.GetItem(CursorBagSlot)) {
 								if (m_inv.GetItem(CursorBagSlot)->GetItem()->ID == m_pp.bandoliers[bss->number].items[BandolierSlot].item_id &&
 									m_inv.GetItem(CursorBagSlot)->GetCharges() >= 1) { // ditto
@@ -2235,13 +2235,13 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 
 	_log(INVENTORY__SLOTS,"Char: %s Returning %s to inventory", GetName(), ItemToReturn->GetItem()->Name);
 
-	int32 ItemID = ItemToReturn->GetItem()->ID;
+	uint32 ItemID = ItemToReturn->GetItem()->ID;
 
 	// If the item is stackable (ammo in range slot), try stacking it with other items of the same type
 	//
 	if(ItemToReturn->IsStackable()) {
 
-		for (sint16 i=22; i<=30; i++) { // changed slot max to 30 from 29. client will stack into slot 30 (bags too) before moving.
+		for (int16 i=22; i<=30; i++) { // changed slot max to 30 from 29. client will stack into slot 30 (bags too) before moving.
 
 			ItemInst* InvItem = m_inv.GetItem(i);
 
@@ -2268,9 +2268,9 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 			//
 			if (InvItem && InvItem->IsType(ItemClassContainer)) {
 
-				sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+				int16 BaseSlotID = Inventory::CalcSlotId(i, 0);
 
-				int8 BagSize=InvItem->GetItem()->BagSlots;
+				uint8 BagSize=InvItem->GetItem()->BagSlots;
 
 				uint8 BagSlot;
 				for (BagSlot=0; BagSlot<BagSize; BagSlot++) {
@@ -2304,7 +2304,7 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 
 	// We have tried stacking items, now just try and find an empty slot.
 
-	for (sint16 i=22; i<=30; i++) { // changed slot max to 30 from 29. client will move into slot 30 (bags too) before pushing onto cursor.
+	for (int16 i=22; i<=30; i++) { // changed slot max to 30 from 29. client will move into slot 30 (bags too) before pushing onto cursor.
 
 		ItemInst* InvItem = m_inv.GetItem(i);
 
@@ -2323,9 +2323,9 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 		}
 		if(InvItem->IsType(ItemClassContainer) && Inventory::CanItemFitInContainer(ItemToReturn->GetItem(), InvItem->GetItem())) {
 
-			sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+			int16 BaseSlotID = Inventory::CalcSlotId(i, 0);
 
-			int8 BagSize=InvItem->GetItem()->BagSlots;
+			uint8 BagSize=InvItem->GetItem()->BagSlots;
 
 			for (uint8 BagSlot=0; BagSlot<BagSize; BagSlot++) {
 
@@ -2357,7 +2357,7 @@ bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 	return true;
 }
 
-void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, std::string value) {
+void Inventory::SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, std::string value) {
     ItemInst *inst = GetItem(slot_id);
     if(inst) {
         inst->SetCustomData(identifier, value);
@@ -2365,7 +2365,7 @@ void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::stri
     }
 }
 
-void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, int value) {
+void Inventory::SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, int value) {
     ItemInst *inst = GetItem(slot_id);
     if(inst) {
         inst->SetCustomData(identifier, value);
@@ -2373,7 +2373,7 @@ void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::stri
     }
 }
 
-void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, float value) {
+void Inventory::SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, float value) {
     ItemInst *inst = GetItem(slot_id);
     if(inst) {
         inst->SetCustomData(identifier, value);
@@ -2381,7 +2381,7 @@ void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::stri
     }
 }
 
-void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, bool value) {
+void Inventory::SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, bool value) {
     ItemInst *inst = GetItem(slot_id);
     if(inst) {
         inst->SetCustomData(identifier, value);
@@ -2389,7 +2389,7 @@ void Inventory::SetCustomItemData(uint32 character_id, sint16 slot_id, std::stri
     }
 }
 
-std::string Inventory::GetCustomItemData(sint16 slot_id, std::string identifier) {
+std::string Inventory::GetCustomItemData(int16 slot_id, std::string identifier) {
     ItemInst *inst = GetItem(slot_id);
     if(inst) {
         return inst->GetCustomData(identifier);

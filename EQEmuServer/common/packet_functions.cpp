@@ -34,17 +34,17 @@ void EncryptProfilePacket(EQApplicationPacket* app) {
 	//EncryptProfilePacket(app->pBuffer, app->size);
 }
 
-void EncryptProfilePacket(uchar* pBuffer, int32 size) {
-	int64* data=(int64*)pBuffer;
-	int64 crypt = 0x659365E7;
-	int64 next_crypt;
-	int32 len = size >> 3;
+void EncryptProfilePacket(uchar* pBuffer, uint32 size) {
+	uint64* data=(uint64*)pBuffer;
+	uint64 crypt = 0x659365E7;
+	uint64 next_crypt;
+	uint32 len = size >> 3;
 	
-	int64 swap = data[0];
+	uint64 swap = data[0];
 	data[0] = data[len/2];
 	data[len/2] = swap;
 	
-    for(int32 i=0; i<len;i++) {
+    for(uint32 i=0; i<len;i++) {
 		next_crypt = crypt+data[i]-0x422437A9;
 		data[i] = ((data[i]>>0x19)|(data[i]<<0x27))+0x422437A9;
 		data[i] =  (data[i]<<0x07)|(data[i]>>0x39);
@@ -57,17 +57,17 @@ void EncryptZoneSpawnPacket(EQApplicationPacket* app) {
 	//EncryptZoneSpawnPacket(app->pBuffer, app->size);
 }
 
-void EncryptZoneSpawnPacket(uchar* pBuffer, int32 size) {
-	int64* data=(int64*)pBuffer;
-	int64 crypt = 0x0000;
-	int64 next_crypt;
-	int32 len = size >> 3;
+void EncryptZoneSpawnPacket(uchar* pBuffer, uint32 size) {
+	uint64* data=(uint64*)pBuffer;
+	uint64 crypt = 0x0000;
+	uint64 next_crypt;
+	uint32 len = size >> 3;
 	
-	int64 swap = data[0];
+	uint64 swap = data[0];
 	data[0] = data[len/2];
 	data[len/2] = swap;
 	
-    for(int32 i=0; i<len;i++) {
+    for(uint32 i=0; i<len;i++) {
 		next_crypt = crypt+data[i]-0x659365E7;
 		data[i] = ((data[i]<<0x1d)|(data[i]>>0x23))+0x659365E7;
 		data[i] =  (data[i]<<0x0e)|(data[i]>>0x32);
@@ -275,23 +275,23 @@ uint32 InflatePacket(const uchar* indata, uint32 indatalen, uchar* outdata, uint
 #endif
 }
 
-int32 roll(int32 in, int8 bits) {
+uint32 roll(uint32 in, uint8 bits) {
 	return ((in << bits) | (in >> (32-bits)));
 }
 
-int64 roll(int64 in, int8 bits) {
+uint64 roll(uint64 in, uint8 bits) {
 	return ((in << bits) | (in >> (64-bits)));
 }
 
-int32 rorl(int32 in, int8 bits) {
+uint32 rorl(uint32 in, uint8 bits) {
 	return ((in >> bits) | (in << (32-bits)));
 }
 
-int64 rorl(int64 in, int8 bits) {
+uint64 rorl(uint64 in, uint8 bits) {
 	return ((in >> bits) | (in << (64-bits)));
 }
 
-int32 CRCLookup(uchar idx) {
+uint32 CRCLookup(uchar idx) {
 	if (idx == 0)
 		return 0x00000000;
 	
@@ -322,9 +322,9 @@ int32 CRCLookup(uchar idx) {
 	return false;
 }
 
-uint32 GenerateCRC(int32 b, int32 bufsize, uchar *buf) {
-	int32 CRC = (b ^ 0xFFFFFFFF);
-	int32 bufremain = bufsize;
+uint32 GenerateCRC(uint32 b, uint32 bufsize, uchar *buf) {
+	uint32 CRC = (b ^ 0xFFFFFFFF);
+	uint32 bufremain = bufsize;
 	uchar* bufptr = buf;
 	
 	while (bufremain--) {

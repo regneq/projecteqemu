@@ -137,7 +137,7 @@ bool Console::SendChannelMessage(const ServerChannelMessage_Struct* scm) {
 	return true;
 }
 
-bool Console::SendEmoteMessage(int32 type, const char* message, ...) {
+bool Console::SendEmoteMessage(uint32 type, const char* message, ...) {
 	if (!message)
 		return false;
 	if (!pAcceptMessages)
@@ -153,7 +153,7 @@ bool Console::SendEmoteMessage(int32 type, const char* message, ...) {
 	return true;
 }
 
-bool Console::SendEmoteMessageRaw(int32 type, const char* message) {
+bool Console::SendEmoteMessageRaw(uint32 type, const char* message) {
 	if (!message)
 		return false;
 	if (!pAcceptMessages)
@@ -162,7 +162,7 @@ bool Console::SendEmoteMessageRaw(int32 type, const char* message) {
 	return true;
 }
 
-void Console::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...) {
+void Console::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...) {
 	if (!message)
 		return;
 	if (to_guilddbid != 0 || to_minstatus > Admin())
@@ -177,7 +177,7 @@ void Console::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_min
 	SendEmoteMessageRaw(to, to_guilddbid, to_minstatus, type, buffer);
 }
 
-void Console::SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message) {
+void Console::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message) {
 	if (!message)
 		return;
 	if (to_guilddbid != 0 || to_minstatus > Admin())
@@ -185,11 +185,11 @@ void Console::SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_
 	SendMessage(1, message);
 }
 
-void Console::SendMessage(int8 newline, const char* message, ...) {
+void Console::SendMessage(uint8 newline, const char* message, ...) {
 	if (!message)
 		return;
 	char* buffer = 0;
-	int32 bufsize = 1500;
+	uint32 bufsize = 1500;
 	if (message)
 		bufsize += strlen(message);
 	buffer = new char[bufsize];
@@ -304,7 +304,7 @@ void ConsoleList::KillAll() {
 	}
 }
 
-void ConsoleList::SendConsoleWho(WorldTCPConnection* connection, const char* to, sint16 admin, char** output, int32* outsize, int32* outlen) {
+void ConsoleList::SendConsoleWho(WorldTCPConnection* connection, const char* to, int16 admin, char** output, uint32* outsize, uint32* outlen) {
 	LinkedListIterator<Console*> iterator(list);
 	iterator.Reset();
 	struct in_addr  in;
@@ -344,7 +344,7 @@ void ConsoleList::SendChannelMessage(const ServerChannelMessage_Struct* scm) {
 	}
 }
 
-void ConsoleList::SendEmoteMessage(int32 type, const char* message, ...) {
+void ConsoleList::SendEmoteMessage(uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[1024];
 
@@ -355,7 +355,7 @@ void ConsoleList::SendEmoteMessage(int32 type, const char* message, ...) {
 	SendEmoteMessageRaw(type, buffer);
 }
 
-void ConsoleList::SendEmoteMessageRaw(int32 type, const char* message) {
+void ConsoleList::SendEmoteMessageRaw(uint32 type, const char* message) {
 	LinkedListIterator<Console*> iterator(list);
 	iterator.Reset();
 
@@ -489,8 +489,8 @@ void Console::ProcessCommand(const char* command) {
 					SendMessage(1, "Format: setpass accountname password");
 				else {
 
-					sint16 tmpstatus = 0;
-					int32 tmpid = database.GetAccountIDByName(sep.arg[1], &tmpstatus);
+					int16 tmpstatus = 0;
+					uint32 tmpid = database.GetAccountIDByName(sep.arg[1], &tmpstatus);
 					if (!tmpid)
 						SendMessage(1, "Error: Account not found");
 					else if (tmpstatus > admin)
@@ -519,7 +519,7 @@ void Console::ProcessCommand(const char* command) {
 				}
 			}
 			else if (strcasecmp(sep.arg[0], "md5") == 0) {
-				int8 md5[16];
+				uint8 md5[16];
 				MD5::Generate((const uchar*) sep.argplus[1], strlen(sep.argplus[1]), md5);
 				SendMessage(1, "MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", md5[0], md5[1], md5[2], md5[3], md5[4], md5[5], md5[6], md5[7], md5[8], md5[9], md5[10], md5[11], md5[12], md5[13], md5[14], md5[15]);
 			}
@@ -795,7 +795,7 @@ void Console::ProcessCommand(const char* command) {
 					zoneserver_list.ListLockedZones(0, this);
 				}
 				else if (strcasecmp(sep.arg[1], "lock") == 0 && admin >= 101) {
-					int16 tmp = database.GetZoneID(sep.arg[2]);
+					uint16 tmp = database.GetZoneID(sep.arg[2]);
 					if (tmp) {
 						if (zoneserver_list.SetLockedZone(tmp, true))
 							zoneserver_list.SendEmoteMessage(0, 0, 80, 15, "Zone locked: %s", database.GetZoneName(tmp));
@@ -806,7 +806,7 @@ void Console::ProcessCommand(const char* command) {
 						SendMessage(1, "Usage: #zonelock lock [zonename]");
 				}
 				else if (strcasecmp(sep.arg[1], "unlock") == 0 && admin >= 101) {
-					int16 tmp = database.GetZoneID(sep.arg[2]);
+					uint16 tmp = database.GetZoneID(sep.arg[2]);
 					if (tmp) {
 						if (zoneserver_list.SetLockedZone(tmp, false))
 							zoneserver_list.SendEmoteMessage(0, 0, 80, 15, "Zone unlocked: %s", database.GetZoneName(tmp));

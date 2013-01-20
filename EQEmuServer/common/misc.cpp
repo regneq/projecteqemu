@@ -154,7 +154,7 @@ static char *temp=NULL;
 		return false;
 	}
 	ptr++;
-	int32 id = atoi(field[id_pos].c_str());
+	uint32 id = atoi(field[id_pos].c_str());
 	items[id]=field;
 
 	for(i=0;i<10;i++) {

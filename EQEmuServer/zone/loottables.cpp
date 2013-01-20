@@ -39,10 +39,10 @@ bool SharedDatabase::LoadLoot() {
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 tmpLootTableCount = 0;
-	int32 tmpLootTableEntriesCount = 0;
-	int32 tmpLootDropCount = 0;
-	int32 tmpLootDropEntriesCount = 0;
+	uint32 tmpLootTableCount = 0;
+	uint32 tmpLootTableEntriesCount = 0;
+	uint32 tmpLootDropCount = 0;
+	uint32 tmpLootDropEntriesCount = 0;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT max(id), count(*) FROM loottable"), errbuf, &result)) {
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
@@ -134,7 +134,7 @@ bool SharedDatabase::DBLoadLoot() {
     MYSQL_RES *result;
     MYSQL_ROW row;
     MYSQL_RES *result2;
-	int32 i, tmpid = 0, tmpmincash = 0, tmpmaxcash = 0, tmpavgcoin = 0;
+	uint32 i, tmpid = 0, tmpmincash = 0, tmpmaxcash = 0, tmpavgcoin = 0;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, mincash, maxcash, avgcoin FROM loottable"), errbuf, &result)) {
 		safe_delete_array(query);
 		LootTable_Struct* tmpLT = 0;
@@ -248,16 +248,16 @@ bool SharedDatabase::DBLoadLoot() {
 	return true;
 }
 
-const LootTable_Struct* SharedDatabase::GetLootTable(int32 loottable_id) {
+const LootTable_Struct* SharedDatabase::GetLootTable(uint32 loottable_id) {
 	return EMuShareMemDLL.Loot.GetLootTable(loottable_id);
 }
 
-const LootDrop_Struct* SharedDatabase::GetLootDrop(int32 lootdrop_id) {
+const LootDrop_Struct* SharedDatabase::GetLootDrop(uint32 lootdrop_id) {
 	return EMuShareMemDLL.Loot.GetLootDrop(lootdrop_id);
 }
 
 // Queries the loottable: adds item & coin to the npc
-void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* itemlist, int32* copper, int32* silver, int32* gold, int32* plat) {
+void ZoneDatabase::AddLootTableToNPC(NPC* npc,uint32 loottable_id, ItemList* itemlist, uint32* copper, uint32* silver, uint32* gold, uint32* plat) {
 	_ZP(Database_AddLootTableToNPC);
 //if (loottable_id == 178190)
 //DebugBreak();
@@ -276,7 +276,7 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 		cerr << "Error in loottable #" << loottable_id << ": mincash > maxcash" << endl;
 	}
 	else if (lts->maxcash != 0) {
-		int32 cash = 0;
+		uint32 cash = 0;
 		if (lts->mincash == lts->maxcash)
 			cash = lts->mincash;
 		else
@@ -284,8 +284,8 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 		if (cash != 0) {
 			if (lts->avgcoin != 0) {
 				//this is some crazy ass stuff... and makes very little sense... dont use it, k?
-				int32 mincoin = (int32) (lts->avgcoin * 0.75 + 1);
-				int32 maxcoin = (int32) (lts->avgcoin * 1.25 + 1);
+				uint32 mincoin = (uint32) (lts->avgcoin * 0.75 + 1);
+				uint32 maxcoin = (uint32) (lts->avgcoin * 1.25 + 1);
 				*copper = MakeRandomInt(mincoin, maxcoin);
 				*silver = MakeRandomInt(mincoin, maxcoin);
 				*gold = MakeRandomInt(mincoin, maxcoin);
@@ -301,9 +301,9 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 			}
 			*plat = cash / 1000;
 			cash -= *plat * 1000;
-			int32 gold2 = cash / 100;
+			uint32 gold2 = cash / 100;
 			cash -= gold2 * 100;
-			int32 silver2 = cash / 10;
+			uint32 silver2 = cash / 10;
 			cash -= silver2 * 10;
 			*gold += gold2;
 			*silver += silver2;
@@ -312,10 +312,10 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 	}
 
 	// Do items
-	for (int32 i=0; i<lts->NumEntries; i++) {
-		for (int32 k = 1; k <= lts->Entries[i].multiplier; k++) {
-		    int8 droplimit = lts->Entries[i].droplimit;
-		    int8 mindrop = lts->Entries[i].mindrop;
+	for (uint32 i=0; i<lts->NumEntries; i++) {
+		for (uint32 k = 1; k <= lts->Entries[i].multiplier; k++) {
+		    uint8 droplimit = lts->Entries[i].droplimit;
+		    uint8 mindrop = lts->Entries[i].mindrop;
 
             //LootTable Entry probability
             float ltchance = 0.0f;
@@ -335,7 +335,7 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 
 // Called by AddLootTableToNPC
 // maxdrops = size of the array npcd
-void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemlist, int8 droplimit, int8 mindrop) {
+void ZoneDatabase::AddLootDropToNPC(NPC* npc,uint32 lootdrop_id, ItemList* itemlist, uint8 droplimit, uint8 mindrop) {
 	const LootDrop_Struct* lds = GetLootDrop(lootdrop_id);
 	if (!lds) {
 		return;
@@ -347,20 +347,20 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 	if(lds->NumEntries > 99 && droplimit < 1)
 		droplimit = lds->NumEntries/100; 
 
-	int8 limit = 0;
+	uint8 limit = 0;
 	// Start at a random point in itemlist.
-	int32 item = MakeRandomInt(0, lds->NumEntries-1);
+	uint32 item = MakeRandomInt(0, lds->NumEntries-1);
 	// Main loop.
-	for (int32 i=0; i<lds->NumEntries;) 
+	for (uint32 i=0; i<lds->NumEntries;) 
 	{
 		//Force the itemlist back to beginning.
 		if (item > (lds->NumEntries-1))
 			item = 0;
 
-		int8 charges = lds->Entries[item].multiplier;
-		int8 pickedcharges = 0;
+		uint8 charges = lds->Entries[item].multiplier;
+		uint8 pickedcharges = 0;
 		// Loop to check multipliers.
-		for (int32 x=1; x<=charges; x++)  
+		for (uint32 x=1; x<=charges; x++)  
 		{
 			// Actual roll.
 			float thischance = 0.0;
@@ -375,7 +375,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 #endif
 			if (thischance == 100.0 || drop_chance < thischance) 
 			{
-				int32 itemid = lds->Entries[item].item_id;
+				uint32 itemid = lds->Entries[item].item_id;
 			
 				const Item_Struct* dbitem = GetItem(itemid);
 				npc->AddLootDrop(dbitem, itemlist, lds->Entries[item].item_charges, lds->Entries[item].minlevel, lds->Entries[item].maxlevel, lds->Entries[item].equip_item, false);
@@ -403,7 +403,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 }
 
 //if itemlist is null, just send wear changes
-void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charges, int8 minlevel, int8 maxlevel, bool equipit, bool wearchange) {
+void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, int16 charges, uint8 minlevel, uint8 maxlevel, bool equipit, bool wearchange) {
 	if(item2 == NULL)
 		return;
 	
@@ -439,7 +439,7 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 		char newid[20];
 		const Item_Struct* compitem = NULL;
 		bool found = false; // track if we found an empty slot we fit into
-		sint32 foundslot = -1; // for multi-slot items
+		int32 foundslot = -1; // for multi-slot items
 		
 		// Equip rules are as follows:
 		// If the item has the NoPet flag set it will not be equipped.
@@ -585,12 +585,12 @@ void NPC::AddLootDrop(const Item_Struct *item2, ItemList* itemlist, sint16 charg
 	}
 }
 	  
-void NPC::AddItem(const Item_Struct* item, int16 charges, bool equipitem) {
+void NPC::AddItem(const Item_Struct* item, uint16 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
 	AddLootDrop(item, &itemlist, charges, 1, 127, equipitem, equipitem);
 }
 
-void NPC::AddItem(int32 itemid, int16 charges, bool equipitem) {
+void NPC::AddItem(uint32 itemid, uint16 charges, bool equipitem) {
 	//slot isnt needed, its determined from the item.
 	const Item_Struct * i = database.GetItem(itemid);
 	if(i == NULL)

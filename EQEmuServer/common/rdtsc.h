@@ -45,19 +45,19 @@ public:
 	double getDuration();	//returns the number of miliseconds elapsed
 	
 	//access functions
-	sint64 getTicks() { return(_end - _start); }
-	static sint64 ticksPerMS() { return(_ticsperms); }
+	int64 getTicks() { return(_end - _start); }
+	static int64 ticksPerMS() { return(_ticsperms); }
 	
 protected:
-	static sint64 rdtsc();
+	static int64 rdtsc();
 	
-	sint64 _start;
-	sint64 _end;
+	int64 _start;
+	int64 _end;
 
 protected:
 	static void init();
 	static bool _inited;
-	static sint64 _ticsperms;
+	static int64 _ticsperms;
 };
 
 //this is a timer which can be started and stoped many times.
@@ -75,12 +75,12 @@ public:
 	double getTotalDuration();	//returns the number of miliseconds elapsed
 	double getAverage();
 	
-	sint64 getTotalTicks() { return(_sum); }
-	sint64 getCount() { return(_count); }
+	int64 getTotalTicks() { return(_sum); }
+	int64 getCount() { return(_count); }
 	
 protected:
-	sint64 _sum;
-	sint64 _count;
+	int64 _sum;
+	int64 _count;
 };
 
 

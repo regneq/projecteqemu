@@ -48,11 +48,11 @@ static inline float ABS(float x) {
 	return(x);
 }
 
-void NPC::AI_SetRoambox(float iDist, float iRoamDist, int32 iDelay) {
+void NPC::AI_SetRoambox(float iDist, float iRoamDist, uint32 iDelay) {
 	AI_SetRoambox(iDist, GetX()+iRoamDist, GetX()-iRoamDist, GetY()+iRoamDist, GetY()-iRoamDist, iDelay);
 }
 
-void NPC::AI_SetRoambox(float iDist, float iMaxX, float iMinX, float iMaxY, float iMinY, int32 iDelay) {
+void NPC::AI_SetRoambox(float iDist, float iMaxX, float iMinX, float iMaxY, float iMinY, uint32 iDelay) {
 	roambox_distance = iDist;
 	roambox_max_x = iMaxX;
 	roambox_min_x = iMinX;
@@ -492,7 +492,7 @@ float Mob::CalculateDistance(float x, float y, float z) {
 }
 
 /*
-int8 NPC::CalculateHeadingToNextWaypoint() {
+uint8 NPC::CalculateHeadingToNextWaypoint() {
     return CalculateHeadingToTarget(cur_wp_x, cur_wp_y);
 }
 */
@@ -549,7 +549,7 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 		
 		mlog(AI__WAYPOINTS, "Calculating new position2 to (%.3f, %.3f, %.3f), old vector (%.3f, %.3f, %.3f)", x, y, z, tar_vx, tar_vy, tar_vz);
 		
-		int8 NPCFlyMode = 0;
+		uint8 NPCFlyMode = 0;
 
 		if(IsNPC()) {
 			if(CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2)
@@ -606,7 +606,7 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 	tar_vy = y - ny;
 	tar_vz = z - nz;
 
-	//pRunAnimSpeed = (sint8)(speed*NPC_RUNANIM_RATIO);
+	//pRunAnimSpeed = (int8)(speed*NPC_RUNANIM_RATIO);
 	//speed *= NPC_SPEED_MULTIPLIER;
 
 	mlog(AI__WAYPOINTS, "Calculating new position2 to (%.3f, %.3f, %.3f), new vector (%.3f, %.3f, %.3f) rate %.3f, RAS %d", x, y, z, tar_vx, tar_vy, tar_vz, speed, pRunAnimSpeed);
@@ -658,7 +658,7 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 		mlog(AI__WAYPOINTS, "Next position2 (%.3f, %.3f, %.3f) (%d steps)", x_pos, y_pos, z_pos, numsteps);
 	}
 	
-	int8 NPCFlyMode = 0;
+	uint8 NPCFlyMode = 0;
 
 	if(IsNPC()) {
 		if(CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2)
@@ -712,7 +712,7 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 
 bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ) {
 	if(IsNPC() || IsClient() || IsPet()) {
-		pRunAnimSpeed = (sint8)(speed*NPC_RUNANIM_RATIO);
+		pRunAnimSpeed = (int8)(speed*NPC_RUNANIM_RATIO);
 		speed *= NPC_SPEED_MULTIPLIER;
 	}
 
@@ -750,7 +750,7 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 
 	if (tar_vx == 0 && tar_vy == 0)
 		return false;
-	pRunAnimSpeed = (int8)(speed*NPC_RUNANIM_RATIO);
+	pRunAnimSpeed = (uint8)(speed*NPC_RUNANIM_RATIO);
 	speed *= NPC_SPEED_MULTIPLIER;
 	
 	mlog(AI__WAYPOINTS, "Calculating new position to (%.3f, %.3f, %.3f) vector (%.3f, %.3f, %.3f) rate %.3f RAS %d", x, y, z, tar_vx, tar_vy, tar_vz, speed, pRunAnimSpeed);
@@ -775,7 +775,7 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 		mlog(AI__WAYPOINTS, "Next position (%.3f, %.3f, %.3f)", x_pos, y_pos, z_pos);
 	}
 	
-	int8 NPCFlyMode = 0;
+	uint8 NPCFlyMode = 0;
 
 	if(IsNPC()) {
 		if(CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2)
@@ -828,7 +828,7 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
     return true;
 }
 
-void NPC::AssignWaypoints(sint32 grid) {
+void NPC::AssignWaypoints(int32 grid) {
 	if(grid == 0)
 		return;		//grid ID 0 not supported
 
@@ -1011,7 +1011,7 @@ int	ZoneDatabase::GetHighestGrid(uint32 zoneid) {
 	return(res);
 }
 
-int8 ZoneDatabase::GetGridType2(int32 grid, int16 zoneid) {
+uint8 ZoneDatabase::GetGridType2(uint32 grid, uint16 zoneid) {
 	char *query = 0;
 	char errbuff[MYSQL_ERRMSG_SIZE];
 	MYSQL_RES *result;
@@ -1032,7 +1032,7 @@ int8 ZoneDatabase::GetGridType2(int32 grid, int16 zoneid) {
 	return(type2);
 }
 
-bool ZoneDatabase::GetWaypoints(int32 grid, int16 zoneid, int32 num, wplist* wp) {
+bool ZoneDatabase::GetWaypoints(uint32 grid, uint16 zoneid, uint32 num, wplist* wp) {
 	_CP(Database_GetWaypoints);
 	char *query = 0;
 	char errbuff[MYSQL_ERRMSG_SIZE];
@@ -1061,14 +1061,14 @@ bool ZoneDatabase::GetWaypoints(int32 grid, int16 zoneid, int32 num, wplist* wp)
 	return false;
 }
 
-void ZoneDatabase::AssignGrid(Client *client, float x, float y, int32 grid)
+void ZoneDatabase::AssignGrid(Client *client, float x, float y, uint32 grid)
 {
 	char *query = 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 	int matches = 0, fuzzy = 0, spawn2id = 0;
-	int32 affected_rows;
+	uint32 affected_rows;
 	float dbx = 0, dby = 0;
 
 	// looks like most of the stuff in spawn2 is straight integers
@@ -1176,7 +1176,7 @@ void ZoneDatabase::AssignGrid(Client *client, float x, float y, int32 grid)
 *	zoneid:		The ID number of the zone the grid is being created/deleted in
 */
 
-void ZoneDatabase::ModifyGrid(Client *c, bool remove, int32 id, int8 type, int8 type2, int16 zoneid) { 
+void ZoneDatabase::ModifyGrid(Client *c, bool remove, uint32 id, uint8 type, uint8 type2, uint16 zoneid) { 
 	char *query = 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	if (!remove)
@@ -1210,7 +1210,7 @@ void ZoneDatabase::ModifyGrid(Client *c, bool remove, int32 id, int8 type, int8 
 * AddWP - Adds a new waypoint to a specific grid for a specific zone.
 */
 
-void ZoneDatabase::AddWP(Client *c, int32 gridid, int32 wpnum, float xpos, float ypos, float zpos, int32 pause, int16 zoneid, float heading)
+void ZoneDatabase::AddWP(Client *c, uint32 gridid, uint32 wpnum, float xpos, float ypos, float zpos, uint32 pause, uint16 zoneid, float heading)
 {   
 	char *query = 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1235,7 +1235,7 @@ void ZoneDatabase::AddWP(Client *c, int32 gridid, int32 wpnum, float xpos, float
 *	zoneid:		The ID number of the zone that contains the waypoint being deleted
 */
 
-void ZoneDatabase::DeleteWaypoint(Client *c, int32 grid_num, int32 wp_num, int16 zoneid)
+void ZoneDatabase::DeleteWaypoint(Client *c, uint32 grid_num, uint32 wp_num, uint16 zoneid)
 {
 	char *query=0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1257,9 +1257,9 @@ void ZoneDatabase::DeleteWaypoint(Client *c, int32 grid_num, int32 wp_num, int16
 * the created grid is returned.
 */
 
-int32 ZoneDatabase::AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float ypos, float zpos, int32 pause, int type1, int type2, int16 zoneid, float heading) {
+uint32 ZoneDatabase::AddWPForSpawn(Client *c, uint32 spawn2id, float xpos, float ypos, float zpos, uint32 pause, int type1, int type2, uint16 zoneid, float heading) {
 	char	*query = 0;
-    int32	grid_num,	// The grid number the spawn is assigned to (if spawn has no grid, will be the grid number we end up creating)
+    uint32	grid_num,	// The grid number the spawn is assigned to (if spawn has no grid, will be the grid number we end up creating)
 		next_wp_num;	// The waypoint number we should be assigning to the new waypoint
     bool	CreatedNewGrid;	// Did we create a new grid in this function?
     MYSQL_RES	*result;
@@ -1343,7 +1343,7 @@ int32 ZoneDatabase::AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float y
 } /*** END ZoneDatabase::AddWPForSpawn() ***/
 
 
-int32 ZoneDatabase::GetFreeGrid(int16 zoneid) {
+uint32 ZoneDatabase::GetFreeGrid(uint16 zoneid) {
     char *query = 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -1352,7 +1352,7 @@ int32 ZoneDatabase::GetFreeGrid(int16 zoneid) {
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
-			int32 tmp=0;
+			uint32 tmp=0;
 			if (row[0]) 
 				tmp = atoi(row[0]);
 			mysql_free_result(result);
@@ -1368,7 +1368,7 @@ int32 ZoneDatabase::GetFreeGrid(int16 zoneid) {
 	return 0;
 }
 
-int ZoneDatabase::GetHighestWaypoint(uint32 zoneid, int32 gridid) {
+int ZoneDatabase::GetHighestWaypoint(uint32 zoneid, uint32 gridid) {
 	char *query = 0;
 	char errbuff[MYSQL_ERRMSG_SIZE];
 	MYSQL_RES *result;

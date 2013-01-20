@@ -45,7 +45,7 @@ using namespace std;
 
 #pragma pack(1)
 struct LootTableEntries_Struct {
-	int32	lootdrop_id;
+	uint32	lootdrop_id;
 	uint8	droplimit;
 	uint8	mindrop;
 	uint8	multiplier;
@@ -53,16 +53,16 @@ struct LootTableEntries_Struct {
 };
 
 struct LootTable_Struct {
-	int32	mincash;
-	int32	maxcash;
-	int32	avgcoin;
-	int32	NumEntries;
+	uint32	mincash;
+	uint32	maxcash;
+	uint32	avgcoin;
+	uint32	NumEntries;
 	LootTableEntries_Struct Entries[0];
 };
 
 struct LootDropEntries_Struct {
-	int32	item_id;
-	sint8	item_charges;
+	uint32	item_id;
+	int8	item_charges;
 	uint8	equip_item;
 	float	chance;
 	uint8	minlevel;
@@ -71,7 +71,7 @@ struct LootDropEntries_Struct {
 };
 
 struct LootDrop_Struct {
-	int32	NumEntries;
+	uint32	NumEntries;
 	LootDropEntries_Struct Entries[0];
 };
 #pragma pack()

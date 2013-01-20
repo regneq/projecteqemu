@@ -33,7 +33,7 @@ EQWParser *EQWHTTPHandler::s_parser = NULL;
 #endif
 const int EQWHTTPHandler::READ_BUFFER_LEN = 1024;	//for page IO, was a static const member, but VC6 got mad.
 
-EQWHTTPHandler::EQWHTTPHandler(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort)
+EQWHTTPHandler::EQWHTTPHandler(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort)
 : HttpdSocket(ID,in_socket,irIP,irPort),
   m_closeOnFinish(false)
 {
@@ -138,8 +138,8 @@ bool EQWHTTPHandler::CheckAuth() const {
 	if(m_username.length() < 1)
 		return(false);
 	
-	sint16 status = 0;
-	int32 acctid = database.CheckLogin(m_username.c_str(), m_password.c_str(), &status);
+	int16 status = 0;
+	uint32 acctid = database.CheckLogin(m_username.c_str(), m_password.c_str(), &status);
 	if(acctid == 0) {
 		_log(WORLD__HTTP_ERR, "Login autentication failed for %s with '%s'", m_username.c_str(), m_password.c_str());
 		return(false);
@@ -275,7 +275,7 @@ EQWHTTPServer::EQWHTTPServer()
 {
 }
 
-void EQWHTTPServer::CreateNewConnection(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort) {
+void EQWHTTPServer::CreateNewConnection(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort) {
 	EQWHTTPHandler *conn = new EQWHTTPHandler(ID, in_socket, irIP, irPort);
 	AddConnection(conn);
 }

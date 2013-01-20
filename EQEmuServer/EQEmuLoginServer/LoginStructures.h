@@ -79,11 +79,11 @@ struct LoginLoginFailed_Struct {
 
 struct ServerListHeader_Struct {
 
-	int32 Unknown1;
-	int32 Unknown2;
-	int32 Unknown3;
-	int32 Unknown4;
-	int32 NumberOfServers;
+	uint32 Unknown1;
+	uint32 Unknown2;
+	uint32 Unknown3;
+	uint32 Unknown4;
+	uint32 NumberOfServers;
 };
 
 struct PlayEverquestRequest_Struct 

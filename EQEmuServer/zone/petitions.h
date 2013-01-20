@@ -28,20 +28,20 @@
 class Petition
 {
 public:
-	Petition(int32 id);
+	Petition(uint32 id);
 	~Petition() {}
 	void SendPetitionToPlayer(Client* clientto);
 
 
-	int32 GetID()			{ return this->petid; }
-	int32 GetUnavails()		{ return unavailables; }
-	int32 GetCheckouts()	{ return checkouts; }
-	int32 GetCharLevel()	{ return charlevel; }
-	int32 GetCharRace()		{ return charrace; }
-	int32 GetCharClass()	{ return charclass; }
-	int32 GetUrgency()		{ return urgency; }
+	uint32 GetID()			{ return this->petid; }
+	uint32 GetUnavails()		{ return unavailables; }
+	uint32 GetCheckouts()	{ return checkouts; }
+	uint32 GetCharLevel()	{ return charlevel; }
+	uint32 GetCharRace()		{ return charrace; }
+	uint32 GetCharClass()	{ return charclass; }
+	uint32 GetUrgency()		{ return urgency; }
 	//char*  GetZone()		{ return this->zone; }
-	int32	GetZone()		{ return this->zone; }
+	uint32	GetZone()		{ return this->zone; }
 	char*  GetCharName()	{ return charname; }
 	char*  GetAccountName()	{ return accountname; }
 	char*  GetLastGM()		{ return lastgm; }
@@ -53,41 +53,41 @@ public:
 
 // Set Petition Stuff Functions
 	void SetCheckedOut(bool status_in)	{ ischeckedout = status_in; }
-	void SetUrgency(int32 urgency_in)	{ urgency = urgency_in; }
-	void SetClass(int32 class_in)	{ charclass = class_in; }
-	void SetRace(int32 race_in)		{ charrace = race_in; }
-	void SetLevel(int32 level_in)	{ charlevel = level_in; }
+	void SetUrgency(uint32 urgency_in)	{ urgency = urgency_in; }
+	void SetClass(uint32 class_in)	{ charclass = class_in; }
+	void SetRace(uint32 race_in)		{ charrace = race_in; }
+	void SetLevel(uint32 level_in)	{ charlevel = level_in; }
 	void AddCheckout()				{ checkouts = checkouts + 1; }
 	void AddUnavails()				{ unavailables = unavailables + 1; }
 	//void SetZone(char* zone_in)		{ strcpy(this->zone, zone_in); }
-	void SetZone(int32 zone_in)			{ this->zone = zone_in; }
+	void SetZone(uint32 zone_in)			{ this->zone = zone_in; }
 	void SetCName(const char* name_in)		{ strcpy(charname, name_in); }
 	void SetAName(const char* name_in)		{ strcpy(accountname, name_in); }
 	void SetLastGM(const char* gm_in)		{ strcpy(lastgm, gm_in); }
 	void SetGMText(const char* gmtext_in)	{ if(gmtext_in) strcpy(gmtext, gmtext_in); }
 	void SetPetitionText(char* pet_in) { strn0cpy(petitiontext, pet_in, sizeof(petitiontext)); }
-	void SetPetID(int32 id_in)		{ petid = id_in; }
-	void SetCheckouts(int32 checks_in) { checkouts = checks_in; }
-	void SetUnavails(int32 unavails_in) { unavailables = unavails_in; }
+	void SetPetID(uint32 id_in)		{ petid = id_in; }
+	void SetCheckouts(uint32 checks_in) { checkouts = checks_in; }
+	void SetUnavails(uint32 unavails_in) { unavailables = unavails_in; }
 	void SetSentTime() { time(&senttime); }
 	void SetSentTime2(time_t senttime_in) { senttime = senttime_in; }
 	
 protected:
 
-	int32 petid;
+	uint32 petid;
 	char  charname[64];
 	char  accountname[32];
 	char  lastgm[64];
 	char  petitiontext[1024];
 	char	gmtext[1024];
 	//char  zone[32];
-	int32 zone;
-	int32 urgency; // 0 = green, 1 = yellow, 2 = red
-	int32 charclass;
-	int32 charrace;
-	int32 charlevel;
-	int32 checkouts;
-	int32 unavailables;
+	uint32 zone;
+	uint32 urgency; // 0 = green, 1 = yellow, 2 = red
+	uint32 charclass;
+	uint32 charrace;
+	uint32 charlevel;
+	uint32 checkouts;
+	uint32 unavailables;
 	time_t senttime;
 	bool ischeckedout;
 };
@@ -95,13 +95,13 @@ protected:
 class PetitionList
 {
 public:
-	int DeletePetition(int32 petnumber);
+	int DeletePetition(uint32 petnumber);
 	void UpdateGMQueue();
 	PetitionList() {}
 	~PetitionList() {}
 	void AddPetition(Petition* pet);
-	Petition* GetPetitionByID(int32 id_in);
-	int32	GetTotalPetitions();
+	Petition* GetPetitionByID(uint32 id_in);
+	uint32	GetTotalPetitions();
 	void ClearPetitions();
 	void ReadDatabase();
 	void UpdatePetition(Petition* pet);
@@ -111,7 +111,7 @@ public:
 
 private:
 	LinkedList<Petition*> list;
-	int32 last_insert_id;
+	uint32 last_insert_id;
 	Mutex    PList_Mutex;
 };
 

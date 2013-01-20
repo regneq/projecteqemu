@@ -2,7 +2,7 @@
 
 // Doors
 #ifdef SHAREMEM
-sint32 Database::GetDoorsCount(int32* oMaxID) {
+int32 Database::GetDoorsCount(uint32* oMaxID) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -13,7 +13,7 @@ sint32 Database::GetDoorsCount(int32* oMaxID) {
 		safe_delete(query);
 		row = mysql_fetch_row(result);
 		if (row && row[1]) {
-			sint32 ret = atoi(row[1]);
+			int32 ret = atoi(row[1]);
 			if (oMaxID) {
 				if (row[0])
 					*oMaxID = atoi(row[0]);
@@ -33,8 +33,8 @@ sint32 Database::GetDoorsCount(int32* oMaxID) {
 	return -1;
 }
 
-extern "C" bool extDBLoadDoors(int32 iDoorCount, int32 iMaxDoorID) { return database.DBLoadDoors(iDoorCount, iMaxDoorID); }
-const Door* Database::GetDoor(int8 door_id, const char* zone_name) {
+extern "C" bool extDBLoadDoors(uint32 iDoorCount, uint32 iMaxDoorID) { return database.DBLoadDoors(iDoorCount, iMaxDoorID); }
+const Door* Database::GetDoor(uint8 door_id, const char* zone_name) {
 	for(uint32 i=0; i<max_door_type; i++) {
 		const Door* door = GetDoorDBID(i);
 		if(door && door->door_id == door_id && strcasecmp(door->zone_name, zone_name) == 0)
@@ -50,8 +50,8 @@ const Door* Database::GetDoorDBID(uint32 db_id) {
 bool Database::LoadDoors() {
 	if (!EMuShareMemDLL.Load())
 		return false;
-	sint32 tmp_max_door_type = -1;
-	int32 tmp = 0;
+	int32 tmp_max_door_type = -1;
+	uint32 tmp = 0;
 	tmp_max_door_type = GetDoorsCount(&tmp);
 	if (tmp_max_door_type < 0) {
 		cout << "Error: Database::LoadDoors-ShareMem: GetDoorsCount() returned < 0" << endl;
@@ -62,7 +62,7 @@ bool Database::LoadDoors() {
 	return ret;
 }
 
-bool Database::DBLoadDoors(int32 iDoorCount, int32 iMaxDoorID) {
+bool Database::DBLoadDoors(uint32 iDoorCount, uint32 iMaxDoorID) {
 	cout << "Loading Doors from database..." << endl;
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;

@@ -22,11 +22,11 @@
 
 #pragma pack(1)
 typedef struct ZBSP_Node {
-        sint32 node_number;
+        int32 node_number;
         float normal[3], splitdistance;
-        sint32 region;
-        sint32 special;
-        sint32 left, right;
+        int32 region;
+        int32 special;
+        int32 left, right;
 } ZBSP_Node;
 #pragma pack()
 
@@ -47,7 +47,7 @@ class WaterMap {
 
 public:
 	static WaterMap*  LoadWaterMapfile(const char* in_zonename, const char *directory = NULL);
-        WaterRegionType BSPReturnRegionType(sint32 node_number, float y, float x, float z) const;
+        WaterRegionType BSPReturnRegionType(int32 node_number, float y, float x, float z) const;
         bool InWater(float y, float x, float z) const;
         bool InVWater(float y, float x, float z) const;
         bool InLava(float y, float x, float z) const;

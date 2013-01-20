@@ -19,7 +19,7 @@
 #include "../common/eq_packet_structs.h"
 #include "../common/races.h"
 
-const char* GetRaceName(int16 race) {
+const char* GetRaceName(uint16 race) {
 	switch(race) {
 		case HUMAN:
 			return "Human";
@@ -71,7 +71,7 @@ const char* GetRaceName(int16 race) {
 	}
 }
 
-int32 GetArrayRace(int16 race) {
+uint32 GetArrayRace(uint16 race) {
 	switch(race) {
 		case HUMAN:
 			return Array_Race_HUMAN;

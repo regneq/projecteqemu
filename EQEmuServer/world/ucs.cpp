@@ -41,7 +41,7 @@ bool UCSConnection::Process()
 			{
 				if (pack->opcode == ServerOP_ZAAuth && pack->size == 16)
 				{
-					int8 tmppass[16];
+					uint8 tmppass[16];
 
 					MD5::Generate((const uchar*) WorldConfig::get()->SharedKey.c_str(), WorldConfig::get()->SharedKey.length(), tmppass);
 		

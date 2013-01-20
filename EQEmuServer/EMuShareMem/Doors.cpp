@@ -26,7 +26,7 @@ extern "C" __declspec(dllexport) bool AddDoor(uint32 id, const Door* door) {
 	return pAddDoor(id, door);
 };
 
-extern "C" __declspec(dllexport) bool DLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, int32 iDoorstructSize, sint32* iDoorsCount, int32* iMaxDoorID) {
+extern "C" __declspec(dllexport) bool DLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, uint32 iDoorstructSize, int32* iDoorsCount, uint32* iMaxDoorID) {
 	return pDLLLoadDoors(cbDBLoadDoors, iDoorstructSize, iDoorsCount, iMaxDoorID);
 };
 #else
@@ -38,7 +38,7 @@ extern "C" bool AddDoor(uint32 id, const Door* door) {
 	return pAddDoor(id, door);
 };
 
-extern "C" bool DLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, int32 iDoorstructSize, sint32* iDoorsCount, int32* iMaxDoorID) {
+extern "C" bool DLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, uint32 iDoorstructSize, int32* iDoorsCount, uint32* iMaxDoorID) {
 	return pDLLLoadDoors(cbDBLoadDoors, iDoorstructSize, iDoorsCount, iMaxDoorID);
 };
 
@@ -58,7 +58,7 @@ bool pAddDoor(uint32 id, const Door* door) {
 	return true;
 }
 
-bool pDLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, int32 iDoorstructSize, sint32* iDoorsCount, int32* iMaxDoorID) {
+bool pDLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, uint32 iDoorstructSize, int32* iDoorsCount, uint32* iMaxDoorID) {
 	if (iDoorstructSize != sizeof(Door)) {
 		cout << "Error: EMuShareMem: DLLLoadDoors: iDoorstructSize != sizeof(Door)" << endl;
 		cout << "Door struct has changed, EMuShareMem.dll needs to be recompiled." << endl;
@@ -69,7 +69,7 @@ bool pDLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, int32 iDoorstructSize, si
 		cout << "You need to increase the define in Doors.h." << endl;
 		return false;
 	}
-	int32 tmpMemSize = sizeof(MMFDoors_Struct) + 256 + (sizeof(Door) * (*iDoorsCount));
+	uint32 tmpMemSize = sizeof(MMFDoors_Struct) + 256 + (sizeof(Door) * (*iDoorsCount));
 	if (DoorsMMF.Open("EQEMuDoors", tmpMemSize)) {
 		if (DoorsMMF.CanWrite()) {
 			MMFDoorsData_Writable = (MMFDoors_Struct*) DoorsMMF.GetWriteableHandle();
@@ -102,7 +102,7 @@ bool pDLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, int32 iDoorstructSize, si
 		else {
 			if (!DoorsMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!DoorsMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(10);
 					Timer::SetCurrentTime();

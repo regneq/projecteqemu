@@ -77,7 +77,7 @@ void Petition::SendPetitionToPlayer(Client* clientto) {
 	return;
 }
 
-Petition::Petition(int32 id) 
+Petition::Petition(uint32 id) 
 {
 	petid = id;
 	charclass = 0;
@@ -97,7 +97,7 @@ Petition::Petition(int32 id)
 	//memset(this->zone, 0, sizeof(this->zone));
 	zone = 1;
 }
-Petition* PetitionList::GetPetitionByID(int32 id_in) { 
+Petition* PetitionList::GetPetitionByID(uint32 id_in) { 
 	LinkedListIterator<Petition*> iterator(list); 
 	
 	iterator.Reset(); 
@@ -108,10 +108,10 @@ Petition* PetitionList::GetPetitionByID(int32 id_in) {
 	} 
 	return 0; 
 } 
-int32 PetitionList::GetTotalPetitions(){
+uint32 PetitionList::GetTotalPetitions(){
 	LinkedListIterator<Petition*> iterator(list);
 	iterator.Reset();
-	int32 total=0;
+	uint32 total=0;
 	while(iterator.MoreElements()) { 
 		total++;
 		iterator.Advance(); 
@@ -159,7 +159,7 @@ void PetitionList::AddPetition(Petition* pet) {
 }
 
 //Return Values: 0 = Ok ; -1 = Error deleting petition.
-int PetitionList::DeletePetition(int32 petnumber) {
+int PetitionList::DeletePetition(uint32 petnumber) {
 	LinkedListIterator<Petition*> iterator(list);
 	iterator.Reset();
 	LockMutex lock(&PList_Mutex);
@@ -180,7 +180,7 @@ int PetitionList::DeletePetition(int32 petnumber) {
 void PetitionList::UpdateGMQueue() {
 	LinkedListIterator<Petition*> iterator(list);
 	iterator.Reset();
-	int32 total=0;
+	uint32 total=0;
 	while(iterator.MoreElements()) {
 		total++;
 		entity_list.SendPetitionToAdmins(iterator.GetData());
@@ -220,8 +220,8 @@ void PetitionList::UpdatePetition(Petition* pet) {
 void ZoneDatabase::DeletePetitionFromDB(Petition* wpet) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 affected_rows = 0;
-	int8 checkedout = 0;
+	uint32 affected_rows = 0;
+	uint8 checkedout = 0;
 	if (wpet->CheckedOut()) checkedout = 0;
 	else checkedout = 1;
 	if (!RunQuery(query, MakeAnyLenString(&query, "DELETE from petitions where petid = %i", wpet->GetID()), errbuf, 0, &affected_rows)) {
@@ -235,8 +235,8 @@ void ZoneDatabase::DeletePetitionFromDB(Petition* wpet) {
 void ZoneDatabase::UpdatePetitionToDB(Petition* wpet) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 affected_rows = 0;
-	int8 checkedout = 0;
+	uint32 affected_rows = 0;
+	uint8 checkedout = 0;
 	if (wpet->CheckedOut()) checkedout = 1;
 	else checkedout = 0;
 	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE petitions set gmtext = '%s', lastgm = '%s', urgency = %i, checkouts = %i, unavailables = %i, ischeckedout = %i where petid = %i", wpet->GetGMText(), wpet->GetLastGM(), wpet->GetUrgency(), wpet->GetCheckouts(), wpet->GetUnavails(), checkedout, wpet->GetID()), errbuf, 0, &affected_rows)) {
@@ -252,8 +252,8 @@ void ZoneDatabase::InsertPetitionToDB(Petition* wpet)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 affected_rows = 0;
-	int8 checkedout = 0;
+	uint32 affected_rows = 0;
+	uint8 checkedout = 0;
 	if (wpet->CheckedOut())
 		checkedout = 1;
 	else

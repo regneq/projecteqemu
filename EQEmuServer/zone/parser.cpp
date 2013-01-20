@@ -185,7 +185,7 @@ string gettok(const char *text, char character, int index)
 	return buffer;
 }
 
-void Parser::MakeVars(string text, int32 npcid) {
+void Parser::MakeVars(string text, uint32 npcid) {
 	string buffer;
 	string temp;
 	int pos = numtok(text.c_str(),' ')+1;
@@ -206,12 +206,12 @@ AddVar(temp,buffer);
 }
 
 
-int Parser::CheckAliases(const char * alias, int32 npcid, Mob* npcmob, Mob* mob)
+int Parser::CheckAliases(const char * alias, uint32 npcid, Mob* npcmob, Mob* mob)
 {
 /*	MyListItem <Alias> * Ptr = AliasList.First;
 
 	while (Ptr) {
-		if ( (int32)Ptr->Data->npcid == npcid) {
+		if ( (uint32)Ptr->Data->npcid == npcid) {
 			for (int i=0; i <= Ptr->Data->index; i++) {
 				if (!strcmp(strlwr(Ptr->Data->name[i]),alias)) {
 					CommandEx(Ptr->Data->command[i], npcid, npcmob, mob);
@@ -257,7 +257,7 @@ int Parser::pcalc(const char * string) {
 	return calc(string);
 }
 
-void Parser::MakeParms(const char * str, int32 npcid) {
+void Parser::MakeParms(const char * str, uint32 npcid) {
 	char temp[100];
 	memset(temp, 0, sizeof(temp));
 	char temp2[100];
@@ -274,7 +274,7 @@ void Parser::MakeParms(const char * str, int32 npcid) {
 	}
 }
 
-int Parser::GetItemCount(string itemid, int32 npcid)
+int Parser::GetItemCount(string itemid, uint32 npcid)
 {
 	string temp;
 	int a=0;
@@ -288,9 +288,9 @@ int Parser::GetItemCount(string itemid, int32 npcid)
 	return a;
 }
 
-int Parser::HasQuestFile(int32 npcid)
+int Parser::HasQuestFile(uint32 npcid)
 {
-	sint32 qstID = GetNPCqstID(npcid);
+	int32 qstID = GetNPCqstID(npcid);
 	int success=1;
 	if (qstID==-1)
 		success = LoadScript(npcid, zone->GetShortName());
@@ -300,12 +300,12 @@ int Parser::HasQuestFile(int32 npcid)
 return true;
 }
 
-void Parser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata) {
+void Parser::Event(QuestEventID event, uint32 npcid, const char * data, NPC* npcmob, Mob* mob, uint32 extradata) {
 	if (npcid == 0)
 		return;
 	if(event >= _LargestEventID)
 		return;
-	sint32 qstID = GetNPCqstID(npcid);
+	int32 qstID = GetNPCqstID(npcid);
 	int success=1;
 	if (qstID==-1)
 		success = LoadScript(npcid, zone->GetShortName(),mob);
@@ -367,7 +367,7 @@ void Parser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcm
 	{
 		AddVar("signal.g",data);
 	}
-	int8 fac = 0;
+	uint8 fac = 0;
 	if (mob && mob->IsClient()) {		
 		AddVar("uguild_id.g", itoa(mob->CastToClient()->GuildID()));
 		AddVar("uguildrank.g", itoa(mob->CastToClient()->GuildRank()));
@@ -500,10 +500,10 @@ void Parser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcm
 Parser::Parser() : DEFAULT_QUEST_PREFIX("default") {
 	MainList.clear();
 	pMaxNPCID = database.GetMaxNPCType();
-	/*pNPCqstID = new sint32[pMaxNPCID+1];
-	for (int32 i=0; i<pMaxNPCID+1; i++)
+	/*pNPCqstID = new int32[pMaxNPCID+1];
+	for (uint32 i=0; i<pMaxNPCID+1; i++)
 		pNPCqstID[i] = -1;*/
-	pNPCqstID = new sint32[1];
+	pNPCqstID = new int32[1];
 	npcarrayindex=1;
 }
 
@@ -514,36 +514,36 @@ Parser::~Parser() {
 	safe_delete_array(pNPCqstID);
 }
 
-bool Parser::LoadAttempted(int32 iNPCID) {
+bool Parser::LoadAttempted(uint32 iNPCID) {
 	if (iNPCID > pMaxNPCID)
 		return false;
 
 	return (bool) (FindNPCQuestID(iNPCID) != 0);
 }
-int32 Parser::FindNPCQuestID(sint32 npcid){
-	for(int32 i=0;i<npcarrayindex;i++)
+uint32 Parser::FindNPCQuestID(int32 npcid){
+	for(uint32 i=0;i<npcarrayindex;i++)
 		if(pNPCqstID[i]==npcid)
 			return i;
 	return 0;
 }
-int32 Parser::AddNPCQuestID(int32 npcid){
-	sint32* newpNPCqstID= new sint32[npcarrayindex+2];
-	for(int32 i=0;i<npcarrayindex;i++)
+uint32 Parser::AddNPCQuestID(uint32 npcid){
+	int32* newpNPCqstID= new int32[npcarrayindex+2];
+	for(uint32 i=0;i<npcarrayindex;i++)
 		newpNPCqstID[i]=pNPCqstID[i];
 	newpNPCqstID[npcarrayindex]=npcid;
 	npcarrayindex++;
 	safe_delete_array(pNPCqstID);
-/*	pNPCqstID = new sint32[npcarrayindex+1];
-	for(int32 j=0;j<npcarrayindex;j++)
+/*	pNPCqstID = new int32[npcarrayindex+1];
+	for(uint32 j=0;j<npcarrayindex;j++)
 		pNPCqstID[j]=newpNPCqstID[j];
 	safe_delete_array(newpNPCqstID);*/
 	pNPCqstID = newpNPCqstID;
 	return npcarrayindex-1;
 }
-bool Parser::SetNPCqstID(int32 iNPCID, sint32 iValue) {
+bool Parser::SetNPCqstID(uint32 iNPCID, int32 iValue) {
 	if (iNPCID > pMaxNPCID)
 		return false;
-	int32 idx = FindNPCQuestID(iNPCID);
+	uint32 idx = FindNPCQuestID(iNPCID);
 	if(idx)
 		pNPCqstID[idx] = iValue;
 	else{
@@ -553,10 +553,10 @@ bool Parser::SetNPCqstID(int32 iNPCID, sint32 iValue) {
 	return true;
 }
 
-sint32 Parser::GetNPCqstID(int32 iNPCID) {
+int32 Parser::GetNPCqstID(uint32 iNPCID) {
 	if (iNPCID > pMaxNPCID || iNPCID == 0)
 		return -1;
-	if(int32 idx=FindNPCQuestID(iNPCID))
+	if(uint32 idx=FindNPCQuestID(iNPCID))
 		return pNPCqstID[idx];
 	else
 		return -1;
@@ -566,15 +566,15 @@ void Parser::ClearCache() {
 #if Parser_DEBUG >= 2
 	cout << "Parser::ClearCache" << endl;
 #endif
-	//for (int32 i=0; i<pMaxNPCID+1; i++)
+	//for (uint32 i=0; i<pMaxNPCID+1; i++)
 	//	pNPCqstID[i] = -1;
 	MainList.clear();
 	safe_delete_array(pNPCqstID);
-	pNPCqstID = new sint32[1];
+	pNPCqstID = new int32[1];
 	npcarrayindex=1;
 }
 
-void Parser::SendCommands(const char * event, int32 npcid, NPC* npcmob, Mob* mob) {
+void Parser::SendCommands(const char * event, uint32 npcid, NPC* npcmob, Mob* mob) {
 	iter_events listIt = MainList.begin();
 	Events *p;
 	EventList *pp;
@@ -671,7 +671,7 @@ void Parser::scanformat(char *string, const char *format, char arg[10][1024])
 	arg[argnum][i] = 0;
 }
 
-void Parser::ClearEventsByNPCID(int32 iNPCID) {
+void Parser::ClearEventsByNPCID(uint32 iNPCID) {
 	list<Events*>::iterator iterator = MainList.begin();
 	Events* p;
 	while (iterator != MainList.end())
@@ -685,19 +685,19 @@ void Parser::ClearEventsByNPCID(int32 iNPCID) {
 	}
 }
 
-void Parser::ClearAliasesByNPCID(int32 iNPCID) {
+void Parser::ClearAliasesByNPCID(uint32 iNPCID) {
 /*	MyListItem<Alias>* Ptr = AliasList.First;
 	MyListItem<Alias>* next = 0;
 	while (Ptr) {
 		next = Ptr->Next;
-		if ( (int32)Ptr->Data->npcid == iNPCID) {
+		if ( (uint32)Ptr->Data->npcid == iNPCID) {
 			AliasList.DeleteItemAndData(Ptr);
 		}
 		Ptr = next;
 	}*/
 }
 
-void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid, Mob* other, Mob* mob )
+void Parser::ExCommands(string o_command, string parms, int argnums, uint32 npcid, Mob* other, Mob* mob )
 {
 	char arglist[10][1024];
 	//Work out the argument list, if there needs to be one
@@ -1135,7 +1135,7 @@ void Parser::Replace(string& string1, string repstr, string rep, int all) {
 	}
 }
 
-string Parser::GetVar(string varname, int32 npcid)
+string Parser::GetVar(string varname, uint32 npcid)
 {
 	list<vars*>::iterator iterator = varlist.begin();
 	vars * p;
@@ -1175,7 +1175,7 @@ void Parser::DeleteVar(string name)
 	}
 }
 
-void Parser::DelChatAndItemVars(int32 npcid)
+void Parser::DelChatAndItemVars(uint32 npcid)
 {
 //	MyListItem <vars> * Ptr;
 	string temp;
@@ -1217,7 +1217,7 @@ void Parser::AddVar(string varname, string varval)
 	varlist.push_back(newvar);
 }
 
-void Parser::HandleVars(string varname, string varparms, string& origstring, string format, int32 npcid, Mob* mob)
+void Parser::HandleVars(string varname, string varparms, string& origstring, string format, uint32 npcid, Mob* mob)
 {
 	string tempvar;
 	tempvar = GetVar(varname,npcid);
@@ -1349,7 +1349,7 @@ void Parser::HandleVars(string varname, string varparms, string& origstring, str
 	gClient = 0;
 }
 
-void Parser::ParseVars(string& text, int32 npcid, Mob* mob)
+void Parser::ParseVars(string& text, uint32 npcid, Mob* mob)
 {
 	if (text.find("$") == string::npos && text.find("%") == string::npos)
 		return;
@@ -1552,7 +1552,7 @@ int Parser::ParseIf(string text)
 	return 1;
 }
 
-int Parser::ParseCommands(string text, int line, int justcheck, int32 npcid, Mob* other, Mob* mob,  std::string filename)
+int Parser::ParseCommands(string text, int line, int justcheck, uint32 npcid, Mob* other, Mob* mob,  std::string filename)
 {
 	string buffer,command,parms,temp,temp2;
 	temp2 = text;

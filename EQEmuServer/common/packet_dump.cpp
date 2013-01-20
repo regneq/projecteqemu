@@ -26,9 +26,9 @@ using namespace std;
 #include "EQPacket.h"
 #include "../common/servertalk.h"
 
-void DumpPacketAscii(const uchar* buf, int32 size, int32 cols, int32 skip) {
+void DumpPacketAscii(const uchar* buf, uint32 size, uint32 cols, uint32 skip) {
 	// Output as ASCII
-	for(int32 i=skip; i<size; i++)
+	for(uint32 i=skip; i<size; i++)
 	{
 		if ((i-skip)%cols==0)
 		{
@@ -50,7 +50,7 @@ void DumpPacketAscii(const uchar* buf, int32 size, int32 cols, int32 skip) {
 	cout << endl << endl;
 }
 
-void DumpPacketHex(const uchar* buf, int32 size, int32 cols, int32 skip) {
+void DumpPacketHex(const uchar* buf, uint32 size, uint32 cols, uint32 skip) {
 	if (size == 0 || size > 39565)
 		return;
 	// Output as HEX
@@ -58,7 +58,7 @@ void DumpPacketHex(const uchar* buf, int32 size, int32 cols, int32 skip) {
 	int j = 0; 
 	char* ascii = new char[cols+1]; 
 	memset(ascii, 0, cols+1);
-	int32 i;
+	uint32 i;
     for(i=skip; i<size; i++)
     {
 		if ((i-skip)%cols==0) {
@@ -82,17 +82,17 @@ void DumpPacketHex(const uchar* buf, int32 size, int32 cols, int32 skip) {
 		}
 //		cout << setfill(0) << setw(2) << hex << (int)buf[i] << " ";
     }
-	int32 k = ((i-skip)-1)%cols;
+	uint32 k = ((i-skip)-1)%cols;
 	if (k < 8)
 		cout << "  ";
-	for (int32 h = k+1; h < cols; h++) {
+	for (uint32 h = k+1; h < cols; h++) {
 		cout << "   ";
 	}
 	cout << " | " << ascii << endl;
 	safe_delete_array(ascii);
 }
 
-void DumpPacket(const uchar* buf, int32 size)
+void DumpPacket(const uchar* buf, uint32 size)
 {
 	DumpPacketHex(buf, size);
 //	DumpPacketAscii(buf,size);
@@ -110,24 +110,24 @@ void DumpPacketBin(const ServerPacket* pack) {
 	DumpPacketBin(pack->pBuffer, pack->size);
 }
 
-void DumpPacketBin(int32 data) {
-	DumpPacketBin((uchar*)&data, sizeof(int32));
+void DumpPacketBin(uint32 data) {
+	DumpPacketBin((uchar*)&data, sizeof(uint32));
 }
 
-void DumpPacketBin(int16 data) {
-	DumpPacketBin((uchar*)&data, sizeof(int16));
+void DumpPacketBin(uint16 data) {
+	DumpPacketBin((uchar*)&data, sizeof(uint16));
 }
 
-void DumpPacketBin(int8 data) {
-	DumpPacketBin((uchar*)&data, sizeof(int8));
+void DumpPacketBin(uint8 data) {
+	DumpPacketBin((uchar*)&data, sizeof(uint8));
 }
 
 
-void DumpPacketBin(const void* iData, int32 len) {
+void DumpPacketBin(const void* iData, uint32 len) {
 	if (!len)
 		return;
-	const int8* data = (const int8*) iData;
-	int32 k=0;
+	const uint8* data = (const uint8*) iData;
+	uint32 k=0;
 	for (k=0; k<len; k++) {
 		if (k % 4 == 0) {
 			if (k != 0) {
@@ -175,7 +175,7 @@ void DumpPacketBin(const void* iData, int32 len) {
 		else
 			cout << "0";
 	}
-	int8 tmp = (k % 4);
+	uint8 tmp = (k % 4);
 	if (!tmp)
 		tmp = 4;
 	if (tmp <= 3)

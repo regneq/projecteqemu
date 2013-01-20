@@ -174,5 +174,5 @@ int GetArgs(char * string)
 
 Client* gClient = 0;
 
-int32 Line_Number = 0;
+uint32 Line_Number = 0;
 

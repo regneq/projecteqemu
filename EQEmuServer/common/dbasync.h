@@ -19,8 +19,8 @@ public:
 	~DBAsync();
 	bool	StopThread();
 
-	int32	AddWork(DBAsyncWork** iWork, int32 iDelay = 0);
-	bool	CancelWork(int32 iWorkID);
+	uint32	AddWork(DBAsyncWork** iWork, uint32 iDelay = 0);
+	bool	CancelWork(uint32 iWorkID);
 	void	CommitWrites();
 
 	void	AddFQ(DBAsyncFinishedQueue* iDBAFQ);
@@ -37,7 +37,7 @@ private:
 	
 	void	ProcessWork(DBAsyncWork* iWork, bool iSleep = true);
 	void	DispatchWork(DBAsyncWork* iWork);
-	inline	int32	GetNextID()		{ return pNextID++; }
+	inline	uint32	GetNextID()		{ return pNextID++; }
 	DBAsyncWork*	InListPop();
 	DBAsyncWork*	InListPopWrite();	// Ignores delay
 	void			OutListPush(DBAsyncWork* iDBAW);
@@ -46,7 +46,7 @@ private:
 	bool	pRunLoop;
 
 	DBcore*	pDBC;
-	int32	pNextID;
+	uint32	pNextID;
 	Mutex	MInList;
 	LinkedList<DBAsyncWork*> InList;
 
@@ -73,42 +73,42 @@ typedef bool(*DBWorkCompleteCallBack)(DBAsyncWork*);
 
 class DBAsyncFinishedQueue {
 public:
-	DBAsyncFinishedQueue(int32 iTimeout = 90000);
+	DBAsyncFinishedQueue(uint32 iTimeout = 90000);
 	~DBAsyncFinishedQueue();
 
 	DBAsyncWork*	Pop();
-	DBAsyncWork*	PopByWPT(int32 iWPT);
-	DBAsyncWork*	Find(int32 iWPT);
+	DBAsyncWork*	PopByWPT(uint32 iWPT);
+	DBAsyncWork*	Find(uint32 iWPT);
 	bool			Push(DBAsyncWork* iDBAW);
 
 	void			CheckTimeouts();
 private:
 	Mutex MLock;
-	int32 pTimeout;
+	uint32 pTimeout;
 	LinkedList<DBAsyncWork*> list;
 };
 
 // Container class for multiple queries
 class DBAsyncWork {
 public:
-	DBAsyncWork(Database *db, DBAsyncFinishedQueue* iDBAFQ, int32 iWPT = 0, DBAsync::Type iType = DBAsync::Both, int32 iTimeout = 0);
-	DBAsyncWork(Database *db, DBWorkCompleteCallBack iCB, int32 iWPT = 0, DBAsync::Type iType = DBAsync::Both, int32 iTimeout = 0);
+	DBAsyncWork(Database *db, DBAsyncFinishedQueue* iDBAFQ, uint32 iWPT = 0, DBAsync::Type iType = DBAsync::Both, uint32 iTimeout = 0);
+	DBAsyncWork(Database *db, DBWorkCompleteCallBack iCB, uint32 iWPT = 0, DBAsync::Type iType = DBAsync::Both, uint32 iTimeout = 0);
 	~DBAsyncWork();
 
 	bool			AddQuery(DBAsyncQuery** iDBAQ);
-	bool			AddQuery(int32 iQPT, char** iQuery, int32 iQueryLen = 0xFFFFFFFF, bool iGetResultSet = true, bool iGetErrbuf = true);
-	int32			WPT();
+	bool			AddQuery(uint32 iQPT, char** iQuery, uint32 iQueryLen = 0xFFFFFFFF, bool iGetResultSet = true, bool iGetErrbuf = true);
+	uint32			WPT();
 	DBAsync::Type	Type();
 
 	// Pops finished queries off the work
 	DBAsyncQuery*	PopAnswer();
-	int32			QueryCount();
+	uint32			QueryCount();
 	
 	Database *GetDB() const { return(m_db); }
 
-	bool			CheckTimeout(int32 iFQTimeout);
-	bool			SetWorkID(int32 iWorkID);
-	int32			GetWorkID();
+	bool			CheckTimeout(uint32 iFQTimeout);
+	bool			SetWorkID(uint32 iWorkID);
+	uint32			GetWorkID();
 protected:
 	friend class DBAsync;
 	DBAsync::Status	SetStatus(DBAsync::Status iStatus);
@@ -118,15 +118,15 @@ protected:
 	void			PushAnswer(DBAsyncQuery* iDBAQ);	// Push answer back into workset
 
 	// not mutex'd cause only to be accessed from dbasync class
-	int32	pExecuteAfter;
+	uint32	pExecuteAfter;
 private:
 	Mutex	MLock;
-	int32	pQuestionCount;
-	int32	pAnswerCount;
-	int32	pWorkID;
-	int32	pWPT;
-	int32	pTimeout;
-	int32	pTSFinish; // timestamp when finished
+	uint32	pQuestionCount;
+	uint32	pAnswerCount;
+	uint32	pWorkID;
+	uint32	pWPT;
+	uint32	pTimeout;
+	uint32	pTSFinish; // timestamp when finished
 	DBAsyncFinishedQueue*	pDBAFQ;		//we do now own this pointer
 	DBWorkCompleteCallBack	pCB;
 	DBAsync::Status			pstatus;
@@ -140,31 +140,31 @@ private:
 // Container class for the query information
 class DBAsyncQuery {
 public:
-	DBAsyncQuery(int32 iQPT, char** iQuery, int32 iQueryLen = 0xFFFFFFFF, bool iGetResultSet = true, bool iGetErrbuf = true);
-	DBAsyncQuery(int32 iQPT, const char* iQuery, int32 iQueryLen = 0xFFFFFFFF, bool iGetResultSet = true, bool iGetErrbuf = true);
+	DBAsyncQuery(uint32 iQPT, char** iQuery, uint32 iQueryLen = 0xFFFFFFFF, bool iGetResultSet = true, bool iGetErrbuf = true);
+	DBAsyncQuery(uint32 iQPT, const char* iQuery, uint32 iQueryLen = 0xFFFFFFFF, bool iGetResultSet = true, bool iGetErrbuf = true);
 	~DBAsyncQuery();
 
-	bool	GetAnswer(char* errbuf = 0, MYSQL_RES** result = 0, int32* affected_rows = 0, int32* last_insert_id = 0, int32* errnum = 0);
-	inline int32 QPT()	{ return pQPT; }
+	bool	GetAnswer(char* errbuf = 0, MYSQL_RES** result = 0, uint32* affected_rows = 0, uint32* last_insert_id = 0, uint32* errnum = 0);
+	inline uint32 QPT()	{ return pQPT; }
 protected:
 	friend class DBAsyncWork;
-	int32		pQPT;
+	uint32		pQPT;
 
 	friend class DBAsync;
 	void		Process(DBcore* iDBC);
 
-	void		Init(int32 iQPT, bool iGetResultSet, bool iGetErrbuf);
+	void		Init(uint32 iQPT, bool iGetResultSet, bool iGetErrbuf);
 	DBAsync::Status pstatus;
 	char*		pQuery;
-	int32		pQueryLen;
+	uint32		pQueryLen;
 	bool		pGetResultSet;
 	bool		pGetErrbuf;
 
 	bool		pmysqlsuccess;
 	char*		perrbuf;
-	int32		perrnum;
-	int32		paffected_rows;
-	int32		plast_insert_id;
+	uint32		perrnum;
+	uint32		paffected_rows;
+	uint32		plast_insert_id;
 	MYSQL_RES*	presult;
 };
 

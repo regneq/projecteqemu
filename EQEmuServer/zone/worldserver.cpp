@@ -65,7 +65,7 @@ extern void CatchSignal(int);
 extern WorldServer worldserver;
 extern NetConnection net;
 extern PetitionList petition_list;
-extern int32 numclients;
+extern uint32 numclients;
 extern volatile bool RunLoops;
 
 WorldServer::WorldServer()
@@ -92,7 +92,7 @@ WorldServer::~WorldServer() {
 	safe_delete(pack);
 }*/
 
-void WorldServer::SetZone(int32 iZoneID, int32 iInstanceID) {
+void WorldServer::SetZone(uint32 iZoneID, uint32 iInstanceID) {
 	ServerPacket* pack = new ServerPacket(ServerOP_SetZone, sizeof(SetZone_Struct));
 	SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;
 	szs->zoneid = iZoneID;
@@ -589,7 +589,7 @@ void WorldServer::Process() {
 			break;
 
 		case ServerOP_FlagUpdate: {
-			Client* client = entity_list.GetClientByAccID(*((int32*) pack->pBuffer));
+			Client* client = entity_list.GetClientByAccID(*((uint32*) pack->pBuffer));
 			if (client != 0) {
 				client->UpdateAdmin();
 			}
@@ -640,14 +640,14 @@ void WorldServer::Process() {
 				break;
 			}
 			ServerUptime_Struct* sus = (ServerUptime_Struct*) pack->pBuffer;
-			int32 ms = Timer::GetCurrentTime();
-			int32 d = ms / 86400000;
+			uint32 ms = Timer::GetCurrentTime();
+			uint32 d = ms / 86400000;
 			ms -= d * 86400000;
-			int32 h = ms / 3600000;
+			uint32 h = ms / 3600000;
 			ms -= h * 3600000;
-			int32 m = ms / 60000;
+			uint32 m = ms / 60000;
 			ms -= m * 60000;
-			int32 s = ms / 1000;
+			uint32 s = ms / 1000;
 			if (d)
 				this->SendEmoteMessage(sus->adminname, 0, 0, "Zone #%i Uptime: %02id %02ih %02im %02is", sus->zoneserverid, d, h, m, s);
 			else if (h)
@@ -799,7 +799,7 @@ void WorldServer::Process() {
 				cout << "Wrong size on ServerChangeWID_Struct. Got: " << pack->size << ", Expected: 5" << endl;
 				break;
 			}
-			database.SetItemStatus(*((int32*) &pack->pBuffer[0]), *((int8*) &pack->pBuffer[4]));
+			database.SetItemStatus(*((uint32*) &pack->pBuffer[0]), *((uint8*) &pack->pBuffer[4]));
 			break;
 		}
 		case ServerOP_OOCMute: {
@@ -968,7 +968,7 @@ void WorldServer::Process() {
 			if(!c)
 				break;
 			
-			int32 groupid = database.GetGroupID(c->GetName());
+			uint32 groupid = database.GetGroupID(c->GetName());
 
 			Group* group = NULL;
 
@@ -1841,7 +1841,7 @@ void WorldServer::Process() {
 	return;
 }
 
-bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num, int32 guilddbid, int8 language, const char* message, ...) {
+bool WorldServer::SendChannelMessage(Client* from, const char* to, uint8 chan_num, uint32 guilddbid, uint8 language, const char* message, ...) {
 	if(!worldserver.Connected())
 		return false;
 	va_list argptr;
@@ -1881,7 +1881,7 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 	return ret;
 }
 
-bool WorldServer::SendEmoteMessage(const char* to, int32 to_guilddbid, int32 type, const char* message, ...) {
+bool WorldServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[256];
 	
@@ -1892,7 +1892,7 @@ bool WorldServer::SendEmoteMessage(const char* to, int32 to_guilddbid, int32 typ
 	return SendEmoteMessage(to, to_guilddbid, 0, type, buffer);
 }
 
-bool WorldServer::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...) {
+bool WorldServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[256];
 	
@@ -1920,7 +1920,7 @@ bool WorldServer::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to
 	return ret;
 }
 
-bool WorldServer::SendVoiceMacro(Client* From, int32 Type, char* Target, int32 MacroNumber, int32 GroupOrRaidID) {
+bool WorldServer::SendVoiceMacro(Client* From, uint32 Type, char* Target, uint32 MacroNumber, uint32 GroupOrRaidID) {
 
 	if(!worldserver.Connected() || !From)
 		return false;
@@ -1961,7 +1961,7 @@ bool WorldServer::SendVoiceMacro(Client* From, int32 Type, char* Target, int32 M
 	return Ret;
 }
 
-bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, int32 rezzexp, int32 dbid, int16 opcode)
+bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 dbid, uint16 opcode)
 {
 	_log(SPELLS__REZ, "WorldServer::RezzPlayer rezzexp is %i (0 is normal for RezzComplete", rezzexp);
 	ServerPacket* pack = new ServerPacket(ServerOP_RezzPlayer, sizeof(RezzPlayer_Struct));
@@ -2043,7 +2043,7 @@ void WorldServer::HandleReloadTasks(ServerPacket *pack)
 }
 
 
-int32 WorldServer::NextGroupID() {
+uint32 WorldServer::NextGroupID() {
 	//this system wastes a lot of potential group IDs (~5%), but
 	//if you are creating 2 billion groups in 1 run of the emu,
 	//something else is wrong...
@@ -2063,7 +2063,7 @@ int32 WorldServer::NextGroupID() {
 	return(cur_groupid++);
 }
 
-void WorldServer::UpdateLFP(int32 LeaderID, uint8 Action, uint8 MatchFilter, uint32 FromLevel, uint32 ToLevel, uint32 Classes, 
+void WorldServer::UpdateLFP(uint32 LeaderID, uint8 Action, uint8 MatchFilter, uint32 FromLevel, uint32 ToLevel, uint32 Classes, 
 			    const char *Comments, GroupLFPMemberEntry *LFPMembers) {
 
 	ServerPacket* pack = new ServerPacket(ServerOP_LFPUpdate, sizeof(ServerLFPUpdate_Struct));
@@ -2082,12 +2082,12 @@ void WorldServer::UpdateLFP(int32 LeaderID, uint8 Action, uint8 MatchFilter, uin
 
 }
 
-void WorldServer::UpdateLFP(int32 LeaderID, GroupLFPMemberEntry *LFPMembers) {
+void WorldServer::UpdateLFP(uint32 LeaderID, GroupLFPMemberEntry *LFPMembers) {
 
 	UpdateLFP(LeaderID, LFPMemberUpdate, 0, 0, 0, 0, "", LFPMembers);
 }
 
-void WorldServer::StopLFP(int32 LeaderID) {
+void WorldServer::StopLFP(uint32 LeaderID) {
 
 	GroupLFPMemberEntry LFPMembers;
 	UpdateLFP(LeaderID, LFPOff, 0, 0, 0, 0, "", &LFPMembers);

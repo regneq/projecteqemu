@@ -6,7 +6,7 @@
 #include "EmuTCPServer.h"
 #include "EmuTCPConnection.h"
 
-EmuTCPServer::EmuTCPServer(int16 iPort, bool iOldFormat)
+EmuTCPServer::EmuTCPServer(uint16 iPort, bool iOldFormat)
 : TCPServer<EmuTCPConnection>(iPort),
   pOldFormat(iOldFormat)
 {
@@ -26,7 +26,7 @@ void EmuTCPServer::Process() {
 	TCPServer<EmuTCPConnection>::Process();
 }
 
-void EmuTCPServer::CreateNewConnection(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort)
+void EmuTCPServer::CreateNewConnection(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort)
 {
 	EmuTCPConnection *conn = new EmuTCPConnection(ID, this, in_socket, irIP, irPort, pOldFormat);
 	AddConnection(conn);
@@ -72,7 +72,7 @@ EmuTCPNetPacket_Struct* EmuTCPServer::InQueuePop() {
 }
 
 
-EmuTCPConnection *EmuTCPServer::FindConnection(int32 iID) {
+EmuTCPConnection *EmuTCPServer::FindConnection(uint32 iID) {
 	vitr cur, end;
 	cur = m_list.begin();
 	end = m_list.end();

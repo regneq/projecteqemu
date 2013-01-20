@@ -25,12 +25,12 @@
 #include "WorldConfig.h"
 #include "../common/guilds.h"
 
-extern int32 numplayers;
+extern uint32 numplayers;
 extern LoginServerList loginserverlist;
 extern ClientList		client_list;
 extern volatile bool RunLoops;
 
-ClientListEntry::ClientListEntry(int32 in_id, int32 iLSID, const char* iLoginName, const char* iLoginKey, sint16 iWorldAdmin, int32 ip, uint8 local)
+ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local)
 : id(in_id)
 {
 	ClearVars(true);
@@ -47,7 +47,7 @@ ClientListEntry::ClientListEntry(int32 in_id, int32 iLSID, const char* iLoginNam
 	pinstance = 0;
 }
 
-ClientListEntry::ClientListEntry(int32 in_id, int32 iAccID, const char* iAccName, MD5& iMD5Pass, sint16 iAdmin)
+ClientListEntry::ClientListEntry(uint32 in_id, uint32 iAccID, const char* iAccName, MD5& iMD5Pass, int16 iAdmin)
 : id(in_id)
 {
 	ClearVars(true);
@@ -64,7 +64,7 @@ ClientListEntry::ClientListEntry(int32 in_id, int32 iAccID, const char* iAccName
 	pinstance = 0;
 }
 
-ClientListEntry::ClientListEntry(int32 in_id, ZoneServer* iZS, ServerClientList_Struct* scl, sint8 iOnline)
+ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline)
 : id(in_id)
 {
 	ClearVars(true);
@@ -94,17 +94,17 @@ ClientListEntry::~ClientListEntry() {
 	}
 }
 
-void ClientListEntry::SetChar(int32 iCharID, const char* iCharName) {
+void ClientListEntry::SetChar(uint32 iCharID, const char* iCharName) {
 	pcharid = iCharID;
 	strn0cpy(pname, iCharName, sizeof(pname));
 }
 
-void ClientListEntry::SetOnline(ZoneServer* iZS, sint8 iOnline) {
+void ClientListEntry::SetOnline(ZoneServer* iZS, int8 iOnline) {
 	if (iZS == this->Server())
 		SetOnline(iOnline);
 }
 
-void ClientListEntry::SetOnline(sint8 iOnline) {
+void ClientListEntry::SetOnline(int8 iOnline) {
 	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online)
 		numplayers++;
 	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online) {
@@ -145,7 +145,7 @@ void ClientListEntry::LSZoneChange(ZoneToZone_Struct* ztz){
 		safe_delete(pack);
 	}
 }
-void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, sint8 iOnline) {
+void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline) {
 	if (pzoneserver != iZS) {
 		if (pzoneserver){
 			pzoneserver->RemovePlayer();
@@ -192,7 +192,7 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, sint
 	SetOnline(iOnline);
 }
 
-void ClientListEntry::LeavingZone(ZoneServer* iZS, sint8 iOnline) {
+void ClientListEntry::LeavingZone(ZoneServer* iZS, int8 iOnline) {
 	if (iZS != 0 && iZS != pzoneserver)
 		return;
 	SetOnline(iOnline);
@@ -258,11 +258,11 @@ bool ClientListEntry::CheckStale() {
 	return false;
 }
 
-bool ClientListEntry::CheckAuth(int32 iLSID, const char* iKey) {
+bool ClientListEntry::CheckAuth(uint32 iLSID, const char* iKey) {
 //	if (LSID() == iLSID && strncmp(plskey, iKey,10) == 0) {
 	if (strncmp(plskey, iKey,10) == 0) {
 		if (paccountid == 0 && LSID()>0) {
-			sint16 tmpStatus = WorldConfig::get()->DefaultStatus;
+			int16 tmpStatus = WorldConfig::get()->DefaultStatus;
 			paccountid = database.CreateAccount(plsname, 0, tmpStatus, LSID());
 			if (!paccountid) {
 				_log(WORLD__CLIENTLIST_ERR,"Error adding local account for LS login: '%s', duplicate name?" ,plsname);
@@ -286,7 +286,7 @@ bool ClientListEntry::CheckAuth(const char* iName, MD5& iMD5Password) {
 	return false;
 }
 
-bool ClientListEntry::CheckAuth(int32 id, const char* iKey, int32 ip) {
+bool ClientListEntry::CheckAuth(uint32 id, const char* iKey, uint32 ip) {
 	if (pIP==ip && strncmp(plskey, iKey,10) == 0){
 		paccountid = id;
 		database.GetAccountFromID(id,paccountname,&padmin);

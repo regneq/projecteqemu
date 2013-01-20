@@ -2,7 +2,7 @@
 
 #include "bot.h"
 
-bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
+bool Bot::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes) {
 	_ZP(Bot_AICastSpell);
 
 	if (!tar) {
@@ -27,7 +27,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 		}
 	}
 
-	int8 botClass = GetClass();
+	uint8 botClass = GetClass();
 	uint8 botLevel = GetLevel();
 
 	bool checked_los = false;	//we do not check LOS until we are absolutely sure we need to, and we only do it once.
@@ -83,7 +83,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 		}
 		case SpellType_Heal: {
 			if (tar->DontHealMeBefore() < Timer::GetCurrentTime()) {
-				int8 hpr = (int8)tar->GetHPRatio();
+				uint8 hpr = (uint8)tar->GetHPRatio();
 				bool hasAggro = false;
 				bool isPrimaryHealer = false;
 				
@@ -217,7 +217,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						&& !(tar->CanBuffStack(botSpell.SpellId, botLevel, true) >= 0))
 						break;
 
-					int32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
+					uint32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
 
 					castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontHealMeBeforeTime);
 
@@ -288,7 +288,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					if(tar->CanBuffStack(botSpell.SpellId, botLevel, true) == 0)
 						break;
 
-					int32 TempDontRootMeBefore = tar->DontRootMeBefore();
+					uint32 TempDontRootMeBefore = tar->DontRootMeBefore();
 					
 					castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontRootMeBefore);
 					
@@ -390,7 +390,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					if(CheckSpellRecastTimers(this, itr->SpellIndex))
 					{
 
-						int32 TempDontBuffMeBefore = tar->DontBuffMeBefore();
+						uint32 TempDontBuffMeBefore = tar->DontBuffMeBefore();
 
 						castedSpell = AIDoSpellCast(selectedBotSpell.SpellIndex, tar, selectedBotSpell.ManaCost, &TempDontBuffMeBefore);
 
@@ -405,7 +405,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			break;
 		}
 		case SpellType_Escape: {
-			int8 hpr = (int8)GetHPRatio();
+			uint8 hpr = (uint8)GetHPRatio();
 			bool mayGetAggro = false;
 			
 #ifdef IPC          
@@ -478,7 +478,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 
 				if(botClass == PALADIN || botClass == DRUID || botClass == CLERIC || botClass == ENCHANTER || botClass == WIZARD) {
 					if(botSpell.SpellId == 0) {
-						int8 stunChance = (tar->IsCasting() ? 30: 15);
+						uint8 stunChance = (tar->IsCasting() ? 30: 15);
 						
 						if(botClass == PALADIN)
 							stunChance = 50;
@@ -622,7 +622,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					if(!(!tar->IsImmuneToSpell(botSpell.SpellId, this) && tar->CanBuffStack(botSpell.SpellId, botLevel, true) >= 0))
 						break;
 
-					int32 TempDontSnareMeBefore = tar->DontSnareMeBefore();
+					uint32 TempDontSnareMeBefore = tar->DontSnareMeBefore();
 					
 					castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontSnareMeBefore);
 					
@@ -657,7 +657,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if(!(!tar->IsImmuneToSpell(selectedBotSpell.SpellId, this) && tar->CanBuffStack(selectedBotSpell.SpellId, botLevel, true) >= 0))
 							continue;
 
-						int32 TempDontDotMeBefore = tar->DontDotMeBefore();
+						uint32 TempDontDotMeBefore = tar->DontDotMeBefore();
 
 						castedSpell = AIDoSpellCast(selectedBotSpell.SpellIndex, tar, selectedBotSpell.ManaCost, &TempDontDotMeBefore);
 
@@ -750,7 +750,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				if(botSpell.SpellId == 0)
 					break;
 				
-				int32 TempDontCureMeBeforeTime = tar->DontCureMeBefore();
+				uint32 TempDontCureMeBeforeTime = tar->DontCureMeBefore();
 
 				castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontCureMeBeforeTime);
 
@@ -786,19 +786,19 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 	return castedSpell;
 }
 
-bool Bot::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore) {
+bool Bot::AIDoSpellCast(uint8 i, Mob* tar, int32 mana_cost, uint32* oDontDoAgainBefore) {
 	bool result = false;
 
 	// manacost has special values, -1 is no mana cost, -2 is instant cast (no mana)
-	sint32 manaCost = mana_cost;
+	int32 manaCost = mana_cost;
 
 	if (manaCost == -1)
 		manaCost = spells[AIspells[i].spellid].mana;
 	else if (manaCost == -2)
 		manaCost = 0;
 
-	sint32 extraMana = 0;
-	sint32 hasMana = GetMana();
+	int32 extraMana = 0;
+	int32 hasMana = GetMana();
 
 	// Allow bots to cast buff spells even if they are out of mana
 	if(RuleB(Bots, BotFinishBuffing)) {
@@ -894,7 +894,7 @@ bool Bot::AI_IdleCastCheck() {
 
 		//Ok, IdleCastCheck depends of class. 
 		// Healers WITHOUT pets will check if a heal is needed before buffing.
-		int8 botClass = GetClass();
+		uint8 botClass = GetClass();
 		
 		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER) {
 			if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Cure)) {
@@ -960,7 +960,7 @@ bool Bot::AI_EngagedCastCheck() {
 
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 
-		int8 botClass = GetClass();
+		uint8 botClass = GetClass();
 		BotStanceType botStance = GetBotStance();
 		bool mayGetAggro = HasOrMayGetAggro();
 
@@ -1182,7 +1182,7 @@ bool Bot::AIHealRotation(Mob* tar, bool useFastHeals) {
 		}
 	}
 
-	int8 botLevel = GetLevel();
+	uint8 botLevel = GetLevel();
 
 	bool castedSpell = false;
 
@@ -1220,7 +1220,7 @@ bool Bot::AIHealRotation(Mob* tar, bool useFastHeals) {
 		&& !(tar->CanBuffStack(botSpell.SpellId, botLevel, true) >= 0))
 		return false;
 
-	int32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
+	uint32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
 
 	castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontHealMeBeforeTime);
 
@@ -1292,7 +1292,7 @@ std::list<BotSpell> Bot::GetBotSpellsForSpellEffectAndTargetType(Bot* botCaster,
 	return result;
 }
 
-std::list<BotSpell> Bot::GetBotSpellsBySpellType(Bot* botCaster, int16 spellType) {
+std::list<BotSpell> Bot::GetBotSpellsBySpellType(Bot* botCaster, uint16 spellType) {
 	std::list<BotSpell> result;
 
 	if(botCaster && botCaster->AI_HasSpells()) {
@@ -1319,7 +1319,7 @@ std::list<BotSpell> Bot::GetBotSpellsBySpellType(Bot* botCaster, int16 spellType
 	return result;
 }
 
-BotSpell Bot::GetFirstBotSpellBySpellType(Bot* botCaster, int16 spellType) {
+BotSpell Bot::GetFirstBotSpellBySpellType(Bot* botCaster, uint16 spellType) {
 	BotSpell result;
 	
 	result.SpellId = 0;
@@ -2124,14 +2124,14 @@ BotSpell Bot::GetBestBotSpellForCure(Bot* botCaster, Mob *tar) {
 	return result;
 }
 
-void Bot::SetSpellRecastTimer(int timer_index, sint32 recast_delay) {
+void Bot::SetSpellRecastTimer(int timer_index, int32 recast_delay) {
 	if(timer_index > 0 && timer_index <= MaxSpellTimer) {
 		timers[timer_index - 1] = Timer::GetCurrentTime() + recast_delay;
 	}
 }
 
-sint32 Bot::GetSpellRecastTimer(Bot *caster, int timer_index) {
-	sint32 result = 0;
+int32 Bot::GetSpellRecastTimer(Bot *caster, int timer_index) {
+	int32 result = 0;
 	if(caster) {
 		if(timer_index > 0 && timer_index <= MaxSpellTimer) {
 			result = caster->timers[timer_index - 1];
@@ -2151,14 +2151,14 @@ bool Bot::CheckSpellRecastTimers(Bot *caster, int SpellIndex) {
 	return false;
 }
 
-void Bot::SetDisciplineRecastTimer(int timer_index, sint32 recast_delay) {
+void Bot::SetDisciplineRecastTimer(int timer_index, int32 recast_delay) {
 	if(timer_index > 0 && timer_index <= MaxDisciplineTimer) {
 		timers[DisciplineReuseStart + timer_index - 1] = Timer::GetCurrentTime() + recast_delay;
 	}
 }
 
-sint32 Bot::GetDisciplineRecastTimer(Bot *caster, int timer_index) {
-	sint32 result = 0;
+int32 Bot::GetDisciplineRecastTimer(Bot *caster, int timer_index) {
+	int32 result = 0;
 	if(caster) {
 		if(timer_index > 0 && timer_index <= MaxDisciplineTimer) {
 			result = caster->timers[DisciplineReuseStart + timer_index - 1];
@@ -2167,8 +2167,8 @@ sint32 Bot::GetDisciplineRecastTimer(Bot *caster, int timer_index) {
 	return result;
 }
 
-int32 Bot::GetDisciplineRemainingTime(Bot *caster, int timer_index) {
-	sint32 result = 0;
+uint32 Bot::GetDisciplineRemainingTime(Bot *caster, int timer_index) {
+	int32 result = 0;
 	if(caster) {
 		if(timer_index > 0 && timer_index <= MaxDisciplineTimer) {
 			if(GetDisciplineRecastTimer(caster, timer_index) > Timer::GetCurrentTime())
@@ -2188,7 +2188,7 @@ bool Bot::CheckDisciplineRecastTimers(Bot *caster, int timer_index) {
 }
 
 void Bot::CalcChanceToCast() {
-	int8 castChance = 0;
+	uint8 castChance = 0;
 
 	for(int i=0; i < MaxStances; i++) {
 		for(int j=0; j < MaxSpellTypes; j++) {
@@ -2197,7 +2197,7 @@ void Bot::CalcChanceToCast() {
 	}
 	
 	BotStanceType botStance = GetBotStance();
-	int8 botClass = GetClass();
+	uint8 botClass = GetClass();
 	bool isPrimaryHealer = false;
 	bool isPrimarySlower = false;
 	
@@ -3180,10 +3180,10 @@ void Bot::CalcChanceToCast() {
 	_spellCastingChances[botStance][SpellType_CureIndex] = castChance;
 }
 
-int8 Bot::GetChanceToCastBySpellType(int16 spellType) {
+uint8 Bot::GetChanceToCastBySpellType(uint16 spellType) {
 	int index = 0;
 	int botStance = (int)GetBotStance();
-	int8 chance = 0;
+	uint8 chance = 0;
 
 	if(GetBotStance() >= MaxStances)
 		return 0;

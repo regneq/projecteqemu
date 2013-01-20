@@ -9,7 +9,7 @@ class ServerPacket;
 
 class EmuTCPServer : public TCPServer<EmuTCPConnection> {
 public:
-	EmuTCPServer(int16 iPort = 0, bool iOldFormat = false);
+	EmuTCPServer(uint16 iPort = 0, bool iOldFormat = false);
 	virtual ~EmuTCPServer();
 	
 	//packet broadcast routines.
@@ -17,7 +17,7 @@ public:
 	void	SendPacket(EmuTCPNetPacket_Struct** tnps);
 	
 	//special crap for relay management
-	EmuTCPConnection *FindConnection(int32 iID);
+	EmuTCPConnection *FindConnection(uint32 iID);
 	
 	//exposed for some crap we pull. Do not call from outside this object.
 	TCPServer<EmuTCPConnection>::AddConnection;
@@ -25,7 +25,7 @@ public:
 protected:
 	virtual void	Process();
 	
-	virtual void CreateNewConnection(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort);
+	virtual void CreateNewConnection(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort);
 	
 	bool pOldFormat;
 	

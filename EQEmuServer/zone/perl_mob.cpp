@@ -413,7 +413,7 @@ XS(XS_Mob_GetID)
 		Perl_croak(aTHX_ "Usage: Mob::GetID(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -640,7 +640,7 @@ XS(XS_Mob_SendWearChange)
 		Perl_croak(aTHX_ "Usage: Mob::SendWearChange(THIS, material_slot)");
 	{
 		Mob *		THIS;
-		int8		material_slot = (int8)SvUV(ST(1));
+		uint8		material_slot = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -664,9 +664,9 @@ XS(XS_Mob_GetEquipment)
 		Perl_croak(aTHX_ "Usage: Mob::GetEquipment(THIS, material_slot)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int8		material_slot = (int8)SvUV(ST(1));
+		uint8		material_slot = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -691,9 +691,9 @@ XS(XS_Mob_GetEquipmentMaterial)
 		Perl_croak(aTHX_ "Usage: Mob::GetEquipmentMaterial(THIS, material_slot)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int8		material_slot = (int8)SvUV(ST(1));
+		uint8		material_slot = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -718,9 +718,9 @@ XS(XS_Mob_GetEquipmentColor)
 		Perl_croak(aTHX_ "Usage: Mob::GetEquipmentColor(THIS, material_slot)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int8		material_slot = (int8)SvUV(ST(1));
+		uint8		material_slot = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -745,9 +745,9 @@ XS(XS_Mob_GetArmorTint)
 		Perl_croak(aTHX_ "Usage: Mob::GetArmorTint(THIS, material_slot)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int8		material_slot = (int8)SvUV(ST(1));
+		uint8		material_slot = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -895,11 +895,11 @@ XS(XS_Mob_Damage)
 	{
 		Mob *		THIS;
 		Mob*		from;
-		sint32		damage = (sint32)SvIV(ST(2));
-		int16		spell_id = (int16)SvUV(ST(3));
+		int32		damage = (int32)SvIV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(3));
 		SkillType		attack_skill = (SkillType)SvUV(ST(4));
 		bool		avoidable;
-		sint8		buffslot;
+		int8		buffslot;
 		bool		iBuffTic;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -929,7 +929,7 @@ XS(XS_Mob_Damage)
 		if (items < 7)
 			buffslot = -1;
 		else {
-			buffslot = (sint8)SvIV(ST(6));
+			buffslot = (int8)SvIV(ST(6));
 		}
 
 		if (items < 8)
@@ -1041,7 +1041,7 @@ XS(XS_Mob_HealDamage)
 		Perl_croak(aTHX_ "Usage: Mob::HealDamage(THIS, amount, caster = 0)");
 	{
 		Mob *		THIS;
-		sint32	heal_amt = (sint32)SvIV(ST(1));
+		int32	heal_amt = (int32)SvIV(ST(1));
 		Mob *		caster = NULL;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1101,9 +1101,9 @@ XS(XS_Mob_GetLevelCon)
 		Perl_croak(aTHX_ "Usage: Mob::GetLevelCon(THIS, iOtherLevel)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		int8		iOtherLevel = (int8)SvUV(ST(1));
+		uint8		iOtherLevel = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1128,7 +1128,7 @@ XS(XS_Mob_SetHP)
 		Perl_croak(aTHX_ "Usage: Mob::SetHP(THIS, hp)");
 	{
 		Mob *		THIS;
-		sint32		hp = (sint32)SvIV(ST(1));
+		int32		hp = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1247,7 +1247,7 @@ XS(XS_Mob_SendPosUpdate)
 		Perl_croak(aTHX_ "Usage: Mob::SendPosUpdate(THIS, iSendToSelf= 0)");
 	{
 		Mob *		THIS;
-		int8		iSendToSelf;
+		uint8		iSendToSelf;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1261,7 +1261,7 @@ XS(XS_Mob_SendPosUpdate)
 		if (items < 2)
 			iSendToSelf = 0;
 		else {
-			iSendToSelf = (int8)SvUV(ST(1));
+			iSendToSelf = (uint8)SvUV(ST(1));
 		}
 
 		THIS->SendPosUpdate(iSendToSelf);
@@ -1366,7 +1366,7 @@ XS(XS_Mob_SetInvisible)
 		Perl_croak(aTHX_ "Usage: Mob::SetInvisible(THIS, state)");
 	{
 		Mob *		THIS;
-		int8		state = (int8)SvUV(ST(1));
+		uint8		state = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1391,7 +1391,7 @@ XS(XS_Mob_FindBuff)
 	{
 		Mob *		THIS;
 		bool		RETVAL;
-		int16		spellid = (int16)SvUV(ST(1));
+		uint16		spellid = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1418,9 +1418,9 @@ XS(XS_Mob_FindType)
 	{
 		Mob *		THIS;
 		bool		RETVAL;
-		int8		type = (int8)SvUV(ST(1));
+		uint8		type = (uint8)SvUV(ST(1));
 		bool		bOffensive;
-		int16		threshold;
+		uint16		threshold;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1440,7 +1440,7 @@ XS(XS_Mob_FindType)
 		if (items < 4)
 			threshold = 100;
 		else {
-			threshold = (int16)SvUV(ST(3));
+			threshold = (uint16)SvUV(ST(3));
 		}
 
 		RETVAL = THIS->FindType(type, bOffensive, threshold);
@@ -1458,9 +1458,9 @@ XS(XS_Mob_GetBuffSlotFromType)
 		Perl_croak(aTHX_ "Usage: Mob::GetBuffSlotFromType(THIS, type)");
 	{
 		Mob *		THIS;
-		sint8		RETVAL;
+		int8		RETVAL;
 		dXSTARG;
-		int8		type = (int8)SvUV(ST(1));
+		uint8		type = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1485,7 +1485,7 @@ XS(XS_Mob_MakePet)
 		Perl_croak(aTHX_ "Usage: Mob::MakePet(THIS, spell_id, pettype, name=NULL)");
 	{
 		Mob *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		char*		pettype = (char *)SvPV_nolen(ST(2));
 		char *		name;
 
@@ -1517,9 +1517,9 @@ XS(XS_Mob_MakeTempPet)
 		Perl_croak(aTHX_ "Usage: Mob::MakeTempPet(THIS, spell_id, name=NULL, duration=0, target=NULL)");
 	{
 		Mob *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		char *		name;
-		int32		duration;
+		uint32		duration;
 		Mob *		target;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1539,7 +1539,7 @@ XS(XS_Mob_MakeTempPet)
 		if (items < 4)
 			duration = 0;
 		else
-			duration = (int32)SvUV(ST(3));
+			duration = (uint32)SvUV(ST(3));
 
 		if (items < 5)
 			target = NULL;
@@ -1563,9 +1563,9 @@ XS(XS_Mob_TypesTempPet)
 		Perl_croak(aTHX_ "Usage: Mob::TypesTempPet(THIS, typesid, name=NULL, duration=0, target=NULL, follow=0)");
 	{
 		Mob *		THIS;
-		int32		typesid = (int32)SvUV(ST(1));
+		uint32		typesid = (uint32)SvUV(ST(1));
 		char *		name;
-		int32		duration;
+		uint32		duration;
 		Mob *		target;
 		bool		follow;
 
@@ -1586,7 +1586,7 @@ XS(XS_Mob_TypesTempPet)
 		if (items < 4)
 			duration = 0;
 		else
-			duration = (int32)SvUV(ST(3));
+			duration = (uint32)SvUV(ST(3));
 
 		if (items < 5)
 			target = NULL;
@@ -1616,7 +1616,7 @@ XS(XS_Mob_GetBaseRace)
 		Perl_croak(aTHX_ "Usage: Mob::GetBaseRace(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1642,7 +1642,7 @@ XS(XS_Mob_GetBaseGender)
 		Perl_croak(aTHX_ "Usage: Mob::GetBaseGender(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1668,7 +1668,7 @@ XS(XS_Mob_GetDeity)
 		Perl_croak(aTHX_ "Usage: Mob::GetDeity(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1694,7 +1694,7 @@ XS(XS_Mob_GetRace)
 		Perl_croak(aTHX_ "Usage: Mob::GetRace(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1720,7 +1720,7 @@ XS(XS_Mob_GetGender)
 		Perl_croak(aTHX_ "Usage: Mob::GetGender(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1746,7 +1746,7 @@ XS(XS_Mob_GetTexture)
 		Perl_croak(aTHX_ "Usage: Mob::GetTexture(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1772,7 +1772,7 @@ XS(XS_Mob_GetHelmTexture)
 		Perl_croak(aTHX_ "Usage: Mob::GetHelmTexture(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1798,7 +1798,7 @@ XS(XS_Mob_GetHairColor)
 		Perl_croak(aTHX_ "Usage: Mob::GetHairColor(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1824,7 +1824,7 @@ XS(XS_Mob_GetBeardColor)
 		Perl_croak(aTHX_ "Usage: Mob::GetBeardColor(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1850,7 +1850,7 @@ XS(XS_Mob_GetEyeColor1)
 		Perl_croak(aTHX_ "Usage: Mob::GetEyeColor1(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1876,7 +1876,7 @@ XS(XS_Mob_GetEyeColor2)
 		Perl_croak(aTHX_ "Usage: Mob::GetEyeColor2(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1902,7 +1902,7 @@ XS(XS_Mob_GetHairStyle)
 		Perl_croak(aTHX_ "Usage: Mob::GetHairStyle(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1928,7 +1928,7 @@ XS(XS_Mob_GetLuclinFace)
 		Perl_croak(aTHX_ "Usage: Mob::GetLuclinFace(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1954,7 +1954,7 @@ XS(XS_Mob_GetBeard)
 		Perl_croak(aTHX_ "Usage: Mob::GetBeard(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -1980,7 +1980,7 @@ XS(XS_Mob_GetDrakkinHeritage)
 		Perl_croak(aTHX_ "Usage: Mob::GetDrakkinHeritage(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2006,7 +2006,7 @@ XS(XS_Mob_GetDrakkinTattoo)
 		Perl_croak(aTHX_ "Usage: Mob::GetDrakkinTattoo(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2032,7 +2032,7 @@ XS(XS_Mob_GetDrakkinDetails)
 		Perl_croak(aTHX_ "Usage: Mob::GetDrakkinDetails(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2058,7 +2058,7 @@ XS(XS_Mob_GetClass)
 		Perl_croak(aTHX_ "Usage: Mob::GetClass(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2247,7 +2247,7 @@ XS(XS_Mob_GetHP)
 		Perl_croak(aTHX_ "Usage: Mob::GetHP(THIS)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2273,7 +2273,7 @@ XS(XS_Mob_GetMaxHP)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxHP(THIS)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2299,7 +2299,7 @@ XS(XS_Mob_GetItemHPBonuses)
 		Perl_croak(aTHX_ "Usage: Mob::GetItemHPBonuses(THIS)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2325,7 +2325,7 @@ XS(XS_Mob_GetSpellHPBonuses)
 		Perl_croak(aTHX_ "Usage: Mob::GetSpellHPBonuses(THIS)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2405,7 +2405,7 @@ XS(XS_Mob_GetCasterLevel)
 		Mob *		THIS;
 		int		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2430,7 +2430,7 @@ XS(XS_Mob_GetMaxMana)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxMana(THIS)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2456,7 +2456,7 @@ XS(XS_Mob_GetMana)
 		Perl_croak(aTHX_ "Usage: Mob::GetMana(THIS)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2482,7 +2482,7 @@ XS(XS_Mob_SetMana)
 		Perl_croak(aTHX_ "Usage: Mob::SetMana(THIS, amount)");
 	{
 		Mob *		THIS;
-		sint32		amount = (sint32)SvIV(ST(1));
+		int32		amount = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2532,7 +2532,7 @@ XS(XS_Mob_GetAC)
 		Perl_croak(aTHX_ "Usage: Mob::GetAC(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2558,7 +2558,7 @@ XS(XS_Mob_GetATK)
 		Perl_croak(aTHX_ "Usage: Mob::GetATK(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2584,7 +2584,7 @@ XS(XS_Mob_GetSTR)
 		Perl_croak(aTHX_ "Usage: Mob::GetSTR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2610,7 +2610,7 @@ XS(XS_Mob_GetSTA)
 		Perl_croak(aTHX_ "Usage: Mob::GetSTA(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2636,7 +2636,7 @@ XS(XS_Mob_GetDEX)
 		Perl_croak(aTHX_ "Usage: Mob::GetDEX(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2662,7 +2662,7 @@ XS(XS_Mob_GetAGI)
 		Perl_croak(aTHX_ "Usage: Mob::GetAGI(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2688,7 +2688,7 @@ XS(XS_Mob_GetINT)
 		Perl_croak(aTHX_ "Usage: Mob::GetINT(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2714,7 +2714,7 @@ XS(XS_Mob_GetWIS)
 		Perl_croak(aTHX_ "Usage: Mob::GetWIS(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2740,7 +2740,7 @@ XS(XS_Mob_GetCHA)
 		Perl_croak(aTHX_ "Usage: Mob::GetCHA(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2766,7 +2766,7 @@ XS(XS_Mob_GetMR)
 		Perl_croak(aTHX_ "Usage: Mob::GetMR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2792,7 +2792,7 @@ XS(XS_Mob_GetFR)
 		Perl_croak(aTHX_ "Usage: Mob::GetFR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2818,7 +2818,7 @@ XS(XS_Mob_GetDR)
 		Perl_croak(aTHX_ "Usage: Mob::GetDR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2844,7 +2844,7 @@ XS(XS_Mob_GetPR)
 		Perl_croak(aTHX_ "Usage: Mob::GetPR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2870,7 +2870,7 @@ XS(XS_Mob_GetCR)
 		Perl_croak(aTHX_ "Usage: Mob::GetCR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2896,7 +2896,7 @@ XS(XS_Mob_GetCorruption)
 		Perl_croak(aTHX_ "Usage: Mob::GetCorruption(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2922,7 +2922,7 @@ XS(XS_Mob_GetMaxSTR)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxSTR(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2948,7 +2948,7 @@ XS(XS_Mob_GetMaxSTA)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxSTA(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -2974,7 +2974,7 @@ XS(XS_Mob_GetMaxDEX)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxDEX(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3000,7 +3000,7 @@ XS(XS_Mob_GetMaxAGI)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxAGI(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3026,7 +3026,7 @@ XS(XS_Mob_GetMaxINT)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxINT(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3052,7 +3052,7 @@ XS(XS_Mob_GetMaxWIS)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxWIS(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3078,7 +3078,7 @@ XS(XS_Mob_GetMaxCHA)
 		Perl_croak(aTHX_ "Usage: Mob::GetMaxCHA(THIS)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3106,7 +3106,7 @@ XS(XS_Mob_GetActSpellRange)
 		Mob *		THIS;
 		float		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		float		range = (float)SvNV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3132,10 +3132,10 @@ XS(XS_Mob_GetActSpellDamage)
 		Perl_croak(aTHX_ "Usage: Mob::GetActSpellDamage(THIS, spell_id, value)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
-		sint32		value = (sint32)SvIV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(1));
+		int32		value = (int32)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3160,10 +3160,10 @@ XS(XS_Mob_GetActSpellHealing)
 		Perl_croak(aTHX_ "Usage: Mob::GetActSpellHealing(THIS, spell_id, value)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
-		sint32		value = (sint32)SvIV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(1));
+		int32		value = (int32)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3188,10 +3188,10 @@ XS(XS_Mob_GetActSpellCost)
 		Perl_croak(aTHX_ "Usage: Mob::GetActSpellCost(THIS, spell_id, cost)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
-		sint32		cost = (sint32)SvIV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(1));
+		int32		cost = (int32)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3216,10 +3216,10 @@ XS(XS_Mob_GetActSpellDuration)
 		Perl_croak(aTHX_ "Usage: Mob::GetActSpellDuration(THIS, spell_id, duration)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
-		sint32		duration = (sint32)SvIV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(1));
+		int32		duration = (int32)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3244,10 +3244,10 @@ XS(XS_Mob_GetActSpellCasttime)
 		Perl_croak(aTHX_ "Usage: Mob::GetActSpellCasttime(THIS, spell_id, casttime)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
-		sint32		casttime = (sint32)SvIV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(1));
+		int32		casttime = (int32)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3275,7 +3275,7 @@ XS(XS_Mob_ResistSpell)
 		double		RETVAL;
 		dXSTARG;
 		uint8		ressit_type = (uint8)SvUV(ST(1));
-		int16		spell_id = (int16)SvUV(ST(2));
+		uint16		spell_id = (uint16)SvUV(ST(2));
 		Mob *		caster;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3312,7 +3312,7 @@ XS(XS_Mob_GetSpecializeSkillValue)
 		Mob *		THIS;
 		uint16		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3337,7 +3337,7 @@ XS(XS_Mob_GetNPCTypeID)
 		Perl_croak(aTHX_ "Usage: Mob::GetNPCTypeID(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3598,7 +3598,7 @@ XS(XS_Mob_GetWaypointPause)
 		Perl_croak(aTHX_ "Usage: Mob::GetWaypointPause(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3624,7 +3624,7 @@ XS(XS_Mob_GetWaypointID)
 		Perl_croak(aTHX_ "Usage: Mob::GetWaypointID(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3650,7 +3650,7 @@ XS(XS_Mob_SetCurrentWP)
 		Perl_croak(aTHX_ "Usage: Mob::SetCurrentWP(THIS, waypoint)");
 	{
 		Mob *		THIS;
-		int16		waypoint = (int16)SvUV(ST(1));
+		uint16		waypoint = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3700,7 +3700,7 @@ XS(XS_Mob_SetFollowID)
 		Perl_croak(aTHX_ "Usage: Mob::SetFollowID(THIS, id)");
 	{
 		Mob *		THIS;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3724,7 +3724,7 @@ XS(XS_Mob_GetFollowID)
 		Perl_croak(aTHX_ "Usage: Mob::GetFollowID(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3750,7 +3750,7 @@ XS(XS_Mob_Message)
 		Perl_croak(aTHX_ "Usage: Mob::Message(THIS, type, message, ...)");
 	{
 		Mob *		THIS;
-		int32		type = (int32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(1));
 		char*		message = (char *)SvPV_nolen(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -3775,9 +3775,9 @@ XS(XS_Mob_Message_StringID)
 		Perl_croak(aTHX_ "Usage: Mob::Message_StringID(THIS, type, string_id, distance= 0)");
 	{
 		Mob *		THIS;
-		int32		type = (int32)SvUV(ST(1));
-		int32		string_id = (int32)SvUV(ST(2));
-		int32		distance;
+		uint32		type = (uint32)SvUV(ST(1));
+		uint32		string_id = (uint32)SvUV(ST(2));
+		uint32		distance;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3791,7 +3791,7 @@ XS(XS_Mob_Message_StringID)
 		if (items < 4)
 			distance = 0;
 		else {
-			distance = (int32)SvUV(ST(3));
+			distance = (uint32)SvUV(ST(3));
 		}
 
 		THIS->Message_StringID(type, string_id, distance);
@@ -3879,7 +3879,7 @@ XS(XS_Mob_InterruptSpell)
 		Perl_croak(aTHX_ "Usage: Mob::InterruptSpell(THIS, spellid= 0xFFFF)");
 	{
 		Mob *		THIS;
-		int16		spellid;
+		uint16		spellid;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3893,7 +3893,7 @@ XS(XS_Mob_InterruptSpell)
 		if (items < 2)
 			spellid = 0xFFFF;
 		else {
-			spellid = (int16)SvUV(ST(1));
+			spellid = (uint16)SvUV(ST(1));
 		}
 
 		THIS->InterruptSpell(spellid);
@@ -3909,11 +3909,11 @@ XS(XS_Mob_CastSpell)
 		Perl_croak(aTHX_ "Usage: Mob::CastSpell(THIS, spell_id, target_id, slot= 10, casttime= -1, mana_cost= -1)");
 	{
 		Mob *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
-		int16		target_id = (int16)SvUV(ST(2));
-		int16		slot;
-		sint32		casttime;
-		sint32		mana_cost;
+		uint16		spell_id = (uint16)SvUV(ST(1));
+		uint16		target_id = (uint16)SvUV(ST(2));
+		uint16		slot;
+		int32		casttime;
+		int32		mana_cost;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3927,19 +3927,19 @@ XS(XS_Mob_CastSpell)
 		if (items < 4)
 			slot = 10;
 		else {
-			slot = (int16)SvUV(ST(3));
+			slot = (uint16)SvUV(ST(3));
 		}
 
 		if (items < 5)
 			casttime = -1;
 		else {
-			casttime = (sint32)SvIV(ST(4));
+			casttime = (int32)SvIV(ST(4));
 		}
 
 		if (items < 6)
 			mana_cost = -1;
 		else {
-			mana_cost = (sint32)SvIV(ST(5));
+			mana_cost = (int32)SvIV(ST(5));
 		}
 
 		THIS->CastSpell(spell_id, target_id, slot, casttime, mana_cost);
@@ -3955,9 +3955,9 @@ XS(XS_Mob_SpellFinished)
 		Perl_croak(aTHX_ "Usage: Mob::SpellFinished(spell_id, spell_target = this, mana_cost = 0)");
 	{
 		Mob *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		Mob *		spell_target;
-		int16		mana_cost = 0;
+		uint16		mana_cost = 0;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3984,7 +3984,7 @@ XS(XS_Mob_SpellFinished)
 		}
 
 		if (items > 3)
-			mana_cost = (int16)SvUV(ST(3));
+			mana_cost = (uint16)SvUV(ST(3));
 
 		THIS->SpellFinished(spell_id, spell_target, 10, mana_cost, -1, spells[spell_id].ResistDiff);
 	}
@@ -4000,7 +4000,7 @@ XS(XS_Mob_IsImmuneToSpell)
 	{
 		Mob *		THIS;
 		bool		RETVAL;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		Mob *		caster;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4036,7 +4036,7 @@ XS(XS_Mob_BuffFadeBySpellID)
 		Perl_croak(aTHX_ "Usage: Mob::BuffFadeBySpellID(THIS, spell_id)");
 	{
 		Mob *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4147,8 +4147,8 @@ XS(XS_Mob_CanBuffStack)
 		Mob *		THIS;
 		int		RETVAL;
 		dXSTARG;
-		int16		spellid = (int16)SvUV(ST(1));
-		int8		caster_level = (int8)SvUV(ST(2));
+		uint16		spellid = (uint16)SvUV(ST(1));
+		uint8		caster_level = (uint8)SvUV(ST(2));
 		bool		iFailIfOverwrite;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4206,7 +4206,7 @@ XS(XS_Mob_CastingSpellID)
 		Perl_croak(aTHX_ "Usage: Mob::CastingSpellID(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4289,7 +4289,7 @@ XS(XS_Mob_GetRunAnimSpeed)
 		Perl_croak(aTHX_ "Usage: Mob::GetRunAnimSpeed(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4315,7 +4315,7 @@ XS(XS_Mob_SetRunAnimSpeed)
 		Perl_croak(aTHX_ "Usage: Mob::SetRunAnimSpeed(THIS, in)");
 	{
 		Mob *		THIS;
-		sint8		in = (sint8)SvIV(ST(1));
+		int8		in = (int8)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4339,7 +4339,7 @@ XS(XS_Mob_SetPetID)
 		Perl_croak(aTHX_ "Usage: Mob::SetPetID(THIS, NewPetID)");
 	{
 		Mob *		THIS;
-		int16		NewPetID = (int16)SvUV(ST(1));
+		uint16		NewPetID = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4363,7 +4363,7 @@ XS(XS_Mob_GetPetID)
 		Perl_croak(aTHX_ "Usage: Mob::GetPetID(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4389,7 +4389,7 @@ XS(XS_Mob_SetOwnerID)
 		Perl_croak(aTHX_ "Usage: Mob::SetOwnerID(THIS, NewOwnerID)");
 	{
 		Mob *		THIS;
-		int16		NewOwnerID = (int16)SvUV(ST(1));
+		uint16		NewOwnerID = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4413,7 +4413,7 @@ XS(XS_Mob_GetOwnerID)
 		Perl_croak(aTHX_ "Usage: Mob::GetOwnerID(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4439,7 +4439,7 @@ XS(XS_Mob_GetPetType)
 		Perl_croak(aTHX_ "Usage: Mob::GetPetType(THIS)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4465,7 +4465,7 @@ XS(XS_Mob_GetBodyType)
 		Perl_croak(aTHX_ "Usage: Mob::GetBodyType(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -4843,7 +4843,7 @@ XS(XS_Mob_GetClassLevelFactor)
 		Perl_croak(aTHX_ "Usage: Mob::GetClassLevelFactor(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -5211,8 +5211,8 @@ XS(XS_Mob_AddToHateList)
 	{
 		Mob *		THIS;
 		Mob*		other;
-		sint32		hate;
-		sint32		damage;
+		int32		hate;
+		int32		damage;
 		bool		iYellForHelp;
 		bool		bFrenzy;
 		bool		iBuffTic;
@@ -5238,13 +5238,13 @@ XS(XS_Mob_AddToHateList)
 		if (items < 3)
 			hate = 0;
 		else {
-			hate = (sint32)SvIV(ST(2));
+			hate = (int32)SvIV(ST(2));
 		}
 
 		if (items < 4)
 			damage = 0;
 		else {
-			damage = (sint32)SvIV(ST(3));
+			damage = (int32)SvIV(ST(3));
 		}
 
 		if (items < 5)
@@ -5279,8 +5279,8 @@ XS(XS_Mob_SetHate)
 	{
 		Mob *		THIS;
 		Mob*		other;
-		sint32		hate;
-		sint32		damage;
+		int32		hate;
+		int32		damage;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5303,13 +5303,13 @@ XS(XS_Mob_SetHate)
 		if (items < 3)
 			hate = 0;
 		else {
-			hate = (sint32)SvIV(ST(2));
+			hate = (int32)SvIV(ST(2));
 		}
 
 		if (items < 4)
 			damage = 0;
 		else {
-			damage = (sint32)SvIV(ST(3));
+			damage = (int32)SvIV(ST(3));
 		}
 
 		THIS->SetHate(other, hate, damage);
@@ -5325,7 +5325,7 @@ XS(XS_Mob_GetHateAmount)
 		Perl_croak(aTHX_ "Usage: Mob::GetHateAmount(THIS, tmob, is_dam= false)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 		Mob*		tmob;
 		bool		is_dam;
@@ -5368,7 +5368,7 @@ XS(XS_Mob_GetDamageAmount)
 		Perl_croak(aTHX_ "Usage: Mob::GetDamageAmount(THIS, tmob)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 		Mob*		tmob;
 
@@ -5664,7 +5664,7 @@ XS(XS_Mob_CalculateHeadingToTarget)
 		Perl_croak(aTHX_ "Usage: Mob::CalculateHeadingToTarget(THIS, in_x, in_y)");
 	{
 		Mob *		THIS;
-		sint8		RETVAL;
+		int8		RETVAL;
 		dXSTARG;
 		float		in_x = (float)SvNV(ST(1));
 		float		in_y = (float)SvNV(ST(2));
@@ -5874,7 +5874,7 @@ XS(XS_Mob_DontHealMeBefore)
 		Perl_croak(aTHX_ "Usage: Mob::DontHealMeBefore(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -5900,7 +5900,7 @@ XS(XS_Mob_DontBuffMeBefore)
 		Perl_croak(aTHX_ "Usage: Mob::DontBuffMeBefore(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -5926,7 +5926,7 @@ XS(XS_Mob_DontDotMeBefore)
 		Perl_croak(aTHX_ "Usage: Mob::DontDotMeBefore(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -5952,7 +5952,7 @@ XS(XS_Mob_DontRootMeBefore)
 		Perl_croak(aTHX_ "Usage: Mob::DontRootMeBefore(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -5978,7 +5978,7 @@ XS(XS_Mob_DontSnareMeBefore)
 		Perl_croak(aTHX_ "Usage: Mob::DontSnareMeBefore(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -6004,9 +6004,9 @@ XS(XS_Mob_GetResist)
 		Perl_croak(aTHX_ "Usage: Mob::GetResist(THIS, type)");
 	{
 		Mob *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
-		int8		type = (int8)SvUV(ST(1));
+		uint8		type = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6116,9 +6116,9 @@ XS(XS_Mob_GetLevelHP)
 		Perl_croak(aTHX_ "Usage: Mob::GetLevelHP(THIS, tlevel)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		int8		tlevel = (int8)SvUV(ST(1));
+		uint8		tlevel = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6143,7 +6143,7 @@ XS(XS_Mob_GetZoneID)
 		Perl_croak(aTHX_ "Usage: Mob::GetZoneID(THIS)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -6169,9 +6169,9 @@ XS(XS_Mob_CheckAggroAmount)
 		Perl_croak(aTHX_ "Usage: Mob::CheckAggroAmount(THIS, spellid)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
-		int16		spellid = (int16)SvUV(ST(1));
+		uint16		spellid = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6196,10 +6196,10 @@ XS(XS_Mob_CheckHealAggroAmount)
 		Perl_croak(aTHX_ "Usage: Mob::CheckHealAggroAmount(THIS, spellid, possible_heal_amt)");
 	{
 		Mob *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
-		int16		spellid = (int16)SvUV(ST(1));
-		int32		possible = 0;
+		uint16		spellid = (uint16)SvUV(ST(1));
+		uint32		possible = 0;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6212,7 +6212,7 @@ XS(XS_Mob_CheckHealAggroAmount)
 
 		if(items == 3)
 		{
-			possible = (int32)SvUV(ST(2));
+			possible = (uint32)SvUV(ST(2));
 		}
 
 		RETVAL = THIS->CheckHealAggroAmount(spellid, possible);
@@ -6229,9 +6229,9 @@ XS(XS_Mob_GetAA)
 		Perl_croak(aTHX_ "Usage: Mob::GetAA(THIS, aa_id)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		int32		aa_id = (int32)SvUV(ST(1));
+		uint32		aa_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6371,7 +6371,7 @@ XS(XS_Mob_SetOOCRegen)
 		Perl_croak(aTHX_ "Usage: Mob::SetOOCRegen(THIS, newoocregen)");
 	{
 		Mob *		THIS;
-		sint32		newoocregen = (sint32)SvIV(ST(1));
+		int32		newoocregen = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6546,7 +6546,7 @@ XS(XS_Mob_SignalClient)
 	{
 		Mob *		THIS;
 		Client*		client = NULL;
-		int32		data = (int32)SvUV(ST(2));
+		uint32		data = (uint32)SvUV(ST(2));
 	
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6617,9 +6617,9 @@ XS(XS_Mob_DoSpecialAttackDamage)
 		Mob *		THIS;
 		Mob*		target;
 		SkillType	attack_skill = (SkillType)SvUV(ST(2));
-		sint32		max_damage = (sint32)SvIV(ST(3));
-		sint32		min_damage = 1;
-		sint32		hate_override = -11;
+		int32		max_damage = (int32)SvIV(ST(3));
+		int32		min_damage = 1;
+		int32		hate_override = -11;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6641,12 +6641,12 @@ XS(XS_Mob_DoSpecialAttackDamage)
 
 		if (items > 4)
 		{
-			min_damage = (sint32)SvIV(ST(4));
+			min_damage = (int32)SvIV(ST(4));
 		}
 
 		if (items == 6)
 		{
-			hate_override = (sint32)SvIV(ST(5));
+			hate_override = (int32)SvIV(ST(5));
 		}
 
 		THIS->DoSpecialAttackDamage(target, attack_skill, max_damage, min_damage, hate_override);
@@ -6773,7 +6773,7 @@ XS(XS_Mob_ProjectileAnim)
 	{
 		Mob *		THIS;
 		Mob*		mob;
-		int16		item_id = (int16)SvUV(ST(2));
+		uint16		item_id = (uint16)SvUV(ST(2));
 		bool		IsArrow = false;
 		float		speed = 0;
 		float		angle = 0;
@@ -6855,11 +6855,11 @@ XS(XS_Mob_SendAppearanceEffect)
 		Perl_croak(aTHX_ "Usage: Mob::SendAppearanceEffect(THIS, parm1, parm2, parm3, parm4, parm5, singleclient)");
 	{
 		Mob *		THIS;
-		sint32		parm1 = (sint32)SvIV(ST(1));
-		sint32		parm2 = 0;
-		sint32		parm3 = 0;
-		sint32		parm4 = 0;
-		sint32		parm5 = 0;
+		int32		parm1 = (int32)SvIV(ST(1));
+		int32		parm2 = 0;
+		int32		parm3 = 0;
+		int32		parm4 = 0;
+		int32		parm5 = 0;
 		Client*		client = NULL;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -6871,10 +6871,10 @@ XS(XS_Mob_SendAppearanceEffect)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if (items > 2)	{	parm2 = (sint32)SvIV(ST(2));	}
-		if (items > 3)	{	parm3 = (sint32)SvIV(ST(3));	}
-		if (items > 4)	{	parm4 = (sint32)SvIV(ST(4));	}
-		if (items > 5)	{	parm5 = (sint32)SvIV(ST(5));	}
+		if (items > 2)	{	parm2 = (int32)SvIV(ST(2));	}
+		if (items > 3)	{	parm3 = (int32)SvIV(ST(3));	}
+		if (items > 4)	{	parm4 = (int32)SvIV(ST(4));	}
+		if (items > 5)	{	parm5 = (int32)SvIV(ST(5));	}
 		if (items > 6)	{
 			if (sv_derived_from(ST(6), "Client")) {
 				IV tmp = SvIV((SV*)SvRV(ST(6)));
@@ -6900,9 +6900,9 @@ XS(XS_Mob_QuestReward)
 	{
 		Mob *		THIS;
 		Client*		client = NULL;
-		sint32		silver = 0;
-		sint32		gold = 0;
-		sint32		platinum = 0;		
+		int32		silver = 0;
+		int32		gold = 0;
+		int32		platinum = 0;		
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6923,9 +6923,9 @@ XS(XS_Mob_QuestReward)
 			if(client == NULL)
 				Perl_croak(aTHX_ "client is NULL, avoiding crash.");
 		}
-		if (items > 2)	{	silver = (sint32)SvIV(ST(2));	}
-		if (items > 3)	{	gold = (sint32)SvIV(ST(3));		}
-		if (items > 4)	{	platinum = (sint32)SvIV(ST(4));	}
+		if (items > 2)	{	silver = (int32)SvIV(ST(2));	}
+		if (items > 3)	{	gold = (int32)SvIV(ST(3));		}
+		if (items > 4)	{	platinum = (int32)SvIV(ST(4));	}
 
 		THIS->QuestReward(client, silver, gold, platinum);
 	}
@@ -6940,7 +6940,7 @@ XS(XS_Mob_SetFlyMode)
 		Perl_croak(aTHX_ "Usage: Mob::SetFlyMode(THIS, 0|1|2|3)");
 	{
 		Mob *		THIS;
-		int8		flymode = (int8)SvIV(ST(1));
+		uint8		flymode = (uint8)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6964,7 +6964,7 @@ XS(XS_Mob_SetTexture)
 		Perl_croak(aTHX_ "Usage: Mob::SetTexture(THIS, texture)");
 	{
 		Mob *		THIS;
-		sint32		texture = (sint32)SvIV(ST(1));
+		int32		texture = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6988,7 +6988,7 @@ XS(XS_Mob_SetRace)
 		Perl_croak(aTHX_ "Usage: Mob::SetRace(THIS, race)");
 	{
 		Mob *		THIS;
-		sint32		race = (sint32)SvIV(ST(1));
+		int32		race = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7012,7 +7012,7 @@ XS(XS_Mob_SetGender)
 		Perl_croak(aTHX_ "Usage: Mob::SetGender(THIS, gender)");
 	{
 		Mob *		THIS;
-		sint32		gender = (sint32)SvIV(ST(1));
+		int32		gender = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7036,18 +7036,18 @@ XS(XS_Mob_SendIllusion)
 		Perl_croak(aTHX_ "Usage: Mob::SendIllusion(THIS,race,gender,texture,helmtexture,face,hairstyle,haircolor,beard,beardcolor,drakkin_heritage,drakkin_tattoo,drakkin_details,size)");
 	{
 		Mob *		THIS;
-		int16		race = (int16)SvIV(ST(1));
-		int8		gender = 0xFF;
-		int8		texture = 0xFF;
-		int8		helmtexture = 0xFF;
-		int8		face = 0xFF;
-		int8		hairstyle = 0xFF;
-		int8		haircolor = 0xFF;
-		int8		beard = 0xFF;
-		int8		beardcolor = 0xFF;
-		int32		drakkin_heritage = 0xFFFFFFFF;
-		int32		drakkin_tattoo = 0xFFFFFFFF;
-		int32		drakkin_details = 0xFFFFFFFF;
+		uint16		race = (uint16)SvIV(ST(1));
+		uint8		gender = 0xFF;
+		uint8		texture = 0xFF;
+		uint8		helmtexture = 0xFF;
+		uint8		face = 0xFF;
+		uint8		hairstyle = 0xFF;
+		uint8		haircolor = 0xFF;
+		uint8		beard = 0xFF;
+		uint8		beardcolor = 0xFF;
+		uint32		drakkin_heritage = 0xFFFFFFFF;
+		uint32		drakkin_tattoo = 0xFFFFFFFF;
+		uint32		drakkin_details = 0xFFFFFFFF;
 		float		size = 0xFFFFFFFF;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -7059,17 +7059,17 @@ XS(XS_Mob_SendIllusion)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if(items > 2) {gender = (int8)SvIV(ST(2));}
-		if(items > 3) {texture = (int8)SvIV(ST(3));}
-		if(items > 4) {helmtexture = (int8)SvIV(ST(4));}
-		if(items > 5) {face = (int8)SvIV(ST(5));}
-		if(items > 6) {hairstyle = (int8)SvIV(ST(6));}
-		if(items > 7) {haircolor = (int8)SvIV(ST(7));}
-		if(items > 8) {beard = (int8)SvIV(ST(8));}
-		if(items > 9) {beardcolor = (int8)SvIV(ST(9));}
-		if(items > 10) {drakkin_heritage = (int32)SvIV(ST(10));}
-		if(items > 11) {drakkin_tattoo = (int32)SvIV(ST(11));}
-		if(items > 12) {drakkin_details = (int32)SvIV(ST(12));}
+		if(items > 2) {gender = (uint8)SvIV(ST(2));}
+		if(items > 3) {texture = (uint8)SvIV(ST(3));}
+		if(items > 4) {helmtexture = (uint8)SvIV(ST(4));}
+		if(items > 5) {face = (uint8)SvIV(ST(5));}
+		if(items > 6) {hairstyle = (uint8)SvIV(ST(6));}
+		if(items > 7) {haircolor = (uint8)SvIV(ST(7));}
+		if(items > 8) {beard = (uint8)SvIV(ST(8));}
+		if(items > 9) {beardcolor = (uint8)SvIV(ST(9));}
+		if(items > 10) {drakkin_heritage = (uint32)SvIV(ST(10));}
+		if(items > 11) {drakkin_tattoo = (uint32)SvIV(ST(11));}
+		if(items > 12) {drakkin_details = (uint32)SvIV(ST(12));}
 		if(items > 13) {size = (float)SvNV(ST(13));}
 
 		THIS->SendIllusionPacket(race,gender,texture,helmtexture,haircolor,beardcolor,0xFF,0xFF,
@@ -7132,10 +7132,10 @@ XS(XS_Mob_SpellEffect)
 	{
 		Mob *		THIS;
 		uint32		effect = (uint32)SvUV(ST(1));
-		int32		duration = 5000;
-		int32		finish_delay = 0;
+		uint32		duration = 5000;
+		uint32		finish_delay = 0;
 		bool		zone_wide = true;
-		int32		unk20 = 3000;
+		uint32		unk20 = 3000;
 		bool		perm_effect = false;
 		Client*		client = NULL;
 		
@@ -7149,10 +7149,10 @@ XS(XS_Mob_SpellEffect)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if (items > 2)	{	duration = (int32)SvUV(ST(2));	}
-		if (items > 3)	{	finish_delay = (int32)SvUV(ST(3));	}
+		if (items > 2)	{	duration = (uint32)SvUV(ST(2));	}
+		if (items > 3)	{	finish_delay = (uint32)SvUV(ST(3));	}
 		if (items > 4)	{	zone_wide = (bool)SvTRUE(ST(4));	}
-		if (items > 5)	{	unk20 = (int32)SvUV(ST(5));	}
+		if (items > 5)	{	unk20 = (uint32)SvUV(ST(5));	}
 		if (items > 6)	{	perm_effect = (bool)SvTRUE(ST(6));	}
 		if (items > 7)	{
 			if (sv_derived_from(ST(7), "Client")) {
@@ -7206,8 +7206,8 @@ XS(XS_Mob_GetItemStat)
 		Perl_croak(aTHX_ "Usage: Mob::GetItemStat(THIS, itemid, stat)");
 	{
 		Mob *		THIS;
-		int32		RETVAL;
-		int32		itemid = (int32)SvUV(ST(1));
+		uint32		RETVAL;
+		uint32		itemid = (uint32)SvUV(ST(1));
 		Const_char *	stat = (Const_char *)SvPV_nolen(ST(2));
 		dXSTARG;
 
@@ -7326,10 +7326,10 @@ XS(XS_Mob_SetSlotTint)
 		Perl_croak(aTHX_ "Usage: Mob::SetSlotTint(THIS, material_slot, red_tint, green_tint, blue_tint)");
 	{
 		Mob *		THIS;
-		int8		material_slot = (int8)SvIV(ST(1));
-		int8		red_tint = (int8)SvIV(ST(2));
-		int8		green_tint = (int8)SvIV(ST(3));
-		int8		blue_tint = (int8)SvIV(ST(4));
+		uint8		material_slot = (uint8)SvIV(ST(1));
+		uint8		red_tint = (uint8)SvIV(ST(2));
+		uint8		green_tint = (uint8)SvIV(ST(3));
+		uint8		blue_tint = (uint8)SvIV(ST(4));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7353,8 +7353,8 @@ XS(XS_Mob_WearChange)
 		Perl_croak(aTHX_ "Usage: Mob::WearChange(THIS, material_slot, texture, color)");
 	{
 		Mob *		THIS;
-		int8		material_slot = (int8)SvIV(ST(1));
-		int16		texture = (int16)SvUV(ST(2));
+		uint8		material_slot = (uint8)SvIV(ST(1));
+		uint16		texture = (uint16)SvUV(ST(2));
 		uint32		color = 0;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -7384,8 +7384,8 @@ XS(XS_Mob_DoKnockback)
 	{
 		Mob *		THIS;
 		Mob *       caster;
-		int32		pushback = (int16)SvUV(ST(2));
-		int32		pushup = (int16)SvUV(ST(2));
+		uint32		pushback = (uint16)SvUV(ST(2));
+		uint32		pushup = (uint16)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7418,7 +7418,7 @@ XS(XS_Mob_RemoveNimbusEffect)
 		Perl_croak(aTHX_ "Usage: Mob::RemoveNimbusEffect(THIS, effectid)");
 	{
 		Mob *		THIS;
-		sint32		effectid = (sint32)SvIV(ST(1));
+		int32		effectid = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7493,7 +7493,7 @@ XS(XS_Mob_SetBodyType)
 		Perl_croak(aTHX_ "Usage: Mob::SetBodyType(THIS, type, overwrite_orig = false)");
 	{
 		Mob *		THIS;
-		sint32		type = (sint32)SvIV(ST(1));
+		int32		type = (int32)SvIV(ST(1));
         bool        overwrite_orig = false;
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -7573,7 +7573,7 @@ XS(XS_Mob_SetTargetDestSteps)
 		Perl_croak(aTHX_ "Usage: Mob::SetTargetDestSteps(THIS, target_steps)");
 	{
 		Mob *		THIS;
-		int8		target_steps = (int8)SvIV(ST(1));
+		uint8		target_steps = (uint8)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7622,7 +7622,7 @@ XS(XS_Mob_ModSkillDmgTaken)
 	{
 		Mob *		THIS;
 		SkillType	skill_num = (SkillType)SvUV(ST(1));
-		sint16		value = (sint16)SvIV(ST(2));
+		int16		value = (int16)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7673,7 +7673,7 @@ XS(XS_Mob_GetSkillDmgTaken)
 		Perl_croak(aTHX_ "Usage: Mob::GetSkillDmgTaken(THIS, skill_num)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 		SkillType		skill_num = (SkillType)SvUV(ST(1));
 
@@ -7788,7 +7788,7 @@ XS(XS_Mob_ModVulnerability)
 	{
 		Mob *		THIS;
 		uint8		resist =  (uint8)SvIV(ST(1));
-		sint16		value = (sint16)SvIV(ST(2));
+		int16		value = (int16)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7812,7 +7812,7 @@ XS(XS_Mob_GetModVulnerability)
 		Perl_croak(aTHX_ "Usage: Mob::GetModVulnerability(THIS, resist)");
 	{
 		Mob *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 		uint8		resist = (uint8)SvUV(ST(1));
 
@@ -7840,10 +7840,10 @@ XS(XS_Mob_DoMeleeSkillAttackDmg)
 	{
 		Mob *		THIS;
 		Mob*		target;
-		int16		weapon_damage = (int16)SvIV(ST(2));
+		uint16		weapon_damage = (uint16)SvIV(ST(2));
 		SkillType	skill = (SkillType)SvUV(ST(3));
-		sint16		chance_mod = (sint16)SvIV(ST(4));
-		sint16		focus = (sint16)SvIV(ST(5));
+		int16		chance_mod = (int16)SvIV(ST(4));
+		int16		focus = (int16)SvIV(ST(5));
 		uint8		CanRiposte = (uint8)SvIV(ST(6));
 
 		if (sv_derived_from(ST(0), "Mob")) {
@@ -7880,9 +7880,9 @@ XS(XS_Mob_DoArcheryAttackDmg)
 		Mob*		target;
 		ItemInst*   RangeWeapon = NULL;
 		ItemInst*   Ammo = NULL;
-		int16		weapon_damage = (int16)SvIV(ST(4));
-		sint16		chance_mod = (sint16)SvIV(ST(5));
-		sint16		focus = (sint16)SvIV(ST(6));
+		uint16		weapon_damage = (uint16)SvIV(ST(4));
+		int16		chance_mod = (int16)SvIV(ST(5));
+		int16		focus = (int16)SvIV(ST(6));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -7918,9 +7918,9 @@ XS(XS_Mob_DoThrowingAttackDmg)
 		Mob*		target;
 		ItemInst*   RangeWeapon = NULL;
 		Item_Struct* item = NULL;
-		int16		weapon_damage = (int16)SvIV(ST(4));
-		sint16		chance_mod = (sint16)SvIV(ST(5));
-		sint16		focus = (sint16)SvIV(ST(6));
+		uint16		weapon_damage = (uint16)SvIV(ST(4));
+		int16		chance_mod = (int16)SvIV(ST(5));
+		int16		focus = (int16)SvIV(ST(6));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -8003,7 +8003,7 @@ XS(XS_Mob_SetFlurryChance)
 		Perl_croak(aTHX_ "Usage: Mob::SetFlurryChance(THIS, value)");
 	{
 		Mob *		THIS;
-		int8		value = (int8)SvIV(ST(1));
+		uint8		value = (uint8)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -8027,7 +8027,7 @@ XS(XS_Mob_GetFlurryChance)
 		Perl_croak(aTHX_ "Usage: Mob::GetFlurryChance(THIS)");
 	{
 		Mob *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Mob")) {

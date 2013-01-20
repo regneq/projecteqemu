@@ -82,13 +82,13 @@ enum eappCompressed { appNormal, appInflated, appDeflated };
 #endif
 class EQStreamServer {
 public:
-	EQStreamServer(int16 iPort = 0);
+	EQStreamServer(uint16 iPort = 0);
 	virtual ~EQStreamServer();
 
-	bool	Open(int16 iPort = 0);			// opens the port
+	bool	Open(uint16 iPort = 0);			// opens the port
 	void	Close();	// closes the port
 	void	KillAll();						// kills all clients
-	inline int16	GetPort()		{ return pPort; }
+	inline uint16	GetPort()		{ return pPort; }
 
 	EQStream* NewQueuePop();
 protected:
@@ -103,13 +103,13 @@ protected:
 	bool		RunLoop;
 	Mutex		MLoopRunning;
 private:
-	void		RecvData(uchar* data, int32 size, int32 irIP, int16 irPort);
+	void		RecvData(uchar* data, uint32 size, uint32 irIP, uint16 irPort);
 #ifdef WIN32
 	SOCKET	sock;
 #else
 	int		sock;
 #endif
-	int16	pPort;
+	uint16	pPort;
 	bool	pOpen;
 	Mutex	MNewQueue;
 	Mutex	MOpen;

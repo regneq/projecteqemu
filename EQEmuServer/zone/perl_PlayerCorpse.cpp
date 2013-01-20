@@ -45,7 +45,7 @@ XS(XS_Corpse_GetCharID)
 		Perl_croak(aTHX_ "Usage: Corpse::GetCharID(THIS)");
 	{
 		Corpse *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Corpse")) {
@@ -71,7 +71,7 @@ XS(XS_Corpse_GetDecayTime)
 		Perl_croak(aTHX_ "Usage: Corpse::GetDecayTime(THIS)");
 	{
 		Corpse *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Corpse")) {
@@ -192,7 +192,7 @@ XS(XS_Corpse_GetDBID)
 		Perl_croak(aTHX_ "Usage: Corpse::GetDBID(THIS)");
 	{
 		Corpse *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Corpse")) {
@@ -244,7 +244,7 @@ XS(XS_Corpse_SetDecayTimer)
 		Perl_croak(aTHX_ "Usage: Corpse::SetDecayTimer(THIS, decaytime)");
 	{
 		Corpse *		THIS;
-		int32		decaytime = (int32)SvUV(ST(1));
+		uint32		decaytime = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Corpse")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -295,8 +295,8 @@ XS(XS_Corpse_AddItem)
 	{
 		Corpse *		THIS;
 		uint32		itemnum = (uint32)SvUV(ST(1));
-		int16		charges = (int16)SvUV(ST(2));
-		sint16		slot;
+		uint16		charges = (uint16)SvUV(ST(2));
+		int16		slot;
 
 		if (sv_derived_from(ST(0), "Corpse")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -310,7 +310,7 @@ XS(XS_Corpse_AddItem)
 		if (items < 4)
 			slot = 0;
 		else {
-			slot = (sint16)SvIV(ST(3));
+			slot = (int16)SvIV(ST(3));
 		}
 
 		THIS->AddItem(itemnum, charges, slot);
@@ -328,7 +328,7 @@ XS(XS_Corpse_GetWornItem)
 		Corpse *		THIS;
 		uint32		RETVAL;
 		dXSTARG;
-		sint16		equipSlot = (sint16)SvIV(ST(1));
+		int16		equipSlot = (int16)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Corpse")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -353,7 +353,7 @@ XS(XS_Corpse_RemoveItem)
 		Perl_croak(aTHX_ "Usage: Corpse::RemoveItem(THIS, lootslot)");
 	{
 		Corpse *		THIS;
-		int16		lootslot = (int16)SvUV(ST(1));
+		uint16		lootslot = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Corpse")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -377,10 +377,10 @@ XS(XS_Corpse_SetCash)
 		Perl_croak(aTHX_ "Usage: Corpse::SetCash(THIS, in_copper, in_silver, in_gold, in_platinum)");
 	{
 		Corpse *		THIS;
-		int16		in_copper = (int16)SvUV(ST(1));
-		int16		in_silver = (int16)SvUV(ST(2));
-		int16		in_gold = (int16)SvUV(ST(3));
-		int16		in_platinum = (int16)SvUV(ST(4));
+		uint16		in_copper = (uint16)SvUV(ST(1));
+		uint16		in_silver = (uint16)SvUV(ST(2));
+		uint16		in_gold = (uint16)SvUV(ST(3));
+		uint16		in_platinum = (uint16)SvUV(ST(4));
 
 		if (sv_derived_from(ST(0), "Corpse")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -427,7 +427,7 @@ XS(XS_Corpse_CountItems)
 		Perl_croak(aTHX_ "Usage: Corpse::CountItems(THIS)");
 	{
 		Corpse *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Corpse")) {
@@ -614,7 +614,7 @@ XS(XS_Corpse_CastRezz)
 		Perl_croak(aTHX_ "Usage: Corpse::CastRezz(THIS, spellid, Caster)");
 	{
 		Corpse *		THIS;
-		int16		spellid = (int16)SvUV(ST(1));
+		uint16		spellid = (uint16)SvUV(ST(1));
 		Mob*		Caster;
 
 		if (sv_derived_from(ST(0), "Corpse")) {
@@ -699,7 +699,7 @@ XS(XS_Corpse_AllowMobLoot)
 	{
 		Corpse *		THIS;
 		Mob *		them;
-		int8		slot = (int8)SvUV(ST(2));
+		uint8		slot = (uint8)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Corpse")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));

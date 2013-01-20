@@ -50,7 +50,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  04111-1307  USA
 **
 */
 struct ItemEffect_Struct {
-	sint16	Effect;
+	int16	Effect;
 	uint8	Type;
 	uint8	Level;
 	uint8	Level2;
@@ -64,14 +64,14 @@ struct ItemEffect_Struct {
 class ItemInst;
 
 struct InternalSerializedItem_Struct {
-	sint16 slot_id;
+	int16 slot_id;
 	const void * inst;
 };
 
 #define MAX_AUGMENT_SLOTS 5
 
 struct Item_Struct {
-	bool IsEquipable(int16 Race, int16 Class) const;
+	bool IsEquipable(uint16 Race, uint16 Class) const;
 	// Non packet based fields
 	uint8	MinStatus;
 
@@ -88,7 +88,7 @@ struct Item_Struct {
 	uint32	Slots;			// Bitfield for which slots this item can be used in
 	uint32	Price;			// Item cost (?)
 	uint32	Icon;			// Icon Number
-	uint32	LoreGroup;		// Later items use LoreGroup instead of LoreFlag. we might want to see about changing this to sint32 since it is commonly -1 and is constantly being cast from signed (-1) to unsigned (4294967295)
+	uint32	LoreGroup;		// Later items use LoreGroup instead of LoreFlag. we might want to see about changing this to int32 since it is commonly -1 and is constantly being cast from signed (-1) to unsigned (4294967295)
 	bool	LoreFlag;		// This will be true if LoreGroup is non-zero
 	bool	PendingLoreFlag;
 	bool	ArtifactFlag;
@@ -110,34 +110,34 @@ struct Item_Struct {
 
 	bool	BenefitFlag;
 	bool	Tradeskills;	// Is this a tradeskill item?
-	sint8	CR;				// Save vs Cold
-	sint8	DR;				// Save vs Disease
-	sint8	PR;				// Save vs Poison
-	sint8	MR;				// Save vs Magic
-	sint8	FR;				// Save vs Fire
-	sint8	AStr;			// Strength
-	sint8	ASta;			// Stamina
-	sint8	AAgi;			// Agility
-	sint8	ADex;			// Dexterity
-	sint8	ACha;			// Charisma
-	sint8	AInt;			// Intelligence
-	sint8	AWis;			// Wisdom
-	sint32	HP;				// HP
-	sint32	Mana;			// Mana
-	sint32	AC;				// AC
+	int8	CR;				// Save vs Cold
+	int8	DR;				// Save vs Disease
+	int8	PR;				// Save vs Poison
+	int8	MR;				// Save vs Magic
+	int8	FR;				// Save vs Fire
+	int8	AStr;			// Strength
+	int8	ASta;			// Stamina
+	int8	AAgi;			// Agility
+	int8	ADex;			// Dexterity
+	int8	ACha;			// Charisma
+	int8	AInt;			// Intelligence
+	int8	AWis;			// Wisdom
+	int32	HP;				// HP
+	int32	Mana;			// Mana
+	int32	AC;				// AC
 	uint32	Deity;			// Bitmask of Deities that can equip this item
 	//uint32	Unk033
-	sint32	SkillModValue;	// % Mod to skill specified in SkillModType
+	int32	SkillModValue;	// % Mod to skill specified in SkillModType
 	uint32	SkillModType;	// Type of skill for SkillModValue to apply to
 	uint32	BaneDmgRace;	// Bane Damage Race
-	sint8	BaneDmgAmt;		// Bane Damage Body Amount
+	int8	BaneDmgAmt;		// Bane Damage Body Amount
 	uint32	BaneDmgBody;	// Bane Damage Body
 	bool	Magic;			// True=Magic Item, False=not
-	sint32	CastTime_;
+	int32	CastTime_;
 	uint8	ReqLevel;		// Required Level to use item
 	uint32	BardType;		// Bard Skill Type
-	sint32	BardValue;		// Bard Skill Amount
-	sint8	Light;			// Light
+	int32	BardValue;		// Bard Skill Amount
+	int8	Light;			// Light
 	uint8	Delay;			// Delay * 10
 	uint8	RecLevel;		// Recommended level to use item
 	uint8	RecSkill;		// Recommended skill to use item (refers to primary skill of item)
@@ -149,35 +149,35 @@ struct Item_Struct {
 	uint32	Classes;		// Bitfield of classes that can equip item (1 << class#)
 	uint32	Races;			// Bitfield of races that can equip item (1 << race#)
 	//uint32	Unk054;
-	sint16	MaxCharges;		// Maximum charges items can hold: -1 if not a chargeable item
+	int16	MaxCharges;		// Maximum charges items can hold: -1 if not a chargeable item
 	uint8	ItemType;		// Item Type/Skill (itemClass* from above)
 	uint8	Material;		// Item material type
 	float	SellRate;		// Sell rate
 	//uint32	Unk059;
 	union {
 		uint32  Fulfilment;	// Food fulfilment (How long it lasts)
-		sint16  CastTime;	// Cast Time for clicky effects, in milliseconds
+		int16  CastTime;	// Cast Time for clicky effects, in milliseconds
 	};
 	uint32 EliteMaterial;
-	sint32	ProcRate;
-	sint8	CombatEffects;	// PoP: Combat Effects +
-	sint8	Shielding;		// PoP: Shielding %
-	sint8	StunResist;		// PoP: Stun Resist %
-	sint8	StrikeThrough;	// PoP: Strike Through %
+	int32	ProcRate;
+	int8	CombatEffects;	// PoP: Combat Effects +
+	int8	Shielding;		// PoP: Shielding %
+	int8	StunResist;		// PoP: Stun Resist %
+	int8	StrikeThrough;	// PoP: Strike Through %
 	uint32	ExtraDmgSkill;
 	uint32	ExtraDmgAmt;
-	sint8	SpellShield;	// PoP: Spell Shield %
-	sint8	Avoidance;		// PoP: Avoidance +
-	sint8	Accuracy;		// PoP: Accuracy +
+	int8	SpellShield;	// PoP: Spell Shield %
+	int8	Avoidance;		// PoP: Avoidance +
+	int8	Accuracy;		// PoP: Accuracy +
 	uint32	CharmFileID;
-	sint32	FactionMod1;	// Faction Mod 1
-	sint32	FactionMod2;	// Faction Mod 2
-	sint32	FactionMod3;	// Faction Mod 3
-	sint32	FactionMod4;	// Faction Mod 4
-	sint32	FactionAmt1;	// Faction Amt 1
-	sint32	FactionAmt2;	// Faction Amt 2
-	sint32	FactionAmt3;	// Faction Amt 3
-	sint32	FactionAmt4;	// Faction Amt 4
+	int32	FactionMod1;	// Faction Mod 1
+	int32	FactionMod2;	// Faction Mod 2
+	int32	FactionMod3;	// Faction Mod 3
+	int32	FactionMod4;	// Faction Mod 4
+	int32	FactionAmt1;	// Faction Amt 1
+	int32	FactionAmt2;	// Faction Amt 2
+	int32	FactionAmt3;	// Faction Amt 3
+	int32	FactionAmt4;	// Faction Amt 4
 	char	CharmFile[32];	// ?
 	uint32	AugType;
 	uint8	AugSlotType[MAX_AUGMENT_SLOTS];		// LDoN: Augment Slot 1-5 Type
@@ -205,7 +205,7 @@ struct Item_Struct {
 	bool	Stackable;
 	bool	NoTransfer;
 	bool	QuestItemFlag;
-    sint16	StackSize;
+    int16	StackSize;
 	uint8	PotionBeltSlots;
 	ItemEffect_Struct Click, Proc, Worn, Focus, Scroll, Bard;
 
@@ -213,25 +213,25 @@ struct Item_Struct {
 	uint32	BookType;
 	char	Filename[33];	// Filename for book data
 	// Begin SoF Fields
-	sint32 SVCorruption;
+	int32 SVCorruption;
 	uint32 Purity;
 	uint32 BackstabDmg;
 	uint32 DSMitigation;
-	sint32 HeroicStr;
-	sint32 HeroicInt;
-	sint32 HeroicWis;
-	sint32 HeroicAgi;
-	sint32 HeroicDex;
-	sint32 HeroicSta;
-	sint32 HeroicCha;
-	sint32 HeroicMR;
-	sint32 HeroicFR;
-	sint32 HeroicCR;
-	sint32 HeroicDR;
-	sint32 HeroicPR;
-	sint32 HeroicSVCorrup;
-	sint32 HealAmt;
-	sint32 SpellDmg;
+	int32 HeroicStr;
+	int32 HeroicInt;
+	int32 HeroicWis;
+	int32 HeroicAgi;
+	int32 HeroicDex;
+	int32 HeroicSta;
+	int32 HeroicCha;
+	int32 HeroicMR;
+	int32 HeroicFR;
+	int32 HeroicCR;
+	int32 HeroicDR;
+	int32 HeroicPR;
+	int32 HeroicSVCorrup;
+	int32 HealAmt;
+	int32 SpellDmg;
 	uint32 LDoNSellBackRate;
 	uint32 ScriptFileID;
 	uint16 ExpendableArrow;

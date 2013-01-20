@@ -18,24 +18,24 @@ const MMFSpells_Struct* MMFSpellsData = 0;
 MMFSpells_Struct* MMFSpellsData_Writable = 0;
 
 #ifdef _WINDOWS
-extern "C" __declspec(dllexport) bool DLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, sint32* oSPDAT_RECORDS, int32 iSPDat_Struct_Size) {
+extern "C" __declspec(dllexport) bool DLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, int32* oSPDAT_RECORDS, uint32 iSPDat_Struct_Size) {
 	return pDLLLoadSPDat(cbFileLoadSPDat, oSpellsPointer, oSPDAT_RECORDS, iSPDat_Struct_Size);
 };
 #else
-extern "C" bool DLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, sint32* oSPDAT_RECORDS, int32 iSPDat_Struct_Size) {
+extern "C" bool DLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, int32* oSPDAT_RECORDS, uint32 iSPDat_Struct_Size) {
 	return pDLLLoadSPDat(cbFileLoadSPDat, oSpellsPointer, oSPDAT_RECORDS, iSPDat_Struct_Size);
 };
 
 #endif
 
-bool pDLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, sint32* oSPDAT_RECORDS, int32 iSPDat_Struct_Size) {
+bool pDLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oSpellsPointer, int32* oSPDAT_RECORDS, uint32 iSPDat_Struct_Size) {
 	if (iSPDat_Struct_Size != sizeof(SPDat_Spell_Struct)) {
 		cout << "Error: EMuShareMem: DLLLoadSPDat: iSPDat_Struct_Size != sizeof(SPDat_Spell_Struct)" << endl;
 		cout << "SPDat_Spell_Struct has changed, EMuShareMem.dll needs to be recompiled." << endl;
 		return false;
 	}
 
-	int32 tmpMemSize = sizeof(MMFSpells_Struct) + 256 + (sizeof(SPDat_Spell_Struct) * (*oSPDAT_RECORDS));
+	uint32 tmpMemSize = sizeof(MMFSpells_Struct) + 256 + (sizeof(SPDat_Spell_Struct) * (*oSPDAT_RECORDS));
 	if (SpellsMMF.Open("EQEMuSpells", tmpMemSize)) {
 		if (SpellsMMF.CanWrite()) {
 			MMFSpellsData_Writable = (MMFSpells_Struct*) SpellsMMF.GetWriteableHandle();
@@ -67,7 +67,7 @@ bool pDLLLoadSPDat(const CALLBACK_FileLoadSPDat cbFileLoadSPDat, const void** oS
 		else {
 			if (!SpellsMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!SpellsMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(100);
 					Timer::SetCurrentTime();

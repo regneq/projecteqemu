@@ -15,13 +15,13 @@ struct EventList {
 };
 
 struct Events {
-int32 npcid; 
+uint32 npcid; 
 std::list<EventList*> Event;
 };
 
 struct Alias {
 	int index;
-	int32 npcid;
+	uint32 npcid;
 	char name[100][100];
 	char command[100][1024];
 };
@@ -50,50 +50,50 @@ public:
 	std::list<Events*> MainList;
 	std::list<vars*> varlist;
 	std::list<Alias*> AliasList;
-	int32	npcarrayindex;
+	uint32	npcarrayindex;
 
-	int32	AddNPCQuestID(int32 npcid);
-	int32	FindNPCQuestID(sint32 npcid);
-	int		CheckAliases(const char * alias, int32 npcid, Mob* npcmob, Mob* mob);
-	void	ClearAliasesByNPCID(int32 iNPCID);
+	uint32	AddNPCQuestID(uint32 npcid);
+	uint32	FindNPCQuestID(int32 npcid);
+	int		CheckAliases(const char * alias, uint32 npcid, Mob* npcmob, Mob* mob);
+	void	ClearAliasesByNPCID(uint32 iNPCID);
 	void	ClearCache();
-	void	ClearEventsByNPCID(int32 iNPCID);
+	void	ClearEventsByNPCID(uint32 iNPCID);
 
-	void	DelChatAndItemVars(int32 npcid);
+	void	DelChatAndItemVars(uint32 npcid);
 	void	DeleteVar(std::string name);
 
-	void	ExCommands(std::string command, std::string parms, int argnums, int32 npcid, Mob* other, Mob* mob );
+	void	ExCommands(std::string command, std::string parms, int argnums, uint32 npcid, Mob* other, Mob* mob );
 
 	void	GetCommandName(char * command1, char * arg);
 	int		GetFreeID();
-	int		GetItemCount(std::string itemid, int32 npcid);
-	sint32	GetNPCqstID(int32 iNPCID);
-	std::string	GetVar(std::string varname, int32 npcid);
+	int		GetItemCount(std::string itemid, uint32 npcid);
+	int32	GetNPCqstID(uint32 iNPCID);
+	std::string	GetVar(std::string varname, uint32 npcid);
 
-	void	HandleVars(std::string varname, std::string varparms, std::string& origstring, std::string format, int32 npcid, Mob* mob);
+	void	HandleVars(std::string varname, std::string varparms, std::string& origstring, std::string format, uint32 npcid, Mob* mob);
 
-	bool	LoadAttempted(int32 iNPCID);
+	bool	LoadAttempted(uint32 iNPCID);
 	void	LoadCommands(const char * filename);
 	virtual int 	LoadScript(int npcid, const char * zone, Mob* activater=0);
 
-	void	MakeParms(const char * string, int32 npcid);
-	void	MakeVars(std::string text, int32 npcid);
+	void	MakeParms(const char * string, uint32 npcid);
+	void	MakeVars(std::string text, uint32 npcid);
 
 	int		numtok(const char *text, char character);
 
-	int		ParseCommands(std::string text, int line, int justcheck, int32 npcid, Mob* other, Mob* mob, std::string filename=string("none"));
+	int		ParseCommands(std::string text, int line, int justcheck, uint32 npcid, Mob* other, Mob* mob, std::string filename=string("none"));
 	int		ParseIf(std::string text);
 	int		pcalc(const char * string);
-	void    ParseVars(std::string& text, int32 npcid, Mob* mob);
+	void    ParseVars(std::string& text, uint32 npcid, Mob* mob);
 
 	void	Replace(std::string& string1, std::string repstr, std::string rep, int all=0);
 
 	void	scanformat(char *string, const char *format, char arg[10][1024]);
-	bool	SetNPCqstID(int32 iNPCID, sint32 iValue);
+	bool	SetNPCqstID(uint32 iNPCID, int32 iValue);
 	char *  strrstr(char* string, const char * sub);
-	virtual void	SendCommands(const char * event, int32 npcid, NPC* npcmob, Mob* mob);
+	virtual void	SendCommands(const char * event, uint32 npcid, NPC* npcmob, Mob* mob);
 
-	int	HasQuestFile(int32 npcid);
+	int	HasQuestFile(uint32 npcid);
 	
     //interface stuff
     virtual void EventNPC(QuestEventID evt, NPC* npc, Mob *init, std::string data, uint32 extra_data) {}
@@ -101,7 +101,7 @@ public:
     virtual void EventGlobalPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {}
     virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) {}
     virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data) {}
-    virtual bool HasQuestSub(int32 npcid, const char *subname) { return HasQuestFile(npcid); }
+    virtual bool HasQuestSub(uint32 npcid, const char *subname) { return HasQuestFile(npcid); }
     virtual bool PlayerHasQuestSub(const char *subname) { return true; }
     virtual bool GlobalPlayerHasQuestSub(const char *subname) { return true; }
     virtual bool SpellHasQuestSub(uint32 spell_id, const char *subname) { return true; }
@@ -111,13 +111,13 @@ public:
     virtual uint32 GetIdentifier() { return 0x04629fff; }
 
 private:
-    //void	Event(int event, int32 npcid, const char * data, Mob* npcmob, Mob* mob);
+    //void	Event(int event, uint32 npcid, const char * data, Mob* npcmob, Mob* mob);
 	//changed - Eglin.  more reasonable (IMHO) than changing every single referance to the global pointer.
 	//that's what you get for using globals! :)
-	virtual void    Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
+	virtual void    Event(QuestEventID event, uint32 npcid, const char * data, NPC* npcmob, Mob* mob, uint32 extradata = 0);
 
-	int32	pMaxNPCID;
-	sint32*	pNPCqstID;
+	uint32	pMaxNPCID;
+	int32*	pNPCqstID;
 };
 
 #endif

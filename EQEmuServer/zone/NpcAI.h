@@ -36,6 +36,6 @@ Seems more like a bitwise comparison client side..
 #define DEFAULT_FRENYRADIUS 70
 #define MAX_SHIELDRADIUS    20
 
-int32 GetLevelCon(int8 PlayerLevel, int8 NPCLevel);
+uint32 GetLevelCon(uint8 PlayerLevel, uint8 NPCLevel);
 
 #endif

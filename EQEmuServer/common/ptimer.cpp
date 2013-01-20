@@ -89,7 +89,7 @@ CREATE TABLE timers (
 //#define DEBUG_PTIMERS
 
 
-PersistentTimer *PersistentTimer::LoadTimer(Database *db, int32 char_id, pTimerType type) {
+PersistentTimer *PersistentTimer::LoadTimer(Database *db, uint32 char_id, pTimerType type) {
 	PersistentTimer *p;
 	p = new PersistentTimer(char_id, type, 0);
 	if(p->Load(db))
@@ -98,7 +98,7 @@ PersistentTimer *PersistentTimer::LoadTimer(Database *db, int32 char_id, pTimerT
 	return(NULL);
 }
 
-PersistentTimer::PersistentTimer(int32 char_id, pTimerType type, int32 in_timer_time) {
+PersistentTimer::PersistentTimer(uint32 char_id, pTimerType type, uint32 in_timer_time) {
 	_char_id = char_id;
 	_type = type;
 	
@@ -114,7 +114,7 @@ PersistentTimer::PersistentTimer(int32 char_id, pTimerType type, int32 in_timer_
 #endif
 }
 
-PersistentTimer::PersistentTimer(int32 char_id, pTimerType type, int32 in_start_time, int32 in_timer_time, bool in_enable) {
+PersistentTimer::PersistentTimer(uint32 char_id, pTimerType type, uint32 in_start_time, uint32 in_timer_time, bool in_enable) {
 	_char_id = char_id;
 	_type = type;
 	
@@ -226,7 +226,7 @@ bool PersistentTimer::Expired(Database *db, bool iReset) {
 		LogFile->write(EQEMuLog::Error, "Null timer during ->Check()!?\n"); 
 		return(true);
 	}
-	int32 current_time = get_current_time();
+	uint32 current_time = get_current_time();
     if (current_time-start_time >= timer_time) {
 		if (enabled && iReset) {
 			start_time = current_time; // Reset timer
@@ -240,7 +240,7 @@ bool PersistentTimer::Expired(Database *db, bool iReset) {
 }
 
 /* This function set the timer and restart it */
-void PersistentTimer::Start(int32 set_timer_time) {
+void PersistentTimer::Start(uint32 set_timer_time) {
     start_time = get_current_time();
 	enabled = true;
     if (set_timer_time != 0) {
@@ -252,7 +252,7 @@ void PersistentTimer::Start(int32 set_timer_time) {
 }
 
 // This timer updates the timer without restarting it
-void PersistentTimer::SetTimer(int32 set_timer_time) {
+void PersistentTimer::SetTimer(uint32 set_timer_time) {
     // If we were disabled before => restart the timer
     timer_time = set_timer_time;
     if (!enabled) {
@@ -264,9 +264,9 @@ void PersistentTimer::SetTimer(int32 set_timer_time) {
 #endif
 }
 
-int32 PersistentTimer::GetRemainingTime() {
+uint32 PersistentTimer::GetRemainingTime() {
     if (enabled) {
-		int32 current_time = get_current_time();
+		uint32 current_time = get_current_time();
 	    if (current_time-start_time > timer_time)
 			return 0;
 		else
@@ -278,13 +278,13 @@ int32 PersistentTimer::GetRemainingTime() {
 }
 
 
-int32 PersistentTimer::get_current_time() {
+uint32 PersistentTimer::get_current_time() {
 	timeval tv;
 	gettimeofday(&tv, NULL);
 	return(tv.tv_sec);
 }
 
-PTimerList::PTimerList(int32 char_id) {
+PTimerList::PTimerList(uint32 char_id) {
 	_char_id = char_id;
 }
 	
@@ -333,7 +333,7 @@ bool PTimerList::Load(Database *db) {
 	safe_delete_array(query);
 	
 	pTimerType type;
-	int32 start_time, timer_time;
+	uint32 start_time, timer_time;
 	bool enabled;
 	
 	PersistentTimer *cur;
@@ -404,7 +404,7 @@ bool PTimerList::Clear(Database *db) {
 	return(true);
 }
 	
-void PTimerList::Start(pTimerType type, int32 duration) {
+void PTimerList::Start(pTimerType type, uint32 duration) {
 	if(_list.count(type) == 1 && _list[type] != NULL) {
 		_list[type]->Start(duration);
 	} else {
@@ -448,7 +448,7 @@ void PTimerList::Disable(pTimerType type) {
 		_list[type]->Disable();
 }
 
-int32 PTimerList::GetRemainingTime(pTimerType type) {
+uint32 PTimerList::GetRemainingTime(pTimerType type) {
 	if(_list.count(type) != 1)
 		return(0);
 	if(_list[type] == NULL)
@@ -478,7 +478,7 @@ void PTimerList::ToVector(vector< pair<pTimerType, PersistentTimer *> > &out) {
 	}
 }
 
-bool PTimerList::ClearOffline(Database *db, int32 char_id, pTimerType type) {
+bool PTimerList::ClearOffline(Database *db, uint32 char_id, pTimerType type) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	uint32 qlen = 0;

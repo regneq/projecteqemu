@@ -28,7 +28,7 @@ SharedDatabase::SharedDatabase()
 	s_usedb = this;
 }
 
-SharedDatabase::SharedDatabase(const char* host, const char* user, const char* passwd, const char* database, int32 port)
+SharedDatabase::SharedDatabase(const char* host, const char* user, const char* passwd, const char* database, uint32 port)
 : Database(host, user, passwd, database, port)
 {
 	SDBInitVars();
@@ -48,7 +48,7 @@ void SharedDatabase::SDBInitVars() {
 SharedDatabase::~SharedDatabase() {
 }
 
-bool SharedDatabase::SetHideMe(int32 account_id, int8 hideme)
+bool SharedDatabase::SetHideMe(uint32 account_id, uint8 hideme)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -64,7 +64,7 @@ bool SharedDatabase::SetHideMe(int32 account_id, int8 hideme)
 	
 }
 
-int8 SharedDatabase::GetGMSpeed(int32 account_id)
+uint8 SharedDatabase::GetGMSpeed(uint32 account_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -75,7 +75,7 @@ int8 SharedDatabase::GetGMSpeed(int32 account_id)
 		if (mysql_num_rows(result) == 1)
 		{
 			row = mysql_fetch_row(result);
-			int8 gmspeed = atoi(row[0]);
+			uint8 gmspeed = atoi(row[0]);
 			mysql_free_result(result);
 			return gmspeed;
 		}
@@ -99,7 +99,7 @@ int8 SharedDatabase::GetGMSpeed(int32 account_id)
 
 }
 
-bool SharedDatabase::SetGMSpeed(int32 account_id, int8 gmspeed)
+bool SharedDatabase::SetGMSpeed(uint32 account_id, uint8 gmspeed)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -115,7 +115,7 @@ bool SharedDatabase::SetGMSpeed(int32 account_id, int8 gmspeed)
 	
 }
 
-int32 SharedDatabase::GetTotalTimeEntitledOnAccount(uint32 AccountID) {
+uint32 SharedDatabase::GetTotalTimeEntitledOnAccount(uint32 AccountID) {
 
 	uint32 EntitledTime = 0;
 
@@ -166,7 +166,7 @@ bool ret=true;
 	return ret;
 }
 
-bool SharedDatabase::VerifyInventory(uint32 account_id, sint16 slot_id, const ItemInst* inst)
+bool SharedDatabase::VerifyInventory(uint32 account_id, int16 slot_id, const ItemInst* inst)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
@@ -188,9 +188,9 @@ bool SharedDatabase::VerifyInventory(uint32 account_id, sint16 slot_id, const It
 	bool found = false;
 	if(row) {
 		uint32 id = atoi(row[0]);
-		int16 charges = atoi(row[1]);
+		uint16 charges = atoi(row[1]);
 		
-		int16 expect_charges = 0;
+		uint16 expect_charges = 0;
 		if(inst->GetCharges() >= 0)
 			expect_charges = inst->GetCharges();
 		else
@@ -203,7 +203,7 @@ bool SharedDatabase::VerifyInventory(uint32 account_id, sint16 slot_id, const It
 	return(found);
 }
 
-bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 slot_id) {
+bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, int16 slot_id) {
 	_CP(Database_SaveInventory);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
@@ -233,7 +233,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			// Delete bag slots, if need be
 			if (ret && Inventory::SupportsContainers(slot_id)) {
 				safe_delete_array(query);
-				sint16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
+				int16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
 				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM sharedbank WHERE acctid=%i AND slotid>=%i AND slotid<%i",
 					account_id, base_slot_id, (base_slot_id+10)), errbuf);
 			}
@@ -243,7 +243,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 		else {
 			// Update/Insert item
 			uint32 account_id = GetAccountIDByChar(char_id);
-			int16 charges = 0;
+			uint16 charges = 0;
 			if(inst->GetCharges() >= 0)
 				charges = inst->GetCharges();
 			else
@@ -272,7 +272,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			// Delete bag slots, if need be
 			if (ret && Inventory::SupportsContainers(slot_id)) {
 				safe_delete_array(query);
-				sint16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
+				int16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
 				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM inventory WHERE charid=%i AND slotid>=%i AND slotid<%i",
 					char_id, base_slot_id, (base_slot_id+10)), errbuf);
 			}
@@ -280,7 +280,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			// @merth: need to delete augments here
 		}
 		else {
-			int16 charges = 0;
+			uint16 charges = 0;
 			if(inst->GetCharges() >= 0)
 				charges = inst->GetCharges();
 			else
@@ -317,7 +317,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 	return ret;
 }
 
-sint32 SharedDatabase::GetSharedPlatinum(int32 account_id)
+int32 SharedDatabase::GetSharedPlatinum(uint32 account_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -350,7 +350,7 @@ sint32 SharedDatabase::GetSharedPlatinum(int32 account_id)
 	return 0;
 }
 
-bool SharedDatabase::SetSharedPlatinum(uint32 account_id, sint32 amount_to_add)
+bool SharedDatabase::SetSharedPlatinum(uint32 account_id, int32 amount_to_add)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -432,9 +432,9 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 	
 	if (RunQuery(query, len_query, errbuf, &result)) {
 		while ((row = mysql_fetch_row(result))) {
-			sint16 slot_id	= (sint16)atoi(row[0]);
+			int16 slot_id	= (int16)atoi(row[0]);
 			uint32 item_id	= (uint32)atoi(row[1]);
-			sint8 charges	= (sint8)atoi(row[2]);
+			int8 charges	= (int8)atoi(row[2]);
 			uint32 aug[5];
 			aug[0]	= (uint32)atoi(row[3]);
 			aug[1]	= (uint32)atoi(row[4]);
@@ -444,7 +444,7 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 			const Item_Struct* item = GetItem(item_id);
 			
 			if (item) {
-				sint16 put_slot_id = SLOT_INVALID;
+				int16 put_slot_id = SLOT_INVALID;
 				
 				ItemInst* inst = CreateBaseItem(item, charges);
 				if (item->ItemClass == ItemClassCommon) {
@@ -504,7 +504,7 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 		ret = true;
 	}
 	else {
-		LogFile->write(EQEMuLog::Error, "Database::GetSharedBank(int32 account_id): %s", errbuf);
+		LogFile->write(EQEMuLog::Error, "Database::GetSharedBank(uint32 account_id): %s", errbuf);
 	}
 	
 	safe_delete_array(query);
@@ -526,9 +526,9 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
         "instnodrop,custom_data FROM inventory WHERE charid=%i ORDER BY slotid", char_id), errbuf, &result)) {
 
 		while ((row = mysql_fetch_row(result))) {	
-			sint16 slot_id	= atoi(row[0]);
+			int16 slot_id	= atoi(row[0]);
 			uint32 item_id	= atoi(row[1]);
-			int16 charges	= atoi(row[2]);
+			uint16 charges	= atoi(row[2]);
 			uint32 color		= atoul(row[3]);
 			uint32 aug[5];
 			aug[0]	= (uint32)atoul(row[4]);
@@ -536,12 +536,12 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 			aug[2]	= (uint32)atoul(row[6]);
 			aug[3]	= (uint32)atoul(row[7]);
 			aug[4]	= (uint32)atoul(row[8]);
-			bool instnodrop	= (row[9] && (int16)atoi(row[9])) ? true : false;
+			bool instnodrop	= (row[9] && (uint16)atoi(row[9])) ? true : false;
 
 			const Item_Struct* item = GetItem(item_id);
 			
 			if (item) {
-				sint16 put_slot_id = SLOT_INVALID;
+				int16 put_slot_id = SLOT_INVALID;
 				
 				ItemInst* inst = CreateBaseItem(item, charges);
 				
@@ -636,9 +636,9 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
         name, account_id), errbuf, &result))
 	{
 		while ((row = mysql_fetch_row(result))) {
-			sint16 slot_id	= atoi(row[0]);
+			int16 slot_id	= atoi(row[0]);
 			uint32 item_id	= atoi(row[1]);
-			sint8 charges	= atoi(row[2]);
+			int8 charges	= atoi(row[2]);
 			uint32 color		= atoul(row[3]);
 			uint32 aug[5];
 			aug[0]	= (uint32)atoi(row[4]);
@@ -646,9 +646,9 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 			aug[2]	= (uint32)atoi(row[6]);
 			aug[3]	= (uint32)atoi(row[7]);
 			aug[4]	= (uint32)atoi(row[8]);
-			bool instnodrop	= (row[9] && (int16)atoi(row[9])) ? true : false;
+			bool instnodrop	= (row[9] && (uint16)atoi(row[9])) ? true : false;
 			const Item_Struct* item = GetItem(item_id);
-			sint16 put_slot_id = SLOT_INVALID;
+			int16 put_slot_id = SLOT_INVALID;
 			if(!item)
 				continue;
 
@@ -720,11 +720,11 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 }
 
 
-sint32 SharedDatabase::GetItemsCount(int32* oMaxID) {
+int32 SharedDatabase::GetItemsCount(uint32* oMaxID) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
     MYSQL_ROW row;
-	sint32 ret = -1;
+	int32 ret = -1;
 	
 	char query[] = "SELECT MAX(id),count(*) FROM items";
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
@@ -748,7 +748,7 @@ sint32 SharedDatabase::GetItemsCount(int32* oMaxID) {
 }
 
 
-sint32 SharedDatabase::GetNPCTypesCount(int32* oMaxID) {
+int32 SharedDatabase::GetNPCTypesCount(uint32* oMaxID) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -760,7 +760,7 @@ sint32 SharedDatabase::GetNPCTypesCount(int32* oMaxID) {
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
 		if (row != NULL && row[1] != 0) {
-			sint32 ret = atoi(row[1]);
+			int32 ret = atoi(row[1]);
 			if (oMaxID) {
 				if (row[0])
 					*oMaxID = atoi(row[0]);
@@ -783,14 +783,14 @@ sint32 SharedDatabase::GetNPCTypesCount(int32* oMaxID) {
 }
 
 
-bool SharedDatabase::extDBLoadItems(sint32 iItemCount, int32 iMaxItemID) {
+bool SharedDatabase::extDBLoadItems(int32 iItemCount, uint32 iMaxItemID) {
 	return s_usedb->DBLoadItems(iItemCount, iMaxItemID);
 }
 
 bool SharedDatabase::LoadItems() {
 	if (!EMuShareMemDLL.Load())
 		return false;
-	sint32 tmp = 0;
+	int32 tmp = 0;
 	tmp = GetItemsCount(&max_item);
 	if (tmp == -1) {
 		cout << "Error: SharedDatabase::LoadItems() (sharemem): GetItemsCount() returned -1" << endl;
@@ -801,7 +801,7 @@ bool SharedDatabase::LoadItems() {
 }
 
 // Load all database items into cache
-bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
+bool SharedDatabase::DBLoadItems(int32 iItemCount, uint32 iMaxItemID) {
 	_CP(Database_DBLoadItems);
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	MYSQL_RES *result;
@@ -811,7 +811,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 	LogFile->write(EQEMuLog::Status, "Loading items from database: count=%i", iItemCount);
 	
 	// Make sure enough memory was alloc'd in cache
-	sint32 item_count = GetItemsCount(&max_item);
+	int32 item_count = GetItemsCount(&max_item);
 	if (item_count != iItemCount) {
 		LogFile->write(EQEMuLog::Error, "Insufficient shared memory to load items (actual=%i, allocated=%i)", item_count, iItemCount);
 		return ret;
@@ -875,38 +875,38 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Slots = (uint32)atoul(row[ItemField::slots]);
 			item.Price = (uint32)atoul(row[ItemField::price]);
 			item.Icon = (uint32)atoul(row[ItemField::icon]);
-			//item.Unk012 = (sint32)atoul(row[ItemField::UNK012]);
+			//item.Unk012 = (int32)atoul(row[ItemField::UNK012]);
 			//item.Unk013 = (uint32)atoul(row[ItemField::UNK013]);
 			item.BenefitFlag = (uint32)atoul(row[ItemField::benefitflag]);
 			item.Tradeskills = (atoi(row[ItemField::tradeskills])==0) ? false : true;
-			item.CR = (sint8)atoi(row[ItemField::cr]);
-			item.DR = (sint8)atoi(row[ItemField::dr]);
-			item.PR = (sint8)atoi(row[ItemField::pr]);
-			item.MR = (sint8)atoi(row[ItemField::mr]);
-			item.FR = (sint8)atoi(row[ItemField::fr]);
-			item.AStr = (sint8)atoi(row[ItemField::astr]);
-			item.ASta = (sint8)atoi(row[ItemField::asta]);
-			item.AAgi = (sint8)atoi(row[ItemField::aagi]);
-			item.ADex = (sint8)atoi(row[ItemField::adex]);
-			item.ACha = (sint8)atoi(row[ItemField::acha]);
-			item.AInt = (sint8)atoi(row[ItemField::aint]);
-			item.AWis = (sint8)atoi(row[ItemField::awis]);
-			item.HP = (sint32)atoul(row[ItemField::hp]);
-			item.Mana = (sint32)atoul(row[ItemField::mana]);
-			item.AC = (sint32)atoul(row[ItemField::ac]);
+			item.CR = (int8)atoi(row[ItemField::cr]);
+			item.DR = (int8)atoi(row[ItemField::dr]);
+			item.PR = (int8)atoi(row[ItemField::pr]);
+			item.MR = (int8)atoi(row[ItemField::mr]);
+			item.FR = (int8)atoi(row[ItemField::fr]);
+			item.AStr = (int8)atoi(row[ItemField::astr]);
+			item.ASta = (int8)atoi(row[ItemField::asta]);
+			item.AAgi = (int8)atoi(row[ItemField::aagi]);
+			item.ADex = (int8)atoi(row[ItemField::adex]);
+			item.ACha = (int8)atoi(row[ItemField::acha]);
+			item.AInt = (int8)atoi(row[ItemField::aint]);
+			item.AWis = (int8)atoi(row[ItemField::awis]);
+			item.HP = (int32)atoul(row[ItemField::hp]);
+			item.Mana = (int32)atoul(row[ItemField::mana]);
+			item.AC = (int32)atoul(row[ItemField::ac]);
 			item.Deity = (uint32)atoul(row[ItemField::deity]);
-			item.SkillModValue = (sint32)atoul(row[ItemField::skillmodvalue]);
-			//item.Unk033 = (sint32)atoul(row[ItemField::UNK033]);
+			item.SkillModValue = (int32)atoul(row[ItemField::skillmodvalue]);
+			//item.Unk033 = (int32)atoul(row[ItemField::UNK033]);
 			item.SkillModType = (uint32)atoul(row[ItemField::skillmodtype]);
 			item.BaneDmgRace = (uint32)atoul(row[ItemField::banedmgrace]);
-			item.BaneDmgAmt = (sint8)atoi(row[ItemField::banedmgamt]);
+			item.BaneDmgAmt = (int8)atoi(row[ItemField::banedmgamt]);
 			item.BaneDmgBody = (uint32)atoul(row[ItemField::banedmgbody]);
 			item.Magic = (atoi(row[ItemField::magic])==0) ? false : true;
-			item.CastTime_ = (sint32)atoul(row[ItemField::casttime_]);
+			item.CastTime_ = (int32)atoul(row[ItemField::casttime_]);
 			item.ReqLevel = (uint8)atoi(row[ItemField::reqlevel]);
 			item.BardType = (uint32)atoul(row[ItemField::bardtype]);
-			item.BardValue = (sint32)atoul(row[ItemField::bardvalue]);
-			item.Light = (sint8)atoi(row[ItemField::light]);
+			item.BardValue = (int32)atoul(row[ItemField::bardvalue]);
+			item.Light = (int8)atoi(row[ItemField::light]);
 			item.Delay = (uint8)atoi(row[ItemField::delay]);
 			item.RecLevel = (uint8)atoi(row[ItemField::reclevel]);
 			item.RecSkill = (uint8)atoi(row[ItemField::recskill]);
@@ -918,32 +918,32 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Classes = (uint32)atoul(row[ItemField::classes]);
 			item.Races = (uint32)atoul(row[ItemField::races]);
 			//item.Unk054 = (uint32)atoul(row[ItemField::UNK054]);
-			item.MaxCharges = (sint16)atoi(row[ItemField::maxcharges]);
+			item.MaxCharges = (int16)atoi(row[ItemField::maxcharges]);
 			item.ItemType = (uint8)atoi(row[ItemField::itemtype]);
 			item.Material = (uint8)atoi(row[ItemField::material]);
 			item.SellRate = (float)atof(row[ItemField::sellrate]);
 			//item.Unk059 = (uint32)atoul(row[ItemField::UNK059]);
 			item.CastTime = (uint32)atoul(row[ItemField::casttime]);
 			item.EliteMaterial = (uint32)atoul(row[ItemField::elitematerial]);
-			item.ProcRate = (sint32)atoi(row[ItemField::procrate]);
-			item.CombatEffects = (sint8)atoi(row[ItemField::combateffects]);
-			item.Shielding = (sint8)atoi(row[ItemField::shielding]);
-			item.StunResist = (sint8)atoi(row[ItemField::stunresist]);
-			item.StrikeThrough = (sint8)atoi(row[ItemField::strikethrough]);
+			item.ProcRate = (int32)atoi(row[ItemField::procrate]);
+			item.CombatEffects = (int8)atoi(row[ItemField::combateffects]);
+			item.Shielding = (int8)atoi(row[ItemField::shielding]);
+			item.StunResist = (int8)atoi(row[ItemField::stunresist]);
+			item.StrikeThrough = (int8)atoi(row[ItemField::strikethrough]);
 			item.ExtraDmgSkill = (uint32)atoul(row[ItemField::extradmgskill]);
 			item.ExtraDmgAmt = (uint32)atoul(row[ItemField::extradmgamt]);
-			item.SpellShield = (sint8)atoi(row[ItemField::spellshield]);
-			item.Avoidance = (sint8)atoi(row[ItemField::avoidance]);
-			item.Accuracy = (sint8)atoi(row[ItemField::accuracy]);
+			item.SpellShield = (int8)atoi(row[ItemField::spellshield]);
+			item.Avoidance = (int8)atoi(row[ItemField::avoidance]);
+			item.Accuracy = (int8)atoi(row[ItemField::accuracy]);
 			item.CharmFileID = (uint32)atoul(row[ItemField::charmfileid]);
-			item.FactionMod1 = (sint32)atoul(row[ItemField::factionmod1]);
-			item.FactionMod2 = (sint32)atoul(row[ItemField::factionmod2]);
-			item.FactionMod3 = (sint32)atoul(row[ItemField::factionmod3]);
-			item.FactionMod4 = (sint32)atoul(row[ItemField::factionmod4]);
-			item.FactionAmt1 = (sint32)atoul(row[ItemField::factionamt1]);
-			item.FactionAmt2 = (sint32)atoul(row[ItemField::factionamt2]);
-			item.FactionAmt3 = (sint32)atoul(row[ItemField::factionamt3]);
-			item.FactionAmt4 = (sint32)atoul(row[ItemField::factionamt4]);
+			item.FactionMod1 = (int32)atoul(row[ItemField::factionmod1]);
+			item.FactionMod2 = (int32)atoul(row[ItemField::factionmod2]);
+			item.FactionMod3 = (int32)atoul(row[ItemField::factionmod3]);
+			item.FactionMod4 = (int32)atoul(row[ItemField::factionmod4]);
+			item.FactionAmt1 = (int32)atoul(row[ItemField::factionamt1]);
+			item.FactionAmt2 = (int32)atoul(row[ItemField::factionamt2]);
+			item.FactionAmt3 = (int32)atoul(row[ItemField::factionamt3]);
+			item.FactionAmt4 = (int32)atoul(row[ItemField::factionamt4]);
 			strcpy(item.CharmFile,row[ItemField::charmfile]);
 			item.AugType = (uint32)atoul(row[ItemField::augtype]);
 			item.AugSlotType[0] = (uint8)atoi(row[ItemField::augslot1type]);
@@ -1030,25 +1030,25 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Bard.Level = (uint8)atoul(row[ItemField::bardlevel]);
 			item.Bard.Level2 = (uint8)atoul(row[ItemField::bardlevel2]);
 			item.QuestItemFlag = (atoi(row[ItemField::questitemflag])==0) ? false : true;
-			item.SVCorruption = (sint32)atoi(row[ItemField::svcorruption]);
+			item.SVCorruption = (int32)atoi(row[ItemField::svcorruption]);
 			item.Purity = (uint32)atoul(row[ItemField::purity]);
 			item.BackstabDmg = (uint32)atoul(row[ItemField::backstabdmg]);
 			item.DSMitigation = (uint32)atoul(row[ItemField::dsmitigation]);
-			item.HeroicStr = (sint32)atoi(row[ItemField::heroic_str]);
-			item.HeroicInt = (sint32)atoi(row[ItemField::heroic_int]);
-			item.HeroicWis = (sint32)atoi(row[ItemField::heroic_wis]);
-			item.HeroicAgi = (sint32)atoi(row[ItemField::heroic_agi]);
-			item.HeroicDex = (sint32)atoi(row[ItemField::heroic_dex]);
-			item.HeroicSta = (sint32)atoi(row[ItemField::heroic_sta]);
-			item.HeroicCha = (sint32)atoi(row[ItemField::heroic_cha]);
-			item.HeroicMR = (sint32)atoi(row[ItemField::heroic_mr]);
-			item.HeroicFR = (sint32)atoi(row[ItemField::heroic_fr]);
-			item.HeroicCR = (sint32)atoi(row[ItemField::heroic_cr]);
-			item.HeroicDR = (sint32)atoi(row[ItemField::heroic_dr]);
-			item.HeroicPR = (sint32)atoi(row[ItemField::heroic_pr]);
-			item.HeroicSVCorrup = (sint32)atoi(row[ItemField::heroic_svcorrup]);
-			item.HealAmt = (sint32)atoi(row[ItemField::healamt]);
-			item.SpellDmg = (sint32)atoi(row[ItemField::spelldmg]);
+			item.HeroicStr = (int32)atoi(row[ItemField::heroic_str]);
+			item.HeroicInt = (int32)atoi(row[ItemField::heroic_int]);
+			item.HeroicWis = (int32)atoi(row[ItemField::heroic_wis]);
+			item.HeroicAgi = (int32)atoi(row[ItemField::heroic_agi]);
+			item.HeroicDex = (int32)atoi(row[ItemField::heroic_dex]);
+			item.HeroicSta = (int32)atoi(row[ItemField::heroic_sta]);
+			item.HeroicCha = (int32)atoi(row[ItemField::heroic_cha]);
+			item.HeroicMR = (int32)atoi(row[ItemField::heroic_mr]);
+			item.HeroicFR = (int32)atoi(row[ItemField::heroic_fr]);
+			item.HeroicCR = (int32)atoi(row[ItemField::heroic_cr]);
+			item.HeroicDR = (int32)atoi(row[ItemField::heroic_dr]);
+			item.HeroicPR = (int32)atoi(row[ItemField::heroic_pr]);
+			item.HeroicSVCorrup = (int32)atoi(row[ItemField::heroic_svcorrup]);
+			item.HealAmt = (int32)atoi(row[ItemField::healamt]);
+			item.SpellDmg = (int32)atoi(row[ItemField::spelldmg]);
 			item.LDoNSellBackRate = (uint32)atoul(row[ItemField::ldonsellbackrate]);
 			item.ScriptFileID = (uint32)atoul(row[ItemField::scriptfileid]);
 			item.ExpendableArrow = (uint16)atoul(row[ItemField::expendablearrow]);
@@ -1119,7 +1119,7 @@ string SharedDatabase::GetBook(const char *txtfile)
 }
 
 
-bool SharedDatabase::extDBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iMaxNPCFactionListID) {
+bool SharedDatabase::extDBLoadNPCFactionLists(int32 iNPCFactionListCount, uint32 iMaxNPCFactionListID) {
 	return s_usedb->DBLoadNPCFactionLists(iNPCFactionListCount, iMaxNPCFactionListID);
 }
 
@@ -1130,8 +1130,8 @@ const NPCFactionList* SharedDatabase::GetNPCFactionEntry(uint32 id) {
 bool SharedDatabase::LoadNPCFactionLists() {
 	if (!EMuShareMemDLL.Load())
 		return false;
-	sint32 tmp = -1;
-	int32 tmp_npcfactionlist_max;
+	int32 tmp = -1;
+	uint32 tmp_npcfactionlist_max;
 	tmp = GetNPCFactionListsCount(&tmp_npcfactionlist_max);
 	if (tmp < 0) {
 		cout << "Error: SharedDatabase::LoadNPCFactionLists-ShareMem: GetNPCFactionListsCount() returned < 0" << endl;
@@ -1142,7 +1142,7 @@ bool SharedDatabase::LoadNPCFactionLists() {
 	return ret;
 }
 
-bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iMaxNPCFactionListID) {
+bool SharedDatabase::DBLoadNPCFactionLists(int32 iNPCFactionListCount, uint32 iMaxNPCFactionListID) {
 	_CP(Database_DBLoadNPCFactionLists);
 	LogFile->write(EQEMuLog::Status, "Loading NPC Faction Lists from database...");
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1155,7 +1155,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
 		if (row && row[0]) {
-			if ((int32)atoi(row[0]) > iMaxNPCFactionListID) {
+			if ((uint32)atoi(row[0]) > iMaxNPCFactionListID) {
 				cout << "Error: Insufficient shared memory to load NPC Faction Lists." << endl;
 				cout << "Max(id): " << atoi(row[0]) << ", iMaxNPCFactionListID: " << iMaxNPCFactionListID << endl;
 				cout << "Fix this by increasing the MMF_MAX_NPCFactionList_ID define statement" << endl;
@@ -1197,13 +1197,13 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 			}
 			if (RunQuery(query, MakeAnyLenString(&query, "SELECT npc_faction_id, faction_id, value, npc_value, temp FROM npc_faction_entries order by npc_faction_id"), errbuf, &result)) {
 				safe_delete_array(query);
-				sint8 i = 0;
-				int32 curflid = 0;
-				int32 tmpflid = 0;
+				int8 i = 0;
+				uint32 curflid = 0;
+				uint32 tmpflid = 0;
 				uint32 tmpfactionid[MAX_NPC_FACTIONS];
-				sint32 tmpfactionvalue[MAX_NPC_FACTIONS];
-				sint8 tmpfactionnpcvalue[MAX_NPC_FACTIONS];
-				int8 tmpfactiontemp[MAX_NPC_FACTIONS];
+				int32 tmpfactionvalue[MAX_NPC_FACTIONS];
+				int8 tmpfactionnpcvalue[MAX_NPC_FACTIONS];
+				uint8 tmpfactiontemp[MAX_NPC_FACTIONS];
 
 				memset(tmpfactionid, 0, sizeof(tmpfactionid));
 				memset(tmpfactionvalue, 0, sizeof(tmpfactionvalue));
@@ -1264,7 +1264,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 // Get the player profile and inventory for the given account "account_id" and
 // character name "name".  Return true if the character was found, otherwise false.
 // False will also be returned if there is a database error.
-bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, char* current_zone, uint32 *current_instance) {
+bool SharedDatabase::GetPlayerProfile(uint32 account_id, char* name, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, char* current_zone, uint32 *current_instance) {
 	_CP(Database_GetPlayerProfile);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
@@ -1322,7 +1322,7 @@ bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerPr
 	_CP(Database_SetPlayerProfile);
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 	bool ret = false;
     
 	if (RunQuery(query, SetPlayerProfile_MQ(&query, account_id, charid, pp, inv, ext, current_zone, current_instance, MaxXTargets), errbuf, 0, &affected_rows)) {
@@ -1338,7 +1338,7 @@ bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerPr
 }
 
 // Generate SQL for updating player profile
-int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets) {
+uint32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance, uint8 MaxXTargets) {
     *query = new char[396 + sizeof(PlayerProfile_Struct)*2 + sizeof(ExtendedProfile_Struct)*2 + 4];
 	char* end = *query;
 	if (!current_zone)
@@ -1356,13 +1356,13 @@ int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint3
 	end += DoEscapeString(end, (char*)ext, sizeof(ExtendedProfile_Struct));
     end += sprintf(end,"\',class=%d,level=%d,xtargets=%u WHERE id=%u", pp->class_, pp->level, MaxXTargets, charid);
 	
-	return (int32) (end - (*query));
+	return (uint32) (end - (*query));
 }
 
 
 
 // Create appropriate ItemInst class
-ItemInst* SharedDatabase::CreateItem(uint32 item_id, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
+ItemInst* SharedDatabase::CreateItem(uint32 item_id, int16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
 {
 	const Item_Struct* item = NULL;
 	ItemInst* inst = NULL;
@@ -1381,7 +1381,7 @@ ItemInst* SharedDatabase::CreateItem(uint32 item_id, sint16 charges, uint32 aug1
 
 
 // Create appropriate ItemInst class
-ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
+ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, int16 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5)
 {
 	ItemInst* inst = NULL;
 	if (item) {
@@ -1396,7 +1396,7 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 	return inst;
 }
 
-ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges) {
+ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, int16 charges) {
 	ItemInst* inst = NULL;
 	if (item) {
 		// if maxcharges is -1 that means it is an unlimited use item. 
@@ -1414,10 +1414,10 @@ ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges
 	return inst;
 }
 
-sint32 SharedDatabase::DeleteStalePlayerCorpses() {
+int32 SharedDatabase::DeleteStalePlayerCorpses() {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 
 	if(RuleB(Zone, EnableShadowrest))
 	{
@@ -1444,10 +1444,10 @@ sint32 SharedDatabase::DeleteStalePlayerCorpses() {
 	return affected_rows;
 }
 
-sint32 SharedDatabase::DeleteStalePlayerBackups() {
+int32 SharedDatabase::DeleteStalePlayerBackups() {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 
 	// 1209600 seconds = 2 weeks
 	if (!RunQuery(query, MakeAnyLenString(&query, "Delete from player_corpses_backup where (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) > 1209600"), errbuf, 0, &affected_rows)) {
@@ -1459,7 +1459,7 @@ sint32 SharedDatabase::DeleteStalePlayerBackups() {
 	return affected_rows;
 }
 
-sint32 SharedDatabase::GetNPCFactionListsCount(int32* oMaxID) {
+int32 SharedDatabase::GetNPCFactionListsCount(uint32* oMaxID) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -1470,7 +1470,7 @@ sint32 SharedDatabase::GetNPCFactionListsCount(int32* oMaxID) {
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
 		if (row != NULL && row[1] != 0) {
-			sint32 ret = atoi(row[1]);
+			int32 ret = atoi(row[1]);
 			if (oMaxID) {
 				if (row[0])
 					*oMaxID = atoi(row[0]);
@@ -1522,9 +1522,9 @@ bool SharedDatabase::LoadSkillCaps() {
 	if (!EMuShareMemDLL.Load())
 		return false;
 	
-	int8 class_count = PLAYER_CLASS_COUNT;
-	int8 skill_count = HIGHEST_SKILL+1;
-	int8 level_count = HARD_LEVEL_CAP+1;
+	uint8 class_count = PLAYER_CLASS_COUNT;
+	uint8 skill_count = HIGHEST_SKILL+1;
+	uint8 level_count = HARD_LEVEL_CAP+1;
 
 	return EMuShareMemDLL.SkillCaps.LoadSkillCaps(&extDBLoadSkillCaps,
 			 sizeof(uint16), class_count, skill_count, level_count);
@@ -1533,9 +1533,9 @@ bool SharedDatabase::LoadSkillCaps() {
 bool SharedDatabase::DBLoadSkillCaps() {
 	LogFile->write(EQEMuLog::Status, "Loading skill caps from database...");
 	
-	int8 class_count = PLAYER_CLASS_COUNT;
-	int8 skill_count = HIGHEST_SKILL+1;
-	int8 level_count = HARD_LEVEL_CAP+1;
+	uint8 class_count = PLAYER_CLASS_COUNT;
+	uint8 skill_count = HIGHEST_SKILL+1;
+	uint8 level_count = HARD_LEVEL_CAP+1;
 	
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -1547,10 +1547,10 @@ bool SharedDatabase::DBLoadSkillCaps() {
 		safe_delete_array(query);
 		
 		while ((row = mysql_fetch_row(result))) {
-			int8 skillID = atoi(row[0]);
-			int8 class_ = atoi(row[1])-1;	//classes are base 1... 
-			int8 level = atoi(row[2]);
-			int16 cap = atoi(row[3]);
+			uint8 skillID = atoi(row[0]);
+			uint8 class_ = atoi(row[1])-1;	//classes are base 1... 
+			uint8 level = atoi(row[2]);
+			uint16 cap = atoi(row[3]);
 			if(skillID >= skill_count || class_ >= class_count || level >= level_count)
 				continue;
 			EMuShareMemDLL.SkillCaps.SetSkillCap(class_, skillID, level, cap);
@@ -1566,7 +1566,7 @@ bool SharedDatabase::DBLoadSkillCaps() {
 	return true;
 }
 
-uint16 SharedDatabase::GetSkillCap(int8 Class_, SkillType Skill, int8 Level) {
+uint16 SharedDatabase::GetSkillCap(uint8 Class_, SkillType Skill, uint8 Level) {
 	if(Class_ == 0)
 		return(0);
 	int SkillMaxLevel = RuleI(Character, SkillCapMaxLevel);
@@ -1581,7 +1581,7 @@ uint16 SharedDatabase::GetSkillCap(int8 Class_, SkillType Skill, int8 Level) {
 	}
 }
 
-uint8 SharedDatabase::GetTrainLevel(int8 Class_, SkillType Skill, int8 Level) {
+uint8 SharedDatabase::GetTrainLevel(uint8 Class_, SkillType Skill, uint8 Level) {
 	if(Class_ == 0)
 		return(0);
 
@@ -1603,7 +1603,7 @@ uint8 SharedDatabase::GetTrainLevel(int8 Class_, SkillType Skill, int8 Level) {
 	return ret;
 }
 
-void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMaxSpellID) {
+void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, int32 iMaxSpellID) {
 
 	const char *DSQuery = "SELECT `spellid`, `type` from `damageshieldtypes` WHERE `spellid` >0 "
 	                         "AND `spellid` <= %i";

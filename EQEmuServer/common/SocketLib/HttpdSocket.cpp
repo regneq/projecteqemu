@@ -61,7 +61,7 @@ int HttpdSocket::m_request_count = 0;
 std::string HttpdSocket::m_start = "";
 
 
-HttpdSocket::HttpdSocket(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort)
+HttpdSocket::HttpdSocket(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort)
 : HTTPSocket(ID,in_socket,irIP,irPort)
 ,m_content_length(0)
 ,m_file(NULL)

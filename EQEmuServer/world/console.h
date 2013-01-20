@@ -52,22 +52,22 @@ public:
 
 	bool Process();
 	void Send(const char* message);
-	sint16 Admin() { return admin; }
-	int32 GetIP() { return tcpc->GetrIP(); }
-	int16 GetPort() { return tcpc->GetrPort(); }
+	int16 Admin() { return admin; }
+	uint32 GetIP() { return tcpc->GetrIP(); }
+	uint16 GetPort() { return tcpc->GetrPort(); }
 	void ProcessCommand(const char* command);
 	void Die();
 
 	bool SendChannelMessage(const ServerChannelMessage_Struct* scm);
-	bool SendEmoteMessage(int32 type, const char* message, ...);
-	bool SendEmoteMessageRaw(int32 type, const char* message);
-	void SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...);
-	void SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message);
-	void SendMessage(int8 newline, const char* message, ...);
+	bool SendEmoteMessage(uint32 type, const char* message, ...);
+	bool SendEmoteMessageRaw(uint32 type, const char* message);
+	void SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...);
+	void SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message);
+	void SendMessage(uint8 newline, const char* message, ...);
 
 	const char* GetName() { return paccountname; }
 	const char* AccountName() { return paccountname; }
-	int32 AccountID() { return paccountid; }
+	uint32 AccountID() { return paccountid; }
 private:
 	EmuTCPConnection* tcpc;
 
@@ -76,13 +76,13 @@ private:
 
 	void SendPrompt();
 
-	int32 paccountid;
+	uint32 paccountid;
 	char paccountname[30];
 	bool pAcceptMessages;
 
-	int8 state;
+	uint8 state;
 
-	sint16 admin;
+	int16 admin;
 	uchar textbuf[1024];
 	int bufindex;
 };
@@ -98,9 +98,9 @@ public:
 	void KillAll();
 
 	void SendChannelMessage(const ServerChannelMessage_Struct* scm);
-	void SendConsoleWho(WorldTCPConnection* connection, const char* to, sint16 admin, char** output, int32* outsize, int32* outlen);
-	void SendEmoteMessage(int32 type, const char* message, ...);
-	void SendEmoteMessageRaw(int32 type, const char* message);
+	void SendConsoleWho(WorldTCPConnection* connection, const char* to, int16 admin, char** output, uint32* outsize, uint32* outlen);
+	void SendEmoteMessage(uint32 type, const char* message, ...);
+	void SendEmoteMessageRaw(uint32 type, const char* message);
 	Console* FindByAccountName(const char* accname);
 private:
 	LinkedList<Console*> list;

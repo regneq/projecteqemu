@@ -38,9 +38,9 @@
 #include "classes.h"
 using namespace std;
 
-sint32 NextItemInstSerialNumber = 1;
+int32 NextItemInstSerialNumber = 1;
 
-static inline sint32 GetNextItemInstSerialNumber() {
+static inline int32 GetNextItemInstSerialNumber() {
 
 	// The Bazaar relies on each item a client has up for Trade having a unique 
 	// identifier. This 'SerialNumber' is sent in Serialized item packets and
@@ -60,7 +60,7 @@ static inline sint32 GetNextItemInstSerialNumber() {
 	return NextItemInstSerialNumber;
 }
 
-ItemInst::ItemInst(const Item_Struct* item, sint16 charges) {
+ItemInst::ItemInst(const Item_Struct* item, int16 charges) {
 	m_use_type = ItemUseNormal;
 	m_item = item;
 	m_charges = charges;
@@ -75,7 +75,7 @@ ItemInst::ItemInst(const Item_Struct* item, sint16 charges) {
 	m_SerialNumber = GetNextItemInstSerialNumber();
 }
 
-ItemInst::ItemInst(SharedDatabase *db, uint32 item_id, sint16 charges) {
+ItemInst::ItemInst(SharedDatabase *db, uint32 item_id, int16 charges) {
 	m_use_type = ItemUseNormal;
 	m_item = db->GetItem(item_id);
 	m_charges = charges;
@@ -102,7 +102,7 @@ ItemInstQueue::~ItemInstQueue() {
 }
 
 Inventory::~Inventory() {
-	map<sint16, ItemInst*>::iterator cur,end;
+	map<int16, ItemInst*>::iterator cur,end;
 	
 	
 	cur = m_worn.begin();
@@ -216,7 +216,7 @@ bool ItemInst::IsStackable() const
 
 // Can item be equipped?
 
-bool ItemInst::IsEquipable(int16 race, int16 class_) const
+bool ItemInst::IsEquipable(uint16 race, uint16 class_) const
 {
 	if (!m_item || (m_item->Slots == 0))
 		return false;
@@ -225,7 +225,7 @@ bool ItemInst::IsEquipable(int16 race, int16 class_) const
 }
 
 // Can equip at this slot?
-bool ItemInst::IsEquipable(sint16 slot_id) const
+bool ItemInst::IsEquipable(int16 slot_id) const
 {
 	if (!m_item)
 		return false;
@@ -246,7 +246,7 @@ bool ItemInst::IsEquipable(sint16 slot_id) const
 	return false;
 }
 
-sint8 ItemInst::AvailableAugmentSlot(sint32 augtype) const
+int8 ItemInst::AvailableAugmentSlot(int32 augtype) const
 {
 	if (m_item->ItemClass != ItemClassCommon || !m_item)
 		return -1;
@@ -505,7 +505,7 @@ ItemInst* ItemInstQueue::peek_front() const
 }
 
 // Retrieve item at specified slot; returns false if item not found
-ItemInst* Inventory::GetItem(sint16 slot_id) const
+ItemInst* Inventory::GetItem(int16 slot_id) const
 {
 	_CP(Inventory_GetItem);
 	ItemInst* result = NULL;
@@ -640,19 +640,19 @@ std::string ItemInst::GetCustomData(std::string identifier) {
 }
 
 // Retrieve item at specified position within bag
-ItemInst* Inventory::GetItem(sint16 slot_id, uint8 bagidx) const
+ItemInst* Inventory::GetItem(int16 slot_id, uint8 bagidx) const
 {
 	return GetItem(Inventory::CalcSlotId(slot_id, bagidx));
 }
 
-sint16 Inventory::PushCursor(const ItemInst& inst)
+int16 Inventory::PushCursor(const ItemInst& inst)
 {
 	m_cursor.push(inst.Clone());
 	return SLOT_CURSOR;
 }
 
 // Put an item snto specified slot
-sint16 Inventory::PutItem(sint16 slot_id, const ItemInst& inst)
+int16 Inventory::PutItem(int16 slot_id, const ItemInst& inst)
 {
 	// Clean up item already in slot (if exists)
 	DeleteItem(slot_id);
@@ -668,7 +668,7 @@ sint16 Inventory::PutItem(sint16 slot_id, const ItemInst& inst)
 }
 
 // Swap items in inventory
-bool Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
+bool Inventory::SwapItem(int16 slot_a, int16 slot_b)
 {
 	// Temp holding areas for a and b
 	ItemInst* inst_a = GetItem(slot_a);
@@ -689,10 +689,10 @@ bool Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
 //This function has a flaw in that it only returns the last stack that it looked at
 //when quantity is greater than 1 and not all of quantity can be found in 1 stack.
 
-sint16 Inventory::HasItem(uint32 item_id, uint8 quantity, uint8 where)
+int16 Inventory::HasItem(uint32 item_id, uint8 quantity, uint8 where)
 {
 	_CP(Inventory_HasItem);
-	sint16 slot_id = SLOT_INVALID;
+	int16 slot_id = SLOT_INVALID;
 	
 	//Altered by Father Nitwit to support a specification of
 	//where to search, with a default value to maintain compatibility
@@ -740,9 +740,9 @@ sint16 Inventory::HasItem(uint32 item_id, uint8 quantity, uint8 where)
 
 //this function has the same quantity flaw mentioned above in HasItem()
 
-sint16 Inventory::HasItemByUse(uint8 use, uint8 quantity, uint8 where)
+int16 Inventory::HasItemByUse(uint8 use, uint8 quantity, uint8 where)
 {
-	sint16 slot_id = SLOT_INVALID;
+	int16 slot_id = SLOT_INVALID;
 	
 	// Check each inventory bucket
 	if(where & invWhereWorn) {
@@ -785,9 +785,9 @@ sint16 Inventory::HasItemByUse(uint8 use, uint8 quantity, uint8 where)
 	return slot_id;
 }
 
-sint16 Inventory::HasItemByLoreGroup(uint32 loregroup, uint8 where) 
+int16 Inventory::HasItemByLoreGroup(uint32 loregroup, uint8 where) 
 {
-	sint16 slot_id = SLOT_INVALID;
+	int16 slot_id = SLOT_INVALID;
 	
 	// Check each inventory bucket
 	if(where & invWhereWorn) {
@@ -830,11 +830,11 @@ sint16 Inventory::HasItemByLoreGroup(uint32 loregroup, uint8 where)
 	return slot_id;
 }
 
-bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
+bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, int16 Quantity) {
 
 	if(ItemToTry->Stackable) {
 
-		for(sint16 i = 22; i <= 29; i++) {
+		for(int16 i = 22; i <= 29; i++) {
 	
 			ItemInst* InvItem = GetItem(i);
 
@@ -850,8 +850,8 @@ bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
 			}
 			if (InvItem && InvItem->IsType(ItemClassContainer)) {
 
-				sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
-				int8 BagSize=InvItem->GetItem()->BagSlots;
+				int16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+				uint8 BagSize=InvItem->GetItem()->BagSlots;
 				for (uint8 BagSlot = 0; BagSlot < BagSize; BagSlot++) {
 
 					InvItem = GetItem(BaseSlotID + BagSlot);
@@ -871,7 +871,7 @@ bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
 		}
 	}
 
-	for (sint16 i = 22; i <= 29; i++) {
+	for (int16 i = 22; i <= 29; i++) {
 
 		ItemInst* InvItem = GetItem(i);
 
@@ -894,9 +894,9 @@ bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
 		}
 		else if(InvItem->IsType(ItemClassContainer) && CanItemFitInContainer(ItemToTry, InvItem->GetItem())) {
 
-			sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+			int16 BaseSlotID = Inventory::CalcSlotId(i, 0);
 
-			int8 BagSize=InvItem->GetItem()->BagSlots;
+			uint8 BagSize=InvItem->GetItem()->BagSlots;
 
 			for (uint8 BagSlot=0; BagSlot<BagSize; BagSlot++) {
 
@@ -926,7 +926,7 @@ bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity) {
 }
 
 // Remove item from inventory (with memory delete)
-bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
+bool Inventory::DeleteItem(int16 slot_id, uint8 quantity)
 {
 	// Pop item out of inventory map (or queue)
 	ItemInst* item_to_delete = PopItem(slot_id);
@@ -962,12 +962,12 @@ bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
 }
 
 // Checks All items in a bag for No Drop
-bool Inventory::CheckNoDrop(sint16 slot_id) {
+bool Inventory::CheckNoDrop(int16 slot_id) {
     ItemInst* inst = GetItem(slot_id);
 	if (!inst) return false;
 	if (!inst->GetItem()->NoDrop) return true;
 	if (inst->GetItem()->ItemClass == 1) {
-		for (int16 i=0; i<10; i++) {
+		for (uint16 i=0; i<10; i++) {
 			ItemInst* bagitem = GetItem(Inventory::CalcSlotId(slot_id, i));
 			if (bagitem && !bagitem->GetItem()->NoDrop) return true;
 		}
@@ -977,7 +977,7 @@ bool Inventory::CheckNoDrop(sint16 slot_id) {
 
 // Remove item from bucket without memory delete
 // Returns item pointer if full delete was successful
-ItemInst* Inventory::PopItem(sint16 slot_id)
+ItemInst* Inventory::PopItem(int16 slot_id)
 {
 	ItemInst* p = NULL;
 	
@@ -1018,17 +1018,17 @@ ItemInst* Inventory::PopItem(sint16 slot_id)
 
 // Locate an available inventory slot
 // Returns slot_id when there's one available, else SLOT_INVALID
-sint16 Inventory::FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size, bool is_arrow)
+int16 Inventory::FindFreeSlot(bool for_bag, bool try_cursor, uint8 min_size, bool is_arrow)
 {
 	// Check basic inventory
-	for (sint16 i=22; i<=29; i++) {
+	for (int16 i=22; i<=29; i++) {
 		if (!GetItem(i))
 			// Found available slot in personal inventory
 			return i;
 	}
 	
 	if (!for_bag) {
-		for (sint16 i=22; i<=29; i++) {
+		for (int16 i=22; i<=29; i++) {
 			const ItemInst* inst = GetItem(i);
 			if (inst && inst->IsType(ItemClassContainer) 
 				&& inst->GetItem()->BagSize >= min_size) 
@@ -1038,9 +1038,9 @@ sint16 Inventory::FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size, boo
 					continue;
 				}
 
-				sint16 base_slot_id = Inventory::CalcSlotId(i, 0);
+				int16 base_slot_id = Inventory::CalcSlotId(i, 0);
 
-				int8 slots=inst->GetItem()->BagSlots;
+				uint8 slots=inst->GetItem()->BagSlots;
 				uint8 j;
 				for (j=0; j<slots; j++) {
 					if (!GetItem(base_slot_id + j))
@@ -1160,7 +1160,7 @@ void Inventory::dumpInventory() {
 }
 
 // Internal Method: Retrieves item within an inventory bucket
-ItemInst* Inventory::_GetItem(const map<sint16, ItemInst*>& bucket, sint16 slot_id) const
+ItemInst* Inventory::_GetItem(const map<int16, ItemInst*>& bucket, int16 slot_id) const
 {
 	iter_inst it = bucket.find(slot_id);
 	if (it != bucket.end()) {
@@ -1173,7 +1173,7 @@ ItemInst* Inventory::_GetItem(const map<sint16, ItemInst*>& bucket, sint16 slot_
 
 // Internal Method: "put" item into bucket, without regard for what is currently in bucket
 // Assumes item has already been allocated
-sint16 Inventory::_PutItem(sint16 slot_id, ItemInst* inst)
+int16 Inventory::_PutItem(int16 slot_id, ItemInst* inst)
 {
 	// If putting a NULL into slot, we need to remove slot without memory delete
 	if (inst == NULL) {
@@ -1182,7 +1182,7 @@ sint16 Inventory::_PutItem(sint16 slot_id, ItemInst* inst)
 		return slot_id;
 	}
 	
-	sint16 result = SLOT_INVALID;
+	int16 result = SLOT_INVALID;
 	
 	if (slot_id==SLOT_CURSOR) { // Cursor
 		// Replace current item on cursor, if exists
@@ -1228,7 +1228,7 @@ sint16 Inventory::_PutItem(sint16 slot_id, ItemInst* inst)
 }
 
 // Internal Method: Checks an inventory bucket for a particular item
-sint16 Inventory::_HasItem(map<sint16, ItemInst*>& bucket, uint32 item_id, uint8 quantity)
+int16 Inventory::_HasItem(map<int16, ItemInst*>& bucket, uint32 item_id, uint8 quantity)
 {
 	iter_inst it;
 	iter_contents itb;
@@ -1273,7 +1273,7 @@ sint16 Inventory::_HasItem(map<sint16, ItemInst*>& bucket, uint32 item_id, uint8
 }
 
 // Internal Method: Checks an inventory queue type bucket for a particular item
-sint16 Inventory::_HasItem(ItemInstQueue& iqueue, uint32 item_id, uint8 quantity)
+int16 Inventory::_HasItem(ItemInstQueue& iqueue, uint32 item_id, uint8 quantity)
 {
 	iter_queue it;
 	iter_contents itb;
@@ -1318,7 +1318,7 @@ sint16 Inventory::_HasItem(ItemInstQueue& iqueue, uint32 item_id, uint8 quantity
 }
 
 // Internal Method: Checks an inventory bucket for a particular item
-sint16 Inventory::_HasItemByUse(map<sint16, ItemInst*>& bucket, uint8 use, uint8 quantity)
+int16 Inventory::_HasItemByUse(map<int16, ItemInst*>& bucket, uint8 use, uint8 quantity)
 {
 	iter_inst it;
 	iter_contents itb;
@@ -1353,7 +1353,7 @@ sint16 Inventory::_HasItemByUse(map<sint16, ItemInst*>& bucket, uint8 use, uint8
 }
 
 // Internal Method: Checks an inventory queue type bucket for a particular item
-sint16 Inventory::_HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity)
+int16 Inventory::_HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity)
 {
 	iter_queue it;
 	iter_contents itb;
@@ -1386,7 +1386,7 @@ sint16 Inventory::_HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity
 	return SLOT_INVALID;
 }
 
-sint16 Inventory::_HasItemByLoreGroup(map<sint16, ItemInst*>& bucket, uint32 loregroup) 
+int16 Inventory::_HasItemByLoreGroup(map<int16, ItemInst*>& bucket, uint32 loregroup) 
 {
 	iter_inst it;
 	iter_contents itb;
@@ -1429,7 +1429,7 @@ sint16 Inventory::_HasItemByLoreGroup(map<sint16, ItemInst*>& bucket, uint32 lor
 }
 
 // Internal Method: Checks an inventory queue type bucket for a particular item
-sint16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
+int16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
 {
 	iter_queue it;
 	iter_contents itb;
@@ -1473,7 +1473,7 @@ sint16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
 	return SLOT_INVALID;
 }
 
-bool ItemInst::IsSlotAllowed(sint16 slot_id) const {
+bool ItemInst::IsSlotAllowed(int16 slot_id) const {
 	// 'SupportsContainers' and 'slot_id > 21' previously saw the reassigned PowerSource slot (9999 to 22) as valid -U
 	if(!m_item) { return false; }
 	else if(Inventory::SupportsContainers(slot_id)) { return true; }
@@ -1485,7 +1485,7 @@ bool ItemInst::IsSlotAllowed(sint16 slot_id) const {
 
 uint8 ItemInst::FirstOpenSlot() const
 {
-	int8 slots=m_item->BagSlots,i;
+	uint8 slots=m_item->BagSlots,i;
 	for(i=0;i<slots;i++) {
 		if (!GetItem(i))
 			break;
@@ -1527,13 +1527,13 @@ bool ItemInst::IsAugmented()
 }
 
 // Calculate slot_id for an item within a bag
-sint16 Inventory::CalcSlotId(sint16 bagslot_id, uint8 bagidx)
+int16 Inventory::CalcSlotId(int16 bagslot_id, uint8 bagidx)
 {
 	if (!Inventory::SupportsContainers(bagslot_id)) {
 		return SLOT_INVALID;
 	}
 	
-	sint16 slot_id = SLOT_INVALID;
+	int16 slot_id = SLOT_INVALID;
 	
 	if (bagslot_id==SLOT_CURSOR || bagslot_id==8000) // Cursor
 		slot_id = IDX_CURSOR_BAG + bagidx;
@@ -1550,9 +1550,9 @@ sint16 Inventory::CalcSlotId(sint16 bagslot_id, uint8 bagidx)
 }
 
 // Opposite of above: Get parent bag slot_id from a slot inside of bag
-sint16 Inventory::CalcSlotId(sint16 slot_id)
+int16 Inventory::CalcSlotId(int16 slot_id)
 {
-	sint16 parent_slot_id = SLOT_INVALID;
+	int16 parent_slot_id = SLOT_INVALID;
 	
 	if (slot_id>=251 && slot_id<=330)
 		parent_slot_id = IDX_INV + (slot_id-251) / MAX_ITEMS_PER_BAG;
@@ -1570,7 +1570,7 @@ sint16 Inventory::CalcSlotId(sint16 slot_id)
 	return parent_slot_id;
 }
 
-uint8 Inventory::CalcBagIdx(sint16 slot_id)
+uint8 Inventory::CalcBagIdx(int16 slot_id)
 {
 	uint8 index = 0;
 	
@@ -1592,7 +1592,7 @@ uint8 Inventory::CalcBagIdx(sint16 slot_id)
 	return index;
 }
 
-sint16 Inventory::CalcSlotFromMaterial(int8 material)
+int16 Inventory::CalcSlotFromMaterial(uint8 material)
 {
 	switch(material)
 	{
@@ -1619,7 +1619,7 @@ sint16 Inventory::CalcSlotFromMaterial(int8 material)
 	}
 }
 
-int8 Inventory::CalcMaterialFromSlot(sint16 equipslot)
+uint8 Inventory::CalcMaterialFromSlot(int16 equipslot)
 {
 	switch(equipslot)
 	{
@@ -1649,7 +1649,7 @@ int8 Inventory::CalcMaterialFromSlot(sint16 equipslot)
 
 
 // Test whether a given slot can support a container item
-bool Inventory::SupportsContainers(sint16 slot_id)
+bool Inventory::SupportsContainers(int16 slot_id)
 {
 	if ((slot_id>=22 && slot_id<=30) ||		// Personal inventory slots
 		(slot_id>=2000 && slot_id<=2023) ||	// Bank slots
@@ -1754,7 +1754,7 @@ EvoItemInst::EvoItemInst(const ItemInst &basecopy) {
 	m_scaledItem = NULL;
 }
 
-EvoItemInst::EvoItemInst(const Item_Struct* item, sint16 charges) {
+EvoItemInst::EvoItemInst(const Item_Struct* item, int16 charges) {
 	m_use_type = ItemUseNormal;
 	m_item = item;
 	m_charges = charges;
@@ -1816,43 +1816,43 @@ void EvoItemInst::ScaleItem() {
 	m_scaledItem = new Item_Struct(*m_item);
 	float Mult = (float)(GetExp())/10000;	// scaling is determined by exp, with 10,000 being full stats
 
-	m_scaledItem->AStr = (sint8)((float)m_item->AStr*Mult);
-	m_scaledItem->ASta = (sint8)((float)m_item->ASta*Mult);
-	m_scaledItem->AAgi = (sint8)((float)m_item->AAgi*Mult);
-	m_scaledItem->ADex = (sint8)((float)m_item->ADex*Mult);
-	m_scaledItem->AInt = (sint8)((float)m_item->AInt*Mult);
-	m_scaledItem->AWis = (sint8)((float)m_item->AWis*Mult);
-	m_scaledItem->ACha = (sint8)((float)m_item->ACha*Mult);
+	m_scaledItem->AStr = (int8)((float)m_item->AStr*Mult);
+	m_scaledItem->ASta = (int8)((float)m_item->ASta*Mult);
+	m_scaledItem->AAgi = (int8)((float)m_item->AAgi*Mult);
+	m_scaledItem->ADex = (int8)((float)m_item->ADex*Mult);
+	m_scaledItem->AInt = (int8)((float)m_item->AInt*Mult);
+	m_scaledItem->AWis = (int8)((float)m_item->AWis*Mult);
+	m_scaledItem->ACha = (int8)((float)m_item->ACha*Mult);
 
-	m_scaledItem->MR = (sint8)((float)m_item->MR*Mult);
-	m_scaledItem->PR = (sint8)((float)m_item->PR*Mult);
-	m_scaledItem->DR = (sint8)((float)m_item->DR*Mult);
-	m_scaledItem->CR = (sint8)((float)m_item->CR*Mult);
-	m_scaledItem->FR = (sint8)((float)m_item->FR*Mult);
+	m_scaledItem->MR = (int8)((float)m_item->MR*Mult);
+	m_scaledItem->PR = (int8)((float)m_item->PR*Mult);
+	m_scaledItem->DR = (int8)((float)m_item->DR*Mult);
+	m_scaledItem->CR = (int8)((float)m_item->CR*Mult);
+	m_scaledItem->FR = (int8)((float)m_item->FR*Mult);
 	
-	m_scaledItem->HP = (sint32)((float)m_item->HP*Mult);
-	m_scaledItem->Mana = (sint32)((float)m_item->Mana*Mult);
-	m_scaledItem->AC = (sint32)((float)m_item->AC*Mult);
+	m_scaledItem->HP = (int32)((float)m_item->HP*Mult);
+	m_scaledItem->Mana = (int32)((float)m_item->Mana*Mult);
+	m_scaledItem->AC = (int32)((float)m_item->AC*Mult);
 
-	m_scaledItem->SkillModValue = (sint32)((float)m_item->SkillModValue*Mult);
-	m_scaledItem->BaneDmgAmt = (sint8)((float)m_item->BaneDmgAmt*Mult);
-	m_scaledItem->BardValue = (sint32)((float)m_item->BardValue*Mult);
+	m_scaledItem->SkillModValue = (int32)((float)m_item->SkillModValue*Mult);
+	m_scaledItem->BaneDmgAmt = (int8)((float)m_item->BaneDmgAmt*Mult);
+	m_scaledItem->BardValue = (int32)((float)m_item->BardValue*Mult);
 	m_scaledItem->ElemDmgAmt = (uint8)((float)m_item->ElemDmgAmt*Mult);
 	m_scaledItem->Damage = (uint32)((float)m_item->Damage*Mult);
 
-	m_scaledItem->CombatEffects = (sint8)((float)m_item->CombatEffects*Mult);
-	m_scaledItem->Shielding = (sint8)((float)m_item->Shielding*Mult);
-	m_scaledItem->StunResist = (sint8)((float)m_item->StunResist*Mult);
-	m_scaledItem->StrikeThrough = (sint8)((float)m_item->StrikeThrough*Mult);
+	m_scaledItem->CombatEffects = (int8)((float)m_item->CombatEffects*Mult);
+	m_scaledItem->Shielding = (int8)((float)m_item->Shielding*Mult);
+	m_scaledItem->StunResist = (int8)((float)m_item->StunResist*Mult);
+	m_scaledItem->StrikeThrough = (int8)((float)m_item->StrikeThrough*Mult);
 	m_scaledItem->ExtraDmgAmt = (uint32)((float)m_item->ExtraDmgAmt*Mult);
-	m_scaledItem->SpellShield = (sint8)((float)m_item->SpellShield*Mult);
-	m_scaledItem->Avoidance = (sint8)((float)m_item->Avoidance*Mult);
-	m_scaledItem->Accuracy = (sint8)((float)m_item->Accuracy*Mult);
+	m_scaledItem->SpellShield = (int8)((float)m_item->SpellShield*Mult);
+	m_scaledItem->Avoidance = (int8)((float)m_item->Avoidance*Mult);
+	m_scaledItem->Accuracy = (int8)((float)m_item->Accuracy*Mult);
 
-	m_scaledItem->FactionAmt1 = (sint32)((float)m_item->FactionAmt1*Mult);
-	m_scaledItem->FactionAmt2 = (sint32)((float)m_item->FactionAmt2*Mult);
-	m_scaledItem->FactionAmt3 = (sint32)((float)m_item->FactionAmt3*Mult);
-	m_scaledItem->FactionAmt4 = (sint32)((float)m_item->FactionAmt4*Mult);
+	m_scaledItem->FactionAmt1 = (int32)((float)m_item->FactionAmt1*Mult);
+	m_scaledItem->FactionAmt2 = (int32)((float)m_item->FactionAmt2*Mult);
+	m_scaledItem->FactionAmt3 = (int32)((float)m_item->FactionAmt3*Mult);
+	m_scaledItem->FactionAmt4 = (int32)((float)m_item->FactionAmt4*Mult);
 
 	m_scaledItem->Endur = (uint32)((float)m_item->Endur*Mult);
 	m_scaledItem->DotShielding = (uint32)((float)m_item->DotShielding*Mult);
@@ -1871,7 +1871,7 @@ bool EvoItemInst::EvolveOnAllKills() const {
 	return (m_evolveInfo && m_evolveInfo->AllKills);
 }
 
-sint8 EvoItemInst::GetMaxEvolveLvl() const {
+int8 EvoItemInst::GetMaxEvolveLvl() const {
 	if(m_evolveInfo)
 		return m_evolveInfo->MaxLvl;
 	else 
@@ -1909,7 +1909,7 @@ EvolveInfo::EvolveInfo(uint32 first, uint8 max, bool allkills, uint32 L2, uint32
 	LvlKills[8] = L10;
 }
 
-bool Item_Struct::IsEquipable(int16 Race, int16 Class_) const
+bool Item_Struct::IsEquipable(uint16 Race, uint16 Class_) const
 {
 	bool IsRace = false;
 	bool IsClass = false;
@@ -1918,7 +1918,7 @@ bool Item_Struct::IsEquipable(int16 Race, int16 Class_) const
 
 	uint32 Races_ = Races;
 
-	int32 Race_ = GetArrayRace(Race);
+	uint32 Race_ = GetArrayRace(Race);
 
 	for (int CurrentClass = 1; CurrentClass <= PLAYER_CLASS_COUNT; ++CurrentClass)
 	{

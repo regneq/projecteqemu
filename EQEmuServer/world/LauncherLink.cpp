@@ -73,7 +73,7 @@ bool LauncherLink::Process() {
 		if (!authenticated) {
 			if (WorldConfig::get()->SharedKey.length() > 0) {
 				if (pack->opcode == ServerOP_ZAAuth && pack->size == 16) {
-					int8 tmppass[16];
+					uint8 tmppass[16];
 					MD5::Generate((const uchar*) WorldConfig::get()->SharedKey.c_str(), WorldConfig::get()->SharedKey.length(), tmppass);
 					if (memcmp(pack->pBuffer, tmppass, 16) == 0)
 						authenticated = true;

@@ -52,7 +52,7 @@ extern Zone *zone;
 #define ABS(x) ((x)<0?-(x):(x))
 
 //NOTE: do NOT pass in beneficial and detrimental spell types into the same call here!
-bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
+bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes) {
 	_ZP(Mob_AICastSpell);
 // Faction isnt checked here, it's assumed you wouldnt pass a spell type you wouldnt want casted on the mob
 	if (!tar)
@@ -88,7 +88,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 		}
 		if (iSpellTypes & AIspells[i].type) {
 			// manacost has special values, -1 is no mana cost, -2 is instant cast (no mana)
-			sint32 mana_cost = AIspells[i].manacost;
+			int32 mana_cost = AIspells[i].manacost;
 			if (mana_cost == -1)
 				mana_cost = spells[AIspells[i].spellid].mana;
 			else if (mana_cost == -2)
@@ -120,10 +120,10 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							&& tar->DontHealMeBefore() < Timer::GetCurrentTime()
 							&& !(tar->IsPet() && tar->GetOwner()->IsClient())	//no buffing PC's pets
 							) {
-							int8 hpr = (int8)tar->GetHPRatio();
+							uint8 hpr = (uint8)tar->GetHPRatio();
 
 							if(hpr <= 35 || (!IsEngaged() && hpr <= 50) || (tar->IsClient() && hpr <= 99)) {
-								int32 tempTime = 0;
+								uint32 tempTime = 0;
 								AIDoSpellCast(i, tar, mana_cost, &tempTime);
 								tar->SetDontHealMeBefore(tempTime);
 								return true;
@@ -144,7 +144,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 								checked_los = true;
 							}
-							int32 tempTime = 0;
+							uint32 tempTime = 0;
 							AIDoSpellCast(i, tar, mana_cost, &tempTime);
 							tar->SetDontRootMeBefore(tempTime);
 							return true;
@@ -287,7 +287,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 								checked_los = true;
 							}
-							int32 tempTime = 0;
+							uint32 tempTime = 0;
 							AIDoSpellCast(i, tar, mana_cost, &tempTime);
 							tar->SetDontSnareMeBefore(tempTime);
 							return true;
@@ -305,7 +305,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 								checked_los = true;
 							}
-							int32 tempTime = 0;
+							uint32 tempTime = 0;
 							AIDoSpellCast(i, tar, mana_cost, &tempTime);
 							tar->SetDontDotMeBefore(tempTime);
 							return true;
@@ -328,7 +328,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 	return false;
 }
 
-bool NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore) {
+bool NPC::AIDoSpellCast(uint8 i, Mob* tar, int32 mana_cost, uint32* oDontDoAgainBefore) {
 #if MobAI_DEBUG_Spells >= 1
 	cout << "Mob::AIDoSpellCast: spellid=" << AIspells[i].spellid << ", tar=" << tar->GetName() << ", mana=" << mana_cost << ", Name: " << spells[AIspells[i].spellid].name << endl;
 #endif
@@ -344,7 +344,7 @@ bool NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 	return CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore, -1, -1, 0, 0, &(AIspells[i].resist_adjust));
 }
 
-bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes) {
+bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, uint8 iChance, float iRange, uint16 iSpellTypes) {
 	_ZP(EntityList_AICheckCloseBeneficialSpells);
 
 	if((iSpellTypes&SpellTypes_Detrimental) != 0) {
@@ -367,7 +367,7 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float i
         return false;
 
 	if (iChance < 100) {
-		int8 tmp = MakeRandomInt(0, 99);
+		uint8 tmp = MakeRandomInt(0, 99);
 		if (tmp >= iChance)
 			return false;
 	}
@@ -463,7 +463,7 @@ void Client::AI_Init() {
 	maxLastFightingDelayMoving = CLIENT_LD_TIMEOUT;
 }
 
-void Mob::AI_Start(int32 iMoveDelay) {
+void Mob::AI_Start(uint32 iMoveDelay) {
 	if (pAIControlled)
 		return;
 
@@ -499,7 +499,7 @@ void Mob::AI_Start(int32 iMoveDelay) {
 	pLastChange = Timer::GetCurrentTime();
 }
 
-void Client::AI_Start(int32 iMoveDelay) {
+void Client::AI_Start(uint32 iMoveDelay) {
 	Mob::AI_Start(iMoveDelay);
 
 	if (!pAIControlled)
@@ -512,7 +512,7 @@ void Client::AI_Start(int32 iMoveDelay) {
 	SetFeigned(false);
 }
 
-void NPC::AI_Start(int32 iMoveDelay) {
+void NPC::AI_Start(uint32 iMoveDelay) {
 	Mob::AI_Start(iMoveDelay);
 	if (!pAIControlled)
 		return;
@@ -594,12 +594,12 @@ void Client::AI_SpellCast()
 
 	float dist = DistNoRootNoZ(*targ);
 
-	std::vector<int32> valid_spells;
-	std::vector<int32> slots;
+	std::vector<uint32> valid_spells;
+	std::vector<uint32> slots;
 
 	for(uint32 x = 0; x < 9; ++x)
 	{
-		int32 current_spell = m_pp.mem_spells[x];
+		uint32 current_spell = m_pp.mem_spells[x];
 		if(!IsValidSpell(current_spell))
 			continue;
 
@@ -641,8 +641,8 @@ void Client::AI_SpellCast()
 		slots.push_back(x);
 	}
 
-	int32 spell_to_cast = 0xFFFFFFFF;
-	int32 slot_to_use = 10;
+	uint32 spell_to_cast = 0xFFFFFFFF;
+	uint32 slot_to_use = 10;
 	if(valid_spells.size() == 1)
 	{
 		spell_to_cast = valid_spells[0];
@@ -654,7 +654,7 @@ void Client::AI_SpellCast()
 	}
 	else
 	{
-		int32 idx = MakeRandomInt(0, (valid_spells.size()-1));
+		uint32 idx = MakeRandomInt(0, (valid_spells.size()-1));
 		spell_to_cast = valid_spells[idx];
 		slot_to_use = slots[idx];
 	}
@@ -838,7 +838,7 @@ void Client::AI_Process()
 								if(GetTarget())
 								{
 									//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
-									sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
+									int16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
 
 									if (flurrychance)
 									{
@@ -850,7 +850,7 @@ void Client::AI_Process()
 										}
 									}
 
-									sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
+									int16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
 									if (ExtraAttackChanceBonus && GetTarget()) {
 										ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
@@ -893,9 +893,9 @@ void Client::AI_Process()
 				{
 					float DualWieldProbability = 0.0f;
 					
-					sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+					int16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
 					DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
-					sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+					int16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
 					DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;		
 
 					if(MakeRandomFloat(0.0, 1.0) < DualWieldProbability)
@@ -943,7 +943,7 @@ void Client::AI_Process()
 	else
 	{
 		if(AIfeignremember_timer->Check()) {
-			std::set<int32>::iterator RememberedCharID, tmp;
+			std::set<uint32>::iterator RememberedCharID, tmp;
 			RememberedCharID=feign_memory_list.begin();
 			bool got_one = false;
 			while(RememberedCharID != feign_memory_list.end()) {
@@ -1138,7 +1138,7 @@ void Mob::AI_Process() {
 				//try main hand first
 				if(attack_timer.Check()) {
                     if(IsNPC()) {
-                        sint16 n_atk = CastToNPC()->GetNumberOfAttacks();
+                        int16 n_atk = CastToNPC()->GetNumberOfAttacks();
                         if(n_atk <= 1) {
                             Attack(target, 13);
                         } else {
@@ -1155,7 +1155,7 @@ void Mob::AI_Process() {
 						//we use this random value in three comparisons with different
 						//thresholds, and if its truely random, then this should work
 						//out reasonably and will save us compute resources.
-						sint32 RandRoll = MakeRandomInt(0, 99);
+						int32 RandRoll = MakeRandomInt(0, 99);
 						if (CanThisClassDoubleAttack()
 							//check double attack, this is NOT the same rules that clients use...
 							&& RandRoll < (GetLevel() + NPCDualAttackModifier))  
@@ -1182,7 +1182,7 @@ void Mob::AI_Process() {
 	
 					if (SpecAttacks[SPECATK_FLURRY]) {
 					   
-						int8 npc_flurry = RuleI(Combat, NPCFlurryChance);
+						uint8 npc_flurry = RuleI(Combat, NPCFlurryChance);
 						if (GetFlurryChance())
 							npc_flurry = GetFlurryChance(); 
 
@@ -1195,7 +1195,7 @@ void Mob::AI_Process() {
 						Mob *owner = GetOwner();
 						
 						if (owner){
-						sint16 flurry_chance = owner->aabonuses.PetFlurry + owner->spellbonuses.PetFlurry + owner->itembonuses.PetFlurry;
+						int16 flurry_chance = owner->aabonuses.PetFlurry + owner->spellbonuses.PetFlurry + owner->itembonuses.PetFlurry;
 
 							if (flurry_chance && (MakeRandomInt(0, 99) < flurry_chance))
 								Flurry();
@@ -1230,7 +1230,7 @@ void Mob::AI_Process() {
 							Attack(target, 14);
 							if (CanThisClassDoubleAttack()) 
 							{
-								sint32 RandRoll = MakeRandomInt(0, 99);
+								int32 RandRoll = MakeRandomInt(0, 99);
 								if (RandRoll < (GetLevel() + 20))  
 								{
 									if (Attack(target, 14));
@@ -1316,7 +1316,7 @@ void Mob::AI_Process() {
 			// EverHood - 6/14/06
 			// Improved Feign Death Memory
 			// check to see if any of our previous feigned targets have gotten up.
-			std::set<int32>::iterator RememberedCharID, tmp;
+			std::set<uint32>::iterator RememberedCharID, tmp;
 			RememberedCharID=feign_memory_list.begin();
 			bool got_one = false;
 			while(RememberedCharID != feign_memory_list.end()) {
@@ -1543,7 +1543,7 @@ void NPC::AI_DoMovement() {
 		}
 
 		
-		sint16 gridno = CastToNPC()->GetGrid(); 
+		int16 gridno = CastToNPC()->GetGrid(); 
 
 		if (gridno > 0 || cur_wp==-2)  {
 			if (movetimercompleted==true) {  // time to pause at wp is over
@@ -1725,7 +1725,7 @@ void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 				if(!CastToNPC()->GetCombatEvent() && GetHP() > 0)
 				{
                     parse->EventNPC(EVENT_COMBAT, CastToNPC(), attacker, "1", 0);
-					int16 emoteid = CastToNPC()->GetNPCEmoteID();
+					uint16 emoteid = CastToNPC()->GetNPCEmoteID();
 					if(emoteid != 0)
 						CastToNPC()->DoNPCEmote(ENTERCOMBAT,emoteid);
 					CastToNPC()->SetCombatEvent(true);
@@ -1758,7 +1758,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 	{
 		if(CastToNPC()->GetCombatEvent() && GetHP() > 0)
 		{
-			int16 emoteid = CastToNPC()->GetNPCEmoteID();
+			uint16 emoteid = CastToNPC()->GetNPCEmoteID();
             parse->EventNPC(EVENT_COMBAT, CastToNPC(), NULL, "0", 0);
 			if(emoteid != 0)
 				CastToNPC()->DoNPCEmote(LEAVECOMBAT,emoteid);
@@ -1768,9 +1768,9 @@ void Mob::AI_Event_NoLongerEngaged() {
 }
 
 //this gets called from InterruptSpell() for failure or SpellFinished() for success
-void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot) {
+void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, uint8 slot) {
 	if (slot == 1) {
-		int32 recovery_time = 0;
+		uint32 recovery_time = 0;
 		if (iCastSucceeded) {
 			if (casting_spell_AIindex < AIspells.size()) {
 					recovery_time += spells[AIspells[casting_spell_AIindex].spellid].recovery_time;
@@ -1976,9 +1976,9 @@ void Mob::AreaRampage()
 		Attack(GetTarget());
 }
 
-int32 Mob::GetLevelCon(int8 mylevel, int8 iOtherLevel) {
-    sint16 diff = iOtherLevel - mylevel;
-	int32 conlevel=0;
+uint32 Mob::GetLevelCon(uint8 mylevel, uint8 iOtherLevel) {
+    int16 diff = iOtherLevel - mylevel;
+	uint32 conlevel=0;
 	
     if (diff == 0)
         return CON_WHITE;
@@ -2178,10 +2178,10 @@ create table npc_spells_entries (
 	);
 */ 
 
-bool IsSpellInList(DBnpcspells_Struct* spell_list, sint16 iSpellID);
+bool IsSpellInList(DBnpcspells_Struct* spell_list, int16 iSpellID);
 bool Compare_AI_Spells(AISpells_Struct i, AISpells_Struct j);
 
-bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
+bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 	// ok, this function should load the list, and the parent list then shove them into the struct and sort
 	npc_spells_id = iDBSpellsID;
 	AIspells.clear();
@@ -2212,8 +2212,8 @@ bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 		cout << " (not found)";
 	cout << endl;
 #endif
-	sint16 attack_proc_spell = -1;
-	sint8 proc_chance = 3;
+	int16 attack_proc_spell = -1;
+	int8 proc_chance = 3;
 	if (parentlist) {
 		attack_proc_spell = parentlist->attack_proc;
 		proc_chance = parentlist->proc_chance;
@@ -2253,7 +2253,7 @@ bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 	return true;
 }
 
-bool IsSpellInList(DBnpcspells_Struct* spell_list, sint16 iSpellID) {
+bool IsSpellInList(DBnpcspells_Struct* spell_list, int16 iSpellID) {
 	for (uint32 i=0; i < spell_list->numentries; i++) {
 		if (spell_list->entries[i].spellid == iSpellID)
 			return true;
@@ -2267,8 +2267,8 @@ bool Compare_AI_Spells(AISpells_Struct i, AISpells_Struct j)
 }
 
 // adds a spell to the list, taking into account priority and resorting list as needed.
-void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, 
-							sint16 iManaCost, sint32 iRecastDelay, sint16 iResistAdjust) 
+void NPC::AddSpellToNPCList(int16 iPriority, int16 iSpellID, uint16 iType, 
+							int16 iManaCost, int32 iRecastDelay, int16 iResistAdjust) 
 {
 	
 	if(!IsValidSpell(iSpellID))
@@ -2288,7 +2288,7 @@ void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType,
 	AIspells.push_back(t);
 }
 
-void NPC::RemoveSpellFromNPCList(sint16 spell_id)
+void NPC::RemoveSpellFromNPCList(int16 spell_id)
 {
 	std::vector<AISpells_Struct>::iterator iter = AIspells.begin();
 	while(iter != AIspells.end())
@@ -2302,7 +2302,7 @@ void NPC::RemoveSpellFromNPCList(sint16 spell_id)
 	}
 }
 
-DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
+DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(uint32 iDBSpellsID) {
 	if (iDBSpellsID == 0)
 		return 0;
 	if (!npc_spells_cache) {
@@ -2330,13 +2330,13 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) == 1) {
 				row = mysql_fetch_row(result);
-				int32 tmpparent_list = atoi(row[1]);
-				sint16 tmpattack_proc = atoi(row[2]);
-				int8 tmpproc_chance = atoi(row[3]);
+				uint32 tmpparent_list = atoi(row[1]);
+				int16 tmpattack_proc = atoi(row[2]);
+				uint8 tmpproc_chance = atoi(row[3]);
 				mysql_free_result(result);
 				if (RunQuery(query, MakeAnyLenString(&query, "SELECT spellid, type, minlevel, maxlevel, manacost, recast_delay, priority, resist_adjust from npc_spells_entries where npc_spells_id=%d ORDER BY minlevel", iDBSpellsID), errbuf, &result)) {
 					safe_delete_array(query);
-					int32 tmpSize = sizeof(DBnpcspells_Struct) + (sizeof(DBnpcspells_entries_Struct) * mysql_num_rows(result));
+					uint32 tmpSize = sizeof(DBnpcspells_Struct) + (sizeof(DBnpcspells_entries_Struct) * mysql_num_rows(result));
 					npc_spells_cache[iDBSpellsID] = (DBnpcspells_Struct*) new uchar[tmpSize];
 					memset(npc_spells_cache[iDBSpellsID], 0, tmpSize);
 					npc_spells_cache[iDBSpellsID]->parent_list = tmpparent_list;
@@ -2390,7 +2390,7 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
 	return 0;
 }
 
-int32 ZoneDatabase::GetMaxNPCSpellsID() {
+uint32 ZoneDatabase::GetMaxNPCSpellsID() {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -2400,7 +2400,7 @@ int32 ZoneDatabase::GetMaxNPCSpellsID() {
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
-			int32 ret = 0;
+			uint32 ret = 0;
 			if (row[0])
 				ret = atoi(row[0]);
 			mysql_free_result(result);

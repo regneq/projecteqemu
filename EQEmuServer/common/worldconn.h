@@ -35,8 +35,8 @@ public:
 	virtual void Process();
 	bool SendPacket(ServerPacket* pack);
 	
-	int32	GetIP()	const	{ return tcpc.GetrIP(); }
-	int16	GetPort() const	{ return tcpc.GetrPort(); }
+	uint32	GetIP()	const	{ return tcpc.GetrIP(); }
+	uint16	GetPort() const	{ return tcpc.GetrPort(); }
 	bool	Connected() const	{ return (pConnected && tcpc.Connected()); }
 	
 	void	SetPassword(const char *password) { m_password = password; }

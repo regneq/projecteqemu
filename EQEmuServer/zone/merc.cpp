@@ -110,12 +110,12 @@ void Merc::GenerateBaseStats() {
 	uint16 Intelligence = _baseINT;
 	uint16 Charisma = _baseCHA;
 	uint16 Attack = _baseATK;
-	sint16 MagicResist = _baseMR;
-	sint16 FireResist = _baseFR;
-	sint16 DiseaseResist = _baseDR;
-	sint16 PoisonResist = _basePR;
-	sint16 ColdResist = _baseCR;
-	sint16 CorruptionResist = _baseCorrup;
+	int16 MagicResist = _baseMR;
+	int16 FireResist = _baseFR;
+	int16 DiseaseResist = _baseDR;
+	int16 PoisonResist = _basePR;
+	int16 ColdResist = _baseCR;
+	int16 CorruptionResist = _baseCorrup;
 
 	switch(this->GetClass()) {
 		case 1: // Warrior
@@ -259,10 +259,10 @@ void Merc::GenerateAppearance() {
 		iHairColor = MakeRandomInt(0, 19);
 	}
 
-	int8 iEyeColor1 = (int8)MakeRandomInt(0, 9);
-	int8 iEyeColor2 = 0;
+	uint8 iEyeColor1 = (uint8)MakeRandomInt(0, 9);
+	uint8 iEyeColor2 = 0;
 	if(this->GetRace() == 522) {
-		iEyeColor1 = iEyeColor2 = (int8)MakeRandomInt(0, 11);
+		iEyeColor1 = iEyeColor2 = (uint8)MakeRandomInt(0, 11);
 	}
 	else if(MakeRandomInt(1, 100) > 96) {
 		iEyeColor2 = MakeRandomInt(0, 9);
@@ -292,11 +292,11 @@ void Merc::GenerateAppearance() {
 	this->drakkin_details = iDetails;
 }
 
-int Merc::CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat)
+int Merc::CalcRecommendedLevelBonus(uint8 level, uint8 reclevel, int basestat)
 {
 	if( (reclevel > 0) && (level < reclevel) )
 	{
-		sint32 statmod = (level * 10000 / reclevel) * basestat;
+		int32 statmod = (level * 10000 / reclevel) * basestat;
 	
 		if( statmod < 0 )
 		{
@@ -482,7 +482,7 @@ void Merc::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAug,
 	}
 	
 	//FatherNitwit: New style haste, shields, and regens
-	if(newbon->haste < (sint16)item->Haste) {
+	if(newbon->haste < (int16)item->Haste) {
 		newbon->haste = item->Haste;
 	}
 	if(item->Regen > 0)
@@ -802,13 +802,13 @@ int Merc::GroupLeadershipAAOffenseEnhancement()
 	return 0;
 }
 
-sint32 Merc::LevelRegen()
+int32 Merc::LevelRegen()
 {
 	bool sitting = IsSitting();
 	int level = GetLevel();
 	//bool bonus = GetRaceBitmask(GetBaseRace()) & RuleI(Character, BaseHPRegenBonusRaces);
 	//uint8 multiplier1 = bonus ? 2 : 1;
-	sint32 hp = 0;
+	int32 hp = 0;
 
 	//these calculations should match up with the info from Monkly Business, which was last updated ~05/2008: http://www.monkly-business.net/index.php?pageid=abilities
 	if (level < 51) {
@@ -825,7 +825,7 @@ sint32 Merc::LevelRegen()
 	}
 	//there may be an easier way to calculate this next part, but I don't know what it is
 	else {	//level >= 51
-		sint32 tmp = 0;
+		int32 tmp = 0;
 
 		if (level < 56) {
 			tmp = 2;
@@ -846,7 +846,7 @@ sint32 Merc::LevelRegen()
 			tmp = 7;
 		}
 
-		hp += sint32(float(tmp));
+		hp += int32(float(tmp));
 
 		if (sitting)
 			hp += 3;
@@ -855,10 +855,10 @@ sint32 Merc::LevelRegen()
 	return hp;
 }
 
-sint16 Merc::CalcSTR() {
-	sint16 val = _baseSTR + itembonuses.STR + spellbonuses.STR;
+int16 Merc::CalcSTR() {
+	int16 val = _baseSTR + itembonuses.STR + spellbonuses.STR;
 	
-	sint16 mod = aabonuses.STR;
+	int16 mod = aabonuses.STR;
 	
 	STR = val + mod;
 	
@@ -868,10 +868,10 @@ sint16 Merc::CalcSTR() {
 	return(STR);
 }
 
-sint16 Merc::CalcSTA() {
-	sint16 val = _baseSTA + itembonuses.STA + spellbonuses.STA;
+int16 Merc::CalcSTA() {
+	int16 val = _baseSTA + itembonuses.STA + spellbonuses.STA;
 	
-	sint16 mod = aabonuses.STA;
+	int16 mod = aabonuses.STA;
 	
 	STA = val + mod;
 	
@@ -881,11 +881,11 @@ sint16 Merc::CalcSTA() {
 	return(STA);
 }
 
-sint16 Merc::CalcAGI() {
-	sint16 val = _baseAGI + itembonuses.AGI + spellbonuses.AGI;
-	sint16 mod = aabonuses.AGI;
+int16 Merc::CalcAGI() {
+	int16 val = _baseAGI + itembonuses.AGI + spellbonuses.AGI;
+	int16 mod = aabonuses.AGI;
 
-	sint16 str = GetSTR();
+	int16 str = GetSTR();
 	
 	AGI = val + mod;
 
@@ -895,10 +895,10 @@ sint16 Merc::CalcAGI() {
 	return(AGI);
 }
 
-sint16 Merc::CalcDEX() {
-	sint16 val = _baseDEX + itembonuses.DEX + spellbonuses.DEX;
+int16 Merc::CalcDEX() {
+	int16 val = _baseDEX + itembonuses.DEX + spellbonuses.DEX;
 	
-	sint16 mod = aabonuses.DEX;
+	int16 mod = aabonuses.DEX;
 
 	DEX = val + mod;
 	
@@ -908,10 +908,10 @@ sint16 Merc::CalcDEX() {
 	return(DEX);
 }
 
-sint16 Merc::CalcINT() {
-	sint16 val = _baseINT + itembonuses.INT + spellbonuses.INT;
+int16 Merc::CalcINT() {
+	int16 val = _baseINT + itembonuses.INT + spellbonuses.INT;
 
-	sint16 mod = aabonuses.INT;
+	int16 mod = aabonuses.INT;
 	
 	INT = val + mod;
 
@@ -921,10 +921,10 @@ sint16 Merc::CalcINT() {
 	return(INT);
 }
 
-sint16 Merc::CalcWIS() {
-	sint16 val = _baseWIS + itembonuses.WIS + spellbonuses.WIS;
+int16 Merc::CalcWIS() {
+	int16 val = _baseWIS + itembonuses.WIS + spellbonuses.WIS;
 	
-	sint16 mod = aabonuses.WIS;
+	int16 mod = aabonuses.WIS;
 	
 	WIS = val + mod;
 
@@ -934,10 +934,10 @@ sint16 Merc::CalcWIS() {
 	return(WIS);
 }
 
-sint16 Merc::CalcCHA() {
-	sint16 val = _baseCHA + itembonuses.CHA + spellbonuses.CHA;
+int16 Merc::CalcCHA() {
+	int16 val = _baseCHA + itembonuses.CHA + spellbonuses.CHA;
 	
-	sint16 mod = aabonuses.CHA;
+	int16 mod = aabonuses.CHA;
 	
 	CHA = val + mod;
 	
@@ -950,7 +950,7 @@ sint16 Merc::CalcCHA() {
 //The AA multipliers are set to be 5, but were 2 on WR
 //The resistant discipline which I think should be here is implemented
 //in Mob::ResistSpell
-sint16	Merc::CalcMR()
+int16	Merc::CalcMR()
 {
 	MR = _baseMR + itembonuses.MR + spellbonuses.MR + aabonuses.MR;
 	
@@ -960,7 +960,7 @@ sint16	Merc::CalcMR()
 	return(MR);
 }
 
-sint16	Merc::CalcFR()
+int16	Merc::CalcFR()
 {
 	FR = _baseFR + itembonuses.FR + spellbonuses.FR + aabonuses.FR;
 	
@@ -970,7 +970,7 @@ sint16	Merc::CalcFR()
 	return(FR);
 }
 
-sint16	Merc::CalcDR()
+int16	Merc::CalcDR()
 {
 	DR = _baseDR + itembonuses.DR + spellbonuses.DR + aabonuses.DR;
 	
@@ -980,7 +980,7 @@ sint16	Merc::CalcDR()
 	return(DR);
 }
 
-sint16	Merc::CalcPR()
+int16	Merc::CalcPR()
 {
 	PR = _basePR + itembonuses.PR + spellbonuses.PR + aabonuses.PR;
 	
@@ -990,7 +990,7 @@ sint16	Merc::CalcPR()
 	return(PR);
 }
 
-sint16	Merc::CalcCR()
+int16	Merc::CalcCR()
 {
 	CR = _baseCR + itembonuses.CR + spellbonuses.CR + aabonuses.CR;
 	
@@ -1000,33 +1000,33 @@ sint16	Merc::CalcCR()
 	return(CR);
 }
 
-sint16	Merc::CalcCorrup()
+int16	Merc::CalcCorrup()
 {
 	Corrup = _baseCorrup + itembonuses.Corrup + spellbonuses.Corrup + aabonuses.Corrup;
 
 	return(Corrup);
 }
 
-sint16 Merc::CalcATK() {
+int16 Merc::CalcATK() {
 	ATK = itembonuses.ATK + spellbonuses.ATK + aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
 }
 
-sint16 Merc::CalcAC() {
+int16 Merc::CalcAC() {
 	//spell AC bonuses are added directly to natural total
 	AC = _baseAC + spellbonuses.AC;
 	return(AC);
 }
 
-sint32 Merc::CalcHPRegen() {
-	sint32 regen = hp_regen + itembonuses.HPRegen + spellbonuses.HPRegen;
+int32 Merc::CalcHPRegen() {
+	int32 regen = hp_regen + itembonuses.HPRegen + spellbonuses.HPRegen;
 
 	//regen += aabonuses.HPRegen + GroupLeadershipAAHealthRegeneration();
 
 	return (regen * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
-sint32 Merc::CalcHPRegenCap()
+int32 Merc::CalcHPRegenCap()
 {
 	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
 
@@ -1035,7 +1035,7 @@ sint32 Merc::CalcHPRegenCap()
 	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
-sint32 Merc::CalcMaxHP() {
+int32 Merc::CalcMaxHP() {
 	float nd = 10000;
 	max_hp = (CalcBaseHP() + itembonuses.HP);
 
@@ -1065,12 +1065,12 @@ sint32 Merc::CalcMaxHP() {
 	return max_hp;
 }
 
-sint32 Merc::CalcBaseHP()
+int32 Merc::CalcBaseHP()
 {
 	return base_hp;
 }
 
-sint32 Merc::CalcMaxMana()
+int32 Merc::CalcMaxMana()
 {
 	switch(GetCasterClass())
 	{
@@ -1110,15 +1110,15 @@ sint32 Merc::CalcMaxMana()
 	return max_mana;
 }
 
-sint32 Merc::CalcBaseMana()
+int32 Merc::CalcBaseMana()
 {
 	return base_mana;
 }
 
-sint32 Merc::CalcBaseManaRegen() 
+int32 Merc::CalcBaseManaRegen() 
 {
 	uint8 clevel = GetLevel();
-	sint32 regen = 0;
+	int32 regen = 0;
 	if (IsSitting()) 
 	{
 		if(HasSkill(MEDITATE))
@@ -1132,9 +1132,9 @@ sint32 Merc::CalcBaseManaRegen()
 	return regen;
 }
 
-sint32 Merc::CalcManaRegen() 
+int32 Merc::CalcManaRegen() 
 {
-	sint32 regen = 0;
+	int32 regen = 0;
 	//this should be changed so we dont med while camping, etc...
 	if (IsSitting()) 
 	{
@@ -1158,9 +1158,9 @@ sint32 Merc::CalcManaRegen()
 	return (regen * RuleI(Character, ManaRegenMultiplier) / 100);
 }
 
-sint32 Merc::CalcManaRegenCap()
+int32 Merc::CalcManaRegenCap()
 {
-	sint32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
+	int32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
 	switch(GetCasterClass())
 	{
 		case 'I': 
@@ -1194,12 +1194,12 @@ void Merc::CalcMaxEndurance()
 	}
 }
 
-sint32 Merc::CalcBaseEndurance()
+int32 Merc::CalcBaseEndurance()
 {
-	sint32 base_end = 0;
-	sint32 base_endurance = 0;
-	sint32 ConvertedStats = 0;
-	sint32 sta_end = 0;
+	int32 base_end = 0;
+	int32 base_endurance = 0;
+	int32 ConvertedStats = 0;
+	int32 sta_end = 0;
 	int Stats = 0;
 
 	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
@@ -1266,20 +1266,20 @@ sint32 Merc::CalcBaseEndurance()
 	return base_end;
 }
 
-sint32 Merc::CalcEnduranceRegen() {
-	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
+int32 Merc::CalcEnduranceRegen() {
+	int32 regen = int32(GetLevel() * 4 / 10) + 2;
 	regen += aabonuses.EnduranceRegen + spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
 
 	return (regen * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
-sint32 Merc::CalcEnduranceRegenCap() {
+int32 Merc::CalcEnduranceRegenCap() {
 	int cap = (RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25);
 		
 	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
-void Merc::SetEndurance(sint32 newEnd)
+void Merc::SetEndurance(int32 newEnd)
 {
 	/*Endurance can't be less than 0 or greater than max*/
 	if(newEnd < 0)
@@ -1330,7 +1330,7 @@ bool Merc::CanHaveSkill(SkillType skill_id) const {
 	//if you don't have it by max level, then odds are you never will?
 }
 
-int16 Merc::MaxSkill(SkillType skillid, int16 class_, int16 level) const {
+uint16 Merc::MaxSkill(SkillType skillid, uint16 class_, uint16 level) const {
 	return(database.GetSkillCap(class_, skillid, level));
 }
 
@@ -1735,7 +1735,7 @@ void Merc::AI_Process() {
 					}
 
 					//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
-					sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
+					int16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
 
 					if (GetTarget() && flurrychance)
 					{
@@ -1747,7 +1747,7 @@ void Merc::AI_Process() {
 						}
 					}
 
-					sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
+					int16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
 					if (GetTarget() && ExtraAttackChanceBonus) {
 								if(MakeRandomInt(0, 100) < ExtraAttackChanceBonus)
@@ -1778,9 +1778,9 @@ void Merc::AI_Process() {
 						if(bIsFist || ((weapontype != ItemType2HS) && (weapontype != ItemType2HPierce) && (weapontype != ItemType2HB))) {
 							float DualWieldProbability = 0.0f;
 				
-							sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+							int16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
 							DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
-							sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+							int16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
 							DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;
 
 							float random = MakeRandomFloat(0, 1);
@@ -1993,7 +1993,7 @@ bool Merc::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough, boo
 	return NPC::Attack(other, Hand, bRiposte, IsStrikethrough, IsFromSpell);
 }
 
-void Merc::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable, sint8 buffslot, bool iBuffTic)
+void Merc::Damage(Mob* other, int32 damage, uint16 spell_id, SkillType attack_skill, bool avoidable, int8 buffslot, bool iBuffTic)
 {
 	if(IsDead() || IsCorpse())
 		return;
@@ -2034,7 +2034,7 @@ Mob* Merc::GetOwnerOrSelf() {
 	return Result;
 }
 
-void Merc::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_skill)
+void Merc::Death(Mob* killerMob, int32 damage, uint16 spell, SkillType attack_skill)
 {
 	NPC::Death(killerMob, damage, spell, attack_skill);
 	Save();
@@ -2236,7 +2236,7 @@ Merc* Merc::LoadMerc(Client *c, MercTemplate* merc_template, uint32 merchant_id)
 				}
 				snprintf(npc_type->name, 64, "%s", c->GetEPP().merc_name);
 			}
-			int8 gender;
+			uint8 gender;
 			if(merchant_id > 0) {
 				NPC* tar = entity_list.GetNPCByID(merchant_id);
 				if(tar) {
@@ -2323,7 +2323,7 @@ bool Merc::Spawn(Client *owner) {
 
 	/*
 	uint32 itemID = 0;
-	int8 materialFromSlot = 0xFF;
+	uint8 materialFromSlot = 0xFF;
 	for(int i=0; i<22; ++i) {
 		itemID = GetMercItemBySlot(i);
 		if(itemID != 0) {
@@ -2345,7 +2345,7 @@ void Client::UpdateMercTimer()
 	if(merc && !merc->IsSuspended()) {		
 			if(merc_timer.Check())
 			{
-			int32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
+			uint32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
 			//TakeMoneyFromPP(upkeep, true);
 			// Send Mercenary Status/Timer packet
 			SendMercTimerPacket(GetID(), 5, GetEPP().mercSuspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
@@ -2501,9 +2501,9 @@ bool Merc::Unsuspend() {
 		return false;
 
 	if(GetMercID()) {
-		int32 entityID = 0;
-		int32 mercState = 5;
-		int32 suspendedTime = 0;
+		uint32 entityID = 0;
+		uint32 mercState = 5;
+		uint32 suspendedTime = 0;
 
 		if(mercOwner->GetEPP().mercIsSuspended) {
 			mercState = 1;
@@ -2725,7 +2725,7 @@ void Client::UpdateMercLevel() {
 	}
 }
 
-void Client::SendMercMerchantResponsePacket(sint32 response_type) {
+void Client::SendMercMerchantResponsePacket(int32 response_type) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryHire, sizeof(MercenaryMerchantResponse_Struct));
 	MercenaryMerchantResponse_Struct* mmr = (MercenaryMerchantResponse_Struct*)outapp->pBuffer;
 	mmr->ResponseType = response_type;		// send specified response type
@@ -2734,7 +2734,7 @@ void Client::SendMercMerchantResponsePacket(sint32 response_type) {
 	FastQueuePacket(&outapp);
 }
 
-void Client::SendMercSuspendResponsePacket(int32 suspended_time) {
+void Client::SendMercSuspendResponsePacket(uint32 suspended_time) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenarySuspendResponse, sizeof(SuspendMercenaryResponse_Struct));
 	SuspendMercenaryResponse_Struct* smr = (SuspendMercenaryResponse_Struct*)outapp->pBuffer;
 	smr->SuspendTime = suspended_time;		// Seen 0 (not suspended) or c9 c2 64 4f (suspended on Sat Mar 17 11:58:49 2012) - Unix Timestamp
@@ -2743,7 +2743,7 @@ void Client::SendMercSuspendResponsePacket(int32 suspended_time) {
 	FastQueuePacket(&outapp);
 }
 
-void Client::SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 suspended_time, sint32 update_interval, sint32 unk01) {
+void Client::SendMercTimerPacket(int32 entity_id, int32 merc_state, int32 suspended_time, int32 update_interval, int32 unk01) {
 	// Send Mercenary Status/Timer packet
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryTimer, sizeof(MercenaryStatus_Struct));
 	MercenaryStatus_Struct* mss = (MercenaryStatus_Struct*)outapp->pBuffer;
@@ -2757,7 +2757,7 @@ void Client::SendMercTimerPacket(sint32 entity_id, sint32 merc_state, sint32 sus
 	FastQueuePacket(&outapp);
 }
 
-void Client::SendMercAssignPacket(int32 entityID, int32 unk01, int32 unk02) {
+void Client::SendMercAssignPacket(uint32 entityID, uint32 unk01, uint32 unk02) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryAssign, sizeof(MercenaryAssign_Struct));
 	MercenaryAssign_Struct* mas = (MercenaryAssign_Struct*)outapp->pBuffer;
 	mas->MercEntityID = entityID;
@@ -2833,7 +2833,7 @@ void NPC::LoadMercs(){
 	}
 }
 
-int NPC::GetNumMercTypes(int32 clientVersion)
+int NPC::GetNumMercTypes(uint32 clientVersion)
 {
 	int count = 0;
 	std::list<MercType> mercTypeList = GetMercTypesList();
@@ -2846,7 +2846,7 @@ int NPC::GetNumMercTypes(int32 clientVersion)
 	return count;
 }
 
-int NPC::GetNumMercs(int32 clientVersion)
+int NPC::GetNumMercs(uint32 clientVersion)
 {
 	int count = 0;
 	std::list<MercData> mercDataList = GetMercsList();
@@ -2859,7 +2859,7 @@ int NPC::GetNumMercs(int32 clientVersion)
 	return count;
 }
 
-std::list<MercType> NPC::GetMercTypesList(int32 clientVersion) {
+std::list<MercType> NPC::GetMercTypesList(uint32 clientVersion) {
 	std::list<MercType> result;
 
 	if(GetNumMercTypes() > 0) {
@@ -2876,7 +2876,7 @@ std::list<MercType> NPC::GetMercTypesList(int32 clientVersion) {
 	return result;
 }
 
-std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
+std::list<MercData> NPC::GetMercsList(uint32 clientVersion) {
 	std::list<MercData> result;
 
 	if(GetNumMercs() > 0) {
@@ -2901,8 +2901,8 @@ std::list<MercData> NPC::GetMercsList(int32 clientVersion) {
 	return result;
 }
 
-int32 Merc::CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type) {
-	int32 cost = 0;
+uint32 Merc::CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type) {
+	uint32 cost = 0;
 
 	MercTemplate *mercData = zone->GetMercTemplate(templateID);
 
@@ -2927,8 +2927,8 @@ int32 Merc::CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_ty
 	return cost/100;
 }
 
-int32 Merc::CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type) {
-	int32 cost = 0;
+uint32 Merc::CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type) {
+	uint32 cost = 0;
 
 	MercTemplate *mercData = zone->GetMercTemplate(templateID);
 

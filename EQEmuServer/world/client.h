@@ -47,7 +47,7 @@ public:
 	void	EnterWorld(bool TryBootup = true);
 	void	ZoneUnavail();
 	void	QueuePacket(const EQApplicationPacket* app, bool ack_req = true);
-	void	Clearance(sint8 response);
+	void	Clearance(int8 response);
 	void	SendGuildList();
 	void	SendEnterWorld(std::string name);
 	void	SendExpansionInfo();
@@ -56,18 +56,18 @@ public:
 	void	SendPostEnterWorld();
 	bool	GenPassKey(char* key);
 
-	inline int32		GetIP()				{ return ip; }
-	inline int16		GetPort()			{ return port; }
-	inline int32		GetZoneID()			{ return zoneID; }
-	inline int32		GetInstanceID()		{ return instanceID; }
-	inline int32		WaitingForBootup()	{ return pwaitingforbootup; }
+	inline uint32		GetIP()				{ return ip; }
+	inline uint16		GetPort()			{ return port; }
+	inline uint32		GetZoneID()			{ return zoneID; }
+	inline uint32		GetInstanceID()		{ return instanceID; }
+	inline uint32		WaitingForBootup()	{ return pwaitingforbootup; }
 	inline const char *	GetAccountName()	{ if (cle) { return cle->AccountName(); } return "NOCLE"; }
-	inline sint16		GetAdmin()			{ if (cle) { return cle->Admin(); } return 0; }
-	inline int32		GetAccountID()		{ if (cle) { return cle->AccountID(); } return 0; }
-	inline int32		GetWID()			{ if (cle) { return cle->GetID(); } return 0; }
-	inline int32		GetLSID()			{ if (cle) { return cle->LSID(); } return 0; }
+	inline int16		GetAdmin()			{ if (cle) { return cle->Admin(); } return 0; }
+	inline uint32		GetAccountID()		{ if (cle) { return cle->AccountID(); } return 0; }
+	inline uint32		GetWID()			{ if (cle) { return cle->GetID(); } return 0; }
+	inline uint32		GetLSID()			{ if (cle) { return cle->LSID(); } return 0; }
 	inline const char*	GetLSKey()			{ if (cle) { return cle->GetLSKey(); } return "NOKEY"; }
-	inline int32		GetCharID()			{ return charid; }
+	inline uint32		GetCharID()			{ return charid; }
 	inline const char*	GetCharName()		{ return char_name; }
 	inline ClientListEntry* GetCLE()		{ return cle; }
 	inline void			SetCLE(ClientListEntry* iCLE)			{ cle = iCLE; }
@@ -77,15 +77,15 @@ private:
 	void world_log(LogType type, const char *fmt, ...);
 	#endif
 	
-	int32	ip;
-	int16	port;
-	int32	charid; 
+	uint32	ip;
+	uint16	port;
+	uint32	charid; 
 	char	char_name[64];
-	int32	zoneID;
-	int32	instanceID;
+	uint32	zoneID;
+	uint32	instanceID;
 	bool	pZoning;
 	Timer	autobootup_timeout;
-	int32	pwaitingforbootup;
+	uint32	pwaitingforbootup;
 
 	bool StartInTutorial;
 	uint32 ClientVersionBit;

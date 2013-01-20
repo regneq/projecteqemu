@@ -28,7 +28,7 @@
 
 class LoginServer{
 public:
-	LoginServer(const char*, int16, const char*, const char*);
+	LoginServer(const char*, uint16, const char*, const char*);
 	~LoginServer();
 
 	bool InitLoginServer();
@@ -51,8 +51,8 @@ private:
 	bool minilogin;
 	EmuTCPConnection* tcpc;
 	char	LoginServerAddress[256];
-	int32	LoginServerIP;
-	int16	LoginServerPort;
+	uint32	LoginServerIP;
+	uint16	LoginServerPort;
 	char	LoginAccount[32];
 	char	LoginPassword[32];
 	bool	CanAccountUpdate;

@@ -26,11 +26,11 @@ extern "C" __declspec(dllexport) bool AddNPCFactionList(uint32 id, const NPCFact
 	return pAddNPCFactionList(id, nfl);
 };
 
-extern "C" __declspec(dllexport) bool DLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, int32 iNPCFactionListStructSize, sint32* iNPCFactionListsCount, int32* iMaxNPCFactionListID, int8 iMaxNPCFactions) {
+extern "C" __declspec(dllexport) bool DLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, uint32 iNPCFactionListStructSize, int32* iNPCFactionListsCount, uint32* iMaxNPCFactionListID, uint8 iMaxNPCFactions) {
 	return pDLLLoadNPCFactionLists(cbDBLoadNPCFactionLists, iNPCFactionListStructSize, iNPCFactionListsCount, iMaxNPCFactionListID, iMaxNPCFactions);
 };
 
-extern "C" __declspec(dllexport) bool SetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp) {
+extern "C" __declspec(dllexport) bool SetNPCFaction(uint32 id, uint32* factionid, int32* factionvalue, int8 *factionnpcvalue, uint8 *factiontemp) {
 	return pSetNPCFaction(id, factionid, factionvalue, factionnpcvalue, factiontemp);
 }
 #else
@@ -42,11 +42,11 @@ extern "C" bool AddNPCFactionList(uint32 id, const NPCFactionList* nfl) {
 	return pAddNPCFactionList(id, nfl);
 };
 
-extern "C" bool DLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, int32 iNPCFactionListStructSize, sint32* iNPCFactionListsCount, int32* iMaxNPCFactionListID, int8 iMaxNPCFactions) {
+extern "C" bool DLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, uint32 iNPCFactionListStructSize, int32* iNPCFactionListsCount, uint32* iMaxNPCFactionListID, uint8 iMaxNPCFactions) {
 	return pDLLLoadNPCFactionLists(cbDBLoadNPCFactionLists, iNPCFactionListStructSize, iNPCFactionListsCount, iMaxNPCFactionListID, iMaxNPCFactions);
 };
 
-extern "C" bool SetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp) {
+extern "C" bool SetNPCFaction(uint32 id, uint32* factionid, int32* factionvalue, int8 *factionnpcvalue, uint8 *factiontemp) {
 	return pSetNPCFaction(id, factionid, factionvalue, factionnpcvalue, factiontemp);
 }
 #endif
@@ -71,7 +71,7 @@ bool pAddNPCFactionList(uint32 id, const NPCFactionList* nfl) {
 	return true;
 }
 
-bool pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *factionnpcvalue, int8 *factiontemp) {
+bool pSetNPCFaction(uint32 id, uint32* factionid, int32* factionvalue, int8 *factionnpcvalue, uint8 *factiontemp) {
 	if (!MMFNPCFactionListsData_Writable) {
 	    if(EQDEBUG>=1) cout<<"[Debug] !MMFNPCFactionListsData_Writable"<<endl;
 		return false;
@@ -94,7 +94,7 @@ bool pSetNPCFaction(int32 id, uint32* factionid, sint32* factionvalue, sint8 *fa
 	return true;
 }
 
-bool pDLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, int32 iNPCFactionListStructSize, sint32* iNPCFactionListsCount, int32* iMaxNPCFactionListID, int8 iMaxNPCFactions) {
+bool pDLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLists, uint32 iNPCFactionListStructSize, int32* iNPCFactionListsCount, uint32* iMaxNPCFactionListID, uint8 iMaxNPCFactions) {
 	if (iNPCFactionListStructSize != sizeof(NPCFactionList)) {
 		cout << "Error: EMuShareMem: DLLLoadNPCFactionLists: iNPCFactionListStructSize != sizeof(NPCFactionList)" << endl;
 		cout << "NPCFactionList struct has changed, EMuShareMem.dll needs to be recompiled." << endl;
@@ -110,7 +110,7 @@ bool pDLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLi
 		cout << "You need to increase the define in NPCFactionList.h." << endl;
 		return false;
 	}
-	int32 tmpMemSize = sizeof(MMFNPCFactionLists_Struct) + 256 + (sizeof(NPCFactionList) * (*iNPCFactionListsCount));
+	uint32 tmpMemSize = sizeof(MMFNPCFactionLists_Struct) + 256 + (sizeof(NPCFactionList) * (*iNPCFactionListsCount));
 	if (NPCFactionListsMMF.Open("EQEMuFactionLists", tmpMemSize)) {
 //		MMFNPCFactionListsData = (const MMFNPCFactionLists_Struct*) NPCFactionListsMMF.GetHandle();
 		if (NPCFactionListsMMF.CanWrite()) {
@@ -144,7 +144,7 @@ bool pDLLLoadNPCFactionLists(CALLBACK_DBLoadNPCFactionLists cbDBLoadNPCFactionLi
 		else {
 			if (!NPCFactionListsMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!NPCFactionListsMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(100);
 					Timer::SetCurrentTime();

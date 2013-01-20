@@ -173,7 +173,7 @@ string TitleManager::GetSuffix(int TitleID)
 
 bool TitleManager::IsClientEligibleForTitle(Client *c, vector<TitleEntry>::iterator Title)
 {
-		if((Title->CharID >= 0) && (c->CharacterID() != static_cast<int32>(Title->CharID)))
+		if((Title->CharID >= 0) && (c->CharacterID() != static_cast<uint32>(Title->CharID)))
 			return false;
 
 		if((Title->Status >= 0) && (c->Admin() < Title->Status))

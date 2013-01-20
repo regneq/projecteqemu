@@ -33,14 +33,14 @@
 
 
 // Return max stat value for level
-sint16 Client::GetMaxStat() const {
+int16 Client::GetMaxStat() const {
 
 	if((RuleI(Character, StatCap)) > 0)
 		return (RuleI(Character, StatCap));
 
 	int level = GetLevel();
 	
-	sint16 base = 0;
+	int16 base = 0;
 	
 	if (level < 61) {
 		base = 255;
@@ -58,11 +58,11 @@ sint16 Client::GetMaxStat() const {
 	return(base);
 }
 
-sint16 Client::GetMaxResist() const 
+int16 Client::GetMaxResist() const 
 {
 	int level = GetLevel();
 
-	sint16 base = 500;
+	int16 base = 500;
 	
 	if(level > 60)
 		base += ((level - 60) * 5);
@@ -70,92 +70,92 @@ sint16 Client::GetMaxResist() const
 	return base;
 }
 
-sint16 Client::GetMaxSTR() const {
+int16 Client::GetMaxSTR() const {
 	return GetMaxStat()
 		+ itembonuses.STRCapMod
 		+ spellbonuses.STRCapMod
 		+ aabonuses.STRCapMod;
 }
-sint16 Client::GetMaxSTA() const {
+int16 Client::GetMaxSTA() const {
 	return GetMaxStat()
 		+ itembonuses.STACapMod
 		+ spellbonuses.STACapMod
 		+ aabonuses.STACapMod;
 }
-sint16 Client::GetMaxDEX() const {
+int16 Client::GetMaxDEX() const {
 	return GetMaxStat()
 		+ itembonuses.DEXCapMod
 		+ spellbonuses.DEXCapMod
 		+ aabonuses.DEXCapMod;
 }
-sint16 Client::GetMaxAGI() const {
+int16 Client::GetMaxAGI() const {
 	return GetMaxStat()
 		+ itembonuses.AGICapMod
 		+ spellbonuses.AGICapMod
 		+ aabonuses.AGICapMod;
 }
-sint16 Client::GetMaxINT() const {
+int16 Client::GetMaxINT() const {
 	return GetMaxStat()
 		+ itembonuses.INTCapMod
 		+ spellbonuses.INTCapMod
 		+ aabonuses.INTCapMod;
 }
-sint16 Client::GetMaxWIS() const {
+int16 Client::GetMaxWIS() const {
 	return GetMaxStat()
 		+ itembonuses.WISCapMod
 		+ spellbonuses.WISCapMod
 		+ aabonuses.WISCapMod;
 }
-sint16 Client::GetMaxCHA() const {
+int16 Client::GetMaxCHA() const {
 	return GetMaxStat()
 		+ itembonuses.CHACapMod
 		+ spellbonuses.CHACapMod
 		+ aabonuses.CHACapMod;
 }
-sint16 Client::GetMaxMR() const {
+int16 Client::GetMaxMR() const {
 	return GetMaxResist()
 		+ itembonuses.MRCapMod
 		+ spellbonuses.MRCapMod
 		+ aabonuses.MRCapMod;
 }
-sint16 Client::GetMaxPR() const {
+int16 Client::GetMaxPR() const {
 	return GetMaxResist()
 		+ itembonuses.PRCapMod
 		+ spellbonuses.PRCapMod
 		+ aabonuses.PRCapMod;
 }
-sint16 Client::GetMaxDR() const {
+int16 Client::GetMaxDR() const {
 	return GetMaxResist()
 		+ itembonuses.DRCapMod
 		+ spellbonuses.DRCapMod
 		+ aabonuses.DRCapMod;
 }
-sint16 Client::GetMaxCR() const {
+int16 Client::GetMaxCR() const {
 	return GetMaxResist()
 		+ itembonuses.CRCapMod
 		+ spellbonuses.CRCapMod
 		+ aabonuses.CRCapMod;
 }
-sint16 Client::GetMaxFR() const {
+int16 Client::GetMaxFR() const {
 	return GetMaxResist()
 		+ itembonuses.FRCapMod
 		+ spellbonuses.FRCapMod
 		+ aabonuses.FRCapMod;
 }
-sint16 Client::GetMaxCorrup() const {
+int16 Client::GetMaxCorrup() const {
 	return GetMaxResist()
 		+ itembonuses.CorrupCapMod
 		+ spellbonuses.CorrupCapMod
 		+ aabonuses.CorrupCapMod;
 }
-sint32 Client::LevelRegen()
+int32 Client::LevelRegen()
 {
 	bool sitting = IsSitting();
 	bool feigned = GetFeigned();
 	int level = GetLevel();
 	bool bonus = GetRaceBitmask(GetBaseRace()) & RuleI(Character, BaseHPRegenBonusRaces);
 	uint8 multiplier1 = bonus ? 2 : 1;
-	sint32 hp = 0;
+	int32 hp = 0;
 
 	//these calculations should match up with the info from Monkly Business, which was last updated ~05/2008: http://www.monkly-business.net/index.php?pageid=abilities
 	if (level < 51) {
@@ -172,7 +172,7 @@ sint32 Client::LevelRegen()
 	}
 	//there may be an easier way to calculate this next part, but I don't know what it is
 	else {	//level >= 51
-		sint32 tmp = 0;
+		int32 tmp = 0;
 		float multiplier2 = 1;
 		if (level < 56) {
 			tmp = 2;
@@ -205,7 +205,7 @@ sint32 Client::LevelRegen()
 				multiplier2 = 2.58;
 		}
 
-		hp += sint32(float(tmp) * multiplier2);
+		hp += int32(float(tmp) * multiplier2);
 
 		if (sitting)
 			hp += 3 * multiplier1;
@@ -216,15 +216,15 @@ sint32 Client::LevelRegen()
 	return hp;
 }
 
-sint32 Client::CalcHPRegen() {
-	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
+int32 Client::CalcHPRegen() {
+	int32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
 
 	regen += aabonuses.HPRegen + GroupLeadershipAAHealthRegeneration();
 
 	return (regen * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcHPRegenCap()
+int32 Client::CalcHPRegenCap()
 {
 	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
 
@@ -233,7 +233,7 @@ sint32 Client::CalcHPRegenCap()
 	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcMaxHP() {
+int32 Client::CalcMaxHP() {
 	float nd = 10000;
 	max_hp = (CalcBaseHP() + itembonuses.HP);
 
@@ -263,9 +263,9 @@ sint32 Client::CalcMaxHP() {
 	return max_hp;
 }
 
-int16 Mob::GetClassLevelFactor(){
-	int16 multiplier = 0;
-	int8 mlevel=GetLevel();
+uint16 Mob::GetClassLevelFactor(){
+	uint16 multiplier = 0;
+	uint8 mlevel=GetLevel();
 	switch(GetClass())
 	{
 		case WARRIOR:{
@@ -367,11 +367,11 @@ int16 Mob::GetClassLevelFactor(){
 	return multiplier;
 }
 
-sint32 Client::CalcBaseHP()
+int32 Client::CalcBaseHP()
 {
 	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 		float SoDPost255;
-		int16 NormalSTA = GetSTA();
+		uint16 NormalSTA = GetSTA();
 
 		if(((NormalSTA - 255) / 2) > 0)
 			SoDPost255 = ((NormalSTA - 255) / 2);
@@ -399,8 +399,8 @@ sint32 Client::CalcBaseHP()
 
 	}
 	else {
-		int16 Post255;
-		int16 lm=GetClassLevelFactor();
+		uint16 Post255;
+		uint16 lm=GetClassLevelFactor();
 		if((GetSTA()-255)/2 > 0)
 			Post255 = (GetSTA()-255)/2;
 		else
@@ -412,7 +412,7 @@ sint32 Client::CalcBaseHP()
 }
 
 // This is for calculating Base HPs + STA bonus for SoD or later clients.
-int32 Client::GetClassHPFactor() {
+uint32 Client::GetClassHPFactor() {
 
 	int factor;
 
@@ -459,10 +459,10 @@ int32 Client::GetClassHPFactor() {
 }
 
 // This should return the combined AC of all the items the player is wearing.
-sint16 Client::GetRawItemAC() {
-	sint16 Total = 0;
+int16 Client::GetRawItemAC() {
+	int16 Total = 0;
 	
-	for (sint16 slot_id=0; slot_id<21; slot_id++) {
+	for (int16 slot_id=0; slot_id<21; slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
 		if (inst && inst->IsType(ItemClassCommon)) {
 			Total += inst->GetItem()->AC;
@@ -472,7 +472,7 @@ sint16 Client::GetRawItemAC() {
 	return Total;
 }
 
-sint16 Client::acmod() {
+int16 Client::acmod() {
 	int agility = GetAGI();
 	int level = GetLevel();
 	if(agility < 1 || level < 1)
@@ -850,7 +850,7 @@ sint16 Client::acmod() {
 // ac1 and ac2 are probably the damage migitation and damage avoidance numbers, not sure which is which.
 // I forgot to include the iksar defense bonus and i cant find my notes now...
 // AC from spells are not included (cant even cast spells yet..)
-sint16 Client::CalcAC() {
+int16 Client::CalcAC() {
 
 	// new formula
 	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
@@ -901,7 +901,7 @@ sint16 Client::CalcAC() {
 	return(AC);
 }
 
-sint16 Client::GetACMit() {
+int16 Client::GetACMit() {
 
 	int mitigation = 0;
 	if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
@@ -927,7 +927,7 @@ sint16 Client::GetACMit() {
 	return(mitigation*1000/847);
 }
 
-sint16 Client::GetACAvoid() {
+int16 Client::GetACAvoid() {
 
 	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
 	if (avoidance < 0)
@@ -936,7 +936,7 @@ sint16 Client::GetACAvoid() {
 	return(avoidance*1000/847);
 }
 
-sint32 Client::CalcMaxMana()
+int32 Client::CalcMaxMana()
 {
 	switch(GetCasterClass())
 	{
@@ -976,11 +976,11 @@ sint32 Client::CalcMaxMana()
 	return max_mana;
 }
 
-sint32 Client::CalcBaseMana()
+int32 Client::CalcBaseMana()
 {
 	int WisInt = 0;
 	int MindLesserFactor, MindFactor;
-	sint32 max_m = 0;
+	int32 max_m = 0;
 	int wisint_mana = 0;
 	int base_mana = 0;
 	int ConvertedWisInt = 0;
@@ -1091,10 +1091,10 @@ sint32 Client::CalcBaseMana()
 	return max_m;
 }
 
-sint32 Client::CalcBaseManaRegen() 
+int32 Client::CalcBaseManaRegen() 
 {
 	uint8 clevel = GetLevel();
-	sint32 regen = 0;
+	int32 regen = 0;
 	if (IsSitting() || (GetHorseId() != 0)) 
 	{
 		if(HasSkill(MEDITATE))
@@ -1108,10 +1108,10 @@ sint32 Client::CalcBaseManaRegen()
 	return regen;
 }
 
-sint32 Client::CalcManaRegen() 
+int32 Client::CalcManaRegen() 
 {
 	uint8 clevel = GetLevel();
-	sint32 regen = 0;
+	int32 regen = 0;
 	//this should be changed so we dont med while camping, etc...
 	if (IsSitting() || (GetHorseId() != 0)) 
 	{
@@ -1136,9 +1136,9 @@ sint32 Client::CalcManaRegen()
 	return (regen * RuleI(Character, ManaRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcManaRegenCap()
+int32 Client::CalcManaRegenCap()
 {
-	sint32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
+	int32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
 	switch(GetCasterClass())
 	{
 		case 'I': 
@@ -1215,7 +1215,7 @@ uint32 Client::CalcCurrentWeight() {
 	return Total;
 }
 
-sint16 Client::CalcAlcoholPhysicalEffect()
+int16 Client::CalcAlcoholPhysicalEffect()
 {
 	if(m_pp.intoxication <= 55)
 		return 0;
@@ -1223,10 +1223,10 @@ sint16 Client::CalcAlcoholPhysicalEffect()
 	return (m_pp.intoxication - 40) / 16;
 }
 
-sint16 Client::CalcSTR() {
-	sint16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect();
+int16 Client::CalcSTR() {
+	int16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect();
 	
-	sint16 mod = aabonuses.STR;
+	int16 mod = aabonuses.STR;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1242,10 +1242,10 @@ sint16 Client::CalcSTR() {
 	return(STR);
 }
 
-sint16 Client::CalcSTA() {
-	sint16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA + CalcAlcoholPhysicalEffect();;
+int16 Client::CalcSTA() {
+	int16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA + CalcAlcoholPhysicalEffect();;
 	
-	sint16 mod = aabonuses.STA;
+	int16 mod = aabonuses.STA;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1261,21 +1261,21 @@ sint16 Client::CalcSTA() {
 	return(STA);
 }
 
-sint16 Client::CalcAGI() {
-	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI - CalcAlcoholPhysicalEffect();;
-	sint16 mod = aabonuses.AGI;
+int16 Client::CalcAGI() {
+	int16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI - CalcAlcoholPhysicalEffect();;
+	int16 mod = aabonuses.AGI;
 
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
 
-	sint16 str = GetSTR();
+	int16 str = GetSTR();
 	
 	//Encumbered penalty
 	if(weight > (str * 10)) {
 		//AGI is halved when we double our weight, zeroed (defaults to 1) when we triple it. this includes AGI from AAs
 		float total_agi = float(val + mod);
 		float str_float = float(str);
-		AGI = (sint16)(((-total_agi) / (str_float * 2)) * (((float)weight / 10) - str_float) + total_agi);	//casting to an int assumes this will be floor'd. without using floats & casting to sint16, the calculation doesn't work right
+		AGI = (int16)(((-total_agi) / (str_float * 2)) * (((float)weight / 10) - str_float) + total_agi);	//casting to an int assumes this will be floor'd. without using floats & casting to int16, the calculation doesn't work right
 	} else
 		AGI = val + mod;
 
@@ -1289,10 +1289,10 @@ sint16 Client::CalcAGI() {
 	return(AGI);
 }
 
-sint16 Client::CalcDEX() {
-	sint16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX - CalcAlcoholPhysicalEffect();;
+int16 Client::CalcDEX() {
+	int16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX - CalcAlcoholPhysicalEffect();;
 	
-	sint16 mod = aabonuses.DEX;
+	int16 mod = aabonuses.DEX;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1308,10 +1308,10 @@ sint16 Client::CalcDEX() {
 	return(DEX);
 }
 
-sint16 Client::CalcINT() {
-	sint16 val = m_pp.INT + itembonuses.INT + spellbonuses.INT;
+int16 Client::CalcINT() {
+	int16 val = m_pp.INT + itembonuses.INT + spellbonuses.INT;
 
-	sint16 mod = aabonuses.INT;
+	int16 mod = aabonuses.INT;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1319,7 +1319,7 @@ sint16 Client::CalcINT() {
 	
 	if(m_pp.intoxication)
 	{
-		sint16 AlcINT  = INT - (sint16)((float)m_pp.intoxication / 200.0f * (float)INT) - 1;
+		int16 AlcINT  = INT - (int16)((float)m_pp.intoxication / 200.0f * (float)INT) - 1;
 
 		if((AlcINT < (int)(0.2 * INT)))
 			INT = (int)(0.2f * (float)INT);
@@ -1337,10 +1337,10 @@ sint16 Client::CalcINT() {
 	return(INT);
 }
 
-sint16 Client::CalcWIS() {
-	sint16 val = m_pp.WIS + itembonuses.WIS + spellbonuses.WIS;
+int16 Client::CalcWIS() {
+	int16 val = m_pp.WIS + itembonuses.WIS + spellbonuses.WIS;
 	
-	sint16 mod = aabonuses.WIS;
+	int16 mod = aabonuses.WIS;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1348,7 +1348,7 @@ sint16 Client::CalcWIS() {
 
 	if(m_pp.intoxication)
 	{
-		sint16 AlcWIS  = WIS - (sint16)((float)m_pp.intoxication / 200.0f * (float)WIS) - 1;
+		int16 AlcWIS  = WIS - (int16)((float)m_pp.intoxication / 200.0f * (float)WIS) - 1;
 
 		if((AlcWIS < (int)(0.2 * WIS)))
 			WIS = (int)(0.2f * (float)WIS);
@@ -1366,10 +1366,10 @@ sint16 Client::CalcWIS() {
 	return(WIS);
 }
 
-sint16 Client::CalcCHA() {
-	sint16 val = m_pp.CHA + itembonuses.CHA + spellbonuses.CHA;
+int16 Client::CalcCHA() {
+	int16 val = m_pp.CHA + itembonuses.CHA + spellbonuses.CHA;
 	
-	sint16 mod = aabonuses.CHA;
+	int16 mod = aabonuses.CHA;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1430,7 +1430,7 @@ int Client::CalcHaste() {
 //The AA multipliers are set to be 5, but were 2 on WR
 //The resistant discipline which I think should be here is implemented
 //in Mob::ResistSpell
-sint16	Client::CalcMR()
+int16	Client::CalcMR()
 {
 	//racial bases
 	switch(GetBaseRace()) {
@@ -1500,7 +1500,7 @@ sint16	Client::CalcMR()
 	return(MR);
 }
 
-sint16	Client::CalcFR()
+int16	Client::CalcFR()
 {
 	//racial bases
 	switch(GetBaseRace()) {
@@ -1576,7 +1576,7 @@ sint16	Client::CalcFR()
 	return(FR);
 }
 
-sint16	Client::CalcDR()
+int16	Client::CalcDR()
 {
 	//racial bases
 	switch(GetBaseRace()) {
@@ -1659,7 +1659,7 @@ sint16	Client::CalcDR()
 	return(DR);
 }
 
-sint16	Client::CalcPR()
+int16	Client::CalcPR()
 {
 	//racial bases
 	switch(GetBaseRace()) {
@@ -1742,7 +1742,7 @@ sint16	Client::CalcPR()
 	return(PR);
 }
 
-sint16	Client::CalcCR()
+int16	Client::CalcCR()
 {
 	//racial bases
 	switch(GetBaseRace()) {
@@ -1818,7 +1818,7 @@ sint16	Client::CalcCR()
 	return(CR);
 }
 
-sint16	Client::CalcCorrup()
+int16	Client::CalcCorrup()
 {
 	Corrup = GetBaseCorrup() + itembonuses.Corrup + spellbonuses.Corrup + aabonuses.Corrup;
 	
@@ -1828,16 +1828,16 @@ sint16	Client::CalcCorrup()
 	return(Corrup);
 }
 
-sint16 Client::CalcATK() {
+int16 Client::CalcATK() {
 	ATK = itembonuses.ATK + spellbonuses.ATK + aabonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
 }
 
-int16 Mob::GetInstrumentMod(int16 spell_id) const {
+uint16 Mob::GetInstrumentMod(uint16 spell_id) const {
 	if(GetClass() != BARD)
 		return(10);
 	
-	int16 effectmod = 10;
+	uint16 effectmod = 10;
 	
 	//this should never use spell modifiers...
 	//if a spell grants better modifers, they are copied into the item mods
@@ -1940,12 +1940,12 @@ void Client::CalcMaxEndurance()
 	}
 }
 
-sint32 Client::CalcBaseEndurance()
+int32 Client::CalcBaseEndurance()
 {
-	sint32 base_end = 0;
-	sint32 base_endurance = 0;
-	sint32 ConvertedStats = 0;
-	sint32 sta_end = 0;
+	int32 base_end = 0;
+	int32 base_endurance = 0;
+	int32 ConvertedStats = 0;
+	int32 sta_end = 0;
 	int Stats = 0;
 
 	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
@@ -2012,14 +2012,14 @@ sint32 Client::CalcBaseEndurance()
 	return base_end;
 }
 
-sint32 Client::CalcEnduranceRegen() {
-	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
+int32 Client::CalcEnduranceRegen() {
+	int32 regen = int32(GetLevel() * 4 / 10) + 2;
 	regen += aabonuses.EnduranceRegen + spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
 
 	return (regen * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
-sint32 Client::CalcEnduranceRegenCap() {
+int32 Client::CalcEnduranceRegenCap() {
 	int cap = (RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25);
 		
 	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);

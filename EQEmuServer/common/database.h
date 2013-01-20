@@ -37,7 +37,7 @@
 #include <map>
 using namespace std;
 
-//atoi is not int32 or uint32 safe!!!!
+//atoi is not uint32 or uint32 safe!!!!
 #define atoul(str) strtoul(str, NULL, 10)
 
 //class Spawn;
@@ -57,10 +57,10 @@ class Inventory;
 class ItemInst;
 
 struct EventLogDetails_Struct {
-	int32	id;
+	uint32	id;
 	char	accountname[64];
-	int32	account_id;
-	sint16	status;
+	uint32	account_id;
+	int16	status;
 	char	charactername[64];
 	char	targetname[64];
 	char	timestamp[64];
@@ -69,8 +69,8 @@ struct EventLogDetails_Struct {
 };
 
 struct CharacterEventLog_Struct {
-int32	count;
-int8	eventid;
+uint32	count;
+uint8	eventid;
 EventLogDetails_Struct eld[255];
 };
 
@@ -81,9 +81,9 @@ EventLogDetails_Struct eld[255];
 //     decaytime 55 100 = Levels 55 through 100
 // It will always put the LAST time for the level (I think) from the Database
 struct npcDecayTimes_Struct {
-	int16 minlvl;
-	int16 maxlvl;
-	int32 seconds;
+	uint16 minlvl;
+	uint16 maxlvl;
+	uint32 seconds;
 };
 // Added By Hogie -- End
 
@@ -102,8 +102,8 @@ class PTimerList;
 class Database : public DBcore {
 public:
 	Database();
-	Database(const char* host, const char* user, const char* passwd, const char* database,int32 port);
-	bool Connect(const char* host, const char* user, const char* passwd, const char* database,int32 port);
+	Database(const char* host, const char* user, const char* passwd, const char* database,uint32 port);
+	bool Connect(const char* host, const char* user, const char* passwd, const char* database,uint32 port);
 	~Database();
 	
 	
@@ -114,48 +114,48 @@ public:
 	 * General Character Related Stuff
 	 */
 	bool	MoveCharacterToZone(const char* charname, const char* zonename);
-	bool	MoveCharacterToZone(const char* charname, const char* zonename,int32 zoneid);
-	bool	MoveCharacterToZone(int32 iCharID, const char* iZonename);
+	bool	MoveCharacterToZone(const char* charname, const char* zonename,uint32 zoneid);
+	bool	MoveCharacterToZone(uint32 iCharID, const char* iZonename);
 	bool	UpdateName(const char* oldname, const char* newname);
 	bool	SetHackerFlag(const char* accountname, const char* charactername, const char* hacked);
 	bool	SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone);
 	bool	AddToNameFilter(const char* name);
-	bool	ReserveName(int32 account_id, char* name);
-	bool	CreateCharacter(uint32 account_id, char* name, int16 gender, int16 race, int16 class_, int8 str, int8 sta, int8 cha, int8 dex, int8 int_, int8 agi, int8 wis, int8 face);
+	bool	ReserveName(uint32 account_id, char* name);
+	bool	CreateCharacter(uint32 account_id, char* name, uint16 gender, uint16 race, uint16 class_, uint8 str, uint8 sta, uint8 cha, uint8 dex, uint8 int_, uint8 agi, uint8 wis, uint8 face);
 	bool	StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext);
 	bool	DeleteCharacter(char* name);
-	int8	CopyCharacter(const char* oldname, const char* newname, int32 acctid);
+	uint8	CopyCharacter(const char* oldname, const char* newname, uint32 acctid);
 
 	/*
 	 * General Information Getting Queries
 	 */
 	bool	CheckNameFilter(const char* name, bool surname = false);
 	bool	CheckUsedName(const char* name);
-	int32	GetAccountIDByChar(const char* charname, int32* oCharID = 0);
+	uint32	GetAccountIDByChar(const char* charname, uint32* oCharID = 0);
 	uint32	GetAccountIDByChar(uint32 char_id);
-	int32	GetAccountIDByName(const char* accname, sint16* status = 0, int32* lsid = 0);
-	uint32	GetGuildDBIDByCharID(int32 char_id);
-	void	GetAccountName(int32 accountid, char* name, int32* oLSAccountID = 0);
-	void	GetCharName(int32 char_id, char* name);
-	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, int32* oInstanceID = 0,float* oX = 0, float* oY = 0, float* oZ = 0);
-	int32	GetCharacterID(const char *name);
+	uint32	GetAccountIDByName(const char* accname, int16* status = 0, uint32* lsid = 0);
+	uint32	GetGuildDBIDByCharID(uint32 char_id);
+	void	GetAccountName(uint32 accountid, char* name, uint32* oLSAccountID = 0);
+	void	GetCharName(uint32 char_id, char* name);
+	uint32	GetCharacterInfo(const char* iName, uint32* oAccID = 0, uint32* oZoneID = 0, uint32* oInstanceID = 0,float* oX = 0, float* oY = 0, float* oZ = 0);
+	uint32	GetCharacterID(const char *name);
 	bool	CheckBannedIPs(const char* loginIP); //Lieka Edit:  Check incomming connection against banned IP table.
  	bool	AddBannedIP(char* bannedIP, const char* notes); //Lieka Edit:  Add IP address to the Banned_IPs table.
-	bool	CheckGMIPs(const char* loginIP, int32 account_id);
+	bool	CheckGMIPs(const char* loginIP, uint32 account_id);
 	bool	AddGMIP(char* ip_address, char* name);
-	void	LoginIP(int32 AccountID, const char* LoginIP);
+	void	LoginIP(uint32 AccountID, const char* LoginIP);
 
 	/*
 	 * Instancing Stuff
 	 */
-	bool VerifyZoneInstance(int32 zone_id, int16 instance_id);
-	bool VerifyInstanceAlive(int16 instance_id, int32 char_id);
-	bool CharacterInInstanceGroup(int16 instance_id, int32 char_id);
+	bool VerifyZoneInstance(uint32 zone_id, uint16 instance_id);
+	bool VerifyInstanceAlive(uint16 instance_id, uint32 char_id);
+	bool CharacterInInstanceGroup(uint16 instance_id, uint32 char_id);
 	void DeleteInstance(uint16 instance_id);
 	bool CheckInstanceExpired(uint16 instance_id);
-	int32 ZoneIDFromInstanceID(uint16 instance_id);
-	int32 VersionFromInstanceID(uint16 instance_id);
-	int32 GetTimeRemainingInstance(uint16 instance_id, bool &is_perma);
+	uint32 ZoneIDFromInstanceID(uint16 instance_id);
+	uint32 VersionFromInstanceID(uint16 instance_id);
+	uint32 GetTimeRemainingInstance(uint16 instance_id, bool &is_perma);
 	bool GetUnusedInstanceID(uint16 &instance_id);
 	bool CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version, uint32 duration);
 	void PurgeExpiredInstances();
@@ -164,103 +164,103 @@ public:
 	bool RemoveClientsFromInstance(uint16 instance_id);
 	bool CheckInstanceExists(uint16 instance_id);
 	void BuryCorpsesInInstance(uint16 instance_id);
-	int16 GetInstanceVersion(uint16 instance_id);
-	int16 GetInstanceID(const char* zone, int32 charid, sint16 version);
-	int16 GetInstanceID(int32 zone, int32 charid, sint16 version);
-	void AssignGroupToInstance(int32 gid, int32 instance_id);
-	void AssignRaidToInstance(int32 rid, int32 instance_id);
-	void FlagInstanceByGroupLeader(int32 zone, sint16 version, int32 charid, int32 gid);
-	void FlagInstanceByRaidLeader(int32 zone, sint16 version, int32 charid, int32 rid);
-	void SetInstanceDuration(int16 instance_id, int32 new_duration);
+	uint16 GetInstanceVersion(uint16 instance_id);
+	uint16 GetInstanceID(const char* zone, uint32 charid, int16 version);
+	uint16 GetInstanceID(uint32 zone, uint32 charid, int16 version);
+	void AssignGroupToInstance(uint32 gid, uint32 instance_id);
+	void AssignRaidToInstance(uint32 rid, uint32 instance_id);
+	void FlagInstanceByGroupLeader(uint32 zone, int16 version, uint32 charid, uint32 gid);
+	void FlagInstanceByRaidLeader(uint32 zone, int16 version, uint32 charid, uint32 rid);
+	void SetInstanceDuration(uint16 instance_id, uint32 new_duration);
 	bool GlobalInstance(uint16 instance_id);
 
 	/*
 	 * Adventure related.
 	 */
-	void UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win);
-	bool GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int32 &mmc_w, int32 &ruj_w, int32 &tak_w, 
-		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
+	void UpdateAdventureStatsEntry(uint32 char_id, uint8 theme, bool win);
+	bool GetAdventureStats(uint32 char_id, uint32 &guk_w, uint32 &mir_w, uint32 &mmc_w, uint32 &ruj_w, uint32 &tak_w, 
+		uint32 &guk_l, uint32 &mir_l, uint32 &mmc_l, uint32 &ruj_l, uint32 &tak_l);
 
 	/*
 	 * Account Related
 	 */
-	int32	GetMiniLoginAccount(char* ip);
-	void	GetAccountFromID(int32 id, char* oAccountName, sint16* oStatus);
-	int32	CheckLogin(const char* name, const char* password, sint16* oStatus = 0);
-	sint16	CheckStatus(int32 account_id);
-	int32	CreateAccount(const char* name, const char* password, sint16 status, int32 lsaccount_id = 0);
+	uint32	GetMiniLoginAccount(char* ip);
+	void	GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus);
+	uint32	CheckLogin(const char* name, const char* password, int16* oStatus = 0);
+	int16	CheckStatus(uint32 account_id);
+	uint32	CreateAccount(const char* name, const char* password, int16 status, uint32 lsaccount_id = 0);
 	bool	DeleteAccount(const char* name);
- 	bool	SetAccountStatus(const char* name, sint16 status);
+ 	bool	SetAccountStatus(const char* name, int16 status);
 	bool	SetLocalPassword(uint32 accid, const char* password);
-	int32	GetAccountIDFromLSID(int32 iLSID, char* oAccountName = 0, sint16* oStatus = 0);
-	bool	UpdateLiveChar(char* charname,int32 lsaccount_id);
-	bool	GetLiveChar(int32 account_id, char* cname);
-	int8	GetAgreementFlag(int32 acctid);
-	void	SetAgreementFlag(int32 acctid);
+	uint32	GetAccountIDFromLSID(uint32 iLSID, char* oAccountName = 0, int16* oStatus = 0);
+	bool	UpdateLiveChar(char* charname,uint32 lsaccount_id);
+	bool	GetLiveChar(uint32 account_id, char* cname);
+	uint8	GetAgreementFlag(uint32 acctid);
+	void	SetAgreementFlag(uint32 acctid);
 	
 	/*
 	 * Groups
 	 */
-	int32	GetGroupID(const char* name);
-	void	SetGroupID(const char* name, int32 id, int32 charid, int32 ismerc = false);
-	void	ClearGroup(int32 gid = 0);
+	uint32	GetGroupID(const char* name);
+	void	SetGroupID(const char* name, uint32 id, uint32 charid, uint32 ismerc = false);
+	void	ClearGroup(uint32 gid = 0);
 	char*	GetGroupLeaderForLogin(const char* name,char* leaderbuf);
 	
-	void	SetGroupLeaderName(int32 gid, const char* name);
-	char*	GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* maintank = NULL, char* assist = NULL, char* puller = NULL, char *marknpc = NULL,
+	void	SetGroupLeaderName(uint32 gid, const char* name);
+	char*	GetGroupLeadershipInfo(uint32 gid, char* leaderbuf, char* maintank = NULL, char* assist = NULL, char* puller = NULL, char *marknpc = NULL,
 				       GroupLeadershipAA_Struct* GLAA = NULL);
-	void	ClearGroupLeader(int32 gid = 0);
+	void	ClearGroupLeader(uint32 gid = 0);
 
 	/*
 	 * Raids
 	 */
-	void	ClearRaid(int32 rid = 0);
-	void	ClearRaidDetails(int32 rid = 0);
-	int32	GetRaidID(const char* name);
-	const char *GetRaidLeaderName(int32 rid);
+	void	ClearRaid(uint32 rid = 0);
+	void	ClearRaidDetails(uint32 rid = 0);
+	uint32	GetRaidID(const char* name);
+	const char *GetRaidLeaderName(uint32 rid);
 
 	/*
 	 * Database Varaibles
 	 */
-	bool	GetVariable(const char* varname, char* varvalue, int16 varvalue_len);
+	bool	GetVariable(const char* varname, char* varvalue, uint16 varvalue_len);
 	bool	SetVariable(const char* varname, const char* varvalue);
 	bool	LoadVariables();
-	int32	LoadVariables_MQ(char** query);
+	uint32	LoadVariables_MQ(char** query);
 	bool	LoadVariables_result(MYSQL_RES* result);
 	
 	/*
 	 * General Queries
 	 */
 	bool	LoadZoneNames();
-	bool	GetZoneLongName(const char* short_name, char** long_name, char* file_name = 0, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, int32* graveyard_id = 0, int32* maxclients = 0);
-	bool	GetZoneGraveyard(const int32 graveyard_id, int32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
-	int32	GetZoneGraveyardID(int32 zone_id, int32 version);
-	int32	GetZoneID(const char* zonename);
-	int8    GetPEQZone(int32 zoneID, int32 version);
-	const char*	GetZoneName(int32 zoneID, bool ErrorUnknown = false);
-	int8	GetServerType();
-	bool	GetSafePoints(const char* short_name, int32 version, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL);
-	bool	GetSafePoints(int32 zoneID, int32 version, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL) { return GetSafePoints(GetZoneName(zoneID), version, safe_x, safe_y, safe_z, minstatus, minlevel, flag_needed); }
-	int8	GetSkillCap(int8 skillid, int8 in_race, int8 in_class, int16 in_level);
-	int8	GetRaceSkill(int8 skillid, int8 in_race);
+	bool	GetZoneLongName(const char* short_name, char** long_name, char* file_name = 0, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, uint32* graveyard_id = 0, uint32* maxclients = 0);
+	bool	GetZoneGraveyard(const uint32 graveyard_id, uint32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
+	uint32	GetZoneGraveyardID(uint32 zone_id, uint32 version);
+	uint32	GetZoneID(const char* zonename);
+	uint8    GetPEQZone(uint32 zoneID, uint32 version);
+	const char*	GetZoneName(uint32 zoneID, bool ErrorUnknown = false);
+	uint8	GetServerType();
+	bool	GetSafePoints(const char* short_name, uint32 version, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = NULL);
+	bool	GetSafePoints(uint32 zoneID, uint32 version, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = NULL) { return GetSafePoints(GetZoneName(zoneID), version, safe_x, safe_y, safe_z, minstatus, minlevel, flag_needed); }
+	uint8	GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16 in_level);
+	uint8	GetRaceSkill(uint8 skillid, uint8 in_race);
 	bool	LoadPTimers(uint32 charid, PTimerList &into);
 	void	ClearPTimers(uint32 charid);
 	void	ClearMerchantTemp();
-	void	SetLFP(int32 CharID, bool LFP); 
-	void	SetLFG(int32 CharID, bool LFG);
-	void	SetFirstLogon(int32 CharID, int8 firstlogon);
-	void	SetLoginFlags(int32 CharID, bool LFP, bool LFG, int8 firstlogon); 
+	void	SetLFP(uint32 CharID, bool LFP); 
+	void	SetLFG(uint32 CharID, bool LFG);
+	void	SetFirstLogon(uint32 CharID, uint8 firstlogon);
+	void	SetLoginFlags(uint32 CharID, bool LFP, bool LFG, uint8 firstlogon); 
 	void	AddReport(std::string who, std::string against, std::string lines);
 	
 
 protected:
-	void	HandleMysqlError(int32 errnum);
-	//bool	RunQuery(const char* query, int32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, int32* affected_rows = 0, int32* errnum = 0, bool retry = true);
+	void	HandleMysqlError(uint32 errnum);
+	//bool	RunQuery(const char* query, uint32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, uint32* affected_rows = 0, uint32* errnum = 0, bool retry = true);
 	
 private:
 	void DBInitVars();
 	
-	int32				max_zonename;
+	uint32				max_zonename;
 	char**				zonename_array;
 	
 	Mutex				Mvarcache;

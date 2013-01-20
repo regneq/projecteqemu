@@ -73,7 +73,7 @@ type  HI_LOSWAPshort (type a) {return (LO_BYTE(a)<<8) | (HI_BYTE(a)>>8);}
 template <typename type>                    // HI_LOSWAPlong
 type  HI_LOSWAPlong (type x) {return (LO_WORD(a)<<16) | (HIWORD(a)>>16);}  
 
-EQStreamServer::EQStreamServer(int16 iPort) {
+EQStreamServer::EQStreamServer(uint16 iPort) {
 	RunLoop = false;
 	pPort = iPort;
 	pOpen = false;
@@ -98,7 +98,7 @@ EQStreamServer::~EQStreamServer() {
 		NewQueue.pop(); // they're deleted with the list, clear this queue so it doesnt try to delete them again
 }
 
-bool EQStreamServer::Open(int16 iPort) {
+bool EQStreamServer::Open(uint16 iPort) {
 	LockMutex lock(&MOpen);
 	if (iPort && pPort != iPort) {
 		if (pOpen)
@@ -254,7 +254,7 @@ void EQStreamServer::Process() {
 	}
 }
 
-void EQStreamServer::RecvData(uchar* data, int32 size, int32 irIP, int16 irPort) {
+void EQStreamServer::RecvData(uchar* data, uint32 size, uint32 irIP, uint16 irPort) {
 /*
 	CHANGE HISTORY
 
@@ -266,7 +266,7 @@ void EQStreamServer::RecvData(uchar* data, int32 size, int32 irIP, int16 irPort)
 
 	// Check for invalid data
 	if (!data || size <= 4) return;
-	//if (CRC32::Generate(data, size-4) != ntohl(*((int32*) &data[size-4]))) {
+	//if (CRC32::Generate(data, size-4) != ntohl(*((uint32*) &data[size-4]))) {
 #if EQN_DEBUG_Error >= 1
 		//cout << "Incomming Packet failed checksum" << endl;
 #endif

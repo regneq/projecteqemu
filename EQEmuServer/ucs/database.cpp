@@ -63,15 +63,15 @@ Database::Database ()
 Establish a connection to a mysql database with the supplied parameters
 */
 
-Database::Database(const char* host, const char* user, const char* passwd, const char* database, int32 port)
+Database::Database(const char* host, const char* user, const char* passwd, const char* database, uint32 port)
 {
 	DBInitVars();
 	Connect(host, user, passwd, database, port);
 }
 
-bool Database::Connect(const char* host, const char* user, const char* passwd, const char* database, int32 port)
+bool Database::Connect(const char* host, const char* user, const char* passwd, const char* database, uint32 port)
 {
-	int32 errnum= 0;
+	uint32 errnum= 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	if (!Open(host, user, passwd, database, port, &errnum, errbuf))
 	{
@@ -93,7 +93,7 @@ void Database::DBInitVars() {
 
 
 
-void Database::HandleMysqlError(int32 errnum) {
+void Database::HandleMysqlError(uint32 errnum) {
 }
 
 /*
@@ -275,7 +275,7 @@ int Database::FindCharacter(const char *CharacterName) {
 
 }
 
-bool Database::GetVariable(const char* varname, char* varvalue, int16 varvalue_len) {
+bool Database::GetVariable(const char* varname, char* varvalue, uint16 varvalue_len) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
@@ -581,7 +581,7 @@ bool Database::SendMail(string Recipient, string From, string Subject, string Bo
 	const char *MailQuery="INSERT INTO `mail` (`charid`, `timestamp`, `from`, `subject`, `body`, `to`, `status`) "
 			      "VALUES ('%i', %i, '%s', '%s', '%s', '%s', %i)";
 
-	int32 LastMsgID;
+	uint32 LastMsgID;
 
 	int Now = time(NULL); // time returns a 64 bit int on Windows at least, which vsnprintf doesn't like.
 
@@ -643,7 +643,7 @@ void Database::ExpireMail() {
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	int32 AffectedRows;
+	uint32 AffectedRows;
 
 	if (!RunQuery(query,MakeAnyLenString(&query, "select COUNT(*) from `mail` "),errbuf,&result)){
 		_log(UCS__ERROR, "Unable to get message count from database. %s %s", query, errbuf);

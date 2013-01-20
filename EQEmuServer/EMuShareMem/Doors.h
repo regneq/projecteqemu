@@ -17,6 +17,6 @@ struct MMFDoors_Struct {
 	Door		Doors[0];
 };
 
-bool	pDLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, int32 iDoorstructSize, sint32* iDoorsCount, int32* iMaxDoorID);
+bool	pDLLLoadDoors(CALLBACK_DBLoadDoors cbDBLoadDoors, uint32 iDoorstructSize, int32* iDoorsCount, uint32* iMaxDoorID);
 bool	pAddDoor(uint32 id, const Door* door);
 const Door* pGetDoor(uint32 id);

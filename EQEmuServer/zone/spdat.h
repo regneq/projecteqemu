@@ -624,24 +624,24 @@ struct SPDat_Spell_Struct
 /* 010 */	float		aoerange;
 /* 011 */	float		pushback;
 /* 012 */	float		pushup;
-/* 013 */	int32		cast_time; // Cast time
-/* 014 */	int32		recovery_time; // Recovery time
-/* 015 */	int32		recast_time; // Recast same spell time
-/* 016 */	int32		buffdurationformula;
-/* 017 */	int32		buffduration;
-/* 018 */	int32		AEDuration;	// sentinel, rain of something
-/* 019 */	int16		mana; // Mana Used
-/* 020 */	sint32		base[EFFECT_COUNT];	//various purposes
+/* 013 */	uint32		cast_time; // Cast time
+/* 014 */	uint32		recovery_time; // Recovery time
+/* 015 */	uint32		recast_time; // Recast same spell time
+/* 016 */	uint32		buffdurationformula;
+/* 017 */	uint32		buffduration;
+/* 018 */	uint32		AEDuration;	// sentinel, rain of something
+/* 019 */	uint16		mana; // Mana Used
+/* 020 */	int32		base[EFFECT_COUNT];	//various purposes
 /* 032 */	int			base2[EFFECT_COUNT]; //various purposes
-/* 044 */	sint16		max[EFFECT_COUNT];
-/* 056 */	int16		icon; // Spell icon
-/* 057 */	int16		memicon; // Icon on membarthing
-/* 058 */	sint32		components[4]; // reagents
+/* 044 */	int16		max[EFFECT_COUNT];
+/* 056 */	uint16		icon; // Spell icon
+/* 057 */	uint16		memicon; // Icon on membarthing
+/* 058 */	int32		components[4]; // reagents
 /* 062 */	int			component_counts[4]; // amount of regents used
 /* 066 */	signed		NoexpendReagent[4];	// focus items (Need but not used; Flame Lick has a Fire Beetle Eye focus.)
 											// If it is a number between 1-4 it means components[number] is a focus and not to expend it
 											// If it is a valid itemid it means this item is a focus as well
-/* 070 */	int16		formula[EFFECT_COUNT]; // Spell's value formula
+/* 070 */	uint16		formula[EFFECT_COUNT]; // Spell's value formula
 /* 082 */	int			LightType; // probaly another effecttype flag
 /* 083 */	int			goodEffect; //0=detrimental, 1=Beneficial, 2=Beneficial, Group Only
 /* 084 */	int			Activated; // probaly another effecttype flag	
@@ -650,30 +650,30 @@ struct SPDat_Spell_Struct
 /* 098 */	SpellTargetType	targettype;	// Spell's Target
 /* 099 */	int			basediff; // base difficulty fizzle adjustment
 /* 100 */	SkillType	skill;
-/* 101 */	sint16		zonetype;	// 01=Outdoors, 02=dungeons, ff=Any 
-/* 102 */	int16		EnvironmentType;
+/* 101 */	int16		zonetype;	// 01=Outdoors, 02=dungeons, ff=Any 
+/* 102 */	uint16		EnvironmentType;
 /* 103 */	int			TimeOfDay;
-/* 104 */	int8		classes[PLAYER_CLASS_COUNT]; // Classes, and their min levels
-/* 120 */	int8		CastingAnim;
-/* 121 */	int8		TargetAnim;
-/* 122 */	int32		TravelType;
-/* 123 */	int16		SpellAffectIndex;
+/* 104 */	uint8		classes[PLAYER_CLASS_COUNT]; // Classes, and their min levels
+/* 120 */	uint8		CastingAnim;
+/* 121 */	uint8		TargetAnim;
+/* 122 */	uint32		TravelType;
+/* 123 */	uint16		SpellAffectIndex;
 /* 124 */   int         disallow_sit;	// 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
 /* 125 */   int         spacing125;   // 125: Words of the Skeptic
-/* 126 */	sint8		deities[16];	// Deity check. 201 - 216 per http://www.eqemulator.net/wiki/wikka.php?wakka=DeityList
+/* 126 */	int8		deities[16];	// Deity check. 201 - 216 per http://www.eqemulator.net/wiki/wikka.php?wakka=DeityList
 										// -1: Restrict to Deity; 1: Restrict to Deity, but only used on non-Live (Test Server "Blessing of ...") spells; 0: Don't restrict
 /* 142 */ int spacing142[2];	// 142: between 0 & 100
 								// 143: always set to 0
-/* 144 */	sint16		new_icon;	// Spell icon used by the client in uifiles/default/spells??.tga, both for spell gems & buff window. Looks to depreciate icon & memicon
-/* 145 */	sint16		spellanim;	// Doesn't look like it's the same as #doanim, so not sure what this is
-/* 146 */	sint8		uninterruptable;	// Looks like anything != 0 is uninterruptable. Values are mostly -1, 0, & 1 (Fetid Breath = 90?)
-/* 147 */	sint16		ResistDiff; 
+/* 144 */	int16		new_icon;	// Spell icon used by the client in uifiles/default/spells??.tga, both for spell gems & buff window. Looks to depreciate icon & memicon
+/* 145 */	int16		spellanim;	// Doesn't look like it's the same as #doanim, so not sure what this is
+/* 146 */	int8		uninterruptable;	// Looks like anything != 0 is uninterruptable. Values are mostly -1, 0, & 1 (Fetid Breath = 90?)
+/* 147 */	int16		ResistDiff; 
 /* 148 */   int			dot_stacking_exempt;
 /* 149 */   int			deletable;
-/* 150 */	int16		RecourseLink;
+/* 150 */	uint16		RecourseLink;
 /* 151 */ int spacing151[3];	// 151: -1, 0, or 1
 								// 152 & 153: all set to 0
-/* 154 */	sint8		short_buff_box;	// != 0, goes to short buff box. Not really supported in the server code
+/* 154 */	int8		short_buff_box;	// != 0, goes to short buff box. Not really supported in the server code
 /* 155 */   int			descnum; // eqstr of description of spell
 /* 156 */   int			typedescnum; // eqstr of type description
 /* 157 */   int			effectdescnum; // eqstr of effect description
@@ -709,7 +709,7 @@ struct SPDat_Spell_Struct
 /* 219 */	int			maxtargets; // not in DB yet, is used for beam and ring spells for target # limits
 
 //shared memory errors
-/* 186 */	/*sint8		nodispell;*/	// 0=can be dispelled, -1=can't be dispelled at all, 1=most can be cancelled w/ a cure but not dispelled
+/* 186 */	/*int8		nodispell;*/	// 0=can be dispelled, -1=can't be dispelled at all, 1=most can be cancelled w/ a cure but not dispelled
 /* 187 */	/*uint8		npc_category;*/	// 0=not used, 1=AoE Detrimental, 2=DD, 3=Buffs, 4=Pets, 5=Healing, 6=Gate, 7=Debuff, 8=Dispell
 /* 188 */	/*uint32		npc_usefulness;*/	// higher number = more useful, lower number = less useful
 /* 189 */ /*int spacing189[18];*/
@@ -718,99 +718,99 @@ struct SPDat_Spell_Struct
 // Might be newer fields in the live version, which is what some of the last fields are
 
 
-			int8		DamageShieldType; // This field does not exist in spells_us.txt
+			uint8		DamageShieldType; // This field does not exist in spells_us.txt
 };
 
 #if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 	extern const SPDat_Spell_Struct* spells; 
-	extern sint32 SPDAT_RECORDS;
+	extern int32 SPDAT_RECORDS;
 #else
 	#define SPDAT_RECORDS	3602
 #endif
 
-bool IsTargetableAESpell(int16 spell_id);
-bool IsSacrificeSpell(int16 spell_id);
-bool IsLifetapSpell(int16 spell_id);
-bool IsMezSpell(int16 spell_id);
-bool IsStunSpell(int16 spell_id);
-bool IsSlowSpell(int16 spell_id);
-bool IsHasteSpell(int16 spell_id);
-bool IsHarmonySpell(int16 spell_id);
-bool IsPercentalHealSpell(int16 spell_id);
-bool IsGroupOnlySpell(int16 spell_id);
-bool IsBeneficialSpell(int16 spell_id);
-bool IsDetrimentalSpell(int16 spell_id);
-bool IsInvulnerabilitySpell(int16 spell_id);
-bool IsCHDurationSpell(int16 spell_id);
-bool IsPoisonCounterSpell(int16 spell_id);
-bool IsDiseaseCounterSpell(int16 spell_id);
-bool IsSummonItemSpell(int16 spell_id);
-bool IsSummonSkeletonSpell(int16 spell_id);
-bool IsSummonPetSpell(int16 spell_id);
-bool IsSummonPCSpell(int16 spell_id);
-bool IsCharmSpell(int16 spell_id);
-bool IsBlindSpell(int16 spell_id);
-bool IsEffectHitpointsSpell(int16 spell_id);
-bool IsReduceCastTimeSpell(int16 spell_id);
-bool IsIncreaseDurationSpell(int16 spell_id);
-bool IsReduceManaSpell(int16 spell_id);
-bool IsExtRangeSpell(int16 spell_id);
-bool IsImprovedHealingSpell(int16 spell_id);
-bool IsImprovedDamageSpell(int16 spell_id);
-bool IsAEDurationSpell(int16 spell_id);
-bool IsPureNukeSpell(int16 spell_id);
-bool IsPartialCapableSpell(int16 spell_id);
-bool IsResistableSpell(int16 spell_id);
-bool IsGroupSpell(int16 spell_id);
-bool IsTGBCompatibleSpell(int16 spell_id);
-bool IsBardSong(int16 spell_id);
-bool IsEffectInSpell(int16 spellid, int effect);
-bool IsBlankSpellEffect(int16 spellid, int effect_index);
-bool IsValidSpell(int32 spellid);
-bool IsSummonSpell(int16 spellid);
-bool IsEvacSpell(int16 spellid);
-bool IsDamageSpell(int16 spellid);
-bool IsFearSpell(int16 spellid);
-bool BeneficialSpell(int16 spell_id);
-bool GroupOnlySpell(int16 spell_id);
-int GetSpellEffectIndex(int16 spell_id, int effect);
-int CanUseSpell(int16 spellid, int classa, int level);
-int GetMinLevel(int16 spell_id);
-int GetSpellLevel(int16 spell_id, int classa);
+bool IsTargetableAESpell(uint16 spell_id);
+bool IsSacrificeSpell(uint16 spell_id);
+bool IsLifetapSpell(uint16 spell_id);
+bool IsMezSpell(uint16 spell_id);
+bool IsStunSpell(uint16 spell_id);
+bool IsSlowSpell(uint16 spell_id);
+bool IsHasteSpell(uint16 spell_id);
+bool IsHarmonySpell(uint16 spell_id);
+bool IsPercentalHealSpell(uint16 spell_id);
+bool IsGroupOnlySpell(uint16 spell_id);
+bool IsBeneficialSpell(uint16 spell_id);
+bool IsDetrimentalSpell(uint16 spell_id);
+bool IsInvulnerabilitySpell(uint16 spell_id);
+bool IsCHDurationSpell(uint16 spell_id);
+bool IsPoisonCounterSpell(uint16 spell_id);
+bool IsDiseaseCounterSpell(uint16 spell_id);
+bool IsSummonItemSpell(uint16 spell_id);
+bool IsSummonSkeletonSpell(uint16 spell_id);
+bool IsSummonPetSpell(uint16 spell_id);
+bool IsSummonPCSpell(uint16 spell_id);
+bool IsCharmSpell(uint16 spell_id);
+bool IsBlindSpell(uint16 spell_id);
+bool IsEffectHitpointsSpell(uint16 spell_id);
+bool IsReduceCastTimeSpell(uint16 spell_id);
+bool IsIncreaseDurationSpell(uint16 spell_id);
+bool IsReduceManaSpell(uint16 spell_id);
+bool IsExtRangeSpell(uint16 spell_id);
+bool IsImprovedHealingSpell(uint16 spell_id);
+bool IsImprovedDamageSpell(uint16 spell_id);
+bool IsAEDurationSpell(uint16 spell_id);
+bool IsPureNukeSpell(uint16 spell_id);
+bool IsPartialCapableSpell(uint16 spell_id);
+bool IsResistableSpell(uint16 spell_id);
+bool IsGroupSpell(uint16 spell_id);
+bool IsTGBCompatibleSpell(uint16 spell_id);
+bool IsBardSong(uint16 spell_id);
+bool IsEffectInSpell(uint16 spellid, int effect);
+bool IsBlankSpellEffect(uint16 spellid, int effect_index);
+bool IsValidSpell(uint32 spellid);
+bool IsSummonSpell(uint16 spellid);
+bool IsEvacSpell(uint16 spellid);
+bool IsDamageSpell(uint16 spellid);
+bool IsFearSpell(uint16 spellid);
+bool BeneficialSpell(uint16 spell_id);
+bool GroupOnlySpell(uint16 spell_id);
+int GetSpellEffectIndex(uint16 spell_id, int effect);
+int CanUseSpell(uint16 spellid, int classa, int level);
+int GetMinLevel(uint16 spell_id);
+int GetSpellLevel(uint16 spell_id, int classa);
 int CalcBuffDuration_formula(int level, int formula, int duration);
-sint32 CalculatePoisonCounters(int16 spell_id);
-sint32 CalculateDiseaseCounters(int16 spell_id);
-sint32 CalculateCurseCounters(int16 spell_id);
-sint32 CalculateCorruptionCounters(int16 spell_id);
-sint32 CalculateCounters(int16 spell_id);
-bool IsDisciplineBuff(int16 spell_id);
-bool IsDiscipline(int16 spell_id);
-bool IsResurrectionEffects(int16 spell_id);
-bool IsRuneSpell(int16 spell_id);
-bool IsMagicRuneSpell(int16 spell_id);
-bool IsManaTapSpell(int16 spell_id);
-bool IsAllianceSpellLine(int16 spell_id);
-bool IsDeathSaveSpell(int16 spell_id);
-bool IsFullDeathSaveSpell(int16 spell_id);
-bool IsPartialDeathSaveSpell(int16 spell_id);
-bool IsShadowStepSpell(int16 spell_id);
-bool IsSuccorSpell(int16 spell_id);
-bool IsTeleportSpell(int16 spell_id);
-bool IsGateSpell(int16 spell_id);
-bool IsPlayerIllusionSpell(int16 spell_id); // seveian 2008-09-23
-bool IsLDoNObjectSpell(int16 spell_id);
-sint32 GetSpellResistType(int16 spell_id);
-sint32 GetSpellTargetType(int16 spell_id);
-bool IsHealOverTimeSpell(int16 spell_id);
-bool IsCompleteHealSpell(int16 spell_id);
-bool IsFastHealSpell(int16 spell_id);
-bool IsRegularSingleTargetHealSpell(int16 spell_id);
-bool IsRegularGroupHealSpell(int16 spell_id);
-bool IsGroupCompleteHealSpell(int16 spell_id);
-bool IsGroupHealOverTimeSpell(int16 spell_id);
-bool IsDebuffSpell(int16 spell_id);
-bool IsResistDebuffSpell(int16 spell_id);
-bool IsSelfConversionSpell(int16 spell_id);
+int32 CalculatePoisonCounters(uint16 spell_id);
+int32 CalculateDiseaseCounters(uint16 spell_id);
+int32 CalculateCurseCounters(uint16 spell_id);
+int32 CalculateCorruptionCounters(uint16 spell_id);
+int32 CalculateCounters(uint16 spell_id);
+bool IsDisciplineBuff(uint16 spell_id);
+bool IsDiscipline(uint16 spell_id);
+bool IsResurrectionEffects(uint16 spell_id);
+bool IsRuneSpell(uint16 spell_id);
+bool IsMagicRuneSpell(uint16 spell_id);
+bool IsManaTapSpell(uint16 spell_id);
+bool IsAllianceSpellLine(uint16 spell_id);
+bool IsDeathSaveSpell(uint16 spell_id);
+bool IsFullDeathSaveSpell(uint16 spell_id);
+bool IsPartialDeathSaveSpell(uint16 spell_id);
+bool IsShadowStepSpell(uint16 spell_id);
+bool IsSuccorSpell(uint16 spell_id);
+bool IsTeleportSpell(uint16 spell_id);
+bool IsGateSpell(uint16 spell_id);
+bool IsPlayerIllusionSpell(uint16 spell_id); // seveian 2008-09-23
+bool IsLDoNObjectSpell(uint16 spell_id);
+int32 GetSpellResistType(uint16 spell_id);
+int32 GetSpellTargetType(uint16 spell_id);
+bool IsHealOverTimeSpell(uint16 spell_id);
+bool IsCompleteHealSpell(uint16 spell_id);
+bool IsFastHealSpell(uint16 spell_id);
+bool IsRegularSingleTargetHealSpell(uint16 spell_id);
+bool IsRegularGroupHealSpell(uint16 spell_id);
+bool IsGroupCompleteHealSpell(uint16 spell_id);
+bool IsGroupHealOverTimeSpell(uint16 spell_id);
+bool IsDebuffSpell(uint16 spell_id);
+bool IsResistDebuffSpell(uint16 spell_id);
+bool IsSelfConversionSpell(uint16 spell_id);
 uint32 GetMorphTrigger(uint32 spell_id);
 uint32 GetPartialMeleeRuneReduction(uint32 spell_id);
 uint32 GetPartialMagicRuneReduction(uint32 spell_id);
@@ -819,11 +819,11 @@ uint32 GetPartialMagicRuneAmount(uint32 spell_id);
 
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
-int GetSpellEffectDescNum(int16 spell_id);
-DmgShieldType GetDamageShieldType(int16 spell_id);
-bool DetrimentalSpellAllowsRest(int16 spell_id);
-uint32 GetNimbusEffect(int16 spell_id);
-sint32 GetFuriousBash(int16 spell_id);
-bool IsShortDurationBuff(int16 spell_id);
+int GetSpellEffectDescNum(uint16 spell_id);
+DmgShieldType GetDamageShieldType(uint16 spell_id);
+bool DetrimentalSpellAllowsRest(uint16 spell_id);
+uint32 GetNimbusEffect(uint16 spell_id);
+int32 GetFuriousBash(uint16 spell_id);
+bool IsShortDurationBuff(uint16 spell_id);
 
 #endif

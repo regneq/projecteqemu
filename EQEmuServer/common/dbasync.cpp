@@ -103,9 +103,9 @@ bool DBAsync::StopThread() {
 	return ret;
 }
 
-int32 DBAsync::AddWork(DBAsyncWork** iWork, int32 iDelay) {
+uint32 DBAsync::AddWork(DBAsyncWork** iWork, uint32 iDelay) {
 	MInList.lock();
-	int32 ret = GetNextID();
+	uint32 ret = GetNextID();
 	if (!(*iWork)->SetWorkID(ret)) {
 		MInList.unlock();
 		return 0;
@@ -127,7 +127,7 @@ int32 DBAsync::AddWork(DBAsyncWork** iWork, int32 iDelay) {
 	return ret;
 }
 
-bool DBAsync::CancelWork(int32 iWorkID) {
+bool DBAsync::CancelWork(uint32 iWorkID) {
 	if (iWorkID == 0)
 		return false;
 #if DEBUG_MYSQL_QUERIES >= 2
@@ -331,7 +331,7 @@ void DBAsync::DispatchWork(DBAsyncWork* iWork) {
 
 
 
-DBAsyncFinishedQueue::DBAsyncFinishedQueue(int32 iTimeout) {
+DBAsyncFinishedQueue::DBAsyncFinishedQueue(uint32 iTimeout) {
 	pTimeout = iTimeout;
 }
 
@@ -361,7 +361,7 @@ DBAsyncWork* DBAsyncFinishedQueue::Pop() {
 	return ret;
 }
 
-DBAsyncWork* DBAsyncFinishedQueue::Find(int32 iWorkID) {
+DBAsyncWork* DBAsyncFinishedQueue::Find(uint32 iWorkID) {
 	DBAsyncWork* ret = 0;
 	MLock.lock();
 	LinkedListIterator<DBAsyncWork*> iterator(list);
@@ -379,7 +379,7 @@ DBAsyncWork* DBAsyncFinishedQueue::Find(int32 iWorkID) {
 	return ret;
 }
 
-DBAsyncWork* DBAsyncFinishedQueue::PopByWPT(int32 iWPT) {
+DBAsyncWork* DBAsyncFinishedQueue::PopByWPT(uint32 iWPT) {
 	DBAsyncWork* ret = 0;
 	MLock.lock();
 	LinkedListIterator<DBAsyncWork*> iterator(list);
@@ -408,7 +408,7 @@ bool DBAsyncFinishedQueue::Push(DBAsyncWork* iDBAW) {
 
 
 
-DBAsyncWork::DBAsyncWork(Database *db, DBAsyncFinishedQueue* iDBAFQ, int32 iWPT, DBAsync::Type iType, int32 iTimeout)
+DBAsyncWork::DBAsyncWork(Database *db, DBAsyncFinishedQueue* iDBAFQ, uint32 iWPT, DBAsync::Type iType, uint32 iTimeout)
 : m_db(db)
 {
 	pstatus = DBAsync::AddingWork;
@@ -424,7 +424,7 @@ DBAsyncWork::DBAsyncWork(Database *db, DBAsyncFinishedQueue* iDBAFQ, int32 iWPT,
 	pTSFinish = 0;
 }
 
-DBAsyncWork::DBAsyncWork(Database *db, DBWorkCompleteCallBack iCB, int32 iWPT, DBAsync::Type iType, int32 iTimeout)
+DBAsyncWork::DBAsyncWork(Database *db, DBWorkCompleteCallBack iCB, uint32 iWPT, DBAsync::Type iType, uint32 iTimeout)
 : m_db(db)
 {
 	pstatus = DBAsync::AddingWork;
@@ -466,7 +466,7 @@ bool DBAsyncWork::AddQuery(DBAsyncQuery** iDBAQ) {
 	return ret;
 }
 
-bool DBAsyncWork::AddQuery(int32 iQPT, char** iQuery, int32 iQueryLen, bool iGetResultSet, bool iGetErrbuf) {
+bool DBAsyncWork::AddQuery(uint32 iQPT, char** iQuery, uint32 iQueryLen, bool iGetResultSet, bool iGetErrbuf) {
 	DBAsyncQuery* DBAQ = new DBAsyncQuery(iQPT, iQuery, iQueryLen, iGetResultSet, iGetErrbuf);
 	if (AddQuery(&DBAQ))
 		return true;
@@ -476,7 +476,7 @@ bool DBAsyncWork::AddQuery(int32 iQPT, char** iQuery, int32 iQueryLen, bool iGet
 	}
 }
 
-bool DBAsyncWork::SetWorkID(int32 iWorkID) {
+bool DBAsyncWork::SetWorkID(uint32 iWorkID) {
 	bool ret = true;
 	MLock.lock();
 	if (pWorkID)
@@ -487,16 +487,16 @@ bool DBAsyncWork::SetWorkID(int32 iWorkID) {
 	return ret;
 }
 
-int32 DBAsyncWork::GetWorkID() {
-	int32 ret;
+uint32 DBAsyncWork::GetWorkID() {
+	uint32 ret;
 	MLock.lock();
 	ret = pWorkID;
 	MLock.unlock();
 	return ret;
 }
 
-int32 DBAsyncWork::WPT() {
-	int32 ret;
+uint32 DBAsyncWork::WPT() {
+	uint32 ret;
 	MLock.lock();
 	ret = pWPT;
 	MLock.unlock();
@@ -522,7 +522,7 @@ DBAsyncQuery* DBAsyncWork::PopAnswer() {
 	return ret;
 }
 
-bool DBAsyncWork::CheckTimeout(int32 iFQTimeout) {
+bool DBAsyncWork::CheckTimeout(uint32 iFQTimeout) {
 	if (pTimeout == 0xFFFFFFFF)
 		return false;
 	bool ret = false;
@@ -587,7 +587,7 @@ void DBAsyncWork::PushAnswer(DBAsyncQuery* iDBAQ) {
 }
 
 
-DBAsyncQuery::DBAsyncQuery(int32 iQPT, char** iQuery, int32 iQueryLen, bool iGetResultSet, bool iGetErrbuf) {
+DBAsyncQuery::DBAsyncQuery(uint32 iQPT, char** iQuery, uint32 iQueryLen, bool iGetResultSet, bool iGetErrbuf) {
 	if (iQueryLen == 0xFFFFFFFF)
 		pQueryLen = strlen(*iQuery);
 	else
@@ -597,7 +597,7 @@ DBAsyncQuery::DBAsyncQuery(int32 iQPT, char** iQuery, int32 iQueryLen, bool iGet
 	Init(iQPT, iGetResultSet, iGetErrbuf);
 }
 
-DBAsyncQuery::DBAsyncQuery(int32 iQPT, const char* iQuery, int32 iQueryLen, bool iGetResultSet, bool iGetErrbuf) {
+DBAsyncQuery::DBAsyncQuery(uint32 iQPT, const char* iQuery, uint32 iQueryLen, bool iGetResultSet, bool iGetErrbuf) {
 	if (iQueryLen == 0xFFFFFFFF)
 		pQueryLen = strlen(iQuery);
 	else
@@ -606,7 +606,7 @@ DBAsyncQuery::DBAsyncQuery(int32 iQPT, const char* iQuery, int32 iQueryLen, bool
 	Init(iQPT, iGetResultSet, iGetErrbuf);
 }
 
-void DBAsyncQuery::Init(int32 iQPT, bool iGetResultSet, bool iGetErrbuf) {
+void DBAsyncQuery::Init(uint32 iQPT, bool iGetResultSet, bool iGetErrbuf) {
 	pstatus = DBAsync::AddingWork;
 	pQPT = iQPT;
 	pGetResultSet = iGetResultSet;
@@ -627,7 +627,7 @@ DBAsyncQuery::~DBAsyncQuery() {
 		mysql_free_result(presult);
 }
 
-bool DBAsyncQuery::GetAnswer(char* errbuf, MYSQL_RES** result, int32* affected_rows, int32* last_insert_id, int32* errnum) {
+bool DBAsyncQuery::GetAnswer(char* errbuf, MYSQL_RES** result, uint32* affected_rows, uint32* last_insert_id, uint32* errnum) {
 	if (pstatus != DBAsync::Finished) {
 		if (errbuf)
 			snprintf(errbuf, MYSQL_ERRMSG_SIZE, "Error: Query not finished.");

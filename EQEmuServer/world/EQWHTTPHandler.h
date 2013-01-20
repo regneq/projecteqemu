@@ -29,7 +29,7 @@ class EQWParser;
 class EQWHTTPHandler : public HttpdSocket {
 	static const int READ_BUFFER_LEN;
 public:
-	EQWHTTPHandler(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort);
+	EQWHTTPHandler(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort);
 	virtual ~EQWHTTPHandler();
 	
 	void SetResponseCode(const char *code) { m_responseCode = code; }
@@ -80,7 +80,7 @@ protected:
 	volatile bool m_running;
 	uint16 m_port;
 	
-	virtual void CreateNewConnection(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort);
+	virtual void CreateNewConnection(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort);
 	
 /*	//I decided to put this into its own thread so that the HTTP pages
 	//cannot block the main world server's operation.

@@ -115,10 +115,10 @@ int EQW::CountZones() {
 vector<string> EQW::ListBootedZones() {
 	vector<string> res;
 	
-	vector<int32> zones;
+	vector<uint32> zones;
 	zoneserver_list.GetZoneIDList(zones);
 	
-	vector<int32>::iterator cur, end;
+	vector<uint32>::iterator cur, end;
 	cur = zones.begin();
 	end = zones.end();
 	for(; cur != end; cur++) {
@@ -340,47 +340,47 @@ int  EQW::GetDynamicCount(Const_char *launcher_name) {
 }
 */
 
-int32 EQW::CreateGuild(const char* name, int32 leader_char_id) {
-	int32 id = guild_mgr.CreateGuild(name, leader_char_id);
+uint32 EQW::CreateGuild(const char* name, uint32 leader_char_id) {
+	uint32 id = guild_mgr.CreateGuild(name, leader_char_id);
 	if(id != GUILD_NONE)
 		client_list.UpdateClientGuild(leader_char_id, id);
 	return(id);
 }
 
-bool EQW::DeleteGuild(int32 guild_id) {
+bool EQW::DeleteGuild(uint32 guild_id) {
 	return(guild_mgr.DeleteGuild(guild_id));
 }
 
-bool EQW::RenameGuild(int32 guild_id, const char* name) {
+bool EQW::RenameGuild(uint32 guild_id, const char* name) {
 	return(guild_mgr.RenameGuild(guild_id, name));
 }
 
-bool EQW::SetGuildMOTD(int32 guild_id, const char* motd, const char *setter) {
+bool EQW::SetGuildMOTD(uint32 guild_id, const char* motd, const char *setter) {
 	return(guild_mgr.SetGuildMOTD(guild_id, motd, setter));
 }
 
-bool EQW::SetGuildLeader(int32 guild_id, int32 leader_char_id) {
+bool EQW::SetGuildLeader(uint32 guild_id, uint32 leader_char_id) {
 	return(guild_mgr.SetGuildLeader(guild_id, leader_char_id));
 }
 
-bool EQW::SetGuild(int32 charid, int32 guild_id, int8 rank) {
+bool EQW::SetGuild(uint32 charid, uint32 guild_id, uint8 rank) {
 	client_list.UpdateClientGuild(charid, guild_id);
 	return(guild_mgr.SetGuild(charid, guild_id, rank));
 }
 
-bool EQW::SetGuildRank(int32 charid, int8 rank) {
+bool EQW::SetGuildRank(uint32 charid, uint8 rank) {
 	return(guild_mgr.SetGuildRank(charid, rank));
 }
 
-bool EQW::SetBankerFlag(int32 charid, bool is_banker) {
+bool EQW::SetBankerFlag(uint32 charid, bool is_banker) {
 	return(guild_mgr.SetBankerFlag(charid, is_banker));
 }
 
-bool EQW::SetTributeFlag(int32 charid, bool enabled) {
+bool EQW::SetTributeFlag(uint32 charid, bool enabled) {
 	return(guild_mgr.SetTributeFlag(charid, enabled));
 }
 
-bool EQW::SetPublicNote(int32 charid, const char *note) {
+bool EQW::SetPublicNote(uint32 charid, const char *note) {
 	return(guild_mgr.SetPublicNote(charid, note));
 }
 

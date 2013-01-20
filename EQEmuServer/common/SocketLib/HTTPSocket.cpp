@@ -57,7 +57,7 @@ namespace SOCKETS_NAMESPACE {
 
 
 
-HTTPSocket::HTTPSocket(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort)
+HTTPSocket::HTTPSocket(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort)
 :TCPConnection(ID,in_socket,irIP,irPort)
 ,m_first(true)
 ,m_header(true)

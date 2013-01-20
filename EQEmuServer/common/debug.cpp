@@ -36,7 +36,7 @@ EQEMuLog::EQEMuLog() {
 //	MOpen = new Mutex;
 //	MLog = new Mutex*[MaxLogID];
 //	fp = new FILE*[MaxLogID];
-//	pLogStatus = new int8[MaxLogID];
+//	pLogStatus = new uint8[MaxLogID];
 	for (int i=0; i<MaxLogID; i++) {
 		fp[i] = 0;
 //		MLog[i] = new Mutex;
@@ -252,7 +252,7 @@ bool EQEMuLog::writePVA(LogIDs id, const char *prefix, const char *fmt, va_list 
     return true;
 }
 
-bool EQEMuLog::writebuf(LogIDs id, const char *buf, int8 size, int32 count) {
+bool EQEMuLog::writebuf(LogIDs id, const char *buf, uint8 size, uint32 count) {
 	if (!logFileValid) {
 		return false;
     }
@@ -323,7 +323,7 @@ bool EQEMuLog::writeNTS(LogIDs id, bool dofile, const char *fmt, ...) {
     return true;
 };
 
-bool EQEMuLog::Dump(LogIDs id, int8* data, int32 size, int32 cols, int32 skip) {
+bool EQEMuLog::Dump(LogIDs id, uint8* data, uint32 size, uint32 cols, uint32 skip) {
 	if (!logFileValid) {
 #if EQDEBUG >= 10
     cerr << "Error: Dump() from null pointer"<<endl;
@@ -349,7 +349,7 @@ bool EQEMuLog::Dump(LogIDs id, int8* data, int32 size, int32 cols, int32 skip) {
 	write(id, "Dumping Packet: %i", size);
 	// Output as HEX
 	int j = 0; char* ascii = new char[cols+1]; memset(ascii, 0, cols+1);
-	int32 i;
+	uint32 i;
     for(i=skip; i<size; i++) {
 		if ((i-skip)%cols==0) {
 			if (i != skip)
@@ -368,10 +368,10 @@ bool EQEMuLog::Dump(LogIDs id, int8* data, int32 size, int32 cols, int32 skip) {
 		else
 			ascii[j++] = '.';
     }
-	int32 k = ((i-skip)-1)%cols;
+	uint32 k = ((i-skip)-1)%cols;
 	if (k < 8)
 		writeNTS(id, dofile, "  ");
-	for (int32 h = k+1; h < cols; h++) {
+	for (uint32 h = k+1; h < cols; h++) {
 		writeNTS(id, dofile, "   ");
 	}
 	writeNTS(id, dofile, " | %s\n", ascii);

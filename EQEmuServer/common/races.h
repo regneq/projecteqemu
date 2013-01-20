@@ -73,10 +73,10 @@
 #define rall_1			16384 //froglok?
 #define drakkin_1		32768
 
-const char* GetRaceName(int16 race);
+const char* GetRaceName(uint16 race);
 
-int32 GetArrayRace(int16 race);
-inline uint32 GetRaceBitmask(int16 race) { return uint32(pow(2.0f, float(GetArrayRace(race) - 1))); }
+uint32 GetArrayRace(uint16 race);
+inline uint32 GetRaceBitmask(uint16 race) { return uint32(pow(2.0f, float(GetArrayRace(race) - 1))); }
 
 #define Array_Race_UNKNOWN		0
 #define Array_Race_HUMAN		1

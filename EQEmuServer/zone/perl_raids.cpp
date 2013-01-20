@@ -75,7 +75,7 @@ XS(XS_Raid_CastGroupSpell)
 		Raid *		THIS;
 		Mob*		caster;
 		uint16		spellid = (uint16)SvUV(ST(2));
-		int32		gid = (int32)SvUV(ST(3));
+		uint32		gid = (uint32)SvUV(ST(3));
 
 		if (sv_derived_from(ST(0), "Raid")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -108,9 +108,9 @@ XS(XS_Raid_GroupCount)
 		Perl_croak(aTHX_ "Usage: Raid::GroupCount(THIS, gid)");
 	{
 		Raid *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
-		uint32		gid = (int32)SvUV(ST(1));
+		uint32		gid = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Raid")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -135,7 +135,7 @@ XS(XS_Raid_RaidCount)
 		Perl_croak(aTHX_ "Usage: Raid::RaidCount(THIS)");
 	{
 		Raid *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Raid")) {
@@ -161,7 +161,7 @@ XS(XS_Raid_GetGroup)
 		Perl_croak(aTHX_ "Usage: Raid::GetGroup(THIS, name)");
 	{
 		Raid *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 		const char*	name = (char *)SvPV_nolen(ST(1));
 
@@ -222,7 +222,7 @@ XS(XS_Raid_GetTotalRaidDamage)
 		Perl_croak(aTHX_ "Usage: Raid::GetTotalRaidDamage(THIS, other)");
 	{
 		Raid *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 		Mob*		other;
 
@@ -285,8 +285,8 @@ XS(XS_Raid_BalanceHP)
 		Perl_croak(aTHX_ "Usage: Raid::BalanceHP(THIS, penalty, gid)");
 	{
 		Raid *		THIS;
-		sint32		penalty = (sint32)SvUV(ST(1));
-		int32		gid = (int32)SvUV(ST(2));
+		int32		penalty = (int32)SvUV(ST(1));
+		uint32		gid = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Raid")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -364,7 +364,7 @@ XS(XS_Raid_GetHighestLevel)
 		Perl_croak(aTHX_ "Usage: Raid::GetHighestLevel(THIS)");
 	{
 		Raid *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Raid")) {
@@ -390,7 +390,7 @@ XS(XS_Raid_GetLowestLevel)
 		Perl_croak(aTHX_ "Usage: Raid::GetLowestLevel(THIS)");
 	{
 		Raid *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Raid")) {
@@ -417,7 +417,7 @@ XS(XS_Raid_GetClientByIndex)
 	{
 		Raid *		THIS;
 		Client *		RETVAL;
-		int16		index = (int16)SvUV(ST(1));
+		uint16		index = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Raid")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -444,12 +444,12 @@ XS(XS_Raid_TeleportGroup)
 	{
 		Raid *		THIS;
 		Mob*		sender;
-		int32		zoneID = (int32)SvUV(ST(2));
+		uint32		zoneID = (uint32)SvUV(ST(2));
 		float		x = (float)SvNV(ST(3));
 		float		y = (float)SvNV(ST(4));
 		float		z = (float)SvNV(ST(5));
 		float		heading = (float)SvNV(ST(6));
-		int32		gid = (int32)SvUV(ST(7));
+		uint32		gid = (uint32)SvUV(ST(7));
 
 		if (sv_derived_from(ST(0), "Raid")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -483,7 +483,7 @@ XS(XS_Raid_TeleportRaid)
 	{
 		Raid *		THIS;
 		Mob*		sender;
-		int32		zoneID = (int32)SvUV(ST(2));
+		uint32		zoneID = (uint32)SvUV(ST(2));
 		float		x = (float)SvNV(ST(3));
 		float		y = (float)SvNV(ST(4));
 		float		z = (float)SvNV(ST(5));
@@ -520,7 +520,7 @@ XS(XS_Raid_GetID)
 		Perl_croak(aTHX_ "Usage: Raid::GetID(THIS)");
 	{
 		Raid *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Raid")) {

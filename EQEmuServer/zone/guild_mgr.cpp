@@ -82,7 +82,7 @@ GuildBankManager *GuildBanks;
 extern WorldServer worldserver;
 extern volatile bool ZoneLoaded;
 
-void ZoneGuildManager::SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation) {
+void ZoneGuildManager::SendGuildRefresh(uint32 guild_id, bool name, bool motd, bool rank, bool relation) {
 	_log(GUILDS__REFRESH, "Sending guild refresh for %d to world, changes: name=%d, motd=%d, rank=d, relation=%d", guild_id, name, motd, rank, relation);
 	ServerPacket* pack = new ServerPacket(ServerOP_RefreshGuild, sizeof(ServerGuildRefresh_Struct));
 	ServerGuildRefresh_Struct *s = (ServerGuildRefresh_Struct *) pack->pBuffer;
@@ -95,7 +95,7 @@ void ZoneGuildManager::SendGuildRefresh(int32 guild_id, bool name, bool motd, bo
 	safe_delete(pack);
 }
 
-void ZoneGuildManager::SendCharRefresh(int32 old_guild_id, int32 guild_id, int32 charid) {
+void ZoneGuildManager::SendCharRefresh(uint32 old_guild_id, uint32 guild_id, uint32 charid) {
 	if(guild_id == 0) {
 		_log(GUILDS__REFRESH, "Guild lookup for char %d when sending char refresh.", charid);
 		
@@ -118,7 +118,7 @@ void ZoneGuildManager::SendCharRefresh(int32 old_guild_id, int32 guild_id, int32
 	safe_delete(pack);
 }
 
-void ZoneGuildManager::SendRankUpdate(int32 CharID)
+void ZoneGuildManager::SendRankUpdate(uint32 CharID)
 {
 	CharGuildInfo gci;
 
@@ -139,7 +139,7 @@ void ZoneGuildManager::SendRankUpdate(int32 CharID)
 	safe_delete(pack);
 }
 	
-void ZoneGuildManager::SendGuildDelete(int32 guild_id) {
+void ZoneGuildManager::SendGuildDelete(uint32 guild_id) {
 	_log(GUILDS__REFRESH, "Sending guild delete for guild %d to world", guild_id);
 	ServerPacket* pack = new ServerPacket(ServerOP_DeleteGuild, sizeof(ServerGuildID_Struct));
 	ServerGuildID_Struct *s = (ServerGuildID_Struct *) pack->pBuffer;
@@ -149,7 +149,7 @@ void ZoneGuildManager::SendGuildDelete(int32 guild_id) {
 }
 
 //makes a guild member list packet (internal format), returns ownership of the buffer.
-uint8 *ZoneGuildManager::MakeGuildMembers(int32 guild_id, const char *prefix_name, uint32 &length) {
+uint8 *ZoneGuildManager::MakeGuildMembers(uint32 guild_id, const char *prefix_name, uint32 &length) {
 	uint8 *retbuffer;
 	
 	//hack because we dont have the "remove from guild" packet right now.
@@ -169,13 +169,13 @@ uint8 *ZoneGuildManager::MakeGuildMembers(int32 guild_id, const char *prefix_nam
 		return(NULL);
 	
 	//figure out the actual packet length.
-	int32 fixed_length = sizeof(Internal_GuildMembers_Struct) + members.size()*sizeof(Internal_GuildMemberEntry_Struct);
+	uint32 fixed_length = sizeof(Internal_GuildMembers_Struct) + members.size()*sizeof(Internal_GuildMemberEntry_Struct);
 	vector<CharGuildInfo *>::iterator cur, end;
 	CharGuildInfo *ci;
 	cur = members.begin();
 	end = members.end();
-	int32 name_len = 0;
-	int32 note_len = 0;
+	uint32 name_len = 0;
+	uint32 note_len = 0;
 	for(; cur != end; cur++) {
 		ci = *cur;
 		name_len += ci->char_name.length();
@@ -291,12 +291,12 @@ void ZoneGuildManager::DescribeGuild(Client *c, uint32 guild_id) const {
 
 //in theory, we could get a pile of unused entries in this array, but only if 
 //we had a malicious client sending controlled packets, plus its like 10 bytes per entry.
-void ZoneGuildManager::RecordInvite(int32 char_id, int32 guild_id, int8 rank) {
-	m_inviteQueue[char_id] = pair<int32, int8>(guild_id, rank);
+void ZoneGuildManager::RecordInvite(uint32 char_id, uint32 guild_id, uint8 rank) {
+	m_inviteQueue[char_id] = pair<uint32, uint8>(guild_id, rank);
 }
 
-bool ZoneGuildManager::VerifyAndClearInvite(int32 char_id, int32 guild_id, int8 rank) {
-	map<int32, pair<int32, int8> >::iterator res;
+bool ZoneGuildManager::VerifyAndClearInvite(uint32 char_id, uint32 guild_id, uint8 rank) {
+	map<uint32, pair<uint32, uint8> >::iterator res;
 	res = m_inviteQueue.find(char_id);
 	if(res == m_inviteQueue.end())
 		return(false);	//no entry...
@@ -579,7 +579,7 @@ void ZoneGuildManager::AddGuildApproval(const char* guildname,Client* owner)
 	list.Insert(tmp);
 }
 
-void ZoneGuildManager::AddMemberApproval(int32 refid,Client* name)
+void ZoneGuildManager::AddMemberApproval(uint32 refid,Client* name)
 {
 	GuildApproval* tmp = FindGuildByIDApproval(refid);
 	if(tmp != 0)
@@ -605,7 +605,7 @@ void ZoneGuildManager::ClearGuildsApproval()
 	list.Clear();
 }
 
-GuildApproval* ZoneGuildManager::FindGuildByIDApproval(int32 refid)
+GuildApproval* ZoneGuildManager::FindGuildByIDApproval(uint32 refid)
 {
 	LinkedListIterator<GuildApproval*> iterator(list);
 
@@ -645,7 +645,7 @@ GuildBankManager::~GuildBankManager()
 	}
 }
 
-bool GuildBankManager::Load(int32 GuildID)
+bool GuildBankManager::Load(uint32 GuildID)
 {
 	const char *LoadQuery = "SELECT `area`, `slot`, `itemid`, `qty`, `donator`, `permissions`, `whofor`  from `guild_bank` "
 				"WHERE `guildid` = %i";
@@ -745,7 +745,7 @@ bool GuildBankManager::Load(int32 GuildID)
 
 }
 
-bool GuildBankManager::IsLoaded(int32 GuildID)
+bool GuildBankManager::IsLoaded(uint32 GuildID)
 {
 	std::list<GuildBank*>::iterator Iterator = GetGuildBank(GuildID);
 
@@ -874,7 +874,7 @@ bool GuildBankManager::IsAreaFull(uint32 GuildID, uint16 Area)
 	return true;
 }
 
-bool GuildBankManager::AddItem(int32 GuildID, uint8 Area, uint32 ItemID, sint32 QtyOrCharges, const char *Donator, uint8 Permissions, const char *WhoFor)
+bool GuildBankManager::AddItem(uint32 GuildID, uint8 Area, uint32 ItemID, int32 QtyOrCharges, const char *Donator, uint8 Permissions, const char *WhoFor)
 {
 	std::list<GuildBank*>::iterator Iterator = GetGuildBank(GuildID);
 
@@ -1126,7 +1126,7 @@ void GuildBankManager::SetPermissions(uint32 GuildID, uint16 SlotID, uint32 Perm
 	entity_list.QueueClientsGuildBankItemUpdate(&gbius, GuildID);
 }
 
-ItemInst*  GuildBankManager::GetItem(int32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity)
+ItemInst*  GuildBankManager::GetItem(uint32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity)
 {
 	std::list<GuildBank*>::iterator Iterator = GetGuildBank(GuildID);
 
@@ -1209,7 +1209,7 @@ std::list<GuildBank*>::iterator GuildBankManager::GetGuildBank(uint32 GuildID)
 	return Iterator;
 }
 
-bool GuildBankManager::DeleteItem(int32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity)
+bool GuildBankManager::DeleteItem(uint32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity)
 {
 	std::list<GuildBank*>::iterator Iterator = GetGuildBank(GuildID);
 
@@ -1494,10 +1494,10 @@ bool GuildApproval::ProcessApproval()
 	return true;
 }
 
-GuildApproval::GuildApproval(const char* guildname, Client* owner,int32 id)
+GuildApproval::GuildApproval(const char* guildname, Client* owner,uint32 id)
 {
 	database.GetVariable("GuildCreation", founders, 3);
-	int8 tmp = atoi(founders);
+	uint8 tmp = atoi(founders);
 	deletion_timer = new Timer(1800000);
 	strcpy(guild,guildname);
 	this->owner = owner;
@@ -1516,7 +1516,7 @@ GuildApproval::~GuildApproval()
 bool GuildApproval::AddMemberApproval(Client* addition)
 {
 	database.GetVariable("GuildCreation", founders, 3);
-	int8 tmp = atoi(founders);
+	uint8 tmp = atoi(founders);
 	for(int i=0;i<tmp;i++)
 	{
 		if(members[i] && members[i] == addition)
@@ -1546,7 +1546,7 @@ bool GuildApproval::AddMemberApproval(Client* addition)
 void GuildApproval::ApprovedMembers(Client* requestee)
 {
 	database.GetVariable("GuildCreation", founders, 3);
-	int8 tmp = atoi(founders);
+	uint8 tmp = atoi(founders);
 	for(int i=0;i<tmp;i++)
 	{
 		if(members[i])
@@ -1562,8 +1562,8 @@ void GuildApproval::GuildApproved()
 	if(!owner)
 		return;
 	database.GetVariable("GuildCreation", founders, 3);
-	int8 tmp = atoi(founders);
-	int32 tmpeq = guild_mgr.CreateGuild(guild, owner->CharacterID());
+	uint8 tmp = atoi(founders);
+	uint32 tmpeq = guild_mgr.CreateGuild(guild, owner->CharacterID());
 	guild_mgr.SetGuild(owner->CharacterID(),tmpeq,2);
 	owner->SendAppearancePacket(AT_GuildID,true,false);
 	for(int i=0;i<tmp;i++)

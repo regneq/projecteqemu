@@ -19,7 +19,7 @@ static const char *name = "Titanium";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
-char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth);
+char *SerializeItem(const ItemInst *inst, int16 slot_id, uint32 *length, uint8 depth);
 	
 void Register(EQStreamIdentifier &into) {
 	//create our opcode manager if we havent already
@@ -751,7 +751,7 @@ ENCODE(OP_GuildMemberList) {
 	
 	
 	//make a new EQ buffer.
-	int32 pnl = strlen(emu->player_name);
+	uint32 pnl = strlen(emu->player_name);
 	uint32 length = sizeof(structs::GuildMembers_Struct) + pnl + 
 		emu->count*sizeof(structs::GuildMemberEntry_Struct)
 		+ emu->name_length + emu->note_length;
@@ -894,7 +894,7 @@ ENCODE(OP_VetRewardsAvaliable)
 	EQApplicationPacket *inapp = *p;
 	unsigned char * __emu_buffer = inapp->pBuffer;
 
-	int32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
+	uint32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
 
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
 	uchar *old_data = __emu_buffer;
@@ -1362,14 +1362,14 @@ DECODE(OP_LFGuild)
 	FINISH_DIRECT_DECODE();
 }
 
-char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
+char *SerializeItem(const ItemInst *inst, int16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
 	char *instance = NULL;
 	const char *protection=(const char *)"\\\\\\\\\\";
 	char *sub_items[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	bool stackable=inst->IsStackable();
 	uint32 merchant_slot=inst->GetMerchantSlot();
-	sint16 charges=inst->GetCharges();
+	int16 charges=inst->GetCharges();
 	const Item_Struct *item=inst->GetItem();
 	int i;
 	uint32 sub_length;

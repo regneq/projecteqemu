@@ -71,9 +71,9 @@ using namespace std;
 
 extern WorldServer worldserver;
 extern Zone* zone;
-extern int32 numclients;
+extern uint32 numclients;
 extern NetConnection net;
-extern int16 adverrornum;
+extern uint16 adverrornum;
 extern PetitionList petition_list;
 Mutex MZoneShutdown;
 extern bool staticzone;
@@ -82,11 +82,11 @@ volatile bool ZoneLoaded = false;
 extern QuestParserCollection* parse;
 extern DBAsyncFinishedQueue MTdbafq;
 extern DBAsync *dbasync;
-void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result);
+void CleanupLoadZoneState(uint32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result);
 
 
 
-bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
+bool Zone::Bootup(uint32 iZoneID, uint32 iInstanceID, bool iStaticZone) {
 	_ZP(Zone_Bootup);
 	const char* zonename = database.GetZoneName(iZoneID);
 	
@@ -137,7 +137,7 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 			LogFile->write(EQEMuLog::Status, "Loot logging level: %i", zone->lootvar);
 		}
 		else {
-        	zone->loglevelvar = int8(atoi(tmp)); //continue supporting only command logging (for now)
+        	zone->loglevelvar = uint8(atoi(tmp)); //continue supporting only command logging (for now)
 			zone->merchantvar = 0;
 			zone->tradevar = 0;
 			zone->lootvar = 0;
@@ -251,7 +251,7 @@ bool Zone::LoadZoneObjects() {
 			uint32 type = 0;
 			uint32 itemid = 0;
 			uint32 idx = 0;
-			sint16 charges = 0;
+			int16 charges = 0;
 			
 			id							= (uint32)atoi(row[idx++]);
 			data.zone_id				= atoi(row[idx++]);
@@ -260,9 +260,9 @@ bool Zone::LoadZoneObjects() {
 			data.z						= atof(row[idx++]);
 			data.heading				= atof(row[idx++]);
 			itemid						= (uint32)atoi(row[idx++]);
-			charges						= (sint16)atoi(row[idx++]);
+			charges						= (int16)atoi(row[idx++]);
 			strcpy(data.object_name, row[idx++]);
-			type						= (int8)atoi(row[idx++]);
+			type						= (uint8)atoi(row[idx++]);
 			icon						= (uint32)atoi(row[idx++]);
 			data.object_type			= (uint32)atoi(row[idx++]);
 			data.linked_list_addr[0]	= 0;
@@ -323,9 +323,9 @@ bool Zone::LoadGroundSpawns() {
 	int gsindex=0;
 	LogFile->write(EQEMuLog::Status, "Loading Ground Spawns from DB...");
 	database.LoadGroundSpawns(zoneid, GetInstanceVersion(), &groundspawn);
-	int32 ix=0;
+	uint32 ix=0;
 	char* name=0;
-	int32 gsnumber=0;
+	uint32 gsnumber=0;
 	for(gsindex=0;gsindex<50;gsindex++){
 		if(groundspawn.spawn[gsindex].item>0 && groundspawn.spawn[gsindex].item<500000){
 			ItemInst* inst = NULL;
@@ -345,11 +345,11 @@ bool Zone::LoadGroundSpawns() {
 	return(true);
 }
 
-int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold){
+int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charges, bool sold){
 	int freeslot = 0;
 	std::list<MerchantList> merlist = merchanttable[merchantid];
 	std::list<MerchantList>::const_iterator itr;
-	int32 i = 1;
+	uint32 i = 1;
 	for(itr = merlist.begin();itr != merlist.end();itr++){
 		MerchantList ml = *itr;
 		if(ml.item == item)
@@ -423,7 +423,7 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 	return freeslot;
 }
 
-uint32 Zone::GetTempMerchantQuantity(int32 NPCID, uint32 Slot) {
+uint32 Zone::GetTempMerchantQuantity(uint32 NPCID, uint32 Slot) {
 
  	std::list<TempMerchantList> TmpMerchantList = tmpmerchanttable[NPCID]; 
 	std::list<TempMerchantList>::const_iterator Iterator;
@@ -465,7 +465,7 @@ void Zone::LoadTempMerchantData(){
     MYSQL_ROW row;
 	std::list<TempMerchantList> merlist;
 	if (database.RunQuery(query, MakeAnyLenString(&query, "select ml.npcid,ml.slot,ml.itemid,ml.charges from merchantlist_temp ml, npc_types nt, spawnentry se, spawn2 s2 where nt.id=ml.npcid and nt.id=se.npcid and se.spawngroupid=s2.spawngroupid and s2.zone='%s' group by ml.npcid,slot order by npcid,slot asc", GetShortName()), errbuf, &result)) {
-		int32 npcid = 0;
+		uint32 npcid = 0;
 		while((row = mysql_fetch_row(result))) {
 			if(npcid != atoul(row[0])){		
 				if(npcid > 0)
@@ -494,7 +494,7 @@ void Zone::LoadTempMerchantData(){
 void Zone::LoadTempMerchantData_result(MYSQL_RES* result) {
     MYSQL_ROW row;
 	std::map<uint32,std::list<TempMerchantList> >::iterator cur;
-	int32 npcid = 0;
+	uint32 npcid = 0;
 	while((row = mysql_fetch_row(result))) {
 		TempMerchantList ml;
 		ml.npcid = atoul(row[0]);
@@ -546,7 +546,7 @@ void Zone::LoadNewMerchantData(uint32 merchantid){
 void Zone::LoadMerchantData_result(MYSQL_RES* result) {
     MYSQL_ROW row;
 	std::map<uint32,std::list<MerchantList> >::iterator cur;
-	int32 npcid = 0;
+	uint32 npcid = 0;
 	while((row = mysql_fetch_row(result))) {
 		MerchantList ml;
 		ml.id = atoul(row[0]);
@@ -609,7 +609,7 @@ void Zone::GetMerchantDataForZoneLoad(){
     MYSQL_ROW row;
 	std::list<MerchantList> merlist;
 	if (database.RunQuery(query, MakeAnyLenString(&query, "select ml.merchantid,ml.slot,ml.item from merchantlist ml, npc_types nt, spawnentry se, spawn2 s2 where nt.merchant_id=ml.merchantid and nt.id=se.npcid and se.spawngroupid=s2.spawngroupid and s2.zone='%s' group by ml.merchantid,slot order by merchantid,slot asc", GetShortName()), errbuf, &result)) {
-		int32 npcid = 0;
+		uint32 npcid = 0;
 		while((row = mysql_fetch_row(result))) {
 			if(npcid != atoul(row[0])){		
 				if(npcid > 0)
@@ -729,7 +729,7 @@ void Zone::LoadLevelEXPMods(){
 	}
 }
 
-void Zone::DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) {
+void Zone::DBAWComplete(uint8 workpt_b1, DBAsyncWork* dbaw) {
 //	LogFile->write(EQEMuLog::Debug, "Zone work complete...");
 	switch (workpt_b1) {
 		case DBA_b1_Zone_MerchantLists: {
@@ -834,12 +834,12 @@ void Zone::Shutdown(bool quite)
 	UpdateWindowTitle();
 }
 
-void Zone::LoadZoneDoors(const char* zone, sint16 version)
+void Zone::LoadZoneDoors(const char* zone, int16 version)
 {
 	LogFile->write(EQEMuLog::Status, "Loading doors for %s ...", zone);
 	
-	int32 maxid;
-	sint32 count = database.GetDoorsCount(&maxid, zone, version);
+	uint32 maxid;
+	int32 count = database.GetDoorsCount(&maxid, zone, version);
 	if(count < 1) {
 		LogFile->write(EQEMuLog::Status, "... No doors loaded.");
 		return;
@@ -862,7 +862,7 @@ void Zone::LoadZoneDoors(const char* zone, sint16 version)
 	delete[] dlist;
 }
 
-Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
+Zone::Zone(uint32 in_zoneid, uint32 in_instanceid, const char* in_short_name)
 :	initgrids_timer(10000),
 	autoshutdown_timer((RuleI(Zone, AutoShutdownDelay))),
 	clientauth_timer(AUTHENTICATION_TIMEOUT * 1000),
@@ -931,7 +931,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	bool is_perma = false;
 	if(instanceid > 0)
 	{
-		int32 rem = database.GetTimeRemainingInstance(instanceid, is_perma);
+		uint32 rem = database.GetTimeRemainingInstance(instanceid, is_perma);
 
 		if(!is_perma)
 		{
@@ -1243,7 +1243,7 @@ void Zone::ResetAuth()
 	}
 }
 
-bool Zone::GetAuth(int32 iIP, const char* iCharName, int32* oWID, int32* oAccID, int32* oCharID, sint16* oStatus, char* oLSKey, bool* oTellsOff) {
+bool Zone::GetAuth(uint32 iIP, const char* iCharName, uint32* oWID, uint32* oAccID, uint32* oCharID, int16* oStatus, char* oLSKey, bool* oTellsOff) {
 	LinkedListIterator<ZoneClientAuth_Struct*> iterator(client_auth_list);
 
 	iterator.Reset();
@@ -1268,7 +1268,7 @@ bool Zone::GetAuth(int32 iIP, const char* iCharName, int32* oWID, int32* oAccID,
 	return false;
 }
 
-int32 Zone::CountAuth() {
+uint32 Zone::CountAuth() {
 	LinkedListIterator<ZoneClientAuth_Struct*> iterator(client_auth_list);
 
 	int x = 0;
@@ -1375,14 +1375,14 @@ bool Zone::Process() {
 
 	if(Weather_Timer->Check()){
 		Weather_Timer->Disable();
-		int16 tmpweather = MakeRandomInt(0, 100);
+		uint16 tmpweather = MakeRandomInt(0, 100);
 
 		if(zone->weather_type != 0)
 		{
 			if(tmpweather >= 80)
 			{
 				// A change in the weather....
-				int8 tmpOldWeather = zone_weather;
+				uint8 tmpOldWeather = zone_weather;
 
 				if(zone->zone_weather == 0)
 					zone->zone_weather = zone->weather_type;
@@ -1434,7 +1434,7 @@ bool Zone::Process() {
 	return true;
 }
 
-void Zone::StartShutdownTimer(int32 set_time) {
+void Zone::StartShutdownTimer(uint32 set_time) {
 	MZoneLock.lock();
 	if (set_time > autoshutdown_timer.GetRemainingTime()) {
 		if (set_time == (RuleI(Zone, AutoShutdownDelay)))
@@ -1460,7 +1460,7 @@ std::map<uint32,NPCType *>::iterator itr;
 	return true;
 }
 
-void Zone::Repop(int32 delay) {
+void Zone::Repop(uint32 delay) {
 	
 	if(!Depop())
 		return;
@@ -1490,7 +1490,7 @@ void Zone::GetTimeSync()
 	}
 }
 
-void Zone::SetDate(int16 year, int8 month, int8 day, int8 hour, int8 minute)
+void Zone::SetDate(uint16 year, uint8 month, uint8 day, uint8 hour, uint8 minute)
 {
 	if (worldserver.Connected()) {
 		ServerPacket* pack = new ServerPacket(ServerOP_SetWorldTime, sizeof(eqTimeOfDay));
@@ -1507,7 +1507,7 @@ void Zone::SetDate(int16 year, int8 month, int8 day, int8 hour, int8 minute)
 	}
 }
 
-void Zone::SetTime(int8 hour, int8 minute)
+void Zone::SetTime(uint8 hour, uint8 minute)
 {
 	if (worldserver.Connected()) {
 		ServerPacket* pack = new ServerPacket(ServerOP_SetWorldTime, sizeof(eqTimeOfDay));
@@ -1522,7 +1522,7 @@ void Zone::SetTime(int8 hour, int8 minute)
 	}
 }
 
-ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, Client* client, float max_distance) {
+ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, uint32 to, Client* client, float max_distance) {
 	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
 	ZonePoint* closest_zp = 0;
 	float closest_dist = FLT_MAX;
@@ -1531,7 +1531,7 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, Client
 	while(iterator.MoreElements())
 	{
 		ZonePoint* zp = iterator.GetData();
-		int32 mask_test = client->GetClientVersionBit();
+		uint32 mask_test = client->GetClientVersionBit();
 		if(!(zp->client_version_mask & mask_test))
 		{
 			iterator.Advance();
@@ -1589,7 +1589,7 @@ ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, Clien
 	while(iterator.MoreElements())
 	{
 		ZonePoint* zp = iterator.GetData();
-		int32 mask_test = client->GetClientVersionBit();
+		uint32 mask_test = client->GetClientVersionBit();
 
 		if(!(zp->client_version_mask & mask_test))
 		{
@@ -1618,7 +1618,7 @@ ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, Clien
 	return closest_zp;
 }
 
-bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list, const char* zonename, int32 version)
+bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list, const char* zonename, uint32 version)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -1647,7 +1647,7 @@ bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,
 			zp->target_heading = atof(row[8]);
 			zp->number = atoi(row[9]);
 			zp->target_zone_instance = atoi(row[10]);
-			zp->client_version_mask = (int32)strtoul(row[11], NULL, 0);
+			zp->client_version_mask = (uint32)strtoul(row[11], NULL, 0);
 			zone_point_list->Insert(zp);
 			zone->numzonepoints++;
 		}
@@ -1675,10 +1675,10 @@ bool ZoneDatabase::DumpZoneState() {
 
 
 
-	int32	spawn2_count = zone->CountSpawn2();
-	int32	npc_count = 0;
-	int32	npcloot_count = 0;
-	int32	gmspawntype_count = 0;
+	uint32	spawn2_count = zone->CountSpawn2();
+	uint32	npc_count = 0;
+	uint32	npcloot_count = 0;
+	uint32	gmspawntype_count = 0;
 	entity_list.CountNPC(&npc_count, &npcloot_count, &gmspawntype_count);
 
 	cout << "DEBUG: spawn2count=" << spawn2_count << ", npc_count=" << npc_count << ", npcloot_count=" << npcloot_count << ", gmspawntype_count=" << gmspawntype_count << endl;
@@ -1744,8 +1744,8 @@ bool ZoneDatabase::DumpZoneState() {
     *end++ = '\'';
     end += sprintf(end, ")");
 
-	int32 affected_rows = 0;
-	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+	uint32 affected_rows = 0;
+	if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
 		//    if (DoEscapeString(query, (unsigned int) (end - query))) {
 		safe_delete_array(query);
         cerr << "Error in ZoneDump query " << errbuf << endl;
@@ -1760,19 +1760,19 @@ bool ZoneDatabase::DumpZoneState() {
 	return true;
 }
 
-sint8 ZoneDatabase::LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spawn2_list) {
+int8 ZoneDatabase::LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spawn2_list) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-	int32 i;
+	uint32 i;
 	unsigned long* lengths;
-	int32	elapsedtime = 0;
-	int32	spawn2_count = 0;
-	int32	npc_count = 0;
-	int32	npcloot_count = 0;
-	int32	gmspawntype_count = 0;
+	uint32	elapsedtime = 0;
+	uint32	spawn2_count = 0;
+	uint32	npc_count = 0;
+	uint32	npcloot_count = 0;
+	uint32	gmspawntype_count = 0;
 	ZSDump_Spawn2* spawn2_dump = 0;
 	ZSDump_NPC*	npc_dump = 0;
 	ZSDump_NPC_Loot* npcloot_dump = 0;
@@ -1941,7 +1941,7 @@ sint8 ZoneDatabase::LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spa
 	return 1;
 }
 
-void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result) {
+void CleanupLoadZoneState(uint32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result) {
 	safe_delete(*spawn2_dump);
 	safe_delete(*spawn2_loaded);
 	safe_delete(*gmspawntype_dump);
@@ -1957,7 +1957,7 @@ void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDum
 void Zone::SpawnStatus(Mob* client) {
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
 
-	int32 x = 0;
+	uint32 x = 0;
 	iterator.Reset();
 	while(iterator.MoreElements())
 	{
@@ -2142,7 +2142,7 @@ bool Zone::HasGraveyard() {
 	return Result;
 }
 
-void Zone::SetGraveyard(int32 zoneid, int32 x, int32 y, int32 z, int32 heading) {
+void Zone::SetGraveyard(uint32 zoneid, uint32 x, uint32 y, uint32 z, uint32 heading) {
 	pgraveyard_zoneid = zoneid;
 	pgraveyard_x = x;
 	pgraveyard_y = y;
@@ -2150,7 +2150,7 @@ void Zone::SetGraveyard(int32 zoneid, int32 x, int32 y, int32 z, int32 heading) 
 	pgraveyard_heading = heading;
 }
 
-void Zone::LoadBlockedSpells(int32 zoneid)
+void Zone::LoadBlockedSpells(uint32 zoneid)
 {
 	if(!blocked_spells)
 	{
@@ -2174,7 +2174,7 @@ void Zone::ClearBlockedSpells()
 	}
 }
 
-bool Zone::IsSpellBlocked(int32 spell_id, float nx, float ny, float nz)
+bool Zone::IsSpellBlocked(uint32 spell_id, float nx, float ny, float nz)
 {
 	if (blocked_spells)
 	{
@@ -2244,7 +2244,7 @@ bool Zone::IsSpellBlocked(int32 spell_id, float nx, float ny, float nz)
 	return false;
 }
 
-const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz)
+const char* Zone::GetSpellBlockedMessage(uint32 spell_id, float nx, float ny, float nz)
 {
 	if(blocked_spells)
 	{
@@ -2281,7 +2281,7 @@ const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, flo
 	return "Error: Message String Not Found\0";
 }
 
-void Zone::SetInstanceTimer(int32 new_duration)
+void Zone::SetInstanceTimer(uint32 new_duration)
 {
 	if(Instance_Timer)
 	{
@@ -2301,7 +2301,7 @@ void Zone::LoadLDoNTraps()
 	{
 		while((row = mysql_fetch_row(result))) 
 		{
-			int8 x = 0;
+			uint8 x = 0;
 			LDoNTrapTemplate *lt = new LDoNTrapTemplate;
 			lt->id = atoi(row[x++]);
 			lt->type = (LDoNChestTypes)atoi(row[x++]);
@@ -2331,8 +2331,8 @@ void Zone::LoadLDoNTrapEntries()
 	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, trap_id FROM ldon_trap_entries"),errbuf,&result)) {
 		while((row = mysql_fetch_row(result))) 
 		{
-			int32 id = atoi(row[0]);
-			int32 trap_id = atoi(row[1]);
+			uint32 id = atoi(row[0]);
+			uint32 trap_id = atoi(row[1]);
 
 			LDoNTrapTemplate *tt = NULL;
 			std::map<uint32,LDoNTrapTemplate*>::iterator it;
@@ -2381,7 +2381,7 @@ void Zone::LoadVeteranRewards()
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 	InternalVeteranReward current_reward;
-	int8 idx = 0;
+	uint8 idx = 0;
 
 	current_reward.claim_id = 0;
 	
@@ -2392,7 +2392,7 @@ void Zone::LoadVeteranRewards()
 	{
 		while((row = mysql_fetch_row(result))) 
 		{
-			int32 claim = atoi(row[0]);
+			uint32 claim = atoi(row[0]);
 			if(claim != current_reward.claim_id)
 			{
 				if(current_reward.claim_id != 0)
@@ -2498,7 +2498,7 @@ void Zone::LoadAdventureFlavor()
 	{
 		while((row = mysql_fetch_row(result))) 
 		{
-			int32 id = atoi(row[0]);
+			uint32 id = atoi(row[0]);
 			std::string in_str = row[1];
 			adventure_entry_list_flavor[id] = in_str;
 		}
@@ -2599,7 +2599,7 @@ void Zone::LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList)
 	}
 }
 
-void Zone::ReloadWorld(int32 Option){
+void Zone::ReloadWorld(uint32 Option){
 	if(Option == 1){
 		zone->Repop(0);
 		parse->ReloadQuests();

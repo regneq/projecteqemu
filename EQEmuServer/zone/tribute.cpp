@@ -63,14 +63,14 @@ public:
 	bool is_guild;	//is a guild tribute item
 };
 
-map<int32, TributeData> tribute_list;
+map<uint32, TributeData> tribute_list;
 
 void Client::ToggleTribute(bool enabled) {
 	if(enabled) {
 		//make sure they have enough points to be activating this...
 		int r;
 		uint32 cost = 0;
-		int32 level = GetLevel();
+		uint32 level = GetLevel();
 		for(r = 0; r < MAX_PLAYER_TRIBUTES; r++) {
 			uint32 tid = m_pp.tributes[r].tribute;
 			if(tid == TRIBUTE_NONE)
@@ -163,7 +163,7 @@ void Client::DoTributeUpdate() {
 			
 			TributeData &d = tribute_list[tid];
 			TributeLevel_Struct &tier = d.tiers[m_pp.tributes[r].tier];
-			int32 item_id = tier.tribute_item_id;
+			uint32 item_id = tier.tribute_item_id;
 			
 			//summon the item for them
 			const ItemInst* inst = database.CreateItem(item_id, 1);
@@ -223,7 +223,7 @@ void Client::ChangeTributeSettings(TributeInfo_Struct *t) {
 	DoTributeUpdate();
 }
 
-void Client::SendTributeDetails(int32 client_id, uint32 tribute_id) {
+void Client::SendTributeDetails(uint32 client_id, uint32 tribute_id) {
 	if(tribute_list.count(tribute_id) != 1) {
 		LogFile->write(EQEMuLog::Error, "Details request for invalid tribute %lu", (unsigned long)tribute_id);
 		return;
@@ -243,14 +243,14 @@ void Client::SendTributeDetails(int32 client_id, uint32 tribute_id) {
 }
 
 //returns the number of points received from the tribute
-sint32 Client::TributeItem(int32 slot, int32 quantity) {
+int32 Client::TributeItem(uint32 slot, uint32 quantity) {
 	const ItemInst*inst = m_inv[slot];
 	
 	if(inst == NULL)
 		return(0);
 	
 	//figure out what its worth
-	sint32 pts = inst->GetItem()->Favor;
+	int32 pts = inst->GetItem()->Favor;
 	if(pts < 1) {
 		Message(13, "This item is worthless for favor.");
 		return(0);
@@ -259,7 +259,7 @@ sint32 Client::TributeItem(int32 slot, int32 quantity) {
 	//make sure they have enough of them
 	//and remove it from inventory
 	if(inst->IsStackable()) {
-		if(inst->GetCharges() < (sint32)quantity)	//dont have enough....
+		if(inst->GetCharges() < (int32)quantity)	//dont have enough....
 			return(0);
 		DeleteItemInInventory(slot, quantity, false);
 	} else {
@@ -275,7 +275,7 @@ sint32 Client::TributeItem(int32 slot, int32 quantity) {
 }
 
 //returns the number of points received from the tribute
-sint32 Client::TributeMoney(int32 platinum) {
+int32 Client::TributeMoney(uint32 platinum) {
 	if(!TakeMoneyFromPP(platinum * 1000)) {
 		Message(13, "You do not have that much money!");
 		return(0);
@@ -286,7 +286,7 @@ sint32 Client::TributeMoney(int32 platinum) {
 	return(platinum);
 }
 
-void Client::AddTributePoints(sint32 ammount) {
+void Client::AddTributePoints(int32 ammount) {
 	EQApplicationPacket outapp(OP_TributePointUpdate, sizeof(TributePoint_Struct));
 	TributePoint_Struct *t = (TributePoint_Struct *) outapp.pBuffer;
 	
@@ -306,7 +306,7 @@ void Client::AddTributePoints(sint32 ammount) {
 
 void Client::SendTributes() {
 	
-	map<int32, TributeData>::iterator cur,end;
+	map<uint32, TributeData>::iterator cur,end;
 	cur = tribute_list.begin();
 	end = tribute_list.end();
 	
@@ -322,7 +322,7 @@ void Client::SendTributes() {
 		
 		//gotta copy over the data from tiers, and flip all the
 		//byte orders, no idea why its flipped here
-		int32 r, c;
+		uint32 r, c;
 		c = cur->second.tier_count;
 		TributeLevel_Struct *dest = tas->tiers;
 		TributeLevel_Struct *src = cur->second.tiers;
@@ -340,7 +340,7 @@ void Client::SendTributes() {
 
 void Client::SendGuildTributes() {
 	
-	map<int32, TributeData>::iterator cur,end;
+	map<uint32, TributeData>::iterator cur,end;
 	cur = tribute_list.begin();
 	end = tribute_list.end();
 	
@@ -362,7 +362,7 @@ void Client::SendGuildTributes() {
 		
 		//gotta copy over the data from tiers, and flip all the
 		//byte orders, no idea why its flipped here
-		int32 r, c;
+		uint32 r, c;
 		c = cur->second.tier_count;
 		TributeLevel_Struct *dest = tas->tiers;
 		TributeLevel_Struct *src = cur->second.tiers;
@@ -395,7 +395,7 @@ bool ZoneDatabase::LoadTributes() {
 		int r;
 		while ((row = mysql_fetch_row(result))) {
 			r = 0;
-			int32 id = atoul(row[r++]);
+			uint32 id = atoul(row[r++]);
 			t.name = row[r++];
 			t.description = row[r++];
 			t.unknown = strtoul(row[r++], NULL, 10);
@@ -415,7 +415,7 @@ bool ZoneDatabase::LoadTributes() {
 		int r;
 		while ((row = mysql_fetch_row(result))) {
 			r = 0;
-			int32 id = atoul(row[r++]);
+			uint32 id = atoul(row[r++]);
 			
 			if(tribute_list.count(id) != 1) {
 				LogFile->write(EQEMuLog::Error, "Error in LoadTributes: unknown tribute %lu in tribute_levels", (unsigned long)id);

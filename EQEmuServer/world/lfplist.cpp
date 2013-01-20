@@ -27,7 +27,7 @@
 extern ClientList client_list;
 extern ZSList zoneserver_list;
 
-GroupLFP::GroupLFP(int32 inLeaderID) {
+GroupLFP::GroupLFP(uint32 inLeaderID) {
 
 	LeaderID = inLeaderID;
 	for(unsigned int i=0; i<MAX_GROUP_MEMBERS; i++) {
@@ -232,7 +232,7 @@ void GroupLFPList::SendLFPMatches(ServerLFPMatchesRequest_Struct* smrs) {
 
 	char *Buf = (char *)Pack->pBuffer;
 
-	VARSTRUCT_ENCODE_TYPE(int32, Buf, smrs->FromID);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buf, smrs->FromID);
 
 	ServerLFPMatchesResponse_Struct* Buffer = (ServerLFPMatchesResponse_Struct*)Buf;
 

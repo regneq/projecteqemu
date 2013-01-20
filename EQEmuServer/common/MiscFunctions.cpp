@@ -94,7 +94,7 @@ void CoutTimestamp(bool ms) {
 
 // normal strncpy doesnt put a null term on copied strings, this one does
 // ref: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcecrt/htm/_wcecrt_strncpy_wcsncpy.asp
-char* strn0cpy(char* dest, const char* source, int32 size) {
+char* strn0cpy(char* dest, const char* source, uint32 size) {
 	if (!dest)
 		return 0;
 	if (size == 0 || source == 0) {
@@ -108,7 +108,7 @@ char* strn0cpy(char* dest, const char* source, int32 size) {
 
 // String N w/null Copy Truncated?
 // return value =true if entire string(source) fit, false if it was truncated
-bool strn0cpyt(char* dest, const char* source, int32 size) {
+bool strn0cpyt(char* dest, const char* source, uint32 size) {
 	if (!dest)
 		return 0;
 	if (size == 0 || source == 0) {
@@ -181,7 +181,7 @@ int MakeAnyLenString(char** ret, const char* format, ...) {
 	return chars;
 }
 
-int32 AppendAnyLenString(char** ret, int32* bufsize, int32* strlen, const char* format, ...) {
+uint32 AppendAnyLenString(char** ret, uint32* bufsize, uint32* strlen, const char* format, ...) {
 	if (*bufsize == 0)
 		*bufsize = 256;
 	if (*ret == 0)
@@ -190,7 +190,7 @@ int32 AppendAnyLenString(char** ret, int32* bufsize, int32* strlen, const char* 
 	char* oldret = 0;
 	va_list argptr, tmpargptr;
 	va_start(argptr, format);
-	while (chars == -1 || chars >= (sint32)(*bufsize-*strlen)) {
+	while (chars == -1 || chars >= (int32)(*bufsize-*strlen)) {
 		if (chars == -1)
 			*bufsize += 256;
 		else
@@ -210,7 +210,7 @@ int32 AppendAnyLenString(char** ret, int32* bufsize, int32* strlen, const char* 
 	return *strlen;
 }
 
-int32 hextoi(char* num) {
+uint32 hextoi(char* num) {
 	int len = strlen(num);
 	if (len < 3)
 		return 0;
@@ -218,7 +218,7 @@ int32 hextoi(char* num) {
 	if (num[0] != '0' || (num[1] != 'x' && num[1] != 'X'))
 		return 0;
 
-	int32 ret = 0;
+	uint32 ret = 0;
 	int mul = 1;
 	for (int i=len-1; i>=2; i--) {
 		if (num[i] >= 'A' && num[i] <= 'F')
@@ -234,7 +234,7 @@ int32 hextoi(char* num) {
 	return ret;
 }
 
-int64 hextoi64(char* num) {
+uint64 hextoi64(char* num) {
 	int len = strlen(num);
 	if (len < 3)
 		return 0;
@@ -242,7 +242,7 @@ int64 hextoi64(char* num) {
 	if (num[0] != '0' || (num[1] != 'x' && num[1] != 'X'))
 		return 0;
 
-	int64 ret = 0;
+	uint64 ret = 0;
 	int mul = 1;
 	for (int i=len-1; i>=2; i--) {
 		if (num[i] >= 'A' && num[i] <= 'F')
@@ -288,14 +288,14 @@ bool atobool(char* iBool) {
 	return false;
 }
 
-sint32 filesize(FILE* fp) {
+int32 filesize(FILE* fp) {
 #ifdef _WINDOWS
 	return _filelength(_fileno(fp));
 #else
 	struct stat file_stat;
 	fstat(fileno(fp), &file_stat);
-	return (sint32) file_stat.st_size;
-/*	int32 tmp = 0;
+	return (int32) file_stat.st_size;
+/*	uint32 tmp = 0;
 	while (!feof(fp)) {
 		fseek(fp, tmp++, SEEK_SET);
 	}
@@ -303,7 +303,7 @@ sint32 filesize(FILE* fp) {
 #endif
 }
 
-int32 ResolveIP(const char* hostname, char* errbuf) {
+uint32 ResolveIP(const char* hostname, char* errbuf) {
 #ifdef _WINDOWS
 	static InitWinsock ws;
 #endif
@@ -339,7 +339,7 @@ int32 ResolveIP(const char* hostname, char* errbuf) {
 	return server_sin.sin_addr.s_addr;
 }
 
-bool ParseAddress(const char* iAddress, int32* oIP, int16* oPort, char* errbuf) {
+bool ParseAddress(const char* iAddress, uint32* oIP, uint16* oPort, char* errbuf) {
 	Seperator sep(iAddress, ':', 2, 250, false, 0, 0);
 	if (sep.argnum == 1 && sep.IsNumber(1)) {
 		*oIP = ResolveIP(sep.arg[0], errbuf);
