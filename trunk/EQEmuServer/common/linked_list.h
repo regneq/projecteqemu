@@ -70,7 +70,7 @@ template<class TYPE>
 class LinkedList
 {
 private:
-	int32				    count;
+	uint32				    count;
 	ListElement<TYPE>*		first;
 	bool					list_destructor_invoked;
 
@@ -88,7 +88,7 @@ public:
   void Clear();
   void LCount() { count--; }
   void ResetCount() { count=0; }
-  int32	Count() { return count; }
+  uint32	Count() { return count; }
   ListElement<TYPE>* GetFirst() { return first; }
 
   friend class LinkedListIterator<TYPE>;

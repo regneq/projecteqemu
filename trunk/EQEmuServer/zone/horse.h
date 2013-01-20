@@ -27,19 +27,19 @@ using namespace std;
 
 class Horse : public NPC {
 public:
-	Horse(Client *owner, int16 spell_id, float x, float y, float z, float heading);
+	Horse(Client *owner, uint16 spell_id, float x, float y, float z, float heading);
 	
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	
-	static bool IsHorseSpell(int16 spell_id);
+	static bool IsHorseSpell(uint16 spell_id);
 protected:
-	int8 mount_color;
+	uint8 mount_color;
 	Client *owner;
 	
 	//generate npc type records for horses
-	static map<int16, const NPCType *> horse_types;
-	static const NPCType *GetHorseType(int16 spell_id);
-	static const NPCType *BuildHorseType(int16 spell_id);
+	static map<uint16, const NPCType *> horse_types;
+	static const NPCType *GetHorseType(uint16 spell_id);
+	static const NPCType *BuildHorseType(uint16 spell_id);
 };
 
 

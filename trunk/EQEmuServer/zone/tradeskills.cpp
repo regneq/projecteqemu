@@ -93,7 +93,7 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 	}
 	
 	ItemInst *tobe_auged, *auged_with = NULL;
-	sint8 slot=-1;
+	int8 slot=-1;
 
 	// Verify 2 items in the augmentation device
 	if (container->GetItem(0) && container->GetItem(1))
@@ -474,7 +474,7 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	//now we know they have everything...
 	
 	//remove all the items from the players inventory, with updates...
-	sint16 slot;
+	int16 slot;
 	for(r = 0; r < qcount; r++) {
 		if(items[r] == 0 || counts[r] == 0)
 			continue;	//skip empties, could prolly break here
@@ -638,7 +638,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		// Recipes that have either been made before or were
 		// explicitly learned are excempt from that limit
 		if (RuleB(Skills, UseLimitTradeskillSearchSkillDiff)) {
-			if (((sint32)trivial - (sint32)GetSkill((SkillType)tradeskill)) > RuleI(Skills, MaxTradeskillSearchSkillDiff)
+			if (((int32)trivial - (int32)GetSkill((SkillType)tradeskill)) > RuleI(Skills, MaxTradeskillSearchSkillDiff)
 				&& row[4] == NULL)
 			{
 				continue;
@@ -786,11 +786,11 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
  	if(spec == NULL)
 		return(false);
 	
-	int16 user_skill = GetSkill(spec->tradeskill);
+	uint16 user_skill = GetSkill(spec->tradeskill);
 	float chance = 0.0;
 	float skillup_modifier = 0.0;
-	sint16 thirdstat = 0;
-	sint16 stat_modifier = 15;
+	int16 thirdstat = 0;
+	int16 stat_modifier = 15;
 	uint16 success_modifier = 0;
 
 	// Rework based on the info on eqtraders.com
@@ -835,8 +835,8 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		stat_modifier = 0;
 	}
 	
-	sint16 higher_from_int_wis = (GetINT() > GetWIS()) ? GetINT() : GetWIS();
-	sint16 bonusstat = (higher_from_int_wis > thirdstat) ? higher_from_int_wis : thirdstat;
+	int16 higher_from_int_wis = (GetINT() > GetWIS()) ? GetINT() : GetWIS();
+	int16 bonusstat = (higher_from_int_wis > thirdstat) ? higher_from_int_wis : thirdstat;
 	
 	vector< pair<uint32,uint8> >::iterator itr;
 
@@ -850,7 +850,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		chance = (user_skill - spec->trivial) + 66;
 	}
 	
-	sint16 over_trivial = (sint16)GetRawSkill(spec->tradeskill) - (sint16)spec->trivial;
+	int16 over_trivial = (int16)GetRawSkill(spec->tradeskill) - (int16)spec->trivial;
 
 	//handle caps
 	if(spec->nofail) {
@@ -1058,7 +1058,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 	return(false);
 }
 
-void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill)
+void Client::CheckIncreaseTradeskill(int16 bonusstat, int16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill)
 {
 	uint16 current_raw_skill = GetRawSkill(tradeskill);
 
@@ -1338,7 +1338,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	
 	row = mysql_fetch_row(result);
  	spec->tradeskill			= (SkillType)atoi(row[1]);
- 	spec->skill_needed		= (sint16)atoi(row[2]);
+ 	spec->skill_needed		= (int16)atoi(row[2]);
  	spec->trivial			= (uint16)atoi(row[3]);
  	spec->nofail			= atoi(row[4]) ? true : false;
  	spec->replace_container	= atoi(row[5]) ? true : false;
@@ -1475,7 +1475,7 @@ void Client::LearnRecipe(uint32 recipeID)
 
 bool Client::CanIncreaseTradeskill(SkillType tradeskill) {
 	uint32 rawskill = GetRawSkill(tradeskill);
-	int16 maxskill = MaxSkill(tradeskill);
+	uint16 maxskill = MaxSkill(tradeskill);
 
 	if (rawskill >= maxskill) //Max skill sanity check
 		return false;
@@ -1488,7 +1488,7 @@ bool Client::CanIncreaseTradeskill(SkillType tradeskill) {
 	uint8 Pottery   = (GetRawSkill(POTTERY) > 200) ? 1 : 0;
 	uint8 Tailoring = (GetRawSkill(TAILORING) > 200) ? 1 : 0;
 	uint8 SkillTotal = Baking + Smithing + Brewing + Fletching + Jewelry + Pottery + Tailoring; //Tradeskills above 200
-	int32 aaLevel  = GetAA(aaNewTanaanCraftingMastery); //New Tanaan AA: Each level allows an additional tradeskill above 200 (first one is free)
+	uint32 aaLevel  = GetAA(aaNewTanaanCraftingMastery); //New Tanaan AA: Each level allows an additional tradeskill above 200 (first one is free)
 	
 	switch (tradeskill) {
 		case BAKING:

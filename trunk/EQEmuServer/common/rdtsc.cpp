@@ -37,7 +37,7 @@
 #endif
 
 bool RDTSC_Timer::_inited = false;
-sint64 RDTSC_Timer::_ticsperms = 0;
+int64 RDTSC_Timer::_ticsperms = 0;
 
 RDTSC_Timer::RDTSC_Timer() {
 	if(!_inited) {
@@ -61,8 +61,8 @@ RDTSC_Timer::RDTSC_Timer(bool start_it) {
 	}
 }
 
-sint64 RDTSC_Timer::rdtsc() {
-	sint64 res;
+int64 RDTSC_Timer::rdtsc() {
+	int64 res;
 #ifdef USE_RDTSC
 #ifndef WIN64
 #ifdef WIN32
@@ -77,7 +77,7 @@ sint64 RDTSC_Timer::rdtsc() {
 		pop edx
 		pop eax
 	}
-	res = ((sint64)highw)<<32 | loww;
+	res = ((int64)highw)<<32 | loww;
 #else
 	//gnu version
 	__asm__ __volatile__ ("rdtsc" : "=A" (res));
@@ -86,7 +86,7 @@ sint64 RDTSC_Timer::rdtsc() {
 	//fall back to get time of day
 	timeval t;
 	gettimeofday(&t, NULL);
-	res = ((sint64)t.tv_sec) * 1000 + t.tv_usec;
+	res = ((int64)t.tv_sec) * 1000 + t.tv_usec;
 #endif
 #endif
 	return(res);
@@ -94,7 +94,7 @@ sint64 RDTSC_Timer::rdtsc() {
 
 void RDTSC_Timer::init() {
 #ifdef USE_RDTSC
-	sint64 before, after, sum;
+	int64 before, after, sum;
 	
 	int r;
 	sum = 0;

@@ -42,7 +42,7 @@ members array.
 */
 
 //create a group which should allready exist in the database
-Group::Group(int32 gid) 
+Group::Group(uint32 gid) 
 : GroupIDConsumer(gid)
 {
 	leader = NULL;
@@ -117,7 +117,7 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 		return;
 	
   uint32 i;
-  int8 membercount = 0;
+  uint8 membercount = 0;
   for (i = 0; i < MAX_GROUP_MEMBERS; i++) { 
 	  if (members[i] != NULL) {
 
@@ -203,7 +203,7 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
   }
 }
 
-bool Group::AddMember(Mob* newmember, const char *NewMemberName, int32 CharacterID)
+bool Group::AddMember(Mob* newmember, const char *NewMemberName, uint32 CharacterID)
 {
         bool InZone = true;
 		bool ismerc = false;
@@ -746,7 +746,7 @@ bool Group::IsGroupMember(const char *Name)
 	return false;
 }
 
-void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {
+void Group::GroupMessage(Mob* sender, uint8 language, uint8 lang_skill, const char* message) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if(!members[i])
@@ -767,8 +767,8 @@ void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char
 	safe_delete(pack);	
 }
 
-int32 Group::GetTotalGroupDamage(Mob* other) {
-	 int32 total = 0;
+uint32 Group::GetTotalGroupDamage(Mob* other) {
+	 uint32 total = 0;
 
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -839,7 +839,7 @@ bool Group::Process() {
 	return true;
 }
 
-void Group::SendUpdate(int32 type, Mob* member)
+void Group::SendUpdate(uint32 type, Mob* member)
 {
 	if(!member->IsClient())
 		return;
@@ -901,9 +901,9 @@ void Group::SendLeadershipAAUpdate()
 	safe_delete(outapp);
 }
 
-int8 Group::GroupCount() {
+uint8 Group::GroupCount() {
 
-	int8 MemberCount = 0;
+	uint8 MemberCount = 0;
 
 	for(uint8 i = 0; i < MAX_GROUP_MEMBERS; ++i)
 		if(membername[i][0])
@@ -912,9 +912,9 @@ int8 Group::GroupCount() {
 	return MemberCount;
 }
 
-int32 Group::GetHighestLevel()
+uint32 Group::GetHighestLevel()
 {
-int32 level = 1;
+uint32 level = 1;
 uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++)
 	 {
@@ -926,9 +926,9 @@ uint32 i;
 	}
 	return level;
 }
-int32 Group::GetLowestLevel()
+uint32 Group::GetLowestLevel()
 {
-int32 level = 255;
+uint32 level = 255;
 uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++)
 	 {
@@ -941,7 +941,7 @@ uint32 i;
 	return level;
 }
 
-void Group::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading)
+void Group::TeleportGroup(Mob* sender, uint32 zoneID, uint16 instance_id, float x, float y, float z, float heading)
 {
 	uint32 i;
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++)
@@ -1024,7 +1024,7 @@ LogFile->write(EQEMuLog::Debug, "Group %lu: Verify %d: Empty.\n", (unsigned long
 }
 
 
-void Group::GroupMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9, int32 distance) {
+void Group::GroupMessage_StringID(Mob* sender, uint32 type, uint32 string_id, const char* message,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9, uint32 distance) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if(members[i] == NULL)
@@ -1081,7 +1081,7 @@ void Group::HealGroup(uint32 heal_amt, Mob* caster)
 }
 
 
-void Group::BalanceHP(sint32 penalty)
+void Group::BalanceHP(int32 penalty)
 {
 	int dmgtaken = 0, numMem = 0;
 	unsigned int gi = 0;
@@ -1110,7 +1110,7 @@ void Group::BalanceHP(sint32 penalty)
 	}
 }
 
-void Group::BalanceMana(sint32 penalty)
+void Group::BalanceMana(int32 penalty)
 {
 	int manataken = 0, numMem = 0;
 	unsigned int gi = 0;
@@ -1172,7 +1172,7 @@ void Group::MarkNPC(Mob* Target, int Number)
 
 	bool AlreadyMarked = false;
 
-	int16 EntityID = Target->GetID();
+	uint16 EntityID = Target->GetID();
 
 	for(int i = 0; i < MAX_MARKED_NPCS; ++i)
 		if(MarkedNPCs[i] == EntityID)
@@ -1869,7 +1869,7 @@ void Group::SaveGroupLeaderAA()
 	safe_delete_array(Query);
 }
 
-void Group::UnMarkNPC(int16 ID)
+void Group::UnMarkNPC(uint16 ID)
 {
 	// Called from entity_list when the mob with the specified ID is being destroyed.
 	//
@@ -1980,7 +1980,7 @@ void Group::QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket*
 	if(!sender || !app || !GetLeadershipAA(groupAANPCHealth))
 		return;
 
-	int16 SenderID = sender->GetID();
+	uint16 SenderID = sender->GetID();
 
 	if(SenderID != AssistTargetID)
 	{

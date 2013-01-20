@@ -123,7 +123,7 @@ public:
 	
 protected:
 
-	int8 app_opcode_size;
+	uint8 app_opcode_size;
 private:
 
 	EQApplicationPacket(const EQApplicationPacket &p) : EQPacket(p.emu_opcode, p.pBuffer, p.size) { app_opcode_size = p.app_opcode_size; }

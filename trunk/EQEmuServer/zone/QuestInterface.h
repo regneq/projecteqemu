@@ -17,7 +17,7 @@ public:
     virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) { }
     virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data) { }
 
-	virtual bool HasQuestSub(int32 npcid, const char *subname) { return false; }
+	virtual bool HasQuestSub(uint32 npcid, const char *subname) { return false; }
 	virtual bool HasGlobalQuestSub(const char *subname) { return false; }
 	virtual bool PlayerHasQuestSub(const char *subname) { return false; }
     virtual bool GlobalPlayerHasQuestSub(const char *subname) { return false; }

@@ -55,7 +55,7 @@ void Corpse::SendEndLootErrorPacket(Client* client) {
 	safe_delete(outapp);
 }
 
-void Corpse::SendLootReqErrorPacket(Client* client, int8 response) {
+void Corpse::SendLootReqErrorPacket(Client* client, uint8 response) {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoneyOnCorpse, sizeof(moneyOnCorpseStruct));
 	moneyOnCorpseStruct* d = (moneyOnCorpseStruct*) outapp->pBuffer;
 	d->response		= response;
@@ -65,7 +65,7 @@ void Corpse::SendLootReqErrorPacket(Client* client, int8 response) {
 	safe_delete(outapp);
 }
 
-Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname, uchar* in_data, int32 in_datasize, float in_x, float in_y, float in_z, float in_heading, char* timeofdeath, bool rezzed, bool wasAtGraveyard) {
+Corpse* Corpse::LoadFromDBData(uint32 in_dbid, uint32 in_charid, char* in_charname, uchar* in_data, uint32 in_datasize, float in_x, float in_y, float in_z, float in_heading, char* timeofdeath, bool rezzed, bool wasAtGraveyard) {
 	if (in_datasize < sizeof(classic_db::DBPlayerCorpse_Struct)) {
 		LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: in_datasize < sizeof(DBPlayerCorpse_Struct)");
 		return 0;
@@ -73,8 +73,8 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 	classic_db::DBPlayerCorpse_Struct* dbpc = (classic_db::DBPlayerCorpse_Struct*) in_data;
 	bool isSoF = true;
 
-	int32 esize1 = (sizeof(DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(player_lootitem::ServerLootItem_Struct)));
-	int32 esize2 = (sizeof(classic_db::DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(player_lootitem::ServerLootItem_Struct)));
+	uint32 esize1 = (sizeof(DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(player_lootitem::ServerLootItem_Struct)));
+	uint32 esize2 = (sizeof(classic_db::DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(player_lootitem::ServerLootItem_Struct)));
 	if (in_datasize != esize1) {
 		LogFile->write(EQEMuLog::Error, "Corpse::LoadFromDBData: Corrupt data: in_datasize (%i) != expected size (%i) Continuing on...", in_datasize, esize1);
 		if (in_datasize != esize2) {
@@ -104,7 +104,7 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 
 		// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
 		// and to maintain backwards compatability with existing corpses in the database.
-		int16 RealRace;
+		uint16 RealRace;
 
 		switch(dbpcs->race) {
 			case 254:
@@ -154,7 +154,7 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 
 		// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
 		// and to maintain backwards compatability with existing corpses in the database.
-		int16 RealRace;
+		uint16 RealRace;
 
 		switch(dbpc->race) {
 			case 254:
@@ -192,7 +192,7 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 
 // To be used on NPC death and ZoneStateLoad
 // Mongrel: added see_invis and see_invis_undead
-Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPCType** in_npctypedata, int32 in_decaytime)
+Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime)
 // vesuvias - appearence fix
  : Mob("Unnamed_Corpse","",0,0,in_npc->GetGender(),in_npc->GetRace(),in_npc->GetClass(),BT_Humanoid//bodytype added
        ,in_npc->GetDeity(),in_npc->GetLevel(),in_npc->GetNPCTypeID(),in_npc->GetSize(),0,
@@ -251,7 +251,7 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 
 // To be used on PC death
 // Mongrel: added see_invis and see_invis_undead
-Corpse::Corpse(Client* client, sint32 in_rezexp)
+Corpse::Corpse(Client* client, int32 in_rezexp)
 // vesuvias - appearence fix
 : Mob
 (
@@ -440,10 +440,10 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 }
 
 // solar: helper function for client corpse constructor
-std::list<uint32> Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
+std::list<uint32> Corpse::MoveItemToCorpse(Client *client, ItemInst *item, int16 equipslot)
 {
 	int bagindex;
-	sint16 interior_slot;
+	int16 interior_slot;
 	ItemInst *interior_item;
    std::list<uint32> returnlist;
 
@@ -473,7 +473,7 @@ std::list<uint32> Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint1
 
 // To be called from LoadFromDBData
 // Mongrel: added see_invis and see_invis_undead
-Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_itemlist, int32 in_copper, int32 in_silver, int32 in_gold, int32 in_plat, float in_x, float in_y, float in_z, float in_heading, float in_size, int8 in_gender, int16 in_race, int8 in_class, int8 in_deity, int8 in_level, int8 in_texture, int8 in_helmtexture,int32 in_rezexp, bool wasAtGraveyard)
+Corpse::Corpse(uint32 in_dbid, uint32 in_charid, char* in_charname, ItemList* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, float in_x, float in_y, float in_z, float in_heading, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture,uint32 in_rezexp, bool wasAtGraveyard)
  : Mob("Unnamed_Corpse","",0,0,in_gender, in_race, in_class, BT_Humanoid, in_deity, in_level,0, in_size, 0, in_heading, in_x, in_y, in_z,0,in_texture,in_helmtexture,
 	 0,0,0,0,0,0,0,0,0,
 	 0,0,0,0,0,0,0,0,0,0,0,0xff,
@@ -549,8 +549,8 @@ bool Corpse::Save() {
 	if (!pIsChanged)
 		return true;
 	
-	int32 tmp = this->CountItems();
-	int32 tmpsize = sizeof(DBPlayerCorpse_Struct) + (tmp * sizeof(player_lootitem::ServerLootItem_Struct));
+	uint32 tmp = this->CountItems();
+	uint32 tmpsize = sizeof(DBPlayerCorpse_Struct) + (tmp * sizeof(player_lootitem::ServerLootItem_Struct));
 	DBPlayerCorpse_Struct* dbpc = (DBPlayerCorpse_Struct*) new uchar[tmpsize];
 	memset(dbpc, 0, tmpsize);
 	dbpc->itemcount = tmp;
@@ -563,7 +563,7 @@ bool Corpse::Save() {
 
 	// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
 	// and to maintain backwards compatability with existing corpses in the database.
-	int16 CorpseRace;
+	uint16 CorpseRace;
 
 	switch(race) {
 		case DRAKKIN:
@@ -596,7 +596,7 @@ bool Corpse::Save() {
 	dbpc->drakkin_tattoo = drakkin_tattoo;
 	dbpc->drakkin_details = drakkin_details;
 	
-	int32 x = 0;
+	uint32 x = 0;
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
@@ -648,11 +648,11 @@ void Corpse::DepopCorpse() {
 		p_depop = true;
 }
 
-int32 Corpse::CountItems() {
+uint32 Corpse::CountItems() {
 	return itemlist.size();
 }
 
-void Corpse::AddItem(uint32 itemnum, int16 charges, sint16 slot, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5) {
+void Corpse::AddItem(uint32 itemnum, uint16 charges, int16 slot, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5) {
 	if (!database.GetItem(itemnum))
 		return;
 	pIsChanged = true;
@@ -669,7 +669,7 @@ void Corpse::AddItem(uint32 itemnum, int16 charges, sint16 slot, uint32 aug1, ui
 	itemlist.push_back(item);
 }
 
-ServerLootItem_Struct* Corpse::GetItem(int16 lootslot, ServerLootItem_Struct** bag_item_data)
+ServerLootItem_Struct* Corpse::GetItem(uint16 lootslot, ServerLootItem_Struct** bag_item_data)
 {
 	ServerLootItem_Struct *sitem = 0, *sitem2;
 	
@@ -687,7 +687,7 @@ ServerLootItem_Struct* Corpse::GetItem(int16 lootslot, ServerLootItem_Struct** b
 
 	if (sitem && bag_item_data && Inventory::SupportsContainers(sitem->equipSlot))
 	{
-		sint16 bagstart = Inventory::CalcSlotId(sitem->equipSlot, 0);
+		int16 bagstart = Inventory::CalcSlotId(sitem->equipSlot, 0);
 
 		cur = itemlist.begin();
 		end = itemlist.end();
@@ -703,7 +703,7 @@ ServerLootItem_Struct* Corpse::GetItem(int16 lootslot, ServerLootItem_Struct** b
 	return sitem;
 }
 
-uint32 Corpse::GetWornItem(sint16 equipSlot) const {
+uint32 Corpse::GetWornItem(int16 equipSlot) const {
 	ItemList::const_iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
@@ -718,7 +718,7 @@ uint32 Corpse::GetWornItem(sint16 equipSlot) const {
 	return 0;
 }
 
-void Corpse::RemoveItem(int16 lootslot)
+void Corpse::RemoveItem(uint16 lootslot)
 {
 
 	if (lootslot == 0xFFFF)
@@ -739,7 +739,7 @@ void Corpse::RemoveItem(int16 lootslot)
 
 void Corpse::RemoveItem(ServerLootItem_Struct* item_data)
 {
-	int8 material;
+	uint8 material;
 	
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
@@ -762,7 +762,7 @@ void Corpse::RemoveItem(ServerLootItem_Struct* item_data)
 	}
 }
 
-void Corpse::SetCash(int32 in_copper, int32 in_silver, int32 in_gold, int32 in_platinum) {
+void Corpse::SetCash(uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_platinum) {
 	this->copper = in_copper;
 	this->silver = in_silver;
 	this->gold = in_gold;
@@ -846,7 +846,7 @@ bool Corpse::Process() {
 	return true;
 }
 
-void Corpse::SetDecayTimer(int32 decaytime) {
+void Corpse::SetDecayTimer(uint32 decaytime) {
 	if (decaytime == 0)
 		corpse_decay_timer.Trigger();
 	else
@@ -854,7 +854,7 @@ void Corpse::SetDecayTimer(int32 decaytime) {
 }
 
 bool Corpse::CanMobLoot(int charid) {
-	int8 z=0;
+	uint8 z=0;
 	for(int i=0; i<MAX_LOOTERS; i++) {
 		if(looters[i] != 0)
 			z++;
@@ -868,7 +868,7 @@ bool Corpse::CanMobLoot(int charid) {
 		return false;
 }
 
-void Corpse::AllowMobLoot(Mob *them, int8 slot)
+void Corpse::AllowMobLoot(Mob *them, uint8 slot)
 {
 	if(slot >= MAX_LOOTERS)
 		return;
@@ -907,7 +907,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		if (looter == 0)
 			this->BeingLootedBy = 0xFFFFFFFF;
 	}
-	int8 tCanLoot = 1;
+	uint8 tCanLoot = 1;
 	bool lootcoin=false;
 	if(database.GetVariable("LootCoin",tmp, 9))
 		lootcoin=(atoi(tmp)==1);
@@ -1012,7 +1012,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		cur = itemlist.begin();
 		end = itemlist.end();
 
-		int8 containercount = 0;
+		uint8 containercount = 0;
 		int corpselootlimit;
       
 		if (client->GetClientVersion() >= EQClientSoF) { corpselootlimit = 32; }
@@ -1353,7 +1353,7 @@ void Corpse::QueryLoot(Client* to) {
          const Item_Struct* item = database.GetItem(sitem->item_id);
 
          if (item)
-            to->Message((sitem->lootslot == 0xFFFF), "LootSlot: %i (EquipSlot: %i) Item: %s (%d), Count: %i", static_cast<sint16>(sitem->lootslot), sitem->equipSlot, item->Name, item->ID, sitem->charges);
+            to->Message((sitem->lootslot == 0xFFFF), "LootSlot: %i (EquipSlot: %i) Item: %s (%d), Count: %i", static_cast<int16>(sitem->lootslot), sitem->equipSlot, item->Name, item->ID, sitem->charges);
          else
             to->Message((sitem->lootslot == 0xFFFF), "Error: 0x%04x", sitem->item_id);
          
@@ -1385,7 +1385,7 @@ void Corpse::QueryLoot(Client* to) {
 
 bool Corpse::Summon(Client* client, bool spell, bool CheckDistance)
 {
-	int32 dist2 = 10000; // pow(100, 2);
+	uint32 dist2 = 10000; // pow(100, 2);
 	if (!spell) {
 		if (this->GetCharID() == client->CharacterID()) {
 			if (IsLocked() && client->Admin() < 100) {
@@ -1452,11 +1452,11 @@ void Corpse::Spawn() {
 	safe_delete(app);
 }
 
-bool ZoneDatabase::DeleteGraveyard(int32 zone_id, int32 graveyard_id) {
+bool ZoneDatabase::DeleteGraveyard(uint32 zone_id, uint32 graveyard_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256];
-	int32 query_length = 0;
-	int32 affected_rows = 0;
+	uint32 query_length = 0;
+	uint32 affected_rows = 0;
 	
 	query_length = sprintf(query,"UPDATE zone SET graveyard_id=0 WHERE zoneidnumber=%u AND version=0", zone_id);
 	
@@ -1487,15 +1487,15 @@ bool ZoneDatabase::DeleteGraveyard(int32 zone_id, int32 graveyard_id) {
 
 	return true;
 }
-int32 ZoneDatabase::AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id) {
+uint32 ZoneDatabase::AddGraveyardIDToZone(uint32 zone_id, uint32 graveyard_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256];
 	char* end = query;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 	
 	end += sprintf(end,"UPDATE zone SET graveyard_id=%u WHERE zoneidnumber=%u AND version=0", graveyard_id, zone_id);
 	
-	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+	if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
         cerr << "Error1 in AddGraveyardIDToZone query " << errbuf << endl;
 		return 0;
@@ -1509,16 +1509,16 @@ int32 ZoneDatabase::AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id) {
 
 	return zone_id;
 }
-int32 ZoneDatabase::NewGraveyardRecord(int32 graveyard_zoneid, float graveyard_x, float graveyard_y, float graveyard_z, float graveyard_heading) {
+uint32 ZoneDatabase::NewGraveyardRecord(uint32 graveyard_zoneid, float graveyard_x, float graveyard_y, float graveyard_z, float graveyard_heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256];
 	char* end = query;
-	int32 affected_rows = 0;
-	int32 new_graveyard_id = 0;
+	uint32 affected_rows = 0;
+	uint32 new_graveyard_id = 0;
 	
 	end += sprintf(end,"INSERT INTO graveyard SET zone_id=%u, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f", graveyard_zoneid, graveyard_x, graveyard_y, graveyard_z, graveyard_heading);
 	
-	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows, &new_graveyard_id)) {
+	if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows, &new_graveyard_id)) {
 		safe_delete_array(query);
         cerr << "Error1 in NewGraveyardRecord query " << errbuf << endl;
 		return 0;
@@ -1537,16 +1537,16 @@ int32 ZoneDatabase::NewGraveyardRecord(int32 graveyard_zoneid, float graveyard_x
 
 	return new_graveyard_id;
 }
-int32 ZoneDatabase::GraveyardPlayerCorpse(int32 dbid, int32 zoneid, int16 instanceid, float x, float y, float z, float heading) {
+uint32 ZoneDatabase::GraveyardPlayerCorpse(uint32 dbid, uint32 zoneid, uint16 instanceid, float x, float y, float z, float heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256];
 	char* end = query;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 	
 	// We probably don't want a graveyard located in an instance.
 	end += sprintf(end,"Update player_corpses SET zoneid=%u, instanceid=0, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f, WasAtGraveyard=1 WHERE id=%d", zoneid, x, y, z, heading, dbid);
 	
-	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+	if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
         cerr << "Error1 in GraveyardPlayerCorpse query " << errbuf << endl;
 		return 0;
@@ -1559,11 +1559,11 @@ int32 ZoneDatabase::GraveyardPlayerCorpse(int32 dbid, int32 zoneid, int16 instan
 	}
 	return dbid;
 }
-int32 ZoneDatabase::UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed) {
+uint32 ZoneDatabase::UpdatePlayerCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, uint16 instanceid, uchar* data, uint32 datasize, float x, float y, float z, float heading, bool rezzed) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256+(datasize*2)];
 	char* end = query;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 	
 	end += sprintf(end, "Update player_corpses SET data=");
 	*end++ = '\'';
@@ -1571,7 +1571,7 @@ int32 ZoneDatabase::UpdatePlayerCorpse(int32 dbid, int32 charid, const char* cha
 	*end++ = '\'';
 	end += sprintf(end,", charname='%s', zoneid=%u, instanceid=%u, charid=%d, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f WHERE id=%d", charname, zoneid, instanceid, charid, x, y, z, heading, dbid);
 	
-	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+	if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
         cerr << "Error1 in UpdatePlayerCorpse query " << errbuf << endl;
 		return 0;
@@ -1591,7 +1591,7 @@ int32 ZoneDatabase::UpdatePlayerCorpse(int32 dbid, int32 charid, const char* cha
 	return dbid;
 }
 
-void ZoneDatabase::MarkCorpseAsRezzed(int32 dbid)
+void ZoneDatabase::MarkCorpseAsRezzed(uint32 dbid)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
@@ -1603,14 +1603,14 @@ void ZoneDatabase::MarkCorpseAsRezzed(int32 dbid)
 	safe_delete_array(query);
 }
 
-int32 ZoneDatabase::CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading) {
+uint32 ZoneDatabase::CreatePlayerCorpse(uint32 charid, const char* charname, uint32 zoneid, uint16 instanceid, uchar* data, uint32 datasize, float x, float y, float z, float heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256+(datasize*2)];
 	char* end = query;
     //MYSQL_RES *result;
     //MYSQL_ROW row;
-	int32 affected_rows = 0;
-	int32 last_insert_id = 0;
+	uint32 affected_rows = 0;
+	uint32 last_insert_id = 0;
 	
 	end += sprintf(end, "Insert into player_corpses SET data=");
 	*end++ = '\'';
@@ -1618,7 +1618,7 @@ int32 ZoneDatabase::CreatePlayerCorpse(int32 charid, const char* charname, int32
 	*end++ = '\'';
 	end += sprintf(end,", charname='%s', zoneid=%u, instanceid=%u, charid=%d, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f, timeofdeath=Now(), IsBurried=0", charname, zoneid, instanceid, charid, x, y, z, heading);
 	
-    if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows, &last_insert_id)) {
+    if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows, &last_insert_id)) {
 		safe_delete_array(query);
         cerr << "Error1 in CreatePlayerCorpse query " << errbuf << endl;
 		return 0;
@@ -1638,12 +1638,12 @@ int32 ZoneDatabase::CreatePlayerCorpse(int32 charid, const char* charname, int32
 	return last_insert_id;
 }
 
-bool ZoneDatabase::CreatePlayerCorpseBackup(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading) {
+bool ZoneDatabase::CreatePlayerCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, uint16 instanceid, uchar* data, uint32 datasize, float x, float y, float z, float heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256+(datasize*2)];
 	char* end = query;
-	int32 affected_rows = 0;
-	int32 last_insert_id = 0;
+	uint32 affected_rows = 0;
+	uint32 last_insert_id = 0;
 	bool result = false;
 	DBPlayerCorpse_Struct* dbpcs = (DBPlayerCorpse_Struct*) data;
 	
@@ -1655,7 +1655,7 @@ bool ZoneDatabase::CreatePlayerCorpseBackup(int32 dbid, int32 charid, const char
 			*end++ = '\'';
 			end += sprintf(end,", charname='%s', zoneid=%u, instanceid=%u, charid=%d, x=%1.1f, y=%1.1f, z=%1.1f, heading=%1.1f, timeofdeath=Now(), IsBurried=0, id=%u", charname, zoneid, instanceid, charid, x, y, z, heading, dbid);
 	
-			if (RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+			if (RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
 				if (affected_rows == 1)
 					result = true;
 				else
@@ -1672,12 +1672,12 @@ bool ZoneDatabase::CreatePlayerCorpseBackup(int32 dbid, int32 charid, const char
 	return result;
 }
 
-int32 ZoneDatabase::GetPlayerBurriedCorpseCount(int32 char_id) {
+uint32 ZoneDatabase::GetPlayerBurriedCorpseCount(uint32 char_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 CorpseCount = 0;
+	uint32 CorpseCount = 0;
 	
 	if (RunQuery(query, MakeAnyLenString(&query, "select count(*) from player_corpses where charid = '%u' and IsBurried = 1", char_id), errbuf, &result)) {
 		row = mysql_fetch_row(result);
@@ -1693,12 +1693,12 @@ int32 ZoneDatabase::GetPlayerBurriedCorpseCount(int32 char_id) {
 	return CorpseCount;
 }
 
-int32 ZoneDatabase::GetPlayerCorpseCount(int32 char_id) {
+uint32 ZoneDatabase::GetPlayerCorpseCount(uint32 char_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 CorpseCount = 0;
+	uint32 CorpseCount = 0;
 	
 	if (RunQuery(query, MakeAnyLenString(&query, "select count(*) from player_corpses where charid = '%u'", char_id), errbuf, &result)) {
 		row = mysql_fetch_row(result);
@@ -1714,17 +1714,17 @@ int32 ZoneDatabase::GetPlayerCorpseCount(int32 char_id) {
 	return CorpseCount;
 }
 
-int32 ZoneDatabase::GetPlayerCorpseID(int32 char_id, int8 corpse) {
+uint32 ZoneDatabase::GetPlayerCorpseID(uint32 char_id, uint8 corpse) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 id = 0;
+	uint32 id = 0;
 	
 	if (RunQuery(query, MakeAnyLenString(&query, "select id from player_corpses where charid = '%u'", char_id), errbuf, &result)) {
 		for (int i=0; i<corpse;i++) {
 			row = mysql_fetch_row(result);
-			id = (int32)atoi(row[0]);
+			id = (uint32)atoi(row[0]);
 		}
 		mysql_free_result(result);
 	}
@@ -1737,7 +1737,7 @@ int32 ZoneDatabase::GetPlayerCorpseID(int32 char_id, int8 corpse) {
 	return id;
 }
 
-uint32 ZoneDatabase::GetPlayerCorpseItemAt(int32 corpse_id, int16 slotid) {
+uint32 ZoneDatabase::GetPlayerCorpseItemAt(uint32 corpse_id, uint16 slotid) {
 	Corpse* tmp = LoadPlayerCorpse(corpse_id);
 	uint32 itemid = 0;
 
@@ -1748,7 +1748,7 @@ uint32 ZoneDatabase::GetPlayerCorpseItemAt(int32 corpse_id, int16 slotid) {
 	return itemid;
 }
 
-Corpse* ZoneDatabase::SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading) {
+Corpse* ZoneDatabase::SummonBurriedPlayerCorpse(uint32 char_id, uint32 dest_zoneid, uint16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -1783,7 +1783,7 @@ Corpse* ZoneDatabase::SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid
 	return NewCorpse;
 }
 
-bool ZoneDatabase::SummonAllPlayerCorpses(int32 char_id, int32 dest_zoneid, int16 dest_instanceid,
+bool ZoneDatabase::SummonAllPlayerCorpses(uint32 char_id, uint32 dest_zoneid, uint16 dest_instanceid,
 					  float dest_x, float dest_y, float dest_z, float dest_heading)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1829,16 +1829,16 @@ bool ZoneDatabase::SummonAllPlayerCorpses(int32 char_id, int32 dest_zoneid, int1
 	return (CorpseCount > 0);
 }
 
-bool ZoneDatabase::UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 new_instanceid, float new_x, float new_y, float new_z, float new_heading) {
+bool ZoneDatabase::UnburyPlayerCorpse(uint32 dbid, uint32 new_zoneid, uint16 new_instanceid, float new_x, float new_y, float new_z, float new_heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256];
 	char* end = query;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 	bool Result = false;
 	
 	end += sprintf(end, "UPDATE player_corpses SET IsBurried=0, zoneid=%u, instanceid=%u, x=%f, y=%f, z=%f, heading=%f, timeofdeath=Now(), WasAtGraveyard=0 WHERE id=%u", new_zoneid, new_instanceid, new_x, new_y, new_z, new_heading, dbid);
 		
-	if (RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
+	if (RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
         if (affected_rows == 1)
 			Result = true;
 		else
@@ -1852,7 +1852,7 @@ bool ZoneDatabase::UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 new_in
 	return Result;
 }
 
-Corpse* ZoneDatabase::LoadPlayerCorpse(int32 player_corpse_id) {
+Corpse* ZoneDatabase::LoadPlayerCorpse(uint32 player_corpse_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -1880,12 +1880,12 @@ Corpse* ZoneDatabase::LoadPlayerCorpse(int32 player_corpse_id) {
 	return NewCorpse;
 }
 
-bool ZoneDatabase::LoadPlayerCorpses(int32 iZoneID, int16 iInstanceID) {
+bool ZoneDatabase::LoadPlayerCorpses(uint32 iZoneID, uint16 iInstanceID) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 query_length = 0;
+	uint32 query_length = 0;
 	
 	unsigned long* lengths;
 
@@ -1912,12 +1912,12 @@ bool ZoneDatabase::LoadPlayerCorpses(int32 iZoneID, int16 iInstanceID) {
 	return true;
 }
 
-int32 ZoneDatabase::GetFirstCorpseID(int32 char_id) {
+uint32 ZoneDatabase::GetFirstCorpseID(uint32 char_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 CorpseID = 0;
+	uint32 CorpseID = 0;
 	
 	MakeAnyLenString(&query, "SELECT id FROM player_corpses WHERE charid='%u' AND IsBurried=0 ORDER BY timeofdeath LIMIT 1", char_id);
 		if (RunQuery(query, strlen(query), errbuf, &result)) {
@@ -1937,7 +1937,7 @@ int32 ZoneDatabase::GetFirstCorpseID(int32 char_id) {
 	return CorpseID;
 }
 
-bool ZoneDatabase::BuryPlayerCorpse(int32 dbid) {
+bool ZoneDatabase::BuryPlayerCorpse(uint32 dbid) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	
@@ -1951,7 +1951,7 @@ bool ZoneDatabase::BuryPlayerCorpse(int32 dbid) {
 	return true;
 }
 
-bool ZoneDatabase::BuryAllPlayerCorpses(int32 charid) {
+bool ZoneDatabase::BuryAllPlayerCorpses(uint32 charid) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	
@@ -1965,7 +1965,7 @@ bool ZoneDatabase::BuryAllPlayerCorpses(int32 charid) {
 	return true;
 }
 
-bool ZoneDatabase::DeletePlayerCorpse(int32 dbid) {
+bool ZoneDatabase::DeletePlayerCorpse(uint32 dbid) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	
@@ -1980,7 +1980,7 @@ bool ZoneDatabase::DeletePlayerCorpse(int32 dbid) {
 }
 
 // these functions operate with a material slot, which is from 0 to 8
-int32 Corpse::GetEquipment(int8 material_slot) const {
+uint32 Corpse::GetEquipment(uint8 material_slot) const {
 	int invslot;
 	
 	if(material_slot > 8)
@@ -1995,7 +1995,7 @@ int32 Corpse::GetEquipment(int8 material_slot) const {
 	return GetWornItem(invslot);
 }
 
-uint32 Corpse::GetEquipmentColor(int8 material_slot) const {
+uint32 Corpse::GetEquipmentColor(uint8 material_slot) const {
 	const Item_Struct *item;
 
 	if(material_slot > 8)
@@ -2026,7 +2026,7 @@ void Corpse::AddLooter(Mob* who)
 	}
 }
 
-void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
+void Corpse::LoadPlayerCorpseDecayTime(uint32 dbid){
 	if(!dbid)
 		return;
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -2067,7 +2067,7 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 }
 
 /*
-void Corpse::CastRezz(int16 spellid, Mob* Caster){
+void Corpse::CastRezz(uint16 spellid, Mob* Caster){
 	if(Rezzed()){
 		if(Caster && Caster->IsClient())
 			Caster->Message(13,"This character has already been resurrected.");

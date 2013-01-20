@@ -30,8 +30,8 @@ public:
 	~BugDatabase();
 	bool UploadBug(const char* bugdetail, const char* version, const char* loginname);
 protected:
-	bool	RunQuery(const char* query, int32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, int32* affected_rows = 0, int32* errnum = 0, bool retry = true);
-	int32	DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen);
+	bool	RunQuery(const char* query, uint32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, uint32* affected_rows = 0, uint32* errnum = 0, bool retry = true);
+	uint32	DoEscapeString(char* tobuf, const char* frombuf, uint32 fromlen);
 
 private:
 	MYSQL	mysqlbug;

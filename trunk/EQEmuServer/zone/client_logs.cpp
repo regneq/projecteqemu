@@ -104,7 +104,7 @@ void ClientLogs::msg(EQEMuLog::LogIDs id, const char *buf) {
 	}
 }
 
-void ClientLogs::EQEmuIO_buf(EQEMuLog::LogIDs id, const char *buf, int8 size, int32 count) {
+void ClientLogs::EQEmuIO_buf(EQEMuLog::LogIDs id, const char *buf, uint8 size, uint32 count) {
 	if(size != 1)
 		return;	//cannot print multibyte data
 	if(buf[0] == '\n' || buf[0] == '\r')

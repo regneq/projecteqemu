@@ -23,7 +23,7 @@ class tHateEntry
 {
 public:
     Mob *ent;
-    sint32 damage, hate;
+    int32 damage, hate;
     bool bFrenzy;
 };
 
@@ -34,17 +34,17 @@ public:
     ~HateList();
 
     // adds a mob to the hatelist
-    void Add(Mob *ent, sint32 in_hate=0, sint32 in_dam=0, bool bFrenzy = false, bool iAddIfNotExist = true);
+    void Add(Mob *ent, int32 in_hate=0, int32 in_dam=0, bool bFrenzy = false, bool iAddIfNotExist = true);
     // sets existing hate
-    void Set(Mob *other, int32 in_hate, int32 in_dam);
+    void Set(Mob *other, uint32 in_hate, uint32 in_dam);
     // removes mobs from hatelist
     bool RemoveEnt(Mob *ent);
     // Remove all
     void Wipe();
     // ???
-    void DoFactionHits(sint32 nfl_id);
+    void DoFactionHits(int32 nfl_id);
     // Gets Hate amount for mob
-    sint32 GetEntHate(Mob *ent, bool damage = false);
+    int32 GetEntHate(Mob *ent, bool damage = false);
     // gets top hated mob
     Mob *GetTop(Mob *center);
     // gets any on the list

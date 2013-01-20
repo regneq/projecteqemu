@@ -47,7 +47,7 @@ class IFile;
 class HttpdSocket : public HTTPSocket
 {
 public:
-	HttpdSocket(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort);
+	HttpdSocket(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort);
 	~HttpdSocket();
 
 	void OnFirst();

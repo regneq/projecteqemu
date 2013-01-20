@@ -13,17 +13,17 @@ class Doors : public Entity
 {
 public:
 	Doors(const Door* door);
-	Doors(const char *dmodel, float dx, float dy, float dz, float dheading, int8 dopentype = 58, int16 dsize = 100);
+	Doors(const char *dmodel, float dx, float dy, float dz, float dheading, uint8 dopentype = 58, uint16 dsize = 100);
 	~Doors();
 	bool	IsDoor() const { return true; }
-	void	HandleClick(Client* sender, int8 trigger);
+	void	HandleClick(Client* sender, uint8 trigger);
 	bool	Process();
-	int8	GetDoorID() { return door_id; }
-	int32	GetDoorDBID() { return db_id; }
-	int32	GetGuildID() { return guild_id; }
-	int8	GetOpenType() { return opentype; }
+	uint8	GetDoorID() { return door_id; }
+	uint32	GetDoorDBID() { return db_id; }
+	uint32	GetGuildID() { return guild_id; }
+	uint8	GetOpenType() { return opentype; }
 	char*	GetDoorName() { return door_name; }
-	int32	GetDoorParam() { return door_param; }
+	uint32	GetDoorParam() { return door_param; }
 	int		GetInvertState() { return invert_state; }
 	float	GetX() { return pos_x; }
 	float	GetY() { return pos_y; }
@@ -34,20 +34,20 @@ public:
 	void	SetOpenState(bool st) { isopen = st; }
 	bool	IsDoorOpen() { return isopen; }
 
-	int8	GetTriggerDoorID() { return trigger_door; }
-	int8	GetTriggerType() { return trigger_type; }
+	uint8	GetTriggerDoorID() { return trigger_door; }
+	uint8	GetTriggerType() { return trigger_type; }
  
 	uint32	GetKeyItem() { return keyitem; }
 	void	SetKeyItem(uint32 in) { keyitem = in; }
-	int8	GetNoKeyring() { return nokeyring; }
-	void	SetNoKeyring(int8 in) { nokeyring = in; }
-	int16	GetLockpick() { return lockpick; } 
-	void	SetLockpick(int16 in) { lockpick = in; } 
-	int16	GetSize() { return size; }
-	void	SetGuildID(int32 guild_id) { this->guild_id = guild_id; }
+	uint8	GetNoKeyring() { return nokeyring; }
+	void	SetNoKeyring(uint8 in) { nokeyring = in; }
+	uint16	GetLockpick() { return lockpick; } 
+	void	SetLockpick(uint16 in) { lockpick = in; } 
+	uint16	GetSize() { return size; }
+	void	SetGuildID(uint32 guild_id) { this->guild_id = guild_id; }
 
-	int32	GetEntityID() { return entity_id; }
-	void	SetEntityID(int32 entity) { entity_id = entity; }
+	uint32	GetEntityID() { return entity_id; }
+	void	SetEntityID(uint32 entity) { entity_id = entity; }
 	
 	void	DumpDoor();
 	float	GetDestX() { return dest_x; }
@@ -55,8 +55,8 @@ public:
 	float	GetDestZ() { return dest_z; }
 	float	GetDestHeading() { return dest_heading; }
 
-	int8	IsLDoNDoor() { return is_ldon_door; }
-	int32	GetClientVersionMask() { return client_version_mask; }
+	uint8	IsLDoNDoor() { return is_ldon_door; }
+	uint32	GetClientVersionMask() { return client_version_mask; }
 	
 	void	NPCOpen(NPC* sender, bool alt_mode=false);
 	void	ForceOpen(Mob *sender, bool alt_mode=false);
@@ -69,14 +69,14 @@ public:
 	void	SetHeading(float in);
 	void	SetIncline(int in);
 	void	SetDoorName(char* name);
-	void	SetOpenType(int8 in);
+	void	SetOpenType(uint8 in);
 	void	SetLocation(float x, float y, float z);
-	void	SetSize(int16 size);
+	void	SetSize(uint16 size);
 	void	CreateDatabaseEntry();
 
 private:
 	
-	int32	db_id;
+	uint32	db_id;
 	uint8	door_id;
 	char	zone_name[32];
 	char	door_name[32];
@@ -85,17 +85,17 @@ private:
 	float	pos_z;
 	float	heading;
 	int		incline;
-	int8	opentype;
-	int32	guild_id;
-	int16	lockpick;
+	uint8	opentype;
+	uint32	guild_id;
+	uint16	lockpick;
 	uint32	keyitem;
-	int8	nokeyring;
-	int8	trigger_door;
-	int8	trigger_type;
-	int32	door_param;
-	int16	size;
+	uint8	nokeyring;
+	uint8	trigger_door;
+	uint8	trigger_type;
+	uint32	door_param;
+	uint16	size;
 	int		invert_state;
-	int32	entity_id;
+	uint32	entity_id;
 	bool	isopen;
 	Timer	close_timer;
 	//Timer	trigger_timer;
@@ -107,7 +107,7 @@ private:
 	float	dest_z;
 	float	dest_heading;
 
-	int8	is_ldon_door;
-	int32	client_version_mask;
+	uint8	is_ldon_door;
+	uint32	client_version_mask;
 };
 #endif

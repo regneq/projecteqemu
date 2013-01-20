@@ -104,7 +104,7 @@ void PerlXSParser::map_funs() {
 	);//eval
 }
 
-void PerlXSParser::SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst)
+void PerlXSParser::SendCommands(const char * pkgprefix, const char *event, uint32 npcid, Mob* other, Mob* mob, ItemInst* iteminst)
 {
 	if(!perl)
 		return;
@@ -338,7 +338,7 @@ XS(XS__spawn)
 	if (items != 6)
 		Perl_croak(aTHX_ "Usage: spawn(npc_type, grid, unused, x, y, z)");
 
-	int16		RETVAL;
+	uint16		RETVAL;
 	dXSTARG;
 
 	int	npc_type = (int)SvIV(ST(0));
@@ -361,7 +361,7 @@ XS(XS__spawn2)
 	if (items != 7)
 		Perl_croak(aTHX_ "Usage: spawn2(npc_type, grid, unused, x, y, z, heading)");
 
-	int16		RETVAL;
+	uint16		RETVAL;
 	dXSTARG;
 
 	int	npc_type = (int)SvIV(ST(0));
@@ -385,7 +385,7 @@ XS(XS__unique_spawn)
 	if (items != 6 && items != 7)
 		Perl_croak(aTHX_ "Usage: unique_spawn(npc_type, grid, unused, x, y, z, [heading])");
 
-	int16		RETVAL;
+	uint16		RETVAL;
 	dXSTARG;
 
 	int	npc_type = (int)SvIV(ST(0));
@@ -411,7 +411,7 @@ XS(XS__spawn_from_spawn2)
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: spawn_from_spawn2(spawn2_id)");
 
-	int16		RETVAL;
+	uint16		RETVAL;
 	dXSTARG;
 
 	int	spawn2_id = (int)SvIV(ST(0));
@@ -514,12 +514,12 @@ XS(XS__addloot)
 	if(items < 1 || items > 3)
 		Perl_croak(aTHX_ "Usage: addloot(item_id, charges = 0, equipitem = true)");
 
-	int32	itemid = (int32)SvUV(ST(0));
-	int16	charges = 0;
+	uint32	itemid = (uint32)SvUV(ST(0));
+	uint16	charges = 0;
 	bool	equipitem = true;
 
 	if (items > 1)
-		charges = (int16)SvUV(ST(1));
+		charges = (uint16)SvUV(ST(1));
 	if (items > 2)
 		equipitem = (bool)SvTRUE(ST(2));
 
@@ -1724,7 +1724,7 @@ XS(XS__spawn_condition)
 	{
 		char *	zone_short = (char *)SvPV_nolen(ST(0));
 		uint16	cond_id = (int)SvUV(ST(1));
-		sint16	value = (int)SvIV(ST(2));
+		int16	value = (int)SvIV(ST(2));
 
 		quest_manager.spawn_condition(zone_short, zone->GetInstanceID(), cond_id, value);
 	}
@@ -1733,7 +1733,7 @@ XS(XS__spawn_condition)
 		char *	zone_short = (char *)SvPV_nolen(ST(0));
 		uint32	instance_id = (int)SvUV(ST(1));
 		uint16	cond_id = (int)SvUV(ST(2));
-		sint16	value = (int)SvIV(ST(3));
+		int16	value = (int)SvIV(ST(3));
 
 		quest_manager.spawn_condition(zone_short, instance_id, cond_id, value);
 	}
@@ -1749,7 +1749,7 @@ XS(XS__get_spawn_condition)
 
 	if(items == 2)
 	{
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		char *	zone_short = (char *)SvPV_nolen(ST(0));
@@ -1762,7 +1762,7 @@ XS(XS__get_spawn_condition)
 	}
 	else
 	{
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		char *	zone_short = (char *)SvPV_nolen(ST(0));
@@ -1783,7 +1783,7 @@ XS(XS__toggle_spawn_event)
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: toggle_spawn_event(event_id, enabled?, reset_base)");
 
-	int32	event_id = (int)SvIV(ST(0));
+	uint32	event_id = (int)SvIV(ST(0));
 	bool	enabled = ((int)SvIV(ST(1))) == 0?false:true;
 	bool	reset_base = ((int)SvIV(ST(1))) == 0?false:true;
 
@@ -1799,10 +1799,10 @@ XS(XS__has_zone_flag)
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: has_zone_flag(zone_id)");
 
-	sint16		RETVAL;
+	int16		RETVAL;
 	dXSTARG;
 
-	int32	zone_id = (int)SvIV(ST(0));
+	uint32	zone_id = (int)SvIV(ST(0));
 
 	RETVAL = quest_manager.has_zone_flag(zone_id);
 	XSprePUSH; PUSHu((IV)RETVAL);
@@ -1818,7 +1818,7 @@ XS(XS__set_zone_flag)
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: set_zone_flag(zone_id)");
 
-	int32	zone_id = (int)SvIV(ST(0));
+	uint32	zone_id = (int)SvIV(ST(0));
 
 	quest_manager.set_zone_flag(zone_id);
 
@@ -1832,7 +1832,7 @@ XS(XS__clear_zone_flag)
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: clear_zone_flag(zone_id)");
 
-	int32	zone_id = (int)SvIV(ST(0));
+	uint32	zone_id = (int)SvIV(ST(0));
 
 	quest_manager.clear_zone_flag(zone_id);
 
@@ -1847,7 +1847,7 @@ XS(XS__summonburriedplayercorpse)
         Perl_croak(aTHX_ "Usage: summonburriedplayercorpse(char_id,dest_x,dest_y,dest_z,dest_heading)");
 
     bool RETVAL;
-    int32    char_id = (int)SvIV(ST(0));
+    uint32    char_id = (int)SvIV(ST(0));
     float    dest_x = (float)SvIV(ST(1));
     float    dest_y = (float)SvIV(ST(2));
     float    dest_z = (float)SvIV(ST(3));
@@ -1868,7 +1868,7 @@ XS(XS__summonallplayercorpses)
         Perl_croak(aTHX_ "Usage: summonallplayercorpses(char_id,dest_x,dest_y,dest_z,dest_heading)");
 
     bool RETVAL;
-    int32    char_id = (int)SvIV(ST(0));
+    uint32    char_id = (int)SvIV(ST(0));
     float    dest_x = (float)SvIV(ST(1));
     float    dest_y = (float)SvIV(ST(2));
     float    dest_z = (float)SvIV(ST(3));
@@ -1888,10 +1888,10 @@ XS(XS__getplayerburriedcorpsecount)
     if (items != 1)
         Perl_croak(aTHX_ "Usage: getplayerburriedcorpsecount(char_id)");
 
-    int32        RETVAL;
+    uint32        RETVAL;
     dXSTARG;
 
-    int32    char_id = (int)SvIV(ST(0));
+    uint32    char_id = (int)SvIV(ST(0));
 
     RETVAL = quest_manager.getplayerburriedcorpsecount(char_id);
     XSprePUSH; PUSHu((IV)RETVAL);
@@ -1906,10 +1906,10 @@ XS(XS__buryplayercorpse)
     if (items != 1)
         Perl_croak(aTHX_ "Usage: buryplayercorpse(char_id)");
 
-    int32        RETVAL;
+    uint32        RETVAL;
     dXSTARG;
 
-    int32    char_id = (int)SvIV(ST(0));
+    uint32    char_id = (int)SvIV(ST(0));
 
     RETVAL = quest_manager.buryplayercorpse(char_id);
     XSprePUSH; PUSHu((IV)RETVAL);
@@ -1926,7 +1926,7 @@ XS(XS__forcedooropen)
 
 	if (items == 1)
 	{
-	int32	did = (int)SvIV(ST(0));
+	uint32	did = (int)SvIV(ST(0));
 
 	quest_manager.forcedooropen(did, false);
 
@@ -1934,7 +1934,7 @@ XS(XS__forcedooropen)
 	}
 	else
 	{
-	int32	did = (int)SvIV(ST(0));
+	uint32	did = (int)SvIV(ST(0));
 	bool	am = (int)SvIV(ST(1)) == 0?false:true;
 
 	quest_manager.forcedooropen(did, am);
@@ -1952,7 +1952,7 @@ XS(XS__forcedoorclose)
 
 	if (items == 1)
 	{
-	int32	did = (int)SvIV(ST(0));
+	uint32	did = (int)SvIV(ST(0));
 
 	quest_manager.forcedoorclose(did, false);
 
@@ -1960,7 +1960,7 @@ XS(XS__forcedoorclose)
 	}
 	else
 	{
-	int32	did = (int)SvIV(ST(0));
+	uint32	did = (int)SvIV(ST(0));
 	bool	am = (int)SvIV(ST(1)) == 0?false:true;
 
 	quest_manager.forcedoorclose(did, am);
@@ -1976,7 +1976,7 @@ XS(XS__toggledoorstate)
 	if (items !=1)
 			Perl_croak(aTHX_ "Usage: toggledoorstate(doorid)");
 
-	int32	did = (int)SvIV(ST(0));
+	uint32	did = (int)SvIV(ST(0));
 
 	quest_manager.toggledoorstate(did);
 
@@ -1993,7 +1993,7 @@ XS(XS__isdooropen)
     bool        RETVAL;
     dXSTARG;
 
-    int32    doorid = (int)SvIV(ST(0));
+    uint32    doorid = (int)SvIV(ST(0));
 
 	RETVAL = quest_manager.isdooropen(doorid);
 	XSprePUSH; PUSHu((IV)RETVAL);
@@ -2357,7 +2357,7 @@ XS(XS__gettaskactivitydonecount);
 XS(XS__gettaskactivitydonecount)
 {
 	dXSARGS;
-	int32        RETVAL;
+	uint32        RETVAL;
 	dXSTARG;
 
 	if(items == 2) {
@@ -2766,7 +2766,7 @@ XS(XS__CreateGroundObject)
 	if(items == 5)
 		id = quest_manager.CreateGroundObject(itemid, x, y, z, heading);
 	else{
-		int32 decay_time = (int32)SvIV(ST(5));
+		uint32 decay_time = (uint32)SvIV(ST(5));
 		id = quest_manager.CreateGroundObject(itemid, x, y, z, heading, decay_time);
 	}
 
@@ -2785,15 +2785,15 @@ XS(XS__CreateGroundObjectFromModel)
 	float y = (float)SvNV(ST(2));
 	float z = (float)SvNV(ST(3));
 	float heading = (float)SvNV(ST(4));
-	int32 type = 0;
-	int32 decay_time = 0;
+	uint32 type = 0;
+	uint32 decay_time = 0;
 	uint16 id = 0;
 
 	if (items > 5)
-		type = (int32)SvIV(ST(5));
+		type = (uint32)SvIV(ST(5));
 
 	if (items > 6)
-		decay_time = (int32)SvIV(ST(6));
+		decay_time = (uint32)SvIV(ST(6));
 
 	id = quest_manager.CreateGroundObjectFromModel(modelname, x, y, z, heading, type, decay_time);
 	XSRETURN_IV(id);
@@ -2811,15 +2811,15 @@ XS(XS__CreateDoor)
 	float y = (float)SvNV(ST(2));
 	float z = (float)SvNV(ST(3));
 	float heading = (float)SvNV(ST(4));
-	int32 type = 58;
-	int32 size = 100;
+	uint32 type = 58;
+	uint32 size = 100;
 	uint16 id = 0;
 
 	if (items > 5)
-		type = (int32)SvIV(ST(5));
+		type = (uint32)SvIV(ST(5));
 
 	if (items > 6)
-		size = (int32)SvIV(ST(6));
+		size = (uint32)SvIV(ST(6));
 
 	id = quest_manager.CreateDoor(modelname, x, y, z, heading, type, size);
 	XSRETURN_IV(id);
@@ -2860,8 +2860,8 @@ XS(XS__UpdateSpawnTimer)
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: UpdateSpawnTimer(Spawn2_ID, Updated_Time_Till_Repop)");
 
-	int32 id = (int)SvIV(ST(0));
-	int32 duration = (int)SvIV(ST(1));
+	uint32 id = (int)SvIV(ST(0));
+	uint32 duration = (int)SvIV(ST(1));
 
 	quest_manager.UpdateSpawnTimer(id, duration);
 
@@ -2874,9 +2874,9 @@ XS(XS__MerchantSetItem) {
 	if (items != 2 && items != 3)
 		Perl_croak(aTHX_ "Usage: MerchantSetItem(NPCid, itemid [, quantity])");
 
-	int32 NPCid = (int)SvUV(ST(0));
-	int32 itemid = (int)SvUV(ST(1));
-	int32 quantity = 0;
+	uint32 NPCid = (int)SvUV(ST(0));
+	uint32 itemid = (int)SvUV(ST(1));
+	uint32 quantity = 0;
 	if (items == 3)
 		quantity = (int)SvUV(ST(2));
 
@@ -2891,9 +2891,9 @@ XS(XS__MerchantCountItem) {
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: MerchantCountItem(NPCid, itemid)");
 
-	int32 NPCid = (int)SvUV(ST(0));
-	int32 itemid = (int)SvUV(ST(1));
-	int32 quantity = quest_manager.MerchantCountItem(NPCid, itemid);
+	uint32 NPCid = (int)SvUV(ST(0));
+	uint32 itemid = (int)SvUV(ST(1));
+	uint32 quantity = quest_manager.MerchantCountItem(NPCid, itemid);
 
 	XSRETURN_UV(quantity);
 }
@@ -2923,9 +2923,9 @@ XS(XS__CreateInstance) {
 		Perl_croak(aTHX_ "Usage: CreateInstance(zone_name, version, duration)");
 
 	char * zone = (char *)SvPV_nolen(ST(0));
-	int16 version = (int)SvUV(ST(1));
-	int32 duration = (int)SvUV(ST(2));
-	int32 id = quest_manager.CreateInstance(zone, version, duration);
+	uint16 version = (int)SvUV(ST(1));
+	uint32 duration = (int)SvUV(ST(2));
+	uint32 id = quest_manager.CreateInstance(zone, version, duration);
 
 	XSRETURN_UV(id);
 }
@@ -2936,7 +2936,7 @@ XS(XS__DestroyInstance) {
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: DestroyInstance(id)");
 
-	int16 id = (int)SvUV(ST(0));
+	uint16 id = (int)SvUV(ST(0));
 	quest_manager.DestroyInstance(id);
 
 	XSRETURN_EMPTY;
@@ -2949,8 +2949,8 @@ XS(XS__GetInstanceID) {
 		Perl_croak(aTHX_ "Usage: GetInstanceID(zone_name, version)");
 
 	char * zone = (char *)SvPV_nolen(ST(0));
-	int16 version = (int)SvUV(ST(1));
-	int16 id = quest_manager.GetInstanceID(zone, version);
+	uint16 version = (int)SvUV(ST(1));
+	uint16 id = quest_manager.GetInstanceID(zone, version);
 
 	XSRETURN_UV(id);
 }
@@ -2961,7 +2961,7 @@ XS(XS__AssignToInstance) {
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: AssignToInstance(id)");
 
-	int16 id = (int)SvUV(ST(0));
+	uint16 id = (int)SvUV(ST(0));
 	quest_manager.AssignToInstance(id);
 
 	XSRETURN_EMPTY;
@@ -2973,7 +2973,7 @@ XS(XS__AssignGroupToInstance) {
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: AssignGroupToInstance(id)");
 
-	int16 id = (int)SvUV(ST(0));
+	uint16 id = (int)SvUV(ST(0));
 	quest_manager.AssignGroupToInstance(id);
 
 	XSRETURN_EMPTY;
@@ -2985,7 +2985,7 @@ XS(XS__AssignRaidToInstance) {
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: AssignRaidToInstance(id)");
 
-	int16 id = (int)SvUV(ST(0));
+	uint16 id = (int)SvUV(ST(0));
 	quest_manager.AssignRaidToInstance(id);
 
 	XSRETURN_EMPTY;
@@ -3023,8 +3023,8 @@ XS(XS__FlagInstanceByGroupLeader) {
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: FlagInstanceByGroupLeader(zone, version)");
 
-	int32 zone = (int)SvUV(ST(0));
-	int16 version = (int)SvUV(ST(1));
+	uint32 zone = (int)SvUV(ST(0));
+	uint16 version = (int)SvUV(ST(1));
 	quest_manager.FlagInstanceByGroupLeader(zone, version);
 
 	XSRETURN_EMPTY;
@@ -3036,8 +3036,8 @@ XS(XS__FlagInstanceByRaidLeader) {
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: FlagInstanceByRaidLeader(zone, version)");
 
-	int32 zone = (int)SvUV(ST(0));
-	int16 version = (int)SvUV(ST(1));
+	uint32 zone = (int)SvUV(ST(0));
+	uint16 version = (int)SvUV(ST(1));
 	quest_manager.FlagInstanceByRaidLeader(zone, version);
 
 	XSRETURN_EMPTY;
@@ -3122,8 +3122,8 @@ XS(XS__IsEffectInSpell)
     if (items != 2)
         Perl_croak(aTHX_ "Usage: IsEffectInSpell(spell_id, effect_id)");
 
-	int32		spell_id = (int32)SvUV(ST(0));
-	int32		effect_id = (int32)SvUV(ST(1));
+	uint32		spell_id = (uint32)SvUV(ST(0));
+	uint32		effect_id = (uint32)SvUV(ST(1));
     bool        RETVAL;
     dXSTARG;
 
@@ -3141,7 +3141,7 @@ XS(XS__IsBeneficialSpell)
     if (items != 1)
         Perl_croak(aTHX_ "Usage: IsBeneficialSpell(spell_id)");
 
-	int32		spell_id = (int32)SvUV(ST(0));
+	uint32		spell_id = (uint32)SvUV(ST(0));
     bool        RETVAL;
     dXSTARG;
 
@@ -3159,8 +3159,8 @@ XS(XS__GetSpellResistType)
     if (items != 1)
         Perl_croak(aTHX_ "Usage: GetSpellResistType(spell_id)");
 
-	int32		spell_id = (int32)SvUV(ST(0));
-	sint32		spell_val = 0;
+	uint32		spell_id = (uint32)SvUV(ST(0));
+	int32		spell_val = 0;
     dXSTARG;
 
 	spell_val = GetSpellResistType(spell_id);
@@ -3174,8 +3174,8 @@ XS(XS__GetSpellTargetType)
     if (items != 1)
         Perl_croak(aTHX_ "Usage: GetSpellTargetType(spell_id)");
 
-	int32		spell_id = (int32)SvUV(ST(0));
-	sint32		spell_val = 0;
+	uint32		spell_id = (uint32)SvUV(ST(0));
+	int32		spell_val = 0;
     dXSTARG;
 
 	spell_val = GetSpellTargetType(spell_id);
@@ -3188,7 +3188,7 @@ XS(XS__FlyMode) {
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: FlyMode([0/1/2])");
 
-	int8 flymode = (int)SvUV(ST(0));
+	uint8 flymode = (int)SvUV(ST(0));
 	quest_manager.FlyMode(flymode);
 
 	XSRETURN_EMPTY;
@@ -3256,8 +3256,8 @@ XS(XS__wearchange)
     if (items != 2)
         Perl_croak(aTHX_ "Usage: wearchange(slot, texture)");
 
-	int8		slot = (int)SvUV(ST(0));
-	int16		texture = (int)SvUV(ST(1));
+	uint8		slot = (int)SvUV(ST(0));
+	uint16		texture = (int)SvUV(ST(1));
 
 	quest_manager.wearchange(slot, texture);
 
@@ -3320,7 +3320,7 @@ XS(XS__GetZoneID)
         Perl_croak(aTHX_ "Usage: GetZoneID(zone)");
 
     char *zone = (char *)SvPV_nolen(ST(0));
-    sint32 id = quest_manager.GetZoneID(zone);
+    int32 id = quest_manager.GetZoneID(zone);
     
     XSRETURN_IV(id);
 }
@@ -3415,7 +3415,7 @@ XS(XS__crosszonesignalclientbycharid)
 
 	if (items == 2) {
 		int	char_id = (int)SvIV(ST(0));
-		int32 data = (int32)SvIV(ST(1));
+		uint32 data = (uint32)SvIV(ST(1));
 		quest_manager.CrossZoneSignalPlayerByCharID(char_id, data);
 	} else {
 		Perl_croak(aTHX_ "Usage: crosszonesignalclientbycharid(char_id, data)");
@@ -3434,7 +3434,7 @@ XS(XS__crosszonesignalclientbyname)
 
 	if (items == 2) {
 		char *Name = (char *)SvPV_nolen(ST(0));
-		int32 data = (int32)SvIV(ST(1));
+		uint32 data = (uint32)SvIV(ST(1));
 		quest_manager.CrossZoneSignalPlayerByName(Name, data);
 	} else {
 		Perl_croak(aTHX_ "Usage: crosszonesignalclientbycharid(Name, data)");
@@ -3453,7 +3453,7 @@ XS(XS__crosszonemessageplayerbyname)
 		Perl_croak(aTHX_ "Usage: crosszonemessageplayerbyname(Type, Name, Message)");
 
 	if (items == 3) {
-		int32 Type = (int32)SvIV(ST(0));
+		uint32 Type = (uint32)SvIV(ST(0));
 		char *Name = (char *)SvPV_nolen(ST(1));
 		char *Message = (char *)SvPV_nolen(ST(2));
 		quest_manager.CrossZoneMessagePlayerByName(Type, Name, Message);

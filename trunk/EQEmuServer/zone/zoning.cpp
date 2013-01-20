@@ -156,8 +156,8 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 
 	//load up the safe coords, restrictions, and verify the zone name
 	float safe_x, safe_y, safe_z;
-	sint16 minstatus = 0;
-	int8 minlevel = 0;
+	int16 minstatus = 0;
+	uint8 minlevel = 0;
 	char flag_needed[128];
 	if(!database.GetSafePoints(target_zone_name, database.GetInstanceVersion(target_instance_id), &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_needed)) {
 		//invalid zone...
@@ -175,7 +175,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 
 	//handle circumvention of zone restrictions
 	//we need the value when creating the outgoing packet as well.
-	int8 ignorerestrictions = zonesummon_ignorerestrictions;
+	uint8 ignorerestrictions = zonesummon_ignorerestrictions;
 	zonesummon_ignorerestrictions = 0;
 
 	float dest_x=0, dest_y=0, dest_z=0, dest_h;
@@ -251,7 +251,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	//OK, now we should know where were going...
 
 	//Check some rules first.
-	sint8 myerror = 1;		//1 is succes
+	int8 myerror = 1;		//1 is succes
 
 	//not sure when we would use ZONE_ERROR_NOTREADY
 
@@ -298,7 +298,7 @@ void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	zone_mode = ZoneUnsolicited;
 }
 
-void Client::SendZoneError(ZoneChange_Struct *zc, sint8 err) 
+void Client::SendZoneError(ZoneChange_Struct *zc, int8 err) 
 {
 	LogFile->write(EQEMuLog::Error, "Zone %i is not available because target wasn't found or character insufficent level", zc->zoneID);
 	
@@ -317,7 +317,7 @@ void Client::SendZoneError(ZoneChange_Struct *zc, sint8 err)
 	zone_mode = ZoneUnsolicited;
 }
 
-void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance_id, float dest_x, float dest_y, float dest_z, float dest_h, sint8 ignore_r) {
+void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, uint32 instance_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r) {
 	//this is called once the client is fully allowed to zone here
 	//it takes care of all the activities which occur when a client zones out
 	
@@ -386,25 +386,25 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance
 	zonesummon_ignorerestrictions = 0;
 }
 
-void Client::MovePC(const char* zonename, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
+void Client::MovePC(const char* zonename, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
 	ProcessMovePC(database.GetZoneID(zonename), 0, x, y, z, heading, ignorerestrictions, zm);
 }
 
 //designed for in zone moving
-void Client::MovePC(float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
+void Client::MovePC(float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
 	ProcessMovePC(zone->GetZoneID(), zone->GetInstanceID(), x, y, z, heading, ignorerestrictions, zm);
 }
 
-void Client::MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
+void Client::MovePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
 	ProcessMovePC(zoneID, 0, x, y, z, heading, ignorerestrictions, zm);
 }
 
-void Client::MovePC(int32 zoneID, int32 instanceID, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm){
+void Client::MovePC(uint32 zoneID, uint32 instanceID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm){
 	ProcessMovePC(zoneID, instanceID, x, y, z, heading, ignorerestrictions, zm);
 }
 
 
-void Client::ProcessMovePC(int32 zoneID, int32 instance_id, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm)
+void Client::ProcessMovePC(uint32 zoneID, uint32 instance_id, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm)
 {
 	// From what I have read, dragged corpses should stay with the player for Intra-zone summons etc, but we can implement that later.
 	ClearDraggedCorpses();
@@ -461,7 +461,7 @@ void Client::ProcessMovePC(int32 zoneID, int32 instance_id, float x, float y, fl
 	}
 }
 
-void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
+void Client::ZonePC(uint32 zoneID, uint32 instance_id, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
 	bool ReadyToZone = true;
 	int iZoneNameLength = 0;
 	const char*	pShortZoneName = NULL;
@@ -805,8 +805,8 @@ void Client::SendZoneFlagInfo(Client *to) const {
 			long_name = empty;
 		
 		float safe_x, safe_y, safe_z;
-		sint16 minstatus = 0;
-		int8 minlevel = 0;
+		int16 minstatus = 0;
+		uint8 minlevel = 0;
 		char flag_name[128];
 		if(!database.GetSafePoints(short_name, 0, &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_name)) {
 			strcpy(flag_name, "(ERROR GETTING NAME)");
@@ -827,8 +827,8 @@ bool Client::CanBeInZone() {
 		return(true);
 	
 	float safe_x, safe_y, safe_z;
-	sint16 minstatus = 0;
-	int8 minlevel = 0;
+	int16 minstatus = 0;
+	uint8 minlevel = 0;
 	char flag_needed[128];
 	if(!database.GetSafePoints(zone->GetShortName(), zone->GetInstanceVersion(), &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_needed)) {
 		//this should not happen...

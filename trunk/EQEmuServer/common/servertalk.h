@@ -199,7 +199,7 @@ class ServerPacket
 {
 public:
 	~ServerPacket() { safe_delete_array(pBuffer); }
-    ServerPacket(int16 in_opcode = 0, int32 in_size = 0) {
+    ServerPacket(uint16 in_opcode = 0, uint32 in_size = 0) {
 		this->compressed = false;
 		size = in_size;
 		opcode = in_opcode;
@@ -230,7 +230,7 @@ public:
 		if ((!this->pBuffer) || (!this->size))
 			return false;
 		uchar* tmp = new uchar[this->size + 128];
-		int32 tmpsize = DeflatePacket(this->pBuffer, this->size, tmp, this->size + 128);
+		uint32 tmpsize = DeflatePacket(this->pBuffer, this->size, tmp, this->size + 128);
 		if (!tmpsize) {
 			safe_delete_array(tmp);
 			return false;
@@ -249,7 +249,7 @@ public:
 		if ((!this->pBuffer) || (!this->size))
 			return false;
 		uchar* tmp = new uchar[InflatedSize];
-		int32 tmpsize = InflatePacket(this->pBuffer, this->size, tmp, InflatedSize);
+		uint32 tmpsize = InflatePacket(this->pBuffer, this->size, tmp, InflatedSize);
 		if (!tmpsize) {
 			safe_delete_array(tmp);
 			return false;
@@ -277,58 +277,58 @@ public:
 	void ReadSkipBytes(uint32 count) { _rpos += count; }
 	void SetReadPosition(uint32 Newrpos) { _rpos = Newrpos; }
 
-	int32	size;
-	int16	opcode;
+	uint32	size;
+	uint16	opcode;
 	uchar*	pBuffer;
 	uint32	_wpos;
 	uint32	_rpos;
 	bool	compressed;
-	int32	InflatedSize;
-	int32	destination;
+	uint32	InflatedSize;
+	uint32	destination;
 };
 
 #pragma pack(1)
 
 struct SPackSendQueue {
-	int16 size;
+	uint16 size;
 	uchar buffer[0];
 };
 
 struct ServerZoneStateChange_struct {
-	int32 ZoneServerID;
+	uint32 ZoneServerID;
 	char adminname[64];
-	int32 zoneid;
-	int16 instanceid;
+	uint32 zoneid;
+	uint16 instanceid;
 	bool makestatic;
 };
 
 struct ServerZoneIncommingClient_Struct {
-	int32	zoneid;		// in case the zone shut down, boot it back up
-	int16	instanceid; // instance id if it exists for booting up
-	int32	ip;			// client's IP address
-	int32	wid;		// client's WorldID#
-	int32	accid;
-	sint16	admin;
-	int32	charid;
+	uint32	zoneid;		// in case the zone shut down, boot it back up
+	uint16	instanceid; // instance id if it exists for booting up
+	uint32	ip;			// client's IP address
+	uint32	wid;		// client's WorldID#
+	uint32	accid;
+	int16	admin;
+	uint32	charid;
 	bool	tellsoff;
 	char	charname[64];
 	char	lskey[30];
 };
 
 struct ServerChangeWID_Struct {
-	int32	charid;
-	int32	newwid;
+	uint32	charid;
+	uint32	newwid;
 };
 struct SendGroup_Struct{
-	int8	grouptotal;
-	int32	zoneid;
+	uint8	grouptotal;
+	uint32	zoneid;
 	char	leader[64];
 	char	thismember[64];
 	char	members[5][64];
 };
 
 struct ServerGroupFollow_Struct {
-	int32 CharacterID;
+	uint32 CharacterID;
 	GroupGeneric_Struct gf;
 };
 
@@ -341,19 +341,19 @@ struct ServerChannelMessage_Struct {
 	char  deliverto[64];
 	char  to[64];
 	char  from[64];
-	int8 fromadmin;
+	uint8 fromadmin;
 	bool  noreply;
-	int16 chan_num;
-	int32 guilddbid;
-	int16  language;
+	uint16 chan_num;
+	uint32 guilddbid;
+	uint16  language;
 	char  message[0];
 };
 
 struct ServerEmoteMessage_Struct {
 	char	to[64];
-	int32	guilddbid;
-	sint16	minstatus;
-	int32	type;
+	uint32	guilddbid;
+	int16	minstatus;
+	uint32	type;
 	char	message[0];
 };
 
@@ -361,63 +361,63 @@ struct ServerVoiceMacro_Struct {
 	char	From[64];
 	union {
 		char	To[64];
-		int32	GroupID;
-		int32	RaidID;
+		uint32	GroupID;
+		uint32	RaidID;
 	};
-	int32	Type;
-	int32	Voice;
-	int32	MacroNumber;
+	uint32	Type;
+	uint32	Voice;
+	uint32	MacroNumber;
 };
 
 struct ServerClientList_Struct {
-	int8	remove;
-	int32	wid;
-	int32	IP;
-	int32	zone;
-	int16	instance_id;
-	sint16	Admin;
-	int32	charid;
+	uint8	remove;
+	uint32	wid;
+	uint32	IP;
+	uint32	zone;
+	uint16	instance_id;
+	int16	Admin;
+	uint32	charid;
 	char	name[64];
-	int32	AccountID;
+	uint32	AccountID;
 	char	AccountName[30];
-	int32	LSAccountID;
+	uint32	LSAccountID;
 	char	lskey[30];
-	int16	race;
-	int8	class_;
-	int8	level;
-	int8	anon;
+	uint16	race;
+	uint8	class_;
+	uint8	level;
+	uint8	anon;
 	bool	tellsoff;
-	int32	guild_id;
+	uint32	guild_id;
 	bool	LFG;
-	int8	gm;
-	int8	ClientVersion;
-	int8	LFGFromLevel;
-	int8	LFGToLevel;
+	uint8	gm;
+	uint8	ClientVersion;
+	uint8	LFGFromLevel;
+	uint8	LFGToLevel;
 	bool	LFGMatchFilter;
 	char	LFGComments[64];
 };
 
 struct ServerClientListKeepAlive_Struct {
-	int32	numupdates;
-	int32	wid[0];
+	uint32	numupdates;
+	uint32	wid[0];
 };
 
 struct ServerZonePlayer_Struct {
 	char	adminname[64];
-	sint16	adminrank;
-	int8	ignorerestrictions;
+	int16	adminrank;
+	uint8	ignorerestrictions;
 	char	name[64];
 	char	zone[25];
-	int32	instance_id;
+	uint32	instance_id;
     float	x_pos;
     float	y_pos;
     float	z_pos;
 };
 
 struct RezzPlayer_Struct {
-	int32	dbid;
-	int32	exp;
-	int16	rezzopcode;
+	uint32	dbid;
+	uint32	exp;
+	uint16	rezzopcode;
 	//char	packet[160];
 	Resurrect_Struct rez;
 };
@@ -425,21 +425,21 @@ struct RezzPlayer_Struct {
 struct ServerZoneReboot_Struct {
 //	char	ip1[250];
 	char	ip2[250];
-	int16	port;
-	int32	zoneid;
+	uint16	port;
+	uint32	zoneid;
 };
 
 struct SetZone_Struct {
-	int16	instanceid;
-	int32	zoneid;
+	uint16	instanceid;
+	uint32	zoneid;
 	bool	staticzone;
 };
 
 struct ServerKickPlayer_Struct {
 	char adminname[64];
-	sint16 adminrank;
+	int16 adminrank;
 	char name[64];
-	int32 AccountID;
+	uint32 AccountID;
 };
 
 struct ServerLSInfo_Struct {
@@ -449,7 +449,7 @@ struct ServerLSInfo_Struct {
 	char	password[31];			// password for the name
 	char	protocolversion[25];	// Major protocol version number
 	char	serverversion[64];		// minor server software version number
-	int8	servertype;				// 0=world, 1=chat, 2=login, 3=MeshLogin
+	uint8	servertype;				// 0=world, 1=chat, 2=login, 3=MeshLogin
 };
 
 struct ServerNewLSInfo_Struct {
@@ -461,22 +461,22 @@ struct ServerNewLSInfo_Struct {
 	char	password[31];			// password for the name
 	char	protocolversion[25];	// Major protocol version number
 	char	serverversion[64];		// minor server software version number
-	int8	servertype;				// 0=world, 1=chat, 2=login, 3=MeshLogin
+	uint8	servertype;				// 0=world, 1=chat, 2=login, 3=MeshLogin
 };
 
 struct ServerLSAccountUpdate_Struct {			// for updating info on login server
 	char	worldaccount[31];			// account name for the worldserver
 	char	worldpassword[31];			// password for the name
-	int32	useraccountid;				// player account ID
+	uint32	useraccountid;				// player account ID
 	char	useraccount[31];			// player account name
 	char	userpassword[51];			// player account password
 	char	useremail[101];				// player account email address
 };
 
 struct ServerLSStatus_Struct {
-	sint32 status;
-	sint32 num_players;
-	sint32 num_zones;
+	int32 status;
+	int32 num_players;
+	int32 num_zones;
 };
 struct ZoneInfo_Struct {
 	uint32 zone;
@@ -516,36 +516,36 @@ struct ServerLSPlayerZoneChange_Struct {
 	uint32 to;  // 0 = world
 };
 struct ServerLSClientAuth {
-	int32	lsaccount_id;	// ID# in login server's db
+	uint32	lsaccount_id;	// ID# in login server's db
 	char	name[30];		// username in login server's db
 	char	key[30];		// the Key the client will present
-	int8	lsadmin;		// login server admin level
-	sint16	worldadmin;		// login's suggested worldadmin level setting for this user, up to the world if they want to obey it
-	int32	ip;
+	uint8	lsadmin;		// login server admin level
+	int16	worldadmin;		// login's suggested worldadmin level setting for this user, up to the world if they want to obey it
+	uint32	ip;
 	uint8	local;			// 1 if the client is from the local network
 };
 
 struct ServerSystemwideMessage {
-	int32	lsaccount_id;
+	uint32	lsaccount_id;
 	char	key[30];		// sessionID key for verification
-	int32	type;
+	uint32	type;
 	char	message[0];
 };
 
 struct ServerLSPeerConnect {
-	int32	ip;
-	int16	port;
+	uint32	ip;
+	uint16	port;
 };
 
 struct ServerConnectInfo {
 	char	address[250];
-	int16	port;
+	uint16	port;
 };
 
 struct ServerGMGoto_Struct {
 	char	myname[64];
 	char	gotoname[64];
-	sint16	admin;
+	int16	admin;
 };
 
 struct ServerMultiLineMsg_Struct {
@@ -555,7 +555,7 @@ struct ServerMultiLineMsg_Struct {
 
 struct ServerLock_Struct {
 	char	myname[64]; // User that did it
-	int8	mode; // 0 = Unlocked ; 1 = Locked
+	uint8	mode; // 0 = Unlocked ; 1 = Locked
 };
 
 struct ServerMotd_Struct {
@@ -564,29 +564,29 @@ struct ServerMotd_Struct {
 };
 
 struct ServerUptime_Struct {
-	int32	zoneserverid;	// 0 for world
+	uint32	zoneserverid;	// 0 for world
 	char	adminname[64];
 };
 
 struct ServerPetitionUpdate_Struct {
-	int32 petid;  // Petition Number
-	int8  status; // 0x00 = ReRead DB -- 0x01 = Checkout -- More?  Dunno... lol
+	uint32 petid;  // Petition Number
+	uint8  status; // 0x00 = ReRead DB -- 0x01 = Checkout -- More?  Dunno... lol
 };
 
 struct ServerWhoAll_Struct {
-	sint16 admin;
-	int32 fromid;
+	int16 admin;
+	uint32 fromid;
 	char from[64];
 	char whom[64];
-	int16 wrace; // FF FF = no race
-	int16 wclass; // FF FF = no class
-	int16 lvllow; // FF FF = no numbers
-	int16 lvlhigh; // FF FF = no numbers
-	int16 gmlookup; // FF FF = not doing /who all gm
+	uint16 wrace; // FF FF = no race
+	uint16 wclass; // FF FF = no class
+	uint16 lvllow; // FF FF = no numbers
+	uint16 lvlhigh; // FF FF = no numbers
+	uint16 gmlookup; // FF FF = not doing /who all gm
 };
 
 struct ServerFriendsWho_Struct {
-	int32 FromID; 
+	uint32 FromID; 
 	char  FromName[64];
 	char  FriendsString[1];
 };
@@ -594,7 +594,7 @@ struct ServerFriendsWho_Struct {
 struct ServerKillPlayer_Struct {
 	char gmname[64];
 	char target[64];
-	sint16 admin;
+	int16 admin;
 };
 
 struct ServerUpdateGM_Struct {
@@ -603,76 +603,76 @@ struct ServerUpdateGM_Struct {
 };
 
 struct ServerEncapPacket_Struct {
-	int32	ToID;	// ID number of the LWorld on the other server
-	int16	opcode;
-	int16	size;
+	uint32	ToID;	// ID number of the LWorld on the other server
+	uint16	opcode;
+	uint16	size;
 	uchar	data[0];
 };
 
 struct ZoneToZone_Struct {
 	char	name[64];
-	int32	guild_id;
-	int32	requested_zone_id;
-	int32	requested_instance_id;
-	int32	current_zone_id;
-	int32	current_instance_id;
-	sint8	response;
-	sint16	admin;
-	int8	ignorerestrictions;
+	uint32	guild_id;
+	uint32	requested_zone_id;
+	uint32	requested_instance_id;
+	uint32	current_zone_id;
+	uint32	current_instance_id;
+	int8	response;
+	int16	admin;
+	uint8	ignorerestrictions;
 };
 
 struct WorldToZone_Struct {
-	int32	account_id;
-	sint8	response;
+	uint32	account_id;
+	int8	response;
 };
 struct WorldShutDown_Struct {
-	int32	time;
-	int32	interval;
+	uint32	time;
+	uint32	interval;
 };
 struct ServerSyncWorldList_Struct {
-	int32	RemoteID;
-	int32	ip;
-	sint32	status;
+	uint32	RemoteID;
+	uint32	ip;
+	int32	status;
 	char	name[201];
 	char	address[250];
 	char	account[31];
-	int32	accountid;
-	int8	authlevel;
-	int8	servertype;		// 0=world, 1=chat, 2=login
-	int32	adminid;
-	int8	greenname;
-	int8	showdown;
-	sint32  num_players;
-	sint32  num_zones;
+	uint32	accountid;
+	uint8	authlevel;
+	uint8	servertype;		// 0=world, 1=chat, 2=login
+	uint32	adminid;
+	uint8	greenname;
+	uint8	showdown;
+	int32  num_players;
+	int32  num_zones;
 	bool	placeholder;
 };
 
 struct UsertoWorldRequest_Struct {
-	int32	lsaccountid;
-	int32	worldid;
-	int32	FromID;
-	int32	ToID;
+	uint32	lsaccountid;
+	uint32	worldid;
+	uint32	FromID;
+	uint32	ToID;
 };
 
 struct UsertoWorldResponse_Struct {
-	int32	lsaccountid;
-	int32	worldid;
-	sint8	response; // -3) World Full, -2) Banned, -1) Suspended, 0) Denied, 1) Allowed
-	int32	FromID;
-	int32	ToID;
+	uint32	lsaccountid;
+	uint32	worldid;
+	int8	response; // -3) World Full, -2) Banned, -1) Suspended, 0) Denied, 1) Allowed
+	uint32	FromID;
+	uint32	ToID;
 };
 
 // generic struct to be used for alot of simple zone->world questions
 struct ServerGenericWorldQuery_Struct {
 	char	from[64];	// charname the query is from
-	sint16	admin;		// char's admin level
+	int16	admin;		// char's admin level
 	char	query[0];	// text of the query
 };
 
 struct ServerLockZone_Struct {
-	int8	op;
+	uint8	op;
 	char	adminname[64];
-	int16	zoneID;
+	uint16	zoneID;
 };
 
 struct RevokeStruct {
@@ -682,42 +682,42 @@ struct RevokeStruct {
 };
 
 struct ServerGroupIDReply_Struct {
-	int32 start;	//a range of group IDs to use.
-	int32 end;
+	uint32 start;	//a range of group IDs to use.
+	uint32 end;
 };
 
 struct ServerGroupLeave_Struct {
-	int32 zoneid;
-	int16 instance_id;
-	int32 gid;
+	uint32 zoneid;
+	uint16 instance_id;
+	uint32 gid;
 	char member_name[64];	//kick this member from the group
 };
 
 struct ServerGroupJoin_Struct {
-	int32 zoneid;
-	int16 instance_id;
-	int32 gid;
+	uint32 zoneid;
+	uint16 instance_id;
+	uint32 gid;
 	char member_name[64];	//this person is joining the group
 };
 
 struct ServerForceGroupUpdate_Struct {
-	int32 origZoneID;
-	int16 instance_id;
-	int32 gid;
+	uint32 origZoneID;
+	uint16 instance_id;
+	uint32 gid;
 };
 
 struct ServerGroupChannelMessage_Struct {
-	int32 zoneid;
-	int16 instanceid;
-	int32 groupid;
+	uint32 zoneid;
+	uint16 instanceid;
+	uint32 groupid;
     char  from[64];
 	char  message[0];
 };
 
 struct ServerDisbandGroup_Struct {
-	int32 zoneid;
-	int16 instance_id;
-	int32 groupid;
+	uint32 zoneid;
+	uint16 instance_id;
+	uint32 groupid;
 };
 
 struct SimpleName_Struct{
@@ -725,14 +725,14 @@ struct SimpleName_Struct{
 };
 
 struct ServerSpawnCondition_Struct {
-	int32 zoneID;
-	int32 instanceID;
+	uint32 zoneID;
+	uint32 instanceID;
 	uint16 condition_id;
-	sint16 value;
+	int16 value;
 };
 
 struct ServerSpawnEvent_Struct {
-	int32	zoneID;
+	uint32	zoneID;
 	uint32	event_id;
 };
 
@@ -764,50 +764,50 @@ struct LauncherZoneStatus {
 
 
 struct ServerGuildID_Struct {
-	int32 guild_id;
+	uint32 guild_id;
 };
 
 struct ServerGuildRefresh_Struct {
-	int32 guild_id;
-	int8 name_change;
-	int8 motd_change;
-	int8 rank_change;
-	int8 relation_change;
+	uint32 guild_id;
+	uint8 name_change;
+	uint8 motd_change;
+	uint8 rank_change;
+	uint8 relation_change;
 };
 
 struct ServerGuildCharRefresh_Struct {
-	int32 guild_id;
-	int32 old_guild_id;
-	int32 char_id;
+	uint32 guild_id;
+	uint32 old_guild_id;
+	uint32 char_id;
 };
 
 struct ServerGuildRankUpdate_Struct
 {
-	int32 GuildID;
+	uint32 GuildID;
 	char MemberName[64];
 	uint32 Rank;
 	uint32 Banker;
 };
 
 struct ServerGuildMemberUpdate_Struct {
-	int32 GuildID;
+	uint32 GuildID;
 	char MemberName[64];
-	int32 ZoneID;
-	int32 LastSeen;
+	uint32 ZoneID;
+	uint32 LastSeen;
 };
 
 struct SpawnPlayerCorpse_Struct {
-	int32 player_corpse_id;
-	int32 zone_id;
+	uint32 player_corpse_id;
+	uint32 zone_id;
 };
 
 struct ServerOP_Consent_Struct {
 	char grantname[64];
 	char ownername[64];
-	int8 permission;
-	int32 zone_id;
-	int16 instance_id;
-	int32 message_string_id;
+	uint8 permission;
+	uint32 zone_id;
+	uint16 instance_id;
+	uint32 message_string_id;
 };
 
 struct ReloadTasks_Struct {
@@ -818,61 +818,61 @@ struct ReloadTasks_Struct {
 struct ServerDepopAllPlayersCorpses_Struct
 {
 	uint32 CharacterID;
-	int32 ZoneID;
-	int16 InstanceID;
+	uint32 ZoneID;
+	uint16 InstanceID;
 };
 
 struct ServerDepopPlayerCorpse_Struct
 {
 	uint32 DBID;
-	int32 ZoneID;
-	int16 InstanceID;
+	uint32 ZoneID;
+	uint16 InstanceID;
 };
 
 struct ServerRaidGeneralAction_Struct {
-	int32 zoneid;
-	int16 instance_id;
-	int32 rid;
-	int32 gid;
+	uint32 zoneid;
+	uint16 instance_id;
+	uint32 rid;
+	uint32 gid;
 	char playername[64];
 };
 
 struct ServerRaidGroupAction_Struct { //add / remove depends on opcode.
 	char membername[64]; //member who's adding / leaving
-	int32 gid; //group id to send to.
-	int32 rid; //raid id to send to. 
+	uint32 gid; //group id to send to.
+	uint32 rid; //raid id to send to. 
 };
 
 struct ServerRaidMessage_Struct {
-	int32 rid;
-	int32 gid;
+	uint32 rid;
+	uint32 gid;
 	char from[64];
 	char message[0];
 };
 
 struct ServerLFGMatchesRequest_Struct {
-	int32	FromID;
-	int8	QuerierLevel;
+	uint32	FromID;
+	uint8	QuerierLevel;
 	char	FromName[64];
-	int8	FromLevel;
-	int8	ToLevel;
+	uint8	FromLevel;
+	uint8	ToLevel;
 	uint32	Classes;
 };
 
 struct ServerLFGMatchesResponse_Struct {
 	char Name[64];
-	int8 Level;
-	int8 Class_;
-	int16 Zone;
+	uint8 Level;
+	uint8 Class_;
+	uint16 Zone;
 	uint16 GuildID;
 	uint16 Anon;
 	char Comments[64];
 };
 
 struct ServerLFPUpdate_Struct {
-	int32 LeaderID;
-	int8 Action;
-	int8 MatchFilter;
+	uint32 LeaderID;
+	uint8 Action;
+	uint8 MatchFilter;
 	uint32	FromLevel;
 	uint32	ToLevel;
 	uint32	Classes;
@@ -889,28 +889,28 @@ struct ServerLFPMatchesResponse_Struct {
 };
 
 struct ServerLFPMatchesRequest_Struct {
-	int32	FromID;
-	int8	FromLevel;
-	int8	ToLevel;
-	int8	QuerierClass;
-	int8	QuerierLevel;
+	uint32	FromID;
+	uint8	FromLevel;
+	uint8	ToLevel;
+	uint8	QuerierClass;
+	uint8	QuerierLevel;
 	char	FromName[64];
 };
 
 struct UpdateSpawnTimer_Struct {
-	int32 id;
-	int32 duration;
+	uint32 id;
+	uint32 duration;
 };
 
 struct ServerInstanceUpdateTime_Struct
 {
-	int16 instance_id;
-	int32 new_duration;
+	uint16 instance_id;
+	uint32 new_duration;
 };
 
 struct ServerSpawnStatusChange_Struct
 {
-	int32 id;
+	uint32 id;
 	bool new_status;
 };
 
@@ -984,9 +984,9 @@ struct ServerSendAdventureData_Struct
 {
 	char player[64];
 	char text[512];
-	int32 time_left;
-	int32 time_to_enter;
-	int32 risk;
+	uint32 time_left;
+	uint32 time_to_enter;
+	uint32 risk;
 	float x;
 	float y;
 	int count;
@@ -1081,77 +1081,77 @@ struct ServerMailMessageHeader_Struct {
 struct Server_Speech_Struct {
 	char	to[64];
 	char	from[64];
-	int32	guilddbid;
-	sint16	minstatus;
-	int32	type;
+	uint32	guilddbid;
+	int16	minstatus;
+	uint32	type;
 	char	message[0];
 };
 
 struct CZClientSignal_Struct {
 	int charid;
-	int32 data;
+	uint32 data;
 };
 
 struct CZClientSignalByName_Struct {
 	char Name[64];
-	int32 data;
+	uint32 data;
 };
 
 struct QSTradeItems_Struct {
-	int32 from_id;
-	int16 from_slot;
-	int32 to_id;
-	int16 to_slot;
-	int32 item_id;
-	int16 charges;
-	int32 aug_1;
-	int32 aug_2;
-	int32 aug_3;
-	int32 aug_4;
-	int32 aug_5;
+	uint32 from_id;
+	uint16 from_slot;
+	uint32 to_id;
+	uint16 to_slot;
+	uint32 item_id;
+	uint16 charges;
+	uint32 aug_1;
+	uint32 aug_2;
+	uint32 aug_3;
+	uint32 aug_4;
+	uint32 aug_5;
 };
 
 struct QSPlayerLogTrade_Struct {
-	int32				char1_id;
+	uint32				char1_id;
 	MoneyUpdate_Struct  char1_money;
-	int16				char1_count;
-	int32				char2_id;
+	uint16				char1_count;
+	uint32				char2_id;
 	MoneyUpdate_Struct	char2_money;
-	int16				char2_count;
+	uint16				char2_count;
 	QSTradeItems_Struct items[0];
 };
 
 struct QSHandinItems_Struct {
 	char action_type[6]; // handin, return or reward
-	int16 char_slot;
-	int32 item_id;
-	int16 charges;
-	int32 aug_1;
-	int32 aug_2;
-	int32 aug_3;
-	int32 aug_4;
-	int32 aug_5;
+	uint16 char_slot;
+	uint32 item_id;
+	uint16 charges;
+	uint32 aug_1;
+	uint32 aug_2;
+	uint32 aug_3;
+	uint32 aug_4;
+	uint32 aug_5;
 };
 
 struct QSPlayerLogHandin_Struct {
-	int32				 quest_id;
-	int32				 char_id;
+	uint32				 quest_id;
+	uint32				 char_id;
 	MoneyUpdate_Struct	 char_money;
-	int16				 char_count;
-	int32				 npc_id;
+	uint16				 char_count;
+	uint32				 npc_id;
 	MoneyUpdate_Struct	 npc_money;
-	int16				 npc_count;
+	uint16				 npc_count;
 	QSHandinItems_Struct items[0];
 };
 
 struct QSPlayerLogNPCKillSub_Struct{
-	int32 NPCID;
-	int32 ZoneID;
-    int32 Type;
+	uint32 NPCID;
+	uint32 ZoneID;
+    uint32 Type;
 };
 
 struct QSPlayerLogNPCKillsPlayers_Struct{
-	int32 char_id;
+	uint32 char_id;
 };
 
 struct QSPlayerLogNPCKill_Struct{
@@ -1160,75 +1160,75 @@ struct QSPlayerLogNPCKill_Struct{
 };
 
 struct QSDeleteItems_Struct {
-	int16 char_slot;
-	int32 item_id;
-	int16 charges;
-	int32 aug_1;
-	int32 aug_2;
-	int32 aug_3;
-	int32 aug_4;
-	int32 aug_5;
+	uint16 char_slot;
+	uint32 item_id;
+	uint16 charges;
+	uint32 aug_1;
+	uint32 aug_2;
+	uint32 aug_3;
+	uint32 aug_4;
+	uint32 aug_5;
 };
 
 struct QSPlayerLogDelete_Struct {
-	int32				 char_id;
-	int16				 stack_size; // '0' indicates full stack or non-stackable item move
-	int16				 char_count;
+	uint32				 char_id;
+	uint16				 stack_size; // '0' indicates full stack or non-stackable item move
+	uint16				 char_count;
 	QSDeleteItems_Struct items[0];
 };
 
 struct QSMoveItems_Struct {
-	int16 from_slot;
-	int16 to_slot;
-	int32 item_id;
-	int16 charges;
-	int32 aug_1;
-	int32 aug_2;
-	int32 aug_3;
-	int32 aug_4;
-	int32 aug_5;
+	uint16 from_slot;
+	uint16 to_slot;
+	uint32 item_id;
+	uint16 charges;
+	uint32 aug_1;
+	uint32 aug_2;
+	uint32 aug_3;
+	uint32 aug_4;
+	uint32 aug_5;
 };
 
 struct QSPlayerLogMove_Struct {
-	int32			   char_id;
-	int16			   from_slot;
-	int16			   to_slot;
-	int16			   stack_size; // '0' indicates full stack or non-stackable item move
-	int16			   char_count;
+	uint32			   char_id;
+	uint16			   from_slot;
+	uint16			   to_slot;
+	uint16			   stack_size; // '0' indicates full stack or non-stackable item move
+	uint16			   char_count;
 	bool			   postaction;
 	QSMoveItems_Struct items[0];
 };
 
 struct QSTransactionItems_Struct {
-	int16 char_slot;
-	int32 item_id;
-	int16 charges;
-	int32 aug_1;
-	int32 aug_2;
-	int32 aug_3;
-	int32 aug_4;
-	int32 aug_5;
+	uint16 char_slot;
+	uint32 item_id;
+	uint16 charges;
+	uint32 aug_1;
+	uint32 aug_2;
+	uint32 aug_3;
+	uint32 aug_4;
+	uint32 aug_5;
 };
 
 struct QSMerchantLogTransaction_Struct {
-	int32					  zone_id;
-	int32					  merchant_id;
+	uint32					  zone_id;
+	uint32					  merchant_id;
 	MoneyUpdate_Struct		  merchant_money;
-	int16					  merchant_count;
-	int32					  char_id;
+	uint16					  merchant_count;
+	uint32					  char_id;
 	MoneyUpdate_Struct		  char_money;
-	int16					  char_count;
+	uint16					  char_count;
 	QSTransactionItems_Struct items[0];
 };
 
 struct CZMessagePlayer_Struct {
-	int32   Type;
+	uint32   Type;
 	char	CharName[64];
 	char	Message[512];
 };
 
 struct ReloadWorld_Struct{
-	int32 Option;
+	uint32 Option;
 };
 
 #pragma pack()

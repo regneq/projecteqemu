@@ -173,7 +173,7 @@ XS(XS_Group_GroupMessage)
 	{
 		Group *		THIS;
 		Mob*		sender;
-		int8		language;
+		uint8		language;
 		char*		message;
 
 		if (sv_derived_from(ST(0), "Group")) {
@@ -195,7 +195,7 @@ XS(XS_Group_GroupMessage)
 			Perl_croak(aTHX_ "sender is NULL, avoiding crash.");
 
 		if (items == 4) {
-			language = (int8)SvUV(ST(2));
+			language = (uint8)SvUV(ST(2));
 			if ((language >= MAX_PP_LANGUAGE) || (language < 0))
 				language = 0;
 			message = (char *)SvPV_nolen(ST(3));
@@ -217,7 +217,7 @@ XS(XS_Group_GetTotalGroupDamage)
 		Perl_croak(aTHX_ "Usage: Group::GetTotalGroupDamage(THIS, other)");
 	{
 		Group *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 		Mob*		other;
 
@@ -467,7 +467,7 @@ XS(XS_Group_GroupCount)
 		Perl_croak(aTHX_ "Usage: Group::GroupCount(THIS)");
 	{
 		Group *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Group")) {
@@ -493,7 +493,7 @@ XS(XS_Group_GetHighestLevel)
 		Perl_croak(aTHX_ "Usage: Group::GetHighestLevel(THIS)");
 	{
 		Group *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Group")) {
@@ -520,7 +520,7 @@ XS(XS_Group_TeleportGroup)
 	{
 		Group *		THIS;
 		Mob*		sender;
-		int32		zoneID = (int32)SvUV(ST(2));
+		uint32		zoneID = (uint32)SvUV(ST(2));
 		float		x = (float)SvNV(ST(3));
 		float		y = (float)SvNV(ST(4));
 		float		z = (float)SvNV(ST(5));
@@ -557,7 +557,7 @@ XS(XS_Group_GetID)
 		Perl_croak(aTHX_ "Usage: Group::GetID(THIS)");
 	{
 		Group *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Group")) {

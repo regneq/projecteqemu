@@ -438,7 +438,7 @@ bool Client::Process() {
 				}
 								
 				//Live AA - Flurry, Rapid Strikes ect (Flurry does not require Triple Attack).
-				sint16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
+				int16 flurrychance = aabonuses.FlurryChance + spellbonuses.FlurryChance + itembonuses.FlurryChance;
 
 				if (auto_attack_target && flurrychance)
 				{
@@ -450,7 +450,7 @@ bool Client::Process() {
 					}
 				}
 			
-				sint16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
+				int16 ExtraAttackChanceBonus = spellbonuses.ExtraAttackChance + itembonuses.ExtraAttackChance + aabonuses.ExtraAttackChance;
 
 				if (auto_attack_target && ExtraAttackChanceBonus) {
 					ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
@@ -499,9 +499,9 @@ bool Client::Process() {
 			else if(auto_attack_target->GetHP() > -10) {
 				float DualWieldProbability = 0.0f;
 				
-				sint16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
+				int16 Ambidexterity = aabonuses.Ambidexterity + spellbonuses.Ambidexterity + itembonuses.Ambidexterity;
 				DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel() + Ambidexterity) / 400.0f; // 78.0 max
-				sint16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
+				int16 DWBonus = spellbonuses.DualWieldChance + itembonuses.DualWieldChance;
 				DualWieldProbability += DualWieldProbability*float(DWBonus)/ 100.0f;
 
 				float random = MakeRandomFloat(0, 1);
@@ -813,7 +813,7 @@ void Client::OnDisconnect(bool hard_disconnect) {
 //#ifdef ITEMCOMBINED
 void Client::BulkSendInventoryItems() {
 	// For future reference: Only the parent item needs to be sent..the ItemInst already contains child ItemInst information
-	sint16 slot_id = 0;
+	int16 slot_id = 0;
 
 	// LINKDEAD TRADE ITEMS
 	// Move trade slot items back into normal inventory..need them there now for the proceeding validity checks -U
@@ -821,7 +821,7 @@ void Client::BulkSendInventoryItems() {
 		ItemInst* inst = m_inv.PopItem(slot_id);
 		if(inst) {
 			bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
-			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
+			int16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 			mlog(INVENTORY__ERROR, "Incomplete Trade Transaction: Moving %s from slot %i to %i", inst->GetItem()->Name, slot_id, free_slot_id);
 			PutItemInInventory(free_slot_id, *inst, false);
 			database.SaveInventory(character_id, NULL, slot_id);
@@ -857,10 +857,10 @@ void Client::BulkSendInventoryItems() {
 	//for r from 0 to pos
 	//	safe_delete(pos[r]);
 
-	int32 size = 0;
-	int16 i = 0;
-	map<int16, string> ser_items;
-	map<int16, string>::iterator itr;
+	uint32 size = 0;
+	uint16 i = 0;
+	map<uint16, string> ser_items;
+	map<uint16, string>::iterator itr;
 
 	//Inventory items
 	for(slot_id = 0; slot_id <= 30; slot_id++) {
@@ -921,7 +921,7 @@ void Client::BulkSendInventoryItems()
 	// Search all inventory buckets for items
 	bool deletenorent=database.NoRentExpired(GetName());
 	// Worn items and Inventory items
-	sint16 slot_id = 0;
+	int16 slot_id = 0;
 	if(deletenorent){//client was offline for more than 30 minutes, delete no rent items
 		RemoveNoRent();
 	}
@@ -950,10 +950,10 @@ void Client::BulkSendInventoryItems()
 	// LINKDEAD TRADE ITEMS
 	// If player went LD during a trade, they have items in the trade inventory
 	// slots.  These items are now being put into their inventory (then queue up on cursor)
-	for (sint16 trade_slot_id=3000; trade_slot_id<=3007; trade_slot_id++) {
+	for (int16 trade_slot_id=3000; trade_slot_id<=3007; trade_slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
 		if (inst) {
-			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
+			int16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
 			DeleteItemInInventory(trade_slot_id, 0, false);
 			PutItemInInventory(free_slot_id, *inst, true);
 		}
@@ -963,7 +963,7 @@ void Client::BulkSendInventoryItems()
 
 void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 	const Item_Struct* handyitem = NULL;
-	int32 numItemSlots=80;  //The max number of items passed in the transaction.
+	uint32 numItemSlots=80;  //The max number of items passed in the transaction.
 	const Item_Struct *item;
 	std::list<MerchantList> merlist = zone->merchanttable[merchant_id];
 	std::list<MerchantList>::const_iterator itr;
@@ -977,15 +977,15 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 	std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[npcid];
 	std::list<TempMerchantList>::iterator tmp_itr;
 
-	int32 i=1;
-	int8 handychance = 0;
+	uint32 i=1;
+	uint8 handychance = 0;
 	for(itr = merlist.begin();itr != merlist.end() && i<numItemSlots;itr++){
 		MerchantList ml = *itr;
         if(GetLevel() < ml.level_required) {
             continue;
         }
 
-        sint32 fac = merch ? merch->GetPrimaryFaction() : 0;
+        int32 fac = merch ? merch->GetPrimaryFaction() : 0;
         if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
             continue;
         }
@@ -1035,7 +1035,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 			else
 				handychance--;
 			int charges=1;
-			//if(item->ItemClass==ItemClassCommon && (sint16)ml.charges <= item->MaxCharges)
+			//if(item->ItemClass==ItemClassCommon && (int16)ml.charges <= item->MaxCharges)
 			//	charges=ml.charges;
 			//else
 			charges = item->MaxCharges;
@@ -1094,7 +1094,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 //		safe_delete_array(cpi);
 }
 
-int8 Client::WithCustomer(int16 NewCustomer){
+uint8 Client::WithCustomer(uint16 NewCustomer){
 
 	if(NewCustomer == 0) {
 		CustomerID = 0;
@@ -1119,7 +1119,7 @@ int8 Client::WithCustomer(int16 NewCustomer){
 	return 0;
 }
 
-void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 InstanceID, float x, float y, float z)
+void Client::OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, uint16 InstanceID, float x, float y, float z)
 {
 	if(PendingRezzXP < 0) {
 		// pendingrezexp is set to -1 if we are not expecting an OP_RezzAnswer
@@ -1134,7 +1134,7 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 		// corpse is in has shutdown since the rez spell was cast.
 		database.MarkCorpseAsRezzed(PendingRezzDBID);
 		_log(SPELLS__REZ, "Player %s got a %i Rezz, spellid %i in zone%i, instance id %i", 
-				  this->name, (int16)spells[SpellID].base[0],
+				  this->name, (uint16)spells[SpellID].base[0],
 				  SpellID, ZoneID, InstanceID);
 
 		this->BuffFadeAll();
@@ -1172,7 +1172,7 @@ void Client::OPTGB(const EQApplicationPacket *app)
 	if(!app) return;
 	if(!app->pBuffer) return;
 
-	int32 tgb_flag = *(int32 *)app->pBuffer;
+	uint32 tgb_flag = *(uint32 *)app->pBuffer;
 	if(tgb_flag == 2)
 		Message_StringID(0, TGB() ? TGB_ON : TGB_OFF);
 	else
@@ -1217,7 +1217,7 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 			{
 				const Item_Struct* item = inst->GetItem();
 				
-				if(item && item->Scroll.Effect == (sint32)(memspell->spell_id))
+				if(item && item->Scroll.Effect == (int32)(memspell->spell_id))
 				{
 					ScribeSpell(memspell->spell_id, memspell->slot);
 					DeleteItemInInventory(SLOT_CURSOR, 1, true);
@@ -1268,7 +1268,7 @@ void Client::BreakInvis()
 	}
 }
 
-static int64 CoinTypeCoppers(uint32 type) {
+static uint64 CoinTypeCoppers(uint32 type) {
 	switch(type) {
 	case COINTYPE_PP:
 		return(1000);
@@ -1286,8 +1286,8 @@ static int64 CoinTypeCoppers(uint32 type) {
 void Client::OPMoveCoin(const EQApplicationPacket* app)
 {
 	MoveCoin_Struct* mc = (MoveCoin_Struct*)app->pBuffer;
-	int64 value = 0, amount_to_take = 0, amount_to_add = 0;
-	sint32 *from_bucket = 0, *to_bucket = 0;
+	uint64 value = 0, amount_to_take = 0, amount_to_add = 0;
+	int32 *from_bucket = 0, *to_bucket = 0;
 	Mob* trader = trade->With();
 	
 	//DumpPacket(app);
@@ -1325,13 +1325,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			switch(mc->cointype1)
 			{
 				case COINTYPE_PP:
-					from_bucket = (sint32 *) &m_pp.platinum_cursor; break;
+					from_bucket = (int32 *) &m_pp.platinum_cursor; break;
 				case COINTYPE_GP:
-					from_bucket = (sint32 *) &m_pp.gold_cursor; break;
+					from_bucket = (int32 *) &m_pp.gold_cursor; break;
 				case COINTYPE_SP:
-					from_bucket = (sint32 *) &m_pp.silver_cursor; break;
+					from_bucket = (int32 *) &m_pp.silver_cursor; break;
 				case COINTYPE_CP:
-					from_bucket = (sint32 *) &m_pp.copper_cursor; break;
+					from_bucket = (int32 *) &m_pp.copper_cursor; break;
 			}
 			break;
 		}
@@ -1340,13 +1340,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			switch(mc->cointype1)
 			{
 				case COINTYPE_PP:
-					from_bucket = (sint32 *) &m_pp.platinum; break;
+					from_bucket = (int32 *) &m_pp.platinum; break;
 				case COINTYPE_GP:
-					from_bucket = (sint32 *) &m_pp.gold; break;
+					from_bucket = (int32 *) &m_pp.gold; break;
 				case COINTYPE_SP:
-					from_bucket = (sint32 *) &m_pp.silver; break;
+					from_bucket = (int32 *) &m_pp.silver; break;
 				case COINTYPE_CP:
-					from_bucket = (sint32 *) &m_pp.copper; break;
+					from_bucket = (int32 *) &m_pp.copper; break;
 			}
 			break;
 		}
@@ -1367,13 +1367,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			switch(mc->cointype1)
 			{
 				case COINTYPE_PP:
-					from_bucket = (sint32 *) &m_pp.platinum_bank; break;
+					from_bucket = (int32 *) &m_pp.platinum_bank; break;
 				case COINTYPE_GP:
-					from_bucket = (sint32 *) &m_pp.gold_bank; break;
+					from_bucket = (int32 *) &m_pp.gold_bank; break;
 				case COINTYPE_SP:
-					from_bucket = (sint32 *) &m_pp.silver_bank; break;
+					from_bucket = (int32 *) &m_pp.silver_bank; break;
 				case COINTYPE_CP:
-					from_bucket = (sint32 *) &m_pp.copper_bank; break;
+					from_bucket = (int32 *) &m_pp.copper_bank; break;
 			}
 			break;
 		}
@@ -1396,7 +1396,7 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 				return;
 			}
 			if(mc->cointype1 == COINTYPE_PP)	// there's only platinum here
-				from_bucket = (sint32 *) &m_pp.platinum_shared;
+				from_bucket = (int32 *) &m_pp.platinum_shared;
 			break;
 		}
 	}
@@ -1413,13 +1413,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			switch(mc->cointype2)
 			{
 				case COINTYPE_PP:
-					to_bucket = (sint32 *) &m_pp.platinum_cursor; break;
+					to_bucket = (int32 *) &m_pp.platinum_cursor; break;
 				case COINTYPE_GP:
-					to_bucket = (sint32 *) &m_pp.gold_cursor; break;
+					to_bucket = (int32 *) &m_pp.gold_cursor; break;
 				case COINTYPE_SP:
-					to_bucket = (sint32 *) &m_pp.silver_cursor; break;
+					to_bucket = (int32 *) &m_pp.silver_cursor; break;
 				case COINTYPE_CP:
-					to_bucket = (sint32 *) &m_pp.copper_cursor; break;
+					to_bucket = (int32 *) &m_pp.copper_cursor; break;
 			}
 			break;
 		}
@@ -1428,13 +1428,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			switch(mc->cointype2)
 			{
 				case COINTYPE_PP:
-					to_bucket = (sint32 *) &m_pp.platinum; break;
+					to_bucket = (int32 *) &m_pp.platinum; break;
 				case COINTYPE_GP:
-					to_bucket = (sint32 *) &m_pp.gold; break;
+					to_bucket = (int32 *) &m_pp.gold; break;
 				case COINTYPE_SP:
-					to_bucket = (sint32 *) &m_pp.silver; break;
+					to_bucket = (int32 *) &m_pp.silver; break;
 				case COINTYPE_CP:
-					to_bucket = (sint32 *) &m_pp.copper; break;
+					to_bucket = (int32 *) &m_pp.copper; break;
 			}
 			break;
 		}
@@ -1454,13 +1454,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			switch(mc->cointype2)
 			{
 				case COINTYPE_PP:
-					to_bucket = (sint32 *) &m_pp.platinum_bank; break;
+					to_bucket = (int32 *) &m_pp.platinum_bank; break;
 				case COINTYPE_GP:
-					to_bucket = (sint32 *) &m_pp.gold_bank; break;
+					to_bucket = (int32 *) &m_pp.gold_bank; break;
 				case COINTYPE_SP:
-					to_bucket = (sint32 *) &m_pp.silver_bank; break;
+					to_bucket = (int32 *) &m_pp.silver_bank; break;
 				case COINTYPE_CP:
-					to_bucket = (sint32 *) &m_pp.copper_bank; break;
+					to_bucket = (int32 *) &m_pp.copper_bank; break;
 			}
 			break;
 		}
@@ -1471,13 +1471,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 				switch(mc->cointype2)
 				{
 					case COINTYPE_PP:
-						to_bucket = (sint32 *) &trade->pp; break;
+						to_bucket = (int32 *) &trade->pp; break;
 					case COINTYPE_GP:
-						to_bucket = (sint32 *) &trade->gp; break;
+						to_bucket = (int32 *) &trade->gp; break;
 					case COINTYPE_SP:
-						to_bucket = (sint32 *) &trade->sp; break;
+						to_bucket = (int32 *) &trade->sp; break;
 					case COINTYPE_CP:
-						to_bucket = (sint32 *) &trade->cp; break;
+						to_bucket = (int32 *) &trade->cp; break;
 				}
 			}
 			break;
@@ -1496,7 +1496,7 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 				return;
 			}
 			if(mc->cointype2 == COINTYPE_PP)	// there's only platinum here
-				to_bucket = (sint32 *) &m_pp.platinum_shared;
+				to_bucket = (int32 *) &m_pp.platinum_shared;
 			break;
 		}
 	}
@@ -1714,10 +1714,10 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			return;
 		}
 
-		int16 skilllevel = GetRawSkill(skill);
+		uint16 skilllevel = GetRawSkill(skill);
 		if(skilllevel == 0) {
 			//this is a new skill..
-			int16 t_level = SkillTrainLevel(skill, GetClass());
+			uint16 t_level = SkillTrainLevel(skill, GetClass());
 			if (t_level == 0)
 			{
 				return;
@@ -1841,7 +1841,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 		}
 		else
 		{
-			int8 tmp = gms->charname[strlen(gms->charname)-1];
+			uint8 tmp = gms->charname[strlen(gms->charname)-1];
 			if (!worldserver.Connected())
 			{
 				Message(0, "Error: World server disconnected");

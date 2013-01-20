@@ -22,14 +22,14 @@
 
 class ServerPacket;
 
-void DumpPacketAscii(const uchar* buf, int32 size, int32 cols=16, int32 skip=0);
-void DumpPacketHex(const uchar* buf, int32 size, int32 cols=16, int32 skip=0);
-void DumpPacketBin(const void* data, int32 len);
-void DumpPacket(const uchar* buf, int32 size);
+void DumpPacketAscii(const uchar* buf, uint32 size, uint32 cols=16, uint32 skip=0);
+void DumpPacketHex(const uchar* buf, uint32 size, uint32 cols=16, uint32 skip=0);
+void DumpPacketBin(const void* data, uint32 len);
+void DumpPacket(const uchar* buf, uint32 size);
 void DumpPacket(const ServerPacket* pack, bool iShowInfo = false);
 void DumpPacketBin(const ServerPacket* pack);
-void DumpPacketBin(int32 data);
-void DumpPacketBin(int16 data);
-void DumpPacketBin(int8 data);
+void DumpPacketBin(uint32 data);
+void DumpPacketBin(uint16 data);
+void DumpPacketBin(uint8 data);
 
 #endif

@@ -70,7 +70,7 @@ bool Raid::Process()
 	return true;
 }
 
-void Raid::AddMember(Client *c, int32 group, bool rleader, bool groupleader, bool looter){
+void Raid::AddMember(Client *c, uint32 group, bool rleader, bool groupleader, bool looter){
 	if(!c)
 		return;
 
@@ -157,7 +157,7 @@ void Raid::DisbandRaid()
 	forceDisband = true;
 }
 
-void Raid::MoveMember(const char *name, int32 newGroup)
+void Raid::MoveMember(const char *name, uint32 newGroup)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
@@ -276,7 +276,7 @@ void Raid::UpdateLevel(const char *name, int newLevel)
 	VerifyRaid();
 }
 
-int32 Raid::GetFreeGroup()
+uint32 Raid::GetFreeGroup()
 {
 	//check each group return the first one with 0 members assigned...
 	for(int x = 0; x < MAX_RAID_GROUPS; x++)
@@ -294,9 +294,9 @@ int32 Raid::GetFreeGroup()
 	return 0xFFFFFFFF;
 }
 
-int8 Raid::GroupCount(int32 gid)
+uint8 Raid::GroupCount(uint32 gid)
 {
-	int8 count = 0;
+	uint8 count = 0;
 	if(gid < 12)
 	{
 		for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -320,7 +320,7 @@ int8 Raid::GroupCount(int32 gid)
 	return count;
 }
 
-int8 Raid::RaidCount()
+uint8 Raid::RaidCount()
 {
 	int count = 0;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -331,7 +331,7 @@ int8 Raid::RaidCount()
 	return count;
 }
 
-int32 Raid::GetGroup(const char *name)
+uint32 Raid::GetGroup(const char *name)
 {
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
@@ -341,7 +341,7 @@ int32 Raid::GetGroup(const char *name)
 	return 0xFFFFFFFF;
 }
 
-int32 Raid::GetGroup(Client *c)
+uint32 Raid::GetGroup(Client *c)
 {
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
@@ -373,7 +373,7 @@ void Raid::RaidGroupSay(const char *msg, Client *c)
 	if(!c)
 		return;
 
-	int32 groupToUse = GetGroup(c->GetName());
+	uint32 groupToUse = GetGroup(c->GetName());
 
 	if(groupToUse > 11)
 		return;
@@ -390,7 +390,7 @@ void Raid::RaidGroupSay(const char *msg, Client *c)
 	safe_delete(pack);
 }
 
-int32 Raid::GetPlayerIndex(const char *name){
+uint32 Raid::GetPlayerIndex(const char *name){
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(strcmp(name, members[x].membername) == 0){
@@ -400,7 +400,7 @@ int32 Raid::GetPlayerIndex(const char *name){
 	return 0; //should never get to here if we do everything else right, set it to 0 so we never crash things that rely on it.
 }
 
-Client *Raid::GetClientByIndex(int16 index)
+Client *Raid::GetClientByIndex(uint16 index)
 {
 	if(index > MAX_RAID_MEMBERS)
 		return NULL;
@@ -408,7 +408,7 @@ Client *Raid::GetClientByIndex(int16 index)
 	return members[index].member;
 }
 
-void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
+void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid)
 {
 	float range, distance;
 
@@ -448,9 +448,9 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
 }
 
 
-int32 Raid::GetTotalRaidDamage(Mob* other)
+uint32 Raid::GetTotalRaidDamage(Mob* other)
 {
-	int32 total = 0;
+	uint32 total = 0;
 
 	for (uint32 i = 0; i < MAX_RAID_MEMBERS; i++) {
 		if(!members[i].member)
@@ -461,7 +461,7 @@ int32 Raid::GetTotalRaidDamage(Mob* other)
 	return total;
 }
 
-void Raid::HealGroup(uint32 heal_amt, Mob* caster, int32 gid)
+void Raid::HealGroup(uint32 heal_amt, Mob* caster, uint32 gid)
 {
 	if (!caster)
 		return;
@@ -492,7 +492,7 @@ void Raid::HealGroup(uint32 heal_amt, Mob* caster, int32 gid)
 }
 
 
-void Raid::BalanceHP(sint32 penalty, int32 gid)
+void Raid::BalanceHP(int32 penalty, uint32 gid)
 {
 	int dmgtaken = 0, numMem = 0;
 	int gi = 0;
@@ -527,7 +527,7 @@ void Raid::BalanceHP(sint32 penalty, int32 gid)
 	}
 }
 
-void Raid::BalanceMana(sint32 penalty, int32 gid)
+void Raid::BalanceMana(int32 penalty, uint32 gid)
 {
 	int manataken = 0, numMem = 0;
 	int gi = 0;
@@ -571,7 +571,7 @@ void Raid::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum
 		return;
 	
   uint32 i;
-  int8 membercount = 0;
+  uint8 membercount = 0;
   for (i = 0; i < MAX_RAID_MEMBERS; i++) { 
 	  if (members[i].member != NULL) {
 
@@ -656,7 +656,7 @@ void Raid::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum
   }
 }
 
-void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
+void Raid::GroupBardPulse(Mob* caster, uint16 spellid, uint32 gid){
 	uint32 z;
 	float range, distance;
 
@@ -692,7 +692,7 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 	}
 }
 
-void Raid::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading, int32 gid)
+void Raid::TeleportGroup(Mob* sender, uint32 zoneID, uint16 instance_id, float x, float y, float z, float heading, uint32 gid)
 {
 	for(int i = 0; i < MAX_RAID_MEMBERS; i++) 
 	{
@@ -707,7 +707,7 @@ void Raid::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, 
 	}
 }
 
-void Raid::TeleportRaid(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading)
+void Raid::TeleportRaid(Mob* sender, uint32 zoneID, uint16 instance_id, float x, float y, float z, float heading)
 {
 	for(int i = 0; i < MAX_RAID_MEMBERS; i++) 
 	{
@@ -718,7 +718,7 @@ void Raid::TeleportRaid(Mob* sender, int32 zoneID, int16 instance_id, float x, f
 	}
 }
 
-void Raid::ChangeLootType(int32 type)
+void Raid::ChangeLootType(uint32 type)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
@@ -814,9 +814,9 @@ bool Raid::IsRaidMember(const char *name){
 	return false;
 }
 
-int32 Raid::GetHighestLevel()
+uint32 Raid::GetHighestLevel()
 {
-	int32 highlvl = 0;
+	uint32 highlvl = 0;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(strlen(members[x].membername))
@@ -828,9 +828,9 @@ int32 Raid::GetHighestLevel()
 	return highlvl;
 }
 
-int32 Raid::GetLowestLevel()
+uint32 Raid::GetLowestLevel()
 {
-	int32 lowlvl = 1000;
+	uint32 lowlvl = 1000;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(strlen(members[x].membername))
@@ -1083,7 +1083,7 @@ void Raid::SendGroupUpdate(Client *to)
 	GroupUpdate2_Struct* gu = (GroupUpdate2_Struct*)outapp->pBuffer;	
 	gu->action = groupActUpdate;
 	int index = 0;
-	int32 grp = GetGroup(to->GetName());
+	uint32 grp = GetGroup(to->GetName());
 	if(grp > 11)
 	{
 		safe_delete(outapp);
@@ -1116,7 +1116,7 @@ void Raid::SendGroupUpdate(Client *to)
 	to->FastQueuePacket(&outapp);
 }
 
-void Raid::GroupUpdate(int32 gid, bool initial)
+void Raid::GroupUpdate(uint32 gid, bool initial)
 {
 	if(gid > 11) //ungrouped member doesn't need grouping.
 		return;
@@ -1204,7 +1204,7 @@ void Raid::SendGroupDisband(Client *to)
 	to->FastQueuePacket(&outapp);
 }
 
-void Raid::SendRaidGroupAdd(const char *who, int32 gid)
+void Raid::SendRaidGroupAdd(const char *who, uint32 gid)
 {
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidGroupAdd, sizeof(ServerRaidGroupAction_Struct));
 	ServerRaidGroupAction_Struct * rga = (ServerRaidGroupAction_Struct*)pack->pBuffer;
@@ -1214,7 +1214,7 @@ void Raid::SendRaidGroupAdd(const char *who, int32 gid)
 	safe_delete(pack);
 }
 
-void Raid::SendRaidGroupRemove(const char *who, int32 gid)
+void Raid::SendRaidGroupRemove(const char *who, uint32 gid)
 {
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidGroupRemove, sizeof(ServerRaidGroupAction_Struct));
 	ServerRaidGroupAction_Struct * rga = (ServerRaidGroupAction_Struct*)pack->pBuffer;
@@ -1366,7 +1366,7 @@ void Raid::SendHPPacketsTo(Client *c)
 	if(!c)
 		return;
 	
-	int32 gid = this->GetGroup(c);
+	uint32 gid = this->GetGroup(c);
 	EQApplicationPacket hpapp;
         EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -1399,7 +1399,7 @@ void Raid::SendHPPacketsFrom(Mob *m)
 	if(!m)
 		return;
 
-	int32 gid = 0;
+	uint32 gid = 0;
 	if(m->IsClient())
 		gid = this->GetGroup(m->CastToClient());
 	EQApplicationPacket hpapp;
@@ -1453,7 +1453,7 @@ const char *Raid::GetClientNameByIndex(uint8 index)
 	return members[index].membername;
 }
 
-void Raid::RaidMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9, int32 distance) {
+void Raid::RaidMessage_StringID(Mob* sender, uint32 type, uint32 string_id, const char* message,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9, uint32 distance) {
 	uint32 i;
 	for (i = 0; i < MAX_RAID_MEMBERS; i++) {
 		if(members[i].member) {

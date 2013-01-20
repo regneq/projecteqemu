@@ -21,17 +21,17 @@ public:
 	ZSList();
 	~ZSList();
 	ZoneServer* FindByName(const char* zonename);
-	ZoneServer* FindByID(int32 ZoneID);
-	ZoneServer* FindByZoneID(int32 ZoneID);
-	ZoneServer*	FindByPort(int16 port);
-	ZoneServer* FindByInstanceID(int32 InstanceID);
+	ZoneServer* FindByID(uint32 ZoneID);
+	ZoneServer* FindByZoneID(uint32 ZoneID);
+	ZoneServer*	FindByPort(uint16 port);
+	ZoneServer* FindByInstanceID(uint32 InstanceID);
 	
-	void	SendChannelMessage(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...);
-	void	SendChannelMessageRaw(const char* from, const char* to, int8 chan_num, int8 language, const char* message);
-	void	SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...);
-	void	SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message);
+	void	SendChannelMessage(const char* from, const char* to, uint8 chan_num, uint8 language, const char* message, ...);
+	void	SendChannelMessageRaw(const char* from, const char* to, uint8 chan_num, uint8 language, const char* message);
+	void	SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...);
+	void	SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message);
 
-	void	SendZoneStatus(const char* to, sint16 admin, WorldTCPConnection* connection);
+	void	SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* connection);
 
 	void	SendTimeSync();	
 	void	Add(ZoneServer* zoneserver);
@@ -40,28 +40,28 @@ public:
 	bool	SendPacket(ServerPacket* pack);
 	bool	SendPacket(uint32 zoneid, ServerPacket* pack);
 	bool	SendPacket(uint32 zoneid, uint16 instanceid, ServerPacket* pack);
-	inline int32	GetNextID()		{ return NextID++; }
-	void	RebootZone(const char* ip1,int16 port, const char* ip2, int32 skipid, int32 zoneid = 0);
-	int32	TriggerBootup(int32 iZoneID, int32 iInstanceID = 0);
-	void	SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char* zonename, bool iMakeStatic = false);
+	inline uint32	GetNextID()		{ return NextID++; }
+	void	RebootZone(const char* ip1,uint16 port, const char* ip2, uint32 skipid, uint32 zoneid = 0);
+	uint32	TriggerBootup(uint32 iZoneID, uint32 iInstanceID = 0);
+	void	SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const char* zonename, bool iMakeStatic = false);
 	EQTime	worldclock;
-	bool	SetLockedZone(int16 iZoneID, bool iLock);
-	bool	IsZoneLocked(int16 iZoneID);
+	bool	SetLockedZone(uint16 iZoneID, bool iLock);
+	bool	IsZoneLocked(uint16 iZoneID);
 	void	ListLockedZones(const char* to, WorldTCPConnection* connection);
 	Timer*	shutdowntimer;
 	Timer*	reminder;
-	void	NextGroupIDs(int32 &start, int32 &end);
+	void	NextGroupIDs(uint32 &start, uint32 &end);
 	void	SendLSZones();
 	uint16  GetAvailableZonePort();
 
 	int GetZoneCount();
-	void GetZoneIDList(std::vector<int32> &zones);
+	void GetZoneIDList(std::vector<uint32> &zones);
 	
 protected:
-	int32 NextID;
+	uint32 NextID;
 	LinkedList<ZoneServer*> list;
-	int16	pLockedZones[MaxLockedZones];
-	int32 CurGroupID;
+	uint16	pLockedZones[MaxLockedZones];
+	uint32 CurGroupID;
 	uint16 LastAllocatedPort;
 	
 	

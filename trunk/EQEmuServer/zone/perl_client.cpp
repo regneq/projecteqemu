@@ -69,7 +69,7 @@ XS(XS_Client_Save)
 	{
 		Client *		THIS;
 		bool		RETVAL;
-		int8		iCommitNow = (int8)SvUV(ST(1));
+		uint8		iCommitNow = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -265,7 +265,7 @@ XS(XS_Client_GetAnon)
 		Perl_croak(aTHX_ "Usage: Client::GetAnon(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -509,7 +509,7 @@ XS(XS_Client_GetBaseFace)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseFace(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -535,9 +535,9 @@ XS(XS_Client_GetLanguageSkill)
 		Perl_croak(aTHX_ "Usage: Client::GetLanguageSkill(THIS, n)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
-		int16		n = (int16)SvUV(ST(1));
+		uint16		n = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -588,9 +588,9 @@ XS(XS_Client_GetLDoNPointsTheme)
 		Perl_croak(aTHX_ "Usage: Client::GetLDoNPointsTheme(THIS, theme)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		sint32 theme_out = (sint32)SvIV(ST(1));
+		int32 theme_out = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -615,7 +615,7 @@ XS(XS_Client_GetBaseSTR)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseSTR(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -641,7 +641,7 @@ XS(XS_Client_GetBaseSTA)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseSTA(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -667,7 +667,7 @@ XS(XS_Client_GetBaseCHA)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseCHA(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -693,7 +693,7 @@ XS(XS_Client_GetBaseDEX)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseDEX(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -719,7 +719,7 @@ XS(XS_Client_GetBaseINT)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseINT(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -745,7 +745,7 @@ XS(XS_Client_GetBaseAGI)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseAGI(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -771,7 +771,7 @@ XS(XS_Client_GetBaseWIS)
 		Perl_croak(aTHX_ "Usage: Client::GetBaseWIS(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -797,7 +797,7 @@ XS(XS_Client_GetWeight)
 		Perl_croak(aTHX_ "Usage: Client::GetWeight(THIS)");
 	{
 		Client *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -902,8 +902,8 @@ XS(XS_Client_UpdateLDoNPoints)
 	{
 		Client *		THIS;
 		bool		RETVAL;
-		sint32		points = (sint32)SvIV(ST(1));
-		int32		theme = (int32)SvUV(ST(2));
+		int32		points = (int32)SvIV(ST(1));
+		uint32		theme = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -954,7 +954,7 @@ XS(XS_Client_AddEXP)
 	{
 		Client *		THIS;
 		uint32		add_exp = (uint32)SvUV(ST(1));
-		int8		conlevel;
+		uint8		conlevel;
 		bool		resexp;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -969,7 +969,7 @@ XS(XS_Client_AddEXP)
 		if (items < 3)
 			conlevel = 0xFF;
 		else {
-			conlevel = (int8)SvUV(ST(2));
+			conlevel = (uint8)SvUV(ST(2));
 		}
 
 		if (items < 4)
@@ -1090,7 +1090,7 @@ XS(XS_Client_GetBindX)
 		if (items == 1)
 			index = 0;
 		else if (items == 2) {
-			index = (int32)SvUV(ST(1));
+			index = (uint32)SvUV(ST(1));
 		}
 
 		RETVAL = THIS->GetBindX(index);
@@ -1123,7 +1123,7 @@ XS(XS_Client_GetBindY)
 		if (items == 1)
 			index = 0;
 		else if (items == 2) {
-			index = (int32)SvUV(ST(1));;
+			index = (uint32)SvUV(ST(1));;
 		}
 
 		RETVAL = THIS->GetBindY(index);
@@ -1156,7 +1156,7 @@ XS(XS_Client_GetBindZ)
 		if (items == 1)
 			index = 0;
 		else if (items == 2) {
-			index = (int32)SvUV(ST(1));
+			index = (uint32)SvUV(ST(1));
 		}
 
 		RETVAL = THIS->GetBindZ(index);
@@ -1189,7 +1189,7 @@ XS(XS_Client_GetBindHeading)
 		if (items == 1)
 			index = 0;
 		else if (items == 2) {
-			index = (int32)SvUV(ST(1));
+			index = (uint32)SvUV(ST(1));
 		}
 
 		RETVAL = THIS->GetBindHeading(index);
@@ -1206,8 +1206,8 @@ XS(XS_Client_GetBindZoneID)
 		Perl_croak(aTHX_ "Usage: Client::GetBindZoneID(index)");
 	{
 		Client *		THIS;
-		int32 index = 0;
-		int32 RETVAL;
+		uint32 index = 0;
+		uint32 RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1222,7 +1222,7 @@ XS(XS_Client_GetBindZoneID)
 		if (items == 1)
 			index = 0;
 		else if (items == 2) {
-			index = (int32)SvUV(ST(1));
+			index = (uint32)SvUV(ST(1));
 		}
 
 		RETVAL = THIS->GetBindZoneID(index);
@@ -1240,7 +1240,7 @@ XS(XS_Client_MovePC)
 		Perl_croak(aTHX_ "Usage: Client::MovePC(THIS, zoneID, x, y, z, heading)");
 	{
 		Client *		THIS;
-		int32		zoneID = (int32)SvUV(ST(1));
+		uint32		zoneID = (uint32)SvUV(ST(1));
 		float		x = (float)SvNV(ST(2));
 		float		y = (float)SvNV(ST(3));
 		float		z = (float)SvNV(ST(4));
@@ -1268,8 +1268,8 @@ XS(XS_Client_MovePCInstance)
 		Perl_croak(aTHX_ "Usage: Client::MovePCInstance(THIS, zoneID, instanceID, x, y, z, heading)");
 	{
 		Client *		THIS;
-		int32		zoneID = (int32)SvUV(ST(1));
-		int32		instanceID = (int32)SvUV(ST(2));
+		uint32		zoneID = (uint32)SvUV(ST(1));
+		uint32		instanceID = (uint32)SvUV(ST(2));
 		float		x = (float)SvNV(ST(3));
 		float		y = (float)SvNV(ST(4));
 		float		z = (float)SvNV(ST(5));
@@ -1323,12 +1323,12 @@ XS(XS_Client_GetFactionLevel)
 		Client *		THIS;
 		FACTION_VALUE		RETVAL;
 		dXSTARG;
-		int32		char_id = (int32)SvUV(ST(1));
-		int32		npc_id = (int32)SvUV(ST(2));
-		int32		p_race = (int32)SvUV(ST(3));
-		int32		p_class = (int32)SvUV(ST(4));
-		int32		p_deity = (int32)SvUV(ST(5));
-		sint32		pFaction = (sint32)SvIV(ST(6));
+		uint32		char_id = (uint32)SvUV(ST(1));
+		uint32		npc_id = (uint32)SvUV(ST(2));
+		uint32		p_race = (uint32)SvUV(ST(3));
+		uint32		p_class = (uint32)SvUV(ST(4));
+		uint32		p_deity = (uint32)SvUV(ST(5));
+		int32		pFaction = (int32)SvIV(ST(6));
 		Mob*		tnpc;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1363,11 +1363,11 @@ XS(XS_Client_SetFactionLevel)
 		Perl_croak(aTHX_ "Usage: Client::SetFactionLevel(THIS, char_id, npc_id, char_class, char_race, char_deity)");
 	{
 		Client *		THIS;
-		int32		char_id = (int32)SvUV(ST(1));
-		int32		npc_id = (int32)SvUV(ST(2));
-		int8		char_class = (int8)SvUV(ST(3));
-		int8		char_race = (int8)SvUV(ST(4));
-		int8		char_deity = (int8)SvUV(ST(5));
+		uint32		char_id = (uint32)SvUV(ST(1));
+		uint32		npc_id = (uint32)SvUV(ST(2));
+		uint8		char_class = (uint8)SvUV(ST(3));
+		uint8		char_race = (uint8)SvUV(ST(4));
+		uint8		char_deity = (uint8)SvUV(ST(5));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1391,13 +1391,13 @@ XS(XS_Client_SetFactionLevel2)
 		Perl_croak(aTHX_ "Usage: Client::SetFactionLevel2(THIS, char_id, faction_id, char_class, char_race, char_deity, value, temp)");
 	{
 		Client *		THIS;
-		int32		char_id = (int32)SvUV(ST(1));
-		sint32		faction_id = (sint32)SvIV(ST(2));
-		int8		char_class = (int8)SvUV(ST(3));
-		int8		char_race = (int8)SvUV(ST(4));
-		int8		char_deity = (int8)SvUV(ST(5));
-		sint32		value = (sint32)SvIV(ST(6));
-		int8		temp;
+		uint32		char_id = (uint32)SvUV(ST(1));
+		int32		faction_id = (int32)SvIV(ST(2));
+		uint8		char_class = (uint8)SvUV(ST(3));
+		uint8		char_race = (uint8)SvUV(ST(4));
+		uint8		char_deity = (uint8)SvUV(ST(5));
+		int32		value = (int32)SvIV(ST(6));
+		uint8		temp;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1411,7 +1411,7 @@ XS(XS_Client_SetFactionLevel2)
 		if (items == 7)
 			temp = 0;
 		else {
-			temp = (int8)SvUV(ST(7));
+			temp = (uint8)SvUV(ST(7));
 		}
 
 		THIS->SetFactionLevel2(char_id, faction_id, char_class, char_race, char_deity, value, temp);
@@ -1427,7 +1427,7 @@ XS(XS_Client_GetRawItemAC)
 		Perl_croak(aTHX_ "Usage: Client::GetRawItemAC(THIS)");
 	{
 		Client *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1453,7 +1453,7 @@ XS(XS_Client_AccountID)
 		Perl_croak(aTHX_ "Usage: Client::AccountID(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1505,7 +1505,7 @@ XS(XS_Client_Admin)
 		Perl_croak(aTHX_ "Usage: Client::Admin(THIS)");
 	{
 		Client *		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1531,7 +1531,7 @@ XS(XS_Client_CharacterID)
 		Perl_croak(aTHX_ "Usage: Client::CharacterID(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1587,7 +1587,7 @@ XS(XS_Client_UpdateWho)
 		Perl_croak(aTHX_ "Usage: Client::UpdateWho(THIS, remove= 0)");
 	{
 		Client *		THIS;
-		int8		remove;
+		uint8		remove;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1601,7 +1601,7 @@ XS(XS_Client_UpdateWho)
 		if (items < 2)
 			remove = 0;
 		else {
-			remove = (int8)SvUV(ST(1));
+			remove = (uint8)SvUV(ST(1));
 		}
 
 		THIS->UpdateWho(remove);
@@ -1617,7 +1617,7 @@ XS(XS_Client_GuildRank)
 		Perl_croak(aTHX_ "Usage: Client::GuildRank(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1643,7 +1643,7 @@ XS(XS_Client_GuildID)
 		Perl_croak(aTHX_ "Usage: Client::GuildID(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1669,7 +1669,7 @@ XS(XS_Client_GetFace)
 		Perl_croak(aTHX_ "Usage: Client::GetFace(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -1780,7 +1780,7 @@ XS(XS_Client_GetSkillPoints)
 		Perl_croak(aTHX_ "Usage: Client::GetSkillPoints(THIS)");
 	{
 		Client *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2001,7 +2001,7 @@ XS(XS_Client_SetSkill)
 	{
 		Client *		THIS;
 		SkillType		skill_num = (SkillType)SvUV(ST(1));
-		int16		value = (int16)SvUV(ST(2));
+		uint16		value = (uint16)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2026,7 +2026,7 @@ XS(XS_Client_AddSkill)
 	{
 		Client *		THIS;
 		SkillType		skillid = (SkillType)SvUV(ST(1));
-		int16		value = (int16)SvUV(ST(2));
+		uint16		value = (uint16)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2050,7 +2050,7 @@ XS(XS_Client_CheckSpecializeIncrease)
 		Perl_croak(aTHX_ "Usage: Client::CheckSpecializeIncrease(THIS, spell_id)");
 	{
 		Client *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2133,10 +2133,10 @@ XS(XS_Client_MaxSkill)
 		Perl_croak(aTHX_ "Usage: Client::MaxSkill(THIS, skillid, class, level)");
 	{
 		Client *		THIS;
-		int16			RETVAL;
+		uint16			RETVAL;
 		SkillType		skillid = (SkillType)SvUV(ST(1));
-		int16			class_ = 0;
-		int16			level = 0;
+		uint16			class_ = 0;
+		uint16			level = 0;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2149,12 +2149,12 @@ XS(XS_Client_MaxSkill)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if(items > 2)
-			class_ = (int16)SvUV(ST(2));
+			class_ = (uint16)SvUV(ST(2));
 		else
 			class_ = THIS->GetClass();
 
 		if(items > 3)
-			level = (int16)SvUV(ST(3));
+			level = (uint16)SvUV(ST(3));
 		else
 			level = THIS->GetLevel();
 
@@ -2221,7 +2221,7 @@ XS(XS_Client_GetDuelTarget)
 		Perl_croak(aTHX_ "Usage: Client::GetDuelTarget(THIS)");
 	{
 		Client *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2273,7 +2273,7 @@ XS(XS_Client_SetDuelTarget)
 		Perl_croak(aTHX_ "Usage: Client::SetDuelTarget(THIS, set_id)");
 	{
 		Client *		THIS;
-		int16		set_id = (int16)SvUV(ST(1));
+		uint16		set_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2344,7 +2344,7 @@ XS(XS_Client_MemSpell)
 		Perl_croak(aTHX_ "Usage: Client::MemSpell(THIS, spell_id, slot, update_client= true)");
 	{
 		Client *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		int		slot = (int)SvIV(ST(2));
 		bool		update_client;
 
@@ -2437,7 +2437,7 @@ XS(XS_Client_ScribeSpell)
 		Perl_croak(aTHX_ "Usage: Client::ScribeSpell(THIS, spell_id, slot, update_client= true)");
 	{
 		Client *		THIS;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 		int		slot = (int)SvIV(ST(2));
 		bool		update_client;
 
@@ -2643,7 +2643,7 @@ XS(XS_Client_GetBecomeNPCLevel)
 		Perl_croak(aTHX_ "Usage: Client::GetBecomeNPCLevel(THIS)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2693,7 +2693,7 @@ XS(XS_Client_SetBecomeNPCLevel)
 		Perl_croak(aTHX_ "Usage: Client::SetBecomeNPCLevel(THIS, level)");
 	{
 		Client *		THIS;
-		int8		level = (int8)SvUV(ST(1));
+		uint8		level = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2820,7 +2820,7 @@ XS(XS_Client_SetHorseId)
 		Perl_croak(aTHX_ "Usage: Client::SetHorseId(THIS, horseid_in)");
 	{
 		Client *		THIS;
-		int16		horseid_in = (int16)SvUV(ST(1));
+		uint16		horseid_in = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2844,7 +2844,7 @@ XS(XS_Client_GetHorseId)
 		Perl_croak(aTHX_ "Usage: Client::GetHorseId(THIS)");
 	{
 		Client *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2905,7 +2905,7 @@ XS(XS_Client_SetTint)
 		Perl_croak(aTHX_ "Usage: Client::SetTint(THIS, slot_id, color)");
 	{
 		Client *		THIS;
-		sint16		slot_id = (sint16)SvIV(ST(1));
+		int16		slot_id = (int16)SvIV(ST(1));
 		uint32		color = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2930,7 +2930,7 @@ XS(XS_Client_SetMaterial)
 		Perl_croak(aTHX_ "Usage: Client::SetMaterial(THIS, slot_id, item_id)");
 	{
 		Client *		THIS;
-		sint16		slot_id = (sint16)SvIV(ST(1));
+		int16		slot_id = (int16)SvIV(ST(1));
 		uint32		item_id = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -2980,7 +2980,7 @@ XS(XS_Client_GetItemIDAt)
 		Client *		THIS;
 		uint32		RETVAL;
 		dXSTARG;
-		sint16		slot_id = (sint16)SvIV(ST(1));
+		int16		slot_id = (int16)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3007,8 +3007,8 @@ XS(XS_Client_GetAugmentIDAt)
 		Client *		THIS;
 		uint32		RETVAL;
 		dXSTARG;
-		sint16		slot_id = (sint16)SvIV(ST(1));
-		sint16		augslot = (uint8)SvIV(ST(2));
+		int16		slot_id = (int16)SvIV(ST(1));
+		int16		augslot = (uint8)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3033,8 +3033,8 @@ XS(XS_Client_DeleteItemInInventory)
 		Perl_croak(aTHX_ "Usage: Client::DeleteItemInInventory(THIS, slot_id, quantity= 0, client_update= false)");
 	{
 		Client *		THIS;
-		sint16		slot_id = (sint16)SvIV(ST(1));
-		sint8		quantity;
+		int16		slot_id = (int16)SvIV(ST(1));
+		int8		quantity;
 		bool		client_update;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -3049,7 +3049,7 @@ XS(XS_Client_DeleteItemInInventory)
 		if (items < 3)
 			quantity = 0;
 		else {
-			quantity = (sint8)SvIV(ST(2));
+			quantity = (int8)SvIV(ST(2));
 		}
 
 		if (items < 4)
@@ -3072,7 +3072,7 @@ XS(XS_Client_SummonItem)
 	{
 		Client *		THIS;
 		uint32		item_id = (uint32)SvUV(ST(1));
-		sint16		charges = 0;
+		int16		charges = 0;
 		bool		attune = false;
 		uint32		aug1 = 0;
 		uint32		aug2 = 0;
@@ -3091,7 +3091,7 @@ XS(XS_Client_SummonItem)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items > 2) {
-			charges = (sint16)SvIV(ST(2));
+			charges = (int16)SvIV(ST(2));
 		}
 		if (items > 3) {
 			attune = (bool)SvTRUE(ST(3));
@@ -3128,8 +3128,8 @@ XS(XS_Client_SetStats)
 		Perl_croak(aTHX_ "Usage: Client::SetStats(THIS, type, increase_val)");
 	{
 		Client *		THIS;
-		int8		type = (int8)SvUV(ST(1));
-		sint16		increase_val = (sint16)SvIV(ST(2));
+		uint8		type = (uint8)SvUV(ST(1));
+		int16		increase_val = (int16)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3153,8 +3153,8 @@ XS(XS_Client_IncStats)
 		Perl_croak(aTHX_ "Usage: Client::IncStats(THIS, type, increase_val)");
 	{
 		Client *		THIS;
-		int8		type = (int8)SvUV(ST(1));
-		sint16		increase_val = (sint16)SvIV(ST(2));
+		uint8		type = (uint8)SvUV(ST(1));
+		int16		increase_val = (int16)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3178,7 +3178,7 @@ XS(XS_Client_DropItem)
 		Perl_croak(aTHX_ "Usage: Client::DropItem(THIS, slot_id)");
 	{
 		Client *		THIS;
-		sint16		slot_id = (sint16)SvIV(ST(1));
+		int16		slot_id = (int16)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3404,9 +3404,9 @@ XS(XS_Client_GetInstrumentMod)
 		Perl_croak(aTHX_ "Usage: Client::GetInstrumentMod(THIS, spell_id)");
 	{
 		Client *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
+		uint16		spell_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3432,8 +3432,8 @@ XS(XS_Client_DecreaseByID)
 	{
 		Client *		THIS;
 		bool		RETVAL;
-		int32		type = (int32)SvUV(ST(1));
-		int8		amt = (int8)SvUV(ST(2));
+		uint32		type = (uint32)SvUV(ST(1));
+		uint8		amt = (uint8)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3459,9 +3459,9 @@ XS(XS_Client_SlotConvert2)
 		Perl_croak(aTHX_ "Usage: Client::SlotConvert2(THIS, slot)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
-		int8		slot = (int8)SvUV(ST(1));
+		uint8		slot = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3649,8 +3649,8 @@ XS(XS_Client_UseDiscipline)
 	{
 		Client *		THIS;
 		bool		RETVAL;
-		int32		spell_id = (int32)SvUV(ST(1));
-		int32		target = (int32)SvUV(ST(2));
+		uint32		spell_id = (uint32)SvUV(ST(1));
+		uint32		target = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3676,9 +3676,9 @@ XS(XS_Client_GetCharacterFactionLevel)
 		Perl_croak(aTHX_ "Usage: Client::GetCharacterFactionLevel(THIS, faction_id)");
 	{
 		Client *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		sint32		faction_id = (sint32)SvIV(ST(1));
+		int32		faction_id = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3868,7 +3868,7 @@ XS(XS_Client_GetClientVersion)
 		Perl_croak(aTHX_ "Usage: Client::GetClientVersion(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -3894,7 +3894,7 @@ XS(XS_Client_GetClientVersionBit)
 		Perl_croak(aTHX_ "Usage: Client::GetClientVersionBit(THIS)");
 	{
 		Client *        THIS;
-		int32           RETVAL;
+		uint32           RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4099,9 +4099,9 @@ XS(XS_Client_GetModCharacterFactionLevel)
 		Perl_croak(aTHX_ "Usage: Client::GetModCharacterFactionLevel(THIS, faction_id)");
 	{
 		Client *	THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
-		sint32		faction_id = (sint32)SvIV(ST(1));
+		int32		faction_id = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4126,7 +4126,7 @@ XS(XS_Client_GetLDoNWins)
 		Perl_croak(aTHX_ "Usage: Client::GetLDoNWins(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4152,7 +4152,7 @@ XS(XS_Client_GetLDoNLosses)
 		Perl_croak(aTHX_ "Usage: Client::GetLDoNLosses(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4178,9 +4178,9 @@ XS(XS_Client_GetLDoNWinsTheme)
 		Perl_croak(aTHX_ "Usage: Client::GetLDoNWinsTheme(THIS, theme)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		sint32 theme_out = (sint32)SvIV(ST(1));
+		int32 theme_out = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4205,9 +4205,9 @@ XS(XS_Client_GetLDoNLossesTheme)
 		Perl_croak(aTHX_ "Usage: Client::GetLDoNLossesTheme(THIS, theme)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		sint32 theme_out = (sint32)SvIV(ST(1));
+		int32 theme_out = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4233,7 +4233,7 @@ XS(XS_Client_GetItemAt)
 	{
 		Client *		THIS;
 		ItemInst *		RETVAL;
-		uint32 slot = (sint32)SvIV(ST(1));
+		uint32 slot = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4260,8 +4260,8 @@ XS(XS_Client_GetAugmentAt)
 	{
 		Client *		THIS;
 		ItemInst *		RETVAL;
-		uint32 slot = (sint32)SvIV(ST(1));
-		uint32 aug_slot = (sint32)SvIV(ST(1));
+		uint32 slot = (int32)SvIV(ST(1));
+		uint32 aug_slot = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4455,7 +4455,7 @@ XS(XS_Client_GetPVPPoints)
 		Perl_croak(aTHX_ "Usage: Client::GetPVPPoints(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4481,7 +4481,7 @@ XS(XS_Client_GetRadiantCrystals)
 		Perl_croak(aTHX_ "Usage: Client::GetRadiantCrystals(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4507,7 +4507,7 @@ XS(XS_Client_GetEbonCrystals)
 		Perl_croak(aTHX_ "Usage: Client::GetEbonCrystals(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4534,7 +4534,7 @@ XS(XS_Client_ReadBook)
 	{
 		Client *		THIS;
 		char*			in_txt = (char *)SvPV_nolen(ST(1));
-		int8			type = (int8)SvUV(ST(2));
+		uint8			type = (uint8)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4558,8 +4558,8 @@ XS(XS_Client_UpdateGroupAAs)
 		Perl_croak(aTHX_ "Usage: Client::UpdateGroupAAs(THIS, points, type)");
 	{
 		Client *		THIS;
-		sint32		points = (sint32)SvIV(ST(1));
-		int32		type = (int32)SvUV(ST(2));
+		int32		points = (int32)SvIV(ST(1));
+		uint32		type = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4583,7 +4583,7 @@ XS(XS_Client_GetGroupPoints)
 		Perl_croak(aTHX_ "Usage: Client::GetGroupPoints(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4609,7 +4609,7 @@ XS(XS_Client_GetRaidPoints)
 		Perl_croak(aTHX_ "Usage: Client::GetRaidPoints(THIS)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4659,7 +4659,7 @@ XS(XS_Client_GetEndurance)
 		Perl_croak(aTHX_ "Usage: Client::GetEndurance(THIS)");
 	{
 		Client *	THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4685,7 +4685,7 @@ XS(XS_Client_GetMaxEndurance)
 		Perl_croak(aTHX_ "Usage: Client::GetMaxEndurance(THIS)");
 	{
 		Client *	THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4711,7 +4711,7 @@ XS(XS_Client_GetEnduranceRatio)
 		Perl_croak(aTHX_ "Usage: Client::GetEnduranceRatio(THIS)");
 	{
 		Client *	THIS;
-		int8		RETVAL;
+		uint8		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4737,7 +4737,7 @@ XS(XS_Client_SetEndurance)
 		Perl_croak(aTHX_ "Usage: Client::SetEndurance(THIS, Endurance)");
 	{
 		Client *	THIS;
-		sint32		Endurance = (sint32)SvUV(ST(1));
+		int32		Endurance = (int32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4762,7 +4762,7 @@ XS(XS_Client_SendOPTranslocateConfirm)
 	{
 		Client *	THIS;
 		Mob * caster = NULL;
-		sint32 spell_id = (sint32)SvUV(ST(2));
+		int32 spell_id = (int32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4797,7 +4797,7 @@ XS(XS_Client_NPCSpawn)
 		Client *		THIS;
 		NPC *			target_npc = NULL;
 		Const_char *	option = (Const_char *)SvPV_nolen(ST(2));
-		int32			respawntime = 1200;
+		uint32			respawntime = 1200;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4818,7 +4818,7 @@ XS(XS_Client_NPCSpawn)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items > 3)
-			respawntime = (int32)SvUV(ST(3));
+			respawntime = (uint32)SvUV(ST(3));
 
 		THIS->NPCSpawn(target_npc, option, respawntime);
 	}
@@ -4833,7 +4833,7 @@ XS(XS_Client_GetIP)
 		Perl_croak(aTHX_ "Usage: Client::GetIP(THIS)");
 	{
 		Client *	THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4887,7 +4887,7 @@ XS(XS_Client_IncrementAA)
 		Perl_croak(aTHX_ "Usage: Client::IncrementAA(THIS, aaskillid)");
 	{
 		Client *		THIS;
-		int32		aaskillid = SvUV(ST(1));
+		uint32		aaskillid = SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4926,9 +4926,9 @@ XS(XS_Client_GetAALevel)
 		Perl_croak(aTHX_ "Usage: Client::GetAALevel(THIS, aaskillid)");
 	{
 		Client *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		int32		aaskillid = SvUV(ST(1));
+		uint32		aaskillid = SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5216,7 +5216,7 @@ XS(XS_Client_GetCorpseCount)
 		Perl_croak(aTHX_ "Usage: Client::GetCorpseCount(THIS)");
 	{
 		Client *	THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -5242,8 +5242,8 @@ XS(XS_Client_GetCorpseID)
 		Perl_croak(aTHX_ "Usage: Client::GetCorpseID(THIS, corpse)");
 	{
 		Client *	THIS;
-		int8		corpse = (int8)SvIV(ST(1));
-		int32		RETVAL;
+		uint8		corpse = (uint8)SvIV(ST(1));
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -5269,8 +5269,8 @@ XS(XS_Client_GetCorpseItemAt)
 		Perl_croak(aTHX_ "Usage: Client::GetCorpseItemAt(THIS, corpse_id, slotid)");
 	{
 		Client *	THIS;
-		int32		corpse_id = (int32)SvIV(ST(1));
-		int16		slotid = (int16)SvIV(ST(2));
+		uint32		corpse_id = (uint32)SvIV(ST(1));
+		uint16		slotid = (uint16)SvIV(ST(2));
 		uint32		RETVAL;
 		dXSTARG;
 
@@ -5297,7 +5297,7 @@ XS(XS_Client_AssignToInstance)
 		Perl_croak(aTHX_ "Usage: Client::AssignToInstance(THIS, instance_id)");
 	{
 		Client *		THIS;
-		int16		instance_id = (int16)SvUV(ST(1));
+		uint16		instance_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5449,7 +5449,7 @@ XS(XS_Client_GetItemInInventory)
 		Perl_croak(aTHX_ "Usage: Client::GetItemInInventory(THIS, slot_id)");
 	{
 		Client *	THIS;
-        sint16      slot_id = (sint16)SvIV(ST(1));
+        int16      slot_id = (int16)SvIV(ST(1));
         ItemInst    *RETVAL = NULL;
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -5476,7 +5476,7 @@ XS(XS_Client_SetCustomItemData)
 		Perl_croak(aTHX_ "Usage: Client::SetCustomItemData(THIS, slot_id, identifier, value)");
 	{
 		Client *	THIS;
-        sint16      slot_id = (sint16)SvIV(ST(1));
+        int16      slot_id = (int16)SvIV(ST(1));
         Const_char*	identifier = SvPV_nolen(ST(2));
         Const_char*	value = SvPV_nolen(ST(3));
 
@@ -5502,7 +5502,7 @@ XS(XS_Client_GetCustomItemData)
 		Perl_croak(aTHX_ "Usage: Client::GetCustomItemData(THIS, slot_id, identifier)");
 	{
 		Client *	THIS;
-        sint16      slot_id = (sint16)SvIV(ST(1));
+        int16      slot_id = (int16)SvIV(ST(1));
         Const_char*	identifier = SvPV_nolen(ST(2));
         Const_char *		RETVAL;
 		dXSTARG;
@@ -5554,7 +5554,7 @@ XS(XS_Client_SignalClient)
 		Perl_croak(aTHX_ "Usage: Client::SignalClient(THIS, data)");
 	{
 		Client *		THIS;
-		int32		data = (int32)SvUV(ST(1));
+		uint32		data = (uint32)SvUV(ST(1));
 	
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5575,11 +5575,11 @@ XS(XS_Client_AddAlternateCurrencyValue)
 {
 	dXSARGS;
 	if (items != 3)
-		Perl_croak(aTHX_ "Usage: Client::AddAlternateCurrencyValue(THIS, uint32 currency_id, sint32 amount)");
+		Perl_croak(aTHX_ "Usage: Client::AddAlternateCurrencyValue(THIS, uint32 currency_id, int32 amount)");
 	{
 		Client *		THIS;
 		uint32		currency_id = (uint32)SvUV(ST(1));
-		sint32		amount = (sint32)SvUV(ST(2));
+		int32		amount = (int32)SvUV(ST(2));
 	
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));

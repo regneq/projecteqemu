@@ -19,63 +19,63 @@ struct ServerClientList_Struct;
 
 class ClientListEntry {
 public:
-	ClientListEntry(int32 id, int32 iLSID, const char* iLoginName, const char* iLoginKey, sint16 iWorldAdmin = 0, int32 ip = 0, uint8 local=0);
-	ClientListEntry(int32 id, int32 iAccID, const char* iAccName, MD5& iMD5Pass, sint16 iAdmin = 0);
-	ClientListEntry(int32 id, ZoneServer* iZS, ServerClientList_Struct* scl, sint8 iOnline);
+	ClientListEntry(uint32 id, uint32 iLSID, const char* iLoginName, const char* iLoginKey, int16 iWorldAdmin = 0, uint32 ip = 0, uint8 local=0);
+	ClientListEntry(uint32 id, uint32 iAccID, const char* iAccName, MD5& iMD5Pass, int16 iAdmin = 0);
+	ClientListEntry(uint32 id, ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline);
 	~ClientListEntry();
 	bool	CheckStale();
-	void	Update(ZoneServer* zoneserver, ServerClientList_Struct* scl, sint8 iOnline = CLE_Status_InZone);
+	void	Update(ZoneServer* zoneserver, ServerClientList_Struct* scl, int8 iOnline = CLE_Status_InZone);
 	void	LSUpdate(ZoneServer* zoneserver);
 	void	LSZoneChange(ZoneToZone_Struct* ztz);
-	bool	CheckAuth(int32 iLSID, const char* key);
+	bool	CheckAuth(uint32 iLSID, const char* key);
 	bool	CheckAuth(const char* iName, MD5& iMD5Password);
-	bool	CheckAuth(int32 id, const char* key, int32 ip);
-	void	SetOnline(ZoneServer* iZS, sint8 iOnline);
-	void	SetOnline(sint8 iOnline = CLE_Status_Online);
-	void	SetChar(int32 iCharID, const char* iCharName);
-	inline sint8		Online()		{ return pOnline; }
-	inline const int32	GetID()	 const	{ return id; }
-	inline const int32	GetIP()	 const	{ return pIP; }
-	inline void			SetIP(const int32& iIP) { pIP = iIP; }
+	bool	CheckAuth(uint32 id, const char* key, uint32 ip);
+	void	SetOnline(ZoneServer* iZS, int8 iOnline);
+	void	SetOnline(int8 iOnline = CLE_Status_Online);
+	void	SetChar(uint32 iCharID, const char* iCharName);
+	inline int8		Online()		{ return pOnline; }
+	inline const uint32	GetID()	 const	{ return id; }
+	inline const uint32	GetIP()	 const	{ return pIP; }
+	inline void			SetIP(const uint32& iIP) { pIP = iIP; }
 	inline void			KeepAlive()		{ stale = 0; }
-	inline int8			GetStaleCounter()  const { return stale; }
-	void	LeavingZone(ZoneServer* iZS = 0, sint8 iOnline = CLE_Status_Offline);
+	inline uint8			GetStaleCounter()  const { return stale; }
+	void	LeavingZone(ZoneServer* iZS = 0, int8 iOnline = CLE_Status_Offline);
 	void	Camp(ZoneServer* iZS = 0);
 
 	// Login Server stuff
-	inline int32		LSID()	const		{ return pLSID; }
-	inline int32		LSAccountID() const	{ return pLSID; }
+	inline uint32		LSID()	const		{ return pLSID; }
+	inline uint32		LSAccountID() const	{ return pLSID; }
 	inline const char*	LSName() const		{ return plsname; }
-	inline sint16		WorldAdmin() const	{ return pworldadmin; }
+	inline int16		WorldAdmin() const	{ return pworldadmin; }
 	inline const char*	GetLSKey() const	{ return plskey; }
 
 	// Account stuff
-	inline int32		AccountID() const		{ return paccountid; }
+	inline uint32		AccountID() const		{ return paccountid; }
 	inline const char*	AccountName() const		{ return paccountname; }
-	inline sint16		Admin() const			{ return padmin; }
-	inline void			SetAdmin(int16 iAdmin)	{ padmin = iAdmin; }
+	inline int16		Admin() const			{ return padmin; }
+	inline void			SetAdmin(uint16 iAdmin)	{ padmin = iAdmin; }
 
 	// Character info
 	inline ZoneServer*	Server() const		{ return pzoneserver; }
 	inline void			ClearServer()		{ pzoneserver = 0; }
-	inline int32		CharID() const		{ return pcharid; }
+	inline uint32		CharID() const		{ return pcharid; }
 	inline const char*	name() const		{ return pname; }
-	inline int32		zone() const		{ return pzone; }
-	inline int16		instance() const	{ return pinstance; }
-	inline int8			level() const		{ return plevel; }
-	inline int8			class_() const		{ return pclass_; }
-	inline int16		race() const		{ return prace; }
-	inline int8			Anon()				{ return panon; }
-	inline int8			TellsOff() const	{ return ptellsoff; }
-	inline int32		GuildID() const	{ return pguild_id; }
-	inline void			SetGuild(int32 guild_id) { pguild_id = guild_id; }
+	inline uint32		zone() const		{ return pzone; }
+	inline uint16		instance() const	{ return pinstance; }
+	inline uint8			level() const		{ return plevel; }
+	inline uint8			class_() const		{ return pclass_; }
+	inline uint16		race() const		{ return prace; }
+	inline uint8			Anon()				{ return panon; }
+	inline uint8			TellsOff() const	{ return ptellsoff; }
+	inline uint32		GuildID() const	{ return pguild_id; }
+	inline void			SetGuild(uint32 guild_id) { pguild_id = guild_id; }
 	inline bool			LFG() const			{ return pLFG; }
-	inline int8			GetGM() const		{ return gm; }
-	inline void			SetGM(int8 igm)	{ gm = igm; }
-	inline void			SetZone(int32 zone) { pzone = zone; }
+	inline uint8			GetGM() const		{ return gm; }
+	inline void			SetGM(uint8 igm)	{ gm = igm; }
+	inline void			SetZone(uint32 zone) { pzone = zone; }
 	inline bool	IsLocalClient() const { return plocal; }
-	inline int8			GetLFGFromLevel() const { return pLFGFromLevel; }
-	inline int8			GetLFGToLevel() const { return pLFGToLevel; }
+	inline uint8			GetLFGFromLevel() const { return pLFGFromLevel; }
+	inline uint8			GetLFGToLevel() const { return pLFGToLevel; }
 	inline bool			GetLFGMatchFilter() const { return pLFGMatchFilter; }
 	inline const char*		GetLFGComments() const { return pLFGComments; }
 	inline uint8	GetClientVersion() { return pClientVersion; }
@@ -83,41 +83,41 @@ public:
 private:
 	void	ClearVars(bool iAll = false);
 
-	const int32	id;
-	int32	pIP;
-	sint8	pOnline;
-	int8	stale;
+	const uint32	id;
+	uint32	pIP;
+	int8	pOnline;
+	uint8	stale;
 
 	// Login Server stuff
-	int32	pLSID;
+	uint32	pLSID;
 	char	plsname[32];
 	char	plskey[16];
-	sint16	pworldadmin;		// Login server's suggested admin status setting
+	int16	pworldadmin;		// Login server's suggested admin status setting
 	bool	plocal;
 
 	// Account stuff
-	int32	paccountid;
+	uint32	paccountid;
 	char	paccountname[32];
 	MD5		pMD5Pass;
-	sint16	padmin;
+	int16	padmin;
 
 	// Character info
 	ZoneServer* pzoneserver;
-	int32	pzone;
-	int16	pinstance;
-	int32	pcharid;
+	uint32	pzone;
+	uint16	pinstance;
+	uint32	pcharid;
 	char	pname[64];
-	int8	plevel;
-	int8	pclass_;
-	int16	prace;
-	int8	panon;
-	int8	ptellsoff;
-	int32	pguild_id;
+	uint8	plevel;
+	uint8	pclass_;
+	uint16	prace;
+	uint8	panon;
+	uint8	ptellsoff;
+	uint32	pguild_id;
 	bool	pLFG;
-	int8	gm;
-	int8	pClientVersion;
-	int8	pLFGFromLevel;
-	int8	pLFGToLevel;
+	uint8	gm;
+	uint8	pClientVersion;
+	uint8	pLFGFromLevel;
+	uint8	pLFGToLevel;
 	bool	pLFGMatchFilter;
 	char	pLFGComments[64];
 };

@@ -59,12 +59,12 @@ bool DBAsyncCB_CharacterBackup(DBAsyncWork* iWork) { // return true means delete
 	MYSQL_RES* result = 0;
 	MYSQL_ROW row;
 	char* query = 0;
-	int32 i;
+	uint32 i;
 	uint8 ToDeleteIndex = 0;
 	uint32 ToDelete[MAX_TO_DELETE];
 	memset(ToDelete, 0, sizeof(ToDelete));
 
-	int32 BackupAges[MAX_BACKUPS]; // must be sorted, highest value in lowest index
+	uint32 BackupAges[MAX_BACKUPS]; // must be sorted, highest value in lowest index
 	memset(BackupAges, 0, sizeof(BackupAges));
 
 	bool FoundBackup[MAX_BACKUPS];
@@ -77,7 +77,7 @@ bool DBAsyncCB_CharacterBackup(DBAsyncWork* iWork) { // return true means delete
 	if (dbaq && dbaq->GetAnswer(errbuf, &result)) {
 		while ((row = mysql_fetch_row(result))) {
 			for (i=0; i<MAX_BACKUPS; i++) {
-				if (BackupAges[i] == 0 || (int32)atoi(row[1]) > BackupAges[i])
+				if (BackupAges[i] == 0 || (uint32)atoi(row[1]) > BackupAges[i])
 					i = MAX_BACKUPS;
 				else if (!FoundBackup[i]) {
 					FoundBackup[i] = true;
@@ -90,9 +90,9 @@ bool DBAsyncCB_CharacterBackup(DBAsyncWork* iWork) { // return true means delete
 				break;
 		}
 		if (ToDelete[0]) {
-			int32 len = 0, size = 0;
+			uint32 len = 0, size = 0;
 			AppendAnyLenString(&query, &size, &len, "Delete from character_backup where id=%u", ToDelete[0]);
-			for (int8 i=1; i<ToDeleteIndex; i++) {
+			for (uint8 i=1; i<ToDeleteIndex; i++) {
 				AppendAnyLenString(&query, &size, &len, " or id=%u", ToDelete[i]);
 			}
 			if (!database.RunQuery(query, len, errbuf)) {

@@ -218,7 +218,7 @@ void command_uptime(Client *c, const Seperator *sep);
 void command_flag(Client *c, const Seperator *sep);
 void command_time(Client *c, const Seperator *sep);
 void command_guild(Client *c, const Seperator *sep);
-bool helper_guild_edit(Client *c, int32 dbid, int32 eqid, int8 rank, const char* what, const char* value);
+bool helper_guild_edit(Client *c, uint32 dbid, uint32 eqid, uint8 rank, const char* what, const char* value);
 void command_zonestatus(Client *c, const Seperator *sep);
 void command_manaburn(Client *c, const Seperator *sep);
 void command_viewmessage(Client *c, const Seperator *sep);

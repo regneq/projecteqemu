@@ -29,7 +29,7 @@ enum eEQEMuError { EQEMuError_NoError,
 
 void AddEQEMuError(eEQEMuError iError, bool iExitNow = false);
 void AddEQEMuError(char* iError, bool iExitNow = false);
-int32 CheckEQEMuError();
+uint32 CheckEQEMuError();
 void CheckEQEMuErrorAndPause();
 
 #endif

@@ -130,11 +130,11 @@ class EQStream : public EQStreamInterface {
 
 		static uint16 MaxWindowSize;
 
-		sint32 BytesWritten;
+		int32 BytesWritten;
 
 		Mutex MRate;
-		sint32 RateThreshold;
-		sint32 DecayRate;
+		int32 RateThreshold;
+		int32 DecayRate;
 
 		
 		OpcodeManager **OpMgr;
@@ -230,30 +230,30 @@ class EQStream : public EQStreamInterface {
 		void Decay();
 		void AdjustRates(uint32 average_delta);
 
-		int32 bytes_sent;
-		int32 bytes_recv;
-		int32 create_time;
+		uint32 bytes_sent;
+		uint32 bytes_recv;
+		uint32 create_time;
 
-		void AddBytesSent(int32 bytes)
+		void AddBytesSent(uint32 bytes)
 		{
 			bytes_sent += bytes;
 		}
 
-		void AddBytesRecv(int32 bytes)
+		void AddBytesRecv(uint32 bytes)
 		{
 			bytes_recv += bytes;
 		}
 
-		virtual const int32 GetBytesSent() const { return bytes_sent; }
-		virtual const int32 GetBytesRecieved() const { return bytes_recv; }
-		virtual const int32 GetBytesSentPerSecond() const
+		virtual const uint32 GetBytesSent() const { return bytes_sent; }
+		virtual const uint32 GetBytesRecieved() const { return bytes_recv; }
+		virtual const uint32 GetBytesSentPerSecond() const
 		{
 			if((Timer::GetTimeSeconds() - create_time) == 0)
 				return 0;
 			return bytes_sent / (Timer::GetTimeSeconds() - create_time);
 		}
 
-		virtual const int32 GetBytesRecvPerSecond() const
+		virtual const uint32 GetBytesRecvPerSecond() const
 		{
 			if((Timer::GetTimeSeconds() - create_time) == 0)
 				return 0;

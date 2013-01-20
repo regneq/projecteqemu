@@ -103,17 +103,17 @@ void MakeLowerString(const char *source, char *target);
 
 
 int		MakeAnyLenString(char** ret, const char* format, ...);
-int32	AppendAnyLenString(char** ret, int32* bufsize, int32* strlen, const char* format, ...);
-int32	hextoi(char* num);
-int64	hextoi64(char* num);
+uint32	AppendAnyLenString(char** ret, uint32* bufsize, uint32* strlen, const char* format, ...);
+uint32	hextoi(char* num);
+uint64	hextoi64(char* num);
 bool	atobool(char* iBool);
-sint32	filesize(FILE* fp);
-int32	ResolveIP(const char* hostname, char* errbuf = 0);
-bool	ParseAddress(const char* iAddress, int32* oIP, int16* oPort, char* errbuf = 0);
+int32	filesize(FILE* fp);
+uint32	ResolveIP(const char* hostname, char* errbuf = 0);
+bool	ParseAddress(const char* iAddress, uint32* oIP, uint16* oPort, char* errbuf = 0);
 void	CoutTimestamp(bool ms = true);
-char*	strn0cpy(char* dest, const char* source, int32 size);
+char*	strn0cpy(char* dest, const char* source, uint32 size);
 		// return value =true if entire string(source) fit, false if it was truncated
-bool	strn0cpyt(char* dest, const char* source, int32 size);
+bool	strn0cpyt(char* dest, const char* source, uint32 size);
 int	MakeRandomInt(int low, int high);
 double	MakeRandomFloat(double low, double high);
 char *CleanMobName(const char *in, char *out);

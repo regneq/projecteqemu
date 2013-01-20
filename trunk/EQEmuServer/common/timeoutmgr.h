@@ -36,7 +36,7 @@ class Timeoutable {
 	friend class TimeoutManager;
 public:
 	//this frequency should generally be a multiple of TIMEOUT_GRANULARITY
-	Timeoutable(int32 check_frequency);
+	Timeoutable(uint32 check_frequency);
 	virtual ~Timeoutable();
 	
 	virtual void CheckTimeout() = 0;

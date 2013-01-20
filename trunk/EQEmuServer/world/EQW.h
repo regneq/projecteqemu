@@ -61,16 +61,16 @@ public:
 //	EQLConfig * FindLauncher(Const_char *zone_ref);
 	
 	//Guild routines, mostly wrappers around guild_mgr
-	int32	CreateGuild(const char* name, int32 leader_char_id);
-	bool	DeleteGuild(int32 guild_id);
-	bool	RenameGuild(int32 guild_id, const char* name);
-	bool	SetGuildMOTD(int32 guild_id, const char* motd, const char *setter);
-	bool	SetGuildLeader(int32 guild_id, int32 leader_char_id);
-	bool	SetGuild(int32 charid, int32 guild_id, int8 rank);
-	bool	SetGuildRank(int32 charid, int8 rank);
-	bool	SetBankerFlag(int32 charid, bool is_banker);
-	bool	SetTributeFlag(int32 charid, bool enabled);
-	bool	SetPublicNote(int32 charid, const char *note);
+	uint32	CreateGuild(const char* name, uint32 leader_char_id);
+	bool	DeleteGuild(uint32 guild_id);
+	bool	RenameGuild(uint32 guild_id, const char* name);
+	bool	SetGuildMOTD(uint32 guild_id, const char* motd, const char *setter);
+	bool	SetGuildLeader(uint32 guild_id, uint32 leader_char_id);
+	bool	SetGuild(uint32 charid, uint32 guild_id, uint8 rank);
+	bool	SetGuildRank(uint32 charid, uint8 rank);
+	bool	SetBankerFlag(uint32 charid, bool is_banker);
+	bool	SetTributeFlag(uint32 charid, bool enabled);
+	bool	SetPublicNote(uint32 charid, const char *note);
 	
     //bugs
     int  CountBugs();

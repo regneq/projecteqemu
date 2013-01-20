@@ -47,7 +47,7 @@ XS(XS_EntityList_GetMobID)
 	{
 		EntityList *		THIS;
 		Mob *		RETVAL;
-		int16		id = (int16)SvUV(ST(1));
+		uint16		id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -101,7 +101,7 @@ XS(XS_EntityList_GetMobByID)
 	{
 		EntityList *		THIS;
 		Mob *		RETVAL;
-		int16		id = (int16)SvUV(ST(1));
+		uint16		id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -128,7 +128,7 @@ XS(XS_EntityList_GetMobByNpcTypeID)
 	{
 		EntityList *		THIS;
 		Mob *		RETVAL;
-		int32		get_id = (int32)SvUV(ST(1));
+		uint32		get_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -155,7 +155,7 @@ XS(XS_EntityList_GetNPCByID)
 	{
 		EntityList *		THIS;
 		NPC *		RETVAL;
-		int16		id = (int16)SvUV(ST(1));
+		uint16		id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -182,7 +182,7 @@ XS(XS_EntityList_GetNPCByNPCTypeID)
 	{
 		EntityList *		THIS;
 		NPC *		RETVAL;
-		int32		npc_id = (int32)SvUV(ST(1));
+		uint32		npc_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -236,7 +236,7 @@ XS(XS_EntityList_GetClientByAccID)
 	{
 		EntityList *		THIS;
 		Client *		RETVAL;
-		int32		accid = (int32)SvUV(ST(1));
+		uint32		accid = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -263,7 +263,7 @@ XS(XS_EntityList_GetClientByID)
 	{
 		EntityList *		THIS;
 		Client *		RETVAL;
-		int16		id = (int16)SvUV(ST(1));
+		uint16		id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -290,7 +290,7 @@ XS(XS_EntityList_GetClientByCharID)
 	{
 		EntityList *		THIS;
 		Client *		RETVAL;
-		int32		iCharID = (int32)SvUV(ST(1));
+		uint32		iCharID = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -317,7 +317,7 @@ XS(XS_EntityList_GetClientByWID)
 	{
 		EntityList *		THIS;
 		Client *		RETVAL;
-		int32		iWID = (int32)SvUV(ST(1));
+		uint32		iWID = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -344,7 +344,7 @@ XS(XS_EntityList_GetObjectByDBID)
 	{
 		EntityList *		THIS;
 		Object *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -371,7 +371,7 @@ XS(XS_EntityList_GetObjectByID)
 	{
 		EntityList *		THIS;
 		Object *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -398,7 +398,7 @@ XS(XS_EntityList_GetDoorsByDBID)
 	{
 		EntityList *		THIS;
 		Doors *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -425,7 +425,7 @@ XS(XS_EntityList_GetDoorsByDoorID)
 	{
 		EntityList *		THIS;
 		Doors *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -452,7 +452,7 @@ XS(XS_EntityList_GetDoorsByID)
 	{
 		EntityList *		THIS;
 		Doors *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -479,7 +479,7 @@ XS(XS_EntityList_FindDoor)
 	{
 		EntityList *		THIS;
 		Doors *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -578,7 +578,7 @@ XS(XS_EntityList_GetGroupByID)
 	{
 		EntityList *		THIS;
 		Group *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -632,7 +632,7 @@ XS(XS_EntityList_GetRaidByID)
 	{
 		EntityList *		THIS;
 		Raid *		RETVAL;
-		int32		id = (int32)SvUV(ST(1));
+		uint32		id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -731,7 +731,7 @@ XS(XS_EntityList_GetCorpseByID)
 	{
 		EntityList *		THIS;
 		Corpse *		RETVAL;
-		int16		id = (int16)SvUV(ST(1));
+		uint16		id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -867,7 +867,7 @@ XS(XS_EntityList_RemoveMob)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -894,7 +894,7 @@ XS(XS_EntityList_RemoveClient)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -921,7 +921,7 @@ XS(XS_EntityList_RemoveNPC)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -948,7 +948,7 @@ XS(XS_EntityList_RemoveGroup)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int32		delete_id = (int32)SvUV(ST(1));
+		uint32		delete_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -975,7 +975,7 @@ XS(XS_EntityList_RemoveCorpse)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1002,7 +1002,7 @@ XS(XS_EntityList_RemoveDoor)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1029,7 +1029,7 @@ XS(XS_EntityList_RemoveTrap)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1056,7 +1056,7 @@ XS(XS_EntityList_RemoveObject)
 	{
 		EntityList *		THIS;
 		bool		RETVAL;
-		int16		delete_id = (int16)SvUV(ST(1));
+		uint16		delete_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1266,8 +1266,8 @@ XS(XS_EntityList_Message)
 		Perl_croak(aTHX_ "Usage: EntityList::Message(THIS, to_guilddbid, type, message, ...)");
 	{
 		EntityList *		THIS;
-		int32		to_guilddbid = (int32)SvUV(ST(1));
-		int32		type = (int32)SvUV(ST(2));
+		uint32		to_guilddbid = (uint32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(2));
 		char*		message = (char *)SvPV_nolen(ST(3));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -1292,9 +1292,9 @@ XS(XS_EntityList_MessageStatus)
 		Perl_croak(aTHX_ "Usage: EntityList::MessageStatus(THIS, to_guilddbid, to_minstatus, type, message, ...)");
 	{
 		EntityList *		THIS;
-		int32		to_guilddbid = (int32)SvUV(ST(1));
+		uint32		to_guilddbid = (uint32)SvUV(ST(1));
 		int		to_minstatus = (int)SvIV(ST(2));
-		int32		type = (int32)SvUV(ST(3));
+		uint32		type = (uint32)SvUV(ST(3));
 		char*		message = (char *)SvPV_nolen(ST(4));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -1322,7 +1322,7 @@ XS(XS_EntityList_MessageClose)
 		Mob*		sender;
 		bool		skipsender = (bool)SvTRUE(ST(2));
 		float		dist = (float)SvNV(ST(3));
-		int32		type = (int32)SvUV(ST(4));
+		uint32		type = (uint32)SvUV(ST(4));
 		char*		message = (char *)SvPV_nolen(ST(5));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -1509,7 +1509,7 @@ XS(XS_EntityList_SignalMobsByNPCID)
 		Perl_croak(aTHX_ "Usage: EntityList::SignalMobsByNPCID(THIS, npc_type, signal_id)");
 	{
 		EntityList *		THIS;
-		int32		npc_type = (int32)SvUV(ST(1));
+		uint32		npc_type = (uint32)SvUV(ST(1));
 		int		signal_id = (int)SvIV(ST(2));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -1534,7 +1534,7 @@ XS(XS_EntityList_RemoveEntity)
 		Perl_croak(aTHX_ "Usage: EntityList::RemoveEntity(THIS, id)");
 	{
 		EntityList *		THIS;
-		int16		id = (int16)SvUV(ST(1));
+		uint16		id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1558,7 +1558,7 @@ XS(XS_EntityList_DeleteNPCCorpses)
 		Perl_croak(aTHX_ "Usage: EntityList::DeleteNPCCorpses(THIS)");
 	{
 		EntityList *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -1584,7 +1584,7 @@ XS(XS_EntityList_DeletePlayerCorpses)
 		Perl_croak(aTHX_ "Usage: EntityList::DeletePlayerCorpses(THIS)");
 	{
 		EntityList *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -1787,7 +1787,7 @@ XS(XS_EntityList_MessageGroup)
 		EntityList *		THIS;
 		Mob*		sender;
 		bool		skipclose = (bool)SvTRUE(ST(2));
-		int32		type = (int32)SvUV(ST(3));
+		uint32		type = (uint32)SvUV(ST(3));
 		char*		message = (char *)SvPV_nolen(ST(4));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
@@ -2081,7 +2081,7 @@ XS(XS_EntityList_SignalAllClients)
 		Perl_croak(aTHX_ "Usage: EntityList::SignalAllClients(THIS, data)");
 	{
 		EntityList *THIS;
-		int32 data = (int32)SvUV(ST(1));
+		uint32 data = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));

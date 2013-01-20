@@ -43,7 +43,7 @@ struct OLDZone_Struct {
 /*0512*/	float	minclip;
 	// Minimum View Distance
 /*0516*/	float	maxclip;				// Maximum View DIstance
-/*0520*/	int8	unknown_end[68];		// ***Placeholder
+/*0520*/	uint8	unknown_end[68];		// ***Placeholder
 /*0588*/
 };
 
@@ -51,9 +51,9 @@ struct CFGNewZone_Struct {
 /*0000*/	char	char_name[64];			// Character Name
 /*0064*/	char	zone_short_name[32];	// Zone Short Name
 /*0096*/	char	zone_long_name[278];	// Zone Long Name
-/*0278*/	int8	unknown230[100];		// ***Placeholder
-/*0378*/	int8	sky;		  			// Sky Type
-/*0379*/	int8	unknown331[9];			// ***Placeholder
+/*0278*/	uint8	unknown230[100];		// ***Placeholder
+/*0378*/	uint8	sky;		  			// Sky Type
+/*0379*/	uint8	unknown331[9];			// ***Placeholder
 /*0388*/	float	zone_exp_multiplier;	// Experience Multiplier
 /*0392*/	float	safe_x;					// Zone Safe X (Not Inversed)
 /*0396*/	float	safe_y;					// Zone Safe Y (Not Inversed)
@@ -62,7 +62,7 @@ struct CFGNewZone_Struct {
 /*0408*/	float	underworld;				// Underworld (Not Sure?)
 /*0412*/	float	minclip;				// Minimum View Distance
 /*0416*/	float	maxclip;				// Maximum View DIstance
-/*0420*/	int8	unknown_end[56];		// ***Placeholder
+/*0420*/	uint8	unknown_end[56];		// ***Placeholder
 };
 
 /*
@@ -73,29 +73,29 @@ struct CFGNewZone_Struct {
 #if 0	// solar: see Action_Struct and CombatDamage_Struct
 struct CastOn_Struct {
 
-/*00*/	int16	target_id;
-/*02*/	int16	source_id;
-/*04*/	int8	source_level;
-/*05*/	int8	unknown1;
-/*06*/	int8	unknown2; // = 0A
-/*07*/	int8	unknown_zero1[7];
+/*00*/	uint16	target_id;
+/*02*/	uint16	source_id;
+/*04*/	uint8	source_level;
+/*05*/	uint8	unknown1;
+/*06*/	uint8	unknown2; // = 0A
+/*07*/	uint8	unknown_zero1[7];
 /*16*/	float	heading;
-/*20*/	int8	unknown_zero2[4];
-/*22*/	int32	action;
-/*26*/	int8	unknown3;
-/*27*/	int16	spell_id;
-/*29*/	int8	unknown29;
-/*30*/	int8	unknown30; //always 04??
+/*20*/	uint8	unknown_zero2[4];
+/*22*/	uint32	action;
+/*26*/	uint8	unknown3;
+/*27*/	uint16	spell_id;
+/*29*/	uint8	unknown29;
+/*30*/	uint8	unknown30; //always 04??
 };
 struct CastBuff_Struct{
-/*00*/	int16	target_id;
-/*02*/	int16	source_id;
-/*04*/	int8	unknown4; //always E7??
-/*05*/	int16	spell_id; //always E7??
-/*07*/	sint32	damage;
-/*11*/	int8	unknown_zero7[4];
+/*00*/	uint16	target_id;
+/*02*/	uint16	source_id;
+/*04*/	uint8	unknown4; //always E7??
+/*05*/	uint16	spell_id; //always E7??
+/*07*/	int32	damage;
+/*11*/	uint8	unknown_zero7[4];
 /*17*/	float	heading2;
-/*21*/	int8	unknown_zero21[4];
+/*21*/	uint8	unknown_zero21[4];
 };
 #endif
 
@@ -117,11 +117,11 @@ struct _Buff_Struct
 #if 0
 struct OldSpellBuff_Struct
 {
-/*000*/	int8  b_unknown1[5];		// ***Placeholder
-/*005*/	int8  level;				// Level of person who casted buff
-/*006*/	int16  effect;				// ***Placeholder
-/*008*/	int32 spellid;				// Spell
-/*0012*/	int32 duration;				// Duration in ticks
+/*000*/	uint8  b_unknown1[5];		// ***Placeholder
+/*005*/	uint8  level;				// Level of person who casted buff
+/*006*/	uint16  effect;				// ***Placeholder
+/*008*/	uint32 spellid;				// Spell
+/*0012*/	uint32 duration;				// Duration in ticks
 };
 #endif
 
@@ -129,14 +129,14 @@ struct OldSpellBuff_Struct
 // solar: this is used inside profile
 struct OldSpellBuff_Struct
 {
-/*000*/	int8	slotid;
-/*001*/ int8	level;
-/*002*/	int16  effect;				// ***Placeholder
-/*004*/	int32	spellid;
-/*008*/ int32	duration;
-/*009*/ int8	diseasecounters;
-/*010*/ int8	poisoncounters;
-/*012*/	int8	Unknown012[2];
+/*000*/	uint8	slotid;
+/*001*/ uint8	level;
+/*002*/	uint16  effect;				// ***Placeholder
+/*004*/	uint32	spellid;
+/*008*/ uint32	duration;
+/*009*/ uint8	diseasecounters;
+/*010*/ uint8	poisoncounters;
+/*012*/	uint8	Unknown012[2];
 };
 
 
@@ -210,47 +210,47 @@ struct Before_June29th_PlayerProfile_Struct
 /*2505*/	uint8				unknown1545[47];	// ?
 /*2552*/	uint8				languages[MAX_PP_LANGUAGE];
 /*2580*/	uint8				unknown1620[4];
-/*2584*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*2584*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*4184*/	uint8				unknown3224[448];	// all 0xff   
-/*4632*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*4632*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*4668*/	uint8				unknown3704[32];	//
 /*4700*/	float				y;					// Player y position
 /*4704*/	float				x;					// Player x position
 /*4708*/	float				z;					// Player z position
 /*4712*/	float				heading;			// Direction player is facing
 /*4716*/	uint8				unknown3756[4];		//
-/*4720*/	sint32				platinum;			// Platinum Pieces on player
-/*4724*/	sint32				gold;				// Gold Pieces on player
-/*4728*/	sint32				silver;				// Silver Pieces on player
-/*4732*/	sint32				copper;				// Copper Pieces on player
-/*4736*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*4740*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*4744*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*4748*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*4752*/	sint32				platinum_cursor;	// Platinum on cursor
-/*4756*/	sint32				gold_cursor;		// Gold on cursor
-/*4860*/	sint32				silver_cursor;		// Silver on cursor
-/*4864*/	sint32				copper_cursor;		// Copper on cursor
-/*4868*/	sint32				platinum_shared;        // Platinum shared between characters
+/*4720*/	int32				platinum;			// Platinum Pieces on player
+/*4724*/	int32				gold;				// Gold Pieces on player
+/*4728*/	int32				silver;				// Silver Pieces on player
+/*4732*/	int32				copper;				// Copper Pieces on player
+/*4736*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*4740*/	int32				gold_bank;			// Gold Pieces in Bank
+/*4744*/	int32				silver_bank;		// Silver Pieces in Bank
+/*4748*/	int32				copper_bank;		// Copper Pieces in Bank
+/*4752*/	int32				platinum_cursor;	// Platinum on cursor
+/*4756*/	int32				gold_cursor;		// Gold on cursor
+/*4860*/	int32				silver_cursor;		// Silver on cursor
+/*4864*/	int32				copper_cursor;		// Copper on cursor
+/*4868*/	int32				platinum_shared;        // Platinum shared between characters
 /*4872*/	uint8				unknown3812[24];        // @bp unknown skills?
 /*4896*/	uint32				skills[MAX_PP_SKILL];
 /*5096*/	uint8				unknown5096[284];     // @bp unknown skills?
-/*5380*/	int32				pvp2;	//
-/*5384*/	int32				unknown4420;	//
-/*5388*/	int32				pvptype;	//
-/*5392*/	int32				unknown4428;	//
+/*5380*/	uint32				pvp2;	//
+/*5384*/	uint32				unknown4420;	//
+/*5388*/	uint32				pvptype;	//
+/*5392*/	uint32				unknown4428;	//
 /*5396*/	uint32				ability_down;			// Doodman - Guessing
 /*5404*/	uint8				unknown4436[8];	//
 /*5408*/	uint32				autosplit;			//not used right now
 /*5412*/	uint8				unknown4448[8];
-/*5420*/	int32				zone_change_count;      // Number of times user has zoned in their career (guessing)
+/*5420*/	uint32				zone_change_count;      // Number of times user has zoned in their career (guessing)
 /*5424*/	uint8				unknown4460[28];	//
-/*5452*/	int32				expansion;		// expansion setting, bit field of expansions avaliable
-/*5456*/	sint32				toxicity;	//from drinking potions, seems to increase by 3 each time you drink
+/*5452*/	uint32				expansion;		// expansion setting, bit field of expansions avaliable
+/*5456*/	int32				toxicity;	//from drinking potions, seems to increase by 3 each time you drink
 /*5460*/	char				unknown4496[16];	//
-/*5476*/	sint32				hunger_level;
-/*5480*/	sint32				thirst_level;
-/*5484*/	int32				ability_up;
+/*5476*/	int32				hunger_level;
+/*5480*/	int32				thirst_level;
+/*5484*/	uint32				ability_up;
 /*5488*/	char				unknown4524[16];				
 /*5504*/	uint16				zone_id;			// Current zone of the player
 /*5506*/	uint16				instance_id;			// Instance ID
@@ -365,59 +365,59 @@ struct Before_Dec15th_PlayerProfile_Struct
 /*1540*/	uint32				WIS;				// Wisdom
 /*1544*/	uint8				face;				// Player face
 /*1545*/	uint8				unknown1545[11];	// ?
-/*1556*/	int32				unknown1556[9];
+/*1556*/	uint32				unknown1556[9];
 /*1592*/	uint8				languages[28];
 /*1620*/	uint32				unknown1620;
-/*1624*/	int32				spell_book[400];
+/*1624*/	uint32				spell_book[400];
 /*3224*/	uint8				unknown3224[448];	// all 0xff   
-/*3672*/	int32				mem_spells[8];
-/*3704*/	int32				unknown3704[8];	//
-/*3736*/	int32				unknown3736;		//
+/*3672*/	uint32				mem_spells[8];
+/*3704*/	uint32				unknown3704[8];	//
+/*3736*/	uint32				unknown3736;		//
 /*3740*/	float				y;					// Player y position
 /*3744*/	float				x;					// Player x position
 /*3748*/	float				z;					// Player z position
 /*3752*/	float				heading;			// Direction player is facing
 /*3756*/	uint32				unknown3756;		//
-/*3760*/	sint32				platinum;			// Platinum Pieces on player
-/*3764*/	sint32				gold;				// Gold Pieces on player
-/*3768*/	sint32				silver;				// Silver Pieces on player
-/*3772*/	sint32				copper;				// Copper Pieces on player
-/*3776*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*3780*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*3784*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*3788*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*3792*/	sint32				platinum_cursor;	// Platinum on cursor
-/*3796*/	sint32				gold_cursor;		// Gold on cursor
-/*3800*/	sint32				silver_cursor;		// Silver on cursor
-/*3804*/	sint32				copper_cursor;		// Copper on cursor
-/*3808*/	sint32				platinum_shared;	// Platinum shared between characters
+/*3760*/	int32				platinum;			// Platinum Pieces on player
+/*3764*/	int32				gold;				// Gold Pieces on player
+/*3768*/	int32				silver;				// Silver Pieces on player
+/*3772*/	int32				copper;				// Copper Pieces on player
+/*3776*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*3780*/	int32				gold_bank;			// Gold Pieces in Bank
+/*3784*/	int32				silver_bank;		// Silver Pieces in Bank
+/*3788*/	int32				copper_bank;		// Copper Pieces in Bank
+/*3792*/	int32				platinum_cursor;	// Platinum on cursor
+/*3796*/	int32				gold_cursor;		// Gold on cursor
+/*3800*/	int32				silver_cursor;		// Silver on cursor
+/*3804*/	int32				copper_cursor;		// Copper on cursor
+/*3808*/	int32				platinum_shared;	// Platinum shared between characters
 /*3812*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*3832*/	uint32				skills[75];
 /*4132*/	uint32				unknown_skills[45];	// @bp unknown skills?
 /*4308*/	uint8				unknown3472[92];	//
 /*4400*/	uint32				perAA;				// % on the AA exp bar
 /*4404*/	uint8				unknown3564[12];	//28
-/*4416*/	int32				pvp2;	//
-/*4420*/	int32				unknown4420;	//
-/*4424*/	int32				pvptype;	//
-/*4428*/	int32				unknown4428;	//
+/*4416*/	uint32				pvp2;	//
+/*4420*/	uint32				unknown4420;	//
+/*4424*/	uint32				pvptype;	//
+/*4428*/	uint32				unknown4428;	//
 /*4432*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*4436*/	uint8				unknown3596[20];	//
-/*4456*/	int32				ability_down;
+/*4456*/	uint32				ability_down;
 /*4460*/	uint8				unknown3620[20];	//
-/*4480*/	int32				expAA;
-/*4484*/	int32				unknown3644;
-/*4488*/	int32				expansion;		// expansion setting
-/*4492*/	sint32				unknown3648;
+/*4480*/	uint32				expAA;
+/*4484*/	uint32				unknown3644;
+/*4488*/	uint32				expansion;		// expansion setting
+/*4492*/	int32				unknown3648;
 /*4496*/	char				unknown3656[16];	//
-/*4512*/	sint32				hunger_level;
-/*4516*/	sint32				thirst_level;
-/*4520*/	int32				ability_up;
+/*4512*/	int32				hunger_level;
+/*4516*/	int32				thirst_level;
+/*4520*/	uint32				ability_up;
 /*4524*/	char				unknown3688[16];				
 /*4540*/	uint32				zone_id;			// Current zone of the player
 /*4544*/	OldSpellBuff_Struct	buffs[20];			// Buffs currently on the player
 /*4864*/	char 				groupMembers[6][64];		//
-/*5248*/	int32				unknown5248;
+/*5248*/	uint32				unknown5248;
 /*5252*/	uint32				unknown5252;
 /*5256*/	uint32				unknown4380[11];	//one word became pet stuff above
 /*5300*/	uint32				adventure_id;		//this is WRONG!
@@ -499,12 +499,12 @@ struct Before_Sep14th_PlayerProfile_Struct
 /*1416*/	uint32				WIS;				// Wisdom
 /*1420*/	uint8				face;				// Player face
 /*1421*/	uint8				unknown0705[11];	// ?
-/*1432*/	int32				unknown712[9];		// RR GG BB 00
+/*1432*/	uint32				unknown712[9];		// RR GG BB 00
 /*1468*/	uint8				languages[MAX_PP_LANGUAGE];
 /*1496*/	uint8				unknown0780[4];		// All 0x00
-/*1500*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*1500*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*3100*/	uint8				unknown2384[448];	// all 0xff   
-/*3548*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*3548*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*3580*/	uint8				unknown2864[32];	//
 /*3612*/	uint32				unknown2896;		//
 /*3616*/	float				y;					// Player y position
@@ -512,19 +512,19 @@ struct Before_Sep14th_PlayerProfile_Struct
 /*3624*/	float				z;					// Player z position
 /*3628*/	float				heading;			// Direction player is facing
 /*3632*/	uint8				unknown2909[4];		//
-/*3636*/	sint32				platinum;			// Platinum Pieces on player
-/*3640*/	sint32				gold;				// Gold Pieces on player
-/*3644*/	sint32				silver;				// Silver Pieces on player
-/*3648*/	sint32				copper;				// Copper Pieces on player
-/*3652*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*3656*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*3660*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*3664*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*3668*/	sint32				platinum_cursor;	// Platinum on cursor
-/*3672*/	sint32				gold_cursor;		// Gold on cursor
-/*3676*/	sint32				silver_cursor;		// Silver on cursor
-/*3680*/	sint32				copper_cursor;		// Copper on cursor
-/*3684*/	sint32				platinum_shared;	// Platinum shared between characters
+/*3636*/	int32				platinum;			// Platinum Pieces on player
+/*3640*/	int32				gold;				// Gold Pieces on player
+/*3644*/	int32				silver;				// Silver Pieces on player
+/*3648*/	int32				copper;				// Copper Pieces on player
+/*3652*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*3656*/	int32				gold_bank;			// Gold Pieces in Bank
+/*3660*/	int32				silver_bank;		// Silver Pieces in Bank
+/*3664*/	int32				copper_bank;		// Copper Pieces in Bank
+/*3668*/	int32				platinum_cursor;	// Platinum on cursor
+/*3672*/	int32				gold_cursor;		// Gold on cursor
+/*3676*/	int32				silver_cursor;		// Silver on cursor
+/*3680*/	int32				copper_cursor;		// Copper on cursor
+/*3684*/	int32				platinum_shared;	// Platinum shared between characters
 /*3688*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*3708*/	uint32				skills[MAX_PP_SKILL];
 /*4008*/	uint32				unknown_skills[44];	// @bp unknown skills?
@@ -535,17 +535,17 @@ struct Before_Sep14th_PlayerProfile_Struct
 /*4293*/	uint8				unknown3591[15];	//
 /*4308*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*4312*/	uint8				unknown3596[20];	//
-/*4332*/	int32				ability_down;
+/*4332*/	uint32				ability_down;
 /*4336*/	uint8				unknown3620[20];	//
-/*4356*/	int32				expAA;
-/*4360*/	int32				unknown3644;
-/*4364*/	int32				expansion;		// expansion setting
-/*4368*/	sint32				unknown3648;
+/*4356*/	uint32				expAA;
+/*4360*/	uint32				unknown3644;
+/*4364*/	uint32				expansion;		// expansion setting
+/*4368*/	int32				unknown3648;
 /*4372*/	char				unknown3656[16];	//
-/*4388*/	sint32				hunger_level;
-/*4392*/	sint32				thirst_level;
-/*4396*/	int32				ability_up;
-/*4400*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*4388*/	int32				hunger_level;
+/*4392*/	int32				thirst_level;
+/*4396*/	uint32				ability_up;
+/*4400*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*4404*/	char				unknown3688[12];				
 /*4416*/	uint32				zone_id;			// Current zone of the player
 /*4420*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -605,7 +605,7 @@ struct Before_Aug13th_PlayerProfile_Struct
 /*0220*/	uint32				item_material[9];	// Item texture/material of worn/held items
 /*0256*/	uint8				unknown0256[52];
 /*0308*/	Color_Struct		item_tint[9];
-/*0344*/	int16				aa_array[122];		// Length may not be right but i assume no class has more than this
+/*0344*/	uint16				aa_array[122];		// Length may not be right but i assume no class has more than this
 
 
 /*0588*/	char				servername[64];		// length probably not right
@@ -624,12 +624,12 @@ struct Before_Aug13th_PlayerProfile_Struct
 /*0700*/	uint32				WIS;				// Wisdom
 /*0704*/	uint8				face;				// Player face
 /*0705*/	uint8				unknown0705[11];	// ?
-/*0716*/	int32				unknown712[9];		// RR GG BB 00
+/*0716*/	uint32				unknown712[9];		// RR GG BB 00
 /*0752*/	uint8				languages[MAX_PP_LANGUAGE];
 /*0780*/	uint8				unknown0780[4];		// All 0x00
-/*0784*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*0784*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*2384*/	uint8				unknown2384[448];	// all 0xff   
-/*2832*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*2832*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*2864*/	uint8				unknown2864[32];	//
 /*2896*/	uint32				unknown2896;		//
 /*2900*/	float				y;					// Player y position
@@ -637,19 +637,19 @@ struct Before_Aug13th_PlayerProfile_Struct
 /*2908*/	float				z;					// Player z position
 /*2912*/	float				heading;			// Direction player is facing
 /*2916*/	uint8				unknown2909[4];		//
-/*2920*/	sint32				platinum;			// Platinum Pieces on player
-/*2924*/	sint32				gold;				// Gold Pieces on player
-/*2928*/	sint32				silver;				// Silver Pieces on player
-/*2932*/	sint32				copper;				// Copper Pieces on player
-/*2936*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*2940*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*2944*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*2948*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*2952*/	sint32				platinum_cursor;	// Platinum on cursor
-/*2956*/	sint32				gold_cursor;		// Gold on cursor
-/*2960*/	sint32				silver_cursor;		// Silver on cursor
-/*2964*/	sint32				copper_cursor;		// Copper on cursor
-/*2968*/	sint32				platinum_shared;	// Platinum shared between characters
+/*2920*/	int32				platinum;			// Platinum Pieces on player
+/*2924*/	int32				gold;				// Gold Pieces on player
+/*2928*/	int32				silver;				// Silver Pieces on player
+/*2932*/	int32				copper;				// Copper Pieces on player
+/*2936*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*2940*/	int32				gold_bank;			// Gold Pieces in Bank
+/*2944*/	int32				silver_bank;		// Silver Pieces in Bank
+/*2948*/	int32				copper_bank;		// Copper Pieces in Bank
+/*2952*/	int32				platinum_cursor;	// Platinum on cursor
+/*2956*/	int32				gold_cursor;		// Gold on cursor
+/*2960*/	int32				silver_cursor;		// Silver on cursor
+/*2964*/	int32				copper_cursor;		// Copper on cursor
+/*2968*/	int32				platinum_shared;	// Platinum shared between characters
 /*2972*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*2992*/	uint32				skills[MAX_PP_SKILL];
 /*3288*/	uint32				unknown_skills[46];	// @bp unknown skills?
@@ -660,17 +660,17 @@ struct Before_Aug13th_PlayerProfile_Struct
 /*3591*/	uint8				unknown3591[15];	//
 /*3592*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*3596*/	uint8				unknown3596[20];	//
-/*3616*/	int32				ability_down;
+/*3616*/	uint32				ability_down;
 /*3620*/	uint8				unknown3620[20];	//
-/*3640*/	int32				expAA;
-/*3644*/	int32				unknown3644;
-/*3648*/	int32				expansion;		// expansion setting
-/*3652*/	sint32				unknown3648;
+/*3640*/	uint32				expAA;
+/*3644*/	uint32				unknown3644;
+/*3648*/	uint32				expansion;		// expansion setting
+/*3652*/	int32				unknown3648;
 /*3656*/	char				unknown3656[16];	//
-/*3672*/	sint32				hunger_level;
-/*3676*/	sint32				thirst_level;
-/*3680*/	int32				ability_up;
-/*3684*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*3672*/	int32				hunger_level;
+/*3676*/	int32				thirst_level;
+/*3680*/	uint32				ability_up;
+/*3684*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*3688*/	char				unknown3688[12];				
 /*3700*/	uint32				zone_id;			// Current zone of the player
 /*3704*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -732,7 +732,7 @@ struct PlayerProfile_Struct_Before_May26th
 /*0220*/	uint32				item_material[9];	// Item texture/material of worn/held items
 /*0256*/	uint8				unknown0256[52];
 /*0308*/	Color_Struct		item_tint[9];
-/*0344*/	int16				aa_array[122];		// Length may not be right but i assume no class has more than this
+/*0344*/	uint16				aa_array[122];		// Length may not be right but i assume no class has more than this
 
 /*0588*/	char				servername[64];		// length probably not right
 /*0652*/	uint32				guild_id2;		//
@@ -750,12 +750,12 @@ struct PlayerProfile_Struct_Before_May26th
 /*0700*/	uint32				WIS;				// Wisdom
 /*0704*/	uint8				face;				// Player face
 /*0705*/	uint8				unknown0705[11];	// ?
-/*0716*/	int32				unknown712[9];		// RR GG BB 00
+/*0716*/	uint32				unknown712[9];		// RR GG BB 00
 /*0752*/	uint8				languages[MAX_PP_LANGUAGE];
 /*0780*/	uint8				unknown0780[4];		// All 0x00
-/*0784*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*0784*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*2384*/	uint8				unknown2384[448];	// all 0xff   
-/*2832*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*2832*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*2864*/	uint8				unknown2864[32];	//
 /*2896*/	uint32				unknown2896;		//
 /*2900*/	float				y;					// Player y position
@@ -763,19 +763,19 @@ struct PlayerProfile_Struct_Before_May26th
 /*2908*/	float				z;					// Player z position
 /*2912*/	float				heading;			// Direction player is facing
 /*2916*/	uint8				unknown2909[4];		//
-/*2920*/	sint32				platinum;			// Platinum Pieces on player
-/*2924*/	sint32				gold;				// Gold Pieces on player
-/*2928*/	sint32				silver;				// Silver Pieces on player
-/*2932*/	sint32				copper;				// Copper Pieces on player
-/*2936*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*2940*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*2944*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*2948*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*2952*/	sint32				platinum_cursor;	// Platinum on cursor
-/*2956*/	sint32				gold_cursor;		// Gold on cursor
-/*2960*/	sint32				silver_cursor;		// Silver on cursor
-/*2964*/	sint32				copper_cursor;		// Copper on cursor
-/*2968*/	sint32				platinum_shared;	// Platinum shared between characters
+/*2920*/	int32				platinum;			// Platinum Pieces on player
+/*2924*/	int32				gold;				// Gold Pieces on player
+/*2928*/	int32				silver;				// Silver Pieces on player
+/*2932*/	int32				copper;				// Copper Pieces on player
+/*2936*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*2940*/	int32				gold_bank;			// Gold Pieces in Bank
+/*2944*/	int32				silver_bank;		// Silver Pieces in Bank
+/*2948*/	int32				copper_bank;		// Copper Pieces in Bank
+/*2952*/	int32				platinum_cursor;	// Platinum on cursor
+/*2956*/	int32				gold_cursor;		// Gold on cursor
+/*2960*/	int32				silver_cursor;		// Silver on cursor
+/*2964*/	int32				copper_cursor;		// Copper on cursor
+/*2968*/	int32				platinum_shared;	// Platinum shared between characters
 /*2972*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*2992*/	uint32				skills[MAX_PP_SKILL];
 /*3288*/	uint32				unknown_skills[46];	// @bp unknown skills?
@@ -786,17 +786,17 @@ struct PlayerProfile_Struct_Before_May26th
 /*3591*/	uint8				unknown3591[15];	//
 /*3592*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*3596*/	uint8				unknown3596[20];	//
-/*3616*/	int32				ability_down;
+/*3616*/	uint32				ability_down;
 /*3620*/	uint8				unknown3620[20];	//
-/*3640*/	int32				expAA;
-/*3644*/	int32				unknown3644;
-/*3648*/	int32				expansion;		// expansion setting
-/*3652*/	sint32				unknown3648;
+/*3640*/	uint32				expAA;
+/*3644*/	uint32				unknown3644;
+/*3648*/	uint32				expansion;		// expansion setting
+/*3652*/	int32				unknown3648;
 /*3656*/	char				unknown3656[16];	//
-/*3672*/	sint32				hunger_level;
-/*3676*/	sint32				thirst_level;
-/*3680*/	int32				ability_up;
-/*3684*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*3672*/	int32				hunger_level;
+/*3676*/	int32				thirst_level;
+/*3680*/	uint32				ability_up;
+/*3684*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*3688*/	char				unknown3688[12];				
 /*3700*/	uint32				zone_id;			// Current zone of the player
 /*3704*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -858,7 +858,7 @@ struct BeforeMay5th_PlayerProfile_Struct
 /*0220*/	uint32				item_material[9];	// Item texture/material of worn/held items
 /*0256*/	uint8				unknown0256[52];
 /*0308*/	Color_Struct		item_tint[9];
-/*0344*/	int16			aa_array[122];		// Length may not be right but i assume no class has more than this
+/*0344*/	uint16			aa_array[122];		// Length may not be right but i assume no class has more than this
 
 /*0588*/	char				servername[64];		// length probably not right
 /*0652*/	uint32				guild_id2;		//
@@ -876,12 +876,12 @@ struct BeforeMay5th_PlayerProfile_Struct
 /*0700*/	uint32				WIS;				// Wisdom
 /*0704*/	uint8				face;				// Player face
 /*0705*/	uint8				unknown0705[11];	// ?
-/*0716*/	int32				unknown712[9];		// RR GG BB 00
+/*0716*/	uint32				unknown712[9];		// RR GG BB 00
 /*0752*/	uint8				languages[MAX_PP_LANGUAGE];
 /*0780*/	uint8				unknown0780[4];		// All 0x00
-/*0784*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*0784*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*2384*/	uint8				unknown2384[448];	// all 0xff   
-/*2832*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*2832*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*2864*/	uint8				unknown2864[32];	//
 /*2896*/	uint32				unknown2896;		//
 /*2900*/	float				y;					// Player y position
@@ -889,19 +889,19 @@ struct BeforeMay5th_PlayerProfile_Struct
 /*2908*/	float				z;					// Player z position
 /*2912*/	float				heading;			// Direction player is facing
 /*2916*/	uint8				unknown2909[4];		//
-/*2920*/	sint32				platinum;			// Platinum Pieces on player
-/*2924*/	sint32				gold;				// Gold Pieces on player
-/*2928*/	sint32				silver;				// Silver Pieces on player
-/*2932*/	sint32				copper;				// Copper Pieces on player
-/*2936*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*2940*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*2944*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*2948*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*2952*/	sint32				platinum_cursor;	// Platinum on cursor
-/*2956*/	sint32				gold_cursor;		// Gold on cursor
-/*2960*/	sint32				silver_cursor;		// Silver on cursor
-/*2964*/	sint32				copper_cursor;		// Copper on cursor
-/*2968*/	sint32				platinum_shared;	// Platinum shared between characters
+/*2920*/	int32				platinum;			// Platinum Pieces on player
+/*2924*/	int32				gold;				// Gold Pieces on player
+/*2928*/	int32				silver;				// Silver Pieces on player
+/*2932*/	int32				copper;				// Copper Pieces on player
+/*2936*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*2940*/	int32				gold_bank;			// Gold Pieces in Bank
+/*2944*/	int32				silver_bank;		// Silver Pieces in Bank
+/*2948*/	int32				copper_bank;		// Copper Pieces in Bank
+/*2952*/	int32				platinum_cursor;	// Platinum on cursor
+/*2956*/	int32				gold_cursor;		// Gold on cursor
+/*2960*/	int32				silver_cursor;		// Silver on cursor
+/*2964*/	int32				copper_cursor;		// Copper on cursor
+/*2968*/	int32				platinum_shared;	// Platinum shared between characters
 /*2972*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*2992*/	uint32				skills[MAX_PP_SKILL];
 /*3288*/	uint32				unknown_skills[46];	// @bp unknown skills?
@@ -912,17 +912,17 @@ struct BeforeMay5th_PlayerProfile_Struct
 /*3591*/	uint8				unknown3591[15];	//
 /*3592*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*3596*/	uint8				unknown3596[20];	//
-/*3616*/	int32				ability_down;
+/*3616*/	uint32				ability_down;
 /*3620*/	uint8				unknown3620[20];	//
-/*3640*/	int32				expAA;
-/*3644*/	int32				unknown3644;
-/*3648*/	int32				expansion;		// expansion setting
-/*3652*/	sint32				unknown3648;
+/*3640*/	uint32				expAA;
+/*3644*/	uint32				unknown3644;
+/*3648*/	uint32				expansion;		// expansion setting
+/*3652*/	int32				unknown3648;
 /*3656*/	char				unknown3656[16];	//
-/*3672*/	sint32				hunger_level;
-/*3676*/	sint32				thirst_level;
-/*3680*/	int32				ability_up;
-/*3684*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*3672*/	int32				hunger_level;
+/*3676*/	int32				thirst_level;
+/*3680*/	uint32				ability_up;
+/*3684*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*3688*/	char				unknown3688[12];				
 /*3700*/	uint32				zone_id;			// Current zone of the player
 /*3704*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -984,7 +984,7 @@ struct BeforeApr21st_PlayerProfile_Struct
 /*0220*/	uint32				item_material[9];	// Item texture/material of worn/held items
 /*0256*/	uint8				unknown0256[52];
 /*0308*/	Color_Struct		item_tint[9];
-/*0344*/	int16				aa_array[122];		// Length may not be right but i assume no class has more than this
+/*0344*/	uint16				aa_array[122];		// Length may not be right but i assume no class has more than this
 
 /*0588*/	char				servername[64];		// length probably not right
 /*0652*/	uint32				guild_id2;		//
@@ -1002,12 +1002,12 @@ struct BeforeApr21st_PlayerProfile_Struct
 /*0700*/	uint32				WIS;				// Wisdom
 /*0704*/	uint8				face;				// Player face
 /*0705*/	uint8				unknown0705[11];	// ?
-/*0716*/	int32				unknown712[9];		// RR GG BB 00
+/*0716*/	uint32				unknown712[9];		// RR GG BB 00
 /*0752*/	uint8				languages[MAX_PP_LANGUAGE];
 /*0780*/	uint8				unknown0780[4];		// All 0x00
-/*0784*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*0784*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*2384*/	uint8				unknown2384[448];	// all 0xff   
-/*2832*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*2832*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*2864*/	uint8				unknown2864[32];	//
 /*2896*/	uint32				unknown2896;		//
 /*2900*/	float				y;					// Player y position
@@ -1015,19 +1015,19 @@ struct BeforeApr21st_PlayerProfile_Struct
 /*2908*/	float				z;					// Player z position
 /*2912*/	float				heading;			// Direction player is facing
 /*2916*/	uint8				unknown2909[4];		//
-/*2920*/	sint32				platinum;			// Platinum Pieces on player
-/*2924*/	sint32				gold;				// Gold Pieces on player
-/*2928*/	sint32				silver;				// Silver Pieces on player
-/*2932*/	sint32				copper;				// Copper Pieces on player
-/*2936*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*2940*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*2944*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*2948*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*2952*/	sint32				platinum_cursor;	// Platinum on cursor
-/*2956*/	sint32				gold_cursor;		// Gold on cursor
-/*2960*/	sint32				silver_cursor;		// Silver on cursor
-/*2964*/	sint32				copper_cursor;		// Copper on cursor
-/*2968*/	sint32				platinum_shared;	// Platinum shared between characters
+/*2920*/	int32				platinum;			// Platinum Pieces on player
+/*2924*/	int32				gold;				// Gold Pieces on player
+/*2928*/	int32				silver;				// Silver Pieces on player
+/*2932*/	int32				copper;				// Copper Pieces on player
+/*2936*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*2940*/	int32				gold_bank;			// Gold Pieces in Bank
+/*2944*/	int32				silver_bank;		// Silver Pieces in Bank
+/*2948*/	int32				copper_bank;		// Copper Pieces in Bank
+/*2952*/	int32				platinum_cursor;	// Platinum on cursor
+/*2956*/	int32				gold_cursor;		// Gold on cursor
+/*2960*/	int32				silver_cursor;		// Silver on cursor
+/*2964*/	int32				copper_cursor;		// Copper on cursor
+/*2968*/	int32				platinum_shared;	// Platinum shared between characters
 /*2972*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*2992*/	uint32				skills[MAX_PP_SKILL];
 /*3288*/	uint32				unknown_skills[46];	// @bp unknown skills?
@@ -1038,17 +1038,17 @@ struct BeforeApr21st_PlayerProfile_Struct
 /*3591*/	uint8				unknown3591[15];	//
 /*3592*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*3596*/	uint8				unknown3596[20];	//
-/*3616*/	int32				ability_down;
+/*3616*/	uint32				ability_down;
 /*3620*/	uint8				unknown3620[20];	//
-/*3640*/	int32				expAA;
-/*3644*/	int32				unknown3644;
-/*3648*/	int32				expansion;		// expansion setting
-/*3652*/	sint32				unknown3648;
+/*3640*/	uint32				expAA;
+/*3644*/	uint32				unknown3644;
+/*3648*/	uint32				expansion;		// expansion setting
+/*3652*/	int32				unknown3648;
 /*3656*/	char				unknown3656[16];	//
-/*3672*/	sint32				hunger_level;
-/*3676*/	sint32				thirst_level;
-/*3680*/	int32				ability_up;
-/*3684*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*3672*/	int32				hunger_level;
+/*3676*/	int32				thirst_level;
+/*3680*/	uint32				ability_up;
+/*3684*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*3688*/	char				unknown3688[12];				
 /*3700*/	uint32				zone_id;			// Current zone of the player
 /*3704*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -1109,7 +1109,7 @@ struct BeforeApril14th_PlayerProfile_Struct
 /*0220*/	uint32				item_material[9];	// Item texture/material of worn/held items
 /*0256*/	uint8				unknown0256[52];
 /*0308*/	Color_Struct		item_tint[9];
-/*0344*/	int16				aa_array[122];		// Length may not be right but i assume no class has more than this
+/*0344*/	uint16				aa_array[122];		// Length may not be right but i assume no class has more than this
 
 /*0588*/	char				servername[64];		// length probably not right
 /*0652*/	uint32				guild_id2;		//
@@ -1127,12 +1127,12 @@ struct BeforeApril14th_PlayerProfile_Struct
 /*0700*/	uint32				WIS;				// Wisdom
 /*0704*/	uint8				face;				// Player face
 /*0705*/	uint8				unknown0705[11];	// ?
-/*0716*/	int32				unknown712[9];		// RR GG BB 00
+/*0716*/	uint32				unknown712[9];		// RR GG BB 00
 /*0752*/	uint8				languages[MAX_PP_LANGUAGE];
 /*0780*/	uint8				unknown0780[4];		// All 0x00
-/*0784*/	int32				spell_book[MAX_PP_SPELLBOOK];
+/*0784*/	uint32				spell_book[MAX_PP_SPELLBOOK];
 /*2384*/	uint8				unknown2384[448];	// all 0xff   
-/*2832*/	int32				mem_spells[MAX_PP_MEMSPELL];
+/*2832*/	uint32				mem_spells[MAX_PP_MEMSPELL];
 /*2864*/	uint8				unknown2864[32];	//
 /*2896*/	uint32				unknown2896;		//
 /*2900*/	float				y;					// Player y position
@@ -1140,19 +1140,19 @@ struct BeforeApril14th_PlayerProfile_Struct
 /*2908*/	float				z;					// Player z position
 /*2912*/	float				heading;			// Direction player is facing
 /*2916*/	uint8				unknown2909[4];		//
-/*2920*/	sint32				platinum;			// Platinum Pieces on player
-/*2924*/	sint32				gold;				// Gold Pieces on player
-/*2928*/	sint32				silver;				// Silver Pieces on player
-/*2932*/	sint32				copper;				// Copper Pieces on player
-/*2936*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*2940*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*2944*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*2948*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*2952*/	sint32				platinum_cursor;	// Platinum on cursor
-/*2956*/	sint32				gold_cursor;		// Gold on cursor
-/*2960*/	sint32				silver_cursor;		// Silver on cursor
-/*2964*/	sint32				copper_cursor;		// Copper on cursor
-/*2968*/	sint32				platinum_shared;	// Platinum shared between characters
+/*2920*/	int32				platinum;			// Platinum Pieces on player
+/*2924*/	int32				gold;				// Gold Pieces on player
+/*2928*/	int32				silver;				// Silver Pieces on player
+/*2932*/	int32				copper;				// Copper Pieces on player
+/*2936*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*2940*/	int32				gold_bank;			// Gold Pieces in Bank
+/*2944*/	int32				silver_bank;		// Silver Pieces in Bank
+/*2948*/	int32				copper_bank;		// Copper Pieces in Bank
+/*2952*/	int32				platinum_cursor;	// Platinum on cursor
+/*2956*/	int32				gold_cursor;		// Gold on cursor
+/*2960*/	int32				silver_cursor;		// Silver on cursor
+/*2964*/	int32				copper_cursor;		// Copper on cursor
+/*2968*/	int32				platinum_shared;	// Platinum shared between characters
 /*2972*/	uint8				unknown2972[16];   	// @bp unknown skills?
 /*2992*/	uint32				skills[MAX_PP_SKILL];
 /*3288*/	uint32				unknown_skills[46];	// @bp unknown skills?
@@ -1163,17 +1163,17 @@ struct BeforeApril14th_PlayerProfile_Struct
 /*3591*/	uint8				unknown3591[15];	//
 /*3592*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*3596*/	uint8				unknown3596[20];	//
-/*3616*/	int32				ability_down;
+/*3616*/	uint32				ability_down;
 /*3620*/	uint8				unknown3620[20];	//
-/*3640*/	int32				expAA;
-/*3644*/	int32				unknown3644;
-/*3648*/	int32				expansion;		// expansion setting
-/*3652*/	sint32				unknown3648;
+/*3640*/	uint32				expAA;
+/*3644*/	uint32				unknown3644;
+/*3648*/	uint32				expansion;		// expansion setting
+/*3652*/	int32				unknown3648;
 /*3656*/	char				unknown3656[16];	//
-/*3672*/	sint32				hunger_level;
-/*3676*/	sint32				thirst_level;
-/*3680*/	int32				ability_up;
-/*3684*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*3672*/	int32				hunger_level;
+/*3676*/	int32				thirst_level;
+/*3680*/	uint32				ability_up;
+/*3684*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*3688*/	char				unknown3688[12];				
 /*3700*/	uint32				zone_id;			// Current zone of the player
 /*3704*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -1235,7 +1235,7 @@ struct BeforeFeb18_PlayerProfile_Struct
 /*0220*/	uint32				item_material[9];	// Item texture/material of worn/held items
 /*0256*/	uint8				unknown0256[52];
 /*0308*/	Color_Struct		item_tint[9];
-/*0344*/	int16				aa_array[122];		// Length may not be right but i assume no class has more than this
+/*0344*/	uint16				aa_array[122];		// Length may not be right but i assume no class has more than this
 
 /*0588*/	char				servername[64];		// length probably not right
 /*0652*/	uint32				guild_id2;		//
@@ -1253,12 +1253,12 @@ struct BeforeFeb18_PlayerProfile_Struct
 /*0700*/	uint32				WIS;				// Wisdom
 /*0704*/	uint8				face;				// Player face
 /*0705*/	uint8				unknown0705[11];	// ?
-/*0716*/	int32				unknown712[9];		// RR GG BB 00
+/*0716*/	uint32				unknown712[9];		// RR GG BB 00
 /*0752*/	uint8				languages[28];
 /*0780*/	uint8				unknown0780[4];		// All 0x00
-/*0784*/	int32				spell_book[400];
+/*0784*/	uint32				spell_book[400];
 /*2384*/	uint8				unknown2384[448];	// all 0xff   
-/*2832*/	int32				mem_spells[9];
+/*2832*/	uint32				mem_spells[9];
 /*2864*/	uint8				unknown2864[32];	//
 /*2896*/	uint32				unknown2896;		//
 /*2900*/	float				y;					// Player y position
@@ -1289,17 +1289,17 @@ struct BeforeFeb18_PlayerProfile_Struct
 /*3591*/	uint8				unknown3591[15];	//
 /*3592*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*3596*/	uint8				unknown3596[20];	//
-/*3616*/	int32				ability_down;
+/*3616*/	uint32				ability_down;
 /*3620*/	uint8				unknown3620[20];	//
-/*3640*/	int32				expAA;
-/*3644*/	int32				unknown3644;
-/*3648*/	int32				expansion;		// expansion setting
-/*3652*/	sint32				unknown3648;
+/*3640*/	uint32				expAA;
+/*3644*/	uint32				unknown3644;
+/*3648*/	uint32				expansion;		// expansion setting
+/*3652*/	int32				unknown3648;
 /*3656*/	char				unknown3656[16];	//
-/*3672*/	sint32				hunger_level;
-/*3676*/	sint32				thirst_level;
-/*3680*/	int32				ability_up;
-/*3684*/	int32				aapoints;		// Wrong but needs to be put somewhere =P
+/*3672*/	int32				hunger_level;
+/*3676*/	int32				thirst_level;
+/*3680*/	uint32				ability_up;
+/*3684*/	uint32				aapoints;		// Wrong but needs to be put somewhere =P
 /*3688*/	char				unknown3688[12];				
 /*3700*/	uint32				zone_id;			// Current zone of the player
 /*3704*/	OldSpellBuff_Struct	buffs[15];			// Buffs currently on the player
@@ -1387,56 +1387,56 @@ struct Before_May12_PlayerProfile_Struct
 /*1540*/	uint32				WIS;				// Wisdom
 /*1544*/	uint8				face;				// Player face
 /*1545*/	uint8				unknown1545[11];	// ?
-/*1556*/	int32				unknown1556[9];
+/*1556*/	uint32				unknown1556[9];
 /*1592*/	uint8				languages[28];
 /*1620*/	uint32				unknown1620;
-/*1624*/	int32				spell_book[400];
+/*1624*/	uint32				spell_book[400];
 /*3224*/	uint8				unknown3224[448];	// all 0xff   
-/*3672*/	int32				mem_spells[9];
-/*3708*/	int32				unknown3704[7];	//
-/*3736*/	int32				unknown3736;		//
+/*3672*/	uint32				mem_spells[9];
+/*3708*/	uint32				unknown3704[7];	//
+/*3736*/	uint32				unknown3736;		//
 /*3740*/	float				y;					// Player y position
 /*3744*/	float				x;					// Player x position
 /*3748*/	float				z;					// Player z position
 /*3752*/	float				heading;			// Direction player is facing
 /*3756*/	uint32				unknown3756;		//
-/*3760*/	sint32				platinum;			// Platinum Pieces on player
-/*3764*/	sint32				gold;				// Gold Pieces on player
-/*3768*/	sint32				silver;				// Silver Pieces on player
-/*3772*/	sint32				copper;				// Copper Pieces on player
-/*3776*/	sint32				platinum_bank;		// Platinum Pieces in Bank
-/*3780*/	sint32				gold_bank;			// Gold Pieces in Bank
-/*3784*/	sint32				silver_bank;		// Silver Pieces in Bank
-/*3788*/	sint32				copper_bank;		// Copper Pieces in Bank
-/*3792*/	sint32				platinum_cursor;	// Platinum on cursor
-/*3796*/	sint32				gold_cursor;		// Gold on cursor
-/*3800*/	sint32				silver_cursor;		// Silver on cursor
-/*3804*/	sint32				copper_cursor;		// Copper on cursor
-/*3808*/	sint32				platinum_shared;        // Platinum shared between characters
+/*3760*/	int32				platinum;			// Platinum Pieces on player
+/*3764*/	int32				gold;				// Gold Pieces on player
+/*3768*/	int32				silver;				// Silver Pieces on player
+/*3772*/	int32				copper;				// Copper Pieces on player
+/*3776*/	int32				platinum_bank;		// Platinum Pieces in Bank
+/*3780*/	int32				gold_bank;			// Gold Pieces in Bank
+/*3784*/	int32				silver_bank;		// Silver Pieces in Bank
+/*3788*/	int32				copper_bank;		// Copper Pieces in Bank
+/*3792*/	int32				platinum_cursor;	// Platinum on cursor
+/*3796*/	int32				gold_cursor;		// Gold on cursor
+/*3800*/	int32				silver_cursor;		// Silver on cursor
+/*3804*/	int32				copper_cursor;		// Copper on cursor
+/*3808*/	int32				platinum_shared;        // Platinum shared between characters
 /*3812*/	uint8				unknown3812[20];        // @bp unknown skills?
 /*3832*/	uint32				skills[75];
 /*4132*/	uint32				unknown_skills[44];     // @bp unknown skills?
 /*4308*/	uint8				unknown4308[92];        //
 /*4400*/	uint32				perAA;                          // % on the AA exp selector
 /*4404*/	uint8				unknown4494[12];	//28
-/*4416*/	int32				pvp2;	//
-/*4420*/	int32				unknown4420;	//
-/*4424*/	int32				pvptype;	//
-/*4428*/	int32				unknown4428;	//
+/*4416*/	uint32				pvp2;	//
+/*4420*/	uint32				unknown4420;	//
+/*4424*/	uint32				pvptype;	//
+/*4428*/	uint32				unknown4428;	//
 /*4432*/	uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
 /*4436*/	uint8				unknown4436[8];	//
 /*4444*/	uint32				autosplit;			//not used right now
 /*4448*/	uint8				unknown4448[8];
-/*4456*/	int32				ability_down;
+/*4456*/	uint32				ability_down;
 /*4460*/	uint8				unknown4460[20];	//
-/*4480*/	int32				expAA;
-/*4484*/	int32				unknown4484;
-/*4488*/	int32				expansion;		// expansion setting, bit field of expansions avaliable
-/*4492*/	sint32				toxicity;	//from drinking potions, seems to increase by 3 each time you drink
+/*4480*/	uint32				expAA;
+/*4484*/	uint32				unknown4484;
+/*4488*/	uint32				expansion;		// expansion setting, bit field of expansions avaliable
+/*4492*/	int32				toxicity;	//from drinking potions, seems to increase by 3 each time you drink
 /*4496*/	char				unknown4496[16];	//
-/*4512*/	sint32				hunger_level;
-/*4516*/	sint32				thirst_level;
-/*4520*/	int32				ability_up;
+/*4512*/	int32				hunger_level;
+/*4516*/	int32				thirst_level;
+/*4520*/	uint32				ability_up;
 /*4524*/	char				unknown4524[16];				
 /*4540*/	uint32				zone_id;			// Current zone of the player
 /*4544*/	OldSpellBuff_Struct	buffs[25];			// Buffs currently on the player
@@ -1494,7 +1494,7 @@ struct Before_May12_PlayerProfile_Struct
 struct BindWound_Struct {
 // Size 4
     uint16  to; // entity id
-    uint8    type; // This could be an int16
+    uint8    type; // This could be an uint16
     // 0 or 1 complete, 2 Unknown, 3 ACK, 4 Died, 5 Left, 6 they moved, 7 you moved
     uint8    placeholder; //
 };
@@ -1504,40 +1504,40 @@ struct BindWound_Struct {
 struct Action_Struct
 {
 	// len = 24
-	int16 target;
-	int16 source;
-	int8 type;
-	int16 spell;
-	sint32 damage;
-	int8 unknown1[12];
+	uint16 target;
+	uint16 source;
+	uint8 type;
+	uint16 spell;
+	int32 damage;
+	uint8 unknown1[12];
 };
 #endif
 
 /*struct Petition_Struct {
-	int32 petnumber;
-	int32 urgency;
+	uint32 petnumber;
+	uint32 urgency;
 	char accountid[32];
 	char lastgm[64];
-	int32	zone;
+	uint32	zone;
 	//char zone[32];
 	char charname[32];
-	int32 charlevel;
-	int32 charclass;
-	int32 charrace;
+	uint32 charlevel;
+	uint32 charclass;
+	uint32 charrace;
 	time_t senttime; // Time?
-	int32 checkouts;
-	int32 unavail;
-	int8 unknown5[4];
+	uint32 checkouts;
+	uint32 unavail;
+	uint8 unknown5[4];
 	char petitiontext[1024];
 };*/
 
 
 
 /*struct DyeColorStruct{
-	int8	blue;
-	int8	green;
-	int8	red;
-	int8	unknown;
+	uint8	blue;
+	uint8	green;
+	uint8	red;
+	uint8	unknown;
 };*/
 
 #endif

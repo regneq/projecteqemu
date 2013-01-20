@@ -35,7 +35,7 @@ extern std::vector<RaceClassCombos> character_create_race_class_combos;
 
 
 // solar: the current stuff is at the bottom of this function
-void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* cs) {
+void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct* cs) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -201,7 +201,7 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 						if ((material==MATERIAL_PRIMARY) || (material==MATERIAL_SECONDARY))
 						{
 							if(strlen(item->GetItem()->IDFile) > 2) {
-								int32 idfile=atoi(&item->GetItem()->IDFile[2]);
+								uint32 idfile=atoi(&item->GetItem()->IDFile[2]);
 								if (material==MATERIAL_PRIMARY)
 									cs->primary[char_num]=idfile;
 								else
@@ -246,7 +246,7 @@ int WorldDatabase::MoveCharacterToBind(int CharID, uint8 bindnum) {
 	char *query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	int32	affected_rows = 0;
+	uint32	affected_rows = 0;
 	PlayerProfile_Struct pp;
 
 	bool PPValid = false;

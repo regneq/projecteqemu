@@ -58,22 +58,22 @@ uint16 EQStreamProxy::GetRemotePort() const {
 	return(m_stream->GetRemotePort());
 }
 
-const int32 EQStreamProxy::GetBytesSent() const
+const uint32 EQStreamProxy::GetBytesSent() const
 {
 	return(m_stream->GetBytesSent());
 }
 
-const int32 EQStreamProxy::GetBytesRecieved() const
+const uint32 EQStreamProxy::GetBytesRecieved() const
 {
 	return(m_stream->GetBytesRecieved());
 }
 
-const int32 EQStreamProxy::GetBytesSentPerSecond() const
+const uint32 EQStreamProxy::GetBytesSentPerSecond() const
 {
 	return(m_stream->GetBytesSentPerSecond());
 }
 
-const int32 EQStreamProxy::GetBytesRecvPerSecond() const
+const uint32 EQStreamProxy::GetBytesRecvPerSecond() const
 {
 	return(m_stream->GetBytesRecvPerSecond());
 }

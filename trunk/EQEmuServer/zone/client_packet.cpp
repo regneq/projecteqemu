@@ -643,7 +643,7 @@ void Client::Handle_Connect_OP_SendAAStats(const EQApplicationPacket *app)
 //void Client::Handle_Connect_0x3e33(const EQApplicationPacket *app)
 //{
 /*OP_0x0380 = 0x642c*/
-	//EQApplicationPacket* outapp = new EQApplicationPacket(OP_0x0380, sizeof(int32)); // Dunno
+	//EQApplicationPacket* outapp = new EQApplicationPacket(OP_0x0380, sizeof(uint32)); // Dunno
 	//QueuePacket(outapp);
 	//safe_delete(outapp);
 	//return;
@@ -741,8 +741,8 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 	// Send exp packets
 	outapp = new EQApplicationPacket(OP_ExpUpdate, sizeof(ExpUpdate_Struct));
 	ExpUpdate_Struct* eu = (ExpUpdate_Struct*)outapp->pBuffer;
-	int32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
-	int32 tmpxp2 = GetEXPForLevel(GetLevel());
+	uint32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
+	uint32 tmpxp2 = GetEXPForLevel(GetLevel());
 
 	// Quag: crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
@@ -821,8 +821,8 @@ void Client::Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app)
 	// Send exp packets
 	outapp = new EQApplicationPacket(OP_ExpUpdate, sizeof(ExpUpdate_Struct));
 	ExpUpdate_Struct* eu = (ExpUpdate_Struct*)outapp->pBuffer;
-	int32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
-	int32 tmpxp2 = GetEXPForLevel(GetLevel());
+	uint32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
+	uint32 tmpxp2 = GetEXPForLevel(GetLevel());
 
 	// Quag: crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
@@ -932,9 +932,9 @@ void Client::Handle_Connect_OP_ApproveZone(const EQApplicationPacket *app)
 
 void Client::Handle_Connect_OP_TGB(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(int32)) {
+	if (app->size != sizeof(uint32)) {
 		LogFile->write(EQEMuLog::Error, "Invalid size on OP_TGB: Expected %i, Got %i",
-			sizeof(int32), app->size);
+			sizeof(uint32), app->size);
 		return;
 	}
 	OPTGB(app);
@@ -1099,7 +1099,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	{
 		if(m_DistanceSinceLastPositionCheck > 0.0)
 		{
-			int32 cur_time = Timer::GetCurrentTime();
+			uint32 cur_time = Timer::GetCurrentTime();
 			if((cur_time - m_TimeSinceLastPositionCheck) > 0)
 			{
 				float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
@@ -1167,7 +1167,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		}
 		else
 		{
-			int32 cur_time = Timer::GetCurrentTime();
+			uint32 cur_time = Timer::GetCurrentTime();
 			if((cur_time - m_TimeSinceLastPositionCheck) > 2500)
 			{
 				float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
@@ -2024,9 +2024,9 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	}
 
 	ItemVerifyRequest_Struct* request = (ItemVerifyRequest_Struct*)app->pBuffer;
-	sint32 slot_id;
-	sint32 target_id;
-	sint32 spell_id = 0;
+	int32 slot_id;
+	int32 target_id;
+	int32 spell_id = 0;
 	slot_id = request->slot;
 	target_id = request->target;
 
@@ -2257,9 +2257,9 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 	}
 	std::stringstream ss(std::stringstream::in | std::stringstream::out);
 
-	int8 count = 0;
+	uint8 count = 0;
 	AdventureMerchant_Struct* eid = (AdventureMerchant_Struct*)app->pBuffer;
-	int32 merchantid = 0;
+	uint32 merchantid = 0;
 
 	Mob* tmp = entity_list.GetMob(eid->entity_id);
 	if (tmp == 0 || !tmp->IsNPC() || ((tmp->GetClass() != ADVENTUREMERCHANT) &&
@@ -2282,7 +2282,7 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
             continue;
         }
 
-        sint32 fac = tmp->GetPrimaryFaction();
+        int32 fac = tmp->GetPrimaryFaction();
         if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
             continue;
         }
@@ -2290,7 +2290,7 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 		item = database.GetItem(ml.item);
 		if(item)
 		{
-			int32 theme;
+			uint32 theme;
 			if(item->LDoNTheme > 16)
 			{
 				theme = 0;
@@ -2355,7 +2355,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	ldon_points_available -= ldonpointcost;
 	}
 */
-	int32 merchantid = 0;
+	uint32 merchantid = 0;
 	Mob* tmp = entity_list.GetMob(aps->npcid);
 	if (tmp == 0 || !tmp->IsNPC() || ((tmp->GetClass() != ADVENTUREMERCHANT) &&
 	   (tmp->GetClass() != DISCORD_MERCHANT) && (tmp->GetClass() != NORRATHS_KEEPERS_MERCHANT) && (tmp->GetClass() != DARK_REIGN_MERCHANT)))
@@ -2378,7 +2378,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
             continue;
         }
 
-        sint32 fac = tmp->GetPrimaryFaction();
+        int32 fac = tmp->GetPrimaryFaction();
         if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
             continue;
         }        
@@ -2398,7 +2398,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	
 	if(aps->Type == LDoNMerchant)
 	{
-		if(m_pp.ldon_points_available < sint32(item->LDoNPrice)) {
+		if(m_pp.ldon_points_available < int32(item->LDoNPrice)) {
 			Message(13, "You cannot afford that item.");
 			return;
 		}
@@ -2407,41 +2407,41 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 		{
 			if(item->LDoNTheme & 16)
 			{
-				if(m_pp.ldon_points_tak < sint32(item->LDoNPrice))
+				if(m_pp.ldon_points_tak < int32(item->LDoNPrice))
 				{
-					Message(13, "You need at least %u points in tak to purchase this item.", sint32(item->LDoNPrice));
+					Message(13, "You need at least %u points in tak to purchase this item.", int32(item->LDoNPrice));
 					return;
 				}
 			}
 			else if(item->LDoNTheme & 8)
 			{
-				if(m_pp.ldon_points_ruj < sint32(item->LDoNPrice))
+				if(m_pp.ldon_points_ruj < int32(item->LDoNPrice))
 				{
-					Message(13, "You need at least %u points in ruj to purchase this item.", sint32(item->LDoNPrice));
+					Message(13, "You need at least %u points in ruj to purchase this item.", int32(item->LDoNPrice));
 					return;
 				}
 			}
 			else if(item->LDoNTheme & 4)
 			{
-				if(m_pp.ldon_points_mmc < sint32(item->LDoNPrice))
+				if(m_pp.ldon_points_mmc < int32(item->LDoNPrice))
 				{
-					Message(13, "You need at least %u points in mmc to purchase this item.", sint32(item->LDoNPrice));
+					Message(13, "You need at least %u points in mmc to purchase this item.", int32(item->LDoNPrice));
 					return;
 				}
 			}
 			else if(item->LDoNTheme & 2)
 			{
-				if(m_pp.ldon_points_mir < sint32(item->LDoNPrice))
+				if(m_pp.ldon_points_mir < int32(item->LDoNPrice))
 				{
-					Message(13, "You need at least %u points in mir to purchase this item.", sint32(item->LDoNPrice));
+					Message(13, "You need at least %u points in mir to purchase this item.", int32(item->LDoNPrice));
 					return;
 				}
 			}
 			else if(item->LDoNTheme & 1)
 			{
-				if(m_pp.ldon_points_guk < sint32(item->LDoNPrice))
+				if(m_pp.ldon_points_guk < int32(item->LDoNPrice))
 				{
-					Message(13, "You need at least %u points in guk to purchase this item.", sint32(item->LDoNPrice));
+					Message(13, "You need at least %u points in guk to purchase this item.", int32(item->LDoNPrice));
 					return;
 				}
 			}
@@ -2451,7 +2451,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	{
 		if(GetPVPPoints() < item->LDoNPrice)
 		{
-			Message(13, "You need at least %u PVP points to purchase this item.", sint32(item->LDoNPrice));
+			Message(13, "You need at least %u PVP points to purchase this item.", int32(item->LDoNPrice));
 			return;
 		}
 	}
@@ -2459,7 +2459,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	{
 		if(GetRadiantCrystals() < item->LDoNPrice)
 		{
-			Message(13, "You need at least %u Radiant Crystals to purchase this item.", sint32(item->LDoNPrice));
+			Message(13, "You need at least %u Radiant Crystals to purchase this item.", int32(item->LDoNPrice));
 			return;
 		}
 	}
@@ -2467,7 +2467,7 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	{
 		if(GetEbonCrystals() < item->LDoNPrice)
 		{
-			Message(13, "You need at least %u Ebon Crystals to purchase this item.", sint32(item->LDoNPrice));
+			Message(13, "You need at least %u Ebon Crystals to purchase this item.", int32(item->LDoNPrice));
 			return;
 		}
 	}
@@ -2486,27 +2486,27 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 
 	if(aps->Type == LDoNMerchant)
 	{
-		sint32 requiredpts = (sint32)item->LDoNPrice*-1;
+		int32 requiredpts = (int32)item->LDoNPrice*-1;
 
 		if(!UpdateLDoNPoints(requiredpts, 6))
 			return;
 	}
 	else if(aps->Type == DiscordMerchant)
 	{
-		SetPVPPoints(GetPVPPoints() - (sint32)item->LDoNPrice);
+		SetPVPPoints(GetPVPPoints() - (int32)item->LDoNPrice);
 		SendPVPStats();
 	}
 	else if(aps->Type == NorrathsKeepersMerchant)
 	{
-		SetRadiantCrystals(GetRadiantCrystals() - (sint32)item->LDoNPrice);
+		SetRadiantCrystals(GetRadiantCrystals() - (int32)item->LDoNPrice);
 		SendCrystalCounts();
 	}
 	else if(aps->Type == DarkReignMerchant)
 	{
-		SetEbonCrystals(GetEbonCrystals() - (sint32)item->LDoNPrice);
+		SetEbonCrystals(GetEbonCrystals() - (int32)item->LDoNPrice);
 		SendCrystalCounts();
 	}
-	sint16 charges = 1;
+	int16 charges = 1;
 	if(item->MaxCharges != 0)
 		charges = item->MaxCharges;
 
@@ -2528,7 +2528,7 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 	Consider_Struct* conin = (Consider_Struct*)app->pBuffer;
 	Corpse* tcorpse = entity_list.GetCorpseByID(conin->targetid);
 	if (tcorpse && tcorpse->IsNPCCorpse()) {
-		int32 min; int32 sec; int32 ttime;
+		uint32 min; uint32 sec; uint32 ttime;
 		if ((ttime = tcorpse->GetDecayTime()) != 0) {
 			sec = (ttime/1000)%60; // Total seconds
 			min = (ttime/60000)%60; // Total seconds / 60 drop .00
@@ -2541,7 +2541,7 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 		}
 	}
 	else if (tcorpse && tcorpse->IsPlayerCorpse()) {
-		int32 day, hour, min, sec, ttime, restime;
+		uint32 day, hour, min, sec, ttime, restime;
 		if ((ttime = tcorpse->GetDecayTime()) != 0) {
 			sec = (ttime/1000)%60; // Total seconds
 			min = (ttime/60000)%60; // Total seconds
@@ -2937,7 +2937,7 @@ void Client::Handle_OP_RequestDuel(const EQApplicationPacket *app)
 
 	EQApplicationPacket* outapp = app->Copy();
 	Duel_Struct* ds = (Duel_Struct*) outapp->pBuffer;
-	int32 duel = ds->duel_initiator;
+	uint32 duel = ds->duel_initiator;
 	ds->duel_initiator = ds->duel_target;
 	ds->duel_target = duel;
 	Entity* entity = entity_list.GetID(ds->duel_target);
@@ -3333,7 +3333,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
  	if(mi->from_slot >= 251 && mi->from_slot <= 340) {
 		if(mi->from_slot > 330) { mi_hack = true; }
  		else {			
-			sint16 from_parent = m_inv.CalcSlotId(mi->from_slot);
+			int16 from_parent = m_inv.CalcSlotId(mi->from_slot);
 			if(!m_inv[from_parent]) { mi_hack = true; }
 			else if(!m_inv[from_parent]->IsType(ItemClassContainer)) { mi_hack = true; }
 			else if(m_inv.CalcBagIdx(mi->from_slot) >= m_inv[from_parent]->GetItem()->BagSlots) { mi_hack = true; }
@@ -3343,7 +3343,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
  	if(mi->to_slot >= 251 && mi->to_slot <= 340) {
 		if(mi->to_slot > 330) { mi_hack = true; }
 		else {			
-			sint16 to_parent = m_inv.CalcSlotId(mi->to_slot);
+			int16 to_parent = m_inv.CalcSlotId(mi->to_slot);
 			if(!m_inv[to_parent]) { mi_hack = true; }
 			else if(!m_inv[to_parent]->IsType(ItemClassContainer)) { mi_hack = true; }
 			else if(m_inv.CalcBagIdx(mi->to_slot) >= m_inv[to_parent]->GetItem()->BagSlots) { mi_hack = true; }
@@ -3415,8 +3415,8 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 
 	//BreakInvis();
 
-	int16 primfeign = GetSkill(FEIGN_DEATH);
-	int16 secfeign = GetSkill(FEIGN_DEATH);
+	uint16 primfeign = GetSkill(FEIGN_DEATH);
+	uint16 secfeign = GetSkill(FEIGN_DEATH);
 	if (primfeign > 100) {
 		primfeign = 100;
 		secfeign = secfeign - 100;
@@ -3425,7 +3425,7 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 	else
 		secfeign = 0;
 
-	int16 totalfeign = primfeign + secfeign;
+	uint16 totalfeign = primfeign + secfeign;
 	if (MakeRandomFloat(0, 160) > totalfeign) {
 		SetFeigned(false);
 		entity_list.MessageClose_StringID(this, false, 200, 10, STRING_FEIGNFAILED, GetName());
@@ -3662,8 +3662,8 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 	GMZoneRequest_Struct* gmzr = (GMZoneRequest_Struct*)app->pBuffer;
 	float tarx = -1, tary = -1, tarz = -1;
 
-	sint16 minstatus = 0;
-	int8 minlevel = 0;
+	int16 minstatus = 0;
+	uint8 minlevel = 0;
 	char tarzone[32];
 	uint16 zid = gmzr->zone_id;
 	if (gmzr->zone_id == 0)
@@ -3706,26 +3706,26 @@ void Client::Handle_OP_GMZoneRequest2(const EQApplicationPacket *app)
 		database.SetHackerFlag(this->account_name, this->name, "/zone");
 		return;
 	}
-	if (app->size < sizeof(int32)) {
-		LogFile->write(EQEMuLog::Error, "OP size error: OP_GMZoneRequest2 expected:%i got:%i", sizeof(int32), app->size);
+	if (app->size < sizeof(uint32)) {
+		LogFile->write(EQEMuLog::Error, "OP size error: OP_GMZoneRequest2 expected:%i got:%i", sizeof(uint32), app->size);
 		return;
 	}
 
-	int32 zonereq = *((int32 *)app->pBuffer);
+	uint32 zonereq = *((uint32 *)app->pBuffer);
 	GoToSafeCoords(zonereq, 0);
 	return;
 }
 
 void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(int32)) {
-		cout << "Wrong size: OP_EndLootRequest, size=" << app->size << ", expected " << sizeof(int32) << endl;
+	if (app->size != sizeof(uint32)) {
+		cout << "Wrong size: OP_EndLootRequest, size=" << app->size << ", expected " << sizeof(uint32) << endl;
 		return;
 	}
 
 	SetLooting(false);
 
-	Entity* entity = entity_list.GetID(*((int16*)app->pBuffer));
+	Entity* entity = entity_list.GetID(*((uint16*)app->pBuffer));
 	if (entity == 0) {
 		//DumpPacket(app);
 		Message(13, "Error: OP_EndLootRequest: Corpse not found (ent = 0)");
@@ -3748,14 +3748,14 @@ void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 
 void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(int32)) {
-		cout << "Wrong size: OP_LootRequest, size=" << app->size << ", expected " << sizeof(int32) << endl;
+	if (app->size != sizeof(uint32)) {
+		cout << "Wrong size: OP_LootRequest, size=" << app->size << ", expected " << sizeof(uint32) << endl;
 		return;
 	}
 
 	SetLooting(true);
 
-	Entity* ent = entity_list.GetID(*((int32*)app->pBuffer));
+	Entity* ent = entity_list.GetID(*((uint32*)app->pBuffer));
 	if (ent == 0) {
 		Message(13, "Error: OP_LootRequest: Corpse not found (ent = 0)");
 		Corpse::SendLootReqErrorPacket(this);
@@ -3908,7 +3908,7 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 	*/
 
 	EQApplicationPacket* outapp = 0;
-	Entity* entity = entity_list.GetID(*((int16*)app->pBuffer));
+	Entity* entity = entity_list.GetID(*((uint16*)app->pBuffer));
 	if (entity == 0) {
 		Message(13, "Error: OP_LootItem: Corpse not found (ent = 0)");
 		outapp = new EQApplicationPacket(OP_LootComplete, 0);
@@ -4204,7 +4204,7 @@ void Client::Handle_OP_GuildDemote(const EQApplicationPacket *app)
 			Message(0, "%s cannot be demoted any further!", demote->target);
 			return;
 		}
-		int8 rank = gci.rank - 1;
+		uint8 rank = gci.rank - 1;
 
 
 		mlog(GUILDS__ACTIONS, "Demoting %s (%d) from rank %s (%d) to %s (%d) in %s (%d)",
@@ -4373,7 +4373,7 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 		if(Bot::ProcessGuildRemoval(this, gc->othername))
 			return;
 #endif
-		int32 char_id;
+		uint32 char_id;
 		Client* client = entity_list.GetClientByName(gc->othername);
 		
 		if(client) {
@@ -4442,7 +4442,7 @@ void Client::Handle_OP_GuildInviteAccept(const EQApplicationPacket *app)
 		return;
 	}
 
-	//int32 tmpeq = gj->guildeqid;
+	//uint32 tmpeq = gj->guildeqid;
 	if (IsInAGuild() && gj->response==GuildRank())
 		Message(0, "Error: You're already in a guild!");
 	else if (!worldserver.Connected())
@@ -4556,9 +4556,9 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Debug, "cs_unknown2: %u %i", (uint8)castspell->cs_unknown[2], castspell->cs_unknown[2]);
 		LogFile->write(EQEMuLog::Debug, "cs_unknown2: %u %i", (uint8)castspell->cs_unknown[3], castspell->cs_unknown[3]);
 		LogFile->write(EQEMuLog::Debug, "cs_unknown2: 32 %p %u", &castspell->cs_unknown, *(uint32*) castspell->cs_unknown );
-		LogFile->write(EQEMuLog::Debug, "cs_unknown2: 32 %p %i", &castspell->cs_unknown, *(int32*) castspell->cs_unknown );
+		LogFile->write(EQEMuLog::Debug, "cs_unknown2: 32 %p %i", &castspell->cs_unknown, *(uint32*) castspell->cs_unknown );
 		LogFile->write(EQEMuLog::Debug, "cs_unknown2: 16 %p %u %u", &castspell->cs_unknown, *(uint16*) castspell->cs_unknown, *(uint16*) castspell->cs_unknown+sizeof(uint16) );
-		LogFile->write(EQEMuLog::Debug, "cs_unknown2: 16 %p %i %i", &castspell->cs_unknown, *(int16*) castspell->cs_unknown, *(int16*) castspell->cs_unknown+sizeof(int16) );
+		LogFile->write(EQEMuLog::Debug, "cs_unknown2: 16 %p %i %i", &castspell->cs_unknown, *(uint16*) castspell->cs_unknown, *(uint16*) castspell->cs_unknown+sizeof(uint16) );
 #endif
 LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv=%lx", castspell->slot, castspell->spell_id, castspell->target_id, (unsigned long)castspell->inventoryslot);
 
@@ -4574,12 +4574,12 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 		}
 		else if ((castspell->inventoryslot < 30) || (castspell->slot == POTION_BELT_SPELL_SLOT))	// sanity check
 		{
-			const ItemInst* inst = m_inv[castspell->inventoryslot]; //@merth: slot values are sint16, need to check packet on this field
+			const ItemInst* inst = m_inv[castspell->inventoryslot]; //@merth: slot values are int16, need to check packet on this field
 			//bool cancast = true;
 			if (inst && inst->IsType(ItemClassCommon))
 			{
 				const Item_Struct* item = inst->GetItem();
-				if(item->Click.Effect != (int32)castspell->spell_id)
+				if(item->Click.Effect != (uint32)castspell->spell_id)
 				{
 					database.SetMQDetectionFlag(account_name, name, "OP_CastSpell with item, tried to cast a different spell.", zone->GetShortName());
 					InterruptSpell(castspell->spell_id);	//CHEATER!!
@@ -4645,7 +4645,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 	}
 	else	// ability, or regular memmed spell
 	{
-		int16 spell_to_cast = 0;
+		uint16 spell_to_cast = 0;
 
 		//current client seems to send LH in slot 8 now...
 		if(castspell->slot == ABILITY_SPELL_SLOT &&
@@ -4733,8 +4733,8 @@ void Client::Handle_OP_DeleteItem(const EQApplicationPacket *app)
 		entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
 		CheckIncreaseSkill(ALCOHOL_TOLERANCE, NULL, 25);
 
-		sint16 AlcoholTolerance = GetSkill(ALCOHOL_TOLERANCE);
-		sint16 IntoxicationIncrease;
+		int16 AlcoholTolerance = GetSkill(ALCOHOL_TOLERANCE);
+		int16 IntoxicationIncrease;
 
 		if(GetClientVersion() < EQClientSoD)
 			IntoxicationIncrease = (200 - AlcoholTolerance) * 30 / 200 + 10;
@@ -4953,10 +4953,10 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 
 				// start QS code
 				if(RuleB(QueryServ, PlayerLogTrades)) {
-					int16 trade_count = 0;
+					uint16 trade_count = 0;
 
 					// Item trade count for packet sizing
-					for(sint16 slot_id=3000; slot_id<=3007; slot_id++) {
+					for(int16 slot_id=3000; slot_id<=3007; slot_id++) {
 						if(other->GetInv().GetItem(slot_id)) { trade_count += other->GetInv().GetItem(slot_id)->GetTotalItemCount(); }
 						if(m_inv[slot_id]) { trade_count += m_inv[slot_id]->GetTotalItemCount(); }
 					}
@@ -4994,9 +4994,9 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 		if(with->IsNPC())
 			// Audit trade to database for player trade stream
 			if(RuleB(QueryServ, PlayerLogHandins)) {
-				int16 handin_count = 0;
+				uint16 handin_count = 0;
 
-				for(sint16 slot_id=3000; slot_id<=3003; slot_id++) {
+				for(int16 slot_id=3000; slot_id<=3003; slot_id++) {
 					if(m_inv[slot_id]) { handin_count += m_inv[slot_id]->GetTotalItemCount(); }
 				}
 
@@ -5470,7 +5470,7 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 		else
 			strcpy(playerp,GetRacePlural(this));
 
-		int8 rand_ = rand() % 4;
+		uint8 rand_ = rand() % 4;
 		switch(rand_){
 			case 1:
 				Message(0,"%s says 'It's not enough that you %s have ruined your own lands. Now get lost!'", tmp->GetCleanName(), playerp);
@@ -5591,7 +5591,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
             continue;
         }
 
-        sint32 fac = tmp->GetPrimaryFaction();
+        int32 fac = tmp->GetPrimaryFaction();
         if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
             continue;
         }
@@ -5602,7 +5602,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 	}
 	const Item_Struct* item = NULL;
-	int32 prevcharges = 0;
+	uint32 prevcharges = 0;
 	if (item_id == 0) { //check to see if its on the temporary table
 		std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
 		std::list<TempMerchantList>::const_iterator tmp_itr;
@@ -5646,7 +5646,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	mpo->npcid = mp->npcid;
 	mpo->itemslot=mp->itemslot;
 
-	sint16 freeslotid=0;
+	int16 freeslotid=0;
 	ItemInst* inst = database.CreateItem(item, mp->quantity);
 
 	int SinglePrice = 0;
@@ -5711,7 +5711,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	}
 	QueuePacket(outapp);
 	if(inst && tmpmer_used){
-		sint32 new_charges = prevcharges - mp->quantity;
+		int32 new_charges = prevcharges - mp->quantity;
 		zone->SaveTempItem(merchantid, tmp->GetNPCTypeID(),item_id,new_charges);
 		if(new_charges<=0){
 			EQApplicationPacket* delitempacket = new EQApplicationPacket(OP_ShopDelItem, sizeof(Merchant_DelItem_Struct));
@@ -5803,8 +5803,8 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	if(DistNoRoot(*vendor) > USE_NPC_RANGE2)
 		return;
 
-	int32 price=0;
-	int32 itemid = GetItemIDAt(mp->itemslot);
+	uint32 price=0;
+	uint32 itemid = GetItemIDAt(mp->itemslot);
 	if(itemid == 0)
 		return;
 	const Item_Struct* item = database.GetItem(itemid);
@@ -6436,7 +6436,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 		//inviter has a raid don't do group stuff instead do raid stuff!
 		if(raid){
-			int32 groupToUse = 0xFFFFFFFF;
+			uint32 groupToUse = 0xFFFFFFFF;
 			for(int x = 0; x < MAX_RAID_MEMBERS; x++){
 				if(raid->members[x].member){ //this assumes the inviter is in the zone
 					if(raid->members[x].member == inviter->CastToClient()){
@@ -6446,7 +6446,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 				}
 			}
 			if(iraid == raid){ //both in same raid
-				int32 ngid = raid->GetGroup(inviter->GetName());
+				uint32 ngid = raid->GetGroup(inviter->GetName());
 				if(raid->GroupCount(ngid) < 6){
 					raid->MoveMember(GetName(), ngid);
 					raid->SendGroupDisband(this);
@@ -6609,7 +6609,7 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 			return;
 
 		//we have a raid.. see if we're in a raid group
-		int32 grp = raid->GetGroup(memberToDisband->GetName());
+		uint32 grp = raid->GetGroup(memberToDisband->GetName());
 		bool wasGrpLdr = raid->members[raid->GetPlayerIndex(memberToDisband->GetName())].IsGroupLeader;
 		if(grp < 12){
 			if(wasGrpLdr){
@@ -6800,7 +6800,7 @@ void Client::Handle_OP_InspectAnswer(const EQApplicationPacket *app) {
 	Mob* tmp					 = entity_list.GetMob(insr->TargetID);
 	const Item_Struct* item		 = NULL;
 
-	for (sint16 L = 0; L <= 20; L++) {
+	for (int16 L = 0; L <= 20; L++) {
 		const ItemInst* inst = GetInv().GetItem(L);
 		item				 = inst ? inst->GetItem() : NULL;
 		
@@ -7042,7 +7042,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	if(mypet->GetPetType() == petFamiliar && pet->command != PET_GETLOST)
 		return;
 
-	int32 PetCommand = pet->command;
+	uint32 PetCommand = pet->command;
 
 	// Handle Sit/Stand toggle in UF and later.
 	if(GetClientVersion() >= EQClientUnderfoot)
@@ -7094,7 +7094,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	case PET_HEALTHREPORT: {
 		Message_StringID(10, PET_REPORT_HP, ConvertArrayF(mypet->GetHPRatio(), val1));
 		mypet->ShowBuffList(this);
-		//Message(10,"%s tells you, 'I have %d percent of my hit points left.'",mypet->GetName(),(int8)mypet->GetHPRatio());
+		//Message(10,"%s tells you, 'I have %d percent of my hit points left.'",mypet->GetName(),(uint8)mypet->GetHPRatio());
 		break;
 	}
 	case PET_GETLOST: {
@@ -7281,14 +7281,14 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 void Client::Handle_OP_PetitionUnCheckout(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(int32)) {
-		cout << "Wrong size: OP_PetitionUnCheckout, size=" << app->size << ", expected " << sizeof(int32) << endl;
+	if (app->size != sizeof(uint32)) {
+		cout << "Wrong size: OP_PetitionUnCheckout, size=" << app->size << ", expected " << sizeof(uint32) << endl;
 		return;
 	}
 	if (!worldserver.Connected())
 		Message(0, "Error: World server disconnected");
 	else {
-		int32 getpetnum = *((int32*) app->pBuffer);
+		uint32 getpetnum = *((uint32*) app->pBuffer);
 		Petition* getpet = petition_list.GetPetitionByID(getpetnum);
 		if (getpet != 0) {
 			getpet->SetCheckedOut(false);
@@ -7323,14 +7323,14 @@ void Client::Handle_OP_PDeletePetition(const EQApplicationPacket *app)
 
 void Client::Handle_OP_PetitionCheckout(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(int32)) {
-		cout << "Wrong size: OP_PetitionCheckout, size=" << app->size << ", expected " << sizeof(int32) << endl;
+	if (app->size != sizeof(uint32)) {
+		cout << "Wrong size: OP_PetitionCheckout, size=" << app->size << ", expected " << sizeof(uint32) << endl;
 		return;
 	}
 	if (!worldserver.Connected())
 		Message(0, "Error: World server disconnected");
 	else {
-		int32 getpetnum = *((int32*) app->pBuffer);
+		uint32 getpetnum = *((uint32*) app->pBuffer);
 		Petition* getpet = petition_list.GetPetitionByID(getpetnum);
 		if (getpet != 0) {
 			getpet->AddCheckout();
@@ -7515,7 +7515,7 @@ void Client::Handle_OP_GMServers(const EQApplicationPacket *app)
 		Message(0, "Error: World server disconnected");
 	else {
 		ServerPacket* pack = new ServerPacket(ServerOP_ZoneStatus, strlen(this->GetName())+2);
-		memset(pack->pBuffer, (int8) admin, 1);
+		memset(pack->pBuffer, (uint8) admin, 1);
 		strcpy((char *) &pack->pBuffer[1], this->GetName());
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -7958,10 +7958,10 @@ void Client::Handle_OP_GMFind(const EQApplicationPacket *app)
 	Mob* gt = entity_list.GetMob(request->charname);
 	if (gt != 0) {
 		foundplayer->success=1;
-		foundplayer->x=(sint32)gt->GetX();
-		foundplayer->y=(sint32)gt->GetY();
+		foundplayer->x=(int32)gt->GetX();
+		foundplayer->y=(int32)gt->GetY();
 
-		foundplayer->z=(sint32)gt->GetZ();
+		foundplayer->z=(int32)gt->GetZ();
 		foundplayer->zoneID=zone->GetZoneID();
 	}
 	//Send the packet...
@@ -8152,10 +8152,10 @@ void Client::Handle_OP_Split(const EQApplicationPacket *app)
 		return;
 	}
 
-	if(!TakeMoneyFromPP(static_cast<int64>(split->copper) +
-			    10 * static_cast<int64>(split->silver) +
-			    100 * static_cast<int64>(split->gold) + 
-			    1000 * static_cast<int64>(split->platinum))) {
+	if(!TakeMoneyFromPP(static_cast<uint64>(split->copper) +
+			    10 * static_cast<uint64>(split->silver) +
+			    100 * static_cast<uint64>(split->gold) + 
+			    1000 * static_cast<uint64>(split->platinum))) {
 		Message(13, "You do not have enough money to do that split.");
 		return;
 	}
@@ -8427,10 +8427,10 @@ void Client::Handle_OP_TributeToggle(const EQApplicationPacket *app)
 	_log(TRIBUTE__IN, "Received OP_TributeToggle of length %d", app->size);
 	_pkt(TRIBUTE__IN, app);
 
-	if(app->size != sizeof(int32))
+	if(app->size != sizeof(uint32))
 		LogFile->write(EQEMuLog::Error, "Invalid size on OP_TributeToggle packet");
 	else {
-		int32 *val = (int32 *) app->pBuffer;
+		uint32 *val = (uint32 *) app->pBuffer;
 		ToggleTribute(*val? true : false);
 	}
 	return;
@@ -8644,7 +8644,7 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 	return;
 }
 
-void Client::DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) {
+void Client::DBAWComplete(uint8 workpt_b1, DBAsyncWork* dbaw) {
 	Entity::DBAWComplete(workpt_b1, dbaw);
 	switch (workpt_b1) {
 		case DBA_b1_Entity_Client_InfoForLogin: {
@@ -8654,7 +8654,7 @@ void Client::DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) {
 		}
 		case DBA_b1_Entity_Client_Save: {
 			char errbuf[MYSQL_ERRMSG_SIZE];
-			int32 affected_rows = 0;
+			uint32 affected_rows = 0;
 			DBAsyncQuery* dbaq = dbaw->PopAnswer();
 			if (dbaq->GetAnswer(errbuf, 0, &affected_rows) && affected_rows == 1) {
 				if (dbaq->QPT()) {
@@ -8684,7 +8684,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	MYSQL_RES* result = 0;
 	bool loaditems = 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
-	int32 i;
+	uint32 i;
 
 	for (i=1; i<=3; i++) {
 		dbaq = dbaw->PopAnswer();
@@ -8732,7 +8732,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	if(!RuleB(Character, MaintainIntoxicationAcrossZones))
 		m_pp.intoxication = 0;
 
-	//int32 aalen = database.GetPlayerAlternateAdv(account_id, name, &aa);
+	//uint32 aalen = database.GetPlayerAlternateAdv(account_id, name, &aa);
 	//if (aalen == 0) {
 	//	cout << "Client dropped: !GetPlayerAlternateAdv, name=" << name << endl;
 	//	return false;
@@ -8945,7 +8945,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		aa[a] = &m_pp.aa_array[a];
 
 
-		int32 id = aa[a]->AA;
+		uint32 id = aa[a]->AA;
 		//watch for invalid AA IDs
 		if(id == aaNone)
 			continue;
@@ -8977,7 +8977,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	{
 		for(uint32 z=0;z<MAX_PP_MEMSPELL;z++)
 		{
-			if(m_pp.mem_spells[z] >= (int32)SPDAT_RECORDS)
+			if(m_pp.mem_spells[z] >= (uint32)SPDAT_RECORDS)
 				UnmemSpell(z, false);
 		}
 
@@ -9008,7 +9008,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	KeyRingLoad();
 
-	int32 groupid = database.GetGroupID(GetName());
+	uint32 groupid = database.GetGroupID(GetName());
 	Group* group = NULL;
 	if(groupid > 0){
 		group = entity_list.GetGroupByID(groupid);
@@ -9109,14 +9109,14 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	if(m_pp.class_==SHADOWKNIGHT || m_pp.class_==PALADIN)
 	{
-		int32 abilitynum=0;
+		uint32 abilitynum=0;
 		if(m_pp.class_==SHADOWKNIGHT)
 			abilitynum = pTimerHarmTouch;
 		else
 			abilitynum = pTimerLayHands;
 
 
-		int32 remaining = p_timers.GetRemainingTime(abilitynum);
+		uint32 remaining = p_timers.GetRemainingTime(abilitynum);
 		if(remaining > 0 && remaining < 15300)
 			m_pp.abilitySlotRefresh = remaining * 1000;
 		else
@@ -9322,7 +9322,7 @@ void Client::CompleteConnect()
 
 	if (GetHideMe()) Message(13, "[GM] You are currently hidden to all clients");
 
-	int32 raidid = database.GetRaidID(GetName());
+	uint32 raidid = database.GetRaidID(GetName());
 	Raid *raid = NULL;
 	if(raidid > 0){
 		raid = entity_list.GetRaidByID(raidid);
@@ -9347,7 +9347,7 @@ void Client::CompleteConnect()
 			raid->SendRaidAdd(GetName(), this);
 			raid->SendBulkRaid(this);
 			raid->SendGroupUpdate(this);
-			int32 grpID = raid->GetGroup(GetName());
+			uint32 grpID = raid->GetGroup(GetName());
 			if(grpID < 12){
 				raid->SendRaidGroupRemove(GetName(), grpID);
 				raid->SendRaidGroupAdd(GetName(), grpID);
@@ -9362,7 +9362,7 @@ void Client::CompleteConnect()
 	//reapply some buffs
 	uint32 buff_count = GetMaxTotalSlots();
 	for (uint32 j1=0; j1 < buff_count; j1++) {
-		if (buffs[j1].spellid > (int32)SPDAT_RECORDS)
+		if (buffs[j1].spellid > (uint32)SPDAT_RECORDS)
 			continue;
 
 		const SPDat_Spell_Struct &spell = spells[buffs[j1].spellid];
@@ -9560,11 +9560,11 @@ void Client::CompleteConnect()
 	{
 		if(zone->GetInstanceTimer())
 		{
-			int32 ttime = zone->GetInstanceTimer()->GetRemainingTime();
-			int32 day = (ttime/86400000);
-			int32 hour = (ttime/3600000)%24;
-			int32 minute = (ttime/60000)%60;
-			int32 second = (ttime/1000)%60;
+			uint32 ttime = zone->GetInstanceTimer()->GetRemainingTime();
+			uint32 day = (ttime/86400000);
+			uint32 hour = (ttime/3600000)%24;
+			uint32 minute = (ttime/60000)%60;
+			uint32 second = (ttime/1000)%60;
 			if(day)
 			{
 				Message(15, "%s(%u) will expire in %u days, %u hours, %u minutes, and %u seconds.",
@@ -9662,7 +9662,7 @@ void Client::Handle_OP_PurchaseLeadershipAA(const EQApplicationPacket *app) {
 		return;
 	}
 
-	int8 cost = LeadershipAACosts[aaid][current_rank];
+	uint8 cost = LeadershipAACosts[aaid][current_rank];
 	if(cost == 0) {
 		Message(13, "This ability can be trained no further.");
 		return;
@@ -9922,7 +9922,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 					}
 				}
 				if(g){//add us all
-					int32 freeGroup = r->GetFreeGroup();
+					uint32 freeGroup = r->GetFreeGroup();
 					Client *addClient = NULL;
 					for(int x = 0; x < 6; x++)
 					{
@@ -9974,7 +9974,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 					entity_list.AddRaid(r);
 					r->SetRaidDetails();
 
-					int32 groupFree = r->GetFreeGroup(); //get a free group
+					uint32 groupFree = r->GetFreeGroup(); //get a free group
 					if(ig){ //if we already have a group then cycle through adding us...
 						Client *addClientig = NULL;
 						for(int x = 0; x < 6; x++)
@@ -10156,10 +10156,10 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		Raid *r = entity_list.GetRaidByClient(this);
 		if(r){
 			//if(this == r->GetLeader()){
-				int32 grp = r->GetGroup(ri->leader_name);
+				uint32 grp = r->GetGroup(ri->leader_name);
 
 				if(grp < 12){
-					int32 i = r->GetPlayerIndex(ri->leader_name);
+					uint32 i = r->GetPlayerIndex(ri->leader_name);
 					if(r->members[i].IsGroupLeader){ //assign group leader to someone else
 						for(int x = 0; x < MAX_RAID_MEMBERS; x++){
 							if(strlen(r->members[x].membername) > 0 && i != x){
@@ -10210,12 +10210,12 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			{
 				if(ri->parameter < 12) //moving to a group
 				{
-					int8 grpcount = r->GroupCount(ri->parameter);
+					uint8 grpcount = r->GroupCount(ri->parameter);
 
 					if(grpcount < 6)
 					{
 						Client *c = entity_list.GetClientByName(ri->leader_name);
-						int32 oldgrp = r->GetGroup(ri->leader_name);
+						uint32 oldgrp = r->GetGroup(ri->leader_name);
 						if(ri->parameter == oldgrp) //don't rejoin grp if we order to join same group.
 							break;
 
@@ -10288,7 +10288,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 				else //moving to ungrouped
 				{
 					Client *c = entity_list.GetClientByName(ri->leader_name);
-					int32 oldgrp = r->GetGroup(ri->leader_name);
+					uint32 oldgrp = r->GetGroup(ri->leader_name);
 					if(r->members[r->GetPlayerIndex(ri->leader_name)].IsGroupLeader){
 						r->SetGroupLeader(ri->leader_name, false);
 						for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -10756,7 +10756,7 @@ void Client::Handle_OP_Barter(const EQApplicationPacket *app)
 	// The first 4 bytes of the packet determine the action. A lot of Barter packets require the
 	// packet the client sent, sent back to it as an acknowledgement.
 	//
-	int32 Action = VARSTRUCT_DECODE_TYPE(uint32, Buf);
+	uint32 Action = VARSTRUCT_DECODE_TYPE(uint32, Buf);
 
 	_pkt(TRADING__BARTER, app);
 
@@ -11207,7 +11207,7 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 		return;
 	}
 
-	int32 itemid = GetItemIDAt(ams_in->slot);
+	uint32 itemid = GetItemIDAt(ams_in->slot);
 
 	if(itemid == 0)
 	{
@@ -11247,7 +11247,7 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 		return;
 	}
 
-	sint32 price = item->LDoNPrice * 70 / 100;
+	int32 price = item->LDoNPrice * 70 / 100;
 
 	if(price == 0)
 	{
@@ -11527,8 +11527,8 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 		return;
 	}
 
-	int32 size = app->size;
-	int32 current_point = 0;
+	uint32 size = app->size;
+	uint32 current_point = 0;
 	string reported, reporter;
 	string current_string;
 	int mode = 0;
@@ -11728,8 +11728,8 @@ void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (app->size < sizeof(int32)) {
-		LogFile->write(EQEMuLog::Error, "Wrong size: OP_GuildBank, size=%i, expected %i", app->size, sizeof(int32));
+	if (app->size < sizeof(uint32)) {
+		LogFile->write(EQEMuLog::Error, "Wrong size: OP_GuildBank, size=%i, expected %i", app->size, sizeof(uint32));
 		DumpPacket(app);
 		return;
 	}
@@ -12123,7 +12123,7 @@ void Client::Handle_OP_GuildStatus(const EQApplicationPacket *app)
 		return;
 	}
 
-	int32 TargetGuildID = c->GuildID();
+	uint32 TargetGuildID = c->GuildID();
 
 	if(TargetGuildID == GUILD_NONE)
 	{
@@ -12363,7 +12363,7 @@ void Client::Handle_OP_BuffRemoveRequest(const EQApplicationPacket *app)
 	if(brrs->SlotID > (uint32)m->GetMaxTotalSlots())
 		return;
 
-	int16 SpellID = m->GetSpellIDFromSlot(brrs->SlotID);
+	uint16 SpellID = m->GetSpellIDFromSlot(brrs->SlotID);
 
 	if(SpellID && IsBeneficialSpell(SpellID))
 		m->BuffFadeBySlot(brrs->SlotID, true);
@@ -12493,7 +12493,7 @@ void Client::Handle_OP_GuildCreate(const EQApplicationPacket *app)
 		}
 	}
 
-	sint32 GuildCount = guild_mgr.DoesAccountContainAGuildLeader(AccountID());
+	int32 GuildCount = guild_mgr.DoesAccountContainAGuildLeader(AccountID());
 
 	if(GuildCount >= RuleI(Guild, PlayerCreationLimit))
 	{
@@ -12507,7 +12507,7 @@ void Client::Handle_OP_GuildCreate(const EQApplicationPacket *app)
 		return;
 	}
 
-	int32 NewGuildID = guild_mgr.CreateGuild(GuildName, CharacterID());
+	uint32 NewGuildID = guild_mgr.CreateGuild(GuildName, CharacterID());
 				
 	_log(GUILDS__ACTIONS, "%s: Creating guild %s with leader %d via UF+ GUI. It was given id %lu.", GetName(),
 		GuildName, CharacterID(), (unsigned long)NewGuildID);
@@ -12574,7 +12574,7 @@ void Client::Handle_OP_AltCurrencyMerchantRequest(const EQApplicationPacket *app
                 continue;
             }
 
-            sint32 fac = tar->GetPrimaryFaction();
+            int32 fac = tar->GetPrimaryFaction();
             if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
                 continue;
             }
@@ -12641,7 +12641,7 @@ void Client::Handle_OP_AltCurrencySellSelection(const EQApplicationPacket *app) 
                 continue;
             }
 
-            sint32 fac = tar->GetPrimaryFaction();
+            int32 fac = tar->GetPrimaryFaction();
             if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
                 continue;
             }
@@ -12703,7 +12703,7 @@ void Client::Handle_OP_AltCurrencyPurchase(const EQApplicationPacket *app) {
                 continue;
             }
 
-            sint32 fac = tar->GetPrimaryFaction();
+            int32 fac = tar->GetPrimaryFaction();
             if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
                 continue;
             }
@@ -12735,8 +12735,8 @@ void Client::Handle_OP_AltCurrencyPurchase(const EQApplicationPacket *app) {
 	    	return;
 	    }
 
-        AddAlternateCurrencyValue(alt_cur_id, -((sint32)cost));
-        sint16 charges = 1;
+        AddAlternateCurrencyValue(alt_cur_id, -((int32)cost));
+        int16 charges = 1;
 	    if(item->MaxCharges != 0)
 	    	charges = item->MaxCharges;
 
@@ -12778,7 +12778,7 @@ void Client::Handle_OP_AltCurrencyReclaim(const EQApplicationPacket *app) {
             SetAlternateCurrencyValue(reclaim->currency_id, 0);
         } else {
             SummonItem(item_id, reclaim->count, 0, 0, 0, 0, 0, false, SLOT_CURSOR);
-            AddAlternateCurrencyValue(reclaim->currency_id, -((sint32)reclaim->count));
+            AddAlternateCurrencyValue(reclaim->currency_id, -((int32)reclaim->count));
         }
     }
 }
@@ -12820,7 +12820,7 @@ void Client::Handle_OP_AltCurrencySell(const EQApplicationPacket *app) {
                 continue;
             }
 
-            sint32 fac = tar->GetPrimaryFaction();
+            int32 fac = tar->GetPrimaryFaction();
             if(fac != 0 && GetModCharacterFactionLevel(fac) < ml.faction_required) {
                 continue;
             }
@@ -13466,7 +13466,7 @@ void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
 
 	MercenaryMerchantShopRequest_Struct* mmsr = (MercenaryMerchantShopRequest_Struct*) app->pBuffer;
 	uint32 merchant_id = mmsr->MercMerchantID;
-	int32 altCurrentType = 19;
+	uint32 altCurrentType = 19;
 
 	if(MERC_DEBUG > 0)
 		Message(7, "Mercenary Debug: Data Request for Merchant ID (%i)", merchant_id);
@@ -13599,7 +13599,7 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	MercTemplate* merc_template = zone->GetMercTemplate(merc_template_id);
 
 	if(merc_template) {
-		int32 ResponseType = GetMercID() ? 9 : 0;
+		uint32 ResponseType = GetMercID() ? 9 : 0;
 		
 		// This response packet brings up the Mercenary Manager window
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryHire, sizeof(MercenaryMerchantResponse_Struct));
@@ -13668,7 +13668,7 @@ void Client::Handle_OP_MercenaryCommand(const EQApplicationPacket *app)
 
 	MercenaryCommand_Struct* mc = (MercenaryCommand_Struct*) app->pBuffer;
 	uint32 merc_command = mc->MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 36 (zone in with merc)
-	sint32 option = mc->Option;	// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
+	int32 option = mc->Option;	// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
 
 	if(option >= 0)
 	{
@@ -13764,9 +13764,9 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 
 	// To Do: Load Mercenary Timer Data to properly populate this reply packet
 	// All hard set values for now
-	int32 entityID = 0;
-	int32 mercState = 5;
-	int32 suspendedTime = 0;
+	uint32 entityID = 0;
+	uint32 mercState = 5;
+	uint32 suspendedTime = 0;
 	if(GetMercID()) {
 		Merc* merc = GetMerc();
 
@@ -13794,7 +13794,7 @@ void Client::Handle_OP_OpenContainer(const EQApplicationPacket *app) {
 	// SoF, SoD and UF clients send a 4-byte packet indicating the 'parent' slot
 	// SoF, SoD and UF slots are defined by a uint32 value and currently untranslated
 	// RoF client sends a 12-byte packet based on the RoF::Structs::ItemSlotStruct
-	// RoF structure types are defined as signed int16 and currently untranslated
+	// RoF structure types are defined as signed uint16 and currently untranslated
 	// RoF::struct.SlotType = {0 - Equipment, 1 - Bank, 2 - Shared Bank} // not tested beyond listed types
 	// RoF::struct.Unknown2 = 0
 	// RoF::struct.MainSlot = { <parent slot range designated by slottype..zero-based> }

@@ -95,7 +95,7 @@ extern bool spells_loaded;
 ///////////////////////////////////////////////////////////////////////////////
 // spell property testing functions
 
-bool IsTargetableAESpell(int16 spell_id) {
+bool IsTargetableAESpell(uint16 spell_id) {
 	bool bResult = false;
 
 	if (IsValidSpell(spell_id) && spells[spell_id].targettype == ST_AETarget) {
@@ -105,12 +105,12 @@ bool IsTargetableAESpell(int16 spell_id) {
 	return bResult;
 }
 
-bool IsSacrificeSpell(int16 spell_id)
+bool IsSacrificeSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Sacrifice);
 }
 
-bool IsLifetapSpell(int16 spell_id)
+bool IsLifetapSpell(uint16 spell_id)
 {
 	return
 	(
@@ -124,20 +124,20 @@ bool IsLifetapSpell(int16 spell_id)
 	);
 }
 
-bool IsMezSpell(int16 spell_id)
+bool IsMezSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Mez);
 }
 
-bool IsStunSpell(int16 spell_id)
+bool IsStunSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Stun);
 }
 
-bool IsSummonSpell(int16 spellid) {
+bool IsSummonSpell(uint16 spellid) {
 	for (int o = 0; o < EFFECT_COUNT; o++)
 	{
-		int32 tid = spells[spellid].effectid[o];
+		uint32 tid = spells[spellid].effectid[o];
 		if(tid == SE_SummonPet || tid == SE_SummonItem || tid == SE_SummonPC)
 		{
 			return true;
@@ -146,14 +146,14 @@ bool IsSummonSpell(int16 spellid) {
 	return false;
 }
 
-bool IsEvacSpell(int16 spellid) {
+bool IsEvacSpell(uint16 spellid) {
 	return IsEffectInSpell(spellid, SE_Succor);
 }
 
-bool IsDamageSpell(int16 spellid) {
+bool IsDamageSpell(uint16 spellid) {
 	for (int o = 0; o < EFFECT_COUNT; o++)
 	{
-		int32 tid = spells[spellid].effectid[o];
+		uint32 tid = spells[spellid].effectid[o];
 		if((tid == SE_CurrentHPOnce || tid == SE_CurrentHP) && spells[spellid].targettype != ST_Tap && spells[spellid].buffduration < 1 && spells[spellid].base[o] < 0)
 		{
 			return true;
@@ -163,11 +163,11 @@ bool IsDamageSpell(int16 spellid) {
 }
 
 
-bool IsFearSpell(int16 spell_id) {
+bool IsFearSpell(uint16 spell_id) {
 	return IsEffectInSpell(spell_id, SE_Fear);
 }
 
-bool IsSlowSpell(int16 spell_id)
+bool IsSlowSpell(uint16 spell_id)
 {
 	int i;
 	const SPDat_Spell_Struct &sp = spells[spell_id];
@@ -181,7 +181,7 @@ bool IsSlowSpell(int16 spell_id)
 	return false;
 }
 
-bool IsHasteSpell(int16 spell_id)
+bool IsHasteSpell(uint16 spell_id)
 {
 	int i;
 	const SPDat_Spell_Struct &sp = spells[spell_id];
@@ -195,23 +195,23 @@ bool IsHasteSpell(int16 spell_id)
 	return false;
 }
 
-bool IsHarmonySpell(int16 spell_id)
+bool IsHarmonySpell(uint16 spell_id)
 {
 	// IsEffectInSpell(spell_id, SE_Lull) - Lull is not calculated anywhere atm
 	return (IsEffectInSpell(spell_id, SE_Harmony) || IsEffectInSpell(spell_id, SE_ChangeFrenzyRad));
 }
 
-bool IsPercentalHealSpell(int16 spell_id)
+bool IsPercentalHealSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_PercentalHeal);
 }
 
-bool IsGroupOnlySpell(int16 spell_id)
+bool IsGroupOnlySpell(uint16 spell_id)
 {
 	return IsValidSpell(spell_id) && spells[spell_id].goodEffect == 2;
 }
 
-bool IsBeneficialSpell(int16 spell_id)
+bool IsBeneficialSpell(uint16 spell_id)
 {
 	if(!IsValidSpell(spell_id))
 		return false;
@@ -223,7 +223,7 @@ bool IsBeneficialSpell(int16 spell_id)
 				return false;
 		}		
 		if(tt == ST_Target || tt == ST_AETarget || tt == ST_Animal || tt == ST_Undead || tt == ST_Pet) {
-			int16 sai = spells[spell_id].SpellAffectIndex;
+			uint16 sai = spells[spell_id].SpellAffectIndex;
 			if(spells[spell_id].resisttype == RESIST_MAGIC){
 				if(sai == SAI_Calm || sai == SAI_Dispell_Sight || sai == SAI_Memory_Blur || sai == SAI_Calm_Song)
 					return false;
@@ -237,42 +237,42 @@ bool IsBeneficialSpell(int16 spell_id)
 	return spells[spell_id].goodEffect != 0 || IsGroupSpell(spell_id);
 }
 
-bool IsDetrimentalSpell(int16 spell_id)
+bool IsDetrimentalSpell(uint16 spell_id)
 {
 	return !IsBeneficialSpell(spell_id);
 }
 
-bool IsInvulnerabilitySpell(int16 spell_id)
+bool IsInvulnerabilitySpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_DivineAura);
 }
 
-bool IsCHDurationSpell(int16 spell_id)
+bool IsCHDurationSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_CompleteHeal);
 }
 
-bool IsPoisonCounterSpell(int16 spell_id)
+bool IsPoisonCounterSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_PoisonCounter);
 }
 
-bool IsDiseaseCounterSpell(int16 spell_id)
+bool IsDiseaseCounterSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_DiseaseCounter);
 }
 
-bool IsSummonItemSpell(int16 spell_id)
+bool IsSummonItemSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_SummonItem);
 }
 
-bool IsSummonSkeletonSpell(int16 spell_id)
+bool IsSummonSkeletonSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_NecPet);
 }
 
-bool IsSummonPetSpell(int16 spell_id)
+bool IsSummonPetSpell(uint16 spell_id)
 {
 	return
 	(
@@ -281,64 +281,64 @@ bool IsSummonPetSpell(int16 spell_id)
 	);
 }
 
-bool IsSummonPCSpell(int16 spell_id)
+bool IsSummonPCSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_SummonPC);
 }
 
-bool IsCharmSpell(int16 spell_id)
+bool IsCharmSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Charm);
 }
 
-bool IsBlindSpell(int16 spell_id)
+bool IsBlindSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Blind);
 }
 
-bool IsEffectHitpointsSpell(int16 spell_id)
+bool IsEffectHitpointsSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_CurrentHP);
 }
 
-bool IsReduceCastTimeSpell(int16 spell_id)
+bool IsReduceCastTimeSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_IncreaseSpellHaste);
 }
 
-bool IsIncreaseDurationSpell(int16 spell_id)
+bool IsIncreaseDurationSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_IncreaseSpellDuration);
 }
 
-bool IsReduceManaSpell(int16 spell_id)
+bool IsReduceManaSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_ReduceManaCost);
 }
 
-bool IsExtRangeSpell(int16 spell_id)
+bool IsExtRangeSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_IncreaseRange);
 }
 
-bool IsImprovedHealingSpell(int16 spell_id)
+bool IsImprovedHealingSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_ImprovedHeal);
 }
 
-bool IsImprovedDamageSpell(int16 spell_id)
+bool IsImprovedDamageSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_ImprovedDamage);
 }
 
-bool IsAEDurationSpell(int16 spell_id)
+bool IsAEDurationSpell(uint16 spell_id)
 {
 	return IsValidSpell(spell_id) &&
 		(spells[spell_id].targettype == ST_AETarget || spells[spell_id].targettype == ST_UndeadAE )
 		&& spells[spell_id].AEDuration !=0;
 }
 
-bool IsPureNukeSpell(int16 spell_id)
+bool IsPureNukeSpell(uint16 spell_id)
 {
 	int i, effect_count = 0;
 
@@ -358,7 +358,7 @@ bool IsPureNukeSpell(int16 spell_id)
 	);
 }
 
-bool IsPartialCapableSpell(int16 spell_id)
+bool IsPartialCapableSpell(uint16 spell_id)
 {
 	if(IsPureNukeSpell(spell_id) || 
 		IsFearSpell(spell_id) || 
@@ -371,7 +371,7 @@ bool IsPartialCapableSpell(int16 spell_id)
 	return false;
 }
 
-bool IsResistableSpell(int16 spell_id)
+bool IsResistableSpell(uint16 spell_id)
 {
 	// solar: for now only detrimental spells are resistable.  later on i will
 	// add specific exceptions for the beneficial spells that are resistable
@@ -384,7 +384,7 @@ bool IsResistableSpell(int16 spell_id)
 }
 
 // solar: checks if this spell affects your group
-bool IsGroupSpell(int16 spell_id)
+bool IsGroupSpell(uint16 spell_id)
 {
 	return
 	(
@@ -398,7 +398,7 @@ bool IsGroupSpell(int16 spell_id)
 }
 
 // solar: checks if this spell can be targeted
-bool IsTGBCompatibleSpell(int16 spell_id)
+bool IsTGBCompatibleSpell(uint16 spell_id)
 {
 	return
 	(
@@ -412,7 +412,7 @@ bool IsTGBCompatibleSpell(int16 spell_id)
 	);
 }
 
-bool IsBardSong(int16 spell_id)
+bool IsBardSong(uint16 spell_id)
 {
 	return
 	(
@@ -421,7 +421,7 @@ bool IsBardSong(int16 spell_id)
 	);
 }
 
-bool IsEffectInSpell(int16 spellid, int effect)
+bool IsEffectInSpell(uint16 spellid, int effect)
 {
 	int j;
 
@@ -438,7 +438,7 @@ bool IsEffectInSpell(int16 spellid, int effect)
 // solar: arguments are spell id and the index of the effect to check.
 // this is used in loops that process effects inside a spell to skip
 // the blanks
-bool IsBlankSpellEffect(int16 spellid, int effect_index)
+bool IsBlankSpellEffect(uint16 spellid, int effect_index)
 {
 	int effect, base, formula;
 
@@ -461,7 +461,7 @@ bool IsBlankSpellEffect(int16 spellid, int effect_index)
 }
 
 // solar: checks some things about a spell id, to see if we can proceed
-bool IsValidSpell(int32 spellid)
+bool IsValidSpell(uint32 spellid)
 {
 	return
 	(
@@ -475,7 +475,7 @@ bool IsValidSpell(int32 spellid)
 }
 
 //returns the lowest level of any caster which can use the spell
-int GetMinLevel(int16 spell_id) {
+int GetMinLevel(uint16 spell_id) {
 	int r;
 	int min = 255;
 	const SPDat_Spell_Struct &spell = spells[spell_id];
@@ -492,7 +492,7 @@ int GetMinLevel(int16 spell_id) {
 		return(min);
 }
 
-int GetSpellLevel(int16 spell_id, int classa) {
+int GetSpellLevel(uint16 spell_id, int classa) {
     if(classa >= PLAYER_CLASS_COUNT) {
         return 255;
     }
@@ -504,7 +504,7 @@ int GetSpellLevel(int16 spell_id, int classa) {
 // solar: this will find the first occurance of effect.  this is handy
 // for spells like mez and charm, but if the effect appears more than once
 // in a spell this will just give back the first one.
-int GetSpellEffectIndex(int16 spell_id, int effect)
+int GetSpellEffectIndex(uint16 spell_id, int effect)
 {
 	int i;
 
@@ -523,7 +523,7 @@ int GetSpellEffectIndex(int16 spell_id, int effect)
 // solar: returns the level required to use the spell if that class/level
 // can use it, 0 otherwise
 // note: this isn't used by anything right now
-int CanUseSpell(int16 spellid, int classa, int level)
+int CanUseSpell(uint16 spellid, int classa, int level)
 {
 	int level_to_use;
 	
@@ -545,7 +545,7 @@ int CanUseSpell(int16 spellid, int classa, int level)
 
 
 
-bool BeneficialSpell(int16 spell_id)
+bool BeneficialSpell(uint16 spell_id)
 {
 	if (spell_id <= 0 || spell_id >= SPDAT_RECORDS 
 		/*|| spells[spell_id].stacking == 27*/ )
@@ -561,7 +561,7 @@ bool BeneficialSpell(int16 spell_id)
 	return false;
 }
 
-bool GroupOnlySpell(int16 spell_id)
+bool GroupOnlySpell(uint16 spell_id)
 {
 	switch (spells[spell_id].goodEffect)
 	{
@@ -577,11 +577,11 @@ bool GroupOnlySpell(int16 spell_id)
 	return false;
 }
 
-sint32 CalculatePoisonCounters(int16 spell_id){
+int32 CalculatePoisonCounters(uint16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
 
-	sint32 Counters = 0;
+	int32 Counters = 0;
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(spells[spell_id].effectid[i] == SE_PoisonCounter && spells[spell_id].base[i] > 0){
@@ -591,11 +591,11 @@ sint32 CalculatePoisonCounters(int16 spell_id){
     return Counters;
 }
 
-sint32 CalculateDiseaseCounters(int16 spell_id){
+int32 CalculateDiseaseCounters(uint16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
 
-	sint32 Counters = 0;
+	int32 Counters = 0;
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(spells[spell_id].effectid[i] == SE_DiseaseCounter && spells[spell_id].base[i] > 0){
@@ -605,11 +605,11 @@ sint32 CalculateDiseaseCounters(int16 spell_id){
     return Counters;
 }
 
-sint32 CalculateCurseCounters(int16 spell_id){
+int32 CalculateCurseCounters(uint16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
 
-	sint32 Counters = 0;
+	int32 Counters = 0;
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(spells[spell_id].effectid[i] == SE_CurseCounter && spells[spell_id].base[i] > 0){
@@ -619,11 +619,11 @@ sint32 CalculateCurseCounters(int16 spell_id){
     return Counters;
 }
 
-sint32 CalculateCorruptionCounters(int16 spell_id){
+int32 CalculateCorruptionCounters(uint16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
 
-	sint32 Counters = 0;
+	int32 Counters = 0;
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(spells[spell_id].effectid[i] == SE_CorruptionCounter && spells[spell_id].base[i] > 0){
@@ -633,8 +633,8 @@ sint32 CalculateCorruptionCounters(int16 spell_id){
     return Counters;
 }
 
-sint32 CalculateCounters(int16 spell_id) {
-    sint32 counter = CalculatePoisonCounters(spell_id);
+int32 CalculateCounters(uint16 spell_id) {
+    int32 counter = CalculatePoisonCounters(spell_id);
     if(counter != 0) {
         return counter;
     }
@@ -653,7 +653,7 @@ sint32 CalculateCounters(int16 spell_id) {
     return counter;
 }
 
-bool IsDisciplineBuff(int16 spell_id)
+bool IsDisciplineBuff(uint16 spell_id)
 {
 	if(!IsValidSpell(spell_id))
 		return false;
@@ -668,7 +668,7 @@ bool IsDisciplineBuff(int16 spell_id)
 	return false;
 }
 
-bool IsDiscipline(int16 spell_id)
+bool IsDiscipline(uint16 spell_id)
 {
 	if(!IsValidSpell(spell_id))
 		return false;
@@ -680,7 +680,7 @@ bool IsDiscipline(int16 spell_id)
 	return false;
 }
 
-bool IsResurrectionEffects(int16 spell_id) {
+bool IsResurrectionEffects(uint16 spell_id) {
 	bool Result = false;
 
 	if(IsValidSpell(spell_id) && spell_id == 756)		// spell id 756 is Resurrection Effects spell
@@ -689,7 +689,7 @@ bool IsResurrectionEffects(int16 spell_id) {
 	return Result;
 }
 
-bool IsRuneSpell(int16 spell_id) {
+bool IsRuneSpell(uint16 spell_id) {
 	bool Result = false;
 
 	if(IsValidSpell(spell_id)) {
@@ -704,7 +704,7 @@ bool IsRuneSpell(int16 spell_id) {
 	return Result;
 }
 
-bool IsMagicRuneSpell(int16 spell_id) {
+bool IsMagicRuneSpell(uint16 spell_id) {
 	bool Result = false;
 
 	if(IsValidSpell(spell_id)) {
@@ -719,7 +719,7 @@ bool IsMagicRuneSpell(int16 spell_id) {
 	return Result;
 }
 
-bool IsManaTapSpell(int16 spell_id) {
+bool IsManaTapSpell(uint16 spell_id) {
 	bool Result = false;
 
 	if(IsValidSpell(spell_id)) {
@@ -734,7 +734,7 @@ bool IsManaTapSpell(int16 spell_id) {
 	return Result;
 }
 
-bool IsAllianceSpellLine(int16 spell_id) {
+bool IsAllianceSpellLine(uint16 spell_id) {
 	bool Result = false;
 
 	if(IsValidSpell(spell_id))
@@ -743,7 +743,7 @@ bool IsAllianceSpellLine(int16 spell_id) {
 	return Result;
 }
 
-bool IsDeathSaveSpell(int16 spell_id) {
+bool IsDeathSaveSpell(uint16 spell_id) {
 	bool Result = false;
 
 	if(IsValidSpell(spell_id))
@@ -752,7 +752,7 @@ bool IsDeathSaveSpell(int16 spell_id) {
 	return Result;
 }
 
-bool IsPartialDeathSaveSpell(int16 spell_id) {
+bool IsPartialDeathSaveSpell(uint16 spell_id) {
 	bool Result = false;
 
 	// Death Pact
@@ -762,7 +762,7 @@ bool IsPartialDeathSaveSpell(int16 spell_id) {
 	return Result;
 }
 
-bool IsFullDeathSaveSpell(int16 spell_id) {
+bool IsFullDeathSaveSpell(uint16 spell_id) {
 	bool Result = false;
 
 	// Divine Intervention
@@ -772,7 +772,7 @@ bool IsFullDeathSaveSpell(int16 spell_id) {
 	return Result;
 }
 
-bool IsShadowStepSpell(int16 spell_id) {
+bool IsShadowStepSpell(uint16 spell_id) {
 	if (IsEffectInSpell(spell_id, SE_ShadowStep)){
 		return true;
 
@@ -782,7 +782,7 @@ bool IsShadowStepSpell(int16 spell_id) {
 	}
 }
 
-bool IsSuccorSpell(int16 spell_id) {
+bool IsSuccorSpell(uint16 spell_id) {
 	if (IsEffectInSpell(spell_id, SE_Succor)){
 		return true;
 	}
@@ -791,7 +791,7 @@ bool IsSuccorSpell(int16 spell_id) {
 	}
 }
 
-bool IsTeleportSpell(int16 spell_id) {
+bool IsTeleportSpell(uint16 spell_id) {
 	if (IsEffectInSpell(spell_id, SE_Teleport)){
 		return true;
 	}
@@ -800,7 +800,7 @@ bool IsTeleportSpell(int16 spell_id) {
 	}
 }
 
-bool IsGateSpell(int16 spell_id) {
+bool IsGateSpell(uint16 spell_id) {
 	if (IsEffectInSpell(spell_id, SE_Gate)){
 		return true;
 	}
@@ -809,7 +809,7 @@ bool IsGateSpell(int16 spell_id) {
 	}
 }
 // seveian 2008-09-23
-bool IsPlayerIllusionSpell(int16 spell_id) {
+bool IsPlayerIllusionSpell(uint16 spell_id) {
 	if(IsEffectInSpell(spell_id, SE_Illusion) && spells[spell_id].targettype == ST_Self)
 		return true;
 	else
@@ -817,7 +817,7 @@ bool IsPlayerIllusionSpell(int16 spell_id) {
 
 }
 
-int GetSpellEffectDescNum(int16 spell_id)
+int GetSpellEffectDescNum(uint16 spell_id)
 {
 	if( (spell_id > 0) && (spell_id < SPDAT_RECORDS) ){
 		return spells[spell_id].effectdescnum;
@@ -826,7 +826,7 @@ int GetSpellEffectDescNum(int16 spell_id)
 	}
 }
 
-DmgShieldType GetDamageShieldType(int16 spell_id) 
+DmgShieldType GetDamageShieldType(uint16 spell_id) 
 {
 
 	// If we have a DamageShieldType for this spell from the damageshieldtypes table, return that,
@@ -855,7 +855,7 @@ DmgShieldType GetDamageShieldType(int16 spell_id)
 	return DS_THORNS;
 }
 
-bool IsLDoNObjectSpell(int16 spell_id) 
+bool IsLDoNObjectSpell(uint16 spell_id) 
 {
 	if(IsEffectInSpell(spell_id, SE_AppraiseLDonChest) || 
 		IsEffectInSpell(spell_id, SE_DisarmLDoNTrap) || 
@@ -870,24 +870,24 @@ bool IsLDoNObjectSpell(int16 spell_id)
 
 }
 
-sint32 GetSpellResistType(int16 spell_id)
+int32 GetSpellResistType(uint16 spell_id)
 {
 	return spells[spell_id].resisttype;
 }
 
-sint32 GetSpellTargetType(int16 spell_id)
+int32 GetSpellTargetType(uint16 spell_id)
 {
-	return (sint32)spells[spell_id].targettype;
+	return (int32)spells[spell_id].targettype;
 }
 
-bool IsHealOverTimeSpell(int16 spell_id) {
+bool IsHealOverTimeSpell(uint16 spell_id) {
 	if(IsEffectInSpell(spell_id, SE_HealOverTime) && !IsGroupSpell(spell_id))
 		return true;
 	else
 		return false;
 }
 
-bool IsCompleteHealSpell(int16 spell_id) {
+bool IsCompleteHealSpell(uint16 spell_id) {
 	
 	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsPercentalHealSpell(spell_id) && !IsGroupSpell(spell_id))
 		return true;
@@ -895,7 +895,7 @@ bool IsCompleteHealSpell(int16 spell_id) {
 		return false;
 }
 
-bool IsFastHealSpell(int16 spell_id) {
+bool IsFastHealSpell(uint16 spell_id) {
 	const int MaxFastHealCastingTime = 2000;
 
 	if(spells[spell_id].cast_time <= MaxFastHealCastingTime && spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && !IsGroupSpell(spell_id))
@@ -904,7 +904,7 @@ bool IsFastHealSpell(int16 spell_id) {
 		return false;
 }
 
-bool IsRegularSingleTargetHealSpell(int16 spell_id) {
+bool IsRegularSingleTargetHealSpell(uint16 spell_id) {
 	bool result = false;
 
 	if(spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && spells[spell_id].targettype == ST_Target && spells[spell_id].buffduration == 0
@@ -915,7 +915,7 @@ bool IsRegularSingleTargetHealSpell(int16 spell_id) {
 	return result;
 }
 
-bool IsRegularGroupHealSpell(int16 spell_id) {
+bool IsRegularGroupHealSpell(uint16 spell_id) {
 
         if(IsGroupSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsHealOverTimeSpell(spell_id))
                 return true;
@@ -923,7 +923,7 @@ bool IsRegularGroupHealSpell(int16 spell_id) {
                 return false;
 }
 
-bool IsGroupCompleteHealSpell(int16 spell_id) {
+bool IsGroupCompleteHealSpell(uint16 spell_id) {
 
         if(IsGroupSpell(spell_id) && IsCompleteHealSpell(spell_id))
                 return true;
@@ -931,7 +931,7 @@ bool IsGroupCompleteHealSpell(int16 spell_id) {
                 return false;
 }
 
-bool IsGroupHealOverTimeSpell(int16 spell_id) {
+bool IsGroupHealOverTimeSpell(uint16 spell_id) {
 
         if(IsGroupSpell(spell_id) && IsHealOverTimeSpell(spell_id) && spells[spell_id].buffduration < 10)
                 return true;
@@ -939,7 +939,7 @@ bool IsGroupHealOverTimeSpell(int16 spell_id) {
                 return false;
 }
 
-bool IsDebuffSpell(int16 spell_id) {
+bool IsDebuffSpell(uint16 spell_id) {
 
         if(IsBeneficialSpell(spell_id) || IsEffectHitpointsSpell(spell_id) || IsStunSpell(spell_id) || IsMezSpell(spell_id) 
 			|| IsCharmSpell(spell_id) || IsSlowSpell(spell_id) || IsEffectInSpell(spell_id, SE_Root) || IsEffectInSpell(spell_id, SE_CancelMagic)
@@ -949,7 +949,7 @@ bool IsDebuffSpell(int16 spell_id) {
                 return true;
 }
 
-bool IsResistDebuffSpell(int16 spell_id) {
+bool IsResistDebuffSpell(uint16 spell_id) {
 
         if((IsEffectInSpell(spell_id, SE_ResistFire) || IsEffectInSpell(spell_id, SE_ResistCold) || IsEffectInSpell(spell_id, SE_ResistPoison)
 			 || IsEffectInSpell(spell_id, SE_ResistDisease) || IsEffectInSpell(spell_id, SE_ResistMagic) || IsEffectInSpell(spell_id, SE_ResistAll)
@@ -959,7 +959,7 @@ bool IsResistDebuffSpell(int16 spell_id) {
                 return false;
 }
 
-bool IsSelfConversionSpell(int16 spell_id) {
+bool IsSelfConversionSpell(uint16 spell_id) {
 
         if(GetSpellTargetType(spell_id) == ST_Self && IsEffectInSpell(spell_id, SE_CurrentMana) && IsEffectInSpell(spell_id, SE_CurrentHP) 
 			&& spells[spell_id].base[GetSpellEffectIndex(spell_id, SE_CurrentMana)] > 0 && spells[spell_id].base[GetSpellEffectIndex(spell_id, SE_CurrentHP)] < 0)
@@ -1029,7 +1029,7 @@ uint32 GetPartialMagicRuneAmount(uint32 spell_id)
 }
 
 
-bool DetrimentalSpellAllowsRest(int16 spell_id)
+bool DetrimentalSpellAllowsRest(uint16 spell_id)
 {
 	if((spell_id > 0) && (spell_id < SPDAT_RECORDS))
 		return spells[spell_id].AllowRest;
@@ -1037,21 +1037,21 @@ bool DetrimentalSpellAllowsRest(int16 spell_id)
 	return false;
 }
 
-uint32 GetNimbusEffect(int16 spell_id)
+uint32 GetNimbusEffect(uint16 spell_id)
 {
 	if((spell_id > 0) && (spell_id < SPDAT_RECORDS))
-		return (sint32)spells[spell_id].NimbusEffect;
+		return (int32)spells[spell_id].NimbusEffect;
 
 	return 0;
 }
 
-sint32 GetFuriousBash(int16 spell_id)
+int32 GetFuriousBash(uint16 spell_id)
 {
 	if(!IsValidSpell(spell_id))
 		return 0;
 
 	bool found_effect_limit = false;
-	sint32 mod = 0;
+	int32 mod = 0;
 
 	for(int i = 0; i < EFFECT_COUNT; ++i)
 	{
@@ -1074,7 +1074,7 @@ sint32 GetFuriousBash(int16 spell_id)
 		return 0;
 }
 
-bool IsShortDurationBuff(int16 spell_id)
+bool IsShortDurationBuff(uint16 spell_id)
 {
 	if((spell_id > 0) && (spell_id < SPDAT_RECORDS)) {
 		if(spells[spell_id].short_buff_box != 0)

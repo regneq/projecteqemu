@@ -11,20 +11,20 @@
 //this is the non-connection type specific server.
 class BaseTCPServer {
 public:
-	BaseTCPServer(int16 iPort = 0);
+	BaseTCPServer(uint16 iPort = 0);
 	virtual ~BaseTCPServer();
 
-	bool	Open(int16 iPort = 0, char* errbuf = 0);			// opens the port
+	bool	Open(uint16 iPort = 0, char* errbuf = 0);			// opens the port
 	void	Close();						// closes the port
 	bool	IsOpen();
-	inline int16	GetPort()		{ return pPort; }
-	inline int32	GetNextID() { return NextID++; }
+	inline uint16	GetPort()		{ return pPort; }
+	inline uint32	GetNextID() { return NextID++; }
 
 protected:
 	static ThreadReturnType TCPServerLoop(void* tmp);
 	
 	//factory method:
-	virtual void CreateNewConnection(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort) = 0;
+	virtual void CreateNewConnection(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort) = 0;
 	
 	
 	virtual void	Process();
@@ -35,14 +35,14 @@ protected:
 	
 	void	ListenNewConnections();
 
-	int32	NextID;
+	uint32	NextID;
 
 	Mutex	MRunLoop;
 	bool	pRunLoop;
 
 	Mutex	MSock;
 	SOCKET	sock;
-	int16	pPort;
+	uint16	pPort;
 
 };
 
@@ -52,7 +52,7 @@ protected:
 	typedef typename std::vector<T *> vstore;
 	typedef typename std::vector<T *>::iterator vitr;
 public:
-	TCPServer(int16 iPort = 0)
+	TCPServer(uint16 iPort = 0)
 	: BaseTCPServer(iPort) {
 	}
 	

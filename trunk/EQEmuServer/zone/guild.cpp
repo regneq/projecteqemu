@@ -121,7 +121,7 @@ void Client::SendGuildSpawnAppearance() {
 		SendAppearancePacket(AT_GuildID, GUILD_NONE);
 		mlog(GUILDS__OUT_PACKETS, "Sending spawn appearance for no guild tag.");
 	} else {
-		int8 rank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), CharacterID());
+		uint8 rank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), CharacterID());
 		mlog(GUILDS__OUT_PACKETS, "Sending spawn appearance for guild %d at rank %d", GuildID(), rank);
 		SendAppearancePacket(AT_GuildID, GuildID());
 		SendAppearancePacket(AT_GuildRank, rank);
@@ -333,7 +333,7 @@ void EntityList::SendGuildJoin(GuildJoin_Struct* gj){
 
 
 
-/*bool Client::SetGuild(int32 in_guild_id, int8 in_rank) {
+/*bool Client::SetGuild(uint32 in_guild_id, uint8 in_rank) {
 	if (in_guild_id == 0) {
 		// update DB
 		if (!guild_mgr.SetGuild(character_id, 0, GUILD_MEMBER))
@@ -361,11 +361,11 @@ void EntityList::SendGuildJoin(GuildJoin_Struct* gj){
 }*/
 
 /*
-void Client::GuildChangeRank(int32 guild_id, int32 oldrank, int32 newrank){
+void Client::GuildChangeRank(uint32 guild_id, uint32 oldrank, uint32 newrank){
 	GuildChangeRank(GetName(), guild_id, oldrank, newrank);
 }
 
-void Client::GuildChangeRank(const char* name, int32 guild_id, int32 oldrank, int32 newrank) {
+void Client::GuildChangeRank(const char* name, uint32 guild_id, uint32 oldrank, uint32 newrank) {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GuildManageStatus, sizeof(GuildManageStatus_Struct));
 	GuildManageStatus_Struct* gms = (GuildManageStatus_Struct*) outapp->pBuffer;
 	gms->guild_id = guild_id;
@@ -378,7 +378,7 @@ void Client::GuildChangeRank(const char* name, int32 guild_id, int32 oldrank, in
 }*/
 
 
-bool ZoneDatabase::CheckGuildDoor(int8 doorid,int16 guild_id,const char* zone) {
+bool ZoneDatabase::CheckGuildDoor(uint8 doorid,uint16 guild_id,const char* zone) {
 	MYSQL_ROW row;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -412,10 +412,10 @@ bool ZoneDatabase::CheckGuildDoor(int8 doorid,int16 guild_id,const char* zone) {
 	return false;
 }
 
-bool ZoneDatabase::SetGuildDoor(int8 doorid,int16 guild_id, const char* zone) {
+bool ZoneDatabase::SetGuildDoor(uint8 doorid,uint16 guild_id, const char* zone) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
-	int32	affected_rows = 0;
+	uint32	affected_rows = 0;
 	if (doorid > 127)
 		doorid = doorid - 128;
 	if (!RunQuery(query, MakeAnyLenString(&query, 

@@ -37,101 +37,101 @@ struct NPCType
     char    name[64];
     char    lastname[70];
 	
-    sint32  cur_hp;
-    sint32  max_hp;
+    int32  cur_hp;
+    int32  max_hp;
 	
 	float	size;
 	float	runspeed;
-    int8    gender;
-    int16    race;
-    int8    class_;
-    int8    bodytype;   // added for targettype support
-    int8    deity;		//not loaded from DB
-    int8    level;
-	int32   npc_id;
-	int8	texture;
-	int8	helmtexture;
-	int32	loottable_id;
-	int32	npc_spells_id;
-	sint32	npc_faction_id;
+    uint8    gender;
+    uint16    race;
+    uint8    class_;
+    uint8    bodytype;   // added for targettype support
+    uint8    deity;		//not loaded from DB
+    uint8    level;
+	uint32   npc_id;
+	uint8	texture;
+	uint8	helmtexture;
+	uint32	loottable_id;
+	uint32	npc_spells_id;
+	int32	npc_faction_id;
 	uint32	merchanttype;
     uint32  alt_currency_type;
-	int32	adventure_template;
-	int32	trap_template;
-    int8    light;		//not loaded from DB
-	int16	AC;
-	int32	Mana;	//not loaded from DB
-	int16	ATK;	//not loaded from DB
-	int16	STR;
-	int16	STA;
-	int16	DEX;
-	int16	AGI;
-	int16	INT;
-	int16	WIS;
-	int16	CHA;
-	sint16	MR;
-	sint16	FR;
-	sint16	CR;
-	sint16	PR;
-	sint16	DR;
-	sint16	Corrup;
-	int8	haircolor;
-	int8	beardcolor;
-	int8	eyecolor1;			// the eyecolors always seem to be the same, maybe left and right eye?
-	int8	eyecolor2;
-	int8	hairstyle;
-	int8	luclinface;			//
-	int8	beard;				//
-	int32	drakkin_heritage;
-	int32	drakkin_tattoo;
-	int32	drakkin_details;
-	int32  armor_tint[MAX_MATERIALS];
-	int32	min_dmg;
-	int32	max_dmg;
-    sint16  attack_count;
+	uint32	adventure_template;
+	uint32	trap_template;
+    uint8    light;		//not loaded from DB
+	uint16	AC;
+	uint32	Mana;	//not loaded from DB
+	uint16	ATK;	//not loaded from DB
+	uint16	STR;
+	uint16	STA;
+	uint16	DEX;
+	uint16	AGI;
+	uint16	INT;
+	uint16	WIS;
+	uint16	CHA;
+	int16	MR;
+	int16	FR;
+	int16	CR;
+	int16	PR;
+	int16	DR;
+	int16	Corrup;
+	uint8	haircolor;
+	uint8	beardcolor;
+	uint8	eyecolor1;			// the eyecolors always seem to be the same, maybe left and right eye?
+	uint8	eyecolor2;
+	uint8	hairstyle;
+	uint8	luclinface;			//
+	uint8	beard;				//
+	uint32	drakkin_heritage;
+	uint32	drakkin_tattoo;
+	uint32	drakkin_details;
+	uint32  armor_tint[MAX_MATERIALS];
+	uint32	min_dmg;
+	uint32	max_dmg;
+    int16  attack_count;
 	char	npc_attacks[30];
-    int16	d_meele_texture1;
-	int16	d_meele_texture2;
-	int8	prim_melee_type;
-	int8	sec_melee_type;
-	sint32	hp_regen;
-	sint32  mana_regen;
-	sint32	aggroradius; // added for AI improvement - neotokyo
-	int8	see_invis;			// See Invis flag added
+    uint16	d_meele_texture1;
+	uint16	d_meele_texture2;
+	uint8	prim_melee_type;
+	uint8	sec_melee_type;
+	int32	hp_regen;
+	int32  mana_regen;
+	int32	aggroradius; // added for AI improvement - neotokyo
+	uint8	see_invis;			// See Invis flag added
 	bool	see_invis_undead;   // See Invis vs. Undead flag added 
 	bool	see_hide;
 	bool	see_improved_hide;
 	bool	qglobal;
 	bool	npc_aggro;
 	uint8	spawn_limit;	//only this many may be in zone at a time (0=no limit)
-	int8	mount_color;	//only used by horse class
+	uint8	mount_color;	//only used by horse class
 	float	attack_speed;	//%+- on attack delay of the mob.
 	int		accuracy_rating;  //10 = 1% accuracy
 	bool	findable;		//can be found with find command
 	bool	trackable;
 	float	slow_mitigation;	// Slow mitigation % in decimal form.
-	int8	maxlevel;
-	int32	scalerate;
+	uint8	maxlevel;
+	uint32	scalerate;
 	bool	private_corpse;
 	bool	unique_spawn_by_name;
     bool    underwater;
-	int32	emoteid;
+	uint32	emoteid;
 	float	spellscale;
 	float	healscale;
 };
 
 struct ZSDump_Spawn2 {
-	int32	spawn2_id;
-	int32	time_left;
+	uint32	spawn2_id;
+	uint32	time_left;
 };
 
 struct ZSDump_NPC {
-	int32			spawn2_dump_index;
-	int32			gmspawntype_index;
-	int32			npctype_id;
-	sint32			cur_hp;
-	int8			corpse; // 0=no, 1=yes, 2=yes and locked
-	int32			decay_time_left;
+	uint32			spawn2_dump_index;
+	uint32			gmspawntype_index;
+	uint32			npctype_id;
+	int32			cur_hp;
+	uint8			corpse; // 0=no, 1=yes, 2=yes and locked
+	uint32			decay_time_left;
 //	needatype		buffs;		// decided not to save these, would be hard because if expired them on bootup, wouldnt take into account the npcai refreshing them, etc
 	float			x;
 	float			y;
@@ -144,12 +144,12 @@ struct ZSDump_NPC {
 };
 
 struct ZSDump_NPC_Loot {
-	int32	npc_dump_index;
-	int16	itemid;
-	sint8	charges;
-	sint16	equipSlot;
-	int8	minlevel;
-	int8	maxlevel;
+	uint32	npc_dump_index;
+	uint16	itemid;
+	int8	charges;
+	int16	equipSlot;
+	uint8	minlevel;
+	uint8	maxlevel;
 };
 
 /*
@@ -163,25 +163,25 @@ heading float not null, data blob not null, time timestamp(14), index zonename (
 
 struct ServerLootItem_Struct {
 	uint32	item_id;
-	sint16	equipSlot;
-	int8	charges;
-	int16	lootslot;
+	int16	equipSlot;
+	uint8	charges;
+	uint16	lootslot;
 	uint32 aug1;
 	uint32 aug2;
 	uint32 aug3;
 	uint32 aug4;
 	uint32 aug5;
-	int8 minlevel;
-	int8 maxlevel;
+	uint8 minlevel;
+	uint8 maxlevel;
 };
 
 namespace player_lootitem
 {
 	struct ServerLootItem_Struct {
 	uint32	item_id;
-	sint16	equipSlot;
-	int8	charges;
-	int16	lootslot;
+	int16	equipSlot;
+	uint8	charges;
+	uint16	lootslot;
 	uint32 aug1;
 	uint32 aug2;
 	uint32 aug3;
@@ -191,70 +191,70 @@ namespace player_lootitem
 }
 
 struct DBPlayerCorpse_Struct {
-	int32	crc;
+	uint32	crc;
 	bool	locked;
-	int32	itemcount;
-	int32	exp;
+	uint32	itemcount;
+	uint32	exp;
 	float	size;
-	int8	level;
-	int8	race;
-	int8	gender;
-	int8	class_;
-	int8	deity;
-	int8	texture;
-	int8	helmtexture;
-	int32	copper;
-	int32	silver;
-	int32	gold;
-	int32	plat;
+	uint8	level;
+	uint8	race;
+	uint8	gender;
+	uint8	class_;
+	uint8	deity;
+	uint8	texture;
+	uint8	helmtexture;
+	uint32	copper;
+	uint32	silver;
+	uint32	gold;
+	uint32	plat;
 	Color_Struct item_tint[9];
-	int8 haircolor;
-	int8 beardcolor;
-	int8 eyecolor1;
-	int8 eyecolor2;
-	int8 hairstyle;
-	int8 face;
-	int8 beard;
-	int32 drakkin_heritage;
-	int32 drakkin_tattoo;
-	int32 drakkin_details;
+	uint8 haircolor;
+	uint8 beardcolor;
+	uint8 eyecolor1;
+	uint8 eyecolor2;
+	uint8 hairstyle;
+	uint8 face;
+	uint8 beard;
+	uint32 drakkin_heritage;
+	uint32 drakkin_tattoo;
+	uint32 drakkin_details;
 	player_lootitem::ServerLootItem_Struct	items[0];
 };
 
 namespace classic_db
 {
 	struct DBPlayerCorpse_Struct {
-		int32	crc;
+		uint32	crc;
 		bool	locked;
-		int32	itemcount;
-		int32	exp;
+		uint32	itemcount;
+		uint32	exp;
 		float	size;
-		int8	level;
-		int8	race;
-		int8	gender;
-		int8	class_;
-		int8	deity;
-		int8	texture;
-		int8	helmtexture;
-		int32	copper;
-		int32	silver;
-		int32	gold;
-		int32	plat;
+		uint8	level;
+		uint8	race;
+		uint8	gender;
+		uint8	class_;
+		uint8	deity;
+		uint8	texture;
+		uint8	helmtexture;
+		uint32	copper;
+		uint32	silver;
+		uint32	gold;
+		uint32	plat;
 		Color_Struct item_tint[9];
-		int8 haircolor;
-		int8 beardcolor;
-		int8 eyecolor1;
-		int8 eyecolor2;
-		int8 hairstyle;
-		int8 face;
-		int8 beard;
+		uint8 haircolor;
+		uint8 beardcolor;
+		uint8 eyecolor1;
+		uint8 eyecolor2;
+		uint8 hairstyle;
+		uint8 face;
+		uint8 beard;
 		player_lootitem::ServerLootItem_Struct	items[0];
 	};
 }
 
 struct Door {
-	int32   db_id;
-	int8    door_id;
+	uint32   db_id;
+	uint8    door_id;
 	char    zone_name[16];
 	char    door_name[32];
 	float   pos_x;
@@ -262,24 +262,24 @@ struct Door {
 	float   pos_z;
 	float   heading;
 	int     incline;
-	int8    opentype;
-	int32   guild_id;
-	int16   lockpick;
+	uint8    opentype;
+	uint32   guild_id;
+	uint16   lockpick;
 	uint32  keyitem;
-	int8    nokeyring;
-	int8    trigger_door;
-	int8    trigger_type;
-	int32   door_param;
+	uint8    nokeyring;
+	uint8    trigger_door;
+	uint8    trigger_type;
+	uint32   door_param;
 	int     invert_state;
-	int16   size;
+	uint16   size;
 	char    dest_zone[16];
-	int32   dest_instance_id;
+	uint32   dest_instance_id;
 	float   dest_x;
 	float   dest_y;
 	float   dest_z;
 	float   dest_heading;
-	int8    is_ldon_door;
-	int32   client_version_mask;
+	uint8    is_ldon_door;
+	uint32   client_version_mask;
 };
 
 #pragma pack()

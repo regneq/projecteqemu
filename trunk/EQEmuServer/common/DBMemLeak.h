@@ -8,7 +8,7 @@
 
 struct DBMemLeakStruct {
 	const void* result;
-	int32 memblock;
+	uint32 memblock;
 	char query[0];
 };
 

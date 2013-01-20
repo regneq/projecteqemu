@@ -41,7 +41,7 @@ using namespace std;
 
 // Helper typedefs
 typedef list<ItemInst*>::const_iterator					iter_queue;
-typedef map<sint16, ItemInst*>::const_iterator			iter_inst;
+typedef map<int16, ItemInst*>::const_iterator			iter_inst;
 typedef map<uint8, ItemInst*>::const_iterator			iter_contents;
 
 namespace ItemField {
@@ -138,97 +138,97 @@ public:
 	virtual ~Inventory();
 	
 	// Retrieve a writeable item at specified slot
-	ItemInst* GetItem(sint16 slot_id) const;
-	ItemInst* GetItem(sint16 slot_id, uint8 bagidx) const;
+	ItemInst* GetItem(int16 slot_id) const;
+	ItemInst* GetItem(int16 slot_id, uint8 bagidx) const;
 
 	inline iter_queue cursor_begin()	{ return m_cursor.begin(); }
 	inline iter_queue cursor_end()		{ return m_cursor.end(); }
 	inline bool CursorEmpty()		{ return (m_cursor.size() == 0); }
 	
 	// Retrieve a read-only item from inventory
-	inline const ItemInst* operator[](sint16 slot_id) const { return GetItem(slot_id); }
+	inline const ItemInst* operator[](int16 slot_id) const { return GetItem(slot_id); }
 	
 	// Add item to inventory
-	sint16 PutItem(sint16 slot_id, const ItemInst& inst);
+	int16 PutItem(int16 slot_id, const ItemInst& inst);
 
 	// Add item to cursor queue
-	sint16 PushCursor(const ItemInst& inst);
+	int16 PushCursor(const ItemInst& inst);
 	
 	// Swap items in inventory
-	bool SwapItem(sint16 slot_a, sint16 slot_b);
+	bool SwapItem(int16 slot_a, int16 slot_b);
 
 	// Remove item from inventory
-	bool DeleteItem(sint16 slot_id, uint8 quantity=0);
+	bool DeleteItem(int16 slot_id, uint8 quantity=0);
 
 	// Checks All items in a bag for No Drop
-	bool CheckNoDrop(sint16 slot_id);
+	bool CheckNoDrop(int16 slot_id);
 	
 	// Remove item from inventory (and take control of memory)
-	ItemInst* PopItem(sint16 slot_id);
+	ItemInst* PopItem(int16 slot_id);
 	
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
-	sint16 HasItem(uint32 item_id, uint8 quantity=0, uint8 where=0xFF);
+	int16 HasItem(uint32 item_id, uint8 quantity=0, uint8 where=0xFF);
 
 	// Check whether there is space for the specified number of the specified item.
-	bool HasSpaceForItem(const Item_Struct *ItemToTry, sint16 Quantity);
+	bool HasSpaceForItem(const Item_Struct *ItemToTry, int16 Quantity);
 	
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
-	sint16 HasItemByUse(uint8 use, uint8 quantity=0, uint8 where=0xFF);
+	int16 HasItemByUse(uint8 use, uint8 quantity=0, uint8 where=0xFF);
 
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
-	sint16 HasItemByLoreGroup(uint32 loregroup, uint8 where=0xFF);
+	int16 HasItemByLoreGroup(uint32 loregroup, uint8 where=0xFF);
 	
 	// Locate an available inventory slot
-	sint16 FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size = 0, bool is_arrow = false);
+	int16 FindFreeSlot(bool for_bag, bool try_cursor, uint8 min_size = 0, bool is_arrow = false);
 	
 	// Calculate slot_id for an item within a bag
-	static sint16 CalcSlotId(sint16 slot_id); // Calc parent bag's slot_id
-	static sint16 CalcSlotId(sint16 bagslot_id, uint8 bagidx); // Calc slot_id for item inside bag
-	static uint8 CalcBagIdx(sint16 slot_id); // Calc bagidx for slot_id
-	static sint16 CalcSlotFromMaterial(int8 material);
-	static int8 CalcMaterialFromSlot(sint16 equipslot);
+	static int16 CalcSlotId(int16 slot_id); // Calc parent bag's slot_id
+	static int16 CalcSlotId(int16 bagslot_id, uint8 bagidx); // Calc slot_id for item inside bag
+	static uint8 CalcBagIdx(int16 slot_id); // Calc bagidx for slot_id
+	static int16 CalcSlotFromMaterial(uint8 material);
+	static uint8 CalcMaterialFromSlot(int16 equipslot);
 
 	static bool CanItemFitInContainer(const Item_Struct *ItemToTry, const Item_Struct *Container);
 
 	// Test whether a given slot can support a container item
-	static bool SupportsContainers(sint16 slot_id);
+	static bool SupportsContainers(int16 slot_id);
 	
 	void dumpInventory();
 
-	void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, std::string value);
-    void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, int value);
-    void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, float value);
-    void SetCustomItemData(uint32 character_id, sint16 slot_id, std::string identifier, bool value);
-    std::string GetCustomItemData(sint16 slot_id, std::string identifier);
+	void SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, std::string value);
+    void SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, int value);
+    void SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, float value);
+    void SetCustomItemData(uint32 character_id, int16 slot_id, std::string identifier, bool value);
+    std::string GetCustomItemData(int16 slot_id, std::string identifier);
 protected:
 	///////////////////////////////
 	// Protected Methods
 	///////////////////////////////
 	
 	// Retrieves item within an inventory bucket
-	ItemInst* _GetItem(const map<sint16, ItemInst*>& bucket, sint16 slot_id) const;
+	ItemInst* _GetItem(const map<int16, ItemInst*>& bucket, int16 slot_id) const;
 	
 	// Private "put" item into bucket, without regard for what is currently in bucket
-	sint16 _PutItem(sint16 slot_id, ItemInst* inst);
+	int16 _PutItem(int16 slot_id, ItemInst* inst);
 	
 	// Checks an inventory bucket for a particular item
-	sint16 _HasItem(map<sint16, ItemInst*>& bucket, uint32 item_id, uint8 quantity);
-	sint16 _HasItem(ItemInstQueue& iqueue, uint32 item_id, uint8 quantity);
-	sint16 _HasItemByUse(map<sint16, ItemInst*>& bucket, uint8 use, uint8 quantity);
-	sint16 _HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity);
-	sint16 _HasItemByLoreGroup(map<sint16, ItemInst*>& bucket, uint32 loregroup);
-	sint16 _HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup);
+	int16 _HasItem(map<int16, ItemInst*>& bucket, uint32 item_id, uint8 quantity);
+	int16 _HasItem(ItemInstQueue& iqueue, uint32 item_id, uint8 quantity);
+	int16 _HasItemByUse(map<int16, ItemInst*>& bucket, uint8 use, uint8 quantity);
+	int16 _HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity);
+	int16 _HasItemByLoreGroup(map<int16, ItemInst*>& bucket, uint32 loregroup);
+	int16 _HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup);
 	
 	
 	// Player inventory
-	map<sint16, ItemInst*>	m_worn;		// Items worn by character
-	map<sint16, ItemInst*>	m_inv;		// Items in character personal inventory
-	map<sint16, ItemInst*>	m_bank;		// Items in character bank
-	map<sint16, ItemInst*>	m_shbank;	// Items in character shared bank
-	map<sint16, ItemInst*>	m_trade;	// Items in a trade session
+	map<int16, ItemInst*>	m_worn;		// Items worn by character
+	map<int16, ItemInst*>	m_inv;		// Items in character personal inventory
+	map<int16, ItemInst*>	m_bank;		// Items in character bank
+	map<int16, ItemInst*>	m_shbank;	// Items in character shared bank
+	map<int16, ItemInst*>	m_trade;	// Items in a trade session
 	ItemInstQueue			m_cursor;	// Items on cursor: FIFO
 };
 
@@ -247,9 +247,9 @@ public:
 	/////////////////////////
 	
 	// Constructors/Destructor
-	ItemInst(const Item_Struct* item = NULL, sint16 charges = 0);
+	ItemInst(const Item_Struct* item = NULL, int16 charges = 0);
 	
-	ItemInst(SharedDatabase *db, uint32 item_id, sint16 charges = 0);
+	ItemInst(SharedDatabase *db, uint32 item_id, int16 charges = 0);
 	
 	ItemInst(ItemUseType use_type) {
 		m_use_type = use_type;
@@ -272,16 +272,16 @@ public:
 	virtual bool IsStackable() const;
 
 	// Can item be equipped by/at?
-	virtual bool IsEquipable(int16 race, int16 class_) const;
-	virtual bool IsEquipable(sint16 slot_id) const;
+	virtual bool IsEquipable(uint16 race, uint16 class_) const;
+	virtual bool IsEquipable(int16 slot_id) const;
 	
 	//
 	// Augements
 	//
 	inline bool IsAugmentable() const { return m_item->AugSlotType[0]!=0 || m_item->AugSlotType[1]!=0 || m_item->AugSlotType[2]!=0 || m_item->AugSlotType[3]!=0 || m_item->AugSlotType[4]!=0; }
 	bool AvailableWearSlot(uint32 aug_wear_slots) const;
-	sint8 AvailableAugmentSlot(sint32 augtype) const;
-	inline sint32 GetAugmentType() const { return m_item->AugType; }
+	int8 AvailableAugmentSlot(int32 augtype) const;
+	inline int32 GetAugmentType() const { return m_item->AugType; }
 
 	inline bool IsExpendable() const { return ((m_item->Click.Type == ET_Expendable ) || (m_item->ItemType == ItemTypePotion)); }
 
@@ -323,8 +323,8 @@ public:
 	virtual const Item_Struct* GetItem() const		{ return m_item; }
 	void SetItem(const Item_Struct* item)	{ m_item = item; }
 	
-	sint16 GetCharges() const				{ return m_charges; }
-	void SetCharges(sint16 charges)			{ m_charges = charges; }
+	int16 GetCharges() const				{ return m_charges; }
+	void SetCharges(int16 charges)			{ m_charges = charges; }
 	
 	uint32 GetPrice() const					{ return m_price; }
 	void SetPrice(uint32 price)				{ m_price = price; }
@@ -335,11 +335,11 @@ public:
 	uint32 GetMerchantSlot() const				{ return m_merchantslot; }
 	void SetMerchantSlot(uint32 slot)		{ m_merchantslot = slot; }
 
-	sint32 GetMerchantCount() const				{ return m_merchantcount; }
-	void SetMerchantCount(sint32 count)		{ m_merchantcount = count; }
+	int32 GetMerchantCount() const				{ return m_merchantcount; }
+	void SetMerchantCount(int32 count)		{ m_merchantcount = count; }
 
-	sint16 GetCurrentSlot() const			{ return m_currentslot; }
-	void SetCurrentSlot(sint16 curr_slot)   { m_currentslot = curr_slot; }
+	int16 GetCurrentSlot() const			{ return m_currentslot; }
+	void SetCurrentSlot(int16 curr_slot)   { m_currentslot = curr_slot; }
 
 
 
@@ -366,14 +366,14 @@ public:
 	// Clone current item
 	virtual ItemInst* Clone() const;
 	
-	bool IsSlotAllowed(sint16 slot_id) const;
+	bool IsSlotAllowed(int16 slot_id) const;
 
 	virtual bool IsScaling() const		{ return false; }
 	virtual bool IsEvolving() const		{ return false; }
 
-	string Serialize(sint16 slot_id) const { InternalSerializedItem_Struct s; s.slot_id=slot_id; s.inst=(const void *)this; string ser; ser.assign((char *)&s,sizeof(InternalSerializedItem_Struct)); return ser; }
-	inline sint32 GetSerialNumber() const { return m_SerialNumber; }
-	inline void SetSerialNumber(sint32 id) { m_SerialNumber = id; }
+	string Serialize(int16 slot_id) const { InternalSerializedItem_Struct s; s.slot_id=slot_id; s.inst=(const void *)this; string ser; ser.assign((char *)&s,sizeof(InternalSerializedItem_Struct)); return ser; }
+	inline int32 GetSerialNumber() const { return m_SerialNumber; }
+	inline void SetSerialNumber(int32 id) { m_SerialNumber = id; }
 
 protected:
 	//////////////////////////
@@ -389,14 +389,14 @@ protected:
 	
 	ItemUseType			m_use_type;	// Usage type for item
 	const Item_Struct*	m_item;		// Ptr to item data
-	sint16				m_charges;	// # of charges for chargeable items
+	int16				m_charges;	// # of charges for chargeable items
 	uint32				m_price;	// Bazaar /trader price
 	uint32				m_color;
 	uint32				m_merchantslot;
-	sint16				m_currentslot;
+	int16				m_currentslot;
 	bool 				m_instnodrop;
-	sint32				m_merchantcount;		//number avaliable on the merchant, -1=unlimited
-	sint32				m_SerialNumber;	// Unique identifier for this instance of an item. Needed for Bazaar.
+	int32				m_merchantcount;		//number avaliable on the merchant, -1=unlimited
+	int32				m_SerialNumber;	// Unique identifier for this instance of an item. Needed for Bazaar.
 	//
 	// Items inside of this item (augs or contents);
 	map<uint8, ItemInst*> m_contents; // Zero-based index: min=0, max=9
@@ -408,7 +408,7 @@ public:
 	// constructor and destructor
 	EvoItemInst(const EvoItemInst& copy);
 	EvoItemInst(const ItemInst& copy);
-	EvoItemInst(const Item_Struct* item = NULL, sint16 charges = 0);
+	EvoItemInst(const Item_Struct* item = NULL, int16 charges = 0);
 	~EvoItemInst();
 	
 	// accessors... a lot of these are for evolving items (not complete yet)
@@ -419,7 +419,7 @@ public:
 	void AddExp(uint32 exp)				{ m_exp += exp; }
 	bool IsActivated()					{ return m_activated; }
 	void SetActivated(bool activated)	{ m_activated = activated; }
-	sint8 GetEvolveLvl() const			{ return m_evolveLvl; }
+	int8 GetEvolveLvl() const			{ return m_evolveLvl; }
 		
 	EvoItemInst* Clone() const;
 	const Item_Struct* GetItem() const;
@@ -427,13 +427,13 @@ public:
 	void Initialize(SharedDatabase *db = NULL);
 	void ScaleItem();
 	bool EvolveOnAllKills() const;	
-	sint8 GetMaxEvolveLvl() const;
+	int8 GetMaxEvolveLvl() const;
 	uint32 GetKillsNeeded(uint8 currentlevel);
 		
 
 private:
 	uint32				m_exp;
-	sint8				m_evolveLvl;
+	int8				m_evolveLvl;
 	bool				m_activated;
 	Item_Struct*		m_scaledItem;
 	const EvolveInfo*	m_evolveInfo;

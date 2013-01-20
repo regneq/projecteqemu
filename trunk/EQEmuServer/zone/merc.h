@@ -14,8 +14,8 @@ public:
 	virtual ~Merc();
 
 	//abstract virtual function implementations requird by base abstract class
-	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
-	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
+	virtual void Death(Mob* killerMob, int32 damage, uint16 spell_id, SkillType attack_skill);
+	virtual void Damage(Mob* from, int32 damage, uint16 spell_id, SkillType attack_skill, bool avoidable = true, int8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = SLOT_PRIMARY, bool FromRiposte = false, bool IsStrikethrough = false, bool IsFromSpell = false);
 	virtual bool HasRaid() { return false; }
 	virtual bool HasGroup() { return (GetGroup() ? true : false); }
@@ -52,8 +52,8 @@ public:
 	bool IsMedding() {return _medding; };
 	bool IsSuspended() {return _suspended; };
 
-	static int32 CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type = 0);
-	static int32 CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type = 0);
+	static uint32 CalcPurchaseCost( uint32 templateID , uint8 level, uint8 currency_type = 0);
+	static uint32 CalcUpkeepCost( uint32 templateID , uint8 level, uint8 currency_type = 0);
 
 	// "GET" Class Methods
 	virtual Mob* GetOwner();
@@ -72,66 +72,66 @@ public:
 	virtual void SetTarget(Mob* mob);
 	bool	HasSkill(SkillType skill_id) const;
 	bool	CanHaveSkill(SkillType skill_id) const;
-	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
-	inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
+	uint16	MaxSkill(SkillType skillid, uint16 class_, uint16 level) const;
+	inline	uint16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
 
 	// stat functions
 	virtual void CalcBonuses();
-	inline virtual sint16	GetAC()		const { return AC; }
-	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
-	inline virtual sint16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
+	inline virtual int16	GetAC()		const { return AC; }
+	inline virtual int16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
+	inline virtual int16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
 	int GetRawACNoShield(int &shield_ac) const;
 
-	inline virtual sint16	GetSTR()	const { return STR; }
-	inline virtual sint16	GetSTA()	const { return STA; }
-	inline virtual sint16	GetDEX()	const { return DEX; }
-	inline virtual sint16	GetAGI()	const { return AGI; }
-	inline virtual sint16	GetINT()	const { return INT; }
-	inline virtual sint16	GetWIS()	const { return WIS; }
-	inline virtual sint16	GetCHA()	const { return CHA; }
-	inline virtual sint16	GetMR()	const { return MR; }
-	inline virtual sint16	GetFR()	const { return FR; }
-	inline virtual sint16	GetDR()	const { return DR; }
-	inline virtual sint16	GetPR()	const { return PR; }
-	inline virtual sint16	GetCR()	const { return CR; }
-	inline virtual sint16	GetCorrup()	const { return Corrup; }
+	inline virtual int16	GetSTR()	const { return STR; }
+	inline virtual int16	GetSTA()	const { return STA; }
+	inline virtual int16	GetDEX()	const { return DEX; }
+	inline virtual int16	GetAGI()	const { return AGI; }
+	inline virtual int16	GetINT()	const { return INT; }
+	inline virtual int16	GetWIS()	const { return WIS; }
+	inline virtual int16	GetCHA()	const { return CHA; }
+	inline virtual int16	GetMR()	const { return MR; }
+	inline virtual int16	GetFR()	const { return FR; }
+	inline virtual int16	GetDR()	const { return DR; }
+	inline virtual int16	GetPR()	const { return PR; }
+	inline virtual int16	GetCR()	const { return CR; }
+	inline virtual int16	GetCorrup()	const { return Corrup; }
 
-	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
-	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
-	inline virtual sint16	GetHeroicDEX()	const { return itembonuses.HeroicDEX; }
-	inline virtual sint16	GetHeroicAGI()	const { return itembonuses.HeroicAGI; }
-	inline virtual sint16	GetHeroicINT()	const { return itembonuses.HeroicINT; }
-	inline virtual sint16	GetHeroicWIS()	const { return itembonuses.HeroicWIS; }
-	inline virtual sint16	GetHeroicCHA()	const { return itembonuses.HeroicCHA; }
-	inline virtual sint16	GetHeroicMR()	const { return itembonuses.HeroicMR; }
-	inline virtual sint16	GetHeroicFR()	const { return itembonuses.HeroicFR; }
-	inline virtual sint16	GetHeroicDR()	const { return itembonuses.HeroicDR; }
-	inline virtual sint16	GetHeroicPR()	const { return itembonuses.HeroicPR; }
-	inline virtual sint16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
-	inline virtual sint16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
+	inline virtual int16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
+	inline virtual int16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
+	inline virtual int16	GetHeroicDEX()	const { return itembonuses.HeroicDEX; }
+	inline virtual int16	GetHeroicAGI()	const { return itembonuses.HeroicAGI; }
+	inline virtual int16	GetHeroicINT()	const { return itembonuses.HeroicINT; }
+	inline virtual int16	GetHeroicWIS()	const { return itembonuses.HeroicWIS; }
+	inline virtual int16	GetHeroicCHA()	const { return itembonuses.HeroicCHA; }
+	inline virtual int16	GetHeroicMR()	const { return itembonuses.HeroicMR; }
+	inline virtual int16	GetHeroicFR()	const { return itembonuses.HeroicFR; }
+	inline virtual int16	GetHeroicDR()	const { return itembonuses.HeroicDR; }
+	inline virtual int16	GetHeroicPR()	const { return itembonuses.HeroicPR; }
+	inline virtual int16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
+	inline virtual int16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
 	// Mod2
-	inline virtual sint16	GetShielding()		const { return itembonuses.MeleeMitigation; }
-	inline virtual sint16	GetSpellShield()	const { return itembonuses.SpellShield; }
-	inline virtual sint16	GetDoTShield()		const { return itembonuses.DoTShielding; }
-	inline virtual sint16	GetStunResist()		const { return itembonuses.StunResist; }
-	inline virtual sint16	GetStrikeThrough()	const { return itembonuses.StrikeThrough; }
-	inline virtual sint16	GetAvoidance()		const { return itembonuses.AvoidMeleeChance; }
-	inline virtual sint16	GetAccuracy()		const { return itembonuses.HitChance; }
-	inline virtual sint16	GetCombatEffects()	const { return itembonuses.ProcChance; }
-	inline virtual sint16	GetDS()				const { return itembonuses.DamageShield; }
+	inline virtual int16	GetShielding()		const { return itembonuses.MeleeMitigation; }
+	inline virtual int16	GetSpellShield()	const { return itembonuses.SpellShield; }
+	inline virtual int16	GetDoTShield()		const { return itembonuses.DoTShielding; }
+	inline virtual int16	GetStunResist()		const { return itembonuses.StunResist; }
+	inline virtual int16	GetStrikeThrough()	const { return itembonuses.StrikeThrough; }
+	inline virtual int16	GetAvoidance()		const { return itembonuses.AvoidMeleeChance; }
+	inline virtual int16	GetAccuracy()		const { return itembonuses.HitChance; }
+	inline virtual int16	GetCombatEffects()	const { return itembonuses.ProcChance; }
+	inline virtual int16	GetDS()				const { return itembonuses.DamageShield; }
 	// Mod3
-	inline virtual sint16	GetHealAmt()		const { return itembonuses.HealAmt; }
-	inline virtual sint16	GetSpellDmg()		const { return itembonuses.SpellDmg; }
-	inline virtual sint16	GetClair()			const { return itembonuses.Clairvoyance; }
-	inline virtual sint16	GetDSMit()			const { return itembonuses.DSMitigation; }
+	inline virtual int16	GetHealAmt()		const { return itembonuses.HealAmt; }
+	inline virtual int16	GetSpellDmg()		const { return itembonuses.SpellDmg; }
+	inline virtual int16	GetClair()			const { return itembonuses.Clairvoyance; }
+	inline virtual int16	GetDSMit()			const { return itembonuses.DSMitigation; }
 	
-	inline virtual sint16	GetSingMod()		const { return itembonuses.singingMod; }
-	inline virtual sint16	GetBrassMod()		const { return itembonuses.brassMod; }
-	inline virtual sint16	GetPercMod()		const { return itembonuses.percussionMod; }
-	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
-	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
+	inline virtual int16	GetSingMod()		const { return itembonuses.singingMod; }
+	inline virtual int16	GetBrassMod()		const { return itembonuses.brassMod; }
+	inline virtual int16	GetPercMod()		const { return itembonuses.percussionMod; }
+	inline virtual int16	GetStringMod()		const { return itembonuses.stringedMod; }
+	inline virtual int16	GetWindMod()		const { return itembonuses.windMod; }
 	
-	inline virtual sint16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath + 11; }
+	inline virtual int16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath + 11; }
 
 	// "SET" Class Methods
 	void SetMercData (uint32 templateID );
@@ -161,56 +161,56 @@ public:
 protected:
 	void CalcItemBonuses(StatBonuses* newbon);
 	void AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAug = false, bool isTribute = false);
-	int  CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat);
+	int  CalcRecommendedLevelBonus(uint8 level, uint8 reclevel, int basestat);
 
-	int16   skills[HIGHEST_SKILL+1];
-	int32   equipment[MAX_WORN_INVENTORY];	//this is an array of item IDs
-	int16	d_meele_texture1;			//this is an item Material value
-	int16	d_meele_texture2;			//this is an item Material value (offhand)
-	int8	prim_melee_type;			//Sets the Primary Weapon attack message and animation
-	int8	sec_melee_type;				//Sets the Secondary Weapon attack message and animation
+	uint16   skills[HIGHEST_SKILL+1];
+	uint32   equipment[MAX_WORN_INVENTORY];	//this is an array of item IDs
+	uint16	d_meele_texture1;			//this is an item Material value
+	uint16	d_meele_texture2;			//this is an item Material value (offhand)
+	uint8	prim_melee_type;			//Sets the Primary Weapon attack message and animation
+	uint8	sec_melee_type;				//Sets the Secondary Weapon attack message and animation
 
 private:
 
-	sint16    CalcAC();
-	sint16    GetACMit();
-	sint16    GetACAvoid();
-	sint16	  acmod();
-	sint16    CalcATK();
+	int16    CalcAC();
+	int16    GetACMit();
+	int16    GetACAvoid();
+	int16	  acmod();
+	int16    CalcATK();
 	//int      CalcHaste();
 
-	sint16   CalcSTR();
-	sint16   CalcSTA();
-	sint16   CalcDEX();
-	sint16   CalcAGI();
-	sint16   CalcINT();
-	sint16   CalcWIS();
-	sint16   CalcCHA();
+	int16   CalcSTR();
+	int16   CalcSTA();
+	int16   CalcDEX();
+	int16   CalcAGI();
+	int16   CalcINT();
+	int16   CalcWIS();
+	int16   CalcCHA();
 
-    sint16	CalcMR();
-	sint16	CalcFR();
-	sint16	CalcDR();
-	sint16	CalcPR();
-	sint16	CalcCR();
-	sint16	CalcCorrup();
-	sint32	CalcMaxHP();
-	sint32	CalcBaseHP();
-	sint32	GetClassHPFactor();
-	sint32	LevelRegen();
-	sint32	CalcHPRegen();
-	sint32	CalcHPRegenCap();
-	sint32	CalcMaxMana();
-	sint32	CalcBaseMana();
-	sint32	CalcManaRegen();
-	sint32	CalcBaseManaRegen();
-	sint32	CalcManaRegenCap();
+    int16	CalcMR();
+	int16	CalcFR();
+	int16	CalcDR();
+	int16	CalcPR();
+	int16	CalcCR();
+	int16	CalcCorrup();
+	int32	CalcMaxHP();
+	int32	CalcBaseHP();
+	int32	GetClassHPFactor();
+	int32	LevelRegen();
+	int32	CalcHPRegen();
+	int32	CalcHPRegenCap();
+	int32	CalcMaxMana();
+	int32	CalcBaseMana();
+	int32	CalcManaRegen();
+	int32	CalcBaseManaRegen();
+	int32	CalcManaRegenCap();
 	void	CalcMaxEndurance();	//This calculates the maximum endurance we can have
-	sint32	CalcBaseEndurance();	//Calculates Base End
-	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
-	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
-	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
-	sint32	CalcEnduranceRegenCap();
-	void	SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
+	int32	CalcBaseEndurance();	//Calculates Base End
+	int32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
+	int32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	int32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
+	int32	CalcEnduranceRegenCap();
+	void	SetEndurance(int32 newEnd);	//This sets the current endurance to the new value
 	void	DoEnduranceUpkeep();	//does the endurance upkeep
 
 	int 	GroupLeadershipAAHealthEnhancement();
@@ -222,24 +222,24 @@ private:
 	void GenerateAppearance();
 
 	// Private "base stats" Members
-	sint32 base_mana;
+	int32 base_mana;
 	int _baseAC;
-	sint16 _baseSTR;
-	sint16 _baseSTA;
-	sint16 _baseDEX;
-	sint16 _baseAGI;
-	sint16 _baseINT;
-	sint16 _baseWIS;
-	sint16 _baseCHA;
-	sint16 _baseATK;
-	int16 _baseRace;	// Necessary to preserve the race otherwise mercs get their race updated in the db when they get an illusion.
-	int8 _baseGender;	// Merc gender. Necessary to preserve the original value otherwise it can be changed by illusions.
-	sint16 _baseMR;
-	sint16 _baseCR;
-	sint16 _baseDR;
-	sint16 _baseFR;
-	sint16 _basePR;
-	sint16 _baseCorrup;
+	int16 _baseSTR;
+	int16 _baseSTA;
+	int16 _baseDEX;
+	int16 _baseAGI;
+	int16 _baseINT;
+	int16 _baseWIS;
+	int16 _baseCHA;
+	int16 _baseATK;
+	uint16 _baseRace;	// Necessary to preserve the race otherwise mercs get their race updated in the db when they get an illusion.
+	uint8 _baseGender;	// Merc gender. Necessary to preserve the original value otherwise it can be changed by illusions.
+	int16 _baseMR;
+	int16 _baseCR;
+	int16 _baseDR;
+	int16 _baseFR;
+	int16 _basePR;
+	int16 _baseCorrup;
 
 	uint32 _MercID;
 	uint32 _MercTemplateID;
@@ -251,12 +251,12 @@ private:
 	uint8 _OwnerClientVersion;
 
 	Inventory m_inv;
-	sint32	max_end;
-	sint32	cur_end;
+	int32	max_end;
+	int32	cur_end;
 	bool	_medding;
 	bool	_suspended;
 	bool	p_depop;
-	int32	owner_char_id;
+	uint32	owner_char_id;
 	const NPCType*	ourNPCData;
 
 	Timer	endupkeep_timer;

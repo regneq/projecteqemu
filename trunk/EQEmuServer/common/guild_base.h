@@ -11,19 +11,19 @@ class Database;
 class CharGuildInfo {
 public:
 	//fields from `characer_`
-	int32	char_id;
+	uint32	char_id;
 	std::string	char_name;
 	uint8	class_;
-	int16	level;
-	int32	time_last_on;
-	int32	zone_id;
+	uint16	level;
+	uint32	time_last_on;
+	uint32	zone_id;
 	
 	//fields from `guild_members`
-	int32	guild_id;
-	int8	rank;
+	uint32	guild_id;
+	uint8	rank;
 	bool	tribute_enable;
-	int32	total_tribute;
-	int32	last_tribute;		//timestamp
+	uint32	total_tribute;
+	uint32	last_tribute;		//timestamp
 	bool	banker;
 	bool	alt;
 	std::string	public_note;
@@ -42,76 +42,76 @@ public:
 	bool RefreshGuild(uint32 guild_id);
 	
 	//guild edit actions.
-	int32	CreateGuild(const char* name, int32 leader_char_id);
-	bool	DeleteGuild(int32 guild_id);
-	bool	RenameGuild(int32 guild_id, const char* name);
-	bool	SetGuildMOTD(int32 guild_id, const char* motd, const char *setter);
-	bool	SetGuildURL(int32 GuildID, const char* URL);
-	bool	SetGuildChannel(int32 GuildID, const char* Channel);
+	uint32	CreateGuild(const char* name, uint32 leader_char_id);
+	bool	DeleteGuild(uint32 guild_id);
+	bool	RenameGuild(uint32 guild_id, const char* name);
+	bool	SetGuildMOTD(uint32 guild_id, const char* motd, const char *setter);
+	bool	SetGuildURL(uint32 GuildID, const char* URL);
+	bool	SetGuildChannel(uint32 GuildID, const char* Channel);
 	
 	//character edit actions
-	bool	SetGuildLeader(int32 guild_id, int32 leader_char_id);
-	bool	SetGuild(int32 charid, int32 guild_id, int8 rank);
-	bool	SetGuildRank(int32 charid, int8 rank);
-	bool	SetBankerFlag(int32 charid, bool is_banker);
-	bool	GetAltFlag(int32 CharID);
-	bool	SetAltFlag(int32 charid, bool is_alt);
-	bool	GetBankerFlag(int32 CharID);
-	bool	SetTributeFlag(int32 charid, bool enabled);
-	bool	SetPublicNote(int32 charid, const char *note);
+	bool	SetGuildLeader(uint32 guild_id, uint32 leader_char_id);
+	bool	SetGuild(uint32 charid, uint32 guild_id, uint8 rank);
+	bool	SetGuildRank(uint32 charid, uint8 rank);
+	bool	SetBankerFlag(uint32 charid, bool is_banker);
+	bool	GetAltFlag(uint32 CharID);
+	bool	SetAltFlag(uint32 charid, bool is_alt);
+	bool	GetBankerFlag(uint32 CharID);
+	bool	SetTributeFlag(uint32 charid, bool enabled);
+	bool	SetPublicNote(uint32 charid, const char *note);
 	
 	//queries
 	bool	GetCharInfo(const char *char_name, CharGuildInfo &into);
 	bool	GetCharInfo(uint32 char_id, CharGuildInfo &into);
 	bool	GetEntireGuild(uint32 guild_id, std::vector<CharGuildInfo *> &members);	//caller is responsible for deleting each pointer in the resulting vector.
 	bool	GuildExists(uint32 guild_id) const;
-	bool	GetGuildMOTD(int32 guild_id, char *motd_buffer, char *setter_buffer) const;
-	bool	GetGuildURL(int32 GuildID, char *URLBuffer) const;
-	bool	GetGuildChannel(int32 GuildID, char *ChannelBuffer) const;
+	bool	GetGuildMOTD(uint32 guild_id, char *motd_buffer, char *setter_buffer) const;
+	bool	GetGuildURL(uint32 GuildID, char *URLBuffer) const;
+	bool	GetGuildChannel(uint32 GuildID, char *ChannelBuffer) const;
 	const char *GetRankName(uint32 guild_id, uint8 rank) const;
 	const char *GetGuildName(uint32 guild_id) const;
-	bool	GetGuildNameByID(int32 guild_id, std::string &into) const;
+	bool	GetGuildNameByID(uint32 guild_id, std::string &into) const;
 	uint32	GetGuildIDByName(const char *GuildName);
 	bool	IsGuildLeader(uint32 guild_id, uint32 char_id) const;
 	uint8	GetDisplayedRank(uint32 guild_id, uint8 rank, uint32 char_id) const;
 	bool	CheckGMStatus(uint32 guild_id, uint8 status) const;
 	bool	CheckPermission(uint32 guild_id, uint8 rank, GuildAction act) const;
-//	int32	Getguild_id(int32 eqid);
-	int32	FindGuildByLeader(int32 leader) const;
-//	void	GetGuildMembers(int32 guild_id,GuildMember_Struct* gms);
-	int32	NumberInGuild(int32 guild_id);
-//	bool	GetGuildRanks(int32 guildeqid, GuildRanks_Struct* gr);
-//	bool	EditGuild(int32 guild_id, int8 ranknum, GuildRankLevel_Struct* grl);
+//	uint32	Getguild_id(uint32 eqid);
+	uint32	FindGuildByLeader(uint32 leader) const;
+//	void	GetGuildMembers(uint32 guild_id,GuildMember_Struct* gms);
+	uint32	NumberInGuild(uint32 guild_id);
+//	bool	GetGuildRanks(uint32 guildeqid, GuildRanks_Struct* gr);
+//	bool	EditGuild(uint32 guild_id, uint8 ranknum, GuildRankLevel_Struct* grl);
 	
 	uint8 *MakeGuildList(const char *head_name, uint32 &length) const;	//make a guild list packet, returns ownership of the buffer.
 	
 	static const char *const GuildActionNames[_MaxGuildAction];
-	uint32	DoesAccountContainAGuildLeader(int32 AccountID);
+	uint32	DoesAccountContainAGuildLeader(uint32 AccountID);
 	
 protected:
 	//the methods which must be defined by base classes.
-	virtual void SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation) = 0;
-	virtual void SendCharRefresh(int32 old_guild_id, int32 guild_id, int32 charid) = 0;
-	virtual void SendRankUpdate(int32 CharID) = 0;
-	virtual void SendGuildDelete(int32 guild_id) = 0;
+	virtual void SendGuildRefresh(uint32 guild_id, bool name, bool motd, bool rank, bool relation) = 0;
+	virtual void SendCharRefresh(uint32 old_guild_id, uint32 guild_id, uint32 charid) = 0;
+	virtual void SendRankUpdate(uint32 CharID) = 0;
+	virtual void SendGuildDelete(uint32 guild_id) = 0;
 	
-	int32	DBCreateGuild(const char* name, int32 leader_char_id);
-	bool	DBDeleteGuild(int32 guild_id);
-	bool	DBRenameGuild(int32 guild_id, const char* name);
-	bool	DBSetGuildLeader(int32 guild_id, int32 leader_char_id);
-	bool	DBSetGuildMOTD(int32 guild_id, const char* motd, const char *setter);
-	bool	DBSetGuildURL(int32 GuildID, const char* URL);
-	bool	DBSetGuildChannel(int32 GuildID, const char* Channel);
-	bool	DBSetGuild(int32 charid, int32 guild_id, int8 rank);
-	bool	DBSetGuildRank(int32 charid, int8 rank);
-	bool	DBSetBankerFlag(int32 charid, bool is_banker);
-	bool	DBSetAltFlag(int32 charid, bool is_alt);
-	bool	DBSetTributeFlag(int32 charid, bool enabled);
-	bool	DBSetPublicNote(int32 charid, const char *note);
+	uint32	DBCreateGuild(const char* name, uint32 leader_char_id);
+	bool	DBDeleteGuild(uint32 guild_id);
+	bool	DBRenameGuild(uint32 guild_id, const char* name);
+	bool	DBSetGuildLeader(uint32 guild_id, uint32 leader_char_id);
+	bool	DBSetGuildMOTD(uint32 guild_id, const char* motd, const char *setter);
+	bool	DBSetGuildURL(uint32 GuildID, const char* URL);
+	bool	DBSetGuildChannel(uint32 GuildID, const char* Channel);
+	bool	DBSetGuild(uint32 charid, uint32 guild_id, uint8 rank);
+	bool	DBSetGuildRank(uint32 charid, uint8 rank);
+	bool	DBSetBankerFlag(uint32 charid, bool is_banker);
+	bool	DBSetAltFlag(uint32 charid, bool is_alt);
+	bool	DBSetTributeFlag(uint32 charid, bool enabled);
+	bool	DBSetPublicNote(uint32 charid, const char *note);
 	bool	_RunQuery(char *&query, int len, const char *errmsg);
-//	void	DBSetPublicNote(int32 guild_id,char* charname, char* note);
+//	void	DBSetPublicNote(uint32 guild_id,char* charname, char* note);
 	
-	bool	LocalDeleteGuild(int32 guild_id);
+	bool	LocalDeleteGuild(uint32 guild_id);
 	
 	class RankInfo {
 	public:
@@ -128,7 +128,7 @@ protected:
 		std::string url;
 		std::string channel;
 
-		int32 leader_char_id;
+		uint32 leader_char_id;
 		uint8 minstatus;
 		//tribute is not in here on purpose, since it is only valid in world!
 		RankInfo ranks[GUILD_MAX_RANK+1];
@@ -141,7 +141,7 @@ protected:
 	
 	bool _StoreGuildDB(uint32 guild_id);
 	GuildInfo *_CreateGuild(uint32 guild_id, const char *guild_name, uint32 account_id, uint8 minstatus, const char *guild_motd, const char *motd_setter, const char *Channel, const char *URL);
-	int32 _GetFreeGuildID();
+	uint32 _GetFreeGuildID();
 };
 
 

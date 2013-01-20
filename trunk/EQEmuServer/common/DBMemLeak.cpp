@@ -38,7 +38,7 @@ DBMemLeak::~DBMemLeak() {
 void DBMemLeak::Alloc(const void* result, const char* query) {
 	LockMutex lock(&MDBMemLeak);
 	long requestNumber;
-	int8* tmp2 = new int8;
+	uint8* tmp2 = new uint8;
 	_CrtIsMemoryBlock( tmp2, 1, &requestNumber, 0, 0 );
 	safe_delete(tmp2);
 	DBMemLeakStruct* tmp = (DBMemLeakStruct*) new uchar[sizeof(DBMemLeakStruct) + strlen(query) + 1];

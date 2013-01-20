@@ -119,7 +119,7 @@ XS(XS_QuestItem_IsType)
 	{
 		ItemInst*		THIS;
 		bool		RETVAL;
-		uint32 type = (sint32)SvIV(ST(1));
+		uint32 type = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "QuestItem")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -171,7 +171,7 @@ XS(XS_QuestItem_GetCharges)
 		Perl_croak(aTHX_ "Usage: QuestItem::GetCharges(THIS)");
 	{
 		ItemInst*		THIS;
-		sint16		RETVAL;
+		int16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "QuestItem")) {
@@ -197,7 +197,7 @@ XS(XS_QuestItem_GetAugment)
 		Perl_croak(aTHX_ "Usage: QuestItem::GetAugment(THIS, augment_id)");
 	{
 		ItemInst*	THIS;
-        sint16      slot_id = (sint16)SvIV(ST(1));
+        int16      slot_id = (int16)SvIV(ST(1));
 		ItemInst*	RETVAL;
 
 		if (sv_derived_from(ST(0), "QuestItem")) {

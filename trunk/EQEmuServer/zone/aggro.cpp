@@ -96,7 +96,7 @@ void EntityList::DescribeAggro(Client *towho, NPC *from_who, float d, bool verbo
 			continue;
 		
 		if(engaged) {
-			int32 amm = from_who->GetHateAmount(mob);
+			uint32 amm = from_who->GetHateAmount(mob);
 			if(amm == 0) {
 				towho->Message(0, "... %s is not on my hate list.", mob->GetName());
 			} else {
@@ -193,7 +193,7 @@ void NPC::DescribeAggro(Client *towho, Mob *mob, bool verbose) {
 			bool res = false;
 			for(; cur != end; cur++) {
 				struct NPCFaction* fac = *cur;
-				if ((sint32)fac->factionID == mob_primary) {
+				if ((int32)fac->factionID == mob_primary) {
 					if (fac->npc_value > 0) {
 						towho->Message(0, "...%s is on ALLY faction %s (%d) with %d", mob->GetName(), namebuf, mob_primary, fac->npc_value);
 						res = true;
@@ -1120,11 +1120,11 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
 }
 
 //offensive spell aggro
-sint32 Mob::CheckAggroAmount(int16 spellid) {
-	int16 spell_id = spellid;
-	sint32 AggroAmount = 0;
-	sint32 nonModifiedAggro = 0;
-	int16 slevel = GetLevel();
+int32 Mob::CheckAggroAmount(uint16 spellid) {
+	uint16 spell_id = spellid;
+	int32 AggroAmount = 0;
+	int32 nonModifiedAggro = 0;
+	uint16 slevel = GetLevel();
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
 		switch(spells[spell_id].effectid[o]) {
@@ -1341,9 +1341,9 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 }
 
 //healing and buffing aggro
-sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
-	int16 spell_id = spellid;
-	sint32 AggroAmount = 0;
+int32 Mob::CheckHealAggroAmount(uint16 spellid, uint32 heal_possible) {
+	uint16 spell_id = spellid;
+	int32 AggroAmount = 0;
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
 		switch(spells[spell_id].effectid[o]) {
@@ -1423,7 +1423,7 @@ void Mob::ClearFeignMemory() {
 		AIfeignremember_timer->Disable();
 }
 
-bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
+bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, uint16 spell_id) {
 
 	if(!caster) return false;
 

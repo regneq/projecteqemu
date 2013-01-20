@@ -68,7 +68,7 @@ TCPConnection::TCPConnection()
 }
 
 //server version
-TCPConnection::TCPConnection(int32 ID, SOCKET in_socket, int32 irIP, int16 irPort)
+TCPConnection::TCPConnection(uint32 ID, SOCKET in_socket, uint32 irIP, uint16 irPort)
 : ConnectionType(Incomming),
   connection_socket(in_socket),
   id(ID),
@@ -175,7 +175,7 @@ void TCPConnection::Free() {
 	pFree = true;
 }
 
-bool TCPConnection::Send(const uchar* data, sint32 size) {
+bool TCPConnection::Send(const uchar* data, int32 size) {
 	if (!Connected())
 		return false;
 	if (!size)
@@ -184,7 +184,7 @@ bool TCPConnection::Send(const uchar* data, sint32 size) {
 	return true;
 }
 
-void TCPConnection::ServerSendQueuePushEnd(const uchar* data, sint32 size) {
+void TCPConnection::ServerSendQueuePushEnd(const uchar* data, int32 size) {
 	MSendQueue.lock();
 	if (sendbuf == NULL) {
 		sendbuf = new uchar[size];
@@ -203,7 +203,7 @@ void TCPConnection::ServerSendQueuePushEnd(const uchar* data, sint32 size) {
 	MSendQueue.unlock();
 }
 
-void TCPConnection::ServerSendQueuePushEnd(uchar** data, sint32 size) {
+void TCPConnection::ServerSendQueuePushEnd(uchar** data, int32 size) {
 	MSendQueue.lock();
 	if (sendbuf == 0) {
 		sendbuf = *data;
@@ -226,7 +226,7 @@ void TCPConnection::ServerSendQueuePushEnd(uchar** data, sint32 size) {
 	safe_delete_array(*data);
 }
 
-void TCPConnection::ServerSendQueuePushFront(uchar* data, sint32 size) {
+void TCPConnection::ServerSendQueuePushFront(uchar* data, int32 size) {
 	MSendQueue.lock();
 	if (sendbuf == 0) {
 		sendbuf = new uchar[size];
@@ -245,7 +245,7 @@ void TCPConnection::ServerSendQueuePushFront(uchar* data, sint32 size) {
 	MSendQueue.unlock();
 }
 
-bool TCPConnection::ServerSendQueuePop(uchar** data, sint32* size) {
+bool TCPConnection::ServerSendQueuePop(uchar** data, int32* size) {
 	bool ret;
 	if (!MSendQueue.trylock())
 		return false;
@@ -262,7 +262,7 @@ bool TCPConnection::ServerSendQueuePop(uchar** data, sint32* size) {
 	return ret;
 }
 
-bool TCPConnection::ServerSendQueuePopForce(uchar** data, sint32* size) {
+bool TCPConnection::ServerSendQueuePopForce(uchar** data, int32* size) {
 	bool ret;
 	MSendQueue.lock();
 	if (sendbuf) {
@@ -351,14 +351,14 @@ bool TCPConnection::ConnectReady() const {
 	return(ConnectionType == Outgoing);
 }
 
-void TCPConnection::AsyncConnect(const char* irAddress, int16 irPort) {
+void TCPConnection::AsyncConnect(const char* irAddress, uint16 irPort) {
 	safe_delete_array(charAsyncConnect);
 	charAsyncConnect = new char[strlen(irAddress) + 1];
 	strcpy(charAsyncConnect, irAddress);
-	AsyncConnect((int32) 0, irPort);
+	AsyncConnect((uint32) 0, irPort);
 }
 
-void TCPConnection::AsyncConnect(int32 irIP, int16 irPort) {
+void TCPConnection::AsyncConnect(uint32 irIP, uint16 irPort) {
 	if (ConnectionType != Outgoing) {
 		// If this code runs, we got serious problems
 		// Crash and burn.
@@ -400,10 +400,10 @@ void TCPConnection::AsyncConnect(int32 irIP, int16 irPort) {
 	return;
 }
 
-bool TCPConnection::Connect(const char* irAddress, int16 irPort, char* errbuf) {
+bool TCPConnection::Connect(const char* irAddress, uint16 irPort, char* errbuf) {
 	if (errbuf)
 		errbuf[0] = 0;
-	int32 tmpIP = ResolveIP(irAddress);
+	uint32 tmpIP = ResolveIP(irAddress);
 	if (!tmpIP) {
 		if (errbuf) {
 #ifdef _WINDOWS
@@ -417,7 +417,7 @@ bool TCPConnection::Connect(const char* irAddress, int16 irPort, char* errbuf) {
 	return ConnectIP(tmpIP, irPort, errbuf);
 }
 
-bool TCPConnection::ConnectIP(int32 in_ip, int16 in_port, char* errbuf) {
+bool TCPConnection::ConnectIP(uint32 in_ip, uint16 in_port, char* errbuf) {
 	if (errbuf)
 		errbuf[0] = 0;
 	if (ConnectionType != Outgoing) {
@@ -639,7 +639,7 @@ bool TCPConnection::RecvData(char* errbuf) {
 		cout << ": Read " << status << " bytes from network. (recvbuf_used = " << recvbuf_used << ") " << inet_ntoa(in) << ":" << GetrPort();
 		cout << endl;
 	#if TCPN_LOG_RAW_DATA_IN == 2
-		sint32 tmp = status;
+		int32 tmp = status;
 		if (tmp > 32)
 			tmp = 32;
 		DumpPacket(&recvbuf[recvbuf_used], status);
@@ -823,7 +823,7 @@ bool TCPConnection::SendData(bool &sent_something, char* errbuf) {
 		errbuf[0] = 0;
 	/************ Get first send packet on queue and send it! ************/
 	uchar* data = 0;
-	sint32 size = 0;
+	int32 size = 0;
 	int status = 0;
 	if (ServerSendQueuePop(&data, &size)) {
 #ifdef _WINDOWS
@@ -840,7 +840,7 @@ bool TCPConnection::SendData(bool &sent_something, char* errbuf) {
 			cout << ": Wrote " << status << " bytes to network. " << inet_ntoa(in) << ":" << GetrPort();
 			cout << endl;
 	#if TCPN_LOG_RAW_DATA_OUT == 2
-			sint32 tmp = status;
+			int32 tmp = status;
 			if (tmp > 32)
 				tmp = 32;
 			DumpPacket(data, status);

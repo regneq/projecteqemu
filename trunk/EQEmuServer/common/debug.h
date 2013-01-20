@@ -116,7 +116,7 @@ public:
 	};
 	
 	//these are callbacks called for each
-	typedef void (* msgCallbackBuf)(LogIDs id, const char *buf, int8 size, int32 count);
+	typedef void (* msgCallbackBuf)(LogIDs id, const char *buf, uint8 size, uint32 count);
 	typedef void (* msgCallbackFmt)(LogIDs id, const char *fmt, va_list ap);
 	typedef void (* msgCallbackPva)(LogIDs id, const char *prefix, const char *fmt, va_list ap);
 	
@@ -127,10 +127,10 @@ public:
 	void SetCallback(LogIDs id, msgCallbackBuf proc);
 	void SetCallback(LogIDs id, msgCallbackPva proc);
 	
-	bool writebuf(LogIDs id, const char *buf, int8 size, int32 count);
+	bool writebuf(LogIDs id, const char *buf, uint8 size, uint32 count);
 	bool write(LogIDs id, const char *fmt, ...);
 	bool writePVA(LogIDs id, const char *prefix, const char *fmt, va_list args);
-	bool Dump(LogIDs id, int8* data, int32 size, int32 cols=16, int32 skip=0);
+	bool Dump(LogIDs id, uint8* data, uint32 size, uint32 cols=16, uint32 skip=0);
 private:
 	bool open(LogIDs id);
 	bool writeNTS(LogIDs id, bool dofile, const char *fmt, ...); // no error checking, assumes is open, no locking, no timestamp, no newline
@@ -144,7 +144,7 @@ private:
 	4 = fopen error, dont retry
 	8 = use stderr instead (2 must be set)
 */
-	int8	pLogStatus[MaxLogID];
+	uint8	pLogStatus[MaxLogID];
 	
 	msgCallbackFmt logCallbackFmt[MaxLogID];
 	msgCallbackBuf logCallbackBuf[MaxLogID];
@@ -156,7 +156,7 @@ extern EQEMuLog* LogFile;
 #ifdef _EQDEBUG
 class PerformanceMonitor {
 public:
-	PerformanceMonitor(sint64* ip) {
+	PerformanceMonitor(int64* ip) {
 		p = ip;
 		QueryPerformanceCounter(&tmp);
 	}
@@ -166,7 +166,7 @@ public:
 		*p += tmp2.QuadPart - tmp.QuadPart;
 	}
 	LARGE_INTEGER tmp;
-	sint64* p;
+	int64* p;
 };
 #endif
 #endif

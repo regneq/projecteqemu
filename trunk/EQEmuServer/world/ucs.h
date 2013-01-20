@@ -15,7 +15,7 @@ public:
 	void Disconnect() { if(Stream) Stream->Disconnect(); }
 	void SendMessage(const char *From, const char *Message);
 private:
-	inline int32 GetIP() const { return Stream ? Stream->GetrIP() : 0; }
+	inline uint32 GetIP() const { return Stream ? Stream->GetrIP() : 0; }
 	EmuTCPConnection *Stream;
 	bool authenticated;
 };

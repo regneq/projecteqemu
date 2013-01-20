@@ -64,10 +64,10 @@ CREATE TABLE spawn_events (
 
 */
 
-Spawn2::Spawn2(int32 in_spawn2_id, int32 spawngroup_id, 
+Spawn2::Spawn2(uint32 in_spawn2_id, uint32 spawngroup_id, 
 	float in_x, float in_y, float in_z, float in_heading, 
-	int32 respawn, int32 variance, int32 timeleft, int32 grid,
-	uint16 in_cond_id, sint16 in_min_value, bool in_enabled, EmuAppearance anim)
+	uint32 respawn, uint32 variance, uint32 timeleft, uint32 grid,
+	uint16 in_cond_id, int16 in_min_value, bool in_enabled, EmuAppearance anim)
 : timer(100000)
 {
 	spawn2_id = in_spawn2_id;
@@ -102,9 +102,9 @@ Spawn2::~Spawn2()
 {
 }
 
-int32 Spawn2::resetTimer()
+uint32 Spawn2::resetTimer()
 {
-	int32 rspawn = respawn_ * 1000;
+	uint32 rspawn = respawn_ * 1000;
 	
 	if (variance_ != 0) {
 		int var_over_2 = (variance_ * 1000) / 2;
@@ -119,9 +119,9 @@ int32 Spawn2::resetTimer()
 	
 }
 
-int32 Spawn2::despawnTimer(int32 despawn_timer)
+uint32 Spawn2::despawnTimer(uint32 despawn_timer)
 {
-	int32 dspawn = despawn_timer * 1000;
+	uint32 dspawn = despawn_timer * 1000;
 	
 	if (variance_ != 0) {
 		int var_over_2 = (variance_ * 1000) / 2;
@@ -175,7 +175,7 @@ bool Spawn2::Process() {
 		}
 		
 		//have the spawn group pick an NPC for us
-		int32 npcid = sg->GetNPCType();
+		uint32 npcid = sg->GetNPCType();
 		if (npcid == 0) {
 			_log(SPAWNS__MAIN, "Spawn2 %d: Spawn group %d did not yeild an NPC! not spawning.", spawn2_id, spawngroup_id_);
 			Reset();	//try again later (why?)
@@ -278,7 +278,7 @@ void Spawn2::Depop() {
 	npcthis = NULL;
 }
 
-void Spawn2::Repop(int32 delay) {
+void Spawn2::Repop(uint32 delay) {
 	if (delay == 0) {
 		timer.Trigger();
 		_log(SPAWNS__MAIN, "Spawn2 %d: Spawn reset, repop immediately.", spawn2_id);
@@ -310,8 +310,8 @@ void Spawn2::ForceDespawn()
 		}
 	}
 
-	int32 cur = 100000;
-	int32 dtimer = sg->despawn_timer;
+	uint32 cur = 100000;
+	uint32 dtimer = sg->despawn_timer;
 
 	if(sg->despawn == 1 || sg->despawn == 3)
 	{
@@ -331,7 +331,7 @@ void Spawn2::ForceDespawn()
 void Spawn2::DeathReset()
 {
 	//get our reset based on variance etc and store it locally
-	int32 cur = resetTimer();
+	uint32 cur = resetTimer();
 	//set our timer to our reset local
 	timer.Start(cur);
 
@@ -347,7 +347,7 @@ void Spawn2::DeathReset()
 	}
 }
 
-bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, sint16 version, int32 repopdelay) {
+bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list, int16 version, uint32 repopdelay) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -364,7 +364,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 			Spawn2* newSpawn = 0;
 			
 			bool perl_enabled = atoi(row[11]) == 1 ? true : false;
-			int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0]), zone->GetInstanceID()) * 1000);
+			uint32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0]), zone->GetInstanceID()) * 1000);
 			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]), perl_enabled, (EmuAppearance)atoi(row[12]));	
 			spawn2_list.Insert( newSpawn );
 		}
@@ -381,7 +381,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 }
 
 
-Spawn2* ZoneDatabase::LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2id, int32 timeleft) {
+Spawn2* ZoneDatabase::LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, uint32 spawn2id, uint32 timeleft) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -406,12 +406,12 @@ Spawn2* ZoneDatabase::LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2i
 	return 0;
 }
 
-bool ZoneDatabase::CreateSpawn2(Client *c, int32 spawngroup, const char* zone, float heading, float x, float y, float z, int32 respawn, int32 variance, uint16 condition, sint16 cond_value)
+bool ZoneDatabase::CreateSpawn2(Client *c, uint32 spawngroup, const char* zone, float heading, float x, float y, float z, uint32 respawn, uint32 variance, uint16 condition, int16 cond_value)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 
     char *query = 0;
-	int32 affected_rows = 0;
+	uint32 affected_rows = 0;
 	
 	//	if(GetInverseXY()==1) {
 	//		float temp=x;
@@ -440,9 +440,9 @@ bool ZoneDatabase::CreateSpawn2(Client *c, int32 spawngroup, const char* zone, f
 	return false;
 }
 
-int32 Zone::CountSpawn2() {
+uint32 Zone::CountSpawn2() {
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
-	int32 count = 0;
+	uint32 count = 0;
 
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -453,11 +453,11 @@ int32 Zone::CountSpawn2() {
 	return count;
 }
 
-int32 Zone::DumpSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index, Spawn2* spawn2) {
+uint32 Zone::DumpSpawn2(ZSDump_Spawn2* spawn2dump, uint32* spawn2index, Spawn2* spawn2) {
 	if (spawn2 == 0)
 		return 0;
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
-	//	int32	index = 0;
+	//	uint32	index = 0;
 
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -473,9 +473,9 @@ int32 Zone::DumpSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index, Spawn2* sp
 	return 0xFFFFFFFF;
 }
 
-void Zone::DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index) {
+void Zone::DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, uint32* spawn2index) {
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
-	//	int32	index = 0;
+	//	uint32	index = 0;
 
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -500,7 +500,7 @@ void Zone::Despawn(uint32 spawn2ID) {
 	}
 }
 
-void Spawn2::SpawnConditionChanged(const SpawnCondition &c, sint16 old_value) {
+void Spawn2::SpawnConditionChanged(const SpawnCondition &c, int16 old_value) {
 	if(GetSpawnCondition() != c.condition_id)
 		return;
 	
@@ -542,7 +542,7 @@ void Spawn2::SpawnConditionChanged(const SpawnCondition &c, sint16 old_value) {
 	}
 }
 
-void Zone::SpawnConditionChanged(const SpawnCondition &c, sint16 old_value) {
+void Zone::SpawnConditionChanged(const SpawnCondition &c, int16 old_value) {
 	_log(SPAWNS__CONDITIONS, "Zone notified that spawn condition %d has changed from %d to %d. Notifying all spawn points.", c.condition_id, old_value, c.value);
 	
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
@@ -635,7 +635,7 @@ void SpawnConditionManager::ExecEvent(SpawnEvent &event, bool send_update) {
 	
 	SpawnCondition &cond = condi->second;
 	
-	sint16 new_value = cond.value;
+	int16 new_value = cond.value;
 	
 	//we have our event and our condition, do our stuff.
 	switch(event.action) {
@@ -691,7 +691,7 @@ void SpawnConditionManager::UpdateDBEvent(SpawnEvent &event) {
 	safe_delete_array(query);
 }
 
-void SpawnConditionManager::UpdateDBCondition(const char* zone_name, uint32 instance_id, uint16 cond_id, sint16 value) {
+void SpawnConditionManager::UpdateDBCondition(const char* zone_name, uint32 instance_id, uint16 cond_id, int16 value) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	int len;
@@ -924,7 +924,7 @@ void SpawnConditionManager::FindNearestEvent() {
 		_log(SPAWNS__CONDITIONS, "Next event determined to be event %d", next_id);
 }
 
-void SpawnConditionManager::SetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id, sint16 new_value, bool world_update) 
+void SpawnConditionManager::SetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id, int16 new_value, bool world_update) 
 {
 	if(world_update) {
 		//this is an update coming from another zone, they
@@ -944,7 +944,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint32 instance
 			return;
 		}
 		
-		sint16 old_value = cond.value;
+		int16 old_value = cond.value;
 		
 		//set our local value
 		cond.value = new_value;
@@ -971,7 +971,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint32 instance
 			return;
 		}
 	
-		sint16 old_value = cond.value;
+		int16 old_value = cond.value;
 		
 		//set our local value
 		cond.value = new_value;
@@ -1133,7 +1133,7 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool rese
 	safe_delete(pack);
 }
 
-sint16 SpawnConditionManager::GetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id) {
+int16 SpawnConditionManager::GetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id) {
 	if(!strcasecmp(zone_short, zone->GetShortName()) && instance_id == zone->GetInstanceID()) 
 	{
 		//this is a local spawn condition
@@ -1155,7 +1155,7 @@ sint16 SpawnConditionManager::GetCondition(const char *zone_short, uint32 instan
 		MYSQL_ROW row;
 		int len;
 		
-		sint16 value;
+		int16 value;
 		
 		//load spawn conditions	
 		SpawnCondition cond;
@@ -1179,7 +1179,7 @@ sint16 SpawnConditionManager::GetCondition(const char *zone_short, uint32 instan
 	}
 }
 
-bool SpawnConditionManager::Check(uint16 condition, sint16 min_value) {
+bool SpawnConditionManager::Check(uint16 condition, int16 min_value) {
 	map<uint16, SpawnCondition>::iterator condi;
 	condi = spawn_conditions.find(condition);
 	if(condi == spawn_conditions.end())

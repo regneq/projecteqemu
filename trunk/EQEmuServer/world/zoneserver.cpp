@@ -69,7 +69,7 @@ ZoneServer::~ZoneServer() {
 	tcpc->Free();
 }
 
-bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
+bool ZoneServer::SetZone(uint32 iZoneID, uint32 iInstanceID, bool iStaticZone) {
 	BootingUp = false;
 	
 	const char* zn = MakeLowerString(database.GetZoneName(iZoneID));
@@ -114,7 +114,7 @@ bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	return true;
 }
 
-void ZoneServer::LSShutDownUpdate(int32 zoneid){
+void ZoneServer::LSShutDownUpdate(uint32 zoneid){
 	if(WorldConfig::get()->UpdateStats){
 		ServerPacket* pack = new ServerPacket;
 		pack->opcode = ServerOP_LSZoneShutdown;
@@ -131,7 +131,7 @@ void ZoneServer::LSShutDownUpdate(int32 zoneid){
 		safe_delete(pack);
 	}
 }
-void ZoneServer::LSBootUpdate(int32 zoneid, int32 instanceid, bool startup){
+void ZoneServer::LSBootUpdate(uint32 zoneid, uint32 instanceid, bool startup){
 	if(WorldConfig::get()->UpdateStats){
 		ServerPacket* pack = new ServerPacket;
 		if(startup)
@@ -152,7 +152,7 @@ void ZoneServer::LSBootUpdate(int32 zoneid, int32 instanceid, bool startup){
 	}
 }
 
-void ZoneServer::LSSleepUpdate(int32 zoneid){
+void ZoneServer::LSSleepUpdate(uint32 zoneid){
 	if(WorldConfig::get()->UpdateStats){
 		ServerPacket* pack = new ServerPacket;
 		pack->opcode = ServerOP_LSZoneSleep;
@@ -180,7 +180,7 @@ bool ZoneServer::Process() {
 		if (!authenticated) {
 			if (WorldConfig::get()->SharedKey.length() > 0) {
 				if (pack->opcode == ServerOP_ZAAuth && pack->size == 16) {
-					int8 tmppass[16];
+					uint8 tmppass[16];
 					MD5::Generate((const uchar*) WorldConfig::get()->SharedKey.c_str(), WorldConfig::get()->SharedKey.length(), tmppass);
 					if (memcmp(pack->pBuffer, tmppass, 16) == 0)
 						authenticated = true;
@@ -633,7 +633,7 @@ bool ZoneServer::Process() {
 		}
 		case ServerOP_ZoneStatus: {
 			if (pack->size >= 1)
-				zoneserver_list.SendZoneStatus((char *) &pack->pBuffer[1], (int8) pack->pBuffer[0], this);
+				zoneserver_list.SendZoneStatus((char *) &pack->pBuffer[1], (uint8) pack->pBuffer[0], this);
 			break;
 
 		}
@@ -860,9 +860,9 @@ bool ZoneServer::Process() {
 		}
 		
 		case ServerOP_FlagUpdate: {
-			ClientListEntry* cle = client_list.FindCLEByAccountID(*((int32*) pack->pBuffer));
+			ClientListEntry* cle = client_list.FindCLEByAccountID(*((uint32*) pack->pBuffer));
 			if (cle)
-				cle->SetAdmin(*((sint16*) &pack->pBuffer[4]));
+				cle->SetAdmin(*((int16*) &pack->pBuffer[4]));
 			zoneserver_list.SendPacket(pack);
 			break;
 		}
@@ -1328,7 +1328,7 @@ bool ZoneServer::Process() {
 	return true;
 }
 
-void ZoneServer::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...) {
+void ZoneServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...) {
 	if (!message)
 		return;
 	va_list argptr;
@@ -1340,7 +1340,7 @@ void ZoneServer::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_
 	SendEmoteMessageRaw(to, to_guilddbid, to_minstatus, type, buffer);
 }
 
-void ZoneServer::SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message) {
+void ZoneServer::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message) {
 	if (!message)
 		return;
 	ServerPacket* pack = new ServerPacket;
@@ -1376,7 +1376,7 @@ void ZoneServer::SendGroupIDs() {
 	delete pack;
 }
 
-void ZoneServer::ChangeWID(int32 iCharID, int32 iWID) {
+void ZoneServer::ChangeWID(uint32 iCharID, uint32 iWID) {
 	ServerPacket* pack = new ServerPacket(ServerOP_ChangeWID, sizeof(ServerChangeWID_Struct));
 	ServerChangeWID_Struct* scw = (ServerChangeWID_Struct*) pack->pBuffer;
 	scw->charid = iCharID;
@@ -1386,7 +1386,7 @@ void ZoneServer::ChangeWID(int32 iCharID, int32 iWID) {
 }
 
 
-void ZoneServer::TriggerBootup(int32 iZoneID, int32 iInstanceID, const char* adminname, bool iMakeStatic) {
+void ZoneServer::TriggerBootup(uint32 iZoneID, uint32 iInstanceID, const char* adminname, bool iMakeStatic) {
 	BootingUp = true;
 	zoneID = iZoneID;
 	instanceID = iInstanceID;

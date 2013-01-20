@@ -25,10 +25,10 @@ struct AStarNode
 };
 
 struct NeighbourNode {
-	sint16 id;
+	int16 id;
 	float distance;
 	uint8 Teleport;
-	sint16 DoorID;
+	int16 DoorID;
 };
 
 struct PathNode {
@@ -39,8 +39,8 @@ struct PathNode {
 };
 
 struct PathFileHeader {
-	int32 version;
-	int32 PathNodeCount;
+	uint32 version;
+	uint32 PathNodeCount;
 };
 
 #pragma pack()
@@ -81,15 +81,15 @@ public:
 	int GetRandomPathNode();
 
 	void NodeInfo(Client *c);
-	sint32 AddNode(float x, float y, float z, float best_z, sint32 requested_id = 0); //return -1 on failure, else returns the id of this node
+	int32 AddNode(float x, float y, float z, float best_z, int32 requested_id = 0); //return -1 on failure, else returns the id of this node
 	bool DeleteNode(Client *c);
-	bool DeleteNode(sint32 id); //returns true on success, false on failure, tries to delete a node from this map
-	void ConnectNodeToNode(Client *c, sint32 Node2, sint32 teleport = 0, sint32 doorid = -1); //connects a node both ways
-	void ConnectNodeToNode(sint32 Node1, sint32 Node2, sint32 teleport = 0, sint32 doorid = -1);
-	void ConnectNode(Client *c, sint32 Node2, sint32 teleport = 0, sint32 doorid = -1); //connects a node one way
-	void ConnectNode(sint32 Node1, sint32 Node2, sint32 teleport = 0, sint32 doorid = -1);
-	void DisconnectNodeToNode(Client *c, sint32 Node2);
-	void DisconnectNodeToNode(sint32 Node1, sint32 Node2);
+	bool DeleteNode(int32 id); //returns true on success, false on failure, tries to delete a node from this map
+	void ConnectNodeToNode(Client *c, int32 Node2, int32 teleport = 0, int32 doorid = -1); //connects a node both ways
+	void ConnectNodeToNode(int32 Node1, int32 Node2, int32 teleport = 0, int32 doorid = -1);
+	void ConnectNode(Client *c, int32 Node2, int32 teleport = 0, int32 doorid = -1); //connects a node one way
+	void ConnectNode(int32 Node1, int32 Node2, int32 teleport = 0, int32 doorid = -1);
+	void DisconnectNodeToNode(Client *c, int32 Node2);
+	void DisconnectNodeToNode(int32 Node1, int32 Node2);
 	void MoveNode(Client *c);
 	void DisconnectAll(Client *c);
 	bool NodesConnected(PathNode *a, PathNode *b);

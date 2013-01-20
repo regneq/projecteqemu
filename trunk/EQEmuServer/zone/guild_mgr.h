@@ -50,11 +50,11 @@ enum {	GuildBankBankerOnly = 0, GuildBankSingleMember = 1, GuildBankPublicIfUsab
 class GuildApproval
 {
 public:
-	GuildApproval(const char* guildname,Client* owner,int32 id);
+	GuildApproval(const char* guildname,Client* owner,uint32 id);
 	~GuildApproval();
 	bool	ProcessApproval();
 	bool	AddMemberApproval(Client* addition);
-	int32	GetID() { return refid; }
+	uint32	GetID() { return refid; }
 	Client*	GetOwner() { return owner; }
 	void	GuildApproved();
 	void	ApprovedMembers(Client* requestee);
@@ -64,7 +64,7 @@ private:
 	char founders[3];
 	Client* owner;
 	Client* members[6];
-	int32 refid;
+	uint32 refid;
 };
 
 class ZoneGuildManager : public BaseGuildManager {
@@ -72,12 +72,12 @@ public:
 	~ZoneGuildManager(void);
 
 	void	AddGuildApproval(const char* guildname, Client* owner);
-	void	AddMemberApproval(int32 refid,Client* name);
+	void	AddMemberApproval(uint32 refid,Client* name);
 	void	ClearGuildsApproval();
-	GuildApproval* FindGuildByIDApproval(int32 refid);
+	GuildApproval* FindGuildByIDApproval(uint32 refid);
 	GuildApproval* FindGuildByOwnerApproval(Client* owner);
 	void	ProcessApproval();
-	int32	GetFreeID() { return id+1; }
+	uint32	GetFreeID() { return id+1; }
 	//called by worldserver when it receives a message from world.
 	void ProcessWorldPacket(ServerPacket *pack);
 	
@@ -85,26 +85,26 @@ public:
 	void DescribeGuild(Client *c, uint32 guild_id) const;
 	
 	
-//	bool	DonateTribute(int32 charid, int32 guild_id, int32 tribute_amount);
+//	bool	DonateTribute(uint32 charid, uint32 guild_id, uint32 tribute_amount);
 	
-	uint8 *MakeGuildMembers(int32 guild_id, const char *prefix_name, uint32 &length);	//make a guild member list packet, returns ownership of the buffer.
+	uint8 *MakeGuildMembers(uint32 guild_id, const char *prefix_name, uint32 &length);	//make a guild member list packet, returns ownership of the buffer.
 	
-	void RecordInvite(int32 char_id, int32 guild_id, int8 rank);
-	bool VerifyAndClearInvite(int32 char_id, int32 guild_id, int8 rank);
+	void RecordInvite(uint32 char_id, uint32 guild_id, uint8 rank);
+	bool VerifyAndClearInvite(uint32 char_id, uint32 guild_id, uint8 rank);
 	void SendGuildMemberUpdateToWorld(const char *MemberName, uint32 GuildID, uint16 ZoneID, uint32 LastSeen);
 	void RequestOnlineGuildMembers(uint32 FromID, uint32 GuildID);
 
 protected:
-	virtual void SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation);
-	virtual void SendCharRefresh(int32 old_guild_id, int32 guild_id, int32 charid);
-	virtual void SendRankUpdate(int32 CharID);
-	virtual void SendGuildDelete(int32 guild_id);
+	virtual void SendGuildRefresh(uint32 guild_id, bool name, bool motd, bool rank, bool relation);
+	virtual void SendCharRefresh(uint32 old_guild_id, uint32 guild_id, uint32 charid);
+	virtual void SendRankUpdate(uint32 CharID);
+	virtual void SendGuildDelete(uint32 guild_id);
 
-	std::map<int32, std::pair<int32, int8> > m_inviteQueue;	//map from char ID to guild,rank
+	std::map<uint32, std::pair<uint32, uint8> > m_inviteQueue;	//map from char ID to guild,rank
 
 private:
 	LinkedList<GuildApproval*> list;
-	int32 id;
+	uint32 id;
 
 };
 
@@ -115,11 +115,11 @@ class GuildBankManager
 public:
 	~GuildBankManager();
 	void SendGuildBank(Client *c);
-	bool AddItem(int32 GuildID, uint8 Area, uint32 ItemID, sint32 QtyOrCharges, const char *Donator, uint8 Permissions, const char *WhoFor);
+	bool AddItem(uint32 GuildID, uint8 Area, uint32 ItemID, int32 QtyOrCharges, const char *Donator, uint8 Permissions, const char *WhoFor);
 	int Promote(uint32 GuildID, int SlotID);
 	void SetPermissions(uint32 GuildID, uint16 SlotID, uint32 Permissions, const char *MemberName);
-	ItemInst* GetItem(int32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity);
-	bool DeleteItem(int32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity);
+	ItemInst* GetItem(uint32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity);
+	bool DeleteItem(uint32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity);
 	bool HasItem(uint32 GuildID, uint32 ItemID);
 	bool IsAreaFull(uint32 GuildID, uint16 Area);
 	bool MergeStacks(uint32 GuildID, uint16 SlotID);
@@ -127,8 +127,8 @@ public:
 	bool AllowedToWithdraw(uint32 GuildID, uint16 Area, uint16 SlotID, const char *Name);
 
 private:
-	bool IsLoaded(int32 GuildID);
-	bool Load(int32 GuildID);
+	bool IsLoaded(uint32 GuildID);
+	bool Load(uint32 GuildID);
 	std::list<GuildBank*>::iterator GetGuildBank(uint32 GuildID);
 	void UpdateItemQuantity(uint32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity);
 

@@ -21,7 +21,7 @@
 
 #include "timeoutmgr.h"
 
-Timeoutable::Timeoutable(int32 check_frequency)
+Timeoutable::Timeoutable(uint32 check_frequency)
  : next_check(check_frequency)
 {
 	timeout_manager.AddMember(this);

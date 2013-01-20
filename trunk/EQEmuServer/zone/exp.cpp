@@ -46,17 +46,17 @@ static uint32 MaxBankedRaidLeadershipPoints(int Level)
 	return 10;
 }
 
-void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
+void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, bool resexp) {
 
-	int32 add_exp = in_add_exp;
+	uint32 add_exp = in_add_exp;
 
 	if(!resexp && (XPRate != 0))
-		add_exp = static_cast<int32>(in_add_exp * (static_cast<float>(XPRate) / 100.0f));
+		add_exp = static_cast<uint32>(in_add_exp * (static_cast<float>(XPRate) / 100.0f));
 	
 	if (m_epp.perAA<0 || m_epp.perAA>100)
 		m_epp.perAA=0;	// stop exploit with sanity check
 	
-	int32 add_aaxp;
+	uint32 add_aaxp;
 	if(resexp) {
 		add_aaxp = 0;
 	} else {
@@ -93,7 +93,7 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 			totalmod += RuleR(Zone, HotZoneBonus);
 		}
 
-		add_exp = int32(float(add_exp) * totalmod * zemmod);
+		add_exp = uint32(float(add_exp) * totalmod * zemmod);
 	
 		if(RuleB(Character,UseXPConScaling))
 		{
@@ -129,7 +129,7 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 		}
 
 		if(IsLeadershipEXPOn() && ((conlevel == CON_BLUE) || (conlevel == CON_WHITE) || (conlevel == CON_YELLOW) || (conlevel == CON_RED))) {
-			add_exp = static_cast<int32>(static_cast<float>(add_exp) * 0.8f);
+			add_exp = static_cast<uint32>(static_cast<float>(add_exp) * 0.8f);
 
 			if(GetGroup())
 			{
@@ -183,10 +183,10 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 		}
 	}
 
-	int32 exp = GetEXP() + add_exp;
+	uint32 exp = GetEXP() + add_exp;
 
-	int32 aaexp = (int32)(RuleR(Character, AAExpMultiplier) * add_aaxp * aatotalmod);
-	int32 had_aaexp = GetAAXP();
+	uint32 aaexp = (uint32)(RuleR(Character, AAExpMultiplier) * add_aaxp * aatotalmod);
+	uint32 had_aaexp = GetAAXP();
 	aaexp += had_aaexp;
 	if(aaexp < had_aaexp)
 		aaexp = had_aaexp;	//watch for wrap
@@ -194,7 +194,7 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 	SetEXP(exp, aaexp, resexp);
 }
 
-void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
+void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp) {
 	_log(CLIENT__EXP, "Attempting to Set Exp for %s (XP: %u, AAXP: %u, Rez: %s)", this->GetCleanName(), set_exp, set_aaxp, isrezzexp ? "true" : "false");
 	//max_AAXP = GetEXPForLevel(52) - GetEXPForLevel(51);	//GetEXPForLevel() doesn't depend on class/race, just level, so it shouldn't change between Clients
 	max_AAXP = RuleI(AA, ExpPerPoint);	//this may be redundant since we're doing this in Client::FinishConnState2()
@@ -222,7 +222,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	
 	//check_level represents the level we should be when we have
 	//this ammount of exp (once these loops complete)
-	int16 check_level = GetLevel()+1;
+	uint16 check_level = GetLevel()+1;
 	//see if we gained any levels
 	while (set_exp >= GetEXPForLevel(check_level)) {
 		check_level++;
@@ -282,7 +282,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		//Message(15, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
-	int8 maxlevel = RuleI(Character, MaxExpLevel) + 1;
+	uint8 maxlevel = RuleI(Character, MaxExpLevel) + 1;
 
 	if(maxlevel <= 1)
 		maxlevel = RuleI(Character, MaxLevel) + 1;
@@ -293,10 +293,10 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	}
 	
 	if(RuleB(Character, PerCharacterQglobalMaxLevel)){
-		int32 MaxLevel = GetCharMaxLevelFromQGlobal();
+		uint32 MaxLevel = GetCharMaxLevelFromQGlobal();
 		if(MaxLevel){
 			if(GetLevel() >= MaxLevel){
-				int32 expneeded = GetEXPForLevel(MaxLevel);
+				uint32 expneeded = GetEXPForLevel(MaxLevel);
 				if(set_exp > expneeded)
 				{
 					set_exp =  expneeded;
@@ -323,7 +323,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	
 	//If were at max level then stop gaining experience if we make it to the cap
 	if(GetLevel() == maxlevel - 1){
-		int32 expneeded = GetEXPForLevel(maxlevel);
+		uint32 expneeded = GetEXPForLevel(maxlevel);
 		if(set_exp > expneeded)
 		{
 			set_exp =  expneeded;
@@ -340,8 +340,8 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		SendAAStats();	//otherwise, send them an AA update
 
 	//send the expdata in any case so the xp bar isnt stuck after leveling
-	int32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
-	int32 tmpxp2 = GetEXPForLevel(GetLevel());
+	uint32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
+	uint32 tmpxp2 = GetEXPForLevel(GetLevel());
 	// Quag: crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ExpUpdate, sizeof(ExpUpdate_Struct));
@@ -360,7 +360,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	}
 }
 
-void Client::SetLevel(int8 set_level, bool command)
+void Client::SetLevel(uint8 set_level, bool command)
 {
         if (GetEXPForLevel(set_level) == 0xFFFFFFFF) {
                 LogFile->write(EQEMuLog::Error,"Client::SetLevel() GetEXPForLevel(%i) = 0xFFFFFFFF", set_level);
@@ -406,7 +406,7 @@ void Client::SetLevel(int8 set_level, bool command)
         else {
                 float tmpxp = (float) ( (float) m_pp.exp - GetEXPForLevel( GetLevel() )) /
                                                 ( (float) GetEXPForLevel(GetLevel()+1) - GetEXPForLevel(GetLevel()));
-                lu->exp =  (int32)(330.0f * tmpxp);
+                lu->exp =  (uint32)(330.0f * tmpxp);
     }
         QueuePacket(outapp);
         safe_delete(outapp);
@@ -437,10 +437,10 @@ void Client::SetLevel(int8 set_level, bool command)
 
 // Note: The client calculates exp separately, we cant change this function
 // Add: You can set the values you want now, client will be always sync :) - Merkur
-uint32 Client::GetEXPForLevel(int16 check_level)
+uint32 Client::GetEXPForLevel(uint16 check_level)
 {
 
-	int16 check_levelm1 = check_level-1;
+	uint16 check_levelm1 = check_level-1;
 	float mod;
 	if (check_level < 31)
 		mod = 1.0;
@@ -480,7 +480,7 @@ uint32 Client::GetEXPForLevel(int16 check_level)
 	return(uint32(base * mod));
 }
 
-void Client::AddLevelBasedExp(int8 exp_percentage, int8 max_level) {
+void Client::AddLevelBasedExp(uint8 exp_percentage, uint8 max_level) {
 
 	if (exp_percentage > 100)
 	{
@@ -506,8 +506,8 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 	
 	unsigned int i; 
 	uint32 groupexp = exp; 
-	int8 membercount = 0; 
-	int8 maxlevel = 1;
+	uint8 membercount = 0; 
+	uint8 maxlevel = 1;
 	
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) { 
 		if (members[i] != NULL) { 
@@ -546,8 +546,8 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 		{
 			Client *cmember = members[i]->CastToClient();
 			// add exp + exp cap 
-			sint16 diff = cmember->GetLevel() - maxlevel;
-			sint16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
+			int16 diff = cmember->GetLevel() - maxlevel;
+			int16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
 				if(maxdiff > -5)
 					maxdiff = -5;
 			if (diff >= (maxdiff)) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 				
@@ -567,8 +567,8 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 		return;
 
 	uint32 groupexp = exp; 
-	int8 membercount = 0; 
-	int8 maxlevel = 1;
+	uint8 membercount = 0; 
+	uint8 maxlevel = 1;
 
 	for (int i = 0; i < MAX_RAID_MEMBERS; i++) { 
 		if (members[i].member != NULL) { 
@@ -593,8 +593,8 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 		{
 			Client *cmember = members[x].member;
 			// add exp + exp cap 
-			sint16 diff = cmember->GetLevel() - maxlevel;
-			sint16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
+			int16 diff = cmember->GetLevel() - maxlevel;
+			int16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
 			if(maxdiff > -5)
 				maxdiff = -5;
 			if (diff >= (maxdiff)) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 				
@@ -640,7 +640,7 @@ void Client::SendLeadershipEXPUpdate() {
 	FastQueuePacket(&outapp);
 }
 
-int32 Client::GetCharMaxLevelFromQGlobal() {
+uint32 Client::GetCharMaxLevelFromQGlobal() {
 
 		QGlobalCache *char_c = NULL;
 		char_c = this->GetQGlobals();

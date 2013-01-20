@@ -27,17 +27,17 @@
 class GroupLFP {
 
 public:
-	GroupLFP(int32 LeaderID);
+	GroupLFP(uint32 LeaderID);
 
 	void	SetDetails(ServerLFPUpdate_Struct *Update);
 	inline	GroupLFPMemberEntry* GetMembers() { return Members; }
-	inline	int32 GetID() { return LeaderID; }
+	inline	uint32 GetID() { return LeaderID; }
 	void	RemoveMember(int Index);
 
 	friend class GroupLFPList;
 
 private:
-	int32	LeaderID;	
+	uint32	LeaderID;	
 	uint8	MatchFilter;
 	uint32	FromLevel;
 	uint32	ToLevel;

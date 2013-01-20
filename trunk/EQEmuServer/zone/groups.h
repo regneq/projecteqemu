@@ -35,27 +35,27 @@ class GroupIDConsumer {
 public:
 	GroupIDConsumer() { id = 0; }
 	GroupIDConsumer(uint32 gid) { id = gid; }
-	inline const int32 GetID()	const { return id; }
+	inline const uint32 GetID()	const { return id; }
 	
 protected:
 	friend class EntityList;
 	//use of this function is highly discouraged
-	inline void SetID(int32 set_id) { id = set_id; }
+	inline void SetID(uint32 set_id) { id = set_id; }
 private:
-	int32 id;
+	uint32 id;
 };
 
 class Group : public GroupIDConsumer {
 public:
 	Group(Mob* leader);
-	Group(int32 gid);
+	Group(uint32 gid);
 	~Group();
 	
-	bool	AddMember(Mob* newmember, const char* NewMemberName = NULL, int32 CharacterID = 0);
+	bool	AddMember(Mob* newmember, const char* NewMemberName = NULL, uint32 CharacterID = 0);
 	void	AddMember(const char* NewMemberName);
-	void	SendUpdate(int32 type,Mob* member);
+	void	SendUpdate(uint32 type,Mob* member);
 	void	SendLeadershipAAUpdate();
-	void	SendWorldGroup(int32 zone_id,Mob* zoningmember);
+	void	SendWorldGroup(uint32 zone_id,Mob* zoningmember);
 	bool	DelMemberOOZ(const char *Name);
 	bool	DelMember(Mob* oldmember,bool ignoresender = false);
 	void	DisbandGroup();
@@ -66,9 +66,9 @@ public:
 	void	CastGroupSpell(Mob* caster,uint16 spellid);
 	void	GroupBardPulse(Mob* caster,uint16 spellid);
 	void	SplitExp(uint32 exp, Mob* other);
-	void	GroupMessage(Mob* sender,int8 language,int8 lang_skill,const char* message);
-	void	GroupMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
-	int32	GetTotalGroupDamage(Mob* other);
+	void	GroupMessage(Mob* sender,uint8 language,uint8 lang_skill,const char* message);
+	void	GroupMessage_StringID(Mob* sender, uint32 type, uint32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, uint32 distance = 0);
+	uint32	GetTotalGroupDamage(Mob* other);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
 	inline	void SetLeader(Mob* newleader){ leader=newleader; };
 	inline	Mob* GetLeader(){ return leader; };
@@ -78,16 +78,16 @@ public:
 	bool	UpdatePlayer(Mob* update);
 	void	MemberZoned(Mob* removemob);
 	inline	bool IsLeader(Mob* leadertest) { return leadertest==leader; };
-	int8	GroupCount();
-	int32	GetHighestLevel();
-	int32	GetLowestLevel();
+	uint8	GroupCount();
+	uint32	GetHighestLevel();
+	uint32	GetLowestLevel();
 	void	QueuePacket(const EQApplicationPacket *app, bool ack_req = true);
-	void	TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading);
+	void	TeleportGroup(Mob* sender, uint32 zoneID, uint16 instance_id, float x, float y, float z, float heading);
 	uint16	GetAvgLevel();
 	bool	LearnMembers();
 	void	VerifyGroup();
-	void	BalanceHP(sint32 penalty);
-	void	BalanceMana(sint32 penalty);
+	void	BalanceHP(int32 penalty);
+	void	BalanceMana(int32 penalty);
 	void	HealGroup(uint32 heal_amt, Mob* caster);
 	inline	void SetGroupAAs(GroupLeadershipAA_Struct *From) { memcpy(&LeaderAbilities, From, sizeof(GroupLeadershipAA_Struct)); }
 	inline	void GetGroupAAs(GroupLeadershipAA_Struct *Into) { memcpy(Into, &LeaderAbilities, sizeof(GroupLeadershipAA_Struct)); }
@@ -122,7 +122,7 @@ public:
 	const char *GetMainAssistName() { return MainAssistName.c_str(); }
 	const char *GetPullerName() { return PullerName.c_str(); }
 	void	SetNPCMarker(const char *NewNPCMarkerName);
-	void	UnMarkNPC(int16 ID);
+	void	UnMarkNPC(uint16 ID);
 	void	SendMarkedNPCsToMember(Client *c, bool Clear = false);
 	inline  int GetLeadershipAA(int AAID) { return  LeaderAbilities.ranks[AAID]; }
 	void	ClearAllNPCMarks();
@@ -144,11 +144,11 @@ private:
 	string	MainAssistName;
 	string	PullerName;
 	string	NPCMarkerName;
-	int16	NPCMarkerID;
-	int16	AssistTargetID;
-	int16	TankTargetID;
-	int16	PullerTargetID;
-	int16	MarkedNPCs[MAX_MARKED_NPCS];
+	uint16	NPCMarkerID;
+	uint16	AssistTargetID;
+	uint16	TankTargetID;
+	uint16	PullerTargetID;
+	uint16	MarkedNPCs[MAX_MARKED_NPCS];
 
 };
 

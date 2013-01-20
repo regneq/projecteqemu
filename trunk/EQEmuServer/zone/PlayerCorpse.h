@@ -30,24 +30,24 @@ class Corpse : public Mob
 {
 public:
 	static void SendEndLootErrorPacket(Client* client);
-	static void SendLootReqErrorPacket(Client* client, int8 response = 2);
-	static Corpse* LoadFromDBData(int32 in_corpseid, int32 in_charid, char* in_charname, uchar* in_data, int32 in_datasize, float in_x, float in_y, float in_z, float in_heading, char* timeofdeath, bool rezzed = false, bool wasAtGraveyard = false);
+	static void SendLootReqErrorPacket(Client* client, uint8 response = 2);
+	static Corpse* LoadFromDBData(uint32 in_corpseid, uint32 in_charid, char* in_charname, uchar* in_data, uint32 in_datasize, float in_x, float in_y, float in_z, float in_heading, char* timeofdeath, bool rezzed = false, bool wasAtGraveyard = false);
 
-	Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPCType** in_npctypedata, int32 in_decaytime = 600000);
-	Corpse(Client* client, sint32 in_rezexp);
-	Corpse(int32 in_corpseid, int32 in_charid, char* in_charname, ItemList* in_itemlist, int32 in_copper, int32 in_silver, int32 in_gold, int32 in_plat, float in_x, float in_y, float in_z, float in_heading, float in_size, int8 in_gender, int16 in_race, int8 in_class, int8 in_deity, int8 in_level, int8 in_texture, int8 in_helmtexture,int32 in_rezexp, bool wasAtGraveyard = false);
+	Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime = 600000);
+	Corpse(Client* client, int32 in_rezexp);
+	Corpse(uint32 in_corpseid, uint32 in_charid, char* in_charname, ItemList* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, float in_x, float in_y, float in_z, float in_heading, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture,uint32 in_rezexp, bool wasAtGraveyard = false);
 	~Corpse();
 
 	//abstract virtual function implementations requird by base abstract class
-	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) { return; }
-	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) { return; }
+	virtual void Death(Mob* killerMob, int32 damage, uint16 spell_id, SkillType attack_skill) { return; }
+	virtual void Damage(Mob* from, int32 damage, uint16 spell_id, SkillType attack_skill, bool avoidable = true, int8 buffslot = -1, bool iBuffTic = false) { return; }
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = true, bool IsFromSpell = false) { return false; }
 	virtual bool HasRaid() { return false; }
 	virtual bool HasGroup() { return false; }
 	virtual Raid* GetRaid() { return 0; }
 	virtual Group* GetGroup() { return 0; }
 
-	void LoadPlayerCorpseDecayTime(int32 dbid);
+	void LoadPlayerCorpseDecayTime(uint32 dbid);
 
 	bool	IsCorpse()			const { return true; }
 	bool	IsPlayerCorpse()	const { return p_PlayerCorpse; }
@@ -55,30 +55,30 @@ public:
 	bool	IsBecomeNPCCorpse() const { return become_npc; }
 	bool	Process();
 	bool	Save();
-	int32	GetCharID()			{ return charid; }
-	int32	SetCharID(int32 iCharID) { if (IsPlayerCorpse()) { return (charid=iCharID); } return 0xFFFFFFFF; };
-	int32	GetDecayTime()		{ if (!corpse_decay_timer.Enabled()) return 0xFFFFFFFF; else return corpse_decay_timer.GetRemainingTime(); }
-	int32	GetResTime()		{ if (!corpse_res_timer.Enabled()) return 0; else return corpse_res_timer.GetRemainingTime(); }
+	uint32	GetCharID()			{ return charid; }
+	uint32	SetCharID(uint32 iCharID) { if (IsPlayerCorpse()) { return (charid=iCharID); } return 0xFFFFFFFF; };
+	uint32	GetDecayTime()		{ if (!corpse_decay_timer.Enabled()) return 0xFFFFFFFF; else return corpse_decay_timer.GetRemainingTime(); }
+	uint32	GetResTime()		{ if (!corpse_res_timer.Enabled()) return 0; else return corpse_res_timer.GetRemainingTime(); }
 	void	CalcCorpseName();
 	inline void		Lock()			{ pLocked = true; }
 	inline void		UnLock()		{ pLocked = false; }
 	inline bool		IsLocked()		{ return pLocked; }
 	inline void		ResetLooter()	{ BeingLootedBy = 0xFFFFFFFF; }
 	inline bool		IsBeingLooted() { return (BeingLootedBy != 0xFFFFFFFF); }
-	inline int32	GetDBID()		{ return dbid; }
+	inline uint32	GetDBID()		{ return dbid; }
 	inline char*	GetOwnerName()	{ return orgname;}
 
-	void	SetDecayTimer(int32 decaytime);
+	void	SetDecayTimer(uint32 decaytime);
 	bool	IsEmpty() const;
-	void	AddItem(uint32 itemnum, int16 charges, sint16 slot = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
-	uint32	GetWornItem(sint16 equipSlot) const;
-	ServerLootItem_Struct* GetItem(int16 lootslot, ServerLootItem_Struct** bag_item_data = 0);
-	void	RemoveItem(int16 lootslot);
+	void	AddItem(uint32 itemnum, uint16 charges, int16 slot = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
+	uint32	GetWornItem(int16 equipSlot) const;
+	ServerLootItem_Struct* GetItem(uint16 lootslot, ServerLootItem_Struct** bag_item_data = 0);
+	void	RemoveItem(uint16 lootslot);
 	void	RemoveItem(ServerLootItem_Struct* item_data);
-	void	SetCash(int32 in_copper, int32 in_silver, int32 in_gold, int32 in_platinum);
+	void	SetCash(uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_platinum);
 	void	RemoveCash();
 	void	QueryLoot(Client* to);
-	int32	CountItems();
+	uint32	CountItems();
 	void	Delete();
 	void	Bury();
 	virtual void	Depop();
@@ -94,39 +94,39 @@ public:
 	void	LootItem(Client* client, const EQApplicationPacket* app);
 	void	EndLoot(Client* client, const EQApplicationPacket* app);
 	bool	Summon(Client* client, bool spell, bool CheckDistance);
-	void	CastRezz(int16 spellid, Mob* Caster);
+	void	CastRezz(uint16 spellid, Mob* Caster);
 	void	CompleteRezz();
-	void	SetPKItem(sint32 id) { pkitem = id; }
-	sint32	GetPKItem() { return pkitem; }
+	void	SetPKItem(int32 id) { pkitem = id; }
+	int32	GetPKItem() { return pkitem; }
 	bool CanMobLoot(int charid);
-	void AllowMobLoot(Mob *them, int8 slot);
+	void AllowMobLoot(Mob *them, uint8 slot);
 	void AddLooter(Mob *who);
 	bool Rezzed() { return rez; }
 	void Rezzed(bool in_rez) { rez = in_rez; }
 	void	Spawn();
 
 	char		orgname[64];
-	int32 GetEquipment(int8 material_slot) const;	// returns item id
-	uint32 GetEquipmentColor(int8 material_slot) const;
+	uint32 GetEquipment(uint8 material_slot) const;	// returns item id
+	uint32 GetEquipmentColor(uint8 material_slot) const;
 	inline int GetRezzExp() { return rezzexp; }
 
 protected:
-	std::list<uint32> MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
+	std::list<uint32> MoveItemToCorpse(Client *client, ItemInst *item, int16 equipslot);
 
 private:
 	bool		p_PlayerCorpse;	bool		pIsChanged;
 	bool		pLocked;
-	sint32		pkitem;
-	int32		dbid;
-	int32		charid;
+	int32		pkitem;
+	uint32		dbid;
+	uint32		charid;
 	ItemList	itemlist;
 	uint32		copper;
 	uint32		silver;
 	uint32		gold;
 	uint32		platinum;
 	bool		p_depop;
-	int32		BeingLootedBy;
-	int32		rezzexp;
+	uint32		BeingLootedBy;
+	uint32		rezzexp;
 	bool		rez;
 	bool		can_rez;
 	bool		become_npc;

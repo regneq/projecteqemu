@@ -455,7 +455,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			struct in_addr tmpip;
 			tmpip.s_addr = ip;
 #endif
-			int32 id=0;
+			uint32 id=0;
 			bool minilogin = loginserverlist.MiniLogin();
 			if(minilogin){
 				struct in_addr miniip;
@@ -760,7 +760,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			strn0cpy(char_name, ew->name, 64);
 
 			EQApplicationPacket *outapp;
-			int32 tmpaccid = 0;
+			uint32 tmpaccid = 0;
 			charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID, &instanceID);
 			if (charid == 0 || tmpaccid != GetAccountID()) {
 				clog(WORLD__CLIENT_ERR,"Could not get CharInfo for '%s'",char_name);
@@ -869,7 +869,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				database.SetLoginFlags(charid, false, false, 1);
 			}
 			else{
-				int32 groupid=database.GetGroupID(char_name);
+				uint32 groupid=database.GetGroupID(char_name);
 				if(groupid>0){
 					char* leader=0;
 					char leaderbuf[64]={0};
@@ -953,7 +953,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			break;
 		}
 		case OP_DeleteCharacter: {
-			int32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
+			uint32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
 			if(char_acct_id == GetAccountID())
 			{
 				clog(WORLD__CLIENT,"Delete character: %s",app->pBuffer);
@@ -1147,7 +1147,7 @@ void Client::EnterWorld(bool TryBootup) {
 	}
 }
 
-void Client::Clearance(sint8 response)
+void Client::Clearance(int8 response)
 {
 	ZoneServer* zs = NULL;
 	if(instanceID > 0)
@@ -1644,7 +1644,7 @@ bool CheckCharCreateInfoSoF(CharCreate_Struct *cc)
 
 bool CheckCharCreateInfoTitanium(CharCreate_Struct *cc)
 {
-        int32 bSTR, bSTA, bAGI, bDEX, bWIS, bINT, bCHA, bTOTAL, cTOTAL, stat_points;    //these are all int32 in CharCreate_Struct, so we'll make them int32 here to make the compiler shut up
+        uint32 bSTR, bSTA, bAGI, bDEX, bWIS, bINT, bCHA, bTOTAL, cTOTAL, stat_points;    //these are all uint32 in CharCreate_Struct, so we'll make them uint32 here to make the compiler shut up
         int classtemp, racetemp;
         int Charerrors = 0;
 

@@ -61,7 +61,7 @@ extern Zone* zone;
 extern volatile bool ZoneLoaded;
 extern WorldServer worldserver;
 extern NetConnection net;
-extern int32 numclients;
+extern uint32 numclients;
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
@@ -70,7 +70,7 @@ extern PetitionList petition_list;
 extern DBAsync *dbasync;
 
 extern char  errorname[32];
-extern int16 adverrornum;
+extern uint16 adverrornum;
 
 Entity::Entity() {
 	id = 0;
@@ -81,7 +81,7 @@ Entity::~Entity() {
 	dbasync->CancelWork(pDBAsyncWorkID);
 }
 
-void Entity::SetID(int16 set_id) {
+void Entity::SetID(uint16 set_id) {
 	id = set_id;
 }
 
@@ -339,7 +339,7 @@ void EntityList::TrapProcess() {
 	_ZP(EntityList_TrapProcess);
 	LinkedListIterator<Trap*> iterator(trap_list);
 	iterator.Reset();
-	int32 count=0;
+	uint32 count=0;
 	while(iterator.MoreElements())
 	{
 		count++;
@@ -372,7 +372,7 @@ void EntityList::CheckGroupList (const char *fname, const int fline)
 
 void EntityList::GroupProcess() {
 	list<Group *>::iterator iterator;
-	int32 count = 0;
+	uint32 count = 0;
 
 	if(numclients < 1)
 		return;
@@ -416,7 +416,7 @@ void EntityList::QueueToGroupsForNPCHealthAA(Mob* sender, const EQApplicationPac
 
 void EntityList::RaidProcess() {
 	list<Raid *>::iterator iterator;
-	int32 count = 0;
+	uint32 count = 0;
 
 	if(numclients < 1)
 		return;
@@ -441,7 +441,7 @@ void EntityList::DoorProcess() {
 	_ZP(EntityList_DoorProcess);
 	LinkedListIterator<Doors*> iterator(door_list);
 	iterator.Reset();
-	int32 count=0;
+	uint32 count=0;
 	while(iterator.MoreElements())
 	{
 		count++;
@@ -459,7 +459,7 @@ void EntityList::ObjectProcess() {
 	_ZP(EntityList_ObjectProcess);
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
-	int32 count=0;
+	uint32 count=0;
 	while(iterator.MoreElements())
 	{
 		count++;
@@ -477,7 +477,7 @@ void EntityList::CorpseProcess() {
 	_ZP(EntityList_CorpseProcess);
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
-	int32 count=0;
+	uint32 count=0;
 	while(iterator.MoreElements())
 	{
 		count++;
@@ -563,7 +563,7 @@ void EntityList::AddGroup(Group* group) {
 	if(group == NULL)	//this seems to be happening somehow...
 		return;
 	
-	int32 gid = worldserver.NextGroupID();
+	uint32 gid = worldserver.NextGroupID();
 	if(gid == 0) {
 		LogFile->write(EQEMuLog::Error, "Unable to get new group ID from world server. group is going to be broken.");
 		return;
@@ -576,7 +576,7 @@ void EntityList::AddGroup(Group* group) {
 }
 
 
-void EntityList::AddGroup(Group* group, int32 gid) {
+void EntityList::AddGroup(Group* group, uint32 gid) {
 	group->SetID(gid);
 	//group_list.Insert(group);
 	group_list.push_back(group);
@@ -591,7 +591,7 @@ void EntityList::AddRaid(Raid* raid) {
 	if(raid == NULL)
 		return;
 	
-	int32 gid = worldserver.NextGroupID();
+	uint32 gid = worldserver.NextGroupID();
 	if(gid == 0) {
 		LogFile->write(EQEMuLog::Error, "Unable to get new group ID from world server. group is going to be broken.");
 		return;
@@ -599,7 +599,7 @@ void EntityList::AddRaid(Raid* raid) {
 	
 	AddRaid(raid, gid);
 }
-void EntityList::AddRaid(Raid* raid, int32 gid) {
+void EntityList::AddRaid(Raid* raid, uint32 gid) {
 	raid->SetID(gid);
 	raid_list.push_back(raid);
 	if(!net.raid_timer.Enabled())
@@ -607,7 +607,7 @@ void EntityList::AddRaid(Raid* raid, int32 gid) {
 }
 
 
-void EntityList::AddCorpse(Corpse* corpse, int32 in_id) {
+void EntityList::AddCorpse(Corpse* corpse, uint32 in_id) {
 	if (corpse == 0)
 		return;
 	
@@ -625,7 +625,7 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	npc->SetID(GetFreeID());
     parse->EventNPC(EVENT_SPAWN, npc, NULL, "", 0);
 
-	int16 emoteid = npc->GetNPCEmoteID();
+	uint16 emoteid = npc->GetNPCEmoteID();
 	if(emoteid != 0)
 		npc->DoNPCEmote(ONSPAWN,emoteid);
 	
@@ -720,8 +720,8 @@ void EntityList::AddBeacon(Beacon *beacon)
 	beacon_list.Insert(beacon);
 }
 
-void EntityList::AddToSpawnQueue(int16 entityid, NewSpawn_Struct** ns) {
-	int32 count;
+void EntityList::AddToSpawnQueue(uint16 entityid, NewSpawn_Struct** ns) {
+	uint32 count;
 	if((count=(client_list.Count()))==0)
 		return;
 	SpawnQueue.Append(*ns);
@@ -750,7 +750,7 @@ void EntityList::CheckSpawnQueue() {
 			//sending Spawns like this after zone in causes the client to freeze...
 		/*}
 		else {
-			int32 spawns_per_pack = MAX_SPAWNS_PER_PACKET;
+			uint32 spawns_per_pack = MAX_SPAWNS_PER_PACKET;
 			if(NumSpawnsOnQueue < spawns_per_pack)
 				spawns_per_pack = NumSpawnsOnQueue;
 
@@ -770,7 +770,7 @@ void EntityList::CheckSpawnQueue() {
 	}
 }
 
-Doors* EntityList::FindDoor(int8 door_id)
+Doors* EntityList::FindDoor(uint8 door_id)
 {
 	if (door_id == 0)
 		return 0;
@@ -790,7 +790,7 @@ Doors* EntityList::FindDoor(int8 door_id)
 	return 0;
 }
 
-Object* EntityList::FindObject(int32 object_id)
+Object* EntityList::FindObject(uint32 object_id)
 {
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
@@ -840,7 +840,7 @@ Object* EntityList::FindNearbyObject(float x, float y, float z, float radius)
 
 bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app, Client *client)
 {
-	int32 mask_test = client->GetClientVersionBit();
+	uint32 mask_test = client->GetClientVersionBit();
 	int count = 0;
 	LinkedListIterator<Doors*> iterator(door_list);
 	iterator.Reset();
@@ -857,7 +857,7 @@ bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app, Client *client)
 	{
 		return false;
 	}
-	int32 length = count * sizeof(Door_Struct);
+	uint32 length = count * sizeof(Door_Struct);
 	uchar* packet_buffer = new uchar[length];
 	memset(packet_buffer, 0, length);
 	uchar* ptr = packet_buffer;
@@ -896,7 +896,7 @@ bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app, Client *client)
 	app->pBuffer = packet_buffer;
 	return true;	
 }
-Entity* EntityList::GetEntityMob(int16 id){
+Entity* EntityList::GetEntityMob(uint16 id){
 	LinkedListIterator<Mob*> iterator(mob_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -909,7 +909,7 @@ Entity* EntityList::GetEntityMob(int16 id){
 	}
 	return 0;
 }
-Entity* EntityList::GetEntityMerc(int16 id){
+Entity* EntityList::GetEntityMerc(uint16 id){
 	LinkedListIterator<Merc*> iterator(merc_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -938,7 +938,7 @@ Entity* EntityList::GetEntityMob(const char *name)
 	}
 	return 0;
 }
-Entity* EntityList::GetEntityDoor(int16 id){
+Entity* EntityList::GetEntityDoor(uint16 id){
 	LinkedListIterator<Doors*> iterator(door_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -951,7 +951,7 @@ Entity* EntityList::GetEntityDoor(int16 id){
 	}
 	return 0;
 }
-Entity* EntityList::GetEntityCorpse(int16 id){
+Entity* EntityList::GetEntityCorpse(uint16 id){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -981,7 +981,7 @@ Entity* EntityList::GetEntityCorpse(const char *name)
 	return 0;
 }
 
-Entity* EntityList::GetEntityTrap(int16 id){
+Entity* EntityList::GetEntityTrap(uint16 id){
 	LinkedListIterator<Trap*> iterator(trap_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -995,7 +995,7 @@ Entity* EntityList::GetEntityTrap(int16 id){
 	return 0;
 }
 
-Entity* EntityList::GetEntityObject(int16 id){
+Entity* EntityList::GetEntityObject(uint16 id){
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -1009,7 +1009,7 @@ Entity* EntityList::GetEntityObject(int16 id){
 	return 0;
 }
 /*
-Entity* EntityList::GetEntityGroup(int16 id){
+Entity* EntityList::GetEntityGroup(uint16 id){
 	LinkedListIterator<Group*> iterator(group_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -1023,7 +1023,7 @@ Entity* EntityList::GetEntityGroup(int16 id){
 	return 0;
 }
 */
-Entity* EntityList::GetEntityBeacon(int16 id) {
+Entity* EntityList::GetEntityBeacon(uint16 id) {
 	LinkedListIterator<Beacon*> iterator(beacon_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -1036,7 +1036,7 @@ Entity* EntityList::GetEntityBeacon(int16 id) {
 	}
 	return 0;
 }
-Entity* EntityList::GetID(int16 get_id)
+Entity* EntityList::GetID(uint16 get_id)
 {
 	Entity* ent=0;
 	if((ent=entity_list.GetEntityMob(get_id))!=0)
@@ -1057,7 +1057,7 @@ Entity* EntityList::GetID(int16 get_id)
 		return 0;
 }
 
-NPC* EntityList::GetNPCByID(int16 id) {
+NPC* EntityList::GetNPCByID(uint16 id) {
 	LinkedListIterator<NPC*> iterator(npc_list);
 
 	iterator.Reset();
@@ -1074,7 +1074,7 @@ NPC* EntityList::GetNPCByID(int16 id) {
 	return 0;
 }
 
-NPC* EntityList::GetNPCByNPCTypeID(int32 npc_id)
+NPC* EntityList::GetNPCByNPCTypeID(uint32 npc_id)
 {
 	if (npc_id == 0)
 		return 0;
@@ -1092,7 +1092,7 @@ NPC* EntityList::GetNPCByNPCTypeID(int32 npc_id)
 	return 0;
 }
 
-Merc* EntityList::GetMercByID(int16 id) {
+Merc* EntityList::GetMercByID(uint16 id) {
 	LinkedListIterator<Merc*> iterator(merc_list);
 
 	iterator.Reset();
@@ -1109,7 +1109,7 @@ Merc* EntityList::GetMercByID(int16 id) {
 	return 0;
 }
 
-Mob* EntityList::GetMob(int16 get_id)
+Mob* EntityList::GetMob(uint16 get_id)
 {
 	Entity* ent=0;
 
@@ -1139,7 +1139,7 @@ Mob* EntityList::GetMob(const char* name)
 	return 0;
 }
 
-Mob* EntityList::GetMobByNpcTypeID(int32 get_id)
+Mob* EntityList::GetMobByNpcTypeID(uint32 get_id)
 {
 	if (get_id == 0)
 		return 0;
@@ -1157,7 +1157,7 @@ Mob* EntityList::GetMobByNpcTypeID(int32 get_id)
 	return 0;
 }
 
-Object* EntityList::GetObjectByDBID(int32 id)
+Object* EntityList::GetObjectByDBID(uint32 id)
 {
 	if (id == 0)
 		return 0;
@@ -1179,7 +1179,7 @@ Object* EntityList::GetObjectByDBID(int32 id)
 	return 0;
 }
 
-Object* EntityList::GetObjectByID(int16 id)
+Object* EntityList::GetObjectByID(uint16 id)
 {
 	if (id == 0)
 		return 0;
@@ -1201,7 +1201,7 @@ Object* EntityList::GetObjectByID(int16 id)
 	return 0;
 }
 
-Doors* EntityList::GetDoorsByID(int16 id)
+Doors* EntityList::GetDoorsByID(uint16 id)
 {
 	if (id == 0)
 		return 0;
@@ -1223,7 +1223,7 @@ Doors* EntityList::GetDoorsByID(int16 id)
 	return 0;
 }
 
-Doors* EntityList::GetDoorsByDBID(int32 id)
+Doors* EntityList::GetDoorsByDBID(uint32 id)
 {
 	if (id == 0)
 		return 0;
@@ -1245,7 +1245,7 @@ Doors* EntityList::GetDoorsByDBID(int32 id)
 	return 0;
 }
 
-Doors* EntityList::GetDoorsByDoorID(int32 id)
+Doors* EntityList::GetDoorsByDoorID(uint32 id)
 {
 	if (id == 0)
 		return 0;
@@ -1267,11 +1267,11 @@ Doors* EntityList::GetDoorsByDoorID(int32 id)
 	return 0;
 }
 
-int16 EntityList::GetFreeID()
+uint16 EntityList::GetFreeID()
 {
 	if(last_insert_id > 1500)
 		last_insert_id = 0;
-	int16 getid=last_insert_id;
+	uint16 getid=last_insert_id;
 	while(1)
 	{
 		getid++;
@@ -1284,11 +1284,11 @@ int16 EntityList::GetFreeID()
 }
 
 // if no language skill is specified, sent with 100 skill
-void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, const char* message, ...) {
+void EntityList::ChannelMessage(Mob* from, uint8 chan_num, uint8 language, const char* message, ...) {
 	ChannelMessage(from, chan_num, language, 100, message);
 }
 
-void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, int8 lang_skill, const char* message, ...) {
+void EntityList::ChannelMessage(Mob* from, uint8 chan_num, uint8 language, uint8 lang_skill, const char* message, ...) {
 	LinkedListIterator<Client*> iterator(client_list);
 	va_list argptr;
 	char buffer[4096];
@@ -1316,7 +1316,7 @@ void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, int8 la
 	}
 }
 
-void EntityList::ChannelMessageSend(Mob* to, int8 chan_num, int8 language, const char* message, ...) {
+void EntityList::ChannelMessageSend(Mob* to, uint8 chan_num, uint8 language, const char* message, ...) {
 	LinkedListIterator<Client*> iterator(client_list);
 	va_list argptr;
 	char buffer[4096];
@@ -1365,10 +1365,10 @@ void EntityList::SendZoneSpawnsBulk(Client* client)
 	LinkedListIterator<Mob*> iterator(mob_list);
 	NewSpawn_Struct ns;
 	Mob *spawn;
-	int32 maxspawns=100;
+	uint32 maxspawns=100;
 
 	//rate = rate > 1.0 ? (rate < 10.0 ? rate : 10.0) : 1.0;
-	//maxspawns = (int32)rate * SPAWNS_PER_POINT_DATARATE; // FYI > 10240 entities will cause BulkZoneSpawnPacket to throw exception
+	//maxspawns = (uint32)rate * SPAWNS_PER_POINT_DATARATE; // FYI > 10240 entities will cause BulkZoneSpawnPacket to throw exception
 	if(maxspawns > mob_list.Count())
 		maxspawns = mob_list.Count();
 	BulkZoneSpawnPacket* bzsp = new BulkZoneSpawnPacket(client, maxspawns);
@@ -1420,10 +1420,10 @@ void EntityList::SendZoneCorpsesBulk(Client* client) {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	NewSpawn_Struct ns;
 	Corpse *spawn;
-	int32 maxspawns=100;
+	uint32 maxspawns=100;
 
 	//rate = rate > 1.0 ? (rate < 10.0 ? rate : 10.0) : 1.0;
-	//maxspawns = (int32)rate * SPAWNS_PER_POINT_DATARATE; // FYI > 10240 entities will cause BulkZoneSpawnPacket to throw exception
+	//maxspawns = (uint32)rate * SPAWNS_PER_POINT_DATARATE; // FYI > 10240 entities will cause BulkZoneSpawnPacket to throw exception
 	BulkZoneSpawnPacket* bzsp = new BulkZoneSpawnPacket(client, maxspawns);
 	
 	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
@@ -1714,7 +1714,7 @@ void EntityList::QueueClients(Mob* sender, const EQApplicationPacket* app, bool 
 
 /*
 rewrite of all the queue close methods to use the update manager
-void EntityList::FilterQueueCloseClients(int8 filter, int8 required, Mob* sender, const EQApplicationPacket* app, bool ignore_sender, float dist, Mob* SkipThisMob, bool ackreq){
+void EntityList::FilterQueueCloseClients(uint8 filter, uint8 required, Mob* sender, const EQApplicationPacket* app, bool ignore_sender, float dist, Mob* SkipThisMob, bool ackreq){
 	if(dist <= 0) {
 		dist = 600;
 	}
@@ -1731,7 +1731,7 @@ void EntityList::FilterQueueCloseClients(int8 filter, int8 required, Mob* sender
 	while(iterator.MoreElements()) {
 
 		Client* ent = iterator.GetData();
-		int8 filterval=ent->GetFilter(filter);
+		uint8 filterval=ent->GetFilter(filter);
 		if(required==0)
 			required=1;
 		if(filterval==required){
@@ -1755,7 +1755,7 @@ void EntityList::FilterQueueCloseClients(int8 filter, int8 required, Mob* sender
 #endif
 }
 
-void EntityList::QueueCloseClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, float dist, Mob* SkipThisMob, bool ackreq,int8 filter) {
+void EntityList::QueueCloseClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, float dist, Mob* SkipThisMob, bool ackreq,uint8 filter) {
 	if (sender == 0) {
 		QueueClients(sender, app, ignore_sender);
 		return;
@@ -1778,7 +1778,7 @@ void EntityList::QueueCloseClients(Mob* sender, const EQApplicationPacket* app, 
 		Client* ent = iterator.GetData();
 
 		if ((!ignore_sender || ent != sender) && (ent != SkipThisMob)) {
-			int8 filter2=ent->GetFilter(filter);
+			uint8 filter2=ent->GetFilter(filter);
 			if(ent->Connected() && 
 				(filter==0 || (filter2==1 || 
 				(filter2==99 && entity_list.GetGroupByClient(ent)!=0 && 
@@ -1874,7 +1874,7 @@ void EntityList::QueueManaged(Mob* sender, const EQApplicationPacket* app, bool 
 }
 
 
-void EntityList::QueueClientsStatus(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, int8 minstatus, int8 maxstatus)
+void EntityList::QueueClientsStatus(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, uint8 minstatus, uint8 maxstatus)
 {
 	LinkedListIterator<Client*> iterator(client_list);
 	
@@ -1921,7 +1921,7 @@ Client* EntityList::GetClientByName(const char *checkname) {
 	return 0; 
 }
 
-Client* EntityList::GetClientByCharID(int32 iCharID) {
+Client* EntityList::GetClientByCharID(uint32 iCharID) {
 	LinkedListIterator<Client*> iterator(client_list); 
 	
 	iterator.Reset(); 
@@ -1935,7 +1935,7 @@ Client* EntityList::GetClientByCharID(int32 iCharID) {
 	return 0; 
 }
 
-Client* EntityList::GetClientByWID(int32 iWID) {
+Client* EntityList::GetClientByWID(uint32 iWID) {
 	LinkedListIterator<Client*> iterator(client_list); 
 	
 	iterator.Reset(); 
@@ -1987,7 +1987,7 @@ Corpse*	EntityList::GetCorpseByOwner(Client* client){
 	} 
 	return 0; 
 }
-Corpse* EntityList::GetCorpseByID(int16 id){
+Corpse* EntityList::GetCorpseByID(uint16 id){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2000,7 +2000,7 @@ Corpse* EntityList::GetCorpseByID(int16 id){
 	return 0;
 }
 
-Corpse* EntityList::GetCorpseByDBID(int32 dbid){
+Corpse* EntityList::GetCorpseByDBID(uint32 dbid){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2026,7 +2026,7 @@ Corpse* EntityList::GetCorpseByName(const char* name){
 	return 0;
 }
 
-void EntityList::RemoveAllCorpsesByCharID(int32 charid)
+void EntityList::RemoveAllCorpsesByCharID(uint32 charid)
 {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
@@ -2039,7 +2039,7 @@ void EntityList::RemoveAllCorpsesByCharID(int32 charid)
 	}
 }
 
-void EntityList::RemoveCorpseByDBID(int32 dbid)
+void EntityList::RemoveCorpseByDBID(uint32 dbid)
 {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
@@ -2052,7 +2052,7 @@ void EntityList::RemoveCorpseByDBID(int32 dbid)
 	}
 }
 
-int EntityList::RezzAllCorpsesByCharID(int32 charid)
+int EntityList::RezzAllCorpsesByCharID(uint32 charid)
 {
 	int RezzExp = 0;
 
@@ -2107,7 +2107,7 @@ Group* EntityList::GetGroupByLeaderName(char* leader){
 #endif
 	return 0;
 }
-Group* EntityList::GetGroupByID(int32 group_id){
+Group* EntityList::GetGroupByID(uint32 group_id){
 	list<Group *>::iterator iterator;
 
 	iterator = group_list.begin();
@@ -2159,7 +2159,7 @@ Raid* EntityList::GetRaidByLeaderName(const char *leader){
 	} 
 	return 0;
 }
-Raid* EntityList::GetRaidByID(int32 id){
+Raid* EntityList::GetRaidByID(uint32 id){
 	list<Raid *>::iterator iterator;
 
 	iterator = raid_list.begin();
@@ -2214,7 +2214,7 @@ Raid* EntityList::GetRaidByMob(Mob* mob) {
 	return 0; 
 } 
 
-Client* EntityList::GetClientByAccID(int32 accid) 
+Client* EntityList::GetClientByAccID(uint32 accid) 
 { 
 	LinkedListIterator<Client*> iterator(client_list); 
 	
@@ -2228,7 +2228,7 @@ Client* EntityList::GetClientByAccID(int32 accid)
 	} 
 	return 0; 
 } 
-Client* EntityList::GetClientByID(int16 id) { 
+Client* EntityList::GetClientByID(uint16 id) { 
 	LinkedListIterator<Client*> iterator(client_list); 
 	
 	iterator.Reset(); 
@@ -2245,7 +2245,7 @@ Client* EntityList::GetClientByID(int16 id) {
 	return 0; 
 } 
 
-void EntityList::ChannelMessageFromWorld(const char* from, const char* to, int8 chan_num, int32 guild_id, int8 language, const char* message) {
+void EntityList::ChannelMessageFromWorld(const char* from, const char* to, uint8 chan_num, uint32 guild_id, uint8 language, const char* message) {
 	
 	LinkedListIterator<Client*> iterator(client_list);
 	
@@ -2268,7 +2268,7 @@ void EntityList::ChannelMessageFromWorld(const char* from, const char* to, int8 
 	}
 }
 
-void EntityList::Message(int32 to_guilddbid, int32 type, const char* message, ...) {
+void EntityList::Message(uint32 to_guilddbid, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
 	
@@ -2288,7 +2288,7 @@ void EntityList::Message(int32 to_guilddbid, int32 type, const char* message, ..
 	}
 }
 
-void EntityList::QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, int32 guild_id){
+void EntityList::QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, uint32 guild_id){
 	LinkedListIterator<Client*> iterator(client_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2331,7 +2331,7 @@ void EntityList::QueueClientsGuildBankItemUpdate(const GuildBankItemUpdate_Struc
 	safe_delete(outapp);
 }
 
-void EntityList::MessageStatus(int32 to_guild_id, int to_minstatus, int32 type, const char* message, ...) {
+void EntityList::MessageStatus(uint32 to_guild_id, int to_minstatus, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
 	
@@ -2351,7 +2351,7 @@ void EntityList::MessageStatus(int32 to_guild_id, int to_minstatus, int32 type, 
 }
 
 // works much like MessageClose, but with formatted strings
-void EntityList::MessageClose_StringID(Mob *sender, bool skipsender, float dist, int32 type, int32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9)
+void EntityList::MessageClose_StringID(Mob *sender, bool skipsender, float dist, uint32 type, uint32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9)
 {
 	Client *c;
 	LinkedListIterator<Client*> iterator(client_list);
@@ -2366,7 +2366,7 @@ void EntityList::MessageClose_StringID(Mob *sender, bool skipsender, float dist,
 	}
 }
 
-void EntityList::Message_StringID(Mob *sender, bool skipsender, int32 type, int32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9)
+void EntityList::Message_StringID(Mob *sender, bool skipsender, uint32 type, uint32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9)
 {
 	Client *c;
 	LinkedListIterator<Client*> iterator(client_list);
@@ -2380,7 +2380,7 @@ void EntityList::Message_StringID(Mob *sender, bool skipsender, int32 type, int3
 	}
 }
 
-void EntityList::MessageClose(Mob* sender, bool skipsender, float dist, int32 type, const char* message, ...) {
+void EntityList::MessageClose(Mob* sender, bool skipsender, float dist, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
 	
@@ -2489,7 +2489,7 @@ void EntityList::RemoveAllTraps(){
 	while(iterator.MoreElements())
 		iterator.RemoveCurrent();
 }
-bool EntityList::RemoveMob(int16 delete_id){
+bool EntityList::RemoveMob(uint16 delete_id){
 	if(delete_id==0)
 		return true;
 	LinkedListIterator<Mob*> iterator(mob_list);
@@ -2525,7 +2525,7 @@ bool EntityList::RemoveMob(Mob *delete_mob) {
 	return false;
 }
 
-bool EntityList::RemoveNPC(int16 delete_id){
+bool EntityList::RemoveNPC(uint16 delete_id){
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2544,7 +2544,7 @@ bool EntityList::RemoveNPC(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveMerc(int16 delete_id){
+bool EntityList::RemoveMerc(uint16 delete_id){
 	LinkedListIterator<Merc*> iterator(merc_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2557,7 +2557,7 @@ bool EntityList::RemoveMerc(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveClient(int16 delete_id){
+bool EntityList::RemoveClient(uint16 delete_id){
 	LinkedListIterator<Client*> iterator(client_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2585,7 +2585,7 @@ bool EntityList::RemoveClient(Client *delete_client){
 	return false;
 }
 
-bool EntityList::RemoveObject(int16 delete_id){
+bool EntityList::RemoveObject(uint16 delete_id){
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2598,7 +2598,7 @@ bool EntityList::RemoveObject(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveTrap(int16 delete_id){
+bool EntityList::RemoveTrap(uint16 delete_id){
 	LinkedListIterator<Trap*> iterator(trap_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2611,7 +2611,7 @@ bool EntityList::RemoveTrap(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveDoor(int16 delete_id){
+bool EntityList::RemoveDoor(uint16 delete_id){
 	LinkedListIterator<Doors*> iterator(door_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2624,7 +2624,7 @@ bool EntityList::RemoveDoor(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveCorpse(int16 delete_id){
+bool EntityList::RemoveCorpse(uint16 delete_id){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2637,7 +2637,7 @@ bool EntityList::RemoveCorpse(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveGroup(int32 delete_id){
+bool EntityList::RemoveGroup(uint32 delete_id){
 	list<Group *>::iterator iterator;
 
 	iterator = group_list.begin();
@@ -2659,7 +2659,7 @@ bool EntityList::RemoveGroup(int32 delete_id){
 	return false;
 }
 
-bool EntityList::RemoveRaid(int32 delete_id){
+bool EntityList::RemoveRaid(uint32 delete_id){
 	list<Raid *>::iterator iterator;
 
 	iterator = raid_list.begin();
@@ -2694,7 +2694,7 @@ void EntityList::UpdateWho(bool iSendFullUpdate) {
 	if ((!worldserver.Connected()) || !ZoneLoaded)
 		return;
 	LinkedListIterator<Client*> iterator(client_list);
-	int32 tmpNumUpdates = numclients + 5;
+	uint32 tmpNumUpdates = numclients + 5;
 	ServerPacket* pack = 0;
 	ServerClientListKeepAlive_Struct* sclka = 0;
 	if (!iSendFullUpdate) {
@@ -2712,8 +2712,8 @@ void EntityList::UpdateWho(bool iSendFullUpdate) {
 
 				if (sclka->numupdates >= tmpNumUpdates) {
 					tmpNumUpdates += 10;
-					int8* tmp = pack->pBuffer;
-					pack->pBuffer = new int8[sizeof(ServerClientListKeepAlive_Struct) + (tmpNumUpdates * 4)];
+					uint8* tmp = pack->pBuffer;
+					pack->pBuffer = new uint8[sizeof(ServerClientListKeepAlive_Struct) + (tmpNumUpdates * 4)];
 					memset(pack->pBuffer, 0, sizeof(ServerClientListKeepAlive_Struct) + (tmpNumUpdates * 4));
 					memcpy(pack->pBuffer, tmp, pack->size);
 					pack->size = sizeof(ServerClientListKeepAlive_Struct) + (tmpNumUpdates * 4);
@@ -2732,7 +2732,7 @@ void EntityList::UpdateWho(bool iSendFullUpdate) {
 	}
 }
 
-void EntityList::RemoveEntity(int16 id)
+void EntityList::RemoveEntity(uint16 id)
 {
 	if (id == 0)
 		return;
@@ -2763,7 +2763,7 @@ void EntityList::Process()
 	CheckSpawnQueue();
 }
 
-void EntityList::CountNPC(int32* NPCCount, int32* NPCLootCount, int32* gmspawntype_count) {
+void EntityList::CountNPC(uint32* NPCCount, uint32* NPCLootCount, uint32* gmspawntype_count) {
 	LinkedListIterator<NPC*> iterator(npc_list);
 	*NPCCount = 0;
 	*NPCLootCount = 0;
@@ -2780,10 +2780,10 @@ void EntityList::CountNPC(int32* NPCCount, int32* NPCLootCount, int32* gmspawnty
 }
 
 void EntityList::DoZoneDump(ZSDump_Spawn2* spawn2_dump, ZSDump_NPC* npc_dump, ZSDump_NPC_Loot* npcloot_dump, NPCType* gmspawntype_dump) {
-	int32 spawn2index = 0;
-	int32 NPCindex = 0;
-	int32 NPCLootindex = 0;
-	int32 gmspawntype_index = 0;
+	uint32 spawn2index = 0;
+	uint32 NPCindex = 0;
+	uint32 NPCLootindex = 0;
+	uint32 gmspawntype_index = 0;
 	
 	if (npc_dump != 0) {
 		LinkedListIterator<NPC*> iterator(npc_list);
@@ -2858,7 +2858,7 @@ void EntityList::DepopAll(int NPCTypeID, bool StartSpawnTimer) {
 	for(; iterator.MoreElements(); iterator.Advance())
 	{
 		NPC *it = iterator.GetData();
-		if(it && (it->GetNPCTypeID() == (int32)NPCTypeID))
+		if(it && (it->GetNPCTypeID() == (uint32)NPCTypeID))
 			it->Depop(StartSpawnTimer);
 	}
 }
@@ -2914,7 +2914,7 @@ void EntityList::RemoveDebuffs(Mob* caster)
 // Currently, a new packet is sent per entity.
 // @todo: Come back and use FLAG_COMBINED to pack
 // all updates into one packet.
-void EntityList::SendPositionUpdates(Client* client, int32 cLastUpdate, float range, Entity* alwayssend, bool iSendEvenIfNotChanged) {
+void EntityList::SendPositionUpdates(Client* client, uint32 cLastUpdate, float range, Entity* alwayssend, bool iSendEvenIfNotChanged) {
 	range = range * range;
 	LinkedListIterator<Mob*> iterator(mob_list);
 	
@@ -3002,14 +3002,14 @@ char* EntityList::RemoveNumbers(char* name) {
 	strn0cpy(name, tmp, sizeof(tmp));
 	return name;
 }
-void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, int8 searchtype) {
+void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, uint8 searchtype) {
 	if (arg1 == 0)
 		searchtype = 0;
 	else if (arg2 == 0 && searchtype >= 2)
 		searchtype = 0;
 	LinkedListIterator<NPC*> iterator(npc_list);
-	int32 x = 0;
-	int32 z = 0;
+	uint32 x = 0;
+	uint32 z = 0;
 	char sName[36];
 	
 	iterator.Reset();
@@ -3059,7 +3059,7 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 
 void EntityList::ListNPCCorpses(Client* client) {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
-	int32 x = 0;
+	uint32 x = 0;
 	
 	iterator.Reset();
 	client->Message(0, "NPC Corpses in the zone:");
@@ -3075,7 +3075,7 @@ void EntityList::ListNPCCorpses(Client* client) {
 
 void EntityList::ListPlayerCorpses(Client* client) {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
-	int32 x = 0;
+	uint32 x = 0;
 	
 	iterator.Reset();
 	client->Message(0, "Player Corpses in the zone:");
@@ -3116,9 +3116,9 @@ void EntityList::FindPathsToAllNPCs()
 }
 
 // returns the number of corpses deleted. A negative number indicates an error code.
-sint32 EntityList::DeleteNPCCorpses() {
+int32 EntityList::DeleteNPCCorpses() {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
-	sint32 x = 0;
+	int32 x = 0;
 	
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -3132,9 +3132,9 @@ sint32 EntityList::DeleteNPCCorpses() {
 }
 
 // returns the number of corpses deleted. A negative number indicates an error code.
-sint32 EntityList::DeletePlayerCorpses() {
+int32 EntityList::DeletePlayerCorpses() {
 	LinkedListIterator<Corpse*> iterator(corpse_list);
-	sint32 x = 0;
+	int32 x = 0;
 	
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -3237,7 +3237,7 @@ void EntityList::WriteEntityIDs() {
 	}
 }
 
-BulkZoneSpawnPacket::BulkZoneSpawnPacket(Client* iSendTo, int32 iMaxSpawnsPerPacket) {
+BulkZoneSpawnPacket::BulkZoneSpawnPacket(Client* iSendTo, uint32 iMaxSpawnsPerPacket) {
 	data = 0;
 	pSendTo = iSendTo;
 	pMaxSpawnsPerPacket = iMaxSpawnsPerPacket;
@@ -3273,7 +3273,7 @@ void BulkZoneSpawnPacket::SendBuffer() {
 	if (!data)
 		return;
 	
-	int32 tmpBufSize = (index * sizeof(NewSpawn_Struct));
+	uint32 tmpBufSize = (index * sizeof(NewSpawn_Struct));
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_ZoneSpawns, (unsigned char *)data, tmpBufSize);
 	
 	if (pSendTo) {
@@ -3397,7 +3397,7 @@ void EntityList::AggroZone(Mob* who, int hate) {
 }
 
 // Signal Quest command function
-void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id)
+void EntityList::SignalMobsByNPCID(uint32 snpc, int signal_id)
 {
 	LinkedListIterator<NPC*> iterator(npc_list);
 
@@ -3416,7 +3416,7 @@ void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id)
 
 bool EntityList::MakeTrackPacket(Client* client)
 {
-	int32 distance = 0;
+	uint32 distance = 0;
 	float MobDistance;
 
 	if(client->GetClass() == DRUID)
@@ -3430,7 +3430,7 @@ bool EntityList::MakeTrackPacket(Client* client)
 	if(distance<300)
 		distance=300;
 	
-	int32 spe= 0;
+	uint32 spe= 0;
 	bool ret = false;
 	
 	spe = mob_list.Count() + 50;
@@ -3442,7 +3442,7 @@ bool EntityList::MakeTrackPacket(Client* client)
 	Tracking_Struct* track_array = (Tracking_Struct*) buffer2;
 	memset(track_array, 0, sizeof(Track_Struct)*spe);
 	
-	int32 array_counter = 0;
+	uint32 array_counter = 0;
 	
 	LinkedListIterator<Mob*> iterator(mob_list);
 	iterator.Reset();
@@ -3491,7 +3491,7 @@ bool EntityList::MakeTrackPacket(Client* client)
 	return ret;
 }
 
-void EntityList::MessageGroup(Mob* sender, bool skipclose, int32 type, const char* message, ...) {
+void EntityList::MessageGroup(Mob* sender, bool skipclose, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
 
@@ -3531,13 +3531,13 @@ bool EntityList::Fighting(Mob* targ) {
 	return false;
 }
 
-void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
+void EntityList::AddHealAggro(Mob* target, Mob* caster, uint16 thedam)
 {
 	LinkedListIterator<NPC*> iterator(npc_list);
 
 	iterator.Reset();
 	NPC *cur = NULL;
-	int16 count = 0;
+	uint16 count = 0;
 	while(iterator.MoreElements())
 	{
 		cur = iterator.GetData();
@@ -3623,7 +3623,7 @@ void EntityList::OpenDoorsNear(NPC* who)
 	}
 }
 
-void EntityList::SendAlarm(Trap* trap, Mob* currenttarget, int8 kos) 
+void EntityList::SendAlarm(Trap* trap, Mob* currenttarget, uint8 kos) 
 {
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();
@@ -3647,7 +3647,7 @@ void EntityList::SendAlarm(Trap* trap, Mob* currenttarget, int8 kos)
 		{
 			if(kos)
 			{
-				int8 factioncon = currenttarget->GetReverseFactionCon(cur);
+				uint8 factioncon = currenttarget->GetReverseFactionCon(cur);
 				if(factioncon == FACTION_THREATENLY || factioncon == FACTION_SCOWLS)
 				{
 					cur->AddToHateList(currenttarget,1);
@@ -3670,7 +3670,7 @@ void EntityList::AddProximity(NPC *proximity_for) {
 	proximity_for->proximity = new NPCProximity;
 }
 
-bool EntityList::RemoveProximity(int16 delete_npc_id) {
+bool EntityList::RemoveProximity(uint16 delete_npc_id) {
 	LinkedListIterator<NPC*> iterator(proximity_list);
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -3766,7 +3766,7 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 	
 }
 
-void EntityList::ProcessProximitySay(const char *Message, Client *c, int8 language) {
+void EntityList::ProcessProximitySay(const char *Message, Client *c, uint8 language) {
 
 	if(!Message || !c)
 		return;
@@ -3855,7 +3855,7 @@ void EntityList::LimitAddNPC(NPC *npc) {
 	
 	SpawnLimitRecord r;
 	
-	int16 eid = npc->GetID();
+	uint16 eid = npc->GetID();
 	r.spawngroup_id = npc->GetSp2();
 	r.npc_type = npc->GetNPCTypeID();
 	
@@ -3866,17 +3866,17 @@ void EntityList::LimitRemoveNPC(NPC *npc) {
 	if(!npc)
 		return;
 	
-	int16 eid = npc->GetID();
+	uint16 eid = npc->GetID();
 	npc_limit_list.erase(eid);
 }
 
 //check a limit over the entire zone.
 //returns true if the limit has not been reached
-bool EntityList::LimitCheckType(int32 npc_type, int count) {
+bool EntityList::LimitCheckType(uint32 npc_type, int count) {
 	if(count < 1)
 		return(true);
 	
-	map<int16, SpawnLimitRecord>::iterator cur,end;
+	map<uint16, SpawnLimitRecord>::iterator cur,end;
 	cur = npc_limit_list.begin();
 	end = npc_limit_list.end();
 	
@@ -3893,11 +3893,11 @@ bool EntityList::LimitCheckType(int32 npc_type, int count) {
 
 //check limits on an npc type in a given spawn group.
 //returns true if the limit has not been reached
-bool EntityList::LimitCheckGroup(int32 spawngroup_id, int count) {
+bool EntityList::LimitCheckGroup(uint32 spawngroup_id, int count) {
 	if(count < 1)
 		return(true);
 	
-	map<int16, SpawnLimitRecord>::iterator cur,end;
+	map<uint16, SpawnLimitRecord>::iterator cur,end;
 	cur = npc_limit_list.begin();
 	end = npc_limit_list.end();
 	
@@ -3915,11 +3915,11 @@ bool EntityList::LimitCheckGroup(int32 spawngroup_id, int count) {
 //check limits on an npc type in a given spawn group, and
 //checks limits on the entire zone in one pass.
 //returns true if neither limit has been reached
-bool EntityList::LimitCheckBoth(int32 npc_type, int32 spawngroup_id, int group_count, int type_count) {
+bool EntityList::LimitCheckBoth(uint32 npc_type, uint32 spawngroup_id, int group_count, int type_count) {
 	if(group_count < 1 && type_count < 1)
 		return(true);
 	
-	map<int16, SpawnLimitRecord>::iterator cur,end;
+	map<uint16, SpawnLimitRecord>::iterator cur,end;
 	cur = npc_limit_list.begin();
 	end = npc_limit_list.end();
 	
@@ -4107,7 +4107,7 @@ Corpse* EntityList::GetClosestCorpse(Mob* sender, const char* Name)
 	return ClosestCorpse;
 }
 
-void EntityList::ForceGroupUpdate(int32 gid) {
+void EntityList::ForceGroupUpdate(uint32 gid) {
 	LinkedListIterator<Client*> iterator(client_list); 
 	
 	iterator.Reset(); 
@@ -4126,7 +4126,7 @@ void EntityList::ForceGroupUpdate(int32 gid) {
 	} 
 }
 
-void EntityList::SendGroupLeave(int32 gid, const char *name) {
+void EntityList::SendGroupLeave(uint32 gid, const char *name) {
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset(); 
 	while(iterator.MoreElements()) {
@@ -4157,7 +4157,7 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 	} 
 }
 
-void EntityList::SendGroupJoin(int32 gid, const char *name) {
+void EntityList::SendGroupJoin(uint32 gid, const char *name) {
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset(); 
 	while(iterator.MoreElements()) {
@@ -4185,7 +4185,7 @@ void EntityList::SendGroupJoin(int32 gid, const char *name) {
 	} 
 }
 
-void EntityList::GroupMessage(int32 gid, const char *from, const char *message)
+void EntityList::GroupMessage(uint32 gid, const char *from, const char *message)
 {
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset(); 
@@ -4204,7 +4204,7 @@ void EntityList::GroupMessage(int32 gid, const char *from, const char *message)
 	} 
 }
 
-int16 EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
+uint16 EntityList::CreateGroundObject(uint32 itemid, float x, float y, float z, float heading, uint32 decay_time)
 {
 	const Item_Struct* is = database.GetItem(itemid);
 	if(is)
@@ -4224,7 +4224,7 @@ int16 EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, fl
 	return 0; // fell through everything, this is bad/incomplete from perl
 }
 
-int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time)
+uint16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time)
 {
 	if(model)
 	{
@@ -4237,7 +4237,7 @@ int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float 
 	return 0; // fell through everything, this is bad/incomplete from perl
 }
 
-int16 EntityList::CreateDoor(const char *model, float x, float y, float z, float heading, int8 opentype, int16 size)
+uint16 EntityList::CreateDoor(const char *model, float x, float y, float z, float heading, uint8 opentype, uint16 size)
 {
 	if(model)
 	{
@@ -4319,7 +4319,7 @@ void EntityList::SendZoneAppearance(Client *c)
 			}
 			if(cur->GetSize() != cur->GetBaseSize())
 			{
-				cur->SendAppearancePacket(AT_Size, (int32)cur->GetSize(), false, true, c);
+				cur->SendAppearancePacket(AT_Size, (uint32)cur->GetSize(), false, true, c);
 			}
 		}
 		iterator.Advance();
@@ -4389,9 +4389,9 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 	// This is only called for SoF clients, as regular /who is now handled server-side for that client.
 	//
-	int32 PacketLength = 0;
+	uint32 PacketLength = 0;
 
-	int32 Entries = 0;
+	uint32 Entries = 0;
 
 	uint8 WhomLength = strlen(Who->whom);
 
@@ -4539,20 +4539,20 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 				GuildName += ">";
 			}
 
-			int32 FormatMSGID=5025; // 5025 %T1[%2 %3] %4 (%5) %6 %7 %8 %9
+			uint32 FormatMSGID=5025; // 5025 %T1[%2 %3] %4 (%5) %6 %7 %8 %9
 
 			if(ClientEntry->GetAnon() == 1)
 				FormatMSGID = 5024; // 5024 %T1[ANONYMOUS] %2 %3
 			else if(ClientEntry->GetAnon() == 2)
 				FormatMSGID = 5023; // 5023 %T1[ANONYMOUS] %2 %3 %4
 
-			int32 PlayerClass = 0;
+			uint32 PlayerClass = 0;
 
-			int32 PlayerLevel = 0;
+			uint32 PlayerLevel = 0;
 
-			int32 PlayerRace = 0;
+			uint32 PlayerRace = 0;
 
-			int32 ZoneMSGID = 0xFFFFFFFF;
+			uint32 ZoneMSGID = 0xFFFFFFFF;
 
 			if(ClientEntry->GetAnon()==0) {
 
@@ -4625,7 +4625,7 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 	safe_delete(outapp);
 }
 
-void EntityList::UnMarkNPC(int16 ID) 
+void EntityList::UnMarkNPC(uint16 ID) 
 {
 	// Designed to be called from the Mob destructor, this method calls Group::UnMarkNPC for
 	// each group to remove the dead mobs entity ID from the groups list of NPCs marked via the
@@ -4650,10 +4650,10 @@ void EntityList::UnMarkNPC(int16 ID)
 	} 
 }
 
-int32 EntityList::CheckNPCsClose(Mob *center)
+uint32 EntityList::CheckNPCsClose(Mob *center)
 {
     LinkedListIterator<NPC*> iterator(npc_list);
-    int32 count = 0;
+    uint32 count = 0;
 
     iterator.Reset();
     while(iterator.MoreElements())
@@ -4719,7 +4719,7 @@ void EntityList::GateAllClients()
 	}
 }
 
-void EntityList::SignalAllClients(int32 data)
+void EntityList::SignalAllClients(uint32 data)
 {
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset();
@@ -5203,9 +5203,9 @@ void EntityList::GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height,
 			iterator.Advance();
 			continue;
 		}
-		sint32 x_diff = ptr->GetX() - start->GetX();
-		sint32 y_diff = ptr->GetY() - start->GetY();
-		sint32 z_diff = ptr->GetZ() - start->GetZ();
+		int32 x_diff = ptr->GetX() - start->GetX();
+		int32 y_diff = ptr->GetY() - start->GetY();
+		int32 z_diff = ptr->GetZ() - start->GetZ();
 
 		x_diff *= x_diff;
 		y_diff *= y_diff;

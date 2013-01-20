@@ -26,7 +26,7 @@ extern "C" __declspec(dllexport) bool AddNPCType(uint32 id, const NPCType* npcty
 	return pAddNPCType(id, npctype);
 };
 
-/*extern "C" __declspec(dllexport) bool DLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, int32 iNPCTypeStructSize, sint32* iNPCTypesCount, int32* iMaxNPCTypeID) {
+/*extern "C" __declspec(dllexport) bool DLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, uint32 iNPCTypeStructSize, int32* iNPCTypesCount, uint32* iMaxNPCTypeID) {
 	return pDLLLoadNPCTypes(cbDBLoadNPCTypes, iNPCTypeStructSize, iNPCTypesCount, iMaxNPCTypeID);
 };*/
 
@@ -39,7 +39,7 @@ extern "C" bool AddNPCType(uint32 id, const NPCType* npctype) {
 	return pAddNPCType(id, npctype);
 };
 
-extern "C" bool DLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, int32 iNPCTypeStructSize, sint32* iNPCTypesCount, int32* iMaxNPCTypeID) {
+extern "C" bool DLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, uint32 iNPCTypeStructSize, int32* iNPCTypesCount, uint32* iMaxNPCTypeID) {
 	return pDLLLoadNPCTypes(cbDBLoadNPCTypes, iNPCTypeStructSize, iNPCTypesCount, iMaxNPCTypeID);
 };
 #endif
@@ -58,7 +58,7 @@ bool pAddNPCType(uint32 id, const NPCType* npctype) {
 	return true;
 }
 
-/*bool pDLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, int32 iNPCTypeStructSize, sint32* iNPCTypesCount, int32* iMaxNPCTypeID) {
+/*bool pDLLLoadNPCTypes(CALLBACK_DBLoadNPCTypes cbDBLoadNPCTypes, uint32 iNPCTypeStructSize, int32* iNPCTypesCount, uint32* iMaxNPCTypeID) {
 	if (iNPCTypeStructSize != sizeof(NPCType)) {
 		cout << "Error: EMuShareMem: DLLLoadNPCTypes: iNPCTypeStructSize != sizeof(NPCType)" << endl;
 		cout << "NPCType struct has changed, EMuShareMem.dll needs to be recompiled." << endl;
@@ -69,7 +69,7 @@ bool pAddNPCType(uint32 id, const NPCType* npctype) {
 		cout << "You need to increase the define in NPCTypes.h." << endl;
 		return false;
 	}
-	int32 tmpMemSize = sizeof(MMFNPCTypes_Struct) + 256 + (sizeof(NPCType) * (*iNPCTypesCount));
+	uint32 tmpMemSize = sizeof(MMFNPCTypes_Struct) + 256 + (sizeof(NPCType) * (*iNPCTypesCount));
 	if (NPCTypesMMF.Open("EQEMuNPCTypes", tmpMemSize)) {
 //		MMFNPCTypesData = (const MMFNPCTypes_Struct*) NPCTypesMMF.GetHandle();
 		if (NPCTypesMMF.CanWrite()) {
@@ -103,7 +103,7 @@ bool pAddNPCType(uint32 id, const NPCType* npctype) {
 		else {
 			if (!NPCTypesMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!NPCTypesMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(100);
 					Timer::SetCurrentTime();

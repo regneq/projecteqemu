@@ -553,10 +553,10 @@ XS(XS_EQW_CreateGuild)
 		Perl_croak(aTHX_ "Usage: EQW::CreateGuild(THIS, name, leader_char_id)");
 	{
 		EQW *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 		char*		name = (char *)SvPV_nolen(ST(1));
-		int32		leader_char_id = (int32)SvUV(ST(2));
+		uint32		leader_char_id = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -582,7 +582,7 @@ XS(XS_EQW_DeleteGuild)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		guild_id = (int32)SvUV(ST(1));
+		uint32		guild_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "EQW")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -609,7 +609,7 @@ XS(XS_EQW_RenameGuild)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		guild_id = (int32)SvUV(ST(1));
+		uint32		guild_id = (uint32)SvUV(ST(1));
 		char*		name = (char *)SvPV_nolen(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {
@@ -637,7 +637,7 @@ XS(XS_EQW_SetGuildMOTD)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		guild_id = (int32)SvUV(ST(1));
+		uint32		guild_id = (uint32)SvUV(ST(1));
 		char*		motd = (char *)SvPV_nolen(ST(2));
 		char *		setter = (char *)SvPV_nolen(ST(3));
 
@@ -666,8 +666,8 @@ XS(XS_EQW_SetGuildLeader)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		guild_id = (int32)SvUV(ST(1));
-		int32		leader_char_id = (int32)SvUV(ST(2));
+		uint32		guild_id = (uint32)SvUV(ST(1));
+		uint32		leader_char_id = (uint32)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -694,9 +694,9 @@ XS(XS_EQW_SetGuild)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		charid = (int32)SvUV(ST(1));
-		int32		guild_id = (int32)SvUV(ST(2));
-		int8		rank = (int8)SvUV(ST(3));
+		uint32		charid = (uint32)SvUV(ST(1));
+		uint32		guild_id = (uint32)SvUV(ST(2));
+		uint8		rank = (uint8)SvUV(ST(3));
 
 		if (sv_derived_from(ST(0), "EQW")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -723,8 +723,8 @@ XS(XS_EQW_SetGuildRank)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		charid = (int32)SvUV(ST(1));
-		int8		rank = (int8)SvUV(ST(2));
+		uint32		charid = (uint32)SvUV(ST(1));
+		uint8		rank = (uint8)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -751,7 +751,7 @@ XS(XS_EQW_SetBankerFlag)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		charid = (int32)SvUV(ST(1));
+		uint32		charid = (uint32)SvUV(ST(1));
 		bool		is_banker = (bool)SvTRUE(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {
@@ -779,7 +779,7 @@ XS(XS_EQW_SetTributeFlag)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		charid = (int32)SvUV(ST(1));
+		uint32		charid = (uint32)SvUV(ST(1));
 		bool		enabled = (bool)SvTRUE(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {
@@ -807,7 +807,7 @@ XS(XS_EQW_SetPublicNote)
 	{
 		EQW *		THIS;
 		bool		RETVAL;
-		int32		charid = (int32)SvUV(ST(1));
+		uint32		charid = (uint32)SvUV(ST(1));
 		char *		note = (char *)SvPV_nolen(ST(2));
 
 		if (sv_derived_from(ST(0), "EQW")) {

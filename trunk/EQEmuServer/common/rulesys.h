@@ -86,7 +86,7 @@ public:
 	RuleManager();
 	
 	//fetch routines, you should generally use the Rule* macros instead of this
-	sint32 GetIntRule (IntType  t) const;
+	int32 GetIntRule (IntType  t) const;
 	float GetRealRule(RealType t) const;
 	bool GetBoolRule(BoolType t) const;
 
@@ -116,12 +116,12 @@ protected:
 	int		m_activeRuleset;
 	std::string m_activeName;
 #ifdef WIN64
-	int32 	m_RuleIntValues [_IntRuleCount ];
+	uint32 	m_RuleIntValues [_IntRuleCount ];
 #else
 	int m_RuleIntValues [_IntRuleCount ];
 #endif
 	float	m_RuleRealValues[_RealRuleCount];
-	int32	m_RuleBoolValues[_BoolRuleCount];
+	uint32	m_RuleBoolValues[_BoolRuleCount];
 
 	typedef enum {
 		IntRule,

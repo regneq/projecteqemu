@@ -264,7 +264,7 @@ Mob* EntityList::GetTrapTrigger(Trap* trap) {
 }
 
 //todo: rewrite this to not need direct access to trap members.
-bool ZoneDatabase::LoadTraps(const char* zonename, sint16 version) {
+bool ZoneDatabase::LoadTraps(const char* zonename, int16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;

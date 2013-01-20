@@ -46,7 +46,7 @@ BugDatabase::BugDatabase()
 
 }
 
-bool BugDatabase::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES** result, int32* affected_rows, int32* errnum, bool retry) {
+bool BugDatabase::RunQuery(const char* query, uint32 querylen, char* errbuf, MYSQL_RES** result, uint32* affected_rows, uint32* errnum, bool retry) {
 	if (errnum)
 		*errnum = 0;
 	if (errbuf)
@@ -139,7 +139,7 @@ bool BugDatabase::UploadBug(const char* bugdetails, const char* version,const ch
 	return true;
 }
 
-int32 BugDatabase::DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen) {
+uint32 BugDatabase::DoEscapeString(char* tobuf, const char* frombuf, uint32 fromlen) {
 	LockMutex lock(&MBugDatabase);
 	return mysql_real_escape_string(&mysqlbug, tobuf, frombuf, fromlen);
 }

@@ -374,7 +374,7 @@ int RuleManager::_FindOrCreateRuleset(Database *db, const char *ruleset) {
 	char* rst = new char[2*len+1];
 	db->DoEscapeString(rst, ruleset, len);
 
-	int32 new_id;
+	uint32 new_id;
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
 	if (!db->RunQuery(query, MakeAnyLenString(&query, 
@@ -443,7 +443,7 @@ bool RuleManager::ListRulesets(Database *db, std::map<int, std::string> &into) {
 	return(true);
 }
 
-sint32 RuleManager::GetIntRule(RuleManager::IntType t) const
+int32 RuleManager::GetIntRule(RuleManager::IntType t) const
 { 
     return(m_RuleIntValues[t]); 
 }

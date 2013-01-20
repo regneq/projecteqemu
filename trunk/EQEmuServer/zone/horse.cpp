@@ -27,10 +27,10 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include <assert.h>
 #include "worldserver.h"
 
-map<int16, const NPCType *> Horse::horse_types;
+map<uint16, const NPCType *> Horse::horse_types;
 LinkedList<NPCType *> horses_auto_delete;
 
-Horse::Horse(Client *_owner, int16 spell_id, float x, float y, float z, float heading) 
+Horse::Horse(Client *_owner, uint16 spell_id, float x, float y, float z, float heading) 
  : NPC(GetHorseType(spell_id), NULL, x, y, z, heading, FlyMode3)
 {
 	//give the horse its proper name.
@@ -50,7 +50,7 @@ void Horse::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	ns->spawn.runspeed = NPCTypedata->runspeed;
 }
 	
-bool Horse::IsHorseSpell(int16 spell_id) {
+bool Horse::IsHorseSpell(uint16 spell_id) {
 	//written in terms of a function which does a ton more work
 	//than we need to to figure out if this is a horse spell.
 	//the logic is that people calling this function will post
@@ -58,7 +58,7 @@ bool Horse::IsHorseSpell(int16 spell_id) {
 	return(GetHorseType(spell_id) != NULL);
 }
 
-const NPCType *Horse::GetHorseType(int16 spell_id) {
+const NPCType *Horse::GetHorseType(uint16 spell_id) {
 	if(horse_types.count(spell_id) == 1)
 		return(horse_types[spell_id]);
 	//cache invalid spell IDs as NULL entries
@@ -67,7 +67,7 @@ const NPCType *Horse::GetHorseType(int16 spell_id) {
 	return(ret);
 }
 
-const NPCType *Horse::BuildHorseType(int16 spell_id) {
+const NPCType *Horse::BuildHorseType(uint16 spell_id) {
 
 	const char* FileName = spells[spell_id].teleport_zone;
 
@@ -136,7 +136,7 @@ const NPCType *Horse::BuildHorseType(int16 spell_id) {
 
 
 
-void Client::SummonHorse(int16 spell_id) {
+void Client::SummonHorse(uint16 spell_id) {
 	if (GetHorseId() != 0) {
 		Message(13,"You already have a Horse.  Get off, Fatbutt!");
 		return;
@@ -169,12 +169,12 @@ void Client::SummonHorse(int16 spell_id) {
 	entity_list.QueueClients(horse, &outapp);
 	
 	
-	int16 tmpID = horse->GetID();
+	uint16 tmpID = horse->GetID();
 	SetHorseId(tmpID);
 	
 }
 
-void Client::SetHorseId(int16 horseid_in) {
+void Client::SetHorseId(uint16 horseid_in) {
 	//if its the same, do nothing
 	if(horseId == horseid_in)
 		return;

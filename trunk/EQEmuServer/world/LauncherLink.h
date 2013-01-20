@@ -39,8 +39,8 @@ public:
 	void Disconnect() { tcpc->Disconnect(); }
 	
 	inline bool			HasName() const		{ return(m_name.length() > 0); }
-	inline int32		GetIP() const		{ return tcpc->GetrIP(); }
-	inline int16		GetPort() const		{ return tcpc->GetrPort(); }
+	inline uint32		GetIP() const		{ return tcpc->GetrIP(); }
+	inline uint16		GetPort() const		{ return tcpc->GetrPort(); }
 	inline const char * GetName() const		{ return(m_name.c_str()); }
 	inline int			CountZones() const  { return(m_states.size()); }
 	

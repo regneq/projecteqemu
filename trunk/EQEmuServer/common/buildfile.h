@@ -94,17 +94,17 @@ struct PF_MobSpawn {
 	uint16	spawn_id;
 	char	name[64];
 	char	last_name[32];
-	int8	npc;	// 0=player,1=npc,2=pc corpse,3=npc corpse,4=???,5=unknown spawn,10=self
-	int8	beard;
-	int8	beardcolor;
-	int8	class_;
-	int8	equip_chest2;
-	int32	race;
-	int8	eyecolor1;
-	int8	eyecolor2;
-	int8	face;
-	int8	invis;
-	int8	level;
+	uint8	npc;	// 0=player,1=npc,2=pc corpse,3=npc corpse,4=???,5=unknown spawn,10=self
+	uint8	beard;
+	uint8	beardcolor;
+	uint8	class_;
+	uint8	equip_chest2;
+	uint32	race;
+	uint8	eyecolor1;
+	uint8	eyecolor2;
+	uint8	face;
+	uint8	invis;
+	uint8	level;
 	
 	float	x;
 	float	y;
@@ -116,17 +116,17 @@ struct PF_MobSpawn {
 	float	delta_heading;
 	uint16	animation;
 	
-	int8	hairstyle;
-	int8	haircolor;
-	int8	light;
+	uint8	hairstyle;
+	uint8	haircolor;
+	uint8	light;
 	float	size;
-	int8	helm;
+	uint8	helm;
 	float	runspeed;
 	float	walkspeed;
-	int8	gender;
+	uint8	gender;
 	uint32	bodytype;
 	uint32	pet_owner_id;
-	int16	deity;
+	uint16	deity;
 	
 };
 
@@ -142,8 +142,8 @@ struct PF_DeleteSpawn {
 
 //BeginCast_Struct
 struct PF_CastSpell {
-	int16 caster_id;
-	int16 spell_id;
+	uint16 caster_id;
+	uint16 spell_id;
 };
 
 //Merchant_Click_Struct

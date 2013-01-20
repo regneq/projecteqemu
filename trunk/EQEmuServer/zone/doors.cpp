@@ -75,7 +75,7 @@ Doors::Doors(const Door* door)
 	client_version_mask = door->client_version_mask;
 }
 
-Doors::Doors(const char *dmodel, float dx, float dy, float dz, float dheading, int8 dopentype, int16 dsize)
+Doors::Doors(const char *dmodel, float dx, float dy, float dz, float dheading, uint8 dopentype, uint16 dsize)
 :    close_timer(5000)
 {
 	db_id = database.GetDoorsCountPlusOne(zone->GetShortName(), zone->GetInstanceVersion());
@@ -139,7 +139,7 @@ bool Doors::Process()
 	return true;
 }
 
-void Doors::HandleClick(Client* sender, int8 trigger)
+void Doors::HandleClick(Client* sender, uint8 trigger)
 {
 	//door debugging info dump
 	_log(DOORS__INFO, "%s clicked door %s (dbid %d, eqid %d) at (%.4f,%.4f,%.4f @%.4f)", sender->GetName(), door_name, db_id, door_id, pos_x, pos_y, pos_z, heading);
@@ -194,7 +194,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	}
 
 	uint32 keyneeded = GetKeyItem();
-	int8 keepoffkeyring = GetNoKeyring();
+	uint8 keepoffkeyring = GetNoKeyring();
 	uint32 haskey = 0;
 	uint32 playerkey = 0;
 	const ItemInst *lockpicks = sender->GetInv().GetItem(SLOT_CURSOR);
@@ -570,7 +570,7 @@ void Doors::DumpDoor(){
         dest_zone, dest_x, dest_y, dest_z, dest_heading);
 }
 
-sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, sint16 version) {
+int32 ZoneDatabase::GetDoorsCount(uint32* oMaxID, const char *zone_name, int16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 
@@ -582,7 +582,7 @@ sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, sint16 
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
 		if (row != NULL && row[1] != 0) {
-			sint32 ret = atoi(row[1]);
+			int32 ret = atoi(row[1]);
 			if (oMaxID) {
 				if (row[0])
 					*oMaxID = atoi(row[0]);
@@ -603,10 +603,10 @@ sint32 ZoneDatabase::GetDoorsCount(int32* oMaxID, const char *zone_name, sint16 
 	return -1;
 }
 
-sint32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, sint16 version) {
+int32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, int16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 oMaxID = 0;
+	uint32 oMaxID = 0;
 
     MYSQL_RES *result;
     MYSQL_ROW row;
@@ -634,10 +634,10 @@ sint32 ZoneDatabase::GetDoorsCountPlusOne(const char *zone_name, sint16 version)
 	return -1;
 }
 
-sint32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, sint16 version) {
+int32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, int16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	int32 oMaxID = 0;
+	uint32 oMaxID = 0;
 
     MYSQL_RES *result;
     MYSQL_ROW row;
@@ -666,8 +666,8 @@ sint32 ZoneDatabase::GetDoorsDBCountPlusOne(const char *zone_name, sint16 versio
 }
 
 /*
-extern "C" bool extDBLoadDoors(sint32 iDoorCount, int32 iMaxDoorID) { return database.DBLoadDoors(iDoorCount, iMaxDoorID); }
-const Door* ZoneDatabase::GetDoor(int8 door_id, const char* zone_name) {
+extern "C" bool extDBLoadDoors(int32 iDoorCount, uint32 iMaxDoorID) { return database.DBLoadDoors(iDoorCount, iMaxDoorID); }
+const Door* ZoneDatabase::GetDoor(uint8 door_id, const char* zone_name) {
 	for(uint32 i=0; i!=max_door_type;i++)
 	{
         const Door* door;
@@ -687,7 +687,7 @@ const Door* ZoneDatabase::GetDoorDBID(uint32 db_id) {
 bool ZoneDatabase::LoadDoors() {
 	if (!EMuShareMemDLL.Load())
 		return false;
-	sint32 tmp = 0;
+	int32 tmp = 0;
 	tmp = GetDoorsCount(&max_door_type);
 	if (tmp == -1) {
 		cout << "Error: ZoneDatabase::LoadDoors-ShareMem: GetDoorsCount() returned < 0" << endl;
@@ -697,7 +697,7 @@ bool ZoneDatabase::LoadDoors() {
 	return ret;
 }*/
 
-bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name, sint16 version) {
+bool ZoneDatabase::LoadDoors(int32 iDoorCount, Door *into, const char *zone_name, int16 version) {
 	LogFile->write(EQEMuLog::Status, "Loading Doors from database...");
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -711,7 +711,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 		"FROM doors WHERE zone='%s' AND (version=%u OR version=-1) ORDER BY doorid asc", zone_name, version);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		safe_delete_array(query);
-		sint32 r;
+		int32 r;
 		for(r = 0; (row = mysql_fetch_row(result)); r++) {
 			if(r >= iDoorCount) {
 				cerr << "Error, Door Count of " << iDoorCount << " exceeded." << endl;
@@ -744,7 +744,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			into[r].incline=atoi(row[23]);
 			into[r].size=atoi(row[24]);
 			into[r].is_ldon_door=atoi(row[25]);
-			into[r].client_version_mask = (int32)strtoul(row[26], NULL, 10);
+			into[r].client_version_mask = (uint32)strtoul(row[26], NULL, 10);
 		}
 		mysql_free_result(result);
 	}
@@ -794,7 +794,7 @@ void Doors::SetIncline(int in) {
 	entity_list.RespawnAllDoors();
 }
 
-void Doors::SetOpenType(int8 in) { 
+void Doors::SetOpenType(uint8 in) { 
 	entity_list.DespawnAllDoors();
 	opentype = in; 
 	entity_list.RespawnAllDoors();
@@ -807,7 +807,7 @@ void Doors::SetDoorName(char* name) {
 	entity_list.RespawnAllDoors();
 }
 
-void Doors::SetSize(int16 in) { 
+void Doors::SetSize(uint16 in) { 
 	entity_list.DespawnAllDoors();
 	size = in;
 	entity_list.RespawnAllDoors();

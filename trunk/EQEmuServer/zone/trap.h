@@ -43,7 +43,7 @@ public:
     virtual bool IsTrap() const { return true; }
 	void	Trigger(Mob* trigger);
 	
-	void	SpellOnTarget(Mob* trigger, int32 spell_id);
+	void	SpellOnTarget(Mob* trigger, uint32 spell_id);
 
 	NPC * GetHiddenTrigger() { return hiddenTrigger; }
 	void SetHiddenTrigger(NPC* n) { hiddenTrigger = n; }
@@ -52,7 +52,7 @@ public:
 	//Trap data, leave this unprotected
 	Timer	respawn_timer; //Respawn Time when Trap's been disarmed
 	Timer	chkarea_timer;
-	int32	trap_id; //Database ID of trap
+	uint32	trap_id; //Database ID of trap
 	float	x; //X position
 	float	y; //Y position
 	float	z; //Z position
@@ -60,14 +60,14 @@ public:
 	float	radius;		//radius around trap to be triggerable
 	uint8	chance;		//%chance that the trap is triggered each 'tick'
 	uint8	effect; //Effect ID
-	sint32	effectvalue; //Value of Effect
-	sint32	effectvalue2; //Value of Effect
+	int32	effectvalue; //Value of Effect
+	int32	effectvalue2; //Value of Effect
 	uint8	skill; //Skill to detect/disarm with rogue.
 	uint8	level;
 	bool	detected;
 	bool	disarmed;
-	int32	respawn_time;
-	int32	respawn_var;
+	uint32	respawn_time;
+	uint32	respawn_var;
 
 	std::string message;
 protected:

@@ -58,15 +58,15 @@ Database::Database ()
 Establish a connection to a mysql database with the supplied parameters
 */
 
-Database::Database(const char* host, const char* user, const char* passwd, const char* database, int32 port)
+Database::Database(const char* host, const char* user, const char* passwd, const char* database, uint32 port)
 {
 	DBInitVars();
 	Connect(host, user, passwd, database, port);
 }
 
-bool Database::Connect(const char* host, const char* user, const char* passwd, const char* database, int32 port)
+bool Database::Connect(const char* host, const char* user, const char* passwd, const char* database, uint32 port)
 {
-	int32 errnum= 0;
+	uint32 errnum= 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	if (!Open(host, user, passwd, database, port, &errnum, errbuf))
 	{
@@ -88,7 +88,7 @@ void Database::DBInitVars() {
 
 
 
-void Database::HandleMysqlError(int32 errnum) {
+void Database::HandleMysqlError(uint32 errnum) {
 }
 
 /*
@@ -99,7 +99,7 @@ Database::~Database()
 {
 }
 
-bool Database::GetVariable(const char* varname, char* varvalue, int16 varvalue_len) {
+bool Database::GetVariable(const char* varname, char* varvalue, uint16 varvalue_len) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
@@ -134,7 +134,7 @@ bool Database::GetVariable(const char* varname, char* varvalue, int16 varvalue_l
 }
 
 
-void Database::AddSpeech(const char* from, const char* to, const char* message, int16 minstatus, uint32 guilddbid, int8 type) {
+void Database::AddSpeech(const char* from, const char* to, const char* message, uint16 minstatus, uint32 guilddbid, uint8 type) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 
@@ -156,11 +156,11 @@ void Database::AddSpeech(const char* from, const char* to, const char* message, 
 	safe_delete_array(S3);
 }
 
-void Database::LogPlayerTrade(QSPlayerLogTrade_Struct* QS, int32 Items) {
+void Database::LogPlayerTrade(QSPlayerLogTrade_Struct* QS, uint32 Items) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 lastid = 0;
+	uint32 lastid = 0;
 	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_trade_record` SET `time`=NOW(), "
 		"`char1_id`='%i', `char1_pp`='%i', `char1_gp`='%i', `char1_sp`='%i', `char1_cp`='%i', `char1_items`='%i', "
 		"`char2_id`='%i', `char2_pp`='%i', `char2_gp`='%i', `char2_sp`='%i', `char2_cp`='%i', `char2_items`='%i'",
@@ -186,11 +186,11 @@ void Database::LogPlayerTrade(QSPlayerLogTrade_Struct* QS, int32 Items) {
 	}
 }
 
-void Database::LogPlayerHandin(QSPlayerLogHandin_Struct* QS, int32 Items) {
+void Database::LogPlayerHandin(QSPlayerLogHandin_Struct* QS, uint32 Items) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 lastid = 0;
+	uint32 lastid = 0;
 	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_handin_record` SET `time`=NOW(), `quest_id`='%i', "
 		"`char_id`='%i', `char_pp`='%i', `char_gp`='%i', `char_sp`='%i', `char_cp`='%i', `char_items`='%i', "
 		"`npc_id`='%i', `npc_pp`='%i', `npc_gp`='%i', `npc_sp`='%i', `npc_cp`='%i', `npc_items`='%i'",
@@ -216,10 +216,10 @@ void Database::LogPlayerHandin(QSPlayerLogHandin_Struct* QS, int32 Items) {
 	}
 }
 
-void Database::LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members){
+void Database::LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, uint32 Members){
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 lastid = 0;
+	uint32 lastid = 0;
 	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_npc_kill_record` SET `npc_id`='%i', `type`='%i', `zone_id`='%i', `time`=NOW()", QS->s1.NPCID, QS->s1.Type, QS->s1.ZoneID), errbuf, 0, 0, &lastid)) {
 		_log(NET__WORLD, "Failed NPC Kill Log Record Insert: %s", errbuf);
 		_log(NET__WORLD, "%s", query);
@@ -235,11 +235,11 @@ void Database::LogPlayerNPCKill(QSPlayerLogNPCKill_Struct* QS, int32 Members){
 	}
 }
 
-void Database::LogPlayerDelete(QSPlayerLogDelete_Struct* QS, int32 Items) {
+void Database::LogPlayerDelete(QSPlayerLogDelete_Struct* QS, uint32 Items) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 lastid = 0;
+	uint32 lastid = 0;
 	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_delete_record` SET `time`=NOW(), "
 		"`char_id`='%i', `stack_size`='%i', `char_items`='%i'",
 		QS->char_id, QS->stack_size, QS->char_count, QS->char_count),
@@ -263,11 +263,11 @@ void Database::LogPlayerDelete(QSPlayerLogDelete_Struct* QS, int32 Items) {
 	}
 }
 
-void Database::LogPlayerMove(QSPlayerLogMove_Struct* QS, int32 Items) {
+void Database::LogPlayerMove(QSPlayerLogMove_Struct* QS, uint32 Items) {
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 lastid = 0;
+	uint32 lastid = 0;
 	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_player_move_record` SET `time`=NOW(), "
 		"`char_id`='%i', `from_slot`='%i', `to_slot`='%i', `stack_size`='%i', `char_items`='%i', `postaction`='%i'",
 		QS->char_id, QS->from_slot, QS->to_slot, QS->stack_size, QS->char_count, QS->postaction),
@@ -291,12 +291,12 @@ void Database::LogPlayerMove(QSPlayerLogMove_Struct* QS, int32 Items) {
 	}
 }
 
-void Database::LogMerchantTransaction(QSMerchantLogTransaction_Struct* QS, int32 Items) {
+void Database::LogMerchantTransaction(QSMerchantLogTransaction_Struct* QS, uint32 Items) {
 	// Merchant transactions are from the perspective of the merchant, not the player -U
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
-	int32 lastid = 0;
+	uint32 lastid = 0;
 	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `qs_merchant_transaction_record` SET `time`=NOW(), "
 		"`zone_id`='%i', `merchant_id`='%i', `merchant_pp`='%i', `merchant_gp`='%i', `merchant_sp`='%i', `merchant_cp`='%i', `merchant_items`='%i', "
 		"`char_id`='%i', `char_pp`='%i', `char_gp`='%i', `char_sp`='%i', `char_cp`='%i', `char_items`='%i'",

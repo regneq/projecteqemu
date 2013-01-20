@@ -37,7 +37,7 @@ using namespace std;
 LoadEMuShareMemDLL EMuShareMemDLL;
 
 #ifndef WIN32
-int32 LoadEMuShareMemDLL::refCount = 0;
+uint32 LoadEMuShareMemDLL::refCount = 0;
 #endif
 
 LoadEMuShareMemDLL::LoadEMuShareMemDLL() {

@@ -829,7 +829,7 @@ void LoadSPDat(SPDat_Spell_Struct** SpellsPointer) {
 #endif
 
 
-/*void EntityList::SendAATimer(int32 charid,UseAA_Struct* uaa){
+/*void EntityList::SendAATimer(uint32 charid,UseAA_Struct* uaa){
 	Client* client2=this->GetClientByCharID(charid);
 	if(!client2){
 		LogFile->write(EQEMuLog::Error, "Error in SendAATimer: Couldnt find character!");
@@ -838,7 +838,7 @@ void LoadSPDat(SPDat_Spell_Struct** SpellsPointer) {
 	client2->SendAATimer(uaa);
 }
 
-void ZoneDatabase::UpdateAndDeleteAATimers(int32 charid){
+void ZoneDatabase::UpdateAndDeleteAATimers(uint32 charid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	char *query2 = 0;
@@ -853,7 +853,7 @@ void ZoneDatabase::UpdateAndDeleteAATimers(int32 charid){
 	safe_delete_array(query2);
 }
 
-void ZoneDatabase::UpdateTimersClientConnected(int32 charid){
+void ZoneDatabase::UpdateTimersClientConnected(uint32 charid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	if (!RunQuery(query, MakeAnyLenString(&query, "update aa_timers set end=(UNIX_TIMESTAMP(now())+(end-begin)),begin=UNIX_TIMESTAMP(now()) where charid=%i",charid), errbuf)) {
@@ -862,7 +862,7 @@ void ZoneDatabase::UpdateTimersClientConnected(int32 charid){
 	safe_delete_array(query);
 }
 
-void ZoneDatabase::GetAATimers(int32 charid){
+void ZoneDatabase::GetAATimers(uint32 charid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -885,12 +885,12 @@ void ZoneDatabase::GetAATimers(int32 charid){
 	safe_delete_array(query);
 }
 
-int32 ZoneDatabase::GetTimerRemaining(int32 charid,int32 ability){
+uint32 ZoneDatabase::GetTimerRemaining(uint32 charid,uint32 ability){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
 	MYSQL_ROW row;
-	int32 remain=0;
+	uint32 remain=0;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT end-begin from aa_timers WHERE charid=%i and ability=%i", charid,ability), errbuf, &result)) {
 		if((row=mysql_fetch_row(result))){
 			remain=atoi(row[0]);
@@ -904,7 +904,7 @@ int32 ZoneDatabase::GetTimerRemaining(int32 charid,int32 ability){
 	return remain;
 }
 
-void ZoneDatabase::UpdateAATimers(int32 charid,int32 endtime,int32 begintime,int32 ability){
+void ZoneDatabase::UpdateAATimers(uint32 charid,uint32 endtime,uint32 begintime,uint32 ability){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	if(begintime==0){
@@ -921,7 +921,7 @@ void ZoneDatabase::UpdateAATimers(int32 charid,int32 endtime,int32 begintime,int
 }*/
 
 /*
-int16 Client::GetCombinedAC_TEST() {
+uint16 Client::GetCombinedAC_TEST() {
 	int ac1;
 
 	ac1 = GetRawItemAC();
@@ -944,12 +944,12 @@ int16 Client::GetCombinedAC_TEST() {
 	int combined_ac = (ac1+ac2)*1000/847;
 	return combined_ac;
 	float combined_ac = ((float)ac1+(float)ac2)*1000.0f/847.0f;
-	return (int16) combined_ac;//*10.0f)-10;
+	return (uint16) combined_ac;//*10.0f)-10;
 }
 */
 
 
-/*bool Client::GetIncreaseSpellDurationItem(int16 &spell_id, char *itemname)
+/*bool Client::GetIncreaseSpellDurationItem(uint16 &spell_id, char *itemname)
 {
 	for (int i=0; i<22; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -969,7 +969,7 @@ int16 Client::GetCombinedAC_TEST() {
 	return false;
 }
 
-bool Client::GetReduceManaCostItem(int16 &spell_id, char *itemname)
+bool Client::GetReduceManaCostItem(uint16 &spell_id, char *itemname)
 {
 	for (int i=0; i<22; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -989,7 +989,7 @@ bool Client::GetReduceManaCostItem(int16 &spell_id, char *itemname)
 	return false;
 }
 
-bool Client::GetReduceCastTimeItem(int16 &spell_id, char *itemname)
+bool Client::GetReduceCastTimeItem(uint16 &spell_id, char *itemname)
 {
 	for (int i=0; i<22; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -1009,7 +1009,7 @@ bool Client::GetReduceCastTimeItem(int16 &spell_id, char *itemname)
 	return false;
 }
 
-bool Client::GetExtendedRangeItem(int16 &spell_id, char *itemname)
+bool Client::GetExtendedRangeItem(uint16 &spell_id, char *itemname)
 {
 	for (int i=0; i<22; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -1029,7 +1029,7 @@ bool Client::GetExtendedRangeItem(int16 &spell_id, char *itemname)
 	return false;
 }
 
-bool Client::GetImprovedHealingItem(int16 &spell_id, char *itemname)
+bool Client::GetImprovedHealingItem(uint16 &spell_id, char *itemname)
 {
 	for (int i=0; i<22; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -1049,7 +1049,7 @@ bool Client::GetImprovedHealingItem(int16 &spell_id, char *itemname)
 	return false;
 }
 
-bool Client::GetImprovedDamageItem(int16 &spell_id, char *itemname)
+bool Client::GetImprovedDamageItem(uint16 &spell_id, char *itemname)
 {
 	for (int i=0; i<22; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -1069,7 +1069,7 @@ bool Client::GetImprovedDamageItem(int16 &spell_id, char *itemname)
 	return false;
 }
 
-sint32 Client::GenericFocus(int16 spell_id, int16 modspellid)
+int32 Client::GenericFocus(uint16 spell_id, uint16 modspellid)
 {
 	int modifier = 100, i;
 	const SPDat_Spell_Struct &spell = spells[spell_id];
@@ -1152,7 +1152,7 @@ sint32 Client::GenericFocus(int16 spell_id, int16 modspellid)
 				}
 				break;
 			case SE_LimitCastTime:
-				if (modspell.base[i] > (sint16)spell.cast_time)
+				if (modspell.base[i] > (int16)spell.cast_time)
 					return 100;
 				break;
 			case SE_LimitSpellType:
@@ -1197,7 +1197,7 @@ Message(0, "Disc packet id=%d, %x,%x,%x", disc_in->disc_id, disc_in->unknown3[0]
 	if (!p_timers.Expired(&database, pTimerDisciplineReuse)) {
 		char val1[20]={0};
 		char val2[20]={0};
-		int32 remain = p_timers.GetRemainingTime(pTimerDisciplineReuse);
+		uint32 remain = p_timers.GetRemainingTime(pTimerDisciplineReuse);
 		Message_StringID(0,DISCIPLINE_CANUSEIN,ConvertArray((remain)/60,val1),ConvertArray(remain%60,val2));
 		//Message(0,"You can use a new discipline in %i minutes %i seconds.", (disc_timer.GetRemainingTime()/1000)/60,	disc_timer.GetRemainingTime()/1000%60);
 		return;
@@ -1209,8 +1209,8 @@ Message(0, "Disc packet id=%d, %x,%x,%x", disc_in->disc_id, disc_in->unknown3[0]
 	//should change this to check classes better.
 	
 	//both in seconds, converted at the end.
-	int32 duration = 0;
-	int32 reuse = 0;
+	uint32 duration = 0;
+	uint32 reuse = 0;
 	
     switch(disc_in->disc_id){
 	// Shared?
@@ -1534,7 +1534,7 @@ Message(0, "Disc packet id=%d, %x,%x,%x", disc_in->disc_id, disc_in->unknown3[0]
 }*/
 
 #if 0	// solar: this is old code
-/*void EntityList::AESpell(Mob* caster, Mob* center, float dist, int16 spell_id, bool group)
+/*void EntityList::AESpell(Mob* caster, Mob* center, float dist, uint16 spell_id, bool group)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	iterator.Reset();
@@ -1660,7 +1660,7 @@ Message(0, "Disc packet id=%d, %x,%x,%x", disc_in->disc_id, disc_in->unknown3[0]
 
 /*#if 0
 // Queries the loottable: adds item & coin to the npc
-void ZoneDatabase::AddLootTableToNPC(int32 loottable_id, ItemList* itemlist, int32* copper, int32* silver, int32* gold, int32* plat) {
+void ZoneDatabase::AddLootTableToNPC(uint32 loottable_id, ItemList* itemlist, uint32* copper, uint32* silver, uint32* gold, uint32* plat) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -1674,22 +1674,22 @@ void ZoneDatabase::AddLootTableToNPC(int32 loottable_id, ItemList* itemlist, int
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
-			int32 mincash = atoi(row[1]);
-			int32 maxcash = atoi(row[2]);
+			uint32 mincash = atoi(row[1]);
+			uint32 maxcash = atoi(row[2]);
 			if (mincash > maxcash) {
 				cerr << "Error in loottable #" << row[0] << ": mincash > maxcash" << endl;
 			}
 			else if (maxcash != 0) {
-				int32 cash = 0;
+				uint32 cash = 0;
 				if (mincash == maxcash)
 					cash = mincash;
 				else
 					cash = (rand() % (maxcash - mincash)) + mincash;
 				if (cash != 0) {
-					int32 coinavg = atoi(row[3]);
+					uint32 coinavg = atoi(row[3]);
 					if (coinavg != 0) {
-						int32 mincoin = (int32) (coinavg * 0.75 + 1);
-						int32 maxcoin = (int32) (coinavg * 1.25 + 1);
+						uint32 mincoin = (uint32) (coinavg * 0.75 + 1);
+						uint32 maxcoin = (uint32) (coinavg * 1.25 + 1);
 						*copper = (rand() % (maxcoin - mincoin)) + mincoin - 1;
 						*silver = (rand() % (maxcoin - mincoin)) + mincoin - 1;
 						*gold = (rand() % (maxcoin - mincoin)) + mincoin - 1;
@@ -1699,9 +1699,9 @@ void ZoneDatabase::AddLootTableToNPC(int32 loottable_id, ItemList* itemlist, int
 					}
 					*plat = cash / 1000;
 					cash -= *plat * 1000;
-					int32 gold2 = cash / 100;
+					uint32 gold2 = cash / 100;
 					cash -= gold2 * 100;
-					int32 silver2 = cash / 10;
+					uint32 silver2 = cash / 10;
 					cash -= silver2 * 10;
 					*gold += gold2;
 					*silver += silver2;
@@ -1745,7 +1745,7 @@ void ZoneDatabase::AddLootTableToNPC(int32 loottable_id, ItemList* itemlist, int
 
 // Called by AddLootTableToNPC
 // maxdrops = size of the array npcd
-void ZoneDatabase::AddLootDropToNPC(int32 lootdrop_id, ItemList* itemlist) {
+void ZoneDatabase::AddLootDropToNPC(uint32 lootdrop_id, ItemList* itemlist) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -1755,11 +1755,11 @@ void ZoneDatabase::AddLootDropToNPC(int32 lootdrop_id, ItemList* itemlist) {
 // or implemented to support both methods.  (A unique identifier in lootable_entries indicates to roll for a pool item
 // in another table.
 #ifdef POOLLOOTING
-	int32 chancepool = 0;
-	int32 items[50];
-	int32 itemchance[50];
-	int16 itemcharges[50];
-	int8 i = 0;
+	uint32 chancepool = 0;
+	uint32 items[50];
+	uint32 itemchance[50];
+	uint16 itemcharges[50];
+	uint8 i = 0;
 	
 	for (int m=0;m < 50;m++)
 	{
@@ -1779,7 +1779,7 @@ void ZoneDatabase::AddLootDropToNPC(int32 lootdrop_id, ItemList* itemlist) {
 			chancepool += atoi(row[4]);
 			i++;
 		}
-		int32 res;
+		uint32 res;
 		i = 0;
 		
         if (chancepool!=0) //avoid divide by zero if some mobs have 0 for chancepool
@@ -1821,10 +1821,10 @@ void ZoneDatabase::AddLootDropToNPC(int32 lootdrop_id, ItemList* itemlist) {
 		safe_delete_array(query);
 		while ((row = mysql_fetch_row(result)))
 		{
-			int8 LootDropMod=1;  // place holder till I put it in a database variable to make it configurable.
+			uint8 LootDropMod=1;  // place holder till I put it in a database variable to make it configurable.
 			if( (rand()%100) < ((atoi(row[4]) * LootDropMod)) )
 			{
-				int32 itemid = atoi(row[1]);
+				uint32 itemid = atoi(row[1]);
 				const Item_Struct* dbitem = database.GetItem(itemid);
 				if (dbitem == 0)
 				{

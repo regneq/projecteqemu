@@ -59,12 +59,12 @@ typedef enum {
 
 struct EventRecord {
 	QuestEventID event;
-	int32 objid;
+	uint32 objid;
 	string data;
 	NPC* npcmob;
 	ItemInst* iteminst;
 	Mob* mob;
-	int32 extradata;
+	uint32 extradata;
 	bool global;
 };
 
@@ -75,7 +75,7 @@ protected:
 	//could prolly get rid of this map now, since I check for the
 	//actual subroutine in the quest package as opposed to just seeing
 	//if they do not have a quest or the default.
-	map<int32, questMode> hasQuests;	//npcid -> questMode
+	map<uint32, questMode> hasQuests;	//npcid -> questMode
 	map<std::string, playerQuestMode> playerQuestLoaded; //zone shortname -> playerQuestMode
     playerQuestMode globalPlayerQuestLoaded;
 	GlobalNPCQuestMode globalNPCQuestLoaded;
@@ -87,7 +87,7 @@ protected:
 	
 	void HandleQueue();
 
-	void EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata, bool global = false);
+	void EventCommon(QuestEventID event, uint32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, uint32 extradata, bool global = false);
 
 	Embperl * perl;
 	//export a symbol table of sorts
@@ -107,7 +107,7 @@ public:
     virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data);
     virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data);
 
-    virtual bool HasQuestSub(int32 npcid, const char *subname);
+    virtual bool HasQuestSub(uint32 npcid, const char *subname);
 	virtual bool HasGlobalQuestSub(const char *subname);
 	virtual bool PlayerHasQuestSub(const char *subname);
     virtual bool GlobalPlayerHasQuestSub(const char *subname);
@@ -138,12 +138,12 @@ public:
 	void ExportVarComplex(const char * pkgprefix, const char * varname, const char * value) const;
 	
 	//get an appropriate namespage/packagename from an npcid
-	std::string GetPkgPrefix(int32 npcid, bool defaultOK = true);
+	std::string GetPkgPrefix(uint32 npcid, bool defaultOK = true);
 	//call the appropriate perl handler. afterwards, parse and dispatch the command queue
 	//SendCommands("qst1234", "EVENT_SAY") would trigger sub EVENT_SAY() from the qst1234.pl file
-	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst);
+	virtual void SendCommands(const char * pkgprefix, const char *event, uint32 npcid, Mob* other, Mob* mob, ItemInst* iteminst);
 	
-	int	HasQuestFile(int32 npcid);
+	int	HasQuestFile(uint32 npcid);
 
 #ifdef EMBPERL_COMMANDS
 	void ExecCommand(Client *c, Seperator *sep);

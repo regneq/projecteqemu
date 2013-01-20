@@ -35,7 +35,7 @@ SpawnEntry::SpawnEntry( uint32 in_NPCType, int in_chance, uint8 in_npc_spawn_lim
 	npc_spawn_limit = in_npc_spawn_limit;
 }
 
-SpawnGroup::SpawnGroup( uint32 in_id, char* name, int in_group_spawn_limit, float dist, float maxx, float minx, float maxy, float miny, int delay_in, int despawn_in, int32 despawn_timer_in ) {
+SpawnGroup::SpawnGroup( uint32 in_id, char* name, int in_group_spawn_limit, float dist, float maxx, float minx, float maxy, float miny, int delay_in, int despawn_in, uint32 despawn_timer_in ) {
 	id = in_id;
 	strn0cpy( name_, name, 120);
 	group_spawn_limit = in_group_spawn_limit;
@@ -51,7 +51,7 @@ SpawnGroup::SpawnGroup( uint32 in_id, char* name, int in_group_spawn_limit, floa
 
 uint32 SpawnGroup::GetNPCType() {
 #if EQDEBUG >= 10
-	LogFile->write(EQEMuLog::Debug, "SpawnGroup[%08x]::GetNPCType()", (int32) this);
+	LogFile->write(EQEMuLog::Debug, "SpawnGroup[%08x]::GetNPCType()", (uint32) this);
 #endif
 	int npcType = 0;
 	int totalchance = 0;
@@ -78,7 +78,7 @@ uint32 SpawnGroup::GetNPCType() {
 		return 0;
 	
 	
-	sint32 roll = 0;
+	int32 roll = 0;
 	roll = MakeRandomInt(0, totalchance-1);
 	
 	cur = possible.begin();

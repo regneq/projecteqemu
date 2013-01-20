@@ -43,14 +43,14 @@ ZSList::~ZSList() {
 }
 
 void ZSList::ShowUpTime(WorldTCPConnection* con, const char* adminname) {
-	int32 ms = Timer::GetCurrentTime();
-	int32 d = ms / 86400000;
+	uint32 ms = Timer::GetCurrentTime();
+	uint32 d = ms / 86400000;
 	ms -= d * 86400000;
-	int32 h = ms / 3600000;
+	uint32 h = ms / 3600000;
 	ms -= h * 3600000;
-	int32 m = ms / 60000;
+	uint32 m = ms / 60000;
 	ms -= m * 60000;
-	int32 s = ms / 1000;
+	uint32 s = ms / 1000;
 	if (d)
 		con->SendEmoteMessage(adminname, 0, 0, 0, "Worldserver Uptime: %02id %02ih %02im %02is", d, h, m, s);
 	else if (h)
@@ -185,7 +185,7 @@ ZoneServer* ZSList::FindByName(const char* zonename) {
 	return 0;
 }
 
-ZoneServer* ZSList::FindByID(int32 ZoneID) {
+ZoneServer* ZSList::FindByID(uint32 ZoneID) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 
 	iterator.Reset();
@@ -199,7 +199,7 @@ ZoneServer* ZSList::FindByID(int32 ZoneID) {
 	return 0;
 }
 
-ZoneServer* ZSList::FindByZoneID(int32 ZoneID) {
+ZoneServer* ZSList::FindByZoneID(uint32 ZoneID) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -213,7 +213,7 @@ ZoneServer* ZSList::FindByZoneID(int32 ZoneID) {
 	return 0;
 }
 
-ZoneServer* ZSList::FindByPort(int16 port) {
+ZoneServer* ZSList::FindByPort(uint16 port) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 
 	iterator.Reset();
@@ -228,7 +228,7 @@ ZoneServer* ZSList::FindByPort(int16 port) {
 	return 0;
 }
 
-ZoneServer* ZSList::FindByInstanceID(int32 InstanceID)
+ZoneServer* ZSList::FindByInstanceID(uint32 InstanceID)
 {
 	LinkedListIterator<ZoneServer*> iterator(list);
 
@@ -244,7 +244,7 @@ ZoneServer* ZSList::FindByInstanceID(int32 InstanceID)
 	return 0;
 }
 
-bool ZSList::SetLockedZone(int16 iZoneID, bool iLock) {
+bool ZSList::SetLockedZone(uint16 iZoneID, bool iLock) {
 	for (int i=0; i<MaxLockedZones; i++) {
 		if (iLock) {
 			if (pLockedZones[i] == 0) {
@@ -262,7 +262,7 @@ bool ZSList::SetLockedZone(int16 iZoneID, bool iLock) {
 	return false;
 }
 
-bool ZSList::IsZoneLocked(int16 iZoneID) {
+bool ZSList::IsZoneLocked(uint16 iZoneID) {
 	for (int i=0; i<MaxLockedZones; i++) {
 		if (pLockedZones[i] == iZoneID)
 			return true;
@@ -281,7 +281,7 @@ void ZSList::ListLockedZones(const char* to, WorldTCPConnection* connection) {
 	connection->SendEmoteMessage(to, 0, 0, 0, "%i zones locked.", x);
 }
 
-void ZSList::SendZoneStatus(const char* to, sint16 admin, WorldTCPConnection* connection) {
+void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* connection) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 	struct in_addr  in;
 	
@@ -293,7 +293,7 @@ void ZSList::SendZoneStatus(const char* to, sint16 admin, WorldTCPConnection* co
 		strcpy(locked, "No");
 
 	char* output = 0;
-	int32 outsize = 0, outlen = 0;
+	uint32 outsize = 0, outlen = 0;
 	if (connection->IsConsole())
 		AppendAnyLenString(&output, &outsize, &outlen, "World Locked: %s\r\n", locked);
 	else
@@ -382,7 +382,7 @@ void ZSList::SendZoneStatus(const char* to, sint16 admin, WorldTCPConnection* co
 	safe_delete(output);
 }
 
-void ZSList::SendChannelMessage(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...) {
+void ZSList::SendChannelMessage(const char* from, const char* to, uint8 chan_num, uint8 language, const char* message, ...) {
 	if (!message)
 		return;
 	va_list argptr;
@@ -395,7 +395,7 @@ void ZSList::SendChannelMessage(const char* from, const char* to, int8 chan_num,
 	SendChannelMessageRaw(from, to, chan_num, language, buffer);
 }
 
-void ZSList::SendChannelMessageRaw(const char* from, const char* to, int8 chan_num, int8 language, const char* message) {
+void ZSList::SendChannelMessageRaw(const char* from, const char* to, uint8 chan_num, uint8 language, const char* message) {
 	if (!message)
 		return;
 	ServerPacket* pack = new ServerPacket;
@@ -436,7 +436,7 @@ void ZSList::SendChannelMessageRaw(const char* from, const char* to, int8 chan_n
 }
 
 
-void ZSList::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...) {
+void ZSList::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...) {
 	if (!message)
 		return;
 	va_list argptr;
@@ -449,7 +449,7 @@ void ZSList::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_mins
 	SendEmoteMessageRaw(to, to_guilddbid, to_minstatus, type, buffer);
 }
 
-void ZSList::SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message) {
+void ZSList::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message) {
 	if (!message)
 		return;
 	ServerPacket* pack = new ServerPacket;
@@ -507,7 +507,7 @@ void ZSList::SendTimeSync() {
 	delete pack;
 }
 
-void ZSList::NextGroupIDs(int32 &start, int32 &end) {
+void ZSList::NextGroupIDs(uint32 &start, uint32 &end) {
 	start = CurGroupID;
 	CurGroupID += 1000;	//hand them out 1000 at a time...
 	if(CurGroupID < start) {	//handle overflow
@@ -517,10 +517,10 @@ void ZSList::NextGroupIDs(int32 &start, int32 &end) {
 	end = CurGroupID - 1;
 }
 
-void ZSList::SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char* zonename, bool iMakeStatic) {
+void ZSList::SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const char* zonename, bool iMakeStatic) {
 	ZoneServer* zs = 0;
 	ZoneServer* zs2 = 0;
-	int32 zoneid;
+	uint32 zoneid;
 	if (!(zoneid = database.GetZoneID(zonename)))
 		SendEmoteMessage(adminname, 0, 0, 0, "Error: SOP_ZoneBootup: zone '%s' not found in 'zone' table. Typo protection=ON.", zonename);
 	else {
@@ -542,10 +542,10 @@ void ZSList::SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char
 	}
 }
 
-void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid, int32 zoneid){
+void ZSList::RebootZone(const char* ip1,uint16 port,const char* ip2, uint32 skipid, uint32 zoneid){
 // get random zone
 	LinkedListIterator<ZoneServer*> iterator(list);
-	int32 x = 0;
+	uint32 x = 0;
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		x++;
@@ -554,7 +554,7 @@ void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid
 	if (x == 0)
 		return;
 	ZoneServer** tmp = new ZoneServer*[x];
-	int32 y = 0;
+	uint32 y = 0;
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		if (!strcmp(iterator.GetData()->GetCAddress(),ip2) && !iterator.GetData()->IsBootingUp() && iterator.GetData()->GetID() != skipid) {
@@ -566,7 +566,7 @@ void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid
 		safe_delete(tmp);
 		return;
 	}
-	int32 z = MakeRandomInt(0, y-1);
+	uint32 z = MakeRandomInt(0, y-1);
 	
 	ServerPacket* pack = new ServerPacket(ServerOP_ZoneReboot, sizeof(ServerZoneReboot_Struct));
 	ServerZoneReboot_Struct* s = (ServerZoneReboot_Struct*) pack->pBuffer;
@@ -607,7 +607,7 @@ uint16	ZSList::GetAvailableZonePort()
 	return port;
 }
 
-int32 ZSList::TriggerBootup(int32 iZoneID, int32 iInstanceID) {
+uint32 ZSList::TriggerBootup(uint32 iZoneID, uint32 iInstanceID) {
 	if(iInstanceID > 0)
 	{
 		LinkedListIterator<ZoneServer*> iterator(list);
@@ -658,7 +658,7 @@ int32 ZSList::TriggerBootup(int32 iZoneID, int32 iInstanceID) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 
 	srand(time(NULL));
-	int32 x = 0;
+	uint32 x = 0;
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		x++;
@@ -669,7 +669,7 @@ int32 ZSList::TriggerBootup(int32 iZoneID, int32 iInstanceID) {
 	}
 
 	ZoneServer** tmp = new ZoneServer*[x];
-	int32 y = 0;
+	uint32 y = 0;
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -683,10 +683,10 @@ int32 ZSList::TriggerBootup(int32 iZoneID, int32 iInstanceID) {
 		return 0;
 	}
 
-	int32 z = rand() % y;
+	uint32 z = rand() % y;
 	
 	tmp[z]->TriggerBootup(iZoneID);
-	int32 ret = tmp[z]->GetID();
+	uint32 ret = tmp[z]->GetID();
 	safe_delete(tmp);
 	return ret;
 	*/
@@ -706,7 +706,7 @@ int ZSList::GetZoneCount() {
 	return(numzones);
 }
 
-void ZSList::GetZoneIDList(vector<int32> &zones) {
+void ZSList::GetZoneIDList(vector<uint32> &zones) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 	iterator.Reset();
 	while(iterator.MoreElements()) {

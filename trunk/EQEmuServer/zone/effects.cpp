@@ -30,7 +30,7 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-float Client::GetActSpellRange(int16 spell_id, float range, bool IsBard)
+float Client::GetActSpellRange(uint16 spell_id, float range, bool IsBard)
 {
 	float extrange = 100;
 
@@ -40,9 +40,9 @@ float Client::GetActSpellRange(int16 spell_id, float range, bool IsBard)
 }
 
 
-sint32 Client::Additional_SpellDmg(int16 spell_id, bool bufftick) 
+int32 Client::Additional_SpellDmg(uint16 spell_id, bool bufftick) 
 {
-	sint32 spell_dmg = 0;
+	int32 spell_dmg = 0;
 	spell_dmg  += GetFocusEffect(focusFF_Damage_Amount, spell_id);
 	spell_dmg  += GetFocusEffect(focusSpellDamage, spell_id); 
 
@@ -60,24 +60,24 @@ sint32 Client::Additional_SpellDmg(int16 spell_id, bool bufftick)
 //Scale all NPC spell Damage via $npc->SetSpellFocusDMG(value)
 //Direct Damage is checked in Mob::SpellEffect [spell_effects.cpp]
 //DoT Damage is checked in Mob::DoBuffTic [spell_effects.cpp] (This was added for npcs in that routine)
-sint32 NPC::GetActSpellDamage(int16 spell_id, sint32 value) {
+int32 NPC::GetActSpellDamage(uint16 spell_id, int32 value) {
 	
-	sint32 modifier = 100;
+	int32 modifier = 100;
 
 	modifier += SpellFocusDMG;
 
 	return (value * modifier / 100);
 }
 
-sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
+int32 Client::GetActSpellDamage(uint16 spell_id, int32 value) {
 	// Important variables:
 	// value: the actual damage after resists, passed from Mob::SpellEffect
 	// modifier: modifier to damage (from spells & focus effects?)
 	// ratio: % of the modifier to apply (from AAs & natural bonus?)
 	// chance: critital chance %
 	
-	sint32 modifier = 100;
-	sint16 spell_dmg = 0;
+	int32 modifier = 100;
+	int16 spell_dmg = 0;
 
 
 	//Dunno if this makes sense:
@@ -127,7 +127,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		spell_dmg += Additional_SpellDmg(spell_id);
 
 		int chance = RuleI(Spells, BaseCritChance);
-		sint32 ratio = RuleI(Spells, BaseCritRatio);
+		int32 ratio = RuleI(Spells, BaseCritRatio);
 
 		chance += itembonuses.CriticalSpellChance + spellbonuses.CriticalSpellChance + aabonuses.CriticalSpellChance;
 		ratio += itembonuses.SpellCritDmgIncrease + spellbonuses.SpellCritDmgIncrease + aabonuses.SpellCritDmgIncrease;
@@ -188,12 +188,12 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	return ((value * modifier / 100) - spell_dmg);
 }
 
-sint32 Client::GetActDoTDamage(int16 spell_id, sint32 value) {
+int32 Client::GetActDoTDamage(uint16 spell_id, int32 value) {
 
-	sint32 modifier = 100;
-	sint16 spell_dmg = 0;
-	sint16 critChance = 0;
-	sint32 ratio = 0;
+	int32 modifier = 100;
+	int16 spell_dmg = 0;
+	int16 critChance = 0;
+	int32 ratio = 0;
 
 	modifier += GetFocusEffect(focusImprovedDamage, spell_id);
 	critChance += itembonuses.CriticalDoTChance + spellbonuses.CriticalDoTChance + aabonuses.CriticalDoTChance;
@@ -217,9 +217,9 @@ sint32 Client::GetActDoTDamage(int16 spell_id, sint32 value) {
 }
 
 //Scale all NPC spell healing via SetSpellFocusHeal(value)
-sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
+int32 NPC::GetActSpellHealing(uint16 spell_id, int32 value) {
 
-	sint32 modifier = 100;
+	int32 modifier = 100;
 	modifier += SpellFocusHeal;
 	
 		// Check for buffs that affect the healrate of the target
@@ -231,9 +231,9 @@ sint32 NPC::GetActSpellHealing(int16 spell_id, sint32 value) {
 	return (value * modifier / 100);
 }
 
-sint32 Client::Additional_Heal(int16 spell_id) 
+int32 Client::Additional_Heal(uint16 spell_id) 
 {
-	sint32 heal_amt = 0;
+	int32 heal_amt = 0;
 
 	heal_amt  += GetFocusEffect(focusAdditionalHeal, spell_id);
 	heal_amt  += GetFocusEffect(focusAdditionalHeal2, spell_id);
@@ -247,10 +247,10 @@ sint32 Client::Additional_Heal(int16 spell_id)
 	return heal_amt;
 }
 
-sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
+int32 Client::GetActSpellHealing(uint16 spell_id, int32 value) {
 
-	sint32 modifier = 100;
-	sint16 heal_amt = 0;
+	int32 modifier = 100;
+	int16 heal_amt = 0;
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
 	modifier += GetFocusEffect(focusSpellEffectiveness, spell_id);
 	heal_amt += Additional_Heal(spell_id);
@@ -292,12 +292,12 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 	return ((value * modifier / 100) + heal_amt);
 }
 
-sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
+int32 Client::GetActSpellCost(uint16 spell_id, int32 cost)
 {
 	// Formula = Unknown exact, based off a random percent chance up to mana cost(after focuses) of the cast spell
 	if(this->itembonuses.Clairvoyance && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5)
 	{
-		sint16 mana_back = this->itembonuses.Clairvoyance * MakeRandomInt(1, 100) / 100;
+		int16 mana_back = this->itembonuses.Clairvoyance * MakeRandomInt(1, 100) / 100;
 		// Doesnt generate mana, so best case is a free spell
 		if(mana_back > cost)
 			mana_back = cost;
@@ -358,7 +358,7 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 		}
 	}
 
-	sint16 focus_redux = GetFocusEffect(focusManaCost, spell_id);
+	int16 focus_redux = GetFocusEffect(focusManaCost, spell_id);
 
 	if(focus_redux > 0)
 	{
@@ -387,7 +387,7 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 	return cost;
 }
 
-sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
+int32 Client::GetActSpellDuration(uint16 spell_id, int32 duration)
 {
 	int increase = 100;
 	increase += GetFocusEffect(focusSpellDuration, spell_id);
@@ -418,9 +418,9 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 	return (((duration * increase) / 100) + tic_inc);
 }
 
-sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
+int32 Client::GetActSpellCasttime(uint16 spell_id, int32 casttime)
 {
-	sint32 cast_reducer = 0;
+	int32 cast_reducer = 0;
 	cast_reducer += GetFocusEffect(focusSpellHaste, spell_id);
 
 	//this function loops through the effects of spell_id many times
@@ -441,7 +441,7 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 	return casttime;
 }
 
-bool Client::TrainDiscipline(int32 itemid) {
+bool Client::TrainDiscipline(uint32 itemid) {
 	
 	//get the item info
 	const Item_Struct *item = database.GetItem(itemid);
@@ -492,7 +492,7 @@ bool Client::TrainDiscipline(int32 itemid) {
 		return(false);
 	}
 	
-	int32 spell_id = item->Scroll.Effect;
+	uint32 spell_id = item->Scroll.Effect;
 	if(!IsValidSpell(spell_id)) {
 		Message(13, "This tome contains invalid knowledge.");
 		return(false);
@@ -500,7 +500,7 @@ bool Client::TrainDiscipline(int32 itemid) {
 	
 	//can we use the spell?
 	const SPDat_Spell_Struct &spell = spells[spell_id];
-	int8 level_to_use = spell.classes[myclass - 1];
+	uint8 level_to_use = spell.classes[myclass - 1];
 	if(level_to_use == 255) {
 		Message(13, "Your class cannot learn from this tome.");
 		//summon them the item back...
@@ -545,7 +545,7 @@ void Client::SendDisciplineUpdate() {
 	QueuePacket(&app);
 }
 
-bool Client::UseDiscipline(int32 spell_id, int32 target) {
+bool Client::UseDiscipline(uint32 spell_id, uint32 target) {
 	// Dont let client waste a reuse timer if they can't use the disc
 	if (IsStunned() || IsFeared() || IsMezzed() || IsAmnesiad() || IsPet())
 	{
@@ -566,7 +566,7 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	if(!p_timers.Expired(&database, DiscTimer)) {
 		/*char val1[20]={0};*/	//unused
 		/*char val2[20]={0};*/	//unused
-		int32 remain = p_timers.GetRemainingTime(DiscTimer);
+		uint32 remain = p_timers.GetRemainingTime(DiscTimer);
 		//Message_StringID(0, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
 		Message(0, "You can use this discipline in %d minutes %d seconds.", ((remain)/60), (remain%60));
 		return(false);
@@ -580,7 +580,7 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	
 	//can we use the spell?
 	const SPDat_Spell_Struct &spell = spells[spell_id];
-	int8 level_to_use = spell.classes[GetClass() - 1];
+	uint8 level_to_use = spell.classes[GetClass() - 1];
 	if(level_to_use == 255) {
 		Message(13, "Your class cannot learn from this tome.");
 		//should summon them a new one...
@@ -656,7 +656,7 @@ void EntityList::AETaunt(Client* taunter, float range) {
 // solar: causes caster to hit every mob within dist range of center with
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster, sint16 resist_adjust)
+void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_caster, int16 resist_adjust)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
@@ -717,7 +717,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 	}	
 }
 
-void EntityList::MassGroupBuff(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+void EntityList::MassGroupBuff(Mob *caster, Mob *center, uint16 spell_id, bool affect_caster)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
@@ -766,7 +766,7 @@ void EntityList::MassGroupBuff(Mob *caster, Mob *center, int16 spell_id, bool af
 // solar: causes caster to hit every mob within dist range of center with
 // a bard pulse of spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+void EntityList::AEBardPulse(Mob *caster, Mob *center, uint16 spell_id, bool affect_caster)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;

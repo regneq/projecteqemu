@@ -40,13 +40,13 @@ public:
 	~NetConnection();
 	NetConnection();
 	
-	int32	GetIP();
-	int32	GetIP(char* name);
-	void	SaveInfo(char* address, int32 port, char* waddress,char* filename);
+	uint32	GetIP();
+	uint32	GetIP(char* name);
+	void	SaveInfo(char* address, uint32 port, char* waddress,char* filename);
 	char*	GetWorldAddress() { return WorldAddress; }
 	char*	GetZoneAddress() { return ZoneAddress; }
 	char*	GetZoneFileName() { return ZoneFileName; }
-	int32	GetZonePort() { return ZonePort; }
+	uint32	GetZonePort() { return ZonePort; }
 	Timer object_timer;
 	Timer door_timer;
 	Timer corpse_timer;
@@ -54,7 +54,7 @@ public:
 	Timer raid_timer;
 	Timer trap_timer;
 private:
-	int16 ZonePort;
+	uint16 ZonePort;
 	char* ZoneAddress;
 	char* WorldAddress;
 	char ZoneFileName[50];

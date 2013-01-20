@@ -216,7 +216,7 @@ void PerlembParser::HandleQueue() {
 	eventQueueProcessing = false;
 }
 
-void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata, bool global)
+void PerlembParser::EventCommon(QuestEventID event, uint32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, uint32 extradata, bool global)
 {
 	if(!perl)
 		return;
@@ -473,7 +473,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		ExportHash(packagename.c_str(), "qglobals", globhash);
 	}
 
-	int8 fac = 0;
+	uint8 fac = 0;
 	if (mob && mob->IsClient()) {
 		ExportVar(packagename.c_str(), "uguild_id", mob->CastToClient()->GuildID());
 		ExportVar(packagename.c_str(), "uguildrank", mob->CastToClient()->GuildRank());
@@ -1387,8 +1387,8 @@ bool PerlembParser::isloaded(const char *packagename) const {
 
 
 //this function does NOT consider the default to be a quest
-int PerlembParser::HasQuestFile(int32 npcid) {
-	sint32 qstID = GetNPCqstID(npcid);
+int PerlembParser::HasQuestFile(uint32 npcid) {
+	int32 qstID = GetNPCqstID(npcid);
 	int success=1;
 
 	if(hasQuests.count(npcid) == 1) {
@@ -1413,8 +1413,8 @@ int PerlembParser::HasQuestFile(int32 npcid) {
 	return(true);
 }
 
-bool PerlembParser::HasQuestSub(int32 npcid, const char *subname) {
-	sint32 qstID = GetNPCqstID(npcid);
+bool PerlembParser::HasQuestSub(uint32 npcid, const char *subname) {
+	int32 qstID = GetNPCqstID(npcid);
 
 	if (qstID == -1) {
 		if(!LoadScript(npcid, zone->GetShortName())) {
@@ -1508,7 +1508,7 @@ bool PerlembParser::ItemHasQuestSub(ItemInst *itm, const char *subname)
 
 //utility - return something of the form "qst1234"...
 //will return "qst[DEFAULT_QUEST_PREFIX]" if the npc in question has no script of its own or failed to compile and defaultOK is set to true
-std::string PerlembParser::GetPkgPrefix(int32 npcid, bool defaultOK)
+std::string PerlembParser::GetPkgPrefix(uint32 npcid, bool defaultOK)
 {
 	char buf[32];
 	snprintf(buf, 32, "qst%lu", (unsigned long) npcid);
@@ -1523,7 +1523,7 @@ std::string PerlembParser::GetPkgPrefix(int32 npcid, bool defaultOK)
 	return(std::string(buf));
 }
 
-void PerlembParser::SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst)
+void PerlembParser::SendCommands(const char * pkgprefix, const char *event, uint32 npcid, Mob* other, Mob* mob, ItemInst* iteminst)
 {
 	if(!perl)
 		return;

@@ -120,7 +120,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  04111-1307  USA
 #define LiveOP_AdventureInfo	0x02b9 //Cofruben:sent when client right click on the recruiter.
 #define LiveOP_AdventureRequest	0x02a6 //Cofruben: received when client press request button.1 normal,2 hard
 #define LiveOP_AdventureDetails 0x02a8 //Cofruben: sent when client press request button.
-#define LiveOP_LDoNButton		0x02a9 //Cofruben: Received button.(int8)00 decline,01 accept.
+#define LiveOP_LDoNButton		0x02a9 //Cofruben: Received button.(uint8)00 decline,01 accept.
 #define LiveOP_AdventureData	0x02ba //Cofruben: Sent when client press accept button.
 
 #define LiveOP_AdventureFinish	0x02c9 //Cofruben:Used when you win/lose a dungeon
@@ -463,7 +463,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  04111-1307  USA
 #define LiveOP_World_Client_CRC1	0x015a	// Contains a snippet of spell data
 #define LiveOP_World_Client_CRC2	0x015e	// Second client verification packet
 #define LiveOP_SetChatServer		0x0269	// Chatserver? IP,Port,servername.Charname,password(?)
-#define LiveOP_ZoneServerInfo		0x0264	// Zone server? IP,0's,int16?
+#define LiveOP_ZoneServerInfo		0x0264	// Zone server? IP,0's,uint16?
 // not used	#define LiveOP_UserCompInfo		0x02a5	// User submitting computer information
 
 //////////////////////////////////////

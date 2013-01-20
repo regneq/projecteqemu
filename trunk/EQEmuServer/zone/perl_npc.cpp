@@ -73,7 +73,7 @@ XS(XS_NPC_CheckNPCFactionAlly)
 		NPC *		THIS;
 		FACTION_VALUE		RETVAL;
 		dXSTARG;
-		sint32		other_faction = (sint32)SvIV(ST(1));
+		int32		other_faction = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -98,8 +98,8 @@ XS(XS_NPC_AddItem)
 		Perl_croak(aTHX_ "Usage: NPC::AddItem(THIS, itemid, charges = 0, equipitem = true)");
 	{
 		NPC *		THIS;
-		int32		itemid = (int32)SvUV(ST(1));
-		int16		charges = 0;
+		uint32		itemid = (uint32)SvUV(ST(1));
+		uint16		charges = 0;
 		bool		equipitem = true;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -112,7 +112,7 @@ XS(XS_NPC_AddItem)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		if (items > 2)
-			charges = (int16)SvUV(ST(2));
+			charges = (uint16)SvUV(ST(2));
 		if (items > 3)
 			equipitem = (bool)SvTRUE(ST(3));
 
@@ -153,8 +153,8 @@ XS(XS_NPC_RemoveItem)
 	{
 		NPC *		THIS;
 		uint32		item_id = (uint32)SvUV(ST(1));
-		int16		quantity;
-		int16		slot;
+		uint16		quantity;
+		uint16		slot;
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -168,13 +168,13 @@ XS(XS_NPC_RemoveItem)
 		if (items < 3)
 			quantity = 0;
 		else {
-			quantity = (int16)SvUV(ST(2));
+			quantity = (uint16)SvUV(ST(2));
 		}
 
 		if (items < 4)
 			slot = 0;
 		else {
-			slot = (int16)SvUV(ST(3));
+			slot = (uint16)SvUV(ST(3));
 		}
 
 		THIS->RemoveItem(item_id, quantity, slot);
@@ -213,10 +213,10 @@ XS(XS_NPC_AddCash)
 		Perl_croak(aTHX_ "Usage: NPC::AddCash(THIS, in_copper, in_silver, in_gold, in_platinum)");
 	{
 		NPC *		THIS;
-		int16		in_copper = (int16)SvUV(ST(1));
-		int16		in_silver = (int16)SvUV(ST(2));
-		int16		in_gold = (int16)SvUV(ST(3));
-		int16		in_platinum = (int16)SvUV(ST(4));
+		uint16		in_copper = (uint16)SvUV(ST(1));
+		uint16		in_silver = (uint16)SvUV(ST(2));
+		uint16		in_gold = (uint16)SvUV(ST(3));
+		uint16		in_platinum = (uint16)SvUV(ST(4));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -263,7 +263,7 @@ XS(XS_NPC_CountLoot)
 		Perl_croak(aTHX_ "Usage: NPC::CountLoot(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -289,7 +289,7 @@ XS(XS_NPC_GetLoottableID)
 		Perl_croak(aTHX_ "Usage: NPC::GetLoottableID(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -515,7 +515,7 @@ XS(XS_NPC_SetGrid)
 		Perl_croak(aTHX_ "Usage: NPC::SetGrid(THIS, grid_)");
 	{
 		NPC *		THIS;
-		sint32		grid_ = (sint32)SvIV(ST(1));
+		int32		grid_ = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -539,7 +539,7 @@ XS(XS_NPC_SetSaveWaypoint)
 		Perl_croak(aTHX_ "Usage: NPC::SetSaveWaypoint(THIS, waypoint)");
 	{
 		NPC *		THIS;
-		int16		waypoint = (int16)SvUV(ST(1));
+		uint16		waypoint = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -563,7 +563,7 @@ XS(XS_NPC_SetSp2)
 		Perl_croak(aTHX_ "Usage: NPC::SetSp2(THIS, sg2)");
 	{
 		NPC *		THIS;
-		int32		sg2 = (int32)SvUV(ST(1));
+		uint32		sg2 = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -587,7 +587,7 @@ XS(XS_NPC_GetWaypointMax)
 		Perl_croak(aTHX_ "Usage: NPC::GetWaypointMax(THIS)");
 	{
 		NPC *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -613,7 +613,7 @@ XS(XS_NPC_GetGrid)
 		Perl_croak(aTHX_ "Usage: NPC::GetGrid(THIS)");
 	{
 		NPC *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -639,7 +639,7 @@ XS(XS_NPC_GetSp2)
 		Perl_croak(aTHX_ "Usage: NPC::GetSp2(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -665,7 +665,7 @@ XS(XS_NPC_GetNPCFactionID)
 		Perl_croak(aTHX_ "Usage: NPC::GetNPCFactionID(THIS)");
 	{
 		NPC *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -691,7 +691,7 @@ XS(XS_NPC_GetPrimaryFaction)
 		Perl_croak(aTHX_ "Usage: NPC::GetPrimaryFaction(THIS)");
 	{
 		NPC *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -717,7 +717,7 @@ XS(XS_NPC_GetNPCHate)
 		Perl_croak(aTHX_ "Usage: NPC::GetNPCHate(THIS, in_ent)");
 	{
 		NPC *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 		Mob*		in_ent;
 
@@ -789,7 +789,7 @@ XS(XS_NPC_SetNPCFactionID)
 		Perl_croak(aTHX_ "Usage: NPC::SetNPCFactionID(THIS, in)");
 	{
 		NPC *		THIS;
-		sint32		in = (sint32)SvIV(ST(1));
+		int32		in = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -813,7 +813,7 @@ XS(XS_NPC_GetMaxDMG)
 		Perl_croak(aTHX_ "Usage: NPC::GetMaxDMG(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -839,7 +839,7 @@ XS(XS_NPC_GetMinDMG)
 		Perl_croak(aTHX_ "Usage: NPC::GetMinDMG(THIS)");
 	{
 		NPC *        THIS;
-		int32        RETVAL;
+		uint32        RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -892,7 +892,7 @@ XS(XS_NPC_GetPetSpellID)
 		Perl_croak(aTHX_ "Usage: NPC::GetPetSpellID(THIS)");
 	{
 		NPC *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -918,7 +918,7 @@ XS(XS_NPC_SetPetSpellID)
 		Perl_croak(aTHX_ "Usage: NPC::SetPetSpellID(THIS, amt)");
 	{
 		NPC *		THIS;
-		int16		amt = (int16)SvUV(ST(1));
+		uint16		amt = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -942,9 +942,9 @@ XS(XS_NPC_GetMaxDamage)
 		Perl_croak(aTHX_ "Usage: NPC::GetMaxDamage(THIS, tlevel)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
-		int8		tlevel = (int8)SvUV(ST(1));
+		uint8		tlevel = (uint8)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1026,7 +1026,7 @@ XS(XS_NPC_StartSwarmTimer)
 		Perl_croak(aTHX_ "Usage: NPC::StartSwarmTimer(THIS, duration)");
 	{
 		NPC *		THIS;
-		int32		duration = (int32)SvUV(ST(1));
+		uint32		duration = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1165,7 +1165,7 @@ XS(XS_NPC_AssignWaypoints)
 		Perl_croak(aTHX_ "Usage: NPC::AssignWaypoints(THIS, grid)");
 	{
 		NPC *		THIS;
-		int32		grid = (int32)SvUV(ST(1));
+		uint32		grid = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1428,7 +1428,7 @@ XS(XS_NPC_AI_SetRoambox)
 		float		iMinX = (float)SvNV(ST(3));
 		float		iMaxY = (float)SvNV(ST(4));
 		float		iMinY = (float)SvNV(ST(5));
-		int32		iDelay;
+		uint32		iDelay;
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1442,7 +1442,7 @@ XS(XS_NPC_AI_SetRoambox)
 		if (items < 7)
 			iDelay = 2500;
 		else {
-			iDelay = (int32)SvUV(ST(6));
+			iDelay = (uint32)SvUV(ST(6));
 		}
 
 		THIS->AI_SetRoambox(iDist, iMaxX, iMinX, iMaxY, iMinY, iDelay);
@@ -1458,7 +1458,7 @@ XS(XS_NPC_GetNPCSpellsID)
 		Perl_croak(aTHX_ "Usage: NPC::GetNPCSpellsID(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1484,7 +1484,7 @@ XS(XS_NPC_GetSpawnPointID)
 		Perl_croak(aTHX_ "Usage: NPC::GetSpawnPointID(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1747,7 +1747,7 @@ XS(XS_NPC_GetPrimSkill)
 		Perl_croak(aTHX_ "Usage: NPC::GetPrimSkill(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1773,7 +1773,7 @@ XS(XS_NPC_GetSecSkill)
 		Perl_croak(aTHX_ "Usage: NPC::GetSecSkill(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1799,7 +1799,7 @@ XS(XS_NPC_GetSwarmOwner)
 		Perl_croak(aTHX_ "Usage: NPC::GetSwarmOwner(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1825,7 +1825,7 @@ XS(XS_NPC_GetSwarmTarget)
 		Perl_croak(aTHX_ "Usage: NPC::GetSwarmTarget(THIS)");
 	{
 		NPC *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1953,7 +1953,7 @@ XS(XS_NPC_SetSpellFocusDMG)
 		Perl_croak(aTHX_ "Usage: NPC::SetSpellFocusDMG(THIS, NewSpellFocusDMG)");
 	{
 		NPC *		THIS;
-		sint32		NewSpellFocusDMG = (sint32)SvIV(ST(1));
+		int32		NewSpellFocusDMG = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1977,7 +1977,7 @@ XS(XS_NPC_SetSpellFocusHeal)
 		Perl_croak(aTHX_ "Usage: NPC::SetSpellFocusHeal(THIS, NewSpellFocusHeal)");
 	{
 		NPC *		THIS;
-		sint32		NewSpellFocusHeal = (sint32)SvIV(ST(1));
+		int32		NewSpellFocusHeal = (int32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2053,7 +2053,7 @@ XS(XS_NPC_GetAccuracyRating)
 		Perl_croak(aTHX_ "Usage: NPC::GetAccuracyRating(THIS)");
 	{
 		NPC *		THIS;
-		sint32		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {

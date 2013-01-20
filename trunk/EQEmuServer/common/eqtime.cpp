@@ -80,7 +80,7 @@ int EQTime::getEQTimeOfDay( time_t timeConvert, struct TimeOfDay_Struct *eqTimeO
 
    /* Start off timezone offset */
 
-   sint32 ntz = timezone;
+   int32 ntz = timezone;
 
    /* The minutes range from 0 - 59 */
    diff += eqTime.start_eqtime.minute + (ntz%60);

@@ -42,7 +42,7 @@ extern ZSList zoneserver_list;
 extern LoginServerList loginserverlist;
 extern ClientList client_list;
 extern uint32 numzones;
-extern int32 numplayers;
+extern uint32 numplayers;
 extern volatile bool	RunLoops;
 
 LoginServerList::LoginServerList() {
@@ -51,7 +51,7 @@ LoginServerList::LoginServerList() {
 LoginServerList::~LoginServerList() {
 }
 
-void LoginServerList::Add(const char* iAddress, int16 iPort, const char* Account, const char* Password)
+void LoginServerList::Add(const char* iAddress, uint16 iPort, const char* Account, const char* Password)
 {
 	LoginServer* loginserver = new LoginServer(iAddress, iPort, Account, Password);
 	list.Insert(loginserver);

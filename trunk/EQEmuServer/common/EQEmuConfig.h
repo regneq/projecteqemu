@@ -47,7 +47,7 @@ public:
 	uint16 WorldTCPPort;
 	string WorldIP;
 	bool TelnetEnabled;
-	sint32 MaxClients;
+	int32 MaxClients;
 	bool WorldHTTPEnabled;
 	uint16 WorldHTTPPort;
 	string WorldHTTPMimeFile;

@@ -12,8 +12,8 @@ struct AdventureTemplate
 	char zone[64];
 	uint32 zone_version;
 	bool is_hard;
-	sint32 min_level;
-	sint32 max_level;
+	int32 min_level;
+	int32 max_level;
 	uint8 type;
 	uint32 type_data;
 	uint16 type_count;
@@ -24,8 +24,8 @@ struct AdventureTemplate
 	char text[1024];
 	uint32 duration;
 	uint32 zone_in_time;
-	sint32 win_points;
-	sint32 lose_points;
+	int32 win_points;
+	int32 lose_points;
 	uint8 theme;
 	uint16 zone_in_zone_id;
 	float zone_in_x;

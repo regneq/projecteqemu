@@ -1,6 +1,6 @@
 #include "../common/types.h"
 
-inline const char* StaticGetZoneName(int32 zoneID) {
+inline const char* StaticGetZoneName(uint32 zoneID) {
 	// @merth: I did the following query to retrieve these (following by a simple find/replace)
 	// select concat('case ', zoneidnumber), concat(short_name, '";') from zone order by zoneidnumber;
 	switch (zoneID) {

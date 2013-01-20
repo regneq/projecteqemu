@@ -32,11 +32,11 @@ class NPC;
 class Spawn2
 {
 public:
-	Spawn2(int32 spawn2_id, int32 spawngroup_id, 
+	Spawn2(uint32 spawn2_id, uint32 spawngroup_id, 
 		float x, float y, float z, float heading, 
-		int32 respawn, int32 variance, 
-		int32 timeleft = 0, int32 grid = 0,
-		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0, bool in_enabled = true, EmuAppearance anim = eaStanding);
+		uint32 respawn, uint32 variance, 
+		uint32 timeleft = 0, uint32 grid = 0,
+		uint16 cond_id = SC_AlwaysEnabled, int16 min_value = 0, bool in_enabled = true, EmuAppearance anim = eaStanding);
 	~Spawn2();
 
 	void	LoadGrid();
@@ -46,49 +46,49 @@ public:
 	bool	Process();
 	void	Reset();
 	void	Depop();
-	void	Repop(int32 delay = 0);
+	void	Repop(uint32 delay = 0);
 	void	ForceDespawn();
 
 	void	DeathReset(); //resets the spawn in the case the npc dies, also updates db if needed
 
-	void	SpawnConditionChanged(const SpawnCondition &c, sint16 old_value);
-	int32	GetID()		{ return spawn2_id; }
+	void	SpawnConditionChanged(const SpawnCondition &c, int16 old_value);
+	uint32	GetID()		{ return spawn2_id; }
 	float	GetX()		{ return x; }
 	float	GetY()		{ return y; }
 	float	GetZ()		{ return z; }
 	float	GetHeading() { return heading; }
-	void	SetRespawnTimer(int32 newrespawntime) { respawn_ = newrespawntime; };
-	void	SetVariance(int32 newvariance) { variance_ = newvariance; }
-	const int32 GetVariance() const { return variance_; }
-	int32	RespawnTimer() { return respawn_; }
-	int32	SpawnGroupID() { return spawngroup_id_; }
-	int32	CurrentNPCID() { return currentnpcid; }
-	void	SetCurrentNPCID(int32 nid) { currentnpcid = nid; }
-	int32	GetSpawnCondition() { return condition_id; }
-	int32	spawn2_id;
-	int32	respawn_;
+	void	SetRespawnTimer(uint32 newrespawntime) { respawn_ = newrespawntime; };
+	void	SetVariance(uint32 newvariance) { variance_ = newvariance; }
+	const uint32 GetVariance() const { return variance_; }
+	uint32	RespawnTimer() { return respawn_; }
+	uint32	SpawnGroupID() { return spawngroup_id_; }
+	uint32	CurrentNPCID() { return currentnpcid; }
+	void	SetCurrentNPCID(uint32 nid) { currentnpcid = nid; }
+	uint32	GetSpawnCondition() { return condition_id; }
+	uint32	spawn2_id;
+	uint32	respawn_;
 
 	bool	NPCPointerValid() { return (npcthis!=NULL); }
 	void	SetNPCPointer(NPC* n) { npcthis = n; }
-	void	SetTimer(int32 duration) { timer.Start(duration); }
+	void	SetTimer(uint32 duration) { timer.Start(duration); }
 protected:
 	friend class Zone;
 	Timer	timer;
 private:
-	int32	resetTimer();
-	int32	despawnTimer(int32 despawn_timer);
+	uint32	resetTimer();
+	uint32	despawnTimer(uint32 despawn_timer);
 
-	int32	spawngroup_id_;
-	int32	currentnpcid;
+	uint32	spawngroup_id_;
+	uint32	currentnpcid;
 	NPC*	npcthis;
 	float	x;
 	float	y;
 	float	z;
 	float	heading;
-	int32	variance_;
-	int32	grid_;
+	uint32	variance_;
+	uint32	grid_;
 	uint16	condition_id;
-	sint16	condition_min_value;
+	int16	condition_min_value;
 	bool enabled;
     EmuAppearance anim;
 	bool IsDespawned;
@@ -109,7 +109,7 @@ public:
 	SpawnCondition();
 	
 	uint16		condition_id;
-	sint16		value;
+	int16		value;
 	OnChange 	on_change;
 };
 
@@ -131,7 +131,7 @@ public:
 	
 	bool	enabled;
 	Action	action;
-	sint16	argument;
+	int16	argument;
 	
 	uint32	period;	//eq minutes (3 seconds) between events
 	TimeOfDay_Struct next;	//next time this event triggers
@@ -144,10 +144,10 @@ public:
 	void Process();
 	bool LoadSpawnConditions(const char* zone_name, uint32 instance_id);
 	
-	sint16 GetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id);
-	void SetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id, sint16 new_value, bool world_update = false);
+	int16 GetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id);
+	void SetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id, int16 new_value, bool world_update = false);
 	void ToggleEvent(uint32 event_id, bool enabled, bool reset_base);
-	bool Check(uint16 condition, sint16 min_value);
+	bool Check(uint16 condition, int16 min_value);
 	void ReloadEvent(uint32 event_id);
 	
 protected:
@@ -157,7 +157,7 @@ protected:
 	void ExecEvent(SpawnEvent &e, bool send_update);
 	void UpdateDBEvent(SpawnEvent &e);
 	bool LoadDBEvent(uint32 event_id, SpawnEvent &e, string &zone_name);
-	void UpdateDBCondition(const char* zone_name, uint32 instance_id, uint16 cond_id, sint16 value);
+	void UpdateDBCondition(const char* zone_name, uint32 instance_id, uint16 cond_id, int16 value);
 	void FindNearestEvent();
 	
 	Timer minute_timer;

@@ -97,7 +97,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->drakkin_heritage,
 	  d->drakkin_tattoo,
 	  d->drakkin_details,
-	  (int32*)d->armor_tint,
+	  (uint32*)d->armor_tint,
 	  0,
 	  d->see_invis,			// pass see_invis/see_ivu flags to mob constructor
 	  d->see_invis_undead,
@@ -282,7 +282,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 			trap_list = trap_ent_iter->second;
 			if(trap_list.size() > 0)
 			{
-				int16 count = MakeRandomInt(0, (trap_list.size()-1));
+				uint16 count = MakeRandomInt(0, (trap_list.size()-1));
 				std::list<LDoNTrapTemplate*>::iterator trap_list_iter = trap_list.begin();
 				for(int x = 0; x < count; ++x)
 				{
@@ -291,7 +291,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 				LDoNTrapTemplate* tt = (*trap_list_iter);
 				if(tt)
 				{
-					if((int8)tt->spell_id > 0)
+					if((uint8)tt->spell_id > 0)
 					{
 						ldon_trapped = true;
 						ldon_spell_id = tt->spell_id;
@@ -302,7 +302,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 						ldon_spell_id = 0;
 					}
 
-					ldon_trap_type = (int8)tt->type;
+					ldon_trap_type = (uint8)tt->type;
 					if(tt->locked > 0)
 					{
 						ldon_locked = true;
@@ -435,7 +435,7 @@ ServerLootItem_Struct* NPC::GetItem(int slot_id) {
 	return(NULL);
 }
 	  
-void NPC::RemoveItem(uint32 item_id, int16 quantity, int16 slot) {
+void NPC::RemoveItem(uint32 item_id, uint16 quantity, uint16 slot) {
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
@@ -461,8 +461,8 @@ void NPC::CheckMinMaxLevel(Mob *them)
 	if(them == NULL || !them->IsClient())
 		return;
 
-	int16 themlevel = them->GetLevel();
-	int8 material;
+	uint16 themlevel = them->GetLevel();
+	uint8 material;
 
 	list<ServerLootItem_Struct*>::iterator cur = itemlist.begin();
 	while(cur != itemlist.end())
@@ -520,7 +520,7 @@ void NPC::QueryLoot(Client* to) {
 	to->Message(0, "%i items on %s.", x, GetName());
 }
 
-void NPC::AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum) {
+void NPC::AddCash(uint16 in_copper, uint16 in_silver, uint16 in_gold, uint16 in_platinum) {
 	if(in_copper >= 0)
         copper = in_copper;
     else
@@ -592,12 +592,12 @@ bool NPC::Process()
 		if(curfp)
 			ProcessFlee();
 		
-		int32 bonus = 0;
+		uint32 bonus = 0;
 		
 		if(GetAppearance() == eaSitting)
 			bonus+=3;
 		
-		sint32 OOCRegen = 0;
+		int32 OOCRegen = 0;
 		if(oocregen > 0){ //should pull from Mob class
 			OOCRegen += GetMaxHP() * oocregen / 100;
 			}
@@ -710,11 +710,11 @@ bool NPC::Process()
     return true;
 }
 
-int32 NPC::CountLoot() {
+uint32 NPC::CountLoot() {
 	return(itemlist.size());
 }
 
-void NPC::DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPCLootindex) {
+void NPC::DumpLoot(uint32 npcdump_index, ZSDump_NPC_Loot* npclootdump, uint32* NPCLootindex) {
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
@@ -732,7 +732,7 @@ void NPC::DumpLoot(int32 npcdump_index, ZSDump_NPC_Loot* npclootdump, int32* NPC
 }
 
 void NPC::Depop(bool StartSpawnTimer) {
-	int16 emoteid = this->GetNPCEmoteID();
+	uint16 emoteid = this->GetNPCEmoteID();
 	if(emoteid != 0)
 		this->DoNPCEmote(ONDESPAWN,emoteid);
 	p_depop = true;
@@ -830,7 +830,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 		//Calc MaxHP if client neglected to enter it...
 		if (!sep.IsNumber(4)) {
 			//Stolen from Client::GetMaxHP...
-			int8 multiplier = 0;
+			uint8 multiplier = 0;
 			int tmplevel = atoi(sep.arg[2]);
 			switch(atoi(sep.arg[5]))
 			{
@@ -977,18 +977,18 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 	}
 }
 
-int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_version, Client *c, NPC* spawn, int32 extra) {
+uint32 ZoneDatabase::NPCSpawnDB(uint8 command, const char* zone, uint32 zone_version, Client *c, NPC* spawn, uint32 extra) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 tmp = 0;
-	int32 tmp2 = 0;
-    int32 last_insert_id = 0;
+	uint32 tmp = 0;
+	uint32 tmp2 = 0;
+    uint32 last_insert_id = 0;
 	switch (command) {
 		case 0: { // Create a new NPC and add all spawn related data
-			int32 npc_type_id = 0;
-			int32 spawngroupid;
+			uint32 npc_type_id = 0;
+			uint32 spawngroupid;
 			if (extra && c && c->GetZoneID())
 			{
 				// Set an npc_type ID within the standard range for the current zone if possible (zone_id * 1000)
@@ -1069,8 +1069,8 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
 
-			int32 respawntime = 0;
-			int32 spawnid = 0;
+			uint32 respawntime = 0;
+			uint32 spawnid = 0;
 			if (extra)
 				respawntime = extra;
 			else if(spawn->respawn2 && spawn->respawn2->RespawnTimer() != 0)
@@ -1194,7 +1194,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			break;
 			}
 		case 6: { // add npc_type
-			int32 npc_type_id;
+			uint32 npc_type_id;
 			char tmpstr[64];
 			EntityList::RemoveNumbers(strn0cpy(tmpstr, spawn->GetName(), sizeof(tmpstr)));
 			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
@@ -1211,7 +1211,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 	return false;
 }
 
-sint32 NPC::GetEquipmentMaterial(int8 material_slot) const
+int32 NPC::GetEquipmentMaterial(uint8 material_slot) const
 {
 	if (material_slot >= MAX_MATERIALS)
 		return 0;
@@ -1239,9 +1239,9 @@ sint32 NPC::GetEquipmentMaterial(int8 material_slot) const
 	return(Mob::GetEquipmentMaterial(material_slot));
 }
 
-int32 NPC::GetMaxDamage(int8 tlevel)
+uint32 NPC::GetMaxDamage(uint8 tlevel)
 {
-	int32 dmg = 0;
+	uint32 dmg = 0;
 	if (tlevel < 40)
 		dmg = tlevel*2+2;
 	else if (tlevel < 50)
@@ -2009,12 +2009,12 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 
 void NPC::LevelScale() {
 
-	int8 random_level = (MakeRandomInt(level, maxlevel));
+	uint8 random_level = (MakeRandomInt(level, maxlevel));
 
 	float scaling = (((random_level / (float)level) - 1) * (scalerate / 100.0f));
 	
 	// Compensate for scale rates at low levels so they don't add too much
-	int8 scale_adjust = 1;
+	uint8 scale_adjust = 1;
 	if(level > 0 && level <= 5)
 		scale_adjust = 10;
 	if(level > 5 && level <= 10)
@@ -2164,7 +2164,7 @@ void NPC::CalcNPCDamage() {
 }
 
 
-int32 NPC::GetSpawnPointID() const
+uint32 NPC::GetSpawnPointID() const
 {
 	if(respawn2)
 	{
@@ -2173,7 +2173,7 @@ int32 NPC::GetSpawnPointID() const
 	return 0;
 }
 
-void NPC::NPCSlotTexture(int8 slot, int16 texture)
+void NPC::NPCSlotTexture(uint8 slot, uint16 texture)
 {
 	if (slot == 7) {
 		d_meele_texture1 = texture;
@@ -2187,7 +2187,7 @@ void NPC::NPCSlotTexture(int8 slot, int16 texture)
 	return;
 }
 
-int32 NPC::GetSwarmOwner()
+uint32 NPC::GetSwarmOwner()
 {
 	if(GetSwarmInfo() != NULL)
 	{
@@ -2196,7 +2196,7 @@ int32 NPC::GetSwarmOwner()
 	return 0;
 }
 
-int32 NPC::GetSwarmTarget()
+uint32 NPC::GetSwarmTarget()
 {
 	if(GetSwarmInfo() != NULL)
 	{
@@ -2214,7 +2214,7 @@ void NPC::SetSwarmTarget(int target_id)
 	return;
 }
 
-sint32 NPC::CalcMaxMana() {
+int32 NPC::CalcMaxMana() {
 	if(npc_mana == 0) {
         switch (GetCasterClass()) {
 		    case 'I':
@@ -2259,7 +2259,7 @@ void NPC::SignalNPC(int _signal_id)
 	signal_q.push_back(_signal_id);
 }
 
-NPC_Emote_Struct* NPC::GetNPCEmote(int16 emoteid, int8 event_) {
+NPC_Emote_Struct* NPC::GetNPCEmote(uint16 emoteid, uint8 event_) {
 	LinkedListIterator<NPC_Emote_Struct*> iterator(zone->NPCEmoteList);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2273,7 +2273,7 @@ NPC_Emote_Struct* NPC::GetNPCEmote(int16 emoteid, int8 event_) {
 	return (NULL);
 }
 	
-void NPC::DoNPCEmote(int8 event_, int16 emoteid)
+void NPC::DoNPCEmote(uint8 event_, uint16 emoteid)
 {
 	if(this == NULL || emoteid == 0)
 	{
@@ -2303,7 +2303,7 @@ bool NPC::CanTalk()
 {
 	//Races that should be able to talk. (Races up to Titanium)
 
-	int16 TalkRace[473] =
+	uint16 TalkRace[473] =
 	{1,2,3,4,5,6,7,8,9,10,11,12,0,0,15,16,0,18,19,20,0,0,23,0,25,0,0,0,0,0,0,
 	32,0,0,0,0,0,0,39,40,0,0,0,44,0,0,0,0,49,0,51,0,53,54,55,56,57,58,0,0,0,
 	62,0,64,65,66,67,0,0,70,71,0,0,0,0,0,77,78,79,0,81,82,0,0,0,86,0,0,0,90,

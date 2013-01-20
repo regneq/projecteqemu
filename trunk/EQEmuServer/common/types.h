@@ -18,39 +18,43 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-// TODO: If we require signed or unsigned we should the s and u types..
-
-typedef unsigned char		int8;
+#ifdef EQEMU_USE_STDINT
+#include <stdint.h>
+typedef uint8_t byte;
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+#else
 typedef unsigned char		byte;
-typedef unsigned short		int16;
-typedef unsigned int		int32;
-
 typedef unsigned char		uint8;
-typedef  signed  char		sint8;
+typedef  signed  char		int8;
 typedef unsigned short		uint16;
-typedef  signed  short		sint16;
+typedef  signed  short		int16;
 typedef unsigned int		uint32;
-typedef  signed  int		sint32;
-
-#ifdef _WINDOWS
-  #pragma warning( disable : 4200 )
-#endif
+typedef  signed  int		int32;
 
 #ifdef _WINDOWS
 	#if defined(_INTEGRAL_MAX_BITS) && _INTEGRAL_MAX_BITS >= 64
-		typedef unsigned __int64	int64;
 		typedef unsigned __int64	uint64;
-		typedef signed __int64		sint64;
+		typedef unsigned __int64	uint64;
+		typedef signed __int64		int64;
 	#else
 		#error __int64 not supported
 	#endif
 #else
-typedef unsigned long long	int64;
 typedef unsigned long long	uint64;
-typedef signed long long	sint64;
-//typedef __u64				int64;
-//typedef __u64				uint64;
-//typedef __s64				sint64;
+typedef unsigned long long	uint64;
+typedef signed long long	int64;
+#endif
+#endif
+
+#ifdef _WINDOWS
+  #pragma warning( disable : 4200 )
 #endif
 
 #ifndef __cplusplus
@@ -60,7 +64,6 @@ typedef enum { true, false } bool;
 typedef unsigned long		ulong;
 typedef unsigned short		ushort;
 typedef unsigned char		uchar;
-
 typedef const char Const_char;	//for perl XS
 
 #ifdef _WINDOWS
@@ -71,19 +74,17 @@ typedef const char Const_char;	//for perl XS
 	#define strncasecmp	_strnicmp
 	#define strcasecmp  _stricmp
 	typedef void ThreadReturnType;
-//	#define THREAD_RETURN(x) return;
 	#define THREAD_RETURN(x) _endthread(); return; 
 #else
 	typedef void* ThreadReturnType;
-//	typedef int SOCKET;
 	#define THREAD_RETURN(x) return(x);
 #endif
 
 #define safe_delete(d) if(d) { delete d; d=0; }
 #define safe_delete_array(d) if(d) { delete[] d; d=0; }
-#define L32(i)	((int32) i)
-#define H32(i)	((int32) (i >> 32))
-#define L16(i)	((int16) i)
+#define L32(i)	((uint32) i)
+#define H32(i)	((uint32) (i >> 32))
+#define L16(i)	((uint16) i)
 
 #ifndef WIN32
 // More WIN32 compatability

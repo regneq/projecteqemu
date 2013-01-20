@@ -43,7 +43,7 @@ DLLFUNC bool AddItem(uint32 id, const Item_Struct* item) {
 	return true;
 }
 
-DLLFUNC bool DLLLoadItems(CALLBACK_DBLoadItems cbDBLoadItems, int32 iItemStructSize, sint32* iItemCount, int32* iMaxItemID) {
+DLLFUNC bool DLLLoadItems(CALLBACK_DBLoadItems cbDBLoadItems, uint32 iItemStructSize, int32* iItemCount, uint32* iMaxItemID) {
 	if (iItemStructSize != sizeof(Item_Struct)) {
 		cout << "Error: EMuShareMem: DLLLoadItems: iItemStructSize != sizeof(Item_Struct)" << endl;
 		cout << "Item_Struct has changed, EMuShareMem.dll needs to be recompiled." << endl;
@@ -57,7 +57,7 @@ DLLFUNC bool DLLLoadItems(CALLBACK_DBLoadItems cbDBLoadItems, int32 iItemStructS
 	
 	MMFItemsData_Writable = 0;
 	//Allocate the shared memory for the item structures
-	int32 tmpMemSize = sizeof(MMFItems_Struct) + 256 + (sizeof(Item_Struct) * (*iItemCount));
+	uint32 tmpMemSize = sizeof(MMFItems_Struct) + 256 + (sizeof(Item_Struct) * (*iItemCount));
 	//cout << tmpMemSize << endl;
 	if (ItemsMMF.Open("EQEMuItems", tmpMemSize)) {
 		if (ItemsMMF.CanWrite()) {
@@ -77,7 +77,7 @@ DLLFUNC bool DLLLoadItems(CALLBACK_DBLoadItems cbDBLoadItems, int32 iItemStructS
 		} else {
 			if (!ItemsMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!ItemsMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(10);
 					Timer::SetCurrentTime();

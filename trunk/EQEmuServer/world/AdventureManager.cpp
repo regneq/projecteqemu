@@ -648,7 +648,7 @@ bool AdventureManager::LoadAdventureTemplates()
 	{
 		while((row = mysql_fetch_row(result))) 
 		{
-			int8 x = 0;
+			uint8 x = 0;
 			AdventureTemplate *t = new AdventureTemplate;
 			t->id = atoi(row[x++]);
 			strcpy(t->zone, row[x++]);

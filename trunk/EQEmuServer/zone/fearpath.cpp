@@ -74,7 +74,7 @@ void Mob::CheckFlee() {
 	
 	//base our flee ratio on our con. this is how the 
 	//attacker sees the mob, since this is all we can observe
-	int32 con = GetLevelCon(hate_top->GetLevel(), GetLevel());
+	uint32 con = GetLevelCon(hate_top->GetLevel(), GetLevel());
 	float run_ratio;
 	switch(con) {
 		//these values are not 100% researched
@@ -209,7 +209,7 @@ void Mob::CalculateNewFearpoint()
 
 //we need to start acting scared...
 //old fear function, kept for ref.
-/*void Mob::SetFeared(Mob *caster, int32 duration, bool flee) {
+/*void Mob::SetFeared(Mob *caster, uint32 duration, bool flee) {
 	//special args to stop fear
 	if(caster == NULL && duration == 0) {
 		fear_state = fearStateNotFeared;
@@ -283,7 +283,7 @@ void Mob::CalculateNewFearpoint()
 	fear_state = fearStateRunning;
 }
 //old fear function, kept for ref.
-bool Mob::FearTryStraight(Mob *caster, int32 duration, bool flee, VERTEX &hit, VERTEX &fear_vector) {
+bool Mob::FearTryStraight(Mob *caster, uint32 duration, bool flee, VERTEX &hit, VERTEX &fear_vector) {
 	//gotta have somebody to run from
 	if(caster == NULL)
 		return(false);

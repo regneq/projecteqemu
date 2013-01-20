@@ -18,7 +18,7 @@ const MMFSkillCaps_Struct* MMFSkillCapsData = 0;
 MMFSkillCaps_Struct* MMFSkillCapsData_Writable = 0;
 
 
-DLLFUNC uint16 GetSkillCap(int8 Class_, int8 Skill, int8 Level) {
+DLLFUNC uint16 GetSkillCap(uint8 Class_, uint8 Skill, uint8 Level) {
 	if (MMFSkillCapsData == 0 || (!SkillCapsMMF.IsLoaded()))
 		return 0;
 	if (Class_ >= MMFSkillCapsData->ClassCount || Skill >= MMFSkillCapsData->SkillCount || Level >= MMFSkillCapsData->LevelCount)
@@ -31,7 +31,7 @@ DLLFUNC uint16 GetSkillCap(int8 Class_, int8 Skill, int8 Level) {
 	return MMFSkillCapsData->caps[index];
 }
 
-DLLFUNC bool SetSkillCap(int8 Class_, int8 Skill, int8 Level, uint16 cap) {
+DLLFUNC bool SetSkillCap(uint8 Class_, uint8 Skill, uint8 Level, uint16 cap) {
     if (!MMFSkillCapsData_Writable)
 		return false;
 	if (Class_ >= MMFSkillCapsData_Writable->ClassCount || Skill >= MMFSkillCapsData_Writable->SkillCount || Level >= MMFSkillCapsData_Writable->LevelCount)
@@ -46,7 +46,7 @@ DLLFUNC bool SetSkillCap(int8 Class_, int8 Skill, int8 Level, uint16 cap) {
 	return true;
 }
 
-DLLFUNC uint8 GetTrainLevel(int8 Class_, int8 Skill, int8 Level){
+DLLFUNC uint8 GetTrainLevel(uint8 Class_, uint8 Skill, uint8 Level){
 	if (MMFSkillCapsData == 0 || (!SkillCapsMMF.IsLoaded()))
 		return 0;
 	if (Class_ >= MMFSkillCapsData->ClassCount || Skill >= MMFSkillCapsData->SkillCount || Level >= MMFSkillCapsData->LevelCount)
@@ -71,13 +71,13 @@ DLLFUNC void ClearSkillCaps() {
 	
 }
 
-DLLFUNC bool LoadSkillCaps(CALLBACK_DBLoadSkillCaps cb, int32 opsize, int8 ClassCount, int8 SkillCount, int8 LevelCount) {
+DLLFUNC bool LoadSkillCaps(CALLBACK_DBLoadSkillCaps cb, uint32 opsize, uint8 ClassCount, uint8 SkillCount, uint8 LevelCount) {
 	if(opsize != sizeof(uint16)) {
 		cout << "Error: EMuShareMem: DLLLoadSkillCaps: opsize != sizeof(uint16)" << endl;
 		cout << "SkillCap size has changed, EMuShareMem.dll needs to be recompiled." << endl;
 		return false;
 	}
-	int32 tmpMemSize = sizeof(MMFSkillCaps_Struct) + opsize * (ClassCount*SkillCount*LevelCount);
+	uint32 tmpMemSize = sizeof(MMFSkillCaps_Struct) + opsize * (ClassCount*SkillCount*LevelCount);
 	if (SkillCapsMMF.Open("EQEMuKSkillCaps", tmpMemSize)) {
 		if (SkillCapsMMF.CanWrite()) {
 			MMFSkillCapsData_Writable = (MMFSkillCaps_Struct*) SkillCapsMMF.GetWriteableHandle();
@@ -110,7 +110,7 @@ DLLFUNC bool LoadSkillCaps(CALLBACK_DBLoadSkillCaps cb, int32 opsize, int8 Class
 		} else {
 			if (!SkillCapsMMF.IsLoaded()) {
 				Timer::SetCurrentTime();
-				int32 starttime = Timer::GetCurrentTime();
+				uint32 starttime = Timer::GetCurrentTime();
 				while ((!SkillCapsMMF.IsLoaded()) && ((Timer::GetCurrentTime() - starttime) < 300000)) {
 					Sleep(10);
 					Timer::SetCurrentTime();

@@ -43,10 +43,10 @@
 
 using namespace std;
 
-void FileDumpPacketAscii(const char* filename, const uchar* buf, int32 size, int32 cols, int32 skip) {
+void FileDumpPacketAscii(const char* filename, const uchar* buf, uint32 size, uint32 cols, uint32 skip) {
 	ofstream logfile(filename, ios::app);
 	// Output as ASCII
-	for(int32 i=skip; i<size; i++)
+	for(uint32 i=skip; i<size; i++)
 	{
 		if ((i-skip)%cols==0)
 		{
@@ -68,12 +68,12 @@ void FileDumpPacketAscii(const char* filename, const uchar* buf, int32 size, int
 	logfile << endl << endl;
 }
 
-void oldFileDumpPacketHex(const char* filename, const uchar* buf, int32 size, int32 cols, int32 skip)
+void oldFileDumpPacketHex(const char* filename, const uchar* buf, uint32 size, uint32 cols, uint32 skip)
 {
 	ofstream logfile(filename, ios::app);
 	// Output as HEX
 	char output[4];
-    for(int32 i=skip; i<size; i++)
+    for(uint32 i=skip; i<size; i++)
     {
 		if ((i-skip)%cols==0)
 		{
@@ -90,7 +90,7 @@ void oldFileDumpPacketHex(const char* filename, const uchar* buf, int32 size, in
 	logfile << endl << endl;
 }
 
-void FileDumpPacketHex(const char* filename, const uchar* buf, int32 size, int32 cols, int32 skip)
+void FileDumpPacketHex(const char* filename, const uchar* buf, uint32 size, uint32 cols, uint32 skip)
 {
 	if (size == 0)
 		return;
@@ -98,7 +98,7 @@ void FileDumpPacketHex(const char* filename, const uchar* buf, int32 size, int32
 	// Output as HEX
 	char output[4];
 	int j = 0; char* ascii = new char[cols+1]; memset(ascii, 0, cols+1);
-	int32 i;
+	uint32 i;
     for(i=skip; i<size; i++)
     {
 		if ((i-skip)%cols==0) {
@@ -122,10 +122,10 @@ void FileDumpPacketHex(const char* filename, const uchar* buf, int32 size, int32
 		}
 //		logfile << setfill(0) << setw(2) << hex << (int)buf[i] << " ";
     }
-	int32 k = ((i-skip)-1)%cols;
+	uint32 k = ((i-skip)-1)%cols;
 	if (k < 8)
 		logfile << "  ";
-	for (int32 h = k+1; h < cols; h++) {
+	for (uint32 h = k+1; h < cols; h++) {
 		logfile << "   ";
 	}
 	logfile << " | " << ascii << endl;
@@ -142,7 +142,7 @@ void FileDumpPacketAscii(const char* filename, const EQApplicationPacket* app)
 	FileDumpPacketAscii(filename, app->pBuffer, app->size);
 }
 
-void FileDumpPacket(const char* filename, const uchar* buf, int32 size)
+void FileDumpPacket(const char* filename, const uchar* buf, uint32 size)
 {
 	FilePrintLine(filename, true, "Size: %5i", size);
 	FileDumpPacketHex(filename, buf, size);

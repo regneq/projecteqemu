@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/20/2013 ==
+KLS: intN types have changed to more closely reflect C99 and C++11 types: 
+intN was an unsigned int of N bits -> it is now a signed int of N bits.
+sintN was a signed int of N bits -> it has been removed in favor of intN.
+uintN is still unsigned.
+The existing types in the code have been changed automatically(intN -> uintN, sintN -> intN), but keep this in mind when developing in the future.
+
 == 01/19/2013 ==
 Akkadius: Implemented global_npc.pl, this is very similar to global_player.pl where any normal NPC script will run dual-stack or in tandem with the global_npc.pl located in the templates folder
 Akkadius: Implemented the ability to modify EXP and AAEXP modifiers per Level, these are loaded from an optional table (level_exp_mods) that is attached to the commit, you MUST enable the rule first!

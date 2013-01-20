@@ -143,11 +143,11 @@ void PerlPacket::SetString(uint32 pos, char *str) {
 
 #pragma pack(1)
 struct EQ1319 {
-	sint32 part13:13,
+	int32 part13:13,
 		   part19:19;
 };
 struct EQ1913 {
-	sint32 part19:19,
+	int32 part19:19,
 		   part13:13;
 };
 #pragma pack()

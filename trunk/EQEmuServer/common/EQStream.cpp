@@ -105,7 +105,7 @@ EQRawApplicationPacket *EQStream::MakeApplicationPacket(const unsigned char *buf
 }
 
 EQProtocolPacket *EQStream::MakeProtocolPacket(const unsigned char *buf, uint32 len) {
-	int16 proto_opcode = ntohs(*(const uint16 *)buf);
+	uint16 proto_opcode = ntohs(*(const uint16 *)buf);
 	
 	//advance over opcode.
 	buf += 2;
@@ -632,7 +632,7 @@ deque<EQProtocolPacket *>::iterator sitr;
 
 	// Check our rate to make sure we can send more
 	MRate.lock();
-	sint32 threshold=RateThreshold;
+	int32 threshold=RateThreshold;
 	MRate.unlock();
 	if (BytesWritten > threshold) {
 		//cout << "Over threshold: " << BytesWritten << " > " << threshold << endl;

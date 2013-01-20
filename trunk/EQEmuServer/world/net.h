@@ -60,29 +60,29 @@ public:
 	bool ReadLoginINI();
 	bool LoginServerInfo;
 	bool UpdateStats;
-	char* GetLoginInfo(int16* oPort);
-	inline char* GetLoginAddress(int8 i)	{ return loginaddress[i]; }
-	inline int16 GetLoginPort(int8 i)		{ return loginport[i]; }
+	char* GetLoginInfo(uint16* oPort);
+	inline char* GetLoginAddress(uint8 i)	{ return loginaddress[i]; }
+	inline uint16 GetLoginPort(uint8 i)		{ return loginport[i]; }
 	inline char* GetWorldName()			{ return worldname; }
 	inline char* GetWorldShortName()		{ return worldshortname; }
 	inline char* GetWorldAccount()			{ return worldaccount; }
 	inline char* GetWorldPassword()		{ return worldpassword; }
 	inline char* GetWorldAddress()			{ return worldaddress; }
-	inline int8 GetDefaultStatus()			{ return DEFAULTSTATUS; }
+	inline uint8 GetDefaultStatus()			{ return DEFAULTSTATUS; }
 	inline char* GetChatAddress()			{ return chataddress; }
-	int16 GetChatPort()			{ return chatport; }
+	uint16 GetChatPort()			{ return chatport; }
 	bool world_locked;
 private:
 	int		listening_socket;
 	char	loginaddress[5][255];
-	int16	loginport[5];
-	int16	chatport;
+	uint16	loginport[5];
+	uint16	chatport;
 	char	worldname[201];
 	char	worldshortname[31];
 	char	worldaccount[31];
 	char	worldpassword[31];
 	char	worldaddress[255];
 	char	chataddress[255];
-	int8    DEFAULTSTATUS;
+	uint8    DEFAULTSTATUS;
 
 };

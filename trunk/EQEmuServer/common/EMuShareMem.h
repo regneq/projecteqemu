@@ -30,12 +30,12 @@
 ////////////
 // Items //
 ///////////
-typedef bool(*CALLBACK_DBLoadItems)(sint32, int32);
+typedef bool(*CALLBACK_DBLoadItems)(int32, uint32);
 
-typedef bool(*DLLFUNC_DLLLoadItems)(const CALLBACK_DBLoadItems, int32, sint32*, int32*);
+typedef bool(*DLLFUNC_DLLLoadItems)(const CALLBACK_DBLoadItems, uint32, int32*, uint32*);
 typedef const Item_Struct*(*DLLFUNC_GetItem)(uint32);
 typedef const Item_Struct*(*DLLFUNC_IterateItems)(uint32*);
-typedef bool(*DLLFUNC_AddItem)(int32, const Item_Struct*);
+typedef bool(*DLLFUNC_AddItem)(uint32, const Item_Struct*);
 
 struct ItemsDLLFunc_Struct {
 	DLLFUNC_DLLLoadItems DLLLoadItems;
@@ -44,11 +44,11 @@ struct ItemsDLLFunc_Struct {
 	DLLFUNC_AddItem cbAddItem;
 };
 /*
-typedef bool(*CALLBACK_DBLoadNPCTypes)(sint32, int32);
+typedef bool(*CALLBACK_DBLoadNPCTypes)(int32, uint32);
 
-typedef bool(*DLLFUNC_DLLLoadNPCTypes)(const CALLBACK_DBLoadNPCTypes, int32, sint32*, int32*);
-typedef const NPCType*(*DLLFUNC_GetNPCType)(int32);
-typedef bool(*DLLFUNC_AddNPCType)(int32, const NPCType*);
+typedef bool(*DLLFUNC_DLLLoadNPCTypes)(const CALLBACK_DBLoadNPCTypes, uint32, int32*, uint32*);
+typedef const NPCType*(*DLLFUNC_GetNPCType)(uint32);
+typedef bool(*DLLFUNC_AddNPCType)(uint32, const NPCType*);
 struct NPCTypesDLLFunc_Struct {
 	DLLFUNC_DLLLoadNPCTypes DLLLoadNPCTypes;
 	DLLFUNC_GetNPCType GetNPCType;
@@ -60,11 +60,11 @@ struct NPCTypesDLLFunc_Struct {
 ////////////
 // Doors ///
 ////////////
-typedef bool(*CALLBACK_DBLoadDoors)(sint32, int32);
+typedef bool(*CALLBACK_DBLoadDoors)(int32, uint32);
 
-typedef bool(*DLLFUNC_DLLLoadDoors)(const CALLBACK_DBLoadDoors, int32, sint32*, int32*);
-typedef const Door*(*DLLFUNC_GetDoor)(int32);
-typedef bool(*DLLFUNC_AddDoor)(int32, const Door*);
+typedef bool(*DLLFUNC_DLLLoadDoors)(const CALLBACK_DBLoadDoors, uint32, int32*, uint32*);
+typedef const Door*(*DLLFUNC_GetDoor)(uint32);
+typedef bool(*DLLFUNC_AddDoor)(uint32, const Door*);
 struct DoorsDLLFunc_Struct {
 	DLLFUNC_DLLLoadDoors DLLLoadDoors;
 	DLLFUNC_GetDoor GetDoor;
@@ -74,9 +74,9 @@ struct DoorsDLLFunc_Struct {
 ////////////
 // Spells //
 ////////////
-typedef bool(*CALLBACK_FileLoadSPDat)(void*, sint32);
+typedef bool(*CALLBACK_FileLoadSPDat)(void*, int32);
 
-typedef bool(*DLLFUNC_DLLLoadSPDat)(const CALLBACK_FileLoadSPDat, const void**, sint32*, int32);
+typedef bool(*DLLFUNC_DLLLoadSPDat)(const CALLBACK_FileLoadSPDat, const void**, int32*, uint32);
 struct SpellsDLLFunc_Struct {
 	DLLFUNC_DLLLoadSPDat DLLLoadSPDat;
 };
@@ -85,12 +85,12 @@ struct SpellsDLLFunc_Struct {
 // Factions //
 //////////////
 
-typedef bool(*CALLBACK_DBLoadNPCFactionLists)(sint32, int32);
+typedef bool(*CALLBACK_DBLoadNPCFactionLists)(int32, uint32);
 
-typedef bool(*DLLFUNC_DLLLoadNPCFactionLists)(const CALLBACK_DBLoadNPCFactionLists, int32, sint32*, int32*, int8);
-typedef const NPCFactionList*(*DLLFUNC_GetNPCFactionList)(int32);
-typedef bool(*DLLFUNC_AddNPCFactionList)(int32, const NPCFactionList*);
-typedef bool(*DLLFUNC_SetFaction)(int32, uint32*, sint32*, sint8*, int8*);
+typedef bool(*DLLFUNC_DLLLoadNPCFactionLists)(const CALLBACK_DBLoadNPCFactionLists, uint32, int32*, uint32*, uint8);
+typedef const NPCFactionList*(*DLLFUNC_GetNPCFactionList)(uint32);
+typedef bool(*DLLFUNC_AddNPCFactionList)(uint32, const NPCFactionList*);
+typedef bool(*DLLFUNC_SetFaction)(uint32, uint32*, int32*, int8*, uint8*);
 struct NPCFactionListDLLFunc_Struct {
 	DLLFUNC_DLLLoadNPCFactionLists DLLLoadNPCFactionLists;
 	DLLFUNC_GetNPCFactionList GetNPCFactionList;
@@ -104,9 +104,9 @@ struct NPCFactionListDLLFunc_Struct {
 
 typedef bool(*CALLBACK_DBLoadLoot)();
 
-typedef bool(*DLLFUNC_DLLLoadLoot)(const CALLBACK_DBLoadLoot, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32);
-typedef bool(*DLLFUNC_AddLootTable)(int32, const LootTable_Struct*);
-typedef bool(*DLLFUNC_AddLootDrop)(int32, const LootDrop_Struct*);
+typedef bool(*DLLFUNC_DLLLoadLoot)(const CALLBACK_DBLoadLoot, uint32, uint32, uint32, uint32, uint32, uint32, uint32, uint32, uint32, uint32);
+typedef bool(*DLLFUNC_AddLootTable)(uint32, const LootTable_Struct*);
+typedef bool(*DLLFUNC_AddLootDrop)(uint32, const LootDrop_Struct*);
 typedef const LootTable_Struct*(*DLLFUNC_GetLootTable)(uint32);
 typedef const LootDrop_Struct*(*DLLFUNC_GetLootDrop)(uint32);
 struct LootDLLFunc_Struct {
@@ -123,7 +123,7 @@ struct LootDLLFunc_Struct {
 
 typedef bool(*CALLBACK_DBLoadOpcodes)(const char *filename);
 
-typedef bool(*DLLFUNC_DLLLoadOpcodes)(const CALLBACK_DBLoadOpcodes, int32 opsize, int32 eq_count, int32 emu_count, const char *filename);
+typedef bool(*DLLFUNC_DLLLoadOpcodes)(const CALLBACK_DBLoadOpcodes, uint32 opsize, uint32 eq_count, uint32 emu_count, const char *filename);
 typedef uint16 (*DLLFUNC_GetEQOpcode)(uint16 emu_op);
 typedef uint16 (*DLLFUNC_GetEmuOpcode)(uint16 eq_op);
 typedef void (*DLLFUNC_ClearEQOpcodes)();
@@ -142,11 +142,11 @@ struct OpcodeDLLFunc_Struct {
 
 typedef bool(*CALLBACK_DBLoadSkillCaps)();
 
-typedef bool(*DLLFUNC_DLLLoadSkillCaps)(const CALLBACK_DBLoadSkillCaps, int32 opsize, int8 ClassCount, int8 SkillCount, int8 LevelCount);
-typedef uint16 (*DLLFUNC_GetSkillCap)(int8 Class_, int8 Skill, int8 Level);
+typedef bool(*DLLFUNC_DLLLoadSkillCaps)(const CALLBACK_DBLoadSkillCaps, uint32 opsize, uint8 ClassCount, uint8 SkillCount, uint8 LevelCount);
+typedef uint16 (*DLLFUNC_GetSkillCap)(uint8 Class_, uint8 Skill, uint8 Level);
 typedef void (*DLLFUNC_ClearSkillCaps)();
-typedef bool(*DLLFUNC_SetSkillCap)(int8 Class_, int8 Skill, int8 Level, uint16 cap);
-typedef uint8 (*DLLFUNC_GetTrainLevel)(int8 Class_, int8 Skill, int8 Level);
+typedef bool(*DLLFUNC_SetSkillCap)(uint8 Class_, uint8 Skill, uint8 Level, uint16 cap);
+typedef uint8 (*DLLFUNC_GetTrainLevel)(uint8 Class_, uint8 Skill, uint8 Level);
 struct SkillCapDLLFunc_Struct {
 	DLLFUNC_DLLLoadSkillCaps LoadSkillCaps;
 	DLLFUNC_GetSkillCap GetSkillCap;
@@ -179,9 +179,9 @@ private:
 	
 #ifdef _WINDOWS
 #else
-	static int32  refCount;
-	static int32  refCountU() { return ++refCount; };
-	static int32  refCountD() { return --refCount; };
+	static uint32  refCount;
+	static uint32  refCountU() { return ++refCount; };
+	static uint32  refCountD() { return --refCount; };
 #endif
 };
 #endif

@@ -227,7 +227,7 @@ XS(XS_Object_SetID)
 		Perl_croak(aTHX_ "Usage: Object::SetID(THIS, set_id)");
 	{
 		Object *		THIS;
-		int16		set_id = (int16)SvUV(ST(1));
+		uint16		set_id = (uint16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Object")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -276,7 +276,7 @@ XS(XS_Object_GetDBID)
 		Perl_croak(aTHX_ "Usage: Object::GetDBID(THIS)");
 	{
 		Object *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -302,7 +302,7 @@ XS(XS_Object_GetID)
 		Perl_croak(aTHX_ "Usage: Object::GetID(THIS)");
 	{
 		Object *		THIS;
-		int16		RETVAL;
+		uint16		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -432,7 +432,7 @@ XS(XS_Object_VarSave)
 		Perl_croak(aTHX_ "Usage: Object::VarSave(THIS)");
 	{
 		Object *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -459,7 +459,7 @@ XS(XS_Object_GetType)
 		Perl_croak(aTHX_ "Usage: Object::GetType(THIS)");
 	{
 		Object *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -486,7 +486,7 @@ XS(XS_Object_SetType)
 		Perl_croak(aTHX_ "Usage: Object::SetType(THIS, type)");
 	{
 		Object *		THIS;
-		int32		type = (int32)SvUV(ST(1));
+		uint32		type = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Object")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -511,7 +511,7 @@ XS(XS_Object_GetIcon)
 		Perl_croak(aTHX_ "Usage: Object::GetIcon(THIS)");
 	{
 		Object *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -538,7 +538,7 @@ XS(XS_Object_SetIcon)
 		Perl_croak(aTHX_ "Usage: Object::SetIcon(THIS, icon)");
 	{
 		Object *		THIS;
-		int32		icon = (int32)SvUV(ST(1));
+		uint32		icon = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Object")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -563,7 +563,7 @@ XS(XS_Object_GetItemID)
 		Perl_croak(aTHX_ "Usage: Object::GetItemID(THIS)");
 	{
 		Object *		THIS;
-		int32		RETVAL;
+		uint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Object")) {
@@ -590,7 +590,7 @@ XS(XS_Object_SetItemID)
 		Perl_croak(aTHX_ "Usage: Object::SetItemID(THIS, itemid)");
 	{
 		Object *		THIS;
-		int32		itemid = (int32)SvUV(ST(1));
+		uint32		itemid = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Object")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));

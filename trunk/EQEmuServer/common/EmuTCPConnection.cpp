@@ -70,7 +70,7 @@ using namespace std;
 
 
 //server side case
-EmuTCPConnection::EmuTCPConnection(int32 ID, EmuTCPServer* iServer, SOCKET in_socket, int32 irIP, int16 irPort, bool iOldFormat)
+EmuTCPConnection::EmuTCPConnection(uint32 ID, EmuTCPServer* iServer, SOCKET in_socket, uint32 irIP, uint16 irPort, bool iOldFormat)
 : TCPConnection(ID, in_socket, irIP, irPort),
   keepalive_timer(SERVER_TIMEOUT),
   timeout_timer(SERVER_TIMEOUT * 2)
@@ -118,7 +118,7 @@ EmuTCPConnection::EmuTCPConnection(bool iOldFormat, EmuTCPServer* iRelayServer, 
 }
 
 //server side relay case
-EmuTCPConnection::EmuTCPConnection(int32 ID, EmuTCPServer* iServer, EmuTCPConnection* iRelayLink, int32 iRemoteID, int32 irIP, int16 irPort)
+EmuTCPConnection::EmuTCPConnection(uint32 ID, EmuTCPServer* iServer, EmuTCPConnection* iRelayLink, uint32 iRemoteID, uint32 irIP, uint16 irPort)
 : TCPConnection(ID, 0, irIP, irPort),
   keepalive_timer(SERVER_TIMEOUT),
   timeout_timer(SERVER_TIMEOUT * 2)
@@ -144,8 +144,8 @@ EmuTCPConnection::~EmuTCPConnection() {
 }
 
 
-EmuTCPNetPacket_Struct* EmuTCPConnection::MakePacket(ServerPacket* pack, int32 iDestination) {
-	sint32 size = sizeof(EmuTCPNetPacket_Struct) + pack->size;
+EmuTCPNetPacket_Struct* EmuTCPConnection::MakePacket(ServerPacket* pack, uint32 iDestination) {
+	int32 size = sizeof(EmuTCPNetPacket_Struct) + pack->size;
 	if (pack->compressed) {
 		size += 4;
 	}
@@ -155,16 +155,16 @@ EmuTCPNetPacket_Struct* EmuTCPConnection::MakePacket(ServerPacket* pack, int32 i
 	EmuTCPNetPacket_Struct* tnps = (EmuTCPNetPacket_Struct*) new uchar[size];
 	tnps->size = size;
 	tnps->opcode = pack->opcode;
-	*((int8*) &tnps->flags) = 0;
+	*((uint8*) &tnps->flags) = 0;
 	uchar* buffer = tnps->buffer;
 	if (pack->compressed) {
 		tnps->flags.compressed = 1;
-		*((sint32*) buffer) = pack->InflatedSize;
+		*((int32*) buffer) = pack->InflatedSize;
 		buffer += 4;
 	}
 	if (iDestination) {
 		tnps->flags.destination = 1;
-		*((sint32*) buffer) = iDestination;
+		*((int32*) buffer) = iDestination;
 		buffer += 4;
 	}
 	memcpy(buffer, pack->pBuffer, pack->size);
@@ -181,7 +181,7 @@ SPackSendQueue* EmuTCPConnection::MakeOldPacket(ServerPacket* pack) {
 	return spsq;
 }
 
-bool EmuTCPConnection::SendPacket(ServerPacket* pack, int32 iDestination) {
+bool EmuTCPConnection::SendPacket(ServerPacket* pack, uint32 iDestination) {
 	if (!Connected())
 		return false;
 	eTCPMode tmp = GetMode();
@@ -406,7 +406,7 @@ void EmuTCPConnection::Disconnect(bool iSendRelayDisconnect) {
 	}
 }
 
-bool EmuTCPConnection::ConnectIP(int32 irIP, int16 irPort, char* errbuf) {
+bool EmuTCPConnection::ConnectIP(uint32 irIP, uint16 irPort, char* errbuf) {
 	if(!TCPConnection::ConnectIP(irIP, irPort, errbuf))
 		return(false);
 	
@@ -501,7 +501,7 @@ void EmuTCPConnection::RemoveRelay(EmuTCPConnection* relay, bool iSendRelayDisco
 	if (iSendRelayDisconnect) {
 		ServerPacket* pack = new ServerPacket(0, 5);
 		pack->pBuffer[0] = 3;
-		*((int32*) &pack->pBuffer[1]) = relay->GetRemoteID();
+		*((uint32*) &pack->pBuffer[1]) = relay->GetRemoteID();
 		SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -536,8 +536,8 @@ bool EmuTCPConnection::ProcessReceivedData(char* errbuf) {
 bool EmuTCPConnection::ProcessReceivedDataAsPackets(char* errbuf) {
 	if (errbuf)
 		errbuf[0] = 0;
-	sint32 base = 0;
-	sint32 size = 7;
+	int32 base = 0;
+	int32 size = 7;
 	uchar* buffer;
 	ServerPacket* pack = 0;
 	while ((recvbuf_used - base) >= size) {
@@ -561,12 +561,12 @@ bool EmuTCPConnection::ProcessReceivedDataAsPackets(char* errbuf) {
 			pack->opcode = tnps->opcode;
 			if (tnps->flags.compressed) {
 				pack->compressed = true;
-				pack->InflatedSize = *((sint32*)buffer);
+				pack->InflatedSize = *((int32*)buffer);
 				pack->size -= 4;
 				buffer += 4;
 			}
 			if (tnps->flags.destination) {
-				pack->destination = *((sint32*)buffer);
+				pack->destination = *((int32*)buffer);
 				pack->size -= 4;
 				buffer += 4;
 			}
@@ -650,8 +650,8 @@ bool EmuTCPConnection::ProcessReceivedDataAsPackets(char* errbuf) {
 }
 
 bool EmuTCPConnection::ProcessReceivedDataAsOldPackets(char* errbuf) {
-	sint32 base = 0;
-	sint32 size = 4;
+	int32 base = 0;
+	int32 size = 4;
 	uchar* buffer;
 	ServerPacket* pack = 0;
 	while ((recvbuf_used - base) >= size) {
@@ -724,8 +724,8 @@ bool EmuTCPConnection::ProcessReceivedDataAsOldPackets(char* errbuf) {
 }
 
 void EmuTCPConnection::ProcessNetworkLayerPacket(ServerPacket* pack) {
-	int8 opcode = pack->pBuffer[0];
-	int8* data = &pack->pBuffer[1];
+	uint8 opcode = pack->pBuffer[0];
+	uint8* data = &pack->pBuffer[1];
 	switch (opcode) {
 		case 0: {
 			break;
@@ -768,7 +768,7 @@ void EmuTCPConnection::ProcessNetworkLayerPacket(ServerPacket* pack) {
 				SendNetErrorPacket("New RelayClient: illegal on outgoing connection");
 				break;
 			}
-			EmuTCPConnection* con = new EmuTCPConnection(Server->GetNextID(), Server, this, *((int32*) data), *((int32*) &data[4]), *((int16*) &data[8]));
+			EmuTCPConnection* con = new EmuTCPConnection(Server->GetNextID(), Server, this, *((uint32*) data), *((uint32*) &data[4]), *((uint16*) &data[8]));
 			Server->AddConnection(con);
 			RelayCount++;
 			break;
@@ -782,7 +782,7 @@ void EmuTCPConnection::ProcessNetworkLayerPacket(ServerPacket* pack) {
 				SendNetErrorPacket("Delete RelayClient: wrong size, expected 5");
 				break;
 			}
-			EmuTCPConnection* con = Server->FindConnection(*((int32*)data));
+			EmuTCPConnection* con = Server->FindConnection(*((uint32*)data));
 			if (con) {
 				if (ConnectionType == Incomming) {
 					if (con->GetRelayLink() != this) {

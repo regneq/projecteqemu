@@ -43,21 +43,21 @@ struct ZonePoint
 	float y;
 	float z;
 	float heading;
-	int16 number;
+	uint16 number;
 	float target_x;
 	float target_y;
 	float target_z;
 	float target_heading;
-	int16 target_zone_id;
-	sint32 target_zone_instance;
-	int32 client_version_mask;
+	uint16 target_zone_id;
+	int32 target_zone_instance;
+	uint32 client_version_mask;
 };
 struct ZoneClientAuth_Struct {
-	int32	ip;			// client's IP address
-	int32	wid;		// client's WorldID#
-	int32	accid;
-	sint16	admin;
-	int32	charid;
+	uint32	ip;			// client's IP address
+	uint32	wid;		// client's WorldID#
+	uint32	accid;
+	int16	admin;
+	uint32	charid;
 	bool	tellsoff;
 	char	charname[64];
 	char	lskey[30];
@@ -79,10 +79,10 @@ class database;
 class Zone
 {
 public:
-	static bool Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone = false);
+	static bool Bootup(uint32 iZoneID, uint32 iInstanceID, bool iStaticZone = false);
 	static void Shutdown(bool quite = false);
 	
-	Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name);
+	Zone(uint32 in_zoneid, uint32 in_instanceid, const char* in_short_name);
 	~Zone();
 	bool	Init(bool iStaticZone);
 	bool	LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDefault = false);
@@ -92,37 +92,37 @@ public:
 	inline const char*	GetLongName()	{ return long_name; }
 	inline const char*	GetFileName()	{ return file_name; }
 	inline const char*	GetShortName()	{ return short_name; }
-	inline const int32	GetZoneID() const { return zoneid; }
-	inline const int32	GetInstanceID() const { return instanceid; }
-	inline const int16	GetInstanceVersion() const { return instanceversion; }
+	inline const uint32	GetZoneID() const { return zoneid; }
+	inline const uint32	GetInstanceID() const { return instanceid; }
+	inline const uint16	GetInstanceVersion() const { return instanceversion; }
 
 	inline Timer* GetInstanceTimer() { return Instance_Timer; }
 
 	inline const float&	safe_x()		{ return psafe_x; }
 	inline const float&	safe_y()		{ return psafe_y; }
 	inline const float&	safe_z()		{ return psafe_z; }
-	inline const int32& graveyard_zoneid()	{ return pgraveyard_zoneid; }
+	inline const uint32& graveyard_zoneid()	{ return pgraveyard_zoneid; }
 	inline const float& graveyard_x()	{ return pgraveyard_x; }
 	inline const float& graveyard_y()	{ return pgraveyard_y; }
 	inline const float& graveyard_z()	{ return pgraveyard_z; }
 	inline const float& graveyard_heading() { return pgraveyard_heading; }
-	inline const int32& graveyard_id()	{ return pgraveyard_id; }
+	inline const uint32& graveyard_id()	{ return pgraveyard_id; }
 
-	inline const int32& GetMaxClients() { return pMaxClients; }
+	inline const uint32& GetMaxClients() { return pMaxClients; }
 
 	void	LoadAAs();
 	int		GetTotalAAs() { return totalAAs; }
-	SendAA_Struct*	GetAABySequence(int32 seq) { return aas[seq]; }
-	SendAA_Struct*	FindAA(int32 id);
-	uint8	GetTotalAALevels(int32 skill_id);
-	void	LoadZoneDoors(const char* zone, sint16 version);
+	SendAA_Struct*	GetAABySequence(uint32 seq) { return aas[seq]; }
+	SendAA_Struct*	FindAA(uint32 id);
+	uint8	GetTotalAALevels(uint32 skill_id);
+	void	LoadZoneDoors(const char* zone, int16 version);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();
 	void	ReloadStaticData();
 	
-	int32	CountSpawn2();
+	uint32	CountSpawn2();
 	ZonePoint* GetClosestZonePoint(float x, float y, float z, const char* to_name, Client *client, float max_distance = 40000.0f);
-	ZonePoint* GetClosestZonePoint(float x, float y, float z, int32	to, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestZonePoint(float x, float y, float z, uint32	to, Client *client, float max_distance = 40000.0f);
 	ZonePoint* GetClosestZonePointWithoutZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
 	SpawnGroupList spawn_group_list;
 
@@ -130,47 +130,47 @@ public:
 	bool RemoveSpawnGroup(uint32 in_id);
 	
 	bool	Process();
-	void	DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index);
-	int32	DumpSpawn2(ZSDump_Spawn2* spawn2dump, int32* spawn2index, Spawn2* spawn2);
+	void	DumpAllSpawn2(ZSDump_Spawn2* spawn2dump, uint32* spawn2index);
+	uint32	DumpSpawn2(ZSDump_Spawn2* spawn2dump, uint32* spawn2index, Spawn2* spawn2);
 	void	Despawn(uint32 spawngroupID);
 
 	bool	Depop(bool StartSpawnTimer = false);
-	void	Repop(int32 delay = 0);
+	void	Repop(uint32 delay = 0);
 	void	SpawnStatus(Mob* client);
 	void	ShowEnabledSpawnStatus(Mob* client);
 	void    ShowDisabledSpawnStatus(Mob* client);
 	void    ShowSpawnStatusByID(Mob* client, uint32 spawnid);
-	void	StartShutdownTimer(int32 set_time = (RuleI(Zone, AutoShutdownDelay)));
+	void	StartShutdownTimer(uint32 set_time = (RuleI(Zone, AutoShutdownDelay)));
 	void	AddAuth(ServerZoneIncommingClient_Struct* szic);
 	void	RemoveAuth(const char* iCharName);
 	void	ResetAuth();
-	bool	GetAuth(int32 iIP, const char* iCharName, int32* oWID = 0, int32* oAccID = 0, int32* oCharID = 0, sint16* oStatus = 0, char* oLSKey = 0, bool* oTellsOff = 0);
-	int32	CountAuth();
+	bool	GetAuth(uint32 iIP, const char* iCharName, uint32* oWID = 0, uint32* oAccID = 0, uint32* oCharID = 0, int16* oStatus = 0, char* oLSKey = 0, bool* oTellsOff = 0);
+	uint32	CountAuth();
 
 	void		AddAggroMob()			{ aggroedmobs++; }
 	void		DelAggroMob()			{ aggroedmobs--; }
 	bool		AggroLimitReached()		{ return (aggroedmobs>10)?true:false; } // change this value, to allow more NPCs to autoaggro
-	sint32		MobsAggroCount()		{ return aggroedmobs; }
+	int32		MobsAggroCount()		{ return aggroedmobs; }
 	inline bool InstantGrids()			{ return(!initgrids_timer.Enabled()); }
 	void		SetStaticZone(bool sz)	{ staticzone = sz; }
 	inline bool	IsStaticZone()			{ return staticzone; }
 	inline void	GotCurTime(bool time)	{ gottime = time; }
-	void DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw);
+	void DBAWComplete(uint8 workpt_b1, DBAsyncWork* dbaw);
 	
-	void	SpawnConditionChanged(const SpawnCondition &c, sint16 old_value);
+	void	SpawnConditionChanged(const SpawnCondition &c, int16 old_value);
 		
 	void	GetMerchantDataForZoneLoad();
 	void	LoadNewMerchantData(uint32 merchantid);
 	void	LoadTempMerchantData();
-	uint32	GetTempMerchantQuantity(int32 NPCID, uint32 Slot);
+	uint32	GetTempMerchantQuantity(uint32 NPCID, uint32 Slot);
 	void	LoadTempMerchantData_result(MYSQL_RES* result);
 	void	LoadMerchantData_result(MYSQL_RES* result);
-	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
+	int		SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charges, bool sold=false);
 	void LoadMercTemplates();
 	void LoadLevelEXPMods();
 	MercTemplate* GetMercTemplate( uint32 template_id );
 
-	void SetInstanceTimer(int32 new_duration);
+	void SetInstanceTimer(uint32 new_duration);
 	void LoadLDoNTraps();
 	void LoadLDoNTrapEntries();
 	void LoadAdventureFlavor();
@@ -196,20 +196,20 @@ public:
 	void	LoadVeteranRewards();
     void    LoadAlternateCurrencies();
 	void	LoadNPCEmotes(LinkedList<NPC_Emote_Struct*>* NPCEmoteList);
-	void	ReloadWorld(int32 Option);
+	void	ReloadWorld(uint32 Option);
 
 	Map*	zonemap;
 	WaterMap* watermap;
 	PathManager *pathing;
 	NewZone_Struct	newzone_data;
-	int8	zone_weather;
+	uint8	zone_weather;
 
 	SpawnConditionManager spawn_conditions;
 	
 	EQTime	zone_time;
 	void	GetTimeSync();
-	void	SetDate(int16 year, int8 month, int8 day, int8 hour, int8 minute);
-	void	SetTime(int8 hour, int8 minute);
+	void	SetDate(uint16 year, uint8 month, uint8 day, uint8 hour, uint8 minute);
+	void	SetTime(uint8 hour, uint8 minute);
 
 	void	weatherSend();
 	bool	CanBind() const { return(can_bind); }
@@ -221,20 +221,20 @@ public:
 	inline	bool BuffTimersSuspended() const { return newzone_data.SuspendBuffs; };
 	
 	time_t	weather_timer;
-	int8	weather_type;
+	uint8	weather_type;
 	
-	int8 loglevelvar;
-	int8 merchantvar;
-	int8 tradevar;
-	int8 lootvar;
+	uint8 loglevelvar;
+	uint8 merchantvar;
+	uint8 tradevar;
+	uint8 lootvar;
 
 	bool	HasGraveyard();
-	void	SetGraveyard(int32 zoneid, int32 x, int32 y, int32 z, int32 heading);
+	void	SetGraveyard(uint32 zoneid, uint32 x, uint32 y, uint32 z, uint32 heading);
 
-	void		LoadBlockedSpells(int32 zoneid);
+	void		LoadBlockedSpells(uint32 zoneid);
 	void		ClearBlockedSpells();
-	bool		IsSpellBlocked(int32 spell_id, float nx, float ny, float nz);
-	const char *GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz);
+	bool		IsSpellBlocked(uint32 spell_id, float nx, float ny, float nz);
+	const char *GetSpellBlockedMessage(uint32 spell_id, float nx, float ny, float nz);
 	int			GetTotalBlockedSpells() { return totalBS; }
 	inline bool HasMap() { return zonemap != NULL; }
 	inline bool HasWaterMap() { return watermap != NULL; }
@@ -246,28 +246,28 @@ public:
 
 	LinkedList<Spawn2*> spawn2_list;
 	LinkedList<ZonePoint*> zone_point_list;
-	int32	numzonepoints;
+	uint32	numzonepoints;
 	
 	LinkedList<NPC_Emote_Struct*> NPCEmoteList;
 
 private:
-	int32	zoneid;
-	int32	instanceid;
-	int16	instanceversion;
+	uint32	zoneid;
+	uint32	instanceid;
+	uint16	instanceversion;
 	char*	short_name;
 	char	file_name[16];
 	char*	long_name;
 	char*	map_name;
 	bool pvpzone;
 	float	psafe_x, psafe_y, psafe_z;
-	int32	pMaxClients;
+	uint32	pMaxClients;
 	bool	can_bind;
 	bool	is_city;
 	bool	can_combat;
 	bool    can_castoutdoor;
 	bool	can_levitate;
 	bool	is_hotzone;
-	int32	pgraveyard_id, pgraveyard_zoneid;
+	uint32	pgraveyard_id, pgraveyard_zoneid;
 	float	pgraveyard_x, pgraveyard_y, pgraveyard_z, pgraveyard_heading;
 	int     default_ruleset;
 
@@ -280,15 +280,15 @@ private:
 	/*
 		Spawn related things
 	*/
-	sint32	aggroedmobs;
+	int32	aggroedmobs;
 	Timer initgrids_timer;	//delayed loading of initial grids.
 
 
 	bool	staticzone;
 	bool	gottime;
 	
-	int32 pQueuedMerchantsWorkID;
-	int32 pQueuedTempMerchantsWorkID;
+	uint32 pQueuedMerchantsWorkID;
+	uint32 pQueuedTempMerchantsWorkID;
 
 	Timer	autoshutdown_timer;
 	Timer	clientauth_timer;

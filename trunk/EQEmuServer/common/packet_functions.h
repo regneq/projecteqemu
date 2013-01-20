@@ -21,23 +21,23 @@
 
 class EQApplicationPacket;
 
-int32 roll(int32 in, int8 bits);
-int64 roll(int64 in, int8 bits);
-int32 rorl(int32 in, int8 bits);
-int64 rorl(int64 in, int8 bits);
+uint32 roll(uint32 in, uint8 bits);
+uint64 roll(uint64 in, uint8 bits);
+uint32 rorl(uint32 in, uint8 bits);
+uint64 rorl(uint64 in, uint8 bits);
 
 void EncryptProfilePacket(EQApplicationPacket* app);
-void EncryptProfilePacket(uchar* pBuffer, int32 size);
+void EncryptProfilePacket(uchar* pBuffer, uint32 size);
 
 #define EncryptSpawnPacket EncryptZoneSpawnPacket
 //void EncryptSpawnPacket(EQApplicationPacket* app);
-//void EncryptSpawnPacket(uchar* pBuffer, int32 size);
+//void EncryptSpawnPacket(uchar* pBuffer, uint32 size);
 
 void EncryptZoneSpawnPacket(EQApplicationPacket* app);
-void EncryptZoneSpawnPacket(uchar* pBuffer, int32 size);
+void EncryptZoneSpawnPacket(uchar* pBuffer, uint32 size);
 
 int DeflatePacket(const unsigned char* in_data, int in_length, unsigned char* out_data, int max_out_length);
 uint32 InflatePacket(const uchar* indata, uint32 indatalen, uchar* outdata, uint32 outdatalen, bool iQuiet = false);
-uint32 GenerateCRC(int32 b, int32 bufsize, uchar *buf);
+uint32 GenerateCRC(uint32 b, uint32 bufsize, uchar *buf);
 
 #endif

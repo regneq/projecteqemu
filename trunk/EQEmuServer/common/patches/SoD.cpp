@@ -21,7 +21,7 @@ static const char *name = "SoD";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
-char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth);
+char* SerializeItem(const ItemInst *inst, int16 slot_id, uint32 *length, uint8 depth);
 	
 void Register(EQStreamIdentifier &into) {
 	//create our opcode manager if we havent already
@@ -105,8 +105,8 @@ std::string Strategy::Describe() const {
 
 
 // Converts Titanium Slot IDs to SoD Slot IDs for use in Encodes
-static inline int32 TitaniumToSoDSlot(int32 TitaniumSlot) {
-	int32 SoDSlot = 0;
+static inline uint32 TitaniumToSoDSlot(uint32 TitaniumSlot) {
+	uint32 SoDSlot = 0;
 
 	if(TitaniumSlot >= 21 && TitaniumSlot <= 53)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
@@ -137,8 +137,8 @@ static inline int32 TitaniumToSoDSlot(int32 TitaniumSlot) {
 }
 
 // Converts SoD Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 SoDToTitaniumSlot(int32 SoDSlot) {
-	int32 TitaniumSlot = 0;
+static inline uint32 SoDToTitaniumSlot(uint32 SoDSlot) {
+	uint32 TitaniumSlot = 0;
 	
 	if(SoDSlot >= 22 && SoDSlot <= 54)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
@@ -1271,8 +1271,8 @@ ENCODE(OP_MercenaryDataResponse) {
 	PacketSize += (sizeof(structs::MercenaryListEntry_Struct) - 4) * emu->MercCount;
 
 
-	int32 r;
-	int32 k;
+	uint32 r;
+	uint32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->Mercs[r].StanceCount;
@@ -1304,7 +1304,7 @@ ENCODE(OP_MercenaryDataResponse) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyUpkeep);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].AltCurrencyType);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->Mercs[r].StanceCount);
-			VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->Mercs[r].TimeLeft);
+			VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->Mercs[r].TimeLeft);
 			if(emu->Mercs[r].StanceCount > 0)
 			{
 				for(k = 0; k < emu->Mercs[r].StanceCount; k++)
@@ -1334,8 +1334,8 @@ ENCODE(OP_MercenaryDataUpdate) {
 
 	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
 
-	int32 r;
-	int32 k;
+	uint32 r;
+	uint32 k;
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
@@ -1358,7 +1358,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyUpkeep);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].AltCurrencyType);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
-		VARSTRUCT_ENCODE_TYPE(sint32, Buffer, emu->MercData[r].TimeLeft);
+		VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->MercData[r].TimeLeft);
 		for(k = 0; k < emu->MercData[r].StanceCount; k++)
 		{
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
@@ -1492,7 +1492,7 @@ ENCODE(OP_GuildMemberList) {
 	
 	
 	//make a new EQ buffer.
-	int32 pnl = strlen(emu->player_name);
+	uint32 pnl = strlen(emu->player_name);
 	uint32 length = sizeof(structs::GuildMembers_Struct) + pnl + 
 		emu->count*sizeof(structs::GuildMemberEntry_Struct)
 		+ emu->name_length + emu->note_length;
@@ -2073,7 +2073,7 @@ ENCODE(OP_VetRewardsAvaliable)
 	EQApplicationPacket *inapp = *p;
 	unsigned char * __emu_buffer = inapp->pBuffer;
 
-	int32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
+	uint32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
 
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
 	uchar *old_data = __emu_buffer;
@@ -3009,10 +3009,10 @@ DECODE(OP_LoadSpellSet)
 	FINISH_DIRECT_DECODE();
 }
 
-int32 NextItemInstSerialNumber = 1;
-int32 MaxInstances = 2000000000;
+uint32 NextItemInstSerialNumber = 1;
+uint32 MaxInstances = 2000000000;
 
-static inline sint32 GetNextItemInstSerialNumber() {
+static inline int32 GetNextItemInstSerialNumber() {
 
 	if(NextItemInstSerialNumber >= MaxInstances)
 		NextItemInstSerialNumber = 1;
@@ -3023,7 +3023,7 @@ static inline sint32 GetNextItemInstSerialNumber() {
 }
 
 
-char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uint8 depth) {
+char* SerializeItem(const ItemInst *inst, int16 slot_id_in, uint32 *length, uint8 depth) {
 	uint8 null_term = 0;
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
@@ -3040,7 +3040,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	sint32 slot_id = TitaniumToSoDSlot(slot_id_in);
+	int32 slot_id = TitaniumToSoDSlot(slot_id_in);
 
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();
@@ -3276,7 +3276,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ss.write((const char*)&itbs, sizeof(SoD::structs::ItemTertiaryBodyStruct));
 
 	// Effect Structures Broken down to allow variable length strings for effect names
-	sint32 effect_unknown = 0;
+	int32 effect_unknown = 0;
 
 	SoD::structs::ClickEffectStruct ices;
 	memset(&ices, 0, sizeof(SoD::structs::ClickEffectStruct));
@@ -3302,7 +3302,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// clickunk7
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// clickunk7
 
 	SoD::structs::ProcEffectStruct ipes;
 	memset(&ipes, 0, sizeof(SoD::structs::ProcEffectStruct));
@@ -3325,7 +3325,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown5
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown5
 
 	SoD::structs::WornEffectStruct iwes;
 	memset(&iwes, 0, sizeof(SoD::structs::WornEffectStruct));
@@ -3347,7 +3347,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 
 	SoD::structs::WornEffectStruct ifes;
 	memset(&ifes, 0, sizeof(SoD::structs::WornEffectStruct));
@@ -3369,7 +3369,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 
 	SoD::structs::WornEffectStruct ises;
 	memset(&ises, 0, sizeof(SoD::structs::WornEffectStruct));
@@ -3391,7 +3391,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	ss.write((const char*)&effect_unknown, sizeof(int32));	// unknown6
 	// End of Effects
 
 	SoD::structs::ItemQuaternaryBodyStruct iqbs;

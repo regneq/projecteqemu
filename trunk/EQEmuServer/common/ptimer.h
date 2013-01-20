@@ -65,20 +65,20 @@ typedef uint16 pTimerType;
 
 class PersistentTimer {
 public:
-	static PersistentTimer *LoadTimer(Database *db, int32 char_id, pTimerType type);
+	static PersistentTimer *LoadTimer(Database *db, uint32 char_id, pTimerType type);
 	
-	PersistentTimer(int32 char_id, pTimerType type, int32 duration);
-	PersistentTimer(int32 char_id, pTimerType type, int32 start_time, int32 duration, bool enable);
+	PersistentTimer(uint32 char_id, pTimerType type, uint32 duration);
+	PersistentTimer(uint32 char_id, pTimerType type, uint32 start_time, uint32 duration, bool enable);
 	
 	bool Expired(Database *db, bool iReset = true);
-	void Start(int32 set_timer_time=0);
+	void Start(uint32 set_timer_time=0);
 	
-	void SetTimer(int32 set_timer_time=0);
-	int32 GetRemainingTime();
+	void SetTimer(uint32 set_timer_time=0);
+	uint32 GetRemainingTime();
 	inline void Enable() { enabled = true; }
 	inline void Disable() { enabled = false; }
-	inline const int32 GetTimerTime() const { return timer_time; }
-	inline const int32 GetStartTime() const { return start_time; }
+	inline const uint32 GetTimerTime() const { return timer_time; }
+	inline const uint32 GetStartTime() const { return start_time; }
 	inline const pTimerType GetType() const { return _type; }
 
 	inline bool Enabled() { return enabled; }
@@ -88,20 +88,20 @@ public:
 	bool Clear(Database *db);
 
 protected:
-	int32 get_current_time();
+	uint32 get_current_time();
 	
-	int32	start_time;
-	int32	timer_time;
+	uint32	start_time;
+	uint32	timer_time;
 	bool	enabled;
 	
-	int32 _char_id;
+	uint32 _char_id;
 	pTimerType _type;
 };
 
 //a list of persistent timers for a specific character
 class PTimerList {
 public:
-	PTimerList(int32 char_id = 0);
+	PTimerList(uint32 char_id = 0);
 	
 	~PTimerList();
 	
@@ -109,31 +109,31 @@ public:
 	bool Store(Database *db);
 	bool Clear(Database *db);
 	
-	void Start(pTimerType type, int32 duration);
+	void Start(pTimerType type, uint32 duration);
 	bool Expired(Database *db, pTimerType type, bool reset = true);
 	void Clear(Database *db, pTimerType type);
 	void Enable(pTimerType type);
 	bool Enabled(pTimerType type);
 	void Disable(pTimerType type);
-	int32 GetRemainingTime(pTimerType type);
+	uint32 GetRemainingTime(pTimerType type);
 	PersistentTimer *Get(pTimerType type);
 	
-	inline void SetCharID(int32 char_id) { _char_id = char_id; }
+	inline void SetCharID(uint32 char_id) { _char_id = char_id; }
 	
 	void ToVector(vector< pair<pTimerType, PersistentTimer *> > &out);
 	
 	//Clear a timer for a char not logged in
 	//this is not defined on a char which is logged in!
-	static bool ClearOffline(Database *db, int32 char_id, pTimerType type);
+	static bool ClearOffline(Database *db, uint32 char_id, pTimerType type);
 	
 	typedef map<pTimerType, PersistentTimer *>::iterator iterator;
 	iterator begin() { return(_list.begin()); }
 	iterator end() { return(_list.end()); }
 	
 	
-	void AddTimer(pTimerType type, int32 start_time, int32 duration, bool enable);
+	void AddTimer(pTimerType type, uint32 start_time, uint32 duration, bool enable);
 protected:
-	int32 _char_id;
+	uint32 _char_id;
 	
 	map<pTimerType, PersistentTimer *> _list;
 };

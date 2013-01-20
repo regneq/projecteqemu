@@ -12,14 +12,14 @@ class MMF {
 public:
 	struct MMF_Struct {
 		bool	Loaded;
-		int32	datasize;
-		int8	data[0];
+		uint32	datasize;
+		uint8	data[0];
 	};
 
 	MMF();
 	virtual ~MMF();
 
-			bool	Open(const char* iName, int32 iSize);
+			bool	Open(const char* iName, uint32 iSize);
 			void	Close();
 	const	void*	GetHandle() { if (IsLoaded()) { return SharedMemory->data; } return 0; }
 			void*	GetWriteableHandle() { if (!IsLoaded() && CanWrite()) { return SharedMemory->data; } return 0; }
