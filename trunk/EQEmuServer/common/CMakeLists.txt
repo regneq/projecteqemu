@@ -289,10 +289,6 @@ source_group(TinyXML FILES
     tinyxml/tinyxmlparser.cpp
 )
 
-IF(EQEMU_ENABLE_BOTS)
-    ADD_DEFINITIONS(-DBOTS)
-ENDIF(EQEMU_ENABLE_BOTS)
-
 INCLUDE_DIRECTORIES(Patches SocketLib TinyXML)
 
 ADD_LIBRARY(Common ${common_sources} ${common_headers})
