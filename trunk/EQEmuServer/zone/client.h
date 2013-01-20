@@ -801,9 +801,9 @@ public:
 	bool	DecreaseByID(int32 type, int8 amt);
 	int8	SlotConvert2(int8 slot);	//Maybe not needed.
 	void	Escape(); //AA Escape
-	void    RemoveNoRent();
-	void	RemoveDuplicateLore();
-	void	MoveSlotNotAllowed();
+	void    RemoveNoRent(bool client_update = true);
+	void	RemoveDuplicateLore(bool client_update = true);
+	void	MoveSlotNotAllowed(bool client_update = true);
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other);
 	void	DoClassAttacks(Mob *ca_target, int16 skill = -1, bool IsRiposte=false);

@@ -5,6 +5,11 @@ Akkadius: Implemented global_npc.pl, this is very similar to global_player.pl wh
 Akkadius: Implemented the ability to modify EXP and AAEXP modifiers per Level, these are loaded from an optional table (level_exp_mods) that is attached to the commit, you MUST enable the rule first!
 Akkadius: Added #reloadlevelmods - which will reload level mods from the `level_exp_mods` table
 Derision: RoF: Guild name now appears in the Guild Management window and over player's heads. /guildstatus now works. Guild members status now updates in the GMW.
+Uleat: Corrected the BulkSendInventory process for incomplete item trade returns resulting from a server crash. Previous code used an external reference and items were never moved..and hence, lost once a new trade occurred.
+Uleat: Added mlog messages to existing BulkSendInventory code to report hidden item movements and deletions. All BSI and helper processes now log movements/deletions.
+Uleat: Added two new client pre-entry inventory validation methods - RemoveDuplicateLore and MoveSlotNotAllowed. Duplicate lore was not checked and IsSlotAllowed failures were not handled. Both were causes of persistent desyncs.
+Uleat: Corrected a bug in ItemInst::IsSlotAllowed that 'passed' PowerSource slot checks regardless of ItemInst::Slots value.
+Uleat: [Client-Server Inventory Desyncronization] Most CSD bugs should now be corrected, or at least, compensated for. Please post any desync issues as a new bug post or pm a Dev or GM if it involves an exploit.
 
 Optional SQL: \utils\sql\svn\2428_optional_levelbasedexpmods.sql
 
