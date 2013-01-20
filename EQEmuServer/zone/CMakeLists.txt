@@ -159,7 +159,6 @@ SET(zone_headers
 
 ADD_EXECUTABLE(zone ${zone_sources} ${zone_headers})
 
-OPTION(EQEMU_ENABLE_BOTS "Enable Bots" OFF)
 ADD_DEFINITIONS(-DZONE)
 IF(EQEMU_ENABLE_BOTS)
     ADD_DEFINITIONS(-DBOTS)
