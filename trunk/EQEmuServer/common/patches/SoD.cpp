@@ -1332,7 +1332,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 
 	char *Buffer = (char *) in->pBuffer;
 
-	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
+	uint32 PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
 
 	uint32 r;
 	uint32 k;
@@ -1344,7 +1344,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
 	Buffer = (char *) outapp->pBuffer;
 
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercStatus);
+	VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->MercStatus);
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
 
 	for(r = 0; r < emu->MercCount; r++)
@@ -1364,7 +1364,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].Stance);
 		}
-		//VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
 	}
 
 	dest->FastQueuePacket(&outapp, ack_req);

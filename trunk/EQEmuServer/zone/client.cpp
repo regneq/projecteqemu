@@ -7098,58 +7098,57 @@ void Client::SendWebLink(const char *website)
 
 void Client::SendMercPersonalInfo()
 {
-		int mercTypeCount = 1;
-		int mercCount = 1; //TODO: Un-hardcode this and support multiple mercs like in later clients than SoD.
-		int packetSize = 0;
-		int i=0;
+		uint32 mercCount = 1; //TODO: Un-hardcode this and support multiple mercs like in later clients than SoD.
+		//uint32 packetSize = 0;
+		uint32 i=0;
 		uint32 altCurrentType = 19; //TODO: Implement alternate currency purchases involving mercs!
-		MercenaryMerchantList_Struct* mml = new MercenaryMerchantList_Struct;
+		MercenaryDataUpdate_Struct* mdus = new MercenaryDataUpdate_Struct;
+
 		MercTemplate *mercData = &zone->merc_templates[GetEPP().mercTemplateID];
 
-		if(mercData) {
-				if(mercTypeCount > 0)
+		if (mercData)
+		{
+				mdus->MercStatus = 0;
+				mdus->MercCount = mercCount;
+				if (mercCount > 0)
 				{
-					mml->MercTypeCount = mercTypeCount; //We only should have one merc entry.
-					mml->MercGrades = new MercenaryGrade_Struct[mercTypeCount];	// DBStringID for Type
-				}
-				mml->MercCount = mercCount;
-				if(mercCount > 0)
-				{
-					mml->Mercs = new MercenaryListEntry_Struct[mercCount];
-					mml->Mercs[i].MercID = mercData->MercTemplateID;				
-					mml->Mercs[i].MercType = mercData->MercType;			
-					mml->Mercs[i].MercSubType = mercData->MercSubType;		
-					mml->Mercs[i].PurchaseCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), 0);		
-					mml->Mercs[i].UpkeepCost = Merc::CalcUpkeepCost(mercData->MercTemplateID, GetLevel(), 0);		
-					mml->Mercs[i].Status = 0;				
-					mml->Mercs[i].AltCurrencyCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
-					mml->Mercs[i].AltCurrencyUpkeep = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);	
-					mml->Mercs[i].AltCurrencyType = altCurrentType;
-					mml->Mercs[i].MercUnk01 = 0;			
-					mml->Mercs[i].TimeLeft = GetEPP().mercSuspendedTime;			
-					mml->Mercs[i].MerchantSlot = i + 1;
-					mml->Mercs[i].MercUnk02 = 1;			
-					mml->Mercs[i].StanceCount = zone->merc_stance_list[mercData->MercTemplateID].size();		
-					mml->Mercs[i].MercUnk03 = 0;		
-					mml->Mercs[i].MercUnk04 = 1;		
-					//mml->Mercs[i].MercName;
-					int stanceindex = 0;
-					if(mml->Mercs[i].StanceCount != 0)
+					mdus->MercData = new MercenaryData_Struct[mercCount];
+					mdus->MercData[i].MercID = mercData->MercTemplateID;
+					mdus->MercData[i].MercType = mercData->MercType;
+					mdus->MercData[i].MercSubType = mercData->MercSubType;
+					mdus->MercData[i].PurchaseCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), 0);
+					mdus->MercData[i].UpkeepCost = Merc::CalcUpkeepCost(mercData->MercTemplateID, GetLevel(), 0);
+					mdus->MercData[i].Status = 0;
+					mdus->MercData[i].AltCurrencyCost = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);
+					mdus->MercData[i].AltCurrencyUpkeep = Merc::CalcPurchaseCost(mercData->MercTemplateID, GetLevel(), altCurrentType);
+					mdus->MercData[i].AltCurrencyType = altCurrentType;
+					mdus->MercData[i].MercUnk01 = 0;
+					mdus->MercData[i].TimeLeft = GetMercTimer().GetRemainingTime();	//GetEPP().mercSuspendedTime;
+					mdus->MercData[i].MerchantSlot = i + 1;
+					mdus->MercData[i].MercUnk02 = 1;
+					mdus->MercData[i].StanceCount = zone->merc_stance_list[mercData->MercTemplateID].size();
+					mdus->MercData[i].MercUnk03 = 0;
+					mdus->MercData[i].MercUnk04 = 1;
+					//mdus->MercData[i].MercName;
+					uint32 stanceindex = 0;
+					if (mdus->MercData[i].StanceCount != 0)
 					{
-						mml->Mercs[i].Stances = new MercenaryStance_Struct[mml->Mercs[i].StanceCount];
+						mdus->MercData[i].Stances = new MercenaryStance_Struct[mdus->MercData[i].StanceCount];
 						list<MercStanceInfo>::iterator iter = zone->merc_stance_list[mercData->MercTemplateID].begin();
 						while(iter != zone->merc_stance_list[mercData->MercTemplateID].end())
 						{
-						mml->Mercs[i].Stances[stanceindex].StanceIndex = stanceindex;
-						mml->Mercs[i].Stances[stanceindex].Stance = (iter->StanceID);
+							mdus->MercData[i].Stances[stanceindex].StanceIndex = stanceindex;
+							mdus->MercData[i].Stances[stanceindex].Stance = (iter->StanceID);
 							stanceindex++;
 							iter++;
 						}
 					}
 
-					EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, 1); //Packet sizes are handled by the encoder.
-					outapp->pBuffer = (unsigned char*)mml;
-			//		DumpPacket(outapp);
+					mdus->MercData[i].MercUnk05 = 1;
+
+					EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, 1); //Packet sizes are handled by the encoder.
+					outapp->pBuffer = (unsigned char*)mdus;
+					//DumpPacket(outapp);
 					FastQueuePacket(&outapp);
 			}
 			SendMercMerchantResponsePacket(0);
