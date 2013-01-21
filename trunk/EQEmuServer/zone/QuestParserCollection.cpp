@@ -13,7 +13,6 @@ extern Zone* zone;
 
 QuestParserCollection::QuestParserCollection() {
     _player_quest_status = QuestUnloaded;
-	_global_npc_quest_status = QuestUnloaded;
     _global_player_quest_status = QuestUnloaded;
 }
 
