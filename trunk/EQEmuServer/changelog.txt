@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/21/2013 ==
+Akkadius: Should have fixed some scenarios where the global_npc.pl script wasn't unloading correctly
+
 == 01/20/2013 ==
 KLS: intN types have changed to more closely reflect C99 and C++11 types: 
 intN was an unsigned int of N bits -> it is now a signed int of N bits.
