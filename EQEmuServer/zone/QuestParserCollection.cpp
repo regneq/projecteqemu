@@ -13,6 +13,7 @@ extern Zone* zone;
 
 QuestParserCollection::QuestParserCollection() {
     _player_quest_status = QuestUnloaded;
+	_global_npc_quest_status = QuestUnloaded;
     _global_player_quest_status = QuestUnloaded;
 }
 
@@ -37,6 +38,7 @@ void QuestParserCollection::ReloadQuests(bool reset_timers) {
     _npc_quest_status.clear();
     _player_quest_status = QuestUnloaded;
     _global_player_quest_status = QuestUnloaded;
+	_global_npc_quest_status = QuestUnloaded;
     _spell_quest_status.clear();
     _item_quest_status.clear();
     std::list<QuestInterface*>::iterator iter = _load_precedence.begin();
