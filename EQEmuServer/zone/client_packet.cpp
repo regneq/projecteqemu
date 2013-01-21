@@ -549,7 +549,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientRoF;
 		ClientVersionBit = BIT_RoF;
 	}
-	// Quagmire - Antighost code
+	// Antighost code
 	// tmp var is so the search doesnt find this object
 	Client* client = entity_list.GetClientByName(cze->char_name);
 	if (!zone->GetAuth(ip, cze->char_name, &WID, &account_id, &character_id, &admin, lskey, &tellsoff)) {
@@ -665,7 +665,7 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	// Send Zone Objects
 	entity_list.SendZoneObjects(this);
 	SendZonePoints();
-	// Live does this - Doodman
+	// Live does this
 	outapp = new EQApplicationPacket(OP_SendAAStats, 0);
 	FastQueuePacket(&outapp);
 
@@ -744,7 +744,7 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 	uint32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
 	uint32 tmpxp2 = GetEXPForLevel(GetLevel());
 
-	// Quag: crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
+	// Crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
 		float tmpxp = (float) ( (float) m_pp.exp-tmpxp2 ) / ( (float) tmpxp1-tmpxp2 );
 		eu->exp = (uint32)(330.0f * tmpxp);
@@ -824,7 +824,7 @@ void Client::Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app)
 	uint32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
 	uint32 tmpxp2 = GetEXPForLevel(GetLevel());
 
-	// Quag: crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
+	// Crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
 		float tmpxp = (float) ( (float) m_pp.exp-tmpxp2 ) / ( (float) tmpxp1-tmpxp2 );
 		eu->exp = (uint32)(330.0f * tmpxp);
@@ -946,10 +946,10 @@ void Client::Handle_Connect_OP_UpdateAA(const EQApplicationPacket *app) {
 }
 
 void Client::CheatDetected(CheatTypes CheatType, float x, float y, float z)
-{ //[Paddy] ToDo: Break warp down for special zones. Some zones have special teleportation pads or bad .map files which can trigger the detector without a legit zone request.
+{ //ToDo: Break warp down for special zones. Some zones have special teleportation pads or bad .map files which can trigger the detector without a legit zone request.
 	switch (CheatType)
 	{
-		case MQWarp://Some zones have serious issues, turning off warp flags for these zones.
+		case MQWarp: //Some zones may still have issues. Database updates will eliminate most if not all problems.
 			if(RuleB(Zone, EnableMQWarpDetector) 
 				&& ((this->Admin() < RuleI(Zone, MQWarpExemptStatus) 
 				|| (RuleI(Zone, MQWarpExemptStatus)) == -1)))
@@ -999,7 +999,7 @@ void Client::CheatDetected(CheatTypes CheatType, float x, float y, float z)
 			break;
 
 		case MQZone:
-			if(!( (zone->GetZoneID()==31)/*sola*/ || (zone->GetZoneID()==32)/*solb*/ || (zone->GetZoneID()==25)/*nek*/ || (zone->GetZoneID()==27)/*lava*/ ) && (RuleB(Zone, EnableMQZoneDetector))&& ((this->Admin() < RuleI(Zone, MQZoneExemptStatus) || (RuleI(Zone, MQZoneExemptStatus)) == -1))) //Lieka:  Exempt these zones from the MQZone detector (This may be depricated now, but were problems in the past)
+			if(RuleB(Zone, EnableMQZoneDetector) && ((this->Admin() < RuleI(Zone, MQZoneExemptStatus) || (RuleI(Zone, MQZoneExemptStatus)) == -1)))
 			{
 				char hString[250];
 				sprintf(hString, "/MQZone used at %.2f, %.2f, %.2f to %.2f %.2f %.2f", GetX(), GetY(), GetZ(), x, y, z);
@@ -1007,7 +1007,7 @@ void Client::CheatDetected(CheatTypes CheatType, float x, float y, float z)
 			}
 			break;
 		case MQZoneUnknownDest:
-			if(!( (zone->GetZoneID()==31)/*sola*/ || (zone->GetZoneID()==32)/*solb*/ || (zone->GetZoneID()==25)/*nek*/ || (zone->GetZoneID()==27)/*lava*/ ) && (RuleB(Zone, EnableMQZoneDetector))&& ((this->Admin() < RuleI(Zone, MQZoneExemptStatus) || (RuleI(Zone, MQZoneExemptStatus)) == -1))) //Lieka:  Exempt these zones from the MQZone detector (This may be depricated now, but were problems in the past)
+			if(RuleB(Zone, EnableMQZoneDetector) && ((this->Admin() < RuleI(Zone, MQZoneExemptStatus) || (RuleI(Zone, MQZoneExemptStatus)) == -1)))
 			{
 				char hString[250];
 				sprintf(hString, "/MQZone used at %.2f, %.2f, %.2f", GetX(), GetY(), GetZ());
@@ -1020,16 +1020,16 @@ void Client::CheatDetected(CheatTypes CheatType, float x, float y, float z)
 				database.SetMQDetectionFlag(this->account_name,this->name, "/MQGate", zone->GetShortName());
 				if(zone)
 				{
-					this->SetZone(this->GetZoneID(), zone->GetInstanceID()); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+					this->SetZone(this->GetZoneID(), zone->GetInstanceID()); //Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
 				}
 				else
 				{
-					this->SetZone(this->GetZoneID(), 0); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+					this->SetZone(this->GetZoneID(), 0); //Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
 
 				}
 			}
 			break;
-		case MQGhost: //Lieka:  Not currently implemented, but the framework is in place - just needs detection scenarios identified
+		case MQGhost: //Not currently implemented, but the framework is in place - just needs detection scenarios identified
 			if (RuleB(Zone, EnableMQGhostDetector) && ((this->Admin() < RuleI(Zone, MQGhostExemptStatus) || (RuleI(Zone, MQGhostExemptStatus)) == -1))) {
 				database.SetMQDetectionFlag(this->account_name,this->name, "/MQGhost", zone->GetShortName());
 			}
@@ -1227,7 +1227,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 			DragCorpses();
 	}
 
-	//Lieka:  Check to see if PPU should trigger an update to the rewind position.
+	//Check to see if PPU should trigger an update to the rewind position.
 	float rewind_x_diff = 0;
 	float rewind_y_diff = 0;
 
@@ -1236,7 +1236,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	rewind_y_diff = ppu->y_pos - rewind_y;
 	rewind_y_diff *= rewind_y_diff;
 
-	//Lieka:  We only need to store updated values if the player has moved.
+	//We only need to store updated values if the player has moved.
 	//If the player has moved more than  units for x or y, then we'll store
 	//his pre-PPU x and y for /rewind, in case he gets stuck.
 	if ((rewind_x_diff > 750) || (rewind_y_diff > 750)) {
@@ -1245,7 +1245,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		rewind_z = z_pos;
 	}
 
-	//Lieka:  If the PPU was a large jump, such as a cross zone gate or Call of Hero,
+	//If the PPU was a large jump, such as a cross zone gate or Call of Hero,
 	//just update rewind coords to the new ppu coords.  This will prevent exploitation.
 
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000)) {
@@ -3031,7 +3031,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 			SetFeigned(false);
 		}
 
-		// @merth: This is from old code
+		// This is from old code
 		// I have no clue what it's for
 		/*
 		else if (sa->parameter == 0x05) {
@@ -3072,7 +3072,6 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		this->AFK = (sa->parameter == 1);
 		entity_list.QueueClients(this, app, true);
 	}
-	//Father Nitwit:
 	else if (sa->type == AT_Split) {
 		m_pp.autosplit = (sa->parameter == 1);
 	}
@@ -3327,7 +3326,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 		}
 	}
 
-	// Illegal bagslot useage checks. Currently, user only receives a message if this check is triggered. -U
+	// Illegal bagslot useage checks. Currently, user only receives a message if this check is triggered.
 	bool mi_hack = false;
 
  	if(mi->from_slot >= 251 && mi->from_slot <= 340) {
@@ -3593,7 +3592,7 @@ void Client::Handle_OP_WearChange(const EQApplicationPacket *app)
 void Client::Handle_OP_DeleteSpawn(const EQApplicationPacket *app)
 {
 	// The client will send this with his id when he zones, maybe when he disconnects too?
-	//eqs->RemoveData(); // Flushing the queue of packet data to allow for proper zoning -Kasai
+	//eqs->RemoveData(); // Flushing the queue of packet data to allow for proper zoning
 
 	//just make sure this gets out
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LogoutReply);
@@ -3900,7 +3899,6 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 		return;
 	}
 	/*
-	** Disgrace:
 	**	fixed the looting code so that it sends the correct opcodes
 	**	and now correctly removes the looted item the player selected
 	**	as well as gives the player the proper item.
@@ -4501,7 +4499,7 @@ void Client::Handle_OP_ManaChange(const EQApplicationPacket *app)
 
 		return;
 	}
-	else	// solar: i don't think the client sends proper manachanges
+	else	// I don't think the client sends proper manachanges
 	{			// with a length, just the 0 len ones for stopping songs
 		//ManaChange_Struct* p = (ManaChange_Struct*)app->pBuffer;
 		printf("OP_ManaChange from client:\n");
@@ -4574,7 +4572,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 		}
 		else if ((castspell->inventoryslot < 30) || (castspell->slot == POTION_BELT_SPELL_SLOT))	// sanity check
 		{
-			const ItemInst* inst = m_inv[castspell->inventoryslot]; //@merth: slot values are int16, need to check packet on this field
+			const ItemInst* inst = m_inv[castspell->inventoryslot]; //slot values are int16, need to check packet on this field
 			//bool cancast = true;
 			if (inst && inst->IsType(ItemClassCommon))
 			{
@@ -6843,7 +6841,7 @@ void Client::Handle_OP_InspectMessageUpdate(const EQApplicationPacket *app) {
 	database.SetPlayerInspectMessage(name, &playermessage);
 }
 
-#if 0	// solar: i dont think there's an op for this now, and we check this
+#if 0	// I dont think there's an op for this now, and we check this
 			// when the client is sitting
 void Client::Handle_OP_Medding(const EQApplicationPacket *app)
 {
@@ -7061,7 +7059,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			Message_StringID(10, CANNOT_WAKE, mypet->GetCleanName(), GetTarget()->GetCleanName());
 			break;
 		}
-		if (mypet->IsFeared()) break; //AndMetal: prevent pet from attacking stuff while feared
+		if (mypet->IsFeared()) break; //prevent pet from attacking stuff while feared
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
 			if (GetTarget() != this && mypet->DistNoRootNoZ(*GetTarget()) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
@@ -7082,7 +7080,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_BACKOFF: {
-		if (mypet->IsFeared()) break; //AndMetal: keeps pet running while feared
+		if (mypet->IsFeared()) break; //keeps pet running while feared
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_CALMING);
@@ -7113,7 +7111,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		mypet->Say_StringID(PET_GETLOST_STRING);
 		mypet->CastToNPC()->Depop();
 
-		// WildcardX: Oddly, the client (Titanium) will still allow "/pet get lost" command despite me adding the code below. If someone can figure that out, you can uncomment this code and use it.
+		//Oddly, the client (Titanium) will still allow "/pet get lost" command despite me adding the code below. If someone can figure that out, you can uncomment this code and use it.
 		/*
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
 		mypet->Say_StringID(PET_GETLOST_STRING);
@@ -7124,7 +7122,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_GUARDHERE: {
-		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
 			if(mypet->IsNPC()) {
@@ -7137,7 +7135,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_FOLLOWME: {
-		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
 			mypet->SetHeld(false);
@@ -7162,7 +7160,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_GUARDME: {
-		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
 			mypet->SetHeld(false);
@@ -7173,20 +7171,20 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_SITDOWN: {
-		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_SIT_STRING);
 			mypet->SetPetOrder(SPO_Sit);
 			mypet->SetRunAnimSpeed(0);
-			if(!mypet->UseBardSpellLogic())	// solar: maybe we can have a bard pet
-				mypet->InterruptSpell(); //Baron-Sprite: No cast 4 u. // neotokyo: i guess the pet should start casting
+			if(!mypet->UseBardSpellLogic())	//maybe we can have a bard pet
+				mypet->InterruptSpell(); //No cast 4 u. //i guess the pet should start casting
 			mypet->SendAppearancePacket(AT_Anim, ANIM_SIT);
 		}
 		break;
 	}
 	case PET_STANDUP: {
-		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_SIT_STRING);
@@ -7196,14 +7194,14 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_SLUMBER: {
-		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if(mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_SIT_STRING);
 			mypet->SetPetOrder(SPO_Sit);
 			mypet->SetRunAnimSpeed(0);
-			if(!mypet->UseBardSpellLogic())	// solar: maybe we can have a bard pet
-				mypet->InterruptSpell(); //Baron-Sprite: No cast 4 u. // neotokyo: i guess the pet should start casting
+			if(!mypet->UseBardSpellLogic())	//maybe we can have a bard pet
+				mypet->InterruptSpell(); //No cast 4 u. //i guess the pet should start casting
 			mypet->SendAppearancePacket(AT_Anim, ANIM_DEATH);
 		}
 		break;
@@ -7211,7 +7209,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	case PET_HOLD: {
 		if(GetAA(aaPetDiscipline) && mypet->IsNPC()){
 			if (mypet->IsFeared())
-				break; //AndMetal: could be exploited like PET_BACKOFF
+				break; //could be exploited like PET_BACKOFF
 
 			mypet->Say("I will hold until given an order, master.");
 			mypet->WipeHateList();
@@ -7539,7 +7537,7 @@ void Client::Handle_OP_Illusion(const EQApplicationPacket *app)
 	}
 
 	Illusion_Struct* bnpc = (Illusion_Struct*)app->pBuffer;
-	// @merth: these need to be implemented
+	//these need to be implemented
 	/*
 	texture		= bnpc->texture;
 	helmtexture	= bnpc->helmtexture;
@@ -7810,8 +7808,8 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 {
 	// Bazaar Trader:
 	//
-	// Derision: SoF sends 1 or more unhandled OP_Trader packets of size 96 when a trade has completed.
-	//           I don't know what they are for (yet), but it doesn't seem to matter that we ignore them.
+	// SoF sends 1 or more unhandled OP_Trader packets of size 96 when a trade has completed.
+	// I don't know what they are for (yet), but it doesn't seem to matter that we ignore them.
 
 	_pkt(TRADING__PACKETS, app);
 
@@ -8138,7 +8136,6 @@ void Client::Handle_OP_Split(const EQApplicationPacket *app)
 	// update our state anyway, and make sure they had enough to begin
 	// with.
 	Split_Struct *split = (Split_Struct *)app->pBuffer;
-	//Implemented by Father Nitwit
 	//Per the note above, Im not exactly sure what to do on error
 	//to notify the client of the error...
 	if(!isgrouped) {
@@ -8716,7 +8713,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		}
 	}
 
-	// This should be a part of the PlayerProfile BLOB, but we don't want to modify that -U
+	// This should be a part of the PlayerProfile BLOB, but we don't want to modify that
 	// The player inspect message is retrieved from the db on load, then saved as new updates come in..no mods to Client::Save()
 	database.GetPlayerInspectMessage(m_pp.name, &m_inspect_message);
 
@@ -8966,7 +8963,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			continue;
 		}
 
-		if(aa[a]->value > 1)	//hack in some shit for sony's new AA method (where each level of each AA has a seperate ID)
+		if(aa[a]->value > 1)	//hack in some stuff for sony's new AA method (where each level of each AA has a seperate ID)
 			aa_points[(id - aa[a]->value +1)] = aa[a]->value;
 		else
 			aa_points[id] = aa[a]->value;
@@ -9021,7 +9018,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				delete group;
 				group = NULL;
 			}
-		}	//else, somebody from our group is allready here...
+		}	//else, somebody from our group is already here...
 
 		if(group)
 			group->UpdatePlayer(this);
@@ -9745,7 +9742,7 @@ void Client::Handle_OP_RequestTitles(const EQApplicationPacket *app)
 
 void Client::Handle_OP_BankerChange(const EQApplicationPacket *app)
 {
-	if(app->size != sizeof(BankerChange_Struct) && app->size!=4) // cb: Titanium only sends 4 Bytes for this
+	if(app->size != sizeof(BankerChange_Struct) && app->size!=4) //Titanium only sends 4 Bytes for this
 	{
 		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_BankerChange expected %i got %i", sizeof(BankerChange_Struct), app->size);
 		DumpPacket(app);
@@ -10447,7 +10444,7 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app) {
 		}
 		else
 		{
-			// Derision: If the spell has a translocate to bind effect, AND we are already in the zone the client
+			// If the spell has a translocate to bind effect, AND we are already in the zone the client
 			// is bound in, use the GoToBind method. If we send OP_Translocate in this case, the client moves itself
 			// to the bind coords it has from the PlayerProfile, but with the X and Y reversed. I suspect they are
 			// reversed in the pp, and since spells like Gate are handled serverside, this has not mattered before.
