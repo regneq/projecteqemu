@@ -4938,7 +4938,7 @@ struct MercenaryData_Struct {
 struct MercenaryDataUpdate_Struct {
 /*0000*/	int32	MercStatus;					// Seen 0 with merc and -1 with no merc hired
 /*0004*/	uint32	MercCount;					// Seen 1 with 1 merc hired and 0 with no merc hired
-/*0008*/	MercenaryData_Struct MercData[0];	// Data for individual mercenaries in the Merchant List
+/*0008*/	MercenaryData_Struct* MercData;	// Data for individual mercenaries in the Merchant List
 };
 
 // [OPCode: 0x6537] On Live as of April 2 2012 [Server->Client]

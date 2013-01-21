@@ -2125,7 +2125,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 
 	char *Buffer = (char *) in->pBuffer;
 
-	int PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct) - 4) * emu->MercCount;
+	uint32 PacketSize = sizeof(structs::MercenaryDataUpdate_Struct) + (sizeof(structs::MercenaryData_Struct) - sizeof(structs::MercenaryStance_Struct)) * emu->MercCount;
 
 	uint32 r;
 	uint32 k;
@@ -2137,7 +2137,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
 	Buffer = (char *) outapp->pBuffer;
 
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercStatus);
+	VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->MercStatus);
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercCount);
 
 	for(r = 0; r < emu->MercCount; r++)
@@ -2156,7 +2156,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MerchantSlot);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk02);
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk03);
+		VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->MercData[r].MercUnk03);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk04);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// MercName
 		for(k = 0; k < emu->MercData[r].StanceCount; k++)
@@ -3795,11 +3795,12 @@ ENCODE(OP_AltCurrency)
         out_populate->count = populate->count;
         for(uint32 i = 0; i < populate->count; ++i) {
             out_populate->entries[i].currency_number = populate->entries[i].currency_number;
+			out_populate->entries[i].unknown00 = populate->entries[i].unknown00;
             out_populate->entries[i].currency_number2 = populate->entries[i].currency_number2;
             out_populate->entries[i].item_id = populate->entries[i].item_id;
             out_populate->entries[i].item_icon = populate->entries[i].item_icon;
             out_populate->entries[i].stack_size = populate->entries[i].stack_size;
-            out_populate->entries[i].unknown00 = populate->entries[i].unknown00;
+			out_populate->entries[i].display = ((populate->entries[i].stack_size > 0) ? 1 : 0);
         }
 
         dest->FastQueuePacket(&outapp, ack_req);

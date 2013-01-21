@@ -2081,17 +2081,19 @@ struct AltCurrencyDefinition_Struct {
 //Populates the initial Alternate Currency Window
 struct AltCurrencyPopulateEntry_Struct
 {
-/*000*/ uint32 currency_number; //corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
-/*004*/ uint32 unknown00; //always 1
-/*008*/ uint32 currency_number2; //always same as currency number
-/*012*/ uint32 item_id; //appears to be the item id
-/*016*/ uint32 item_icon; //actual icon
-/*020*/ uint32 stack_size; //most are set to 1000, the stack size for the item; should match db i think or there will be problems.
+/*000*/ uint32 currency_number;		// corresponds to a dbstr id as well, the string matches what shows up in the "alternate currency" tab.
+/*004*/ uint32 unknown00;			// always 1
+/*008*/ uint32 currency_number2;	// always same as currency number
+/*012*/ uint32 item_id;				// appears to be the item id
+/*016*/ uint32 item_icon;			// actual icon
+/*020*/ uint32 stack_size;			// most are set to 1000, the stack size for the item; should match db i think or there will be problems.
+/*024*/ uint8  display;				// If set to 0, will not display by default.
+/*025*/
 };
 
 struct AltCurrencyPopulate_Struct {
-/*000*/ uint32 opcode; //8 for populate
-/*004*/ uint32 count; //number of entries
+/*000*/ uint32 opcode;	// 8 for populate
+/*004*/ uint32 count;	// number of entries
 /*008*/ AltCurrencyPopulateEntry_Struct entries[0];
 };
 
