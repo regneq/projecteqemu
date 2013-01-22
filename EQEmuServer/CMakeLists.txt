@@ -53,7 +53,7 @@ IF(NOT STDINT_CHECK_RESULT)
     ENDIF(STDINT_CHECK_RESULT)
 ENDIF()
 
-SET(EQEMU_DEBUG_LEVEL 2 CACHE STRING "EQEmu debug level:
+SET(EQEMU_DEBUG_LEVEL 5 CACHE STRING "EQEmu debug level:
   0 - Quiet mode Errors to file Status and Normal ignored
   1 - Status and Normal to console, Errors to logfile
   2 - Status, Normal, and Error to console and logfile
@@ -74,6 +74,10 @@ OPTION(EQEMU_BUILD_AZONE "Build azone utility." OFF)
 
 IF(UNIX)
     OPTION(EQEMU_BUILD_CLEANIPC "Build cleanipc." ON)
+    OPTION(EQEMU_CPP_ELEVEN "Enable C++11 extentions in g++" OFF)
+    IF(EQEMU_CPP_ELEVEN)
+        ADD_DEFINITIONS(-std=c++0x)
+    ENDIF(EQEMU_CPP_ELEVEN)
 ENDIF(UNIX)
 
 ADD_DEFINITIONS(-DEMBPERL)
