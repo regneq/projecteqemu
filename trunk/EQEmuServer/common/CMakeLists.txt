@@ -296,6 +296,7 @@ ADD_LIBRARY(Common ${common_sources} ${common_headers})
 
 IF(UNIX)
     ADD_DEFINITIONS(-fPIC)
+    SET_SOURCE_FILES_PROPERTIES("patches/SoD.cpp" "patches/SoF.cpp" "patches/RoF.cpp" "patches/Underfoot.cpp" PROPERTIES COMPILE_FLAGS -O0)
 ENDIF(UNIX)
 
 SET(LIBRARY_OUTPUT_PATH ../Bin)
