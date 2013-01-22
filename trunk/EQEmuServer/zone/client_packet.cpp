@@ -13791,6 +13791,7 @@ void Client::Handle_OP_OpenContainer(const EQApplicationPacket *app) {
 	// SoF, SoD and UF clients send a 4-byte packet indicating the 'parent' slot
 	// SoF, SoD and UF slots are defined by a uint32 value and currently untranslated
 	// RoF client sends a 12-byte packet based on the RoF::Structs::ItemSlotStruct
+
 	// RoF structure types are defined as signed uint16 and currently untranslated
 	// RoF::struct.SlotType = {0 - Equipment, 1 - Bank, 2 - Shared Bank} // not tested beyond listed types
 	// RoF::struct.Unknown2 = 0
@@ -13798,4 +13799,7 @@ void Client::Handle_OP_OpenContainer(const EQApplicationPacket *app) {
 	// RoF::struct.SubSlot  = -1 (non-child)
 	// RoF::struct.AugSlot  = -1 (non-child)
 	// RoF::struct.Unknown1 = 141 (unsure why, but always appears to be this value..combine containers not tested)
+
+	// SideNote: Watching the slot translations, Unknown1 is showing '141' as well on certain item swaps.
+	// Manually looting a corpse results in a from '34' to '68' value for equipment items, '0' to '0' for inventory.
 }

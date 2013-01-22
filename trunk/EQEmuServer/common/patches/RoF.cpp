@@ -115,7 +115,7 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(uint32 TitaniumSlot)
 	RoFSlot.Unknown01 = 0;
 	uint32 TempSlot = 0;
 
-	if (TitaniumSlot < 31)	// Main Inventory and Cursor
+	if (TitaniumSlot < 56 || TitaniumSlot == 9999)	// Main Inventory and Cursor
 	{
 		RoFSlot.SlotType = 0;
 		RoFSlot.MainSlot = TitaniumSlot;
@@ -123,20 +123,21 @@ static inline structs::ItemSlotStruct TitaniumToRoFSlot(uint32 TitaniumSlot)
 		{
 			RoFSlot.MainSlot = 21;
 		}
-		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
+		else if (TitaniumSlot >= 30)	// Cursor and Extended Corpse Inventory
+		{
+			RoFSlot.MainSlot += 3;
+		}
+		else if (TitaniumSlot > 20)
 		{
 			RoFSlot.MainSlot += 1;
 		}
-		else if (TitaniumSlot == 30)	// Cursor
-		{
-			RoFSlot.MainSlot = 33;
-		}
+		
 	}
-	else if (TitaniumSlot < 51)		// Cursor Buffer
+	/*else if (TitaniumSlot < 51)		// Cursor Buffer
 	{
 		RoFSlot.SlotType = 5;
 		RoFSlot.MainSlot = TitaniumSlot - 31;
-	}
+	}*/
 	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
 	{
 		RoFSlot.SlotType = 0;
@@ -210,16 +211,26 @@ static inline uint32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 	uint32 TitaniumSlot = 0xffffffff;
 	uint32 TempSlot = 0;
 
-	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 51)	// Worn/Personal Inventory and Cursor
+	if (RoFSlot.SlotType == 0 && RoFSlot.MainSlot < 57)	// Worn/Personal Inventory and Cursor (Originally 51)
 	{
 		if (RoFSlot.MainSlot == 21)			// Power Source
 		{
 			TempSlot = 9999;
 		}
-		else if (RoFSlot.MainSlot == 33)	// Cursor
+		else if (RoFSlot.MainSlot >= 33)	// Cursor and Extended Corpse Inventory
 		{
-			TempSlot = 30;
+			TempSlot = RoFSlot.MainSlot - 3;
 		}
+		/*else if (RoFSlot.MainSlot == 31 || RoFSlot.MainSlot == 32) { // 9th and 10th RoF inventory/corpse slots
+			// Need to figure out what to do when we get these
+
+			// The slot range of 0 - client_max is cross-utilized between player inventory and corpse inventory.
+			// In the case of RoF, player inventory is addressed as 0 - 33 and corpse inventory is addressed as 23 - 56.
+			// We 'could' assign the two new inventory slots as 9997 and 9998, and then work around their bag
+			// slot assignments, but doing so may disrupt our ability to utilize the corpse looting range properly.
+
+			// For now, it's probably best to leave as-is and let this work itself out in the inventory rework.
+		}*/
 		else if (RoFSlot.MainSlot >= 22)	// Ammo and Main Inventory
 		{
 			TempSlot = RoFSlot.MainSlot - 1;
@@ -284,7 +295,7 @@ static inline uint32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 		}
 		TitaniumSlot = TempSlot;
 	}
-	else if (RoFSlot.SlotType == 5)		// Cursor Buffer
+	/*else if (RoFSlot.SlotType == 5)		// Cursor Buffer
 	{
 		TempSlot = 31;
 		if (RoFSlot.MainSlot >= 0)
@@ -292,7 +303,7 @@ static inline uint32 RoFToTitaniumSlot(structs::ItemSlotStruct RoFSlot)
 			TempSlot += RoFSlot.MainSlot;
 		}
 		TitaniumSlot = TempSlot;
-	}
+	}*/
 	_log(NET__ERROR, "Convert RoF Slots: Type %i, Unk2 %i, Main %i, Sub %i, Aug %i, Unk1 %i to Titanium Slot %i", RoFSlot.SlotType, RoFSlot.Unknown02, RoFSlot.MainSlot, RoFSlot.SubSlot, RoFSlot.AugSlot, RoFSlot.Unknown01, TitaniumSlot);
 
 	return TitaniumSlot;
@@ -303,17 +314,22 @@ static inline uint32 MainInvRoFToTitaniumSlot(structs::MainInvItemSlotStruct RoF
 	uint32 TitaniumSlot = 0xffffffff;
 	uint32 TempSlot = 0;
 
-	if (RoFSlot.MainSlot < 33)				// Worn/Personal Inventory and Cursor
+	if (RoFSlot.MainSlot < 57)				// Worn/Personal Inventory and Cursor (Originally 33)
 	{
 		if (RoFSlot.MainSlot == 21)
 		{
 			TempSlot = 9999;
 		}
-		else if (RoFSlot.MainSlot == 33)	// Cursor
+		else if (RoFSlot.MainSlot >= 33)	// Cursor and Extended Corpse Inventory
 		{
-			TempSlot = 30;
+			TempSlot = RoFSlot.MainSlot - 3;
 		}
-		else if (RoFSlot.MainSlot >= 22)	// Main Inventory Slots
+		/*else if (RoFSlot.MainSlot == 31 || RoFSlot.MainSlot == 32) { // 9th and 10th RoF inventory slots
+			// Need to figure out what to do when we get these
+
+			// Same as above
+		}*/
+		else if (RoFSlot.MainSlot >= 22)	// Main Inventory and Ammo Slots
 		{
 			TempSlot = RoFSlot.MainSlot - 1;
 		}
@@ -345,25 +361,29 @@ static inline structs::MainInvItemSlotStruct MainInvTitaniumToRoFSlot(uint32 Tit
 	RoFSlot.Unknown01 = 0;
 	uint32 TempSlot = 0;
 
-	if (TitaniumSlot < 52)
+	if (TitaniumSlot < 56 || TitaniumSlot == 9999) // (Originally 52)
 	{
 		RoFSlot.MainSlot = TitaniumSlot;
 		if (TitaniumSlot == 9999)
 		{
 			RoFSlot.MainSlot = 21;
 		}
-		else if (TitaniumSlot > 20 && TitaniumSlot < 30 )
+		else if (TitaniumSlot > 29) // Cursor and Extended Corpse Inventory
+		{
+			RoFSlot.MainSlot += 3;
+		}
+		else if(TitaniumSlot > 20) // Ammo and Personl Inventory
 		{
 			RoFSlot.MainSlot += 1;
 		}
-		else if (TitaniumSlot > 29)		// Cursor
+		/*else if (TitaniumSlot > 29)		// Cursor
 		{
 			RoFSlot.MainSlot = 33;
 			if (TitaniumSlot > 30)
 			{
 				RoFSlot.SubSlot = (TitaniumSlot + 3) - 33;
 			}
-		}
+		}*/
 	}
 	else if (TitaniumSlot > 250 && TitaniumSlot < 341)
 	{
@@ -4143,7 +4163,7 @@ DECODE(OP_MoveItem)
 	SETUP_DIRECT_DECODE(MoveItem_Struct, structs::MoveItem_Struct);
 
 	//_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot.MainSlot, eq->to_slot.MainSlot);
-	_log(NET__ERROR, "MoveItem SlotType from %u to %u, MainSlot from %u to %u, SubSlot from %u to %u, AugSlot from %u to %u, Unknown01 from %u to %u, Number %u", eq->from_slot.SlotType, eq->to_slot.SlotType, eq->from_slot.MainSlot, eq->to_slot.MainSlot, eq->from_slot.SubSlot, eq->to_slot.SubSlot, eq->from_slot.AugSlot, eq->to_slot.AugSlot, eq->from_slot.Unknown01, eq->to_slot.Unknown01, eq->number_in_stack);
+	_log(NET__ERROR, "MoveItem SlotType from %i to %i, MainSlot from %i to %i, SubSlot from %i to %i, AugSlot from %i to %i, Unknown01 from %i to %i, Number %u", eq->from_slot.SlotType, eq->to_slot.SlotType, eq->from_slot.MainSlot, eq->to_slot.MainSlot, eq->from_slot.SubSlot, eq->to_slot.SubSlot, eq->from_slot.AugSlot, eq->to_slot.AugSlot, eq->from_slot.Unknown01, eq->to_slot.Unknown01, eq->number_in_stack);
 	emu->from_slot = RoFToTitaniumSlot(eq->from_slot);
 	emu->to_slot = RoFToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);

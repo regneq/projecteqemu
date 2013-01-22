@@ -882,56 +882,49 @@ void Corpse::AllowMobLoot(Mob *them, uint8 slot)
 void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* app) {
 	// Added 12/08.  Started compressing loot struct on live.
 	char tmp[10];
-	if(p_depop)
-	{
+	if(p_depop) {
 		SendLootReqErrorPacket(client, 0);
 		return;
 	}
 
-	if (IsPlayerCorpse() && dbid == 0) {
-//		SendLootReqErrorPacket(client, 0);
+	if(IsPlayerCorpse() && dbid == 0) {
+		// SendLootReqErrorPacket(client, 0);
 		client->Message(13, "Warning: Corpse's dbid = 0! Corpse will not survive zone shutdown!");
 		cout << "Error: PlayerCorpse::MakeLootRequestPackets: dbid = 0!" << endl;
-//		return;
+		// return;
 	}
-	if (pLocked && client->Admin() < 100) {
+
+	if(pLocked && client->Admin() < 100) {
 		SendLootReqErrorPacket(client, 0);
 		client->Message(13, "Error: Corpse locked by GM.");
 		return;
 	}
-	if(BeingLootedBy == 0)
-		BeingLootedBy = 0xFFFFFFFF;
-	if (this->BeingLootedBy != 0xFFFFFFFF) {
+
+	if(BeingLootedBy == 0) { BeingLootedBy = 0xFFFFFFFF; }
+
+	if(this->BeingLootedBy != 0xFFFFFFFF) {
 		// lets double check....
 		Entity* looter = entity_list.GetID(this->BeingLootedBy);
-		if (looter == 0)
-			this->BeingLootedBy = 0xFFFFFFFF;
+		if(looter == 0) { this->BeingLootedBy = 0xFFFFFFFF; }
 	}
+
 	uint8 tCanLoot = 1;
-	bool lootcoin=false;
-	if(database.GetVariable("LootCoin",tmp, 9))
-		lootcoin=(atoi(tmp)==1);
-	if (this->BeingLootedBy != 0xFFFFFFFF && this->BeingLootedBy != client->GetID()) {
+	bool lootcoin  = false;
+	if(database.GetVariable("LootCoin", tmp, 9)) { lootcoin = (atoi(tmp) == 1); }
+
+	if(this->BeingLootedBy != 0xFFFFFFFF && this->BeingLootedBy != client->GetID()) {
 		SendLootReqErrorPacket(client, 0);
 		tCanLoot = 0;
 	}
-	else if(IsPlayerCorpse() && charid == client->CharacterID())
-		tCanLoot = 2;
-	else if ((IsNPCCorpse() || become_npc) && CanMobLoot(client->CharacterID()))
-		tCanLoot = 2;
-	else if(GetPKItem()==-1 && CanMobLoot(client->CharacterID()))
-		tCanLoot = 3; //pvp loot all items, variable cash
-	else if(GetPKItem()==1 && CanMobLoot(client->CharacterID()))
-		tCanLoot = 4; //pvp loot 1 item, variable cash
-	else if(GetPKItem()>1 && CanMobLoot(client->CharacterID()))
-		tCanLoot = 5; //pvp loot 1 set item, variable cash
-	if(tCanLoot == 1){
-		if (client->Admin() < 100 || !client->GetGM()) {
-			SendLootReqErrorPacket(client, 2);
-		}
-	}
-	if (tCanLoot >= 2 || (tCanLoot == 1 && client->Admin() >= 100 && client->GetGM()))
-	{
+	else if(IsPlayerCorpse() && charid == client->CharacterID()) { tCanLoot = 2; }
+	else if((IsNPCCorpse() || become_npc) && CanMobLoot(client->CharacterID())) { tCanLoot = 2; }
+	else if(GetPKItem() == -1 && CanMobLoot(client->CharacterID())) { tCanLoot = 3; } //pvp loot all items, variable cash
+	else if(GetPKItem() == 1 && CanMobLoot(client->CharacterID())) { tCanLoot = 4; } //pvp loot 1 item, variable cash
+	else if(GetPKItem() > 1 && CanMobLoot(client->CharacterID())) { tCanLoot = 5; } //pvp loot 1 set item, variable cash
+	
+	if(tCanLoot == 1) { if(client->Admin() < 100 || !client->GetGM()) { SendLootReqErrorPacket(client, 2); } }
+
+	if(tCanLoot >= 2 || (tCanLoot == 1 && client->Admin() >= 100 && client->GetGM())) {
 		this->BeingLootedBy = client->GetID();
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoneyOnCorpse, sizeof(moneyOnCorpseStruct));
 		moneyOnCorpseStruct* d = (moneyOnCorpseStruct*) outapp->pBuffer;
@@ -939,37 +932,30 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		d->response		= 1;
 		d->unknown1		= 0x42;
 		d->unknown2		= 0xef;
-		if (tCanLoot == 2 || (tCanLoot>=3 && lootcoin)) { // dont take the coin off if it's a gm peeking at the corpse
-			if (zone->lootvar!=0){
-				int admin=client->Admin();
-				if (zone->lootvar==7){
-						client->LogLoot(client,this,0);
+		if(tCanLoot == 2 || (tCanLoot >= 3 && lootcoin)) { // dont take the coin off if it's a gm peeking at the corpse
+			if(zone->lootvar != 0) {
+				int admin = client->Admin();
+				if(zone->lootvar == 7) { client->LogLoot(client, this, 0); }
+				else if((admin >= 10) && (admin < 20)) {
+					if((zone->lootvar < 8) && (zone->lootvar > 5)) { client->LogLoot(client, this, 0); }
 				}
-				else if ((admin>=10) && (admin<20)){
-					if ((zone->lootvar<8) && (zone->lootvar>5))
-						client->LogLoot(client,this,0);
+				else if(admin <= 20) {
+					if((zone->lootvar < 8) && (zone->lootvar > 4)) { client->LogLoot(client, this, 0); }
 				}
-				else if (admin<=20){
-					if ((zone->lootvar<8) && (zone->lootvar>4))
-						client->LogLoot(client,this,0);
+				else if(admin <= 80) {
+					if((zone->lootvar < 8) && (zone->lootvar > 3)) { client->LogLoot(client, this, 0); }
 				}
-				else if (admin<=80){
-					if ((zone->lootvar<8) && (zone->lootvar>3))
-						client->LogLoot(client,this,0);
+				else if(admin <= 100) {
+					if((zone->lootvar < 9) && (zone->lootvar > 2)) { client->LogLoot(client, this, 0); }
 				}
-				else if (admin<=100){
-					if ((zone->lootvar<9) && (zone->lootvar>2))
-						client->LogLoot(client,this,0);
+				else if(admin <= 150) {
+					if(((zone->lootvar < 8) && (zone->lootvar > 1)) || (zone->lootvar == 9)) { client->LogLoot(client, this, 0); }
 				}
-				else if (admin<=150){
-					if (((zone->lootvar<8) && (zone->lootvar>1)) || (zone->lootvar==9))
-						client->LogLoot(client,this,0);
-				}
-				else if (admin<=255){
-					if ((zone->lootvar<8) && (zone->lootvar>0))
-						client->LogLoot(client,this,0);	
+				else if (admin <= 255) {
+					if((zone->lootvar < 8) && (zone->lootvar > 0)) { client->LogLoot(client, this, 0); }
 				}
 			}
+
 			if(!IsPlayerCorpse() && client->IsGrouped() && client->AutoSplitEnabled() && client->GetGroup()) {
 				d->copper		= 0;
 				d->silver		= 0;
@@ -977,31 +963,33 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 				d->platinum		= 0;
 				Group *cgroup = client->GetGroup();
 				cgroup->SplitMoney(GetCopper(), GetSilver(), GetGold(), GetPlatinum(), client);
-			} else {
+			}
+			else {
 				d->copper		= this->GetCopper();
 				d->silver		= this->GetSilver();
 				d->gold			= this->GetGold();
 				d->platinum		= this->GetPlatinum();
-				client->AddMoneyToPP(GetCopper(),GetSilver(),GetGold(),GetPlatinum(),false);
+				client->AddMoneyToPP(GetCopper(), GetSilver(), GetGold(), GetPlatinum(), false);
 			}
+
 			RemoveCash();
 			Save();
 			client->Save();
 		}
+
 		outapp->priority = 6;
 		client->QueuePacket(outapp); 
 		safe_delete(outapp);
-		if(tCanLoot==5){
+		if(tCanLoot == 5) {
 			int pkitem = GetPKItem();
 			const Item_Struct* item = database.GetItem(pkitem);
 			ItemInst* inst = database.CreateItem(item, item->MaxCharges);
-			if (inst)
-			{
+			if(inst) {
 				client->SendItemPacket(22, inst, ItemPacketLoot);
 				safe_delete(inst);
 			}
-			else
-				client->Message(13,"Could not find item number %i to send!!",GetPKItem());
+			else { client->Message(13, "Could not find item number %i to send!!", GetPKItem()); }
+
 			client->QueuePacket(app);
 			return;
 		}
@@ -1011,56 +999,63 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		ItemList::iterator cur,end;
 		cur = itemlist.begin();
 		end = itemlist.end();
-
+		
 		uint8 containercount = 0;
 		int corpselootlimit;
-      
-		if (client->GetClientVersion() >= EQClientSoF) { corpselootlimit = 32; }
-		else if (client->GetClientVersion() == EQClientTitanium) { corpselootlimit = 31; }
+		
+		if(client->GetClientVersion() >= EQClientRoF) { corpselootlimit = 34; }
+		else if(client->GetClientVersion() >= EQClientSoF) { corpselootlimit = 32; }
+		else if(client->GetClientVersion() == EQClientTitanium) { corpselootlimit = 31; }
 		else { corpselootlimit = 30; }
-
+		
 		for(; cur != end; cur++) {
 			ServerLootItem_Struct* item_data = *cur;
 			item_data->lootslot = 0xFFFF;
-         
-         // Dont display the item if it's in a bag
-
-         // Added cursor queue slots to corpse item visibility list. Nothing else should be making it to corpse.
-         if(!IsPlayerCorpse() || item_data->equipSlot <= 30 || tCanLoot>=3 ||
-            (item_data->equipSlot >= 8000 && item_data->equipSlot <= 8999))
-			{
-            if (i < corpselootlimit) // < 30 (0 - 29)
-				{
+		
+			// Dont display the item if it's in a bag
+			
+			// Added cursor queue slots to corpse item visibility list. Nothing else should be making it to corpse.
+			if(!IsPlayerCorpse() || item_data->equipSlot <= 30 || item_data->equipSlot == 9999 || tCanLoot>=3 ||
+				(item_data->equipSlot >= 8000 && item_data->equipSlot <= 8999)) {
+				if(i < corpselootlimit) {
 					item = database.GetItem(item_data->item_id);
-					if (client && item)
-					{
+					if(client && item) {
 						ItemInst* inst = database.CreateItem(item, item_data->charges, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
-						if (inst)
-						{
-							client->SendItemPacket(i + 22, inst, ItemPacketLoot);
+						if(inst) {
+							client->SendItemPacket(i + 22, inst, ItemPacketLoot); // 22 is the corpse inventory start offset for Ti(EMu)
 							safe_delete(inst);
 						}
+
 						item_data->lootslot = i;
 					}
 				}
-            else if (i == corpselootlimit) // = 30
-            {
-               client->Message(13, "*** This corpse contains more items than can be displayed! ***");
-               client->Message(0, "Remove items and re-loot corpse to access remaining inventory.");
-            }
+
 				i++;
 			}
 		}
-      if (i > corpselootlimit) // > 30 (remember 'i' is increased again after the last iteration, so no '=')
-         client->Message(0, "(%s contains %i additional %s.)", GetName(), (i-corpselootlimit), (i-corpselootlimit)==1?"item":"items");
 
-      if (IsPlayerCorpse() && i == 0 && itemlist.size() > 0) { // somehow, corpse contains items, but client doesn't see them...
-         client->Message(13, "This corpse contains items that you do not have permission to access!");
-         client->Message(0, "Contact a GM for assistance to see if item replacement is necessary.");
-         client->Message(0, "BUGGED CORPSE [DBID: %i, Name: %s, Item Count: %i]", GetDBID(), GetName(), itemlist.size());
-         // if needed/wanted - create log dump->iterate corpse list..need pointer to log file
-         // could add code to check for owning client and give list of bugged items on corpse
-      }
+		if(IsPlayerCorpse() && (charid == client->CharacterID() || client->GetGM())) {
+			if(i > corpselootlimit) {
+				client->Message(15, "*** This corpse contains more items than can be displayed! ***");
+				client->Message(0, "Remove items and re-loot corpse to access remaining inventory.");
+				client->Message(0, "(%s contains %i additional %s.)", GetName(), (i - corpselootlimit), (i - corpselootlimit) == 1 ? "item" : "items");
+			}
+			
+			if(IsPlayerCorpse() && i == 0 && itemlist.size() > 0) { // somehow, player corpse contains items, but client doesn't see them...
+				client->Message(13, "This corpse contains items that are inaccessable!");
+				client->Message(15, "Contact a GM for item replacement, if necessary.");
+				client->Message(15, "BUGGED CORPSE [DBID: %i, Name: %s, Item Count: %i]", GetDBID(), GetName(), itemlist.size());
+				
+				cur = itemlist.begin();
+				end = itemlist.end();
+				for(; cur != end; cur++) {
+					ServerLootItem_Struct* item_data = *cur;
+					item = database.GetItem(item_data->item_id);
+					LogFile->write(EQEMuLog::Debug, "Corpse Looting: %s was not sent to client loot window (corpse_dbid: %i, charname: %s(%s))", item->Name, GetDBID(), client->GetName(), client->GetGM() ? "GM" : "Owner");
+					client->Message(0, "Inaccessable Corpse Item: %s", item->Name);
+				}
+			}
+		}
 	}
 	
 	// Disgrace: Client seems to require that we send the packet back...
@@ -1068,8 +1063,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 
 	// This is required for the 'Loot All' feature to work for SoD clients. I expect it is to tell the client that the
 	// server has now sent all the items on the corpse.
-	if(client->GetClientVersion() >= EQClientSoD)
-		SendLootReqErrorPacket(client, 6);
+	if(client->GetClientVersion() >= EQClientSoD) { SendLootReqErrorPacket(client, 6); }
 }
 
 void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
