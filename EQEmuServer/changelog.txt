@@ -4,6 +4,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Akkadius: Should have fixed some scenarios where the global_npc.pl script wasn't unloading correctly
 Trevius: RoF: Alternate Currencies now display correctly in the inventory window.
 Trevius: Changed one of the mercenary data packets to use the same packet Live does instead of the Merchant packet.
+Uleat: RoF: Aligned the extended client slots back into slottype 0. Previously, corpse looting stopped after looting the ninth slot. (There's still an issue addressing slots 31 and 32..this cannot be efficiently corrected until an inventory rework is performed.)
+Uleat: Fixed a corpse looting issue where the power source item (slot 9999) was being omitted from the corpse inventory. A previous oversight on my part. Also refined message reporting. (RoF: increased corpse slot limit to 34)
+Uleat: Power Source items will now report in 'worn' instead of 'inv' when using #peekinv.
 
 == 01/20/2013 ==
 KLS: intN types have changed to more closely reflect C99 and C++11 types: 

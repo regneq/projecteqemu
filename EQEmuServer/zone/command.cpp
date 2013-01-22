@@ -3074,6 +3074,16 @@ void command_peekinv(Client *c, const Seperator *sep)
 					((item==0)?0:inst->GetCharges()));
 			}
 		}
+
+		if(c->GetClientVersion() >= EQClientSoF)
+		{
+			const ItemInst* inst = client->GetInv().GetItem(9999);
+			item = (inst) ? inst->GetItem() : NULL;
+			c->Message((item==0), "WornSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", 9999,
+			((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+			((item==0)?"null":item->Name), 0x12,
+			((item==0)?0:inst->GetCharges()));
+		}
 	}
 	if (bAll || (strcasecmp(sep->arg[1], "inv")==0)) {
 		// Personal inventory items
@@ -3118,15 +3128,6 @@ void command_peekinv(Client *c, const Seperator *sep)
 					}
 				}
 			}
-		}
-		if(c->GetClientVersion() >= EQClientSoF)
-		{
-			const ItemInst* inst = client->GetInv().GetItem(9999);
-			item = (inst) ? inst->GetItem() : NULL;
-			c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c), Charges: %i", 9999,
-			((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
-			((item==0)?"null":item->Name), 0x12,
-			((item==0)?0:inst->GetCharges()));
 		}
 	}
 
