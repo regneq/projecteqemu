@@ -4255,8 +4255,7 @@ struct ExpansionInfo_Struct {
 };
 
 struct ApplyPoison_Struct {
-	//uint32 inventorySlot;
-	ItemSlotStruct inventorySlot;
+	MainInvItemSlotStruct inventorySlot;
 	uint32 success;
 };
 
