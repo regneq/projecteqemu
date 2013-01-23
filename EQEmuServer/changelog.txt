@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/23/2013 ==
+Trevius: RoF: Corrected multiple opcodes.
+Trevius: RoF: Apply Poison is now functional.
+Trevius: RoF: /getguildmotd is working.
+Trevius: RoF: GM commands /changename, /summon, /emotezone, and /emoteworld are working.
+Trevius: RoF: Sense Traps is now working.
+Trevius: RoF: Potion Belt is now functional.
+
+
 == 01/21/2013 ==
 Akkadius: Should have fixed some scenarios where the global_npc.pl script wasn't unloading correctly
 Trevius: RoF: Alternate Currencies now display correctly in the inventory window.

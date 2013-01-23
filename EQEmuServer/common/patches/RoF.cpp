@@ -2798,7 +2798,7 @@ ENCODE(OP_ShopPlayerSell) {
 ENCODE(OP_ApplyPoison) {
 	ENCODE_LENGTH_EXACT(ApplyPoison_Struct);
 	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
-	eq->inventorySlot = TitaniumToRoFSlot(emu->inventorySlot);
+	eq->inventorySlot = MainInvTitaniumToRoFSlot(emu->inventorySlot);
 	OUT(success);
 	FINISH_ENCODE();
 }
@@ -4098,7 +4098,7 @@ DECODE(OP_ApplyPoison) {
 	DECODE_LENGTH_EXACT(structs::ApplyPoison_Struct);
 	SETUP_DIRECT_DECODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
 
-	emu->inventorySlot = RoFToTitaniumSlot(eq->inventorySlot);
+	emu->inventorySlot = MainInvRoFToTitaniumSlot(eq->inventorySlot);
 	IN(success);
 
 	FINISH_DIRECT_DECODE();
