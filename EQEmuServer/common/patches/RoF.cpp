@@ -3123,6 +3123,10 @@ ENCODE(OP_WhoAllResponse)
 
 	char *OutBuffer = (char *)outapp->pBuffer;
 
+	// The struct fields were moved around a bit, so adjust values before copying
+	wars->unknown44[0] = Count;
+	wars->unknown52 = 0;
+
 	memcpy(OutBuffer, InBuffer, sizeof(WhoAllReturnStruct));
 
 	OutBuffer += sizeof(WhoAllReturnStruct);
@@ -3133,7 +3137,6 @@ ENCODE(OP_WhoAllResponse)
 		uint32 x;
 
 		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
-
 		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
 
 		InBuffer += 4;
