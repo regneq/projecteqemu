@@ -1624,7 +1624,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 // only used from CastedSpellFinished, and procs
 // we can't interrupt in this, or anything called from this!
 // if you need to abort the casting, return false
-bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, uint16 slot, 
+bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, bool isproc, uint16 slot, 
 						uint16 mana_used, uint32 inventory_slot, int16 resist_adjust)
 {
 	_ZP(Mob_SpellFinished);
@@ -1774,8 +1774,11 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, uint16 slot,
 				mlog(SPELLS__CASTING, "Spell %d: Targeted spell, but we have no target", spell_id);
 				return(false);
 			}
-			SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
-
+			if (isproc) {
+				SpellOnTarget(spell_id, spell_target, true, false, true, resist_adjust);
+			} else {
+				SpellOnTarget(spell_id, spell_target, false, false, true, resist_adjust);
+			}
 			if(IsPlayerIllusionSpell(spell_id)
 			&& IsClient()
 			&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
@@ -1812,7 +1815,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, uint16 slot,
 				if(spell_target)	// this must be an AETarget spell
 				{
 					// affect the target too
-					SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
+					SpellOnTarget(spell_id, spell_target, false, false, true, resist_adjust);
 				}
 				if(ae_center && ae_center == this && IsBeneficialSpell(spell_id))
 					SpellOnTarget(spell_id, this);
@@ -1932,7 +1935,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, uint16 slot,
 						(heading_to_target >= 0.0f && heading_to_target <= angle_end))
 					{
 						if(CheckLosFN(spell_target))
-							SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
+							SpellOnTarget(spell_id, spell_target, false,false, true, resist_adjust);
 					}
 				}
 				else
@@ -1940,7 +1943,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, uint16 slot,
 					if(heading_to_target >= angle_start && heading_to_target <= angle_end)
 					{
 						if(CheckLosFN((*iter)))
-							SpellOnTarget(spell_id, (*iter), false, true, resist_adjust);
+							SpellOnTarget(spell_id, (*iter), false, false, true, resist_adjust);
 					}
 				}
 				iter++;
@@ -2903,7 +2906,7 @@ int Mob::CanBuffStack(uint16 spellid, uint8 caster_level, bool iFailIfOverwrite)
 // and if you don't want effects just return false.  interrupting here will
 // break stuff
 //
-bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, int16 resist_adjust)
+bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar,bool isproc, bool reflect, bool use_resist_adjust, int16 resist_adjust)
 {
 
 	// well we can't cast a spell on target without a target
@@ -3248,7 +3251,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		}
 		if(reflect_chance) {
 			Message_StringID(MT_Spells, SPELL_REFLECT, GetCleanName(), spelltar->GetCleanName());
-			SpellOnTarget(spell_id, this, true, use_resist_adjust, resist_adjust);
+			SpellOnTarget(spell_id, this, false, true, use_resist_adjust, resist_adjust);
 			return false;
 		}
 	}
@@ -3411,6 +3414,11 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 
 	if (spelltar->IsAIControlled() && IsDetrimentalSpell(spell_id) && !IsHarmonySpell(spell_id)) {
 		int32 aggro_amount = CheckAggroAmount(spell_id);
+		if (isproc && IsEffectInSpell(spell_id, SE_Stun) && RuleI(Aggro,MaxStunProcAggro) > -1) {
+			if (aggro_amount > RuleI(Aggro,MaxStunProcAggro)) {
+				aggro_amount = RuleI(Aggro,MaxStunProcAggro);
+			}
+		}
 		mlog(SPELLS__CASTING, "Spell %d cast on %s generated %d hate", spell_id, spelltar->GetName(), aggro_amount);
 		if(aggro_amount > 0)
 			spelltar->AddToHateList(this, aggro_amount);
