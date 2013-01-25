@@ -2706,7 +2706,7 @@ ENCODE(OP_Action) {
 	OUT(source);
 	OUT(level);
 	eq->unknown06 = 0;
-	eq->instrument_mod = emu->instrument_mod;
+	eq->instrument_mod = 1.0f + (emu->instrument_mod - 10) / 10.0f;
 	eq->bard_focus_id = emu->bard_focus_id;
 	eq->knockback_angle = emu->sequence;
 	eq->unknown22 = 0;
