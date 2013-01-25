@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==01/25/2013==
+Derision: Updated .conf files for RoF and current live client (Thanks Trevius).
+
 ==01/18/2013==
 Derision: Added support for January 16 2013 client (with help from posts on the SEQ boards).
 

@@ -1065,13 +1065,13 @@ namespace EQExtractor2.Patches
 
             OutputStream.WriteLine("{0, -5}: Expansion Count {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
-            OutputStream.WriteLine("{0, -5}: Unknown {1}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
+            OutputStream.WriteLine("{0, -5}: Unknown {1:X}", Buffer.GetPosition(), Buffer.ReadUInt32());
 
             UInt32 NameLength = Buffer.ReadUInt32();
             OutputStream.WriteLine("{0, -5}: Name Length: {1}", Buffer.GetPosition() - 4, NameLength);
@@ -1423,7 +1423,12 @@ namespace EQExtractor2.Patches
 
             OutputStream.WriteLine("Size: {0}, Face: {1}, Walkspeed: {2}, RunSpeed: {3}, Race: {4}", Size, Face, WalkSpeed, RunSpeed, Race);
 
-            Buffer.SkipBytes(18);
+            //Buffer.SkipBytes(18);
+            Buffer.SkipBytes(5);
+            UInt32 GuildID = Buffer.ReadUInt32();
+            UInt32 GuildRank = Buffer.ReadUInt32();
+            Buffer.SkipBytes(5);
+            OutputStream.WriteLine("GuildID: {0}, Guild Rank: {1}", GuildID, GuildRank);
 
             Buffer.ReadString(false);
 
