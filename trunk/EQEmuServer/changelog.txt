@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/25/2013 ==
+Sorvani: Implemented max aggro from stun proc set to 400. It is rule based set rule to -1 for unlimited.
+
 == 01/24/2013 ==
 Trevius: RoF: The #fixmob command can now go up to race 724 when cycling through races.
 Trevius: RoF: The #npcstats command no longer truncates itemlinks.
