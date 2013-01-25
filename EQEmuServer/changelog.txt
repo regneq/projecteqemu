@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/24/2013 ==
+Trevius: RoF: The #fixmob command can now go up to race 724 when cycling through races.
+Trevius: RoF: The #npcstats command no longer truncates itemlinks.
+
 == 01/23/2013 ==
 Trevius: RoF: Corrected multiple opcodes.
 Trevius: RoF: Apply Poison is now functional.
@@ -8,7 +12,6 @@ Trevius: RoF: GM commands /changename, /summon, /emotezone, and /emoteworld are 
 Trevius: RoF: Sense Traps is now working.
 Trevius: RoF: Potion Belt is now functional.
 Trevius: RoF: /who and /who all now display the correct player counts.
-
 
 == 01/21/2013 ==
 Akkadius: Should have fixed some scenarios where the global_npc.pl script wasn't unloading correctly
