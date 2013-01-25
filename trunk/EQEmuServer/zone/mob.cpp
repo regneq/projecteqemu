@@ -2777,14 +2777,14 @@ void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 			twinproc = true;
 			
 		if (IsBeneficialSpell(spell_id)) {
-			SpellFinished(spell_id, this, 10, 0, -1, spells[spell_id].ResistDiff);
+			SpellFinished(spell_id, this, true, 10, 0, -1, spells[spell_id].ResistDiff);
 			if(twinproc)
-				SpellOnTarget(spell_id, this);
+				SpellOnTarget(spell_id, this, true);
 		}
 		else if(!(on->IsClient() && on->CastToClient()->dead)) { //dont proc on dead clients
-			SpellFinished(spell_id, on, 10, 0, -1, spells[spell_id].ResistDiff);
+			SpellFinished(spell_id, on, true, 10, 0, -1, spells[spell_id].ResistDiff);
 			if(twinproc)
-				SpellOnTarget(spell_id, on);
+				SpellOnTarget(spell_id, on, true);
 		}
 	return;
 }
