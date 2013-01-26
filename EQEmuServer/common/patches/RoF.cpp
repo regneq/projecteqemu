@@ -2152,6 +2152,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 	for(r = 0; r < emu->MercCount; r++)
 	{
 		PacketSize += sizeof(structs::MercenaryStance_Struct) * emu->MercData[r].StanceCount;
+		PacketSize += strlen(emu->MercData[r].MercName);	// Null Terminator size already accounted for in the struct
 	}
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataUpdate, PacketSize);
@@ -2178,7 +2179,8 @@ ENCODE(OP_MercenaryDataUpdate) {
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].StanceCount);
 		VARSTRUCT_ENCODE_TYPE(int32, Buffer, emu->MercData[r].MercUnk03);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->MercData[r].MercUnk04);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// MercName
+		//VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// MercName
+		VARSTRUCT_ENCODE_STRING(Buffer,emu->MercData[r].MercName);
 		for(k = 0; k < emu->MercData[r].StanceCount; k++)
 		{
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);

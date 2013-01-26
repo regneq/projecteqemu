@@ -1364,7 +1364,7 @@ ENCODE(OP_MercenaryDataUpdate) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].StanceIndex);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].Stances[k].Stance);
 		}
-		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
+		//VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->MercData[r].MercUnk05);
 	}
 
 	dest->FastQueuePacket(&outapp, ack_req);
