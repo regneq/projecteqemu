@@ -5,8 +5,40 @@
 #include "npc.h"
 using namespace std;
 
-#define MERC_DEBUG 0
+#define MERC_DEBUG 1
+#define TANK		1
+#define HEALER      2
+#define MELEEDPS	9
+#define CASTERDPS   12
 const int MercAISpellRange = 100; // TODO: Write a method that calcs what the merc's spell range is based on spell, equipment, AA, whatever and replace this
+
+typedef enum MercStanceType {
+	MercStancePassive = 1,
+	MercStanceBalanced,
+	MercStanceEfficient,
+	MercStanceReactive,
+	MercStanceAggressive,
+	MercStanceAssist,
+	MercStanceBurn,
+	MercStanceEfficient2,
+	MercStanceBurnAE
+};
+
+struct MercSpell {
+	uint16	spellid;		// <= 0 = no spell
+	uint16	type;			// 0 = never, must be one (and only one) of the defined values
+	int16	stance;			// 0 = all, + = only this stance, - = all except this stance
+	int16	slot;
+	uint16  proc_chance;
+	uint32	time_cancast;	// when we can cast this spell next
+};
+
+struct MercTimer {
+	uint16	timerid;		// EndurTimerIndex
+	uint8	timertype;		// 1 = spell, 2 = disc
+	uint16	spellid;		// <= 0 = no spell
+	uint32	time_cancast;	// when we can cast this spell next
+};
 
 class Merc : public NPC {
 public:
@@ -23,8 +55,16 @@ public:
 	virtual Group* GetGroup() { return entity_list.GetGroupByMob(this); }
 
 	// Mob AI Virtual Override Methods
+	virtual void AI_Start(int32 iMoveDelay = 0);
 	virtual void AI_Stop();
 	virtual void AI_Process();
+
+	//virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
+	virtual bool AICastSpell(int8 iChance, int16 iSpellTypes);
+	virtual bool AIDoSpellCast(uint16 spellid, Mob* tar, int32 mana_cost, uint32* oDontDoAgainBefore = 0);
+	virtual bool AI_EngagedCastCheck();
+	//virtual bool AI_PursueCastCheck();
+	virtual bool AI_IdleCastCheck();
 
 	virtual bool Process();
 
@@ -32,6 +72,35 @@ public:
 	static bool AddMercToGroup(Merc* merc, Group* group);
 	static bool RemoveMercFromGroup(Merc* merc, Group* group);
 	void ProcessClientZoneChange(Client* mercOwner);
+	static void MercGroupSay(Mob *speaker, const char *msg, ...);
+
+	// Merc Spell Casting Methods
+	int8 GetChanceToCastBySpellType(int16 spellType);
+	void SetSpellRecastTimer(uint16 timer_id, uint16 spellid, uint32 recast_delay);
+	void SetDisciplineRecastTimer(uint16 timer_id, uint16 spellid, uint32 recast_delay);
+	static int32 GetSpellRecastTimer(Merc *caster, uint16 timer_id);
+	static bool CheckSpellRecastTimers(Merc *caster, uint16 spellid);
+	static int32 GetDisciplineRecastTimer(Merc *caster, uint16 timer_id);
+	static bool CheckDisciplineRecastTimers(Merc *caster, uint16 spellid);
+	static int32 GetDisciplineRemainingTime(Merc *caster, uint16 timer_id);
+	static std::list<MercSpell> GetMercSpellsForSpellEffect(Merc* caster, int spellEffect);
+	static std::list<MercSpell> GetMercSpellsForSpellEffectAndTargetType(Merc* caster, int spellEffect, SpellTargetType targetType);
+	static std::list<MercSpell> GetMercSpellsBySpellType(Merc* caster, int spellType);
+	static MercSpell GetFirstMercSpellBySpellType(Merc* caster, int spellType);
+	static MercSpell GetFirstMercSpellForSingleTargetHeal(Merc* caster);
+	static MercSpell GetMercSpellBySpellID(Merc* caster, uint16 spellid);
+	static MercSpell GetBestMercSpellForVeryFastHeal(Merc* caster);
+	static MercSpell GetBestMercSpellForFastHeal(Merc* caster);
+	static MercSpell GetBestMercSpellForHealOverTime(Merc* caster);
+	static MercSpell GetBestMercSpellForPercentageHeal(Merc* caster);
+	static MercSpell GetBestMercSpellForRegularSingleTargetHeal(Merc* caster);
+	static MercSpell GetBestMercSpellForGroupHealOverTime(Merc* caster);
+	static MercSpell GetBestMercSpellForGroupCompleteHeal(Merc* caster);
+	static MercSpell GetBestMercSpellForGroupHeal(Merc* caster);
+	static MercSpell GetBestMercSpellForAETaunt(Merc* caster);
+	static MercSpell GetBestMercSpellForTaunt(Merc* caster);
+	static MercSpell GetBestMercSpellForHate(Merc* caster);
+	bool UseDiscipline(int32 spell_id, int32 target);
 
 	virtual bool IsMerc() const { return true; }
 
@@ -67,6 +136,8 @@ public:
 	uint32 GetProficiencyID() { return _ProficiencyID; }
 	uint32 GetCostFormula() { return _CostFormula; }
 	uint32 GetMercNameType() { return _NameType; }
+	uint32 GetStance() { return _currentStance; }
+
 	inline const uint8 GetClientVersion() const { return _OwnerClientVersion; }
 
 	virtual void SetTarget(Mob* mob);
@@ -74,11 +145,14 @@ public:
 	bool	CanHaveSkill(SkillType skill_id) const;
 	uint16	MaxSkill(SkillType skillid, uint16 class_, uint16 level) const;
 	inline	uint16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
+	virtual void DoClassAttacks(Mob *target);
+	bool	CheckTaunt();
+	bool	CheckAETaunt();
 
 	// stat functions
 	virtual void CalcBonuses();
 	inline virtual int16	GetAC()		const { return AC; }
-	inline virtual int16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
+	inline virtual int16 GetATK() const { return ATK; }
 	inline virtual int16 GetATKBonus() const { return itembonuses.ATK + spellbonuses.ATK; }
 	int GetRawACNoShield(int &shield_ac) const;
 
@@ -124,13 +198,13 @@ public:
 	inline virtual int16	GetSpellDmg()		const { return itembonuses.SpellDmg; }
 	inline virtual int16	GetClair()			const { return itembonuses.Clairvoyance; }
 	inline virtual int16	GetDSMit()			const { return itembonuses.DSMitigation; }
-	
+
 	inline virtual int16	GetSingMod()		const { return itembonuses.singingMod; }
 	inline virtual int16	GetBrassMod()		const { return itembonuses.brassMod; }
 	inline virtual int16	GetPercMod()		const { return itembonuses.percussionMod; }
 	inline virtual int16	GetStringMod()		const { return itembonuses.stringedMod; }
 	inline virtual int16	GetWindMod()		const { return itembonuses.windMod; }
-	
+
 	inline virtual int16	GetDelayDeath()		const { return aabonuses.DelayDeath + spellbonuses.DelayDeath + itembonuses.DelayDeath + 11; }
 
 	// "SET" Class Methods
@@ -145,6 +219,7 @@ public:
 	void SetMercNameType( uint8 nametype ) { _NameType = nametype; }
 	void SetClientVersion(uint8 clientVersion) { _OwnerClientVersion = clientVersion; }
 	void SetSuspended(bool suspended) { _suspended = suspended; }
+	void SetStance( uint32 stance ) { _currentStance = stance; }
 
 	void Sit();
 	void Stand();
@@ -162,6 +237,9 @@ protected:
 	void CalcItemBonuses(StatBonuses* newbon);
 	void AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAug = false, bool isTribute = false);
 	int  CalcRecommendedLevelBonus(uint8 level, uint8 reclevel, int basestat);
+
+	std::vector<MercSpell> merc_spells;
+	std::map<uint32,MercTimer> timers;
 
 	uint16   skills[HIGHEST_SKILL+1];
 	uint32   equipment[MAX_WORN_INVENTORY];	//this is an array of item IDs
@@ -196,7 +274,6 @@ private:
 	int32	CalcMaxHP();
 	int32	CalcBaseHP();
 	int32	GetClassHPFactor();
-	int32	LevelRegen();
 	int32	CalcHPRegen();
 	int32	CalcHPRegenCap();
 	int32	CalcMaxMana();
@@ -212,6 +289,7 @@ private:
 	int32	CalcEnduranceRegenCap();
 	void	SetEndurance(int32 newEnd);	//This sets the current endurance to the new value
 	void	DoEnduranceUpkeep();	//does the endurance upkeep
+	void	CalcRestState();
 
 	int 	GroupLeadershipAAHealthEnhancement();
 	int 	GroupLeadershipAAManaEnhancement();
@@ -221,25 +299,32 @@ private:
 	void GenerateBaseStats();
 	void GenerateAppearance();
 
+	bool LoadMercSpells();
+	bool CheckStance(int16 stance);
+	std::vector<MercSpell> GetMercSpells() { return merc_spells; }
+
 	// Private "base stats" Members
 	int32 base_mana;
 	int _baseAC;
-	int16 _baseSTR;
-	int16 _baseSTA;
-	int16 _baseDEX;
-	int16 _baseAGI;
-	int16 _baseINT;
-	int16 _baseWIS;
-	int16 _baseCHA;
-	int16 _baseATK;
+	uint16 _baseSTR;
+	uint16 _baseSTA;
+	uint16 _baseDEX;
+	uint16 _baseAGI;
+	uint16 _baseINT;
+	uint16 _baseWIS;
+	uint16 _baseCHA;
+	uint16 _baseATK;
 	uint16 _baseRace;	// Necessary to preserve the race otherwise mercs get their race updated in the db when they get an illusion.
 	uint8 _baseGender;	// Merc gender. Necessary to preserve the original value otherwise it can be changed by illusions.
-	int16 _baseMR;
-	int16 _baseCR;
-	int16 _baseDR;
-	int16 _baseFR;
-	int16 _basePR;
-	int16 _baseCorrup;
+	uint16 _baseMR;
+	uint16 _baseCR;
+	uint16 _baseDR;
+	uint16 _baseFR;
+	uint16 _basePR;
+	uint16 _baseCorrup;
+	uint32 RestRegenHP;
+	uint32 RestRegenMana;
+	uint32 RestRegenEndurance;
 
 	uint32 _MercID;
 	uint32 _MercTemplateID;
@@ -249,6 +334,7 @@ private:
 	uint8 _CostFormula;
 	uint8 _NameType;
 	uint8 _OwnerClientVersion;
+	uint32 _currentStance;
 
 	Inventory m_inv;
 	int32	max_end;
@@ -260,6 +346,7 @@ private:
 	const NPCType*	ourNPCData;
 
 	Timer	endupkeep_timer;
+	Timer	rest_timer;
 };
 
 #endif // MERC_H

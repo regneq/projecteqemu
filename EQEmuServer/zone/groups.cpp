@@ -1958,6 +1958,27 @@ void Group::ClearAllNPCMarks()
 
 }
 
+int8 Group::GetNumberNeedingHealedInGroup(int8 hpr, bool includePets) {
+	int8 needHealed = 0;
+	
+	for( int i = 0; i<MAX_GROUP_MEMBERS; i++) {
+		if(members[i] && !members[i]->qglobal) {
+
+			if(members[i]->GetHPRatio() <= hpr) 
+				needHealed++;
+
+			if(includePets) {
+				if(members[i]->GetPet() && members[i]->GetPet()->GetHPRatio() <= hpr) {
+					needHealed++;
+				}
+			}
+		}
+	}	
+
+
+	return needHealed;
+}
+
 void Group::UpdateGroupAAs()
 {
 	// This method updates the Groups Leadership abilities from the Player Profile of the Leader.
