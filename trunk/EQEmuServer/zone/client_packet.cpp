@@ -13596,36 +13596,22 @@ void Client::Handle_OP_MercenaryHire(const EQApplicationPacket *app)
 	MercTemplate* merc_template = zone->GetMercTemplate(merc_template_id);
 
 	if(merc_template) {
-		uint32 ResponseType = GetMercID() ? 9 : 0;
-		
-		// This response packet brings up the Mercenary Manager window
-		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryHire, sizeof(MercenaryMerchantResponse_Struct));
-		MercenaryMerchantResponse_Struct* mmr = (MercenaryMerchantResponse_Struct*)outapp->pBuffer;
-		mmr->ResponseType = ResponseType;		// Seen 0 for hire response, 6 for info response, and 9 for denied hire request
-		FastQueuePacket(&outapp);
 
-		// Unknown Mercenary-Related Packet
-		outapp = new EQApplicationPacket(OP_MercenaryUnknown1, 1);
+		if (GetMercID()) {
+			// 6 - You must dismiss the mercenary before hiring a new one.
+			SendMercMerchantResponsePacket(6);	
+		}
+		else
+		{
+			// 0 is approved hire request
+			SendMercMerchantResponsePacket(0);
 
-		char *Buffer = (char *)outapp->pBuffer;
-
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);
-
-		DumpPacket(outapp);
-		FastQueuePacket(&outapp);
-
-		if(!GetMercID()) {
+			// Set time remaining to max on Hire
+			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
 
 			// Get merc, assign it to client & spawn
 			Merc* merc = Merc::LoadMerc(this, merc_template, merchant_id);
-			if(merc) {
-				merc->Spawn(this);
-				merc->SetSuspended(false);
-				SetMerc(merc);
-				merc->Unsuspend();
-				if(!p_timers.Expired(&database, pTimerMercSuspend, false)) 
-					p_timers.Clear(&database, pTimerMercSuspend);
-			}
+			SpawnMerc(merc);
 		}
 	}
 
@@ -13664,7 +13650,7 @@ void Client::Handle_OP_MercenaryCommand(const EQApplicationPacket *app)
 	}
 
 	MercenaryCommand_Struct* mc = (MercenaryCommand_Struct*) app->pBuffer;
-	uint32 merc_command = mc->MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 36 (zone in with merc)
+	uint32 merc_command = mc->MercCommand;	// Seen 0 (zone in with no merc or suspended), 1 (dismiss merc), 5 (normal state), 20 (unknown), 36 (zone in with merc)
 	int32 option = mc->Option;	// Seen -1 (zone in with no merc), 0 (setting to passive stance), 1 (normal or setting to balanced stance)
 
 	if(option >= 0)
@@ -13718,7 +13704,7 @@ void Client::Handle_OP_MercenaryDismiss(const EQApplicationPacket *app)
 	DumpPacket(app);
 
 	uint8 Command = 0;
-	if(app->size > 1)
+	if(app->size > 0)
 	{
 		char *InBuffer = (char *)app->pBuffer;
 		Command = VARSTRUCT_DECODE_TYPE(uint8, InBuffer);
@@ -13776,7 +13762,8 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 			}
 	
 			// Send Mercenary Status/Timer packet
-			SendMercTimerPacket(entityID, mercState, suspendedTime, GetEPP().mercSuspendedTime, p_timers.GetRemainingTime(pTimerMercSuspend));
+			// SendMercTimerPacket(entityID, mercState, suspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend));
+			SendMercTimerPacket(entityID, mercState, suspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 		}
 	}
 }
