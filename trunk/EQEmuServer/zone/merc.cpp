@@ -3850,13 +3850,38 @@ void Client::UpdateMercTimer()
 
 	if(merc && !merc->IsSuspended())
 	{		
-		if(merc_timer.Check())
+		if(GetMercTimer().Check())
 		{
 			uint32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
-			//TakeMoneyFromPP(upkeep, true);
-			SendMercTimerPacket(GetMercID(), 5, GetEPP().mercSuspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+			//TakeMoneyFromPP((upkeep * 100), true);	// Upkeep is in gold
 			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
-			merc_timer.Start(GetEPP().mercTimerRemaining);
+			SendMercTimerPacket(GetMercID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
+			//merc_timer.Start(GetEPP().mercTimerRemaining);
+			GetMercTimer().Start(GetEPP().mercTimerRemaining);
+
+			// Send upkeep charge message and reset the upkeep timer
+			if (GetClientVersion() < EQClientRoF)
+				SendMercMerchantResponsePacket(10);
+			else
+				SendMercMerchantResponsePacket(11);
+
+			/*
+			uint32 upkeep_plat = 0;
+			uint32 upkeep_gold = 0;
+
+			if (upkeep >= 10)
+				upkeep_plat = (int)(upkeep / 10);
+
+			if (upkeep - (upkeep_plat * 10) >= 1)
+				upkeep_gold = (int)((upkeep - (upkeep_plat * 10)) / 100);
+			*/
+
+			// Normal upkeep charge message
+			//Message(7, "You have been charged a mercenary upkeep cost of %i plat, and %i gold and your mercenary upkeep cost timer has been reset to 15 minutes.", upkeep_plat, upkeep_gold, (int)(RuleI(Mercs, UpkeepIntervalMS) / 1000 / 60));
+
+			// Message below given when too low level to be charged
+			// Temporarily enabled for all upkeep costs until mercenary stuff is completed
+			//Message(7, "Your mercenary waived an upkeep cost of %i plat, and %i gold or %i %s and your mercenary upkeep cost timer has been reset to %i minutes", upkeep_plat, upkeep_gold, 1, "Bayle Marks", (int)(RuleI(Mercs, UpkeepIntervalMS) / 1000 / 60));
 		}
 	}
 }
@@ -3881,7 +3906,7 @@ void Client::SuspendMercCommand()
 				//p_timers.Enable(pTimerMercReuse);
 
 				// Set time remaining to max on unsuspend - there is a charge for unsuspending as well
-				GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
+				// GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
 
 				// Get merc, assign it to client & spawn
 				Merc* merc = Merc::LoadMerc(this, &zone->merc_templates[GetEPP().mercTemplateID], 0);

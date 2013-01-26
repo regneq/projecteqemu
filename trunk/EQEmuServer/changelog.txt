@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: RoF: Updated spell buffs in the PP to account for instrument_mod/bard_modifier.
 Sorvani: Missed a spot on the stun proc aggro change.
 Trevius: Fixed Mercenary Upkeep Timers and Stances again for UF and SoD.
+Trevius: Fixed Mercenary Upkeep Timers to properly restart after the timer is up for all clients.
 Bad_Captain: Mercs - Initial spell casting AI committed.
 KLS: Added crash logging for Windows builds.
 
