@@ -3380,6 +3380,10 @@ void Client::Handle_OP_Logout(const EQApplicationPacket *app)
 	//we will save when we get destroyed soon anyhow
 	//Save();
 
+	// Depop merc when logging out
+	if (GetMerc())
+		GetMerc()->Depop();
+
 	SendLogoutPackets();
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LogoutReply);

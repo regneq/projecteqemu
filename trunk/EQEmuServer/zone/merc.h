@@ -5,7 +5,7 @@
 #include "npc.h"
 using namespace std;
 
-#define MERC_DEBUG 1
+#define MERC_DEBUG 0
 #define TANK		1
 #define HEALER      2
 #define MELEEDPS	9
