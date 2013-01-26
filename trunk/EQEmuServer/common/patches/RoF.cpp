@@ -1117,13 +1117,13 @@ ENCODE(OP_PlayerProfile)
 
 	for(uint32 r = 0; r < BUFF_COUNT; r++)
 	{
-		float unknown004 = 0.0f;
+		float instrument_mod = 0.0f;
 		uint8 slotid = emu->buffs[r].slotid;
 		uint32 player_id = emu->buffs[r].player_id;;
 
 		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
 		{
-			unknown004 = 1;
+			instrument_mod = 1.0f + (emu->buffs[r].bard_modifier - 10) / 10.0f;
 			slotid = 2;
 			player_id = 0x000717fd;
 		}
@@ -1132,7 +1132,7 @@ ENCODE(OP_PlayerProfile)
 			slotid = 0;
 		}
 		outapp->WriteUInt8(0);		// Had this as slot, but always appears to be 0 on live.
-		outapp->WriteFloat(unknown004);
+		outapp->WriteFloat(instrument_mod);
 		outapp->WriteUInt32(player_id);
 		outapp->WriteUInt8(0);
 		outapp->WriteUInt32(emu->buffs[r].counters);
