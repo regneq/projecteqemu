@@ -21,6 +21,7 @@
 #include "../common/EQEmuConfig.h"
 #include "../common/servertalk.h"
 #include "../common/platform.h"
+#include "../common/crash.h"
 #include "worldserver.h"
 #include "ZoneLaunch.h"
 #include <vector>
@@ -37,6 +38,7 @@ void CatchSignal(int sig_num);
 
 int main(int argc, char *argv[]) {
     RegisterExecutablePlatform(ExePlatformLaunch);
+    set_exception_handler();
 
 	string launcher_name;
 	if(argc == 2) {

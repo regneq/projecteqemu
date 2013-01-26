@@ -21,6 +21,7 @@
 #include "../common/EQStreamFactory.h"
 #include "../common/timer.h"
 #include "../common/platform.h"
+#include "../common/crash.h"
 #include "LoginServer.h"
 #include <time.h>
 #include <stdlib.h>
@@ -40,6 +41,7 @@ void CatchSignal(int sig_num)
 int main()
 {
     RegisterExecutablePlatform(ExePlatformLogin);
+    set_exception_handler();
 
 	//Create our error log, is of format login_<number>.log
 	time_t current_time = time(NULL);

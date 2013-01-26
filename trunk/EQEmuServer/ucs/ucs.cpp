@@ -26,6 +26,7 @@
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
 #include "../common/platform.h"
+#include "../common/crash.h"
 #include "database.h"
 #include "ucsconfig.h"
 #include "chatchannel.h"
@@ -71,6 +72,7 @@ string GetMailPrefix() {
 
 int main() {
     RegisterExecutablePlatform(ExePlatformUCS);
+    set_exception_handler();
 
 	// Check every minute for unused channels we can delete
 	//

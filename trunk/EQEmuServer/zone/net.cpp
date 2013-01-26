@@ -87,6 +87,7 @@ extern volatile bool ZoneLoaded;
 #include "../common/rulesys.h"
 #include "../common/MiscFunctions.h"
 #include "../common/platform.h"
+#include "../common/crash.h"
 
 #include "masterentity.h"
 #include "worldserver.h"
@@ -164,6 +165,7 @@ extern  AddonCmd addonCmd;
 
 int main(int argc, char** argv) {
     RegisterExecutablePlatform(ExePlatformZone);
+    set_exception_handler();
 
 	const char *zone_name;
 	
