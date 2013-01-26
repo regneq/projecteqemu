@@ -1200,7 +1200,7 @@ bool logpos;
 	bool	Charmed() const { return charmed; }
 	static uint32	GetLevelHP(uint8 tlevel);
 	uint32	GetZoneID() const;	//for perl
-	virtual int32 CheckAggroAmount(uint16 spellid);
+	virtual int32 CheckAggroAmount(uint16 spellid, bool isproc = false);
 	virtual int32 CheckHealAggroAmount(uint16 spellid, uint32 heal_possible = 0);
 	virtual uint32 GetAA(uint32 aa_id) const { return(0); }
 
