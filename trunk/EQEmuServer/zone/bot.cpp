@@ -17089,6 +17089,12 @@ bool Bot::UseDiscipline(uint32 spell_id, uint32 target) {
 	if(level_to_use > GetLevel()) {
 		return(false);
 	}
+
+	if(GetEndurance() > spell.EndurCost) {
+		SetEndurance(GetEndurance() - spell.EndurCost);
+	} else {
+		return(false);
+	}
 	
 	if(spell.recast_time > 0)
 	{
@@ -17104,12 +17110,6 @@ bool Bot::UseDiscipline(uint32 spell_id, uint32 target) {
 			GetOwner()->Message(0, "%s can use this discipline in %d minutes %d seconds.", GetCleanName(), ((remain)/60), (remain%60));
 			return(false);
 		}
-	}
-
-	if(GetEndurance() > spell.EndurCost) {
-		SetEndurance(GetEndurance() - spell.EndurCost);
-	} else {
-		return(false);
 	}
 
 	if(IsCasting())

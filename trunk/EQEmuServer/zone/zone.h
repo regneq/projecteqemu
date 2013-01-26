@@ -167,6 +167,7 @@ public:
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charges, bool sold=false);
 	void LoadMercTemplates();
+	void LoadMercSpells();
 	void LoadLevelEXPMods();
 	MercTemplate* GetMercTemplate( uint32 template_id );
 
@@ -184,6 +185,7 @@ public:
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 	map<uint32,std::list<MercStanceInfo> > merc_stance_list;
 	map<uint32, MercTemplate> merc_templates;
+	map<uint32,std::list<MercSpellEntry> > merc_spells_list;
 	map<uint32, ZoneEXPModInfo> level_exp_mod;
 	list<InternalVeteranReward> VeteranRewards;
     list<AltCurrencyDefinition_Struct> AlternateCurrencies;

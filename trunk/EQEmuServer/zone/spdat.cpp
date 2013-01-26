@@ -904,6 +904,15 @@ bool IsFastHealSpell(uint16 spell_id) {
 		return false;
 }
 
+bool IsVeryFastHealSpell(uint16 spell_id) {
+	const int MaxFastHealCastingTime = 1000;
+
+	if(spells[spell_id].cast_time <= MaxFastHealCastingTime && spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && !IsGroupSpell(spell_id))
+		return true;
+	else
+		return false;
+}
+
 bool IsRegularSingleTargetHealSpell(uint16 spell_id) {
 	bool result = false;
 

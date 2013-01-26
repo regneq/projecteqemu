@@ -728,6 +728,49 @@ void Zone::LoadLevelEXPMods(){
 		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadEXPLevelMods()");
 	}
 }
+void Zone::LoadMercSpells(){
+
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+	merc_spells_list.clear();
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT msl.class_id, msl.proficiency_id, msle.spell_id, msle.spell_type, msle.stance_id, msle.minlevel, msle.maxlevel, msle.slot, msle.procChance FROM merc_spell_lists msl, merc_spell_list_entries msle WHERE msle.merc_spell_list_id = msl.merc_spell_list_id ORDER BY msl.class_id, msl.proficiency_id, msle.spell_type, msle.minlevel, msle.slot;"), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			uint32 classid;
+			MercSpellEntry tempMercSpellEntry;
+
+			classid = atoi(DataRow[0]);
+			tempMercSpellEntry.proficiencyid = atoi(DataRow[1]);
+			tempMercSpellEntry.spellid = atoi(DataRow[2]);
+			tempMercSpellEntry.type = atoi(DataRow[3]);
+			tempMercSpellEntry.stance = atoi(DataRow[4]);
+			tempMercSpellEntry.minlevel = atoi(DataRow[5]);
+			tempMercSpellEntry.maxlevel = atoi(DataRow[6]);
+			tempMercSpellEntry.slot = atoi(DataRow[7]);
+			tempMercSpellEntry.proc_chance = atoi(DataRow[8]);
+
+			merc_spells_list[classid].push_back(tempMercSpellEntry);	
+		}
+
+		mysql_free_result(DatasetResult);
+
+		if(MERC_DEBUG > 0)
+			LogFile->write(EQEMuLog::Debug, "Mercenary Debug: Loaded %i merc spells.", merc_spells_list[1].size() + merc_spells_list[2].size() + merc_spells_list[9].size() + merc_spells_list[12].size());
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(!errorMessage.empty()) {
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadMercSpells()");
+	}
+}
 
 void Zone::DBAWComplete(uint8 workpt_b1, DBAsyncWork* dbaw) {
 //	LogFile->write(EQEMuLog::Debug, "Zone work complete...");
@@ -1085,8 +1128,10 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadTempMerchantData();
 
 	// Merc data
-	if (RuleB(Mercs, AllowMercs))
+	if (RuleB(Mercs, AllowMercs)) {
 		zone->LoadMercTemplates();
+		zone->LoadMercSpells();
+	}
 
 	if (RuleB(Zone, LevelBasedEXPMods))
 		zone->LoadLevelEXPMods();

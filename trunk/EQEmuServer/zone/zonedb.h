@@ -127,6 +127,18 @@ struct MercInfo {
 	int32	State;
 };
 
+struct MercSpellEntry {
+	uint8	proficiencyid;
+	uint16	spellid;		// <= 0 = no spell
+	uint16	type;			// 0 = never, must be one (and only one) of the defined values
+	int16	stance;			// 0 = all, + = only this stance, - = all except this stance
+	uint8	minlevel;
+	uint8	maxlevel;
+	int16	slot;
+	uint16  proc_chance;
+	uint32	time_cancast;	// when we can cast this spell next
+};
+
 struct ClientMercEntry {
 	uint32 id;
 	uint32 npcid;	
@@ -420,7 +432,6 @@ public:
      */
     void LoadAltCurrencyValues(uint32 char_id, std::map<uint32, uint32> &currency);
     void UpdateAltCurrencyValue(uint32 char_id, uint32 currency_id, uint32 value);
-
     
 	/*
 	 * Misc stuff.

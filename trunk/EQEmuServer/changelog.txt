@@ -4,6 +4,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: RoF: Updated spell buffs in the PP to account for instrument_mod/bard_modifier.
 Sorvani: Missed a spot on the stun proc aggro change.
 Trevius: Fixed Mercenary Upkeep Timers and Stances again for UF and SoD.
+Bad_Captain: Mercs - Initial spell casting AI committed.
+
+OPTIONAL SQL: utils/sql/svn/mercs.sql		-- rerun for updated merc stats & merc spell lists
 
 == 01/25/2013 ==
 Sorvani: Implemented max aggro from stun proc set to 400. It is rule based set rule to -1 for unlimited.
@@ -11,7 +14,6 @@ Derision: RoF: Should fix x10 Buff bug.
 Trevius: Reworked some of the code dealing with Mercenary packets and spawning them.  There is still some work to be done, but the basics are more solid now.
 Trevius: Mercenaries function much more consistently now for Hiring, Suspending, Unsuspending, Dismissing.
 Trevius: Mercenaries no longer fail to group up after being hired, unsuspended or after zoning/logging in.
-Trevius: RoF: Mercenaries in RoF are now fully functional.
 
 == 01/24/2013 ==
 Trevius: RoF: The #fixmob command can now go up to race 724 when cycling through races.

@@ -804,6 +804,7 @@ int32 GetSpellTargetType(uint16 spell_id);
 bool IsHealOverTimeSpell(uint16 spell_id);
 bool IsCompleteHealSpell(uint16 spell_id);
 bool IsFastHealSpell(uint16 spell_id);
+bool IsVeryFastHealSpell(uint16 spell_id);
 bool IsRegularSingleTargetHealSpell(uint16 spell_id);
 bool IsRegularGroupHealSpell(uint16 spell_id);
 bool IsGroupCompleteHealSpell(uint16 spell_id);
