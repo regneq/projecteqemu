@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/26/2013 ==
 Derision: RoF: Updated spell buffs in the PP to account for instrument_mod/bard_modifier.
+Sorvani: Missed a spot on the stun proc aggro change.
 
 == 01/25/2013 ==
 Sorvani: Implemented max aggro from stun proc set to 400. It is rule based set rule to -1 for unlimited.
