@@ -112,6 +112,7 @@ public:
 		Debug,
 		Quest,
 		Commands,
+        Crash,
 		MaxLogID
 	};
 	

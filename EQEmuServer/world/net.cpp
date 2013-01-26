@@ -44,6 +44,7 @@ using namespace std;
 //#include "../common/patches/Client62.h"
 #include "../common/rulesys.h"
 #include "../common/platform.h"
+#include "../common/crash.h"
 #ifdef _WINDOWS
 	#include <process.h>
 	#define snprintf	_snprintf
@@ -128,6 +129,7 @@ void CatchSignal(int sig_num);
 
 int main(int argc, char** argv) {
     RegisterExecutablePlatform(ExePlatformWorld);
+    set_exception_handler();
 
 	// Load server configuration
 	_log(WORLD__INIT, "Loading server configuration..");

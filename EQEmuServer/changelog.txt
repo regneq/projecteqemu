@@ -5,6 +5,7 @@ Derision: RoF: Updated spell buffs in the PP to account for instrument_mod/bard_
 Sorvani: Missed a spot on the stun proc aggro change.
 Trevius: Fixed Mercenary Upkeep Timers and Stances again for UF and SoD.
 Bad_Captain: Mercs - Initial spell casting AI committed.
+KLS: Added crash logging for Windows builds.
 
 OPTIONAL SQL: utils/sql/svn/mercs.sql		-- rerun for updated merc stats & merc spell lists
 

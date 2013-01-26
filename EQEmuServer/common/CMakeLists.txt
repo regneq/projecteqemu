@@ -4,6 +4,7 @@ SET(common_sources
     BasePacket.cpp
     classes.cpp
     Condition.cpp
+    crash.cpp
     CRC16.cpp
     crc32.cpp
     database.cpp
@@ -78,6 +79,7 @@ SET(common_sources
     SocketLib/Parse.cpp
     SocketLib/socket_include.cpp
     SocketLib/Utility.cpp
+    StackWalker/StackWalker.cpp
     tinyxml/tinystr.cpp
     tinyxml/tinyxml.cpp
     tinyxml/tinyxmlerror.cpp
@@ -91,6 +93,7 @@ SET(common_headers
     classes.h
     common_profile.h
     Condition.h
+    crash.h
     CRC16.h
     crc32.h
     database.h
@@ -216,11 +219,12 @@ SET(common_headers
     SocketLib/Parse.h
     SocketLib/socket_include.h
     SocketLib/Utility.h
+    StackWalker/StackWalker.h
     tinyxml/tinystr.h
     tinyxml/tinyxml.h
 )
 
-source_group(Patches FILES
+SOURCE_GROUP(Patches FILES
     patches/SoD.h
     patches/SoD_itemfields.h
     patches/SoD_ops.h
@@ -254,7 +258,7 @@ source_group(Patches FILES
     patches/Underfoot.cpp
 )
 
-source_group(SocketLib FILES
+SOURCE_GROUP(SocketLib FILES
     SocketLib/Base64.h
     SocketLib/File.h
     SocketLib/HttpdCookies.h
@@ -280,7 +284,12 @@ source_group(SocketLib FILES
     SocketLib/Utility.cpp
 )
 
-source_group(TinyXML FILES
+SOURCE_GROUP(StackWalker FILES
+    StackWalker/StackWalker.h
+    StackWalker/StackWalker.cpp
+)
+
+SOURCE_GROUP(TinyXML FILES
     tinyxml/tinystr.h
     tinyxml/tinyxml.h
     tinyxml/tinystr.cpp
@@ -289,7 +298,7 @@ source_group(TinyXML FILES
     tinyxml/tinyxmlparser.cpp
 )
 
-INCLUDE_DIRECTORIES(Patches SocketLib TinyXML)
+INCLUDE_DIRECTORIES(Patches SocketLib StackWalker TinyXML)
 
 ADD_LIBRARY(Common ${common_sources} ${common_headers})
 
