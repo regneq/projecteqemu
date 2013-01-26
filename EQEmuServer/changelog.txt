@@ -8,6 +8,7 @@ Trevius: Fixed Mercenary Upkeep Timers to properly restart after the timer is up
 Bad_Captain: Mercs - Initial spell casting AI committed.
 KLS: Added crash logging for Windows builds.
 Trevius: Mercenaries now despawn when a player camps out.
+Sorvani: (Demonstar55): Moved stunproc rule implmentation to catch all cases
 
 OPTIONAL SQL: utils/sql/svn/mercs.sql		-- rerun for updated merc stats & merc spell lists
 

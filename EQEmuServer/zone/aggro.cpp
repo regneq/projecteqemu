@@ -1120,7 +1120,7 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
 }
 
 //offensive spell aggro
-int32 Mob::CheckAggroAmount(uint16 spellid) {
+int32 Mob::CheckAggroAmount(uint16 spellid, bool isproc) {
 	uint16 spell_id = spellid;
 	int32 AggroAmount = 0;
 	int32 nonModifiedAggro = 0;
@@ -1155,7 +1155,10 @@ int32 Mob::CheckAggroAmount(uint16 spellid) {
 				break;
 			}
 			case SE_Stun: {
-				AggroAmount += (5 + ((slevel * slevel) / 6));
+				int val = (5 + ((slevel * slevel) / 6));
+				if (isproc && RuleI(Aggro,MaxStunProcAggro) > -1 && (val > RuleI(Aggro,MaxStunProcAggro)))
+					val = RuleI(Aggro,MaxStunProcAggro);
+				AggroAmount += val;
 				break;
 			}
 			case SE_Blind: {

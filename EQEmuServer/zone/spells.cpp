@@ -3413,16 +3413,10 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar,bool isproc, bool reflect
 	}
 
 	if (spelltar->IsAIControlled() && IsDetrimentalSpell(spell_id) && !IsHarmonySpell(spell_id)) {
-		int32 aggro_amount = CheckAggroAmount(spell_id);
-		if (isproc && IsEffectInSpell(spell_id, SE_Stun) && RuleI(Aggro,MaxStunProcAggro) > -1) {
-			if (aggro_amount > RuleI(Aggro,MaxStunProcAggro)) {
-				aggro_amount = RuleI(Aggro,MaxStunProcAggro);
-			}
-		}
+		int32 aggro_amount = CheckAggroAmount(spell_id, isproc);
 		mlog(SPELLS__CASTING, "Spell %d cast on %s generated %d hate", spell_id, spelltar->GetName(), aggro_amount);
 		if(aggro_amount > 0)
-			spelltar->AddToHateList(this, aggro_amount);
-		else{
+			spelltar->AddToHateList(this, aggro_amount);		else{
 			int32 newhate = spelltar->GetHateAmount(this) + aggro_amount;
 			if (newhate < 1) {
 				spelltar->SetHate(this,1);
