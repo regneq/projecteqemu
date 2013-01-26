@@ -13760,12 +13760,10 @@ void Client::Handle_OP_MercenaryTimerRequest(const EQApplicationPacket *app)
 				mercState = 1;
 				suspendedTime = GetEPP().mercSuspendedTime;
 			}
-	
-			// Send Mercenary Status/Timer packet
-			// SendMercTimerPacket(entityID, mercState, suspendedTime, GetEPP().mercTimerRemaining, p_timers.GetRemainingTime(pTimerMercSuspend));
-			SendMercTimerPacket(entityID, mercState, suspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 		}
 	}
+
+	SendMercTimerPacket(entityID, mercState, suspendedTime, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
 }
 
 void Client::Handle_OP_OpenInventory(const EQApplicationPacket *app) {
