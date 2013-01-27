@@ -7,7 +7,8 @@ Trevius: Fixed Mercenary Upkeep Timers and Stances again for UF and SoD.
 Trevius: Fixed Mercenary Upkeep Timers to properly restart after the timer is up for all clients.
 Bad_Captain: Mercs - Initial spell casting AI committed.
 KLS: Added crash logging for Windows builds.
-Trevius: Mercenaries now despawn when a player camps out.
+Trevius: Mercenaries now despawn when a player camps out or disconnects in any way.
+Trevius: Players with a Mercenary spawned can now be invited to and join another group with their mercenary.
 Sorvani: (Demonstar55): Moved stunproc rule implmentation to catch all cases
 
 OPTIONAL SQL: utils/sql/svn/mercs.sql		-- rerun for updated merc stats & merc spell lists

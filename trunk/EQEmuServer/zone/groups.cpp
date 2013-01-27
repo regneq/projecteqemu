@@ -258,7 +258,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, uint32 Characte
                 return false;
 
         strcpy(membername[i], NewMemberName);
-	MemberRoles[i] = 0;
+		MemberRoles[i] = 0;
 
         int x=1;
         

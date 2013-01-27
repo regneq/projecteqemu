@@ -193,6 +193,11 @@ bool Client::Process() {
 		if(linkdead_timer.Check()){
 			Save();
 			LeaveGroup();
+			if (GetMerc())
+			{
+				GetMerc()->RemoveMercFromGroup(GetMerc(), GetMerc()->GetGroup());
+				GetMerc()->Depop();
+			}
 			Raid *myraid = entity_list.GetRaidByClient(this);
 			if (myraid)
 			{
@@ -204,6 +209,11 @@ bool Client::Process() {
 		if (camp_timer.Check()) {
 			LeaveGroup();
 			Save();
+			if (GetMerc())
+			{
+				GetMerc()->RemoveMercFromGroup(GetMerc(), GetMerc()->GetGroup());
+				GetMerc()->Depop();
+			}
 			instalog = true;
 		}
 		
@@ -667,6 +677,11 @@ bool Client::Process() {
 		cout << "Client linkdead: " << name << endl;
 
 		if (GetGM()) {
+			if (GetMerc())
+			{
+				GetMerc()->RemoveMercFromGroup(GetMerc(), GetMerc()->GetGroup());
+				GetMerc()->Depop();
+			}
 			return false;
 		}
 		else if(!linkdead_timer.Enabled()){
@@ -710,6 +725,11 @@ bool Client::Process() {
 		//ResetTrade();
 		if (client_state != CLIENT_KICKED) {
 			Save();
+		}
+		if (GetMerc())
+		{
+			GetMerc()->RemoveMercFromGroup(GetMerc(), GetMerc()->GetGroup());
+			GetMerc()->Depop();
 		}
 		adverrorinfo = 811;
 		client_state = CLIENT_LINKDEAD;

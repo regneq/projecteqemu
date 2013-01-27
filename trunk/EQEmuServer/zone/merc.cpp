@@ -1462,6 +1462,11 @@ bool Merc::Process()
 		//return false;
 	}
 
+	if (HasGroup() && GetFollowID() == 0) {
+		SetFollowID(GetMercOwner()->GetID());
+	}
+
+
 	SpellProcess();
 
 	if(tic_timer.Check())
@@ -3850,14 +3855,13 @@ void Client::UpdateMercTimer()
 
 	if(merc && !merc->IsSuspended())
 	{		
-		if(GetMercTimer().Check())
+		if(merc_timer.Check())
 		{
 			uint32 upkeep = Merc::CalcUpkeepCost(merc->GetMercTemplateID(), GetLevel());
 			//TakeMoneyFromPP((upkeep * 100), true);	// Upkeep is in gold
 			GetEPP().mercTimerRemaining = RuleI(Mercs, UpkeepIntervalMS);
 			SendMercTimerPacket(GetMercID(), 5, 0, RuleI(Mercs, UpkeepIntervalMS), RuleI(Mercs, SuspendIntervalMS));
-			//merc_timer.Start(GetEPP().mercTimerRemaining);
-			GetMercTimer().Start(GetEPP().mercTimerRemaining);
+			merc_timer.Start(RuleI(Mercs, UpkeepIntervalMS));
 
 			// Send upkeep charge message and reset the upkeep timer
 			if (GetClientVersion() < EQClientRoF)
@@ -3997,13 +4001,12 @@ bool Merc::Suspend() {
 
 	//Save();
 
-	Client* owner = GetMercOwner();
-	owner->GetEPP().mercIsSuspended = true;
-	owner->GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
-	owner->GetEPP().mercTimerRemaining = owner->GetMercTimer().GetRemainingTime();
-	owner->GetMercTimer().Disable();
-	owner->UpdateMercTimer();
-	owner->SendMercSuspendResponsePacket(owner->GetEPP().mercSuspendedTime);
+	mercOwner->GetEPP().mercIsSuspended = true;
+	mercOwner->GetEPP().mercSuspendedTime = time(NULL) + RuleI(Mercs, SuspendIntervalS);
+	mercOwner->GetEPP().mercTimerRemaining = mercOwner->GetMercTimer().GetRemainingTime();
+	mercOwner->GetMercTimer().Disable();
+	//mercOwner->UpdateMercTimer();
+	mercOwner->SendMercSuspendResponsePacket(mercOwner->GetEPP().mercSuspendedTime);
 
 	Depop();
 
@@ -4171,12 +4174,12 @@ bool Merc::AddMercToGroup(Merc* merc, Group* group) {
 		}
 		// Add merc to this group
 		if(group->AddMember(merc)) {
-			if(group->GetLeader()) {
-				//merc->SetFollowID(merc->GetMercOwner()->GetID());
-			}
 			merc->SetFollowID(merc->GetMercOwner()->GetID());
-
 			Result = true;
+		}
+		else
+		{
+			merc->Suspend();
 		}
 
 	}
@@ -4228,7 +4231,7 @@ void Client::SetMerc(Merc* newmerc) {
 		GetEPP().mercSuspendedTime = 0;
 		GetEPP().mercGender = 0;
 		GetEPP().mercState = 0;
-		//GetEPP().mercTimerRemaining = 0;
+		GetEPP().mercTimerRemaining = 0;
 		memset(GetEPP().merc_name, 0, 64);
 	} else {
 		SetMercID(newmerc->GetID());
