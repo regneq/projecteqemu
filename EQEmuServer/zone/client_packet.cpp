@@ -3380,10 +3380,6 @@ void Client::Handle_OP_Logout(const EQApplicationPacket *app)
 	//we will save when we get destroyed soon anyhow
 	//Save();
 
-	// Depop merc when logging out
-	if (GetMerc())
-		GetMerc()->Depop();
-
 	SendLogoutPackets();
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LogoutReply);
@@ -6338,7 +6334,9 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	if(Invitee) {
 		if(Invitee->IsClient()) {
-			if(!Invitee->IsGrouped() && !Invitee->IsRaidGrouped()) {
+			if((!Invitee->IsGrouped() && !Invitee->IsRaidGrouped()) || 
+				(Invitee->GetGroup() && Invitee->CastToClient()->GetMerc() && Invitee->GetGroup()->GroupCount() == 2))
+			{
 				if(app->GetOpcode() == OP_GroupInvite2)
 				{
 					//Make a new packet using all the same information but make sure it's a fixed GroupInvite opcode so we
@@ -6438,6 +6436,10 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 		//inviter has a raid don't do group stuff instead do raid stuff!
 		if(raid){
+			// Suspend the merc while in a raid (maybe a rule could be added for this)
+			if (GetMerc())
+				GetMerc()->Suspend();
+
 			uint32 groupToUse = 0xFFFFFFFF;
 			for(int x = 0; x < MAX_RAID_MEMBERS; x++){
 				if(raid->members[x].member){ //this assumes the inviter is in the zone
@@ -6485,6 +6487,10 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			}
 		}
 
+		// Remove the merc from the old group
+		if (GetMerc())
+			GetMerc()->RemoveMercFromGroup(GetMerc(), GetMerc()->GetGroup());
+
 		Group* group = entity_list.GetGroupByClient(inviter->CastToClient());
 
 		if(!group){
@@ -6503,6 +6509,15 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			//now we have a group id, can set inviter's id
 			database.SetGroupID(inviter->GetName(), group->GetID(), inviter->CastToClient()->CharacterID());
 			database.SetGroupLeaderName(group->GetID(), inviter->GetName());
+
+			// Add the merc back into the new group
+			if (GetMerc())
+			{
+				if (GetMerc()->AddMercToGroup(GetMerc(), group))
+				{
+					database.SetGroupID(GetMerc()->GetName(), group->GetID(), inviter->CastToClient()->CharacterID(), true);
+				}
+			}
 
 			group->UpdateGroupAAs();
 
@@ -6537,6 +6552,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 		if(!group->AddMember(this))
 			return;
+
 		if(GetMerc())
 		{
 			group->AddMember(GetMerc());
