@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/27/2013 ==
+Trevius: Fixed a bug introduced in Rev2448 that caused some spell casting to use all of a player's mana.
+
 == 01/26/2013 ==
 Derision: RoF: Updated spell buffs in the PP to account for instrument_mod/bard_modifier.
 Sorvani: Missed a spot on the stun proc aggro change.

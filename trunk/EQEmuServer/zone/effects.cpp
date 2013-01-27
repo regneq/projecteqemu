@@ -704,12 +704,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		{
 			if(iCounter < MAX_TARGETS_ALLOWED)
 			{
-				caster->SpellOnTarget(spell_id, curmob, false, false, true, resist_adjust);
+				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust);
 			}
 		}
 		else
 		{
-			caster->SpellOnTarget(spell_id, curmob, false, false, true, resist_adjust);
+			caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust);
 		}
 
 		if(!isnpc) //npcs are not target limited...

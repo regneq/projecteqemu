@@ -1141,7 +1141,7 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, uint16 slot,
 	TryTriggerOnCast(spell_id, 0);
 
 	// we're done casting, now try to apply the spell
-	if( !SpellFinished(spell_id, spell_target, false, slot, mana_used, inventory_slot, resist_adjust) )
+	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot, resist_adjust) )
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: SpellFinished returned false.", spell_id);
 		InterruptSpell();
@@ -1624,8 +1624,8 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 // only used from CastedSpellFinished, and procs
 // we can't interrupt in this, or anything called from this!
 // if you need to abort the casting, return false
-bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, bool isproc, uint16 slot, 
-						uint16 mana_used, uint32 inventory_slot, int16 resist_adjust)
+bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, uint16 slot, uint16 mana_used, 
+						uint32 inventory_slot, int16 resist_adjust, bool isproc)
 {
 	_ZP(Mob_SpellFinished);
 	
@@ -1775,9 +1775,9 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, bool isproc, uint16 
 				return(false);
 			}
 			if (isproc) {
-				SpellOnTarget(spell_id, spell_target, true, false, true, resist_adjust);
+				SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, true);
 			} else {
-				SpellOnTarget(spell_id, spell_target, false, false, true, resist_adjust);
+				SpellOnTarget(spell_id, spell_target, false, true, resist_adjust, false);
 			}
 			if(IsPlayerIllusionSpell(spell_id)
 			&& IsClient()
@@ -1815,7 +1815,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, bool isproc, uint16 
 				if(spell_target)	// this must be an AETarget spell
 				{
 					// affect the target too
-					SpellOnTarget(spell_id, spell_target, false, false, true, resist_adjust);
+					SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
 				}
 				if(ae_center && ae_center == this && IsBeneficialSpell(spell_id))
 					SpellOnTarget(spell_id, this);
@@ -1935,7 +1935,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, bool isproc, uint16 
 						(heading_to_target >= 0.0f && heading_to_target <= angle_end))
 					{
 						if(CheckLosFN(spell_target))
-							SpellOnTarget(spell_id, spell_target, false,false, true, resist_adjust);
+							SpellOnTarget(spell_id, spell_target, false, true, resist_adjust);
 					}
 				}
 				else
@@ -1943,7 +1943,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, bool isproc, uint16 
 					if(heading_to_target >= angle_start && heading_to_target <= angle_end)
 					{
 						if(CheckLosFN((*iter)))
-							SpellOnTarget(spell_id, (*iter), false, false, true, resist_adjust);
+							SpellOnTarget(spell_id, (*iter), false, true, resist_adjust);
 					}
 				}
 				iter++;
@@ -2906,7 +2906,7 @@ int Mob::CanBuffStack(uint16 spellid, uint8 caster_level, bool iFailIfOverwrite)
 // and if you don't want effects just return false.  interrupting here will
 // break stuff
 //
-bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar,bool isproc, bool reflect, bool use_resist_adjust, int16 resist_adjust)
+bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, int16 resist_adjust, bool isproc)
 {
 
 	// well we can't cast a spell on target without a target
@@ -3251,7 +3251,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar,bool isproc, bool reflect
 		}
 		if(reflect_chance) {
 			Message_StringID(MT_Spells, SPELL_REFLECT, GetCleanName(), spelltar->GetCleanName());
-			SpellOnTarget(spell_id, this, false, true, use_resist_adjust, resist_adjust);
+			SpellOnTarget(spell_id, this, true, use_resist_adjust, resist_adjust);
 			return false;
 		}
 	}
