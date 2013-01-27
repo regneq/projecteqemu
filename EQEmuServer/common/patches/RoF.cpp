@@ -1886,25 +1886,23 @@ ENCODE(OP_ZoneSpawns)
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
 
 			Bitfields->gender = emu->gender;
-			Bitfields->showname = ShowName;
-			Bitfields->afk = 0;
+			Bitfields->ispet = emu->is_pet;
+			Bitfields->afk = emu->afk;
 			Bitfields->anon = emu->anon;
+			Bitfields->gm = emu->gm;
+			Bitfields->sneak = 0;
 			Bitfields->lfg = emu->lfg;
 			Bitfields->invis = emu->invis;
-			Bitfields->sneak = 0;
 			Bitfields->linkdead = 0;
-			Bitfields->targetable = 1;
-			Bitfields->targetable_with_hotkey = 1;
+			Bitfields->showhelm = emu->showhelm;
 			Bitfields->trader = 0;
-			Bitfields->ispet = emu->is_pet;
-
-
+			Bitfields->targetable = 1;
+			Bitfields->targetable_with_hotkey = (emu->IsMercenary ? 0 : 1);
+			Bitfields->showname = ShowName;
+			
 			// Not currently found
-			//
-			//Bitfields->gm = emu->gm;
-			//Bitfields->showhelm = emu->showhelm;
-			//Bitfields->statue = 0;
-			//Bitfields->buyer = 0;
+			// Bitfields->statue = 0;
+			// Bitfields->buyer = 0;
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 

@@ -1047,7 +1047,7 @@ ENCODE(OP_ZoneSpawns) {
 			Bitfields->anon = emu->anon;
 			Bitfields->showhelm = emu->showhelm;
 			Bitfields->targetable = 1;
-			Bitfields->targetable_with_hotkey = 1;
+			Bitfields->targetable_with_hotkey = (emu->IsMercenary ? 0 : 1);
 			Bitfields->statue = 0;
 			Bitfields->trader = 0;
 			Bitfields->buyer = 0;
