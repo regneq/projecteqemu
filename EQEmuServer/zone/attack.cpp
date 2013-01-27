@@ -1980,7 +1980,7 @@ void NPC::Damage(Mob* other, int32 damage, uint16 spell_id, SkillType attack_ski
 			if(IsLDoNTrapped())
 			{
 				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
-				SpellFinished(GetLDoNTrapSpellID(), other, false, 10, 0, -1, spells[GetLDoNTrapSpellID()].ResistDiff);
+				SpellFinished(GetLDoNTrapSpellID(), other, 10, 0, -1, spells[GetLDoNTrapSpellID()].ResistDiff, false);
 				SetLDoNTrapSpellID(0);
 				SetLDoNTrapped(false);
 				SetLDoNTrapDetected(false);
