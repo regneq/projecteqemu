@@ -462,6 +462,7 @@ int command_init(void) {
 		command_add("printquestitems","Returns available quest items for multiquesting currently on the target npc.",200,command_printquestitems) ||
 		command_add("clearquestitems","Clears quest items for multiquesting currently on the target npc.",200,command_clearquestitems) ||
 		command_add("zopp", "Troubleshooting command - Sends a fake item packet to you. No server reference is created.", 250, command_zopp) 
+		command_add("augmentitem", "Force augments an item. Must have the augment item window open.", 250, command_augmentitem) 
 		)
 	{
 		command_deinit();
@@ -11761,4 +11762,19 @@ void command_zopp(Client *c, const Seperator *sep)
 		c->Message(0, "Sending zephyr op packet to client - [%s] %s (%u) with %i %s to slot %i.", packettype==ItemPacketTrade?"Trade":"Summon", FakeItem->Name, itemid, charges, abs(charges==1)?"charge":"charges", slotid);
 		safe_delete(FakeItemInst);
 	}
+}
+
+void command_augmentitem(Client *c, const Seperator *sep)
+{
+	if (!c)
+		return;
+
+		AugmentItem_Struct* in_augment = new AugmentItem_Struct[sizeof(AugmentItem_Struct)];
+		in_augment->container_slot = 1000;
+		in_augment->unknown02[0] = 0;
+		in_augment->unknown02[1] = 0;
+		in_augment->augment_slot = -1;
+		if(c->GetTradeskillObject() != NULL)
+		Object::HandleAugmentation(c, in_augment, c->GetTradeskillObject());
+		safe_delete(in_augment);
 }
