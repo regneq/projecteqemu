@@ -391,6 +391,10 @@ QuestInterface *QuestParserCollection::GetQIByNPCQuest(uint32 npcid) {
 }
 
 QuestInterface *QuestParserCollection::GetQIByPlayerQuest() {
+
+	if(!zone)
+	return NULL;
+
     //first look for /quests/zone/player_v[instance_version].ext (precedence)
     std::string filename = "quests/";
     filename += zone->GetShortName();

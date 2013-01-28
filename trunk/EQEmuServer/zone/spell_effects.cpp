@@ -180,13 +180,12 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, float partial)
 		}
 	}
 
-	if(spells[spell_id].numhits > 0){
+	if(spells[spell_id].numhits > 0 && buffslot >= 0){
 		
 		int numhit = spells[spell_id].numhits;
 		
 		if (caster && caster->IsClient()) 
 			numhit += caster->CastToClient()->GetFocusEffect(focusIncreaseNumHits, spell_id);
-
 		buffs[buffslot].numhits = numhit;
 	}
 
