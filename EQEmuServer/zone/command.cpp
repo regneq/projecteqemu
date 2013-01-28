@@ -461,7 +461,7 @@ int command_init(void) {
 		command_add("xtargets", "Show your targets Extended Targets and optionally set how many xtargets they can have.", 250, command_xtargets) ||
 		command_add("printquestitems","Returns available quest items for multiquesting currently on the target npc.",200,command_printquestitems) ||
 		command_add("clearquestitems","Clears quest items for multiquesting currently on the target npc.",200,command_clearquestitems) ||
-		command_add("zopp", "Troubleshooting command - Sends a fake item packet to you. No server reference is created.", 250, command_zopp) 
+		command_add("zopp", "Troubleshooting command - Sends a fake item packet to you. No server reference is created.", 250, command_zopp) ||
 		command_add("augmentitem", "Force augments an item. Must have the augment item window open.", 250, command_augmentitem) 
 		)
 	{
