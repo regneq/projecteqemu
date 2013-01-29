@@ -536,17 +536,37 @@ void QuestManager::gmsay(const char *str, uint32 color, bool send_to_world) {
 	}
 }
 
-void QuestManager::depop(int npc_type) {
-	if(!owner->IsNPC())
+void QuestManager::depop(int npc_type) { // depop NPC and don't start spawn timer
+	if (!owner->IsNPC())
 		return;
-	if (npc_type != 0){
+	if (npc_type != 0) {
 		Mob * tmp = entity_list.GetMobByNpcTypeID(npc_type);
 		if (tmp) {
-			if(tmp != owner){
+			if (tmp != owner) {
 				tmp->CastToNPC()->Depop();
 			}
-			else
+			else {
 				depop_npc = true;
+			}
+		}
+	}
+	else {	//depop self
+		depop_npc = true;
+	}
+}
+
+void QuestManager::depop_withtimer(int npc_type) { // depop NPC and start spawn timer
+	if (!owner->IsNPC())
+		return;
+	if (npc_type != 0) {
+		Mob * tmp = entity_list.GetMobByNpcTypeID(npc_type);
+		if (tmp) {
+			if (tmp != owner) {
+				tmp->CastToNPC()->Depop(true);
+			}
+			else {
+				depop_npc = true;
+			}
 		}
 	}
 	else {	//depop self

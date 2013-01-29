@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Secrets: Fixed a crash issue involving invalid buff slots in SpellEffect code. (Crash fix.)
 Secrets: QuestParserCollection no longer processes EventPlayer in the case that a player zones and the group is still valid via linkdeath. (Crash fix.)
 Secrets: Added the command #augmentitem. Does the same thing that the #bot augmentitem command does but without the bot command needing to be active. Default 250 status.
+JJ: Added quest::depop_withtimer() which will depop NPC and start spawn timer (a replacement for $npc->Depop(1) code if desired)
 
 == 01/27/2013 ==
 Trevius: Fixed a bug introduced in Rev2448 that caused some spell casting to use all of a player's mana.
