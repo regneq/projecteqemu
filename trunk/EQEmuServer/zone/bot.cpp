@@ -5624,7 +5624,7 @@ bool Bot::RemoveBotFromGroup(Bot* bot, Group* group) {
 				if(group->DelMember(bot))
 					database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
 
-				if(group->GroupCount() <= 1)
+				if(group->GroupCount() <= 1 && ZoneLoaded)
 					group->DisbandGroup();
 			}
 			else {

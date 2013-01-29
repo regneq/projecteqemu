@@ -4135,7 +4135,7 @@ bool Merc::RemoveMercFromGroup(Merc* merc, Group* group) {
 						database.SetGroupID(merc->GetName(), 0, merc->GetMercCharacterID(), true);
 				}
 
-				if(group->GroupCount() <= 1)
+				if(group->GroupCount() <= 1 && ZoneLoaded)
 				{
 					group->DisbandGroup();
 				}
