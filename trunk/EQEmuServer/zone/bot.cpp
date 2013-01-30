@@ -5,6 +5,8 @@
 #include "doors.h"
 #include "QuestParserCollection.h"
 
+extern volatile bool ZoneLoaded;
+
 // This constructor is used during the bot create command
 Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false), rest_timer(1) {
 	if(botOwner) {

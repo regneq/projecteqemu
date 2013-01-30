@@ -13,6 +13,8 @@
 #include "QuestParserCollection.h"
 #include "watermap.h"
 
+extern volatile bool ZoneLoaded;
+
 Merc::Merc(const NPCType* d, float x, float y, float z, float heading)
 	: NPC(d, 0, x, y, z, heading, 0, false), endupkeep_timer(1000), rest_timer(1)
 {

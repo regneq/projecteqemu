@@ -387,7 +387,7 @@ Client::~Client() {
 		GetTarget()->IsTargeted(-1);
 
 	//if we are in a group and we are not zoning, force leave the group
-	if(isgrouped && !zoning)
+	if(isgrouped && !zoning && ZoneLoaded)
 		LeaveGroup();
 
 	UpdateWho(2);
@@ -420,6 +420,7 @@ Client::~Client() {
 
 	numclients--;
 	UpdateWindowTitle();
+	if(zone)
 	zone->RemoveAuth(GetName());
 
 	//let the stream factory know were done with this stream
