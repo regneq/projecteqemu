@@ -567,6 +567,7 @@ public:
 	void	SacrificeConfirm(Client* caster);
 	void	Sacrifice(Client* caster);
 	void	GoToDeath();
+	inline const int32	GetInstanceID() const { return zone->GetInstanceID(); }
 
 	FACTION_VALUE	GetReverseFactionCon(Mob* iOther);
     FACTION_VALUE   GetFactionLevel(uint32 char_id, uint32 npc_id, uint32 p_race, uint32 p_class, uint32 p_deity, int32 pFaction, Mob* tnpc);
