@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 01/29/2013 ==
 Secrets: Another attempt to fix this bot/merc group crash on zoning.
+cavedude: Added $client->GetInstanceID() Perl export.
 
 == 01/28/2013 ==
 Secrets: Fixed a crash issue involving invalid buff slots in SpellEffect code. (Crash fix.)

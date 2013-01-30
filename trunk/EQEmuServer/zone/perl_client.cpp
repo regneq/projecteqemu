@@ -5621,6 +5621,32 @@ XS(XS_Client_SendWebLink)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_GetInstanceID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetInstanceID)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetInstanceID(THIS)");
+	{
+		Client *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetInstanceID();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5685,7 +5711,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetBindY"), XS_Client_GetBindY, file, "$$");
 		newXSproto(strcpy(buf, "GetBindZ"), XS_Client_GetBindZ, file, "$$");
 		newXSproto(strcpy(buf, "GetBindHeading"), XS_Client_GetBindHeading, file, "$$");
-		newXSproto(strcpy(buf, "GetBindZoneID"), XS_Client_GetBindX, file, "$$");
+		newXSproto(strcpy(buf, "GetBindZoneID"), XS_Client_GetBindZoneID, file, "$$");
 		newXSproto(strcpy(buf, "MovePC"), XS_Client_MovePC, file, "$$$$$$");
 		newXSproto(strcpy(buf, "MovePCInstance"), XS_Client_MovePCInstance, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "ChangeLastName"), XS_Client_ChangeLastName, file, "$$");
@@ -5846,6 +5872,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SignalClient"), XS_Client_SignalClient, file, "$");
 		newXSproto(strcpy(buf, "AddAlternateCurrencyValue"), XS_Client_AddAlternateCurrencyValue, file, "$$$");
 		newXSproto(strcpy(buf, "SendWebLink"), XS_Client_SendWebLink, file, "$:$");
+		newXSproto(strcpy(buf, "GetInstanceID"), XS_Client_GetInstanceID, file, "$$");
 		XSRETURN_YES;
 }
 
