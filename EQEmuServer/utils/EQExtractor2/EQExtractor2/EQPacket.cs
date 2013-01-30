@@ -16,7 +16,7 @@ using EQApplicationLayer;
 
 namespace EQPacket
 {
-    public enum PacketDirection { Unknown, ClientToServer, ServerToClient };
+    public enum PacketDirection {ClientToServer, ServerToClient, Unknown };
 
     public class EQApplicationPacket
     {
@@ -70,10 +70,11 @@ namespace EQPacket
         private bool PermaLocked = false;
         private bool Identified = false;
 
-        private int FragmentSeq = -1;
-        private int FragmentedPacketSize = 0;
-        private int FragmentedBytesCollected = 0;
-        private byte[] Fragments;
+        private int[] FragmentSeq = {-1, -1};
+        private int[] FragmentedPacketSize = {0, 0};
+        private int[] FragmentedBytesCollected = {0, 0};
+        private byte[][] Fragments = new byte [2][];
+        
 
         private System.Net.IPAddress ServerIP;
         private ushort ServerPort = 0;
@@ -430,7 +431,7 @@ namespace EQPacket
 
                                 ErrorsInStream = true;
 
-			                    FragmentSeq = -1;
+			                    FragmentSeq[(int)Direction] = -1;
 
                                 AdvanceSeq(Direction);
                             }
@@ -538,109 +539,93 @@ namespace EQPacket
                     {
                         Debug("Uncompressed data.");
                         Debug(Utils.HexDump(Uncompressed));
-                    }
+                    }                    
 
-                    if (Direction == PacketDirection.ClientToServer)
-                    {
-                        int CSFragmentSeq = (Uncompressed[0] * 256) + Uncompressed[1];
-
-                        if (CSFragmentSeq > GetExpectedSeq(Direction))
-                            AddToCache(CSFragmentSeq, Direction, Payload, PacketTime, SubPacket);
-                        else
-                        {
-                            AdvanceSeq(Direction);
-                            if (DEBUG)
-                                Debug("Ignoring Fragmented packet from client ... can't handle it yet.");
-                        }
-
-                        break;
-                    }
-
-                    if (FragmentSeq == -1)
+                    if (FragmentSeq[(int)Direction] == -1)
                     {
                         if (DEBUG)
 		                    Debug("First fragment.");
 
-                        FragmentSeq = (Uncompressed[0] * 256) + Uncompressed[1];
+                        FragmentSeq[(int)Direction] = (Uncompressed[0] * 256) + Uncompressed[1];
 
                         if (DEBUG)
-                            Debug("FragmentSeq is " + FragmentSeq + " Expecting " + GetExpectedSeq(Direction));
+                            Debug("FragmentSeq is " + FragmentSeq[(int)Direction] + " Expecting " + GetExpectedSeq(Direction));
 
-                        if (FragmentSeq != GetExpectedSeq(Direction))
+                        if (FragmentSeq[(int)Direction] != GetExpectedSeq(Direction))
                         {			                
-                            if (FragmentSeq > GetExpectedSeq(Direction))
+                            if (FragmentSeq[(int)Direction] > GetExpectedSeq(Direction))
                             {
-                                if((FragmentSeq - GetExpectedSeq(Direction)) < 1000)
-                                    AddToCache(FragmentSeq, Direction, Payload, PacketTime, SubPacket);
+                                if((FragmentSeq[(int)Direction] - GetExpectedSeq(Direction)) < 1000)
+                                    AddToCache(FragmentSeq[(int)Direction], Direction, Payload, PacketTime, SubPacket);
                                 else
                                 {
 			                        Log("Giving up on seeing expected fragment.");
 
                                     ErrorsInStream = true;
 
-				                    FragmentSeq = -1;
+				                    FragmentSeq[(int)Direction] = -1;
 
                                     AdvanceSeq(Direction);
                                 }
                             }
-                            FragmentSeq = -1;
+                            FragmentSeq[(int)Direction] = -1;
                                                         
                             break;
                         }
                         else
                             AdvanceSeq(Direction);
 
-                        FragmentedPacketSize = Uncompressed[2] * 0x1000000 + Uncompressed[3] * 0x10000 + Uncompressed[4] * 0x100 + Uncompressed[5];
+                        FragmentedPacketSize[(int)Direction] = Uncompressed[2] * 0x1000000 + Uncompressed[3] * 0x10000 + Uncompressed[4] * 0x100 + Uncompressed[5];
 
-			            if((FragmentedPacketSize == 0) || (FragmentedPacketSize > 1000000))
+			            if((FragmentedPacketSize[(int)Direction] == 0) || (FragmentedPacketSize[(int)Direction] > 1000000))
 			            {
                             if (DEBUG)
-			                    Debug("Got a fragmented packet of size " + FragmentedPacketSize +". Discarding.");
+			                    Debug("Got a fragmented packet of size " + FragmentedPacketSize[(int)Direction] + ". Discarding.");
 
 			                ErrorsInStream = true;
 
-			                FragmentSeq = -1;
+			                FragmentSeq[(int)Direction] = -1;
 
 			                break;
 			            }
-                        FragmentedBytesCollected = Uncompressed.Length - 6;
+                        FragmentedBytesCollected[(int)Direction] = Uncompressed.Length - 6;
 
                         if (DEBUG)
-			                Debug("Total packet size is " + FragmentedPacketSize);
+			                Debug("Total packet size is " + FragmentedPacketSize[(int)Direction]);
 
-			            if((Uncompressed.Length - 6) > FragmentedPacketSize)
+			            if((Uncompressed.Length - 6) > FragmentedPacketSize[(int)Direction])
 			            {
 			                Log("Mangled fragment.");
 
 			                ErrorsInStream = true;
 
-			                FragmentSeq = -1;
+			                FragmentSeq[(int)Direction] = -1;
 
 			                break;
 			            }
 
-                        Fragments = new byte[FragmentedPacketSize];
+                        Fragments[(int)Direction] = new byte[FragmentedPacketSize[(int)Direction]];
 
                         if (DEBUG)
                             Debug("Copying " + (Uncompressed.Length - 6) + " bytes to Fragments starting at index 0");
 
-			            Array.Copy(Uncompressed, 6, Fragments, 0, Uncompressed.Length - 6);
+			            Array.Copy(Uncompressed, 6, Fragments[(int)Direction], 0, Uncompressed.Length - 6);
                     }
                     else
                     {
-                        int LastSeq = FragmentSeq;
+                        int LastSeq = FragmentSeq[(int)Direction];
 
-                        FragmentSeq = (Uncompressed[0] * 256) + Uncompressed[1];
+                        FragmentSeq[(int)Direction] = (Uncompressed[0] * 256) + Uncompressed[1];
 
                         if (DEBUG)
-                            Debug("FragmentSeq is " + FragmentSeq + ". Expecting " + GetExpectedSeq(Direction));
+                            Debug("FragmentSeq is " + FragmentSeq[(int)Direction] + ". Expecting " + GetExpectedSeq(Direction));
 
-                        if (FragmentSeq != GetExpectedSeq(Direction))
+                        if (FragmentSeq[(int)Direction] != GetExpectedSeq(Direction))
                         {
-                            if (FragmentSeq > GetExpectedSeq(Direction))
+                            if (FragmentSeq[(int)Direction] > GetExpectedSeq(Direction))
                             {
-                                if((FragmentSeq - GetExpectedSeq(Direction)) < 1000)
-                                    AddToCache(FragmentSeq, Direction, Payload, PacketTime, SubPacket);
+                                if ((FragmentSeq[(int)Direction] - GetExpectedSeq(Direction)) < 1000)
+                                    AddToCache(FragmentSeq[(int)Direction], Direction, Payload, PacketTime, SubPacket);
 				                else
 				                {
     			                    Log("Giving up on seeing expected fragment.");
@@ -649,7 +634,7 @@ namespace EQPacket
 
                                     AdvanceSeq(Direction);
 
-				                    FragmentSeq = -1;
+                                    FragmentSeq[(int)Direction] = -1;
 				                }
                             }                            
                             break;
@@ -658,53 +643,53 @@ namespace EQPacket
                             AdvanceSeq(Direction);
 
                         if (DEBUG)
-                            Debug("Copying " + (Uncompressed.Length - 2) + " bytes from Uncompressed to Fragments starting at " + FragmentedBytesCollected);
+                            Debug("Copying " + (Uncompressed.Length - 2) + " bytes from Uncompressed to Fragments starting at " + FragmentedBytesCollected[(int)Direction]);
 
-			            if((Uncompressed.Length - 2) > (Fragments.Length - FragmentedBytesCollected))
+                        if ((Uncompressed.Length - 2) > (Fragments[(int)Direction].Length - FragmentedBytesCollected[(int)Direction]))
 			            {
 			                Log("Mangled fragment. Discarding.");
 
                             ErrorsInStream = true;
 
-			                FragmentSeq = -1;
+                            FragmentSeq[(int)Direction] = -1;
 
 			                break;
 			            }
 
-                        Array.Copy(Uncompressed, 2, Fragments, FragmentedBytesCollected, Uncompressed.Length - 2);
+                        Array.Copy(Uncompressed, 2, Fragments[(int)Direction], FragmentedBytesCollected[(int)Direction], Uncompressed.Length - 2);
 
-                        FragmentedBytesCollected += Uncompressed.Length - 2;
+                        FragmentedBytesCollected[(int)Direction] += Uncompressed.Length - 2;
 
-                        if (FragmentedBytesCollected == FragmentedPacketSize)
+                        if (FragmentedBytesCollected[(int)Direction] == FragmentedPacketSize[(int)Direction])
                         {
                             if (DEBUG)
                                 Debug("Got whole packet.");
 
-                            if ((Fragments[0] == 0x00) && (Fragments[1] == 0x019))
+                            if ((Fragments[(int)Direction][0] == 0x00) && (Fragments[1][(int)Direction] == 0x019))
                             {
                                 if (DEBUG)
                                     Debug("Multi packet.");
 
                                 int BufferPosition = 2;
 
-                                while (BufferPosition < Fragments.Length)
+                                while (BufferPosition < Fragments[(int)Direction].Length)
                                 {
                                     int Size = 0;
 
-                                    if (Fragments[BufferPosition] == 0xff)
+                                    if (Fragments[(int)Direction][BufferPosition] == 0xff)
                                     {
-                                        if(Fragments[BufferPosition + 1] == 0x01)
-                                            Size = 256 + Fragments[BufferPosition + 2];
+                                        if (Fragments[(int)Direction][BufferPosition + 1] == 0x01)
+                                            Size = 256 + Fragments[(int)Direction][BufferPosition + 2];
                                         else
-                                            Size = Fragments[BufferPosition + 2];
+                                            Size = Fragments[(int)Direction][BufferPosition + 2];
 
                                         BufferPosition += 3;
                                     }
                                     else
-                                        Size = Fragments[BufferPosition++];
+                                        Size = Fragments[(int)Direction][BufferPosition++];
 
                                     int OpCodeBytes = 2;
-                                    int AppOpCode = Fragments[BufferPosition++];
+                                    int AppOpCode = Fragments[(int)Direction][BufferPosition++];
 
                                     if (AppOpCode == 0)
                                     {
@@ -712,9 +697,9 @@ namespace EQPacket
                                         OpCodeBytes = 3;
                                     }
 
-                                    AppOpCode += (Fragments[BufferPosition++] * 256);                                    
-                                                                        
-                                    ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - OpCodeBytes, Fragments, BufferPosition, Direction, PacketTime);
+                                    AppOpCode += (Fragments[(int)Direction][BufferPosition++] * 256);
+
+                                    ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - OpCodeBytes, Fragments[(int)Direction], BufferPosition, Direction, PacketTime);
                                     
                                     BufferPosition = BufferPosition + (Size - OpCodeBytes);
                                 }
@@ -723,7 +708,7 @@ namespace EQPacket
                             {
                                 int BufferPosition = 0;
                                 int OpCodeBytes = 2;
-                                int AppOpCode = Fragments[BufferPosition++];
+                                int AppOpCode = Fragments[(int)Direction][BufferPosition++];
 
                                 if (AppOpCode == 0)
                                 {
@@ -731,18 +716,18 @@ namespace EQPacket
                                     OpCodeBytes = 3;
                                 }
 
-                                AppOpCode += (Fragments[BufferPosition++] * 256);                                
+                                AppOpCode += (Fragments[(int)Direction][BufferPosition++] * 256);
 
-                                byte[] NewPacket = new byte[Fragments.Length - OpCodeBytes];
+                                byte[] NewPacket = new byte[Fragments[(int)Direction].Length - OpCodeBytes];
 
-				                Array.Copy(Fragments, BufferPosition, NewPacket, 0, Fragments.Length - OpCodeBytes);
+                                Array.Copy(Fragments[(int)Direction], BufferPosition, NewPacket, 0, Fragments[(int)Direction].Length - OpCodeBytes);
                                 
                                 ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction, PacketTime);
                             }
                             if (DEBUG)
                                 Debug("Reseting FragmentSeq to -1");
 
-                            FragmentSeq = -1;
+                            FragmentSeq[(int)Direction] = -1;
                         }
                     }
                 
