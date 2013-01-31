@@ -565,12 +565,12 @@ void QuestManager::depop_withtimer(int npc_type) { // depop NPC and start spawn 
 				tmp->CastToNPC()->Depop(true);
 			}
 			else {
-				depop_npc = true;
+				owner->Depop(true);
 			}
 		}
 	}
 	else {	//depop self
-		depop_npc = true;
+		owner->Depop(true);
 	}
 }
 
