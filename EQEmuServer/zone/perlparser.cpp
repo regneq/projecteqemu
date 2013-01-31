@@ -684,6 +684,26 @@ XS(XS__depop)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__depop_withtimer);
+XS(XS__depop_withtimer)
+{
+	dXSARGS;
+	if (items < 0 || items > 1)
+		Perl_croak(aTHX_ "Usage: depop_withtimer(npc_type= 0)");
+
+	int	npc_type;
+
+	if (items < 1)
+		npc_type = 0;
+	else
+		npc_type = (int)SvIV(ST(0));
+
+
+	quest_manager.depop_withtimer(npc_type);
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__depopall);
 XS(XS__depopall)
 {
@@ -3510,6 +3530,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "shout2"), XS__shout2, file);
 		newXS(strcpy(buf, "gmsay"), XS__gmsay, file);
 		newXS(strcpy(buf, "depop"), XS__depop, file);
+		newXS(strcpy(buf, "depop_withtimer"), XS__depop_withtimer, file);
 		newXS(strcpy(buf, "settarget"), XS__settarget, file);
 		newXS(strcpy(buf, "follow"), XS__follow, file);
 		newXS(strcpy(buf, "sfollow"), XS__sfollow, file);
