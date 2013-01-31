@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+== 01/30/2013 ==
+Kayen: Various AA fixes, mostly related to SOF display issues.
+
+REQUIRED SQL: utils/sql/svn/2471_required_aa_updates.sql
+
+
 == 01/29/2013 ==
 Secrets: Another attempt to fix this bot/merc group crash on zoning.
 cavedude: Added $client->GetInstanceID() Perl export.
