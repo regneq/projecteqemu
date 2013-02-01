@@ -3127,14 +3127,27 @@ struct Trader_Struct {
 	uint32	itemcost[80];
 };
 
-struct ClickTrader_Struct {
+struct ClickTrader_Struct_old {
 	uint32	code;
 	uint32	unknown[161];//damn soe this is totally pointless :/ but at least your finally using memset! Good job :) -LE
 	uint32	itemcost[80];
 };
 
-struct GetItems_Struct{
-	uint32	items[80];
+struct TraderItemSerial_Struct {
+	char	SerialNumber[17];
+	uint8	Unknown18;
+};
+
+
+struct ClickTrader_Struct {
+/*0000*/	uint32	Code;
+/*0004*/	TraderItemSerial_Struct	items[200];
+/*3604*/	uint32	ItemCost[200];
+/*4404*/
+};
+
+struct GetItems_Struct {
+	uint32	items[200];
 };
 
 struct BecomeTrader_Struct{
@@ -3142,10 +3155,20 @@ struct BecomeTrader_Struct{
 	uint32 code;
 };
 
-struct Trader_ShowItems_Struct{
+struct Trader_ShowItems_Struct_old {
 	uint32 code;
 	uint32 traderid;
 	uint32 unknown08[3];
+};
+
+struct Trader_ShowItems_Struct{
+/*000*/	uint32 Code;
+/*004*/	char   SerialNumber[17];
+/*021*/	uint8  Unknown21;
+/*022*/	uint32 TraderID;
+/*026*/	uint32 Unknown26;
+/*030*/	uint32 Unknown30;
+/*032*/
 };
 
 struct TraderBuy_Struct {
@@ -4212,8 +4235,8 @@ struct AnnoyingZoneUnknown_Struct {
 };
 
 struct LoadSpellSet_Struct {
-      uint32  spell[MAX_PP_MEMSPELL];      // 0xFFFFFFFF if no action, slot number if to unmem starting at 0
-      uint32 unknown;	//there seems to be an extra field in this packet...
+	uint8	spell[12];	// 0xFFFFFFFF if no action, slot number if to unmem starting at 0
+	uint32	unknown;	//Seen 12 - Maybe a gem count?
 };
 
 struct BlockedBuffs_Struct

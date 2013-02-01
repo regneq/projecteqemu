@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 02/01/2013 ==
+Trevius: RoF: Loading Spell Sets now unmems spells before meming the new set.
+Trevius: RoF: Turning on Trader mode in bazaar now works, but no further trader functionality is available yet.
+
 == 01/31/2013 ==
 cavedude00: (demonstar55) Rune aggro fix
 cavedude00: (Drajor) Tradeskill skillneeded fix.

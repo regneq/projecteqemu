@@ -152,5 +152,6 @@ D(OP_RecipeAutoCombine)
 D(OP_GuildDemote)
 D(OP_GuildRemove)
 D(OP_GuildStatus)
+D(OP_Trader)
 #undef E
 #undef D

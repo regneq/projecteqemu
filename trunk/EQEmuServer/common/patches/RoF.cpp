@@ -2876,13 +2876,34 @@ ENCODE(OP_ItemVerifyReply) {
 
 ENCODE(OP_Trader) {
 
-	if((*p)->size != sizeof(TraderBuy_Struct)) {
-		EQApplicationPacket *in = *p;
-		*p = NULL;
-		dest->FastQueuePacket(&in, ack_req);
-		return;
+	if((*p)->size == sizeof(ClickTrader_Struct))
+	{
+		ENCODE_LENGTH_EXACT(ClickTrader_Struct);
+		SETUP_DIRECT_ENCODE(ClickTrader_Struct, structs::ClickTrader_Struct);
+
+		eq->Code = emu->Code;
+		// Live actually has 200 items now, but 80 is the most our internal struct supports
+		for (uint32 i = 0; i < 200; i++)
+		{
+			strncpy(eq->items[i].SerialNumber, "00000000000000000", sizeof(eq->items[i].SerialNumber));
+			eq->items[i].Unknown18 = 0;
+			if (i < 80)
+				eq->ItemCost[i] = emu->ItemCost[i];
+			else
+				eq->ItemCost[i] = 0;
+		}
+		FINISH_ENCODE();
 	}
-	ENCODE_FORWARD(OP_TraderBuy);
+	else if((*p)->size == sizeof(Trader_ShowItems_Struct))
+	{
+		ENCODE_LENGTH_EXACT(Trader_ShowItems_Struct);
+		SETUP_DIRECT_ENCODE(Trader_ShowItems_Struct, structs::Trader_ShowItems_Struct);
+		eq->Code = emu->Code;
+		eq->TraderID = emu->TraderID;
+		FINISH_ENCODE();
+	}
+	else
+		ENCODE_FORWARD(OP_TraderBuy);
 }
 
 ENCODE(OP_TraderBuy) {
@@ -4424,6 +4445,37 @@ DECODE(OP_FindPersonRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
+
+DECODE(OP_Trader) {
+	uint32 psize = __packet->size;
+	if(psize == sizeof(structs::ClickTrader_Struct))
+	{
+		DECODE_LENGTH_EXACT(structs::ClickTrader_Struct);
+		SETUP_DIRECT_DECODE(ClickTrader_Struct, structs::ClickTrader_Struct);
+		MEMSET_IN(ClickTrader_Struct);
+
+		emu->Code = eq->Code;
+		// Live actually has 200 items now, but 80 is the most our internal struct supports
+		for (uint32 i = 0; i < 80; i++)
+		{
+			emu->SerialNumber[i] = 0;	// eq->SerialNumber[i];
+			emu->ItemCost[i] = eq->ItemCost[i];
+		}
+		FINISH_DIRECT_DECODE();
+	}
+	else if(psize == sizeof(structs::Trader_ShowItems_Struct))
+	{
+		DECODE_LENGTH_EXACT(structs::Trader_ShowItems_Struct);
+		SETUP_DIRECT_DECODE(Trader_ShowItems_Struct, structs::Trader_ShowItems_Struct);
+		MEMSET_IN(Trader_ShowItems_Struct);
+
+		emu->Code = eq->Code;
+		emu->TraderID = eq->TraderID;
+
+		FINISH_DIRECT_DECODE();
+	}
+}
+
 DECODE(OP_TraderBuy)
 {
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
@@ -4545,11 +4597,15 @@ DECODE(OP_LoadSpellSet)
 	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
 
 	for(unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
-		emu->spell[i] = eq->spell[i];
+	{
+		if (eq->spell[i] == 0)
+			emu->spell[i] = 0xFFFFFFFF;
+		else
+			emu->spell[i] = eq->spell[i];
+	}
 
 	FINISH_DIRECT_DECODE();
 }
-
 DECODE(OP_Damage) {
 	DECODE_LENGTH_EXACT(structs::CombatDamage_Struct);
 	SETUP_DIRECT_DECODE(CombatDamage_Struct, structs::CombatDamage_Struct);
@@ -4688,6 +4744,23 @@ char* SerializeItem(const ItemInst *inst, int16 slot_id_in, uint32 *length, uint
 	RoF::structs::ItemSerializationHeader hdr;
 
 	sprintf(hdr.unknown000, "06e0002Y1W00");
+
+	// Copy the item id to the end of the serial string (i.e. "0000000012345")
+	// There is sure to be a much easier way of doing this
+	/*
+	sprintf(hdr.unknown000, "0000000000000");
+	char idstr[13];
+	sprintf(idstr, itoa(item->ID));
+	uint8 idlen = strlen(idstr);
+	uint8 seriallen = strlen(hdr.unknown000);
+	uint8 charcount = 0;
+	for (uint8 id_char = (seriallen - idlen); id_char < seriallen; id_char++)
+	{
+		hdr.unknown000[id_char] = idstr[charcount];
+		charcount++;
+	}
+	*/
+
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
