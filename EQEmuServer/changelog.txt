@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/31/2013 ==
+cavedude00: (demonstar55) Rune aggro fix
+cavedude00: (Drajor) Tradeskill skillneeded fix.
 
 == 01/30/2013 ==
 Kayen: Various AA fixes, mostly related to SOF display issues.

@@ -271,6 +271,15 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
  		safe_delete(outapp);
  		return;
  	}
+	// Character does not have the required skill.
+	if(spec.skill_needed > 0 && user->GetSkill(spec.tradeskill) < spec.skill_needed ) {
+		// Notify client.
+		user->Message(4, "You are not skilled enough.");
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
+		user->QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
  	
 	//changing from a switch to string of if's since we don't need to iterate through all of the skills in the SkillType enum
 	if (spec.tradeskill == ALCHEMY) {
