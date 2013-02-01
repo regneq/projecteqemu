@@ -7834,6 +7834,13 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 	_pkt(TRADING__PACKETS, app);
 
+	uint32 max_items = 80;
+
+	/*
+	if (GetClientVersion() >= EQClientRoF)
+		max_items = 200;
+	*/
+
 	if(app->size==sizeof(Trader_ShowItems_Struct)){ //Show Items
 
 		Trader_ShowItems_Struct* sis = (Trader_ShowItems_Struct*)app->pBuffer;
@@ -7889,7 +7896,7 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 			// Verify there are no NODROP or items with a zero price
 			bool TradeItemsValid = true;
 
-			for(int i=0; i<80; i++) {
+			for(int i=0; i<max_items; i++) {
 
 				if(gis->Items[i] == 0) break;
 
@@ -7918,7 +7925,7 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 				return;
 			}
 
-			for(int i=0;i<80;i++){
+			for(int i=0;i<max_items;i++){
 				if(gis->Items[i]>0 && gis->Items[i]<database.GetMaxItem() && database.GetItem(gis->Items[i])!=0)
 					database.SaveTraderItem(this->CharacterID(),gis->Items[i],gis->SerialNumber[i],
 								gis->Charges[i],ints->ItemCost[i],i);
