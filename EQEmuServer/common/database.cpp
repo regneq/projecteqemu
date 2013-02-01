@@ -2064,7 +2064,7 @@ uint32 Database::GetGroupID(const char* name){
 				groupid=atoi(row[0]);
 		}
 		else
-		LogFile->write(EQEMuLog::Error, "Unable to get groupid, character not found!");
+		LogFile->write(EQEMuLog::Debug, "Character not in a group: %s", name);
 		mysql_free_result(result);
 	}
 	else
