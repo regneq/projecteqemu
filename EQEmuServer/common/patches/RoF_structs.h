@@ -1891,11 +1891,12 @@ struct GMGoto_Struct { // x,y is swapped as compared to summon and makes sense a
 };
 
 struct GMLastName_Struct {
-	char name[64];
-	char gmname[64];
-	char lastname[64];
-	uint16 unknown[4];	// 0x00, 0x00
-					    // 0x01, 0x00 = Update the clients
+/*000*/	char name[64];
+/*064*/	char gmname[64];
+/*128*/	char lastname[64];
+/*192*/	uint16 unknown[4];	// 0x00, 0x00, 0x01, 0x00 = Update the clients
+/*200*/	uint32 unknown200[8];
+/*232*/
 };
 
 struct OnLevelMessage_Struct {

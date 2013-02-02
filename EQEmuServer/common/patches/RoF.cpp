@@ -2525,6 +2525,19 @@ ENCODE(OP_GMTrainSkillConfirm) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_GMLastName) {
+	ENCODE_LENGTH_EXACT(GMLastName_Struct);
+	SETUP_DIRECT_ENCODE(GMLastName_Struct, structs::GMLastName_Struct);
+	OUT_str(name);
+	OUT_str(gmname);
+	OUT_str(lastname);
+	for (int i=0; i<4; i++)
+	{
+		eq->unknown[i] = emu->unknown[i];
+	}
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_SkillUpdate) {
 	ENCODE_LENGTH_EXACT(SkillUpdate_Struct);
 	SETUP_DIRECT_ENCODE(SkillUpdate_Struct, structs::SkillUpdate_Struct);
@@ -4401,6 +4414,20 @@ DECODE(OP_GroupCancelInvite)
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_GMLastName)
+{
+	DECODE_LENGTH_EXACT(structs::GMLastName_Struct);
+	SETUP_DIRECT_DECODE(GMLastName_Struct, structs::GMLastName_Struct);
+	memcpy(emu->name, eq->name, sizeof(emu->name));
+	memcpy(emu->gmname, eq->gmname, sizeof(emu->gmname));
+	memcpy(emu->lastname, eq->lastname, sizeof(emu->lastname));
+	for (int i=0; i<4; i++)
+	{
+		emu->unknown[i] = eq->unknown[i];
+	}
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_Buff) {
 	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct_Live);
 	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
@@ -4743,23 +4770,9 @@ char* SerializeItem(const ItemInst *inst, int16 slot_id_in, uint32 *length, uint
 	
 	RoF::structs::ItemSerializationHeader hdr;
 
-	sprintf(hdr.unknown000, "06e0002Y1W00");
+	//sprintf(hdr.unknown000, "06e0002Y1W00");
 
-	// Copy the item id to the end of the serial string (i.e. "0000000012345")
-	// There is sure to be a much easier way of doing this
-	/*
-	sprintf(hdr.unknown000, "0000000000000");
-	char idstr[13];
-	sprintf(idstr, itoa(item->ID));
-	uint8 idlen = strlen(idstr);
-	uint8 seriallen = strlen(hdr.unknown000);
-	uint8 charcount = 0;
-	for (uint8 id_char = (seriallen - idlen); id_char < seriallen; id_char++)
-	{
-		hdr.unknown000[id_char] = idstr[charcount];
-		charcount++;
-	}
-	*/
+	snprintf( hdr.unknown000, sizeof(hdr.unknown000), "%012d", item->ID );
 
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
