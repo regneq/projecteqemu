@@ -878,7 +878,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 			case MONK:
 			case BARD:
 			case ROGUE:
-				//		case BEASTLORD:
+			//case BEASTLORD:
 				if (tmplevel < 51)
 					multiplier = 18;
 				else if (tmplevel < 58)
@@ -919,37 +919,22 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 			sprintf(sep.arg[4],"%i",5+multiplier*atoi(sep.arg[2])+multiplier*atoi(sep.arg[2])*75/300);
 		}
 		
-		// Autoselect NPC Gender... (Scruffy)
+		// Autoselect NPC Gender
 		if (sep.arg[5][0] == 0) {
 			sprintf(sep.arg[5], "%i", (int) Mob::GetDefaultGender(atoi(sep.arg[1])));
 		}
 		
-		if (client) {
-			// Well we want everyone to know what they spawned, right? 
-			client->Message(0, "New spawn:");
-			client->Message(0, "Name: %s",sep.arg[0]);
-			client->Message(0, "Race: %s",sep.arg[1]);
-			client->Message(0, "Level: %s",sep.arg[2]);
-			client->Message(0, "Material: %s",sep.arg[3]);
-			client->Message(0, "Current/Max HP: %s",sep.arg[4]);
-			client->Message(0, "Gender: %s",sep.arg[5]);
-			client->Message(0, "Class: %s",sep.arg[6]);
-			
-			client->Message(0, "Weapon Item Number: %s/%s",sep.arg[7],sep.arg[8]);
-			client->Message(0, "MerchantID: %s",sep.arg[9]);
-			client->Message(0, "Bodytype: %s",sep.arg[10]);
-		}
 		//Time to create the NPC!! 
 		NPCType* npc_type = new NPCType;
 		memset(npc_type, 0, sizeof(NPCType));
 		
-		strcpy(npc_type->name,sep.arg[0]);
+		strncpy(npc_type->name, sep.arg[0], 60);
 		npc_type->cur_hp = atoi(sep.arg[4]); 
 		npc_type->max_hp = atoi(sep.arg[4]); 
 		npc_type->race = atoi(sep.arg[1]);
 		npc_type->gender = atoi(sep.arg[5]); 
 		npc_type->class_ = atoi(sep.arg[6]); 
-		npc_type->deity= 1;
+		npc_type->deity = 1;
 		npc_type->level = atoi(sep.arg[2]);
 		npc_type->npc_id = 0;
 		npc_type->loottable_id = 0;
@@ -974,9 +959,24 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 		
 		NPC* npc = new NPC(npc_type, 0, in_x, in_y, in_z, in_heading/8, FlyMode3);
 		npc->GiveNPCTypeData(npc_type);
-		//safe_delete(npc_type);
 		
 		entity_list.AddNPC(npc);
+
+		if (client) {
+			// Notify client of spawn data 
+			client->Message(0, "New spawn:");
+			client->Message(0, "Name: %s", npc->name);
+			client->Message(0, "Race: %u", npc->race);
+			client->Message(0, "Level: %u", npc->level);
+			client->Message(0, "Material: %u", npc->texture);
+			client->Message(0, "Current/Max HP: %i", npc->max_hp);
+			client->Message(0, "Gender: %u", npc->gender);
+			client->Message(0, "Class: %u", npc->class_);
+			client->Message(0, "Weapon Item Number: %u/%u", npc->d_meele_texture1, npc->d_meele_texture2);
+			client->Message(0, "MerchantID: %u", npc->MerchantType);
+			client->Message(0, "Bodytype: %u", npc->bodytype);
+		}
+
 		return npc;
 	}
 }

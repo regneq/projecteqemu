@@ -169,7 +169,7 @@ Mob::Mob(const char*   in_name,
 	orig_bodytype = in_bodytype;
 	deity		= in_deity;
 	level		= in_level;
-	npctype_id	= in_npctype_id; // rembrant, Dec. 20, 2001
+	npctype_id	= in_npctype_id;
 	size		= in_size;
 	base_size	= size;
 	runspeed   = in_runspeed;
@@ -780,7 +780,7 @@ void Mob::CreateSpawnPacket(EQApplicationPacket* app, NewSpawn_Struct* ns) {
 	else if (ns->spawn.class_==RANGERGM)
 		strcpy(ns2->spawn.lastName, "GM Ranger");
 	else if (ns->spawn.class_==SHADOWKNIGHTGM)
-		strcpy(ns2->spawn.lastName, "GM ShadowKnight");
+		strcpy(ns2->spawn.lastName, "GM Shadowknight");
 	else if (ns->spawn.class_==DRUIDGM)
 		strcpy(ns2->spawn.lastName, "GM Druid");
 	else if (ns->spawn.class_==BARDGM)

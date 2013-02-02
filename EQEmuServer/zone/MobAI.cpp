@@ -1606,7 +1606,7 @@ void NPC::AI_DoMovement() {
 					sprintf(temp, "%d", cur_wp);
 					parse->EventNPC(EVENT_WAYPOINT_ARRIVE, CastToNPC(), NULL, temp, 0);
 					
-					// EverHood - wipe feign memory since we reached our first waypoint
+					// wipe feign memory since we reached our first waypoint
 					if(cur_wp == 1)
 						ClearFeignMemory();
 				} 

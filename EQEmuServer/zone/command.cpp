@@ -2824,7 +2824,6 @@ void command_level(Client *c, const Seperator *sep)
 
 void command_spawn(Client *c, const Seperator *sep)
 {
-	// Image's Spawn Code -- Rewrite by Scruffy
 	if (sep->arg[1][0] != 0){
 		Client* client = entity_list.GetClientByName(sep->arg[1]);
 		if(client){
@@ -2836,22 +2835,8 @@ void command_spawn(Client *c, const Seperator *sep)
 		LogFile->write(EQEMuLog::Debug,"#spawn Spawning:");
 	#endif
 	
-	// Well it needs a name!!!
 	NPC* npc = NPC::SpawnNPC(sep->argplus[1], c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), c);
-	if (npc) {
-		// Disgrace: add some loot to it!
-		npc->AddCash();
-/*
-		int itemcount = MakeRandomInt(1,5);
-		for (int counter=0; counter<itemcount; counter++) {
-			const Item_Struct* item = 0;
-			while (item == 0)
-			item = database.GetItem(MakeRandomInt(0, 32999));
-			npc->AddItem(item, 0, 0);
-		}
-*/
-	}
-	else {
+	if (!npc) {
 		c->Message(0, "Format: #spawn name race level material hp gender class priweapon secweapon merchantid bodytype - spawns a npc those parameters.");
 		c->Message(0, "Name Format: NPCFirstname_NPCLastname - All numbers in a name are stripped and \"_\" characters become a space.");
 		c->Message(0, "Note: Using \"-\" for gender will autoselect the gender for the race. Using \"-\" for HP will use the calculated maximum HP.");
