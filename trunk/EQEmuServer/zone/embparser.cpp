@@ -272,6 +272,7 @@ void PerlembParser::EventCommon(QuestEventID event, uint32 objid, const char * d
 	if(!isPlayerQuest && !isGlobalPlayerQuest && !isItemQuest && !isSpellQuest){
 
 		if(global){
+			isGlobalNPC = true;
 			packagename = "global_npc";
 			LoadGlobalNPCScript();
 		}else{

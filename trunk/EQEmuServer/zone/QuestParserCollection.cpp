@@ -49,6 +49,13 @@ void QuestParserCollection::ReloadQuests(bool reset_timers) {
 
 bool QuestParserCollection::HasQuestSub(uint32 npcid, const char *subname) {
     std::map<uint32, uint32>::iterator iter = _npc_quest_status.find(npcid);
+	if(_global_npc_quest_status == QuestUnloaded){
+		QuestInterface *qi = GetQIByGlobalNPCQuest();
+        if(qi) {
+            _global_npc_quest_status = qi->GetIdentifier();
+			return qi->HasGlobalQuestSub(subname);
+        }
+	}
     if(iter != _npc_quest_status.end()) {
         //loaded or failed to load
         if(iter->second != QuestFailedToLoad) {
