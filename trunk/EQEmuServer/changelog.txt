@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 02/02/2013 ==
+Trevius: RoF: Fixed some opcodes related to surnames and traders.  Surnames can now be cleared.
+
 == 02/01/2013 ==
 Trevius: RoF: Loading Spell Sets now unmems spells before meming the new set.
 Trevius: RoF: Turning on Trader mode in bazaar now works, but no further trader functionality is available yet.

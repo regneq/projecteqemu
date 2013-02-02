@@ -2730,7 +2730,7 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 		return;
 	}
 
-	if(!p_timers.Expired(&database, pTimerSurnameChange, false))
+	if(!p_timers.Expired(&database, pTimerSurnameChange, false) && !GetGM())
 	{
 		Message(15, "You may only change surnames once every 7 days, your /surname is currently on cooldown.");
 		return;
