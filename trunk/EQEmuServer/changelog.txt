@@ -1,7 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 02/03/2013 ==
+Trevius: RoF: More work on Bazaar Traders.
+
 == 02/02/2013 ==
 Trevius: RoF: Fixed some opcodes related to surnames and traders.  Surnames can now be cleared.
+JJ: Fix to #spawn: Automatically truncate name if too long so spawn will happen as expected rather than a NameTooLong NPC.
+JJ: Fix to #spawn: Output actual NPC result after creation rather than projected result before.
 
 == 02/01/2013 ==
 Trevius: RoF: Loading Spell Sets now unmems spells before meming the new set.

@@ -712,7 +712,7 @@ void Client::Trader_ShowItems(){
 	safe_delete(TraderItems);
 }
 
-void Client::SendTraderPacket(Client* Trader)
+void Client::SendTraderPacket(Client* Trader, uint32 Unknown72)
 {
 	if(!Trader)
 		return;
@@ -727,7 +727,7 @@ void Client::SendTraderPacket(Client* Trader)
 
 	strn0cpy(bts->Name, Trader->GetName(), sizeof(bts->Name));
 
-	bts->Unknown072 = 0x33;
+	bts->Unknown072 = Unknown72;
 
 	QueuePacket(outapp);
 
@@ -769,22 +769,7 @@ void Client::Trader_StartTrader() {
 	safe_delete(outapp);
 
 	// Notify other clients we are now in trader mode
-	//
-	outapp= new EQApplicationPacket(OP_BecomeTrader, sizeof(BecomeTrader_Struct));
-
-	BecomeTrader_Struct* bts = (BecomeTrader_Struct*)outapp->pBuffer;
-
-	bts->Code = 1;
-
-	bts->ID = this->GetID();
-
-	strn0cpy(bts->Name, GetName(), sizeof(bts->Name));
-
-	entity_list.QueueClients(this, outapp, false);
-
-	_pkt(TRADING__PACKETS, outapp);
-
-	safe_delete(outapp);
+	SendTraderPacket(this, 0);
 }
 
 void Client::Trader_EndTrader() {

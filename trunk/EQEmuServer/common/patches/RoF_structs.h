@@ -2841,7 +2841,10 @@ enum {
 	BazaarBuyItem = 10,
 	BazaarTrader_ShowItems = 11,
 	BazaarSearchDone = 12,
-	BazaarTrader_CustomerBrowsing = 13
+	BazaarTrader_CustomerBrowsing = 13,
+	BazaarInspectItem = 18,
+	BazaarSearchDone2 = 19,
+	BazaarTrader_StartTraderMode2 = 22
 };
 
 enum {
@@ -3121,24 +3124,17 @@ struct	WhoAllPlayerPart4 {
 	uint32	Unknown100;
 };
 
-struct Trader_Struct {
-	uint32	code;
-	uint32	itemid[160];
-	uint32	unknown;
-	uint32	itemcost[80];
-};
-
-struct ClickTrader_Struct_old {
-	uint32	code;
-	uint32	unknown[161];//damn soe this is totally pointless :/ but at least your finally using memset! Good job :) -LE
-	uint32	itemcost[80];
-};
-
 struct TraderItemSerial_Struct {
 	char	SerialNumber[17];
 	uint8	Unknown18;
 };
 
+struct Trader_Struct {
+/*0000*/	uint32	Code;
+/*0004*/	TraderItemSerial_Struct	items[200];
+/*3604*/	uint32	ItemCost[200];
+/*4404*/
+};
 
 struct ClickTrader_Struct {
 /*0000*/	uint32	Code;
@@ -3151,25 +3147,26 @@ struct GetItems_Struct {
 	uint32	items[200];
 };
 
-struct BecomeTrader_Struct{
+struct BecomeTrader_Struct {
 	uint32 id;
 	uint32 code;
 };
 
-struct Trader_ShowItems_Struct_old {
-	uint32 code;
-	uint32 traderid;
-	uint32 unknown08[3];
-};
-
-struct Trader_ShowItems_Struct{
+struct Trader_ShowItems_Struct {
 /*000*/	uint32 Code;
 /*004*/	char   SerialNumber[17];
 /*021*/	uint8  Unknown21;
-/*022*/	uint32 TraderID;
-/*026*/	uint32 Unknown26;
-/*030*/	uint32 Unknown30;
+/*022*/	uint16 TraderID;
+/*026*/	uint32 Stacksize;
+/*030*/	uint32 Price;
 /*032*/
+};
+
+struct TraderStatus_Struct {
+/*000*/	uint32 Code;
+/*004*/	uint32 Uknown04;
+/*008*/	uint32 Uknown08;
+/*012*/
 };
 
 struct TraderBuy_Struct {
