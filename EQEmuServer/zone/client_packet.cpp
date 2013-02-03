@@ -7841,21 +7841,20 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 		max_items = 200;
 	*/
 
-	if(app->size==sizeof(Trader_ShowItems_Struct)){ //Show Items
-
+	//Show Items
+	if(app->size==sizeof(Trader_ShowItems_Struct))
+	{ 
 		Trader_ShowItems_Struct* sis = (Trader_ShowItems_Struct*)app->pBuffer;
 		
-		switch(sis->Code) {
-			
+		switch(sis->Code)
+		{
 			case BazaarTrader_EndTraderMode: {
 				Trader_EndTrader();
 				break;
 			}
-
 			case BazaarTrader_EndTransaction: {
 
 				Client* c=entity_list.GetClientByID(sis->TraderID);
-
 				if(c)
 					c->WithCustomer(0);
 				else
@@ -7863,34 +7862,29 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 				break;
 			}
-
 			case BazaarTrader_ShowItems: {
-
-				this->Trader_ShowItems();
-
+				Trader_ShowItems();
 				break;
-
 			}
-
 			default: {
 				_log(TRADING__CLIENT, "Unhandled action code in OP_Trader ShowItems_Struct");
-
 				break;
 			}
 		}
 	}
-	else if(app->size==sizeof(ClickTrader_Struct)){
-
+	else if(app->size==sizeof(ClickTrader_Struct))
+	{
 		if(Buyer) {
 			Trader_EndTrader();
 			Message(13, "You cannot be a Trader and Buyer at the same time.");
+			DumpPacket(app);
 			return;
 		}
 
 		ClickTrader_Struct* ints = (ClickTrader_Struct*)app->pBuffer;
 
-		if(ints->Code==BazaarTrader_StartTraderMode){
-
+		if(ints->Code==BazaarTrader_StartTraderMode)
+		{
 			GetItems_Struct* gis=GetTraderItems();
 
 			// Verify there are no NODROP or items with a zero price
@@ -7922,10 +7916,11 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 			if(!TradeItemsValid) {
 				Trader_EndTrader();
+				DumpPacket(app);
 				return;
 			}
 
-			for(int i=0;i<max_items;i++){
+			for (int i=0;i<max_items;i++) {
 				if(gis->Items[i]>0 && gis->Items[i]<database.GetMaxItem() && database.GetItem(gis->Items[i])!=0)
 					database.SaveTraderItem(this->CharacterID(),gis->Items[i],gis->SerialNumber[i],
 								gis->Charges[i],ints->ItemCost[i],i);
@@ -7938,6 +7933,25 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 			safe_delete(gis);
 
 			this->Trader_StartTrader();
+
+			if (GetClientVersion() >= EQClientRoF)
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_Trader, sizeof(TraderStatus_Struct));
+				TraderStatus_Struct* tss = (TraderStatus_Struct*)outapp->pBuffer;
+				tss->Code = BazaarTrader_StartTraderMode2;
+				QueuePacket(outapp);
+				_pkt(TRADING__PACKETS, outapp);
+				safe_delete(outapp);
+			}
+		}
+		else if (app->size==sizeof(TraderStatus_Struct))
+		{
+			TraderStatus_Struct* tss = (TraderStatus_Struct*)app->pBuffer;
+
+			if(tss->Code==BazaarTrader_ShowItems)
+			{
+				Trader_ShowItems();
+			}
 		}
 		else {
 			_log(TRADING__CLIENT,"Client::Handle_OP_Trader: Unknown TraderStruct code of: %i\n",
@@ -7947,8 +7961,8 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 		}
 	}
 
-	else if(app->size==sizeof(TraderPriceUpdate_Struct)){
-
+	else if(app->size==sizeof(TraderPriceUpdate_Struct))
+	{
 		HandleTraderPriceUpdate(app);
 	}
 	else {
@@ -7958,6 +7972,7 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 		return;
 	}
 
+	DumpPacket(app);
 	return;
 }
 

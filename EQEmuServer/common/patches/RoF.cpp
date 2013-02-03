@@ -2898,12 +2898,13 @@ ENCODE(OP_Trader) {
 		// Live actually has 200 items now, but 80 is the most our internal struct supports
 		for (uint32 i = 0; i < 200; i++)
 		{
-			strncpy(eq->items[i].SerialNumber, "00000000000000000", sizeof(eq->items[i].SerialNumber));
+			strncpy(eq->items[i].SerialNumber, "0000000000000000", sizeof(eq->items[i].SerialNumber));
 			eq->items[i].Unknown18 = 0;
-			if (i < 80)
+			if (i < 80) {
 				eq->ItemCost[i] = emu->ItemCost[i];
-			else
+			} else {
 				eq->ItemCost[i] = 0;
+			}
 		}
 		FINISH_ENCODE();
 	}
@@ -2912,11 +2913,23 @@ ENCODE(OP_Trader) {
 		ENCODE_LENGTH_EXACT(Trader_ShowItems_Struct);
 		SETUP_DIRECT_ENCODE(Trader_ShowItems_Struct, structs::Trader_ShowItems_Struct);
 		eq->Code = emu->Code;
+		strncpy(eq->SerialNumber, "0000000000000000", sizeof(eq->SerialNumber));
 		eq->TraderID = emu->TraderID;
+		eq->Stacksize = 0;
+		eq->Price = 0;
 		FINISH_ENCODE();
 	}
-	else
+	else if((*p)->size == sizeof(TraderStatus_Struct))
+	{
+		ENCODE_LENGTH_EXACT(TraderStatus_Struct);
+		SETUP_DIRECT_ENCODE(TraderStatus_Struct, structs::TraderStatus_Struct);
+		eq->Code = emu->Code;
+		FINISH_ENCODE();
+	}
+	else if((*p)->size == sizeof(TraderBuy_Struct))
+	{
 		ENCODE_FORWARD(OP_TraderBuy);
+	}
 }
 
 ENCODE(OP_TraderBuy) {
@@ -4498,6 +4511,16 @@ DECODE(OP_Trader) {
 
 		emu->Code = eq->Code;
 		emu->TraderID = eq->TraderID;
+
+		FINISH_DIRECT_DECODE();
+	}
+	else if(psize == sizeof(structs::TraderStatus_Struct))
+	{
+		DECODE_LENGTH_EXACT(structs::TraderStatus_Struct);
+		SETUP_DIRECT_DECODE(TraderStatus_Struct, structs::TraderStatus_Struct);
+		MEMSET_IN(TraderStatus_Struct);
+
+		emu->Code = eq->Code;
 
 		FINISH_DIRECT_DECODE();
 	}

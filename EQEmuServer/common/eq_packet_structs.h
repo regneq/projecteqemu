@@ -2620,7 +2620,9 @@ enum {
 	BazaarTrader_ShowItems = 11,
 	BazaarSearchDone = 12,
 	BazaarTrader_CustomerBrowsing = 13,
-	BazaarInspectItem = 18
+	BazaarInspectItem = 18,
+	BazaarSearchDone2 = 19,
+	BazaarTrader_StartTraderMode2 = 22
 };
 
 enum {
@@ -3014,6 +3016,12 @@ struct BecomeTrader_Struct
 /*008*/	char  Name[64];
 /*072*/	uint32 Unknown072;	// Observed 0x33,0x91 etc on zone-in, 0x00 when sent for a new trader after zone-in
 /*076*/
+};
+
+struct TraderStatus_Struct{
+	uint32 Code;
+	uint32 Uknown04;
+	uint32 Uknown08;
 };
 
 struct Trader_ShowItems_Struct{

@@ -229,7 +229,7 @@ public:
 	bool	FinishConnState2(DBAsyncWork* dbaw);
 	void	CompleteConnect();
 	bool	TryStacking(ItemInst* item, uint8 type = ItemPacketTrade, bool try_worn = true, bool try_cursor = true);
-	void	SendTraderPacket(Client* trader);
+	void	SendTraderPacket(Client* trader, uint32 Unknown72 = 51);
 	void	SendBuyerPacket(Client* Buyer);
 	GetItems_Struct* GetTraderItems();
 	void	SendBazaarWelcome();
