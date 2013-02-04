@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 02/03/2013 ==
 Trevius: RoF: More work on Bazaar Traders.
+Sorvani: Items with more than 1 charge should be purchased at max charges again. This does not fix players recharging by sell/buyback method. That will come in the future.
 
 == 02/02/2013 ==
 Trevius: RoF: Fixed some opcodes related to surnames and traders.  Surnames can now be cleared.
