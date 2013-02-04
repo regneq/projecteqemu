@@ -5646,7 +5646,15 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	mpo->itemslot=mp->itemslot;
 
 	int16 freeslotid=0;
-	ItemInst* inst = database.CreateItem(item, mp->quantity);
+	int16 charges = 0;
+	if (item->Stackable) {
+		charges = mp->quantity;
+	} else {
+		// this needs expanded to handle varying charges from the merchant,
+		// but will require merchantlist_temp changes amonst other things.
+		charges = item->MaxCharges;
+	}
+	ItemInst* inst = database.CreateItem(item, charges);
 
 	int SinglePrice = 0;
 	if (RuleB(Merchant, UsePriceMod))
