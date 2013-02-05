@@ -858,10 +858,8 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 
 	if(helmtexture && helmtexture != 0xFF)
 	{
-		//ns->spawn.equipment[MATERIAL_HEAD] = helmtexture;
 		ns->spawn.helm=helmtexture;
 	} else {
-		//ns->spawn.equipment[MATERIAL_HEAD] = 0;
 		ns->spawn.helm = 0;
 	}
 	

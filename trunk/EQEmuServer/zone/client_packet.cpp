@@ -3110,6 +3110,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 	else if (sa->type == AT_ShowHelm) 
 	{
 		m_pp.showhelm = (sa->parameter == 1);
+		entity_list.QueueClients(this, app, true);
 	}
 	else {
 		cout << "Unknown SpawnAppearance type: 0x" << hex << setw(4) << setfill('0') << sa->type << dec
