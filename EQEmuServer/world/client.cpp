@@ -1509,8 +1509,8 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	pp.binds[4] = pp.binds[0];
 
 
-	clog(WORLD__CLIENT,"Current location: %s  %0.2f, %0.2f, %0.2f",
-		database.GetZoneName(pp.zone_id), pp.x, pp.y, pp.z);
+	clog(WORLD__CLIENT,"Current location: %s  %0.2f, %0.2f, %0.2f, %0.2f",
+		database.GetZoneName(pp.zone_id), pp.x, pp.y, pp.z, pp.heading);
 	clog(WORLD__CLIENT,"Bind location: %s  %0.2f, %0.2f, %0.2f",
 		database.GetZoneName(pp.binds[0].zoneId), pp.binds[0].x, pp.binds[0].y, pp.binds[0].z);
 

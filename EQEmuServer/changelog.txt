@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 02/05/2013 ==
+cavedude00: Added heading to start_zones
+
+Required SQL: 
+alter table `start_zones` add column `heading` float not null default 0 AFTER `z`;
+
 == 02/03/2013 ==
 Trevius: RoF: More work on Bazaar Traders.
 Sorvani: Items with more than 1 charge should be purchased at max charges again. This does not fix players recharging by sell/buyback method. That will come in the future.
