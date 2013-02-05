@@ -4291,6 +4291,9 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 		// Get the zone id this bot spawned in
 		_lastZoneId = GetZoneID();
 
+		this->helmtexture = 0xFF;
+		this->texture = 0xFF;
+
 		if(this->Save())
 			this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
 		else
@@ -4314,6 +4317,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 
 		this->SendPosition();
 
+		/* // fillspawnstruct now properly handles this -U
 		uint32 itemID = 0;
 		uint8 materialFromSlot = 0xFF;
 		for(int i=0; i<22; ++i) {
@@ -4324,7 +4328,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 					this->SendWearChange(materialFromSlot);
 				}
 			}
-		}
+		}*/
 	}
 }
 
@@ -4569,6 +4573,9 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.flymode = 0;
 		ns->spawn.size = 0;
 		ns->spawn.NPC = 0;					// 0=player,1=npc,2=pc corpse,3=npc corpse
+
+		ns->spawn.helm = 0xFF;
+		ns->spawn.equip_chest2 = 0xFF;
 
 		const Item_Struct* item = 0;
 		const ItemInst* inst = 0;
