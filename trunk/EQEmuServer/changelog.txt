@@ -5,8 +5,7 @@ cavedude00: Added heading to start_zones
 Uleat: Fixed the 'nude' bot issue. Mob::texture was not set to the appropriate value and forcing an unclad body model.
 Uleat: Fixed the show/hide helm feature. Added rebroadcast of packet so that changes take place immediately instead of after zoning.
 
-Required SQL: 
-alter table `start_zones` add column `heading` float not null default 0 AFTER `z`;
+Required SQL: utils/sql/svn/2482_required_start_zones.sql
 
 == 02/03/2013 ==
 Trevius: RoF: More work on Bazaar Traders.
