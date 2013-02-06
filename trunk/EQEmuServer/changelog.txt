@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 02/06/2013 ==
+Uleat: Changed conversion of bot armor colors from long to unsigned long. Conversion error led to #FFFFFFFF for all returns.
+
 == 02/05/2013 ==
 cavedude00: Added heading to start_zones
 Uleat: Fixed the 'nude' bot issue. Mob::texture was not set to the appropriate value and forcing an unclad body model.

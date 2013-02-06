@@ -16805,7 +16805,7 @@ uint32 Bot::GetEquipmentColor(uint8 material_slot) const
 		if(mysql_num_rows(DatasetResult) == 1) {
 			DataRow = mysql_fetch_row(DatasetResult);
 			if(DataRow)
-				returncolor = atol(DataRow[0]);
+				returncolor = atoul(DataRow[0]);
 		}
 		mysql_free_result(DatasetResult);
 		safe_delete_array(Query);
