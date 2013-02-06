@@ -29,7 +29,7 @@ public:
     }
 };
 
-LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS * ExceptionInfo)
+LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS *ExceptionInfo)
 {
     switch(ExceptionInfo->ExceptionRecord->ExceptionCode)
     {
@@ -97,6 +97,7 @@ LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS * ExceptionInfo)
             LogFile->write(EQEMuLog::Crash, "Unknown Exception");
             break;
     }
+    
     if(EXCEPTION_STACK_OVERFLOW != ExceptionInfo->ExceptionRecord->ExceptionCode)
     {
         EQEmuStackWalker sw; sw.ShowCallstack(GetCurrentThread(), ExceptionInfo->ContextRecord);

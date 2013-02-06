@@ -4011,9 +4011,9 @@ float Mob::ResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, bool use
 
 	//Adjust our resist chance based on level modifiers
 	int temp_level_diff = GetLevel() - caster->GetLevel();
-	if(IsNPC() && GetLevel() >= RuleI(Casting,ResistFalloff))
+	if(IsNPC() && GetLevel() >= RuleI(Casting, ResistFalloff))
 	{
-		int a = (RuleI(Casting,ResistFalloff)-1) - caster->GetLevel();
+		int a = (RuleI(Casting, ResistFalloff) - 1) - caster->GetLevel();
 		if(a > 0)
 		{
 			temp_level_diff = a;
@@ -4062,9 +4062,9 @@ float Mob::ResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, bool use
 	if(IsNPC() && IsDamageSpell(spell_id) && GetLevel() >= 17)
 	{
 		int level_diff;
-		if(GetLevel() >= RuleI(Casting,ResistFalloff))
+		if(GetLevel() >= RuleI(Casting, ResistFalloff))
 		{
-			level_diff = (RuleI(Casting,ResistFalloff)-1) - caster->GetLevel();
+			level_diff = (RuleI(Casting, ResistFalloff) - 1) - caster->GetLevel();
 			if(level_diff < 0)
 			{
 				level_diff = 0;

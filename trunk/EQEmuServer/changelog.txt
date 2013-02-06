@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 cavedude00: Added heading to start_zones
 Uleat: Fixed the 'nude' bot issue. Mob::texture was not set to the appropriate value and forcing an unclad body model.
 Uleat: Fixed the show/hide helm feature. Added rebroadcast of packet so that changes take place immediately instead of after zoning.
+KLS: Addressed several (completely stupid and inexcusable) bugs in the avoidance code that made it impossible to dodge and parry in certain situations. 
+As a note: please don't touch the avoidance code if you don't know what you're doing, seriously.
 
 Required SQL: utils/sql/svn/2482_required_start_zones.sql
 

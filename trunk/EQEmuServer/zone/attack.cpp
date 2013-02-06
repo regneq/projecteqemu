@@ -438,8 +438,7 @@ bool Mob::AvoidDamage(Mob* other, int32 &damage, bool CanRiposte)
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-			RollTable[1] = RollTable[0] + (bonus * block_chance) - riposte_chance;
-			block_chance *= bonus; // set this so we can remove it from the parry calcs
+			RollTable[1] = RollTable[0] + (bonus * block_chance);
 		}
 	}
 	else{
@@ -456,7 +455,7 @@ bool Mob::AvoidDamage(Mob* other, int32 &damage, bool CanRiposte)
 
 				//Live AA - Shield Block
 				bonusShieldBlock = aabonuses.ShieldBlock + spellbonuses.ShieldBlock + itembonuses.ShieldBlock;
-				RollTable[1] = RollTable[0] + bonusShieldBlock;
+				RollTable[1] += bonusShieldBlock;
 			}
 		}
 	}
@@ -470,7 +469,7 @@ bool Mob::AvoidDamage(Mob* other, int32 &damage, bool CanRiposte)
 			if(TwoHandBlunt == ItemType2HB) {
 
 				bonusStaffBlock = aabonuses.TwoHandBluntBlock + spellbonuses.TwoHandBluntBlock + itembonuses.TwoHandBluntBlock;
-				RollTable[1] = RollTable[0] + bonusStaffBlock;
+				RollTable[1] += bonusStaffBlock;
 			}
 		}
 	}
@@ -490,11 +489,11 @@ bool Mob::AvoidDamage(Mob* other, int32 &damage, bool CanRiposte)
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
 			bonus *= parry_chance;
-			RollTable[2] = RollTable[1] + bonus - block_chance;
+			RollTable[2] = RollTable[1] + bonus;
 		}
 	}
 	else{
-		RollTable[2] = RollTable[1] - block_chance;
+		RollTable[2] = RollTable[1];
 	}
 	
 	////////////////////////////////////////////////////////
@@ -512,11 +511,11 @@ bool Mob::AvoidDamage(Mob* other, int32 &damage, bool CanRiposte)
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetAGI()/200);
 			bonus *= dodge_chance;
-			RollTable[3] = RollTable[2] + bonus - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25) - parry_chance; // Remove the dex as it doesnt count for dodge
+			RollTable[3] = RollTable[2] + bonus - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25);
 		}
 	}
 	else{
-		RollTable[3] = RollTable[2] - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25) - parry_chance;
+		RollTable[3] = RollTable[2];
 	}
 
 	if(damage > 0){
