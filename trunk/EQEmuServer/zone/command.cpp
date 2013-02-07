@@ -330,9 +330,6 @@ int command_init(void) {
 		command_add("qglobal","[on/off/view] - Toggles qglobal functionality on an NPC",100,command_qglobal) ||
 		command_add("loc","- Print out your or your target's current location and heading",0,command_loc) ||
 		command_add("goto","[x] [y] [z] - Teleport to the provided coordinates or to your target",10,command_goto) ||
-#ifdef BUGTRACK
-		command_add("bugtrack","[bug description] - Report a bug",0,command_bug) ||
-#endif
 #ifdef EMBPERL_PLUGIN
 #ifdef EMBPERL_EVAL_COMMANDS
 		command_add("plugin","(sub) [args] - execute a plugin",PERL_PRIVS,command_embperl_plugin) ||
@@ -4847,23 +4844,6 @@ void command_goto(Client *c, const Seperator *sep)
 	else
 		c->MovePC(zone->GetZoneID(), zone->GetInstanceID(), atof(sep->arg[1]), atof(sep->arg[2]), atof(sep->arg[3]), 0.0f);
 }
-
-#ifdef BUGTRACK
-void command_bug(Client *c, const Seperator *sep)
-{
-	if (sep->argplus[1][0] == 0)
-		c->Message(0, "Usage: #bug details ");
-	else  {
-		LogFile->write(EQEMuLog::Normal,"Sending bug report:", atoi(sep->argplus[1]) );
-		BugDatabase bugdatabase;
-		bugdatabase.UploadBug(sep->argplus[1], CURRENT_VERSION, c->AccountName());
-		#ifdef EQDEBUG
-			LogFile->write(EQEMuLog::Debug,"Bug uploaded deleteing local bug object:");
-		#endif
-		safe_delete(&bugdatabase);
-	}
-}
-#endif
 
 void command_iteminfo(Client *c, const Seperator *sep)
 {
