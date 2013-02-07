@@ -45,25 +45,6 @@ void log_message_zone(LogType type, ZoneServer *who, const char *fmt, ...) {
 	va_end(args);
 }
 
-#ifdef NO_VARIADIC_MACROS
-void Client::world_log(LogType type, const char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	if(log_type_info[type].enabled) {
-		log_message_clientVA(type, this, fmt, args);
-	}
-	va_end(args);
-}
-
-void ZoneServer::world_log(LogType type, const char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	if(log_type_info[type].enabled) {
-		log_message_zoneVA(type, this, fmt, args);
-	}
-	va_end(args);
-}
-#endif
 
 
 

@@ -658,7 +658,7 @@ bool NPC::Process()
 	}
 	
 	if(HasVirus()) {
-		if(ViralTimer.Check()) {
+		if(viral_timer.Check()) {
 			viral_timer_counter++;
 			for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2) {
 				if(viral_spells[i])	{
@@ -673,7 +673,7 @@ bool NPC::Process()
 	}
 	
 	if(spellbonuses.GravityEffect == 1) {
-		if(GravityTimer.Check())
+		if(gravity_timer.Check())
 			DoGravityEffect();
 	}
 

@@ -72,10 +72,6 @@ public:
 	inline ClientListEntry* GetCLE()		{ return cle; }
 	inline void			SetCLE(ClientListEntry* iCLE)			{ cle = iCLE; }
 private:
-	//used by wlog() for VC6
-	#ifdef NO_VARIADIC_MACROS
-	void world_log(LogType type, const char *fmt, ...);
-	#endif
 	
 	uint32	ip;
 	uint16	port;

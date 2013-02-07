@@ -1,4 +1,5 @@
 #include "../common/debug.h"
+#include "../common/MiscFunctions.h"
 #include "QuestParserCollection.h"
 #include "QuestInterface.h"
 #include "zone.h"
@@ -287,7 +288,7 @@ QuestInterface *QuestParserCollection::GetQIByNPCQuest(uint32 npcid) {
         return NULL;
     }
     std::string npc_name = npc_type->name;
-    int sz = npc_name.length();
+    int sz = static_cast<int>(npc_name.length());
     for(int i = 0; i < sz; ++i) {
         if(npc_name[i] == '`') {
             npc_name[i] = '-';

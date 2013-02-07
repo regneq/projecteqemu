@@ -275,7 +275,7 @@ void Client::ActivateAA(aaID activate){
 			}
 			p_timers.Start(AATimerID + pTimerAAStart, timer_base);
 			time_t timestamp = time(NULL);
-			SendAATimer(AATimerID, timestamp, timestamp);
+			SendAATimer(AATimerID, static_cast<uint32>(timestamp), static_cast<uint32>(timestamp));
 		}
 	}
 
@@ -1023,8 +1023,7 @@ void Client::BuyAA(AA_Action* action)
 		}
 	}
 
-	int real_cost;
-
+	uint32 real_cost;
 	std::map<uint32, AALevelCost_Struct>::iterator RequiredLevel = AARequiredLevelAndCost.find(action->ability);
 
 	if(RequiredLevel != AARequiredLevelAndCost.end())
@@ -1093,7 +1092,7 @@ void Client::SendAATimers() {
 			continue;	//not an AA timer
 		//send timer
 		uaaout->begin = cur->GetStartTime();
-		uaaout->end = time(NULL);
+		uaaout->end = static_cast<uint32>(time(NULL));
 		uaaout->ability = cur->GetType() - pTimerAAStart; // uuaaout->ability is really a shared timer number
 		QueuePacket(outapp);
 	}
@@ -1147,7 +1146,7 @@ void Client::SendPreviousAA(uint32 id, int seq){
 			saa->last_id=saa->id-1;
 		saa->current_level=value+1;
 		saa->cost2 = 0; //cost 2 is what the client uses to calc how many points we've spent, so we have to add up the points in order
-		for(int i=0;i<(value+1);i++){
+		for(uint32 i = 0; i < (value+1); i++) {
 			saa->cost2 += saa->cost + (saa->cost_inc * i);
 		}
 	}
@@ -1330,7 +1329,7 @@ void Client::SendAA(uint32 id, int seq) {
 		saa->current_level=value+(current_level_mod);
 		saa->cost = saa2->cost + (saa2->cost_inc*(value-1));
 		saa->cost2 = 0;
-		for(int i=0;i<value;i++){
+		for(uint32 i = 0; i < value; i++) {
 			saa->cost2 += saa2->cost + (saa2->cost_inc * i);
 		}
 		saa->class_type = saa2->class_type + (saa2->level_inc*(value-1));
@@ -1630,7 +1629,7 @@ bool ZoneDatabase::LoadAAEffects() {
 	const char *query = "SELECT aaid,rank,reuse_time,spell_id,target,nonspell_action,nonspell_mana,nonspell_duration,"
 			    "       redux_aa,redux_rate,redux_aa2,redux_rate2 FROM aa_actions";
 
-	if (RunQuery(query, strlen(query), errbuf, &result)) {
+	if(RunQuery(query, static_cast<uint32>(strlen(query)), errbuf, &result)) {
 		//safe_delete_array(query);
 		int r;
 		while ((row = mysql_fetch_row(result))) {
@@ -1692,7 +1691,8 @@ uint8 ZoneDatabase::GetTotalAALevels(uint32 skill_id) {
 
 //this will allow us to count the number of effects for an AA by pulling the info from memory instead of the database. hopefully this will same some CPU cycles
 uint8 Zone::GetTotalAALevels(uint32 skill_id) {
-	return aa_effects[skill_id].size();	//will return 0 if the skill_id isn't loaded
+    size_t sz = aa_effects[skill_id].size();
+    return sz >= 255 ? 255 : static_cast<uint8>(sz);
 }
 
 /*
@@ -1899,8 +1899,8 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(uint32 skill_id)
 				sendaa->prereq_minpoints = atoul(row[8]);
 				sendaa->spell_type = atoul(row[9]);
 				sendaa->spell_refresh = atoul(row[10]);
-				sendaa->classes = atoul(row[11]);
-				sendaa->berserker = atoul(row[12]);
+				sendaa->classes = static_cast<uint16>(atoul(row[11]));
+				sendaa->berserker = static_cast<uint16>(atoul(row[12]));
 				sendaa->last_id = 0xFFFFFFFF;
 				sendaa->current_level=1;
 				sendaa->spellid = atoul(row[13]);
@@ -1926,7 +1926,7 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(uint32 skill_id)
 				//Internal use only - not sent to client
 				sendaa->sof_current_level = atoul(row[25]);
 				sendaa->sof_next_id = atoul(row[26]);
-				sendaa->level_inc = atoul(row[27]);
+				sendaa->level_inc = static_cast<uint8>(atoul(row[27]));
 			}
 			mysql_free_result(result);
 		} else {
@@ -1940,740 +1940,29 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(uint32 skill_id)
 	return sendaa;
 }
 
-/*
-Update the player alternate advancement table for the given account "account_id" and character name "name"
-Return true if the character was found, otherwise false.
-False will also be returned if there is a database error.
-*/
-/*bool ZoneDatabase::SetPlayerAlternateAdv(uint32 account_id, char* name, PlayerAA_Struct* aa)
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char query[256+sizeof(PlayerAA_Struct)*2+1];
-	char* end = query;
-
-	//if (strlen(name) > 15)
-	//	return false;
-
-	for (int i=0; i< 'a' || name[i] > 'z') &&
-	(name[i] < 'A' || name[i] > 'Z') &&
-	(name[i] < '0' || name[i] > '9'))
-	return 0;
-}
-
-
-	end += sprintf(end, "UPDATE character_ SET alt_adv=\'");
-	end += DoEscapeString(end, (char*)aa, sizeof(PlayerAA_Struct));
-	*end++ = '\'';
-	end += sprintf(end," WHERE account_id=%d AND name='%s'", account_id, name);
-
-	uint32 affected_rows = 0;
-    if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
-        LogFile->write(EQEMuLog::Error, "Error in SetPlayerAlternateAdv query '%s': %s", query, errbuf);
-		return false;
-    }
-
-	if (affected_rows == 0) {
-		return false;
-	}
-
-	return true;
-}
-*/
-/*
-Update the player alternate advancement table for the given account "account_id" and character name "name"
-Return true if the character was found, otherwise false.
-False will also be returned if there is a database error.
-*/
-/*bool ZoneDatabase::SetPlayerAlternateAdv(uint32 account_id, char* name, PlayerAA_Struct* aa)
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char query[256+sizeof(PlayerAA_Struct)*2+1];
-	char* end = query;
-
-	end += sprintf(end, "UPDATE character_ SET alt_adv=\'");
-	end += DoEscapeString(end, (char*)aa, sizeof(PlayerAA_Struct));
-	*end++ = '\'';
-	end += sprintf(end," WHERE account_id=%d AND name='%s'", account_id, name);
-
-	uint32 affected_rows = 0;
-    if (!RunQuery(query, (uint32) (end - query), errbuf, 0, &affected_rows)) {
-        LogFile->write(EQEMuLog::Error, "Error in SetPlayerAlternateAdv query: %s", errbuf);
-		return false;
-    }
-
-	if (affected_rows == 0) {
-		return false;
-	}
-
-	return true;
-}*/
-
-/*
-Get the player alternate advancement table for the given account "account_id" and character name "name"
-Return true if the character was found, otherwise false.
-False will also be returned if there is a database error.
-*/
-/*uint32 ZoneDatabase::GetPlayerAlternateAdv(uint32 account_id, char* name, PlayerAA_Struct* aa)
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-
-	unsigned long* lengths;
-	unsigned long len = 0;
-
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT alt_adv FROM character_ WHERE account_id=%i AND name='%s'", account_id, name), errbuf, &result)) {
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
-			row = mysql_fetch_row(result);
-			lengths = mysql_fetch_lengths(result);
-			len = result->lengths[0];
-			//if (lengths[0] == sizeof(PlayerAA_Struct)) {
-			if(row[0] && lengths[0] >= sizeof(PlayerAA_Struct)) {
-				memcpy(aa, row[0], sizeof(PlayerAA_Struct));
-			} else { // let's support ghetto-ALTERed databases that don't contain any data in the alt_adv column
-				memset(aa, 0, sizeof(PlayerAA_Struct));
-				len = sizeof(PlayerAA_Struct);
-			}
-			//}
-			//else {
-			//cerr << "Player alternate advancement table length mismatch in GetPlayerAlternateAdv" << endl;
-			//mysql_free_result(result);
-			//return false;
-			//}
-		}
-		else {
-			mysql_free_result(result);
-			return 0;
-		}
-		mysql_free_result(result);
-		//		unsigned long len=result->lengths[0];
-		return len;
-	}
-	else {
-		LogFile->write(EQEMuLog::Error, "Error in GetPlayerAlternateAdv '%s': %s", query, errbuf);
-		safe_delete_array(query);
-		return 0;
-	}
-
-	//return true;
-}*/
-
-
-/*
-
-this is here because theres a ton of information init,
-and I am not sure that it is all in the DB yet.
-
-	switch(activate){
-		case aaMassGroupBuff:
-			EnableAAEffect(aaEffectMassGroupBuff);
-			timer_base = 4320;
-			target = aaTargetCurrentGroup;
-			break;
-
-		case aaDivineResurrection: //Divine Res
-			spell_id = 2738;
-			timer_base = 64800;
-			target = aaTargetCurrent;
-			break;
-
-		case aaInnateInvisToUndead: //Innate Undead Invis
-			spell_id = 1047;
-			timer_base = 7;
-			break;
-
-		case aaCelestialRegeneration: //Celestial Regen
-			switch (GetAA(aaCelestialRenewal))
-			{
-				case 1:
-					spell_id = 3250;
-					break;
-				case 2:
-					spell_id = 3251;
-					break;
-				default:
-					spell_id = 2740;
-					break;
-			}
-			target = aaTargetCurrent;
-			timer_base = 900;
-			break;
-
-		case aaBestowDivineAura: //Bestow DA
-			dedux = 10*GetAA(aaHastenedDivinity);
-			spell_id = 2690;
-//MISSING timer value, this is wrong:
-			timer_base = 8640;
-			target = aaTargetCurrent;
-			break;
-
-		case aaTurnUndead: //Turn Undead
-			dedux = 10*GetAA(aaHastenedTurning);
-			spell_id = AA_Choose3(activate_val, 2776, 2777, 2778);
-			timer_base = 4320;
-			target = aaTargetCurrent;
-			break;
-
-		case aaPurifySoul: //Purify Soul
-			dedux = 10*GetAA(aaHastenedPurificationofSoul);
-			spell_id = 2742;	//1473?
-			timer_base = 1800;
-			target = aaTargetCurrent;
-			break;
-
-		case aaExodus: //Exodus
-			spell_id = 2771;
-			dedux = 10*GetAA(aaHastenedExodus);
-			timer_base = 4320;
-			break;
-
-		case aaDireCharm: //Dire Charm
-			switch (GetClass())
-			{
-				case DRUID:
-					spell_id = 2760; 	//2644?
-					break;
-				case NECROMANCER:
-					spell_id = 2759;	//2643?
-					break;
-				case ENCHANTER:
-					spell_id = 2761;	//2642?
-					break;
-			}
-			timer_base = 4320;
-			target = aaTargetCurrent;
-			break;
-
-		case aaCannibalization: //Canni V
-			spell_id = 2749;
-			timer_base = 180;
-			break;
-
-		case aaRabidBear:
-			spell_id = 2750;
-			timer_base = 7200;
-			dedux = 10*GetAA(aaHastenedRabidity);
-			target = aaTargetCurrent;
-			break;
-
-		case aaManaBurn:
-			spell_id = 2751;
-			timer_base = 112;
-			target = aaTargetCurrent;	//?
-			break;
-
-		case aaImprovedFamiliar:
-			//Spell IDs might be wrong...
-			if (GetAA(aaAllegiantFamiliar))
-				spell_id = 3264;	//1994?
-			else
-				spell_id = 2758;	//2155?
-			timer_base = 420;
-			break;
-
-		case aaNexusGate: //Nexus Gate
-			spell_id = 2734;	//864?
-			timer_base = 4320;	//2160?
-			break;
-//aaPermanentIllusion
-
-		case aaGatherMana: //Gather Mana
-			//not sure which is better:
-			//SetMana(GetMaxMana());
-			//or:
-			spell_id = 2753;
-
-			dedux = 10*GetAA(aaHastenedGathering);
-			timer_base = 8640;	//4320?
-			break;
-
-		case aaMendCompanion: //Mend Companion
-			dedux = 10*GetAA(aaHastenedMending);
-			if (GetPet()) {
-				spell_id = 2752;	//2654?
-				timer_base = 2160;
-			}
-			break;
-
-		case aaFrenziedBurnout: //Frenzied Burnout
-			spell_id = 2754;
-			timer_base = 4320;	//2160?
-			break;
-
-		case aaElementalFormFire: //Ele Form Fire
-			spell_id = AA_Choose3(activate_val, 2795, 2796, 2797);
-			timer_base = 900;
-			break;
-
-		case aaElementalFormWater: //Ele Form Water
-			spell_id = AA_Choose3(activate_val, 2798, 2799, 2800);
-			//MemorizeSpell(8,spell_id,3);
-			timer_base = 900;
-			break;
-
-		case aaElementalFormEarth: //Ele Form Earth
-			spell_id = AA_Choose3(activate_val, 2792, 2793, 2794);
-			timer_base = 900;
-			break;
-
-		case aaElementalFormAir: //Ele Form Air
-			spell_id = AA_Choose3(activate_val, 2789, 2790, 2791);
-			timer_base = 900;
-			break;
-//aaImprovedReclaimEnergy
-
-		case aaTurnSummoned: //Turn Summoned
-			spell_id = AA_Choose3(activate_val, 2779, 2780, 2781);
-			//On WR was: spell_id = AA_Choose3(activate_val, 2692, 2693, 2694);
-			timer_base = 4320;	//2160?
-			target = aaTargetCurrent;
-			break;
-
-		case aaLifeBurn: //Lifeburn
-			spell_id = 2755;
-			timer_base = 8640;	//4320?
-			target = aaTargetCurrent;
-			break;
-
-		case aaDeadMesmerization: //Dead Mez
-			spell_id = 2756;	//2706?
-			timer_base = 4320;	//2160?
-			target = aaTargetCurrent;
-			break;
-
-		case aaFearstorm: //Fearstorm
-			spell_id = 2757;	//2707?
-			timer_base = 4320;	//2160?
-			target = aaTargetCurrent;	//?
-			break;
-
-		case aaFleshToBone:
-			spell_id = 2772;	//3452?
-			timer_base = 7;
-			break;
-
-		case aaCallToCorpse:
-			spell_id = 2764;
-			timer_base = 4320;	//2160?
-			target = aaTargetCurrent;
-			break;
-
-		case aaDivineStun: //Divine Stun
-			//is this really supposed to be spell based?
-			spell_id = 2190;	//3284?
-			timer_base = 30;
-			target = aaTargetCurrent;
-			dedux = GetAA(aaRushtoJudgement)*23;
-			break;
-//aaSlayUndead
-
-		case aaActOfValor: //Act of Valor
-			spell_id = 2775;
-			timer_base = 4320;
-
-			target = aaTargetCurrent;
-
-			//does the spell do this for us?
-			if(GetTarget() != NULL) {
-				int heal = GetHP();
-				int curhp = GetTarget()->GetHP();
-				GetTarget()->SetHP(heal+curhp);
-				Death(this,0,0,0);
-			}
-
-			break;
-
-		case aaHolySteed:
-			spell_id = 2871;
-			timer_base = 0;
-			break;
-
-		case aaInnateCamouflage: //Innate Camo
-			spell_id = 2765;
-			timer_base = 7;
-			break;
-
-		case aaUnholySteed:
-			spell_id = 2918;
-			timer_base = 0;
-			break;
-
-		case aaImprovedHarmTouch:
-			Message(0,"Sorry Improved harmtouch not working YET");
-			timer_base = 4320;
-			target = aaTargetCurrent;
-			break;
-
-		case aaLeechTouch: //Leech Touch
-			spell_id = 2766;	//610?
-			timer_base = 4320;
-			target = aaTargetCurrent;
-			break;
-//aaDeathPeace
-//aaSoulAbrasion
-//aaJamFest
-//aaSonicCall
-//aaCriticalMend
-
-		case aaPurifyBody: //Purify Body
-			dedux = 10*GetAA(aaHastenedPurificationoftheBody);
-			spell_id = 2190;	//1470?
-			timer_base = 4320;
-			break;
-
-		case aaEscape: //Escape
-			dedux = 10*(GetAA(aaHastyExit) + GetAA(aaImprovedHastyExit));
-			timer_base = 4320;
-			//I dont know which is better:
-			//Escape();
-			//or:
-			spell_id = 5244;
-			break;
-
-		case aaPurgePoison:
-			dedux = 10*GetAA(aaHastenedPurification);
-			//m_pp.aa_active[0] = 1;	//WR method...
-			spell_id = 5232;
-			timer_base = 4320;
-			break;
-
-		case aaRampage:
-			EnableAAEffect(aaEffectRampage, 1000);
-			act_timer = 10000;
-			timer_base = 600;
-			dedux = 10*GetAA(aaFuriousRampage);
-			//I dont think this is complete... attack needs to check aaEffectRampage
-			//or something else needs to be done.
-			if(GetTarget() == NULL) {
-				Message(0, "A target is required for this skill.");
-				return;
-			}
-			Attack(GetTarget(), 13, false);
-			break;
-
-		case aaAreaTaunt: //AE Taunt
-//			entity_list.AETaunt(this);
-			timer_base = 900;
-			dedux = 10*GetAA(aaHastenedInstigation);
-			break;
-
-		case aaWarcry: //Warcry
-			spell_id = AA_Choose3(activate_val, 5229, 5230, 5231);
-			//On WR was: spell_id = AA_Choose3(activate_val, 1930, 1931, 1932);
-			timer_base = 2160;
-			target = aaTargetGroup;
-			break;
-
-		case aaStrongRoot:
-			dedux = 10*GetAA(aaHastenedRoot);
-			spell_id = 2748;
-			timer_base = 2160;
-			target = aaTargetCurrent;
-			break;
-
-		case aaHobbleofSpirits: //Hobble of Spirits
-			spell_id = 3290;
-			timer_base = 300;
-			target = aaTargetPet;
-			break;
-
-		case aaFrenzyofSpirit: //Frenzy of Spirit
-			spell_id = 3289;
-			timer_base = 720;
-			target = aaTargetPet;
-			break;
-
-		case aaParagonofSpirit: //Paragon of Spirit
-			spell_id = 3291;
-			timer_base = 900;
-			target = aaTargetPet;
-			break;
-
-		case aaRadiantCure:
-			spell_id = AA_Choose3(activate_val, 3297, 3298, 3299);
-			//On WR was: spell_id = AA_Choose3(activate_val, 1982, 1983, 1984);
-			dedux = 10*GetAA(aaQuickenedCuring);
-			timer_base = 180;
-			target = aaTargetCurrent;
-			break;
-
-		case aaDivineArbitration: //Divine Arbitration
-			spell_id = AA_Choose3(activate_val, 3252, 3253, 3254);
-			//On WR was: spell_id = AA_Choose3(activate_val, 2014, 2015, 2017);
-			timer_base = 180;
-			target = aaTargetCurrent;
-			break;
-
-		case aaWrathoftheWild:
-			spell_id = AA_Choose3(activate_val, 3255, 3256, 3257);
-			//On WR was: spell_id = AA_Choose3(activate_val, 2264, 2265, 2267);
-			timer_base = 240;
-			break;
-
-		case aaVirulentParalysis:
-			spell_id = AA_Choose3(activate_val, 3274, 3275, 3276);
-			timer_base = 120;
-			target = aaTargetCurrent;
-			break;
-
-		case aaHarvestofDruzzil:
-			spell_id = 3338;	//2747?
-			timer_base = 480;
-			break;
-
-		case aaEldritchRune: //Guarding Rune
-			spell_id = AA_Choose3(activate_val, 3258, 3259, 3260);
-			target = aaTargetCurrent;
-			timer_base = 600;
-			break;
-
-		case aaDeathPeace:
-			spell_id = 611;		//wrong
-			timer_base = 4320;
-			target = aaTargetCurrent;
-			break;
-
-		case aaServantofRo:
-			spell_id = AA_Choose3(activate_val, 3265, 3266, 3267);
-			timer_base = 540;
-			break;
-
-		case aaWaketheDead:
-			spell_id = AA_Choose3(activate_val, 3268, 3269, 3270);
-			timer_base = 540;
-			break;
-
-//I dunno about this one...
-		case aaSuspendedMinion:
-			if (GetPet()) {
-
-				target = aaTargetPet;
-				//dunno if we need to cast a spell..
-				switch (activate_val) {
-					case 1:
-						spell_id = 3248;
-						break;
-					case 2:
-						spell_id = 3249;
-						break;
-				}
-
-				Message(0,"You call your pet to your side.");
-				GetPet()->WipeHateList();
-				GetPet()->GMMove(GetX(),GetY(),GetZ());
-				if (activate_val > 1)
-					entity_list.ClearFeignAggro(GetPet());
-			} else {
-				Message(0,"You have no pet to call.");
-			}
-			timer_base = 1;
-			break;
-
-		case aaSpiritCall:
-			spell_id = AA_Choose3(activate_val, 3283, 3284, 3285);
-			timer_base = 720;
-			break;
-
-		case aaHandofPiety: //Hand of Piety
-			spell_id = AA_Choose3(activate_val, 3261, 3262, 3263);
-			timer_base = 2160;
-			dedux = 10*GetAA(aaHastenedPiety);
-			target = aaTargetCurrentGroup;
-			break;
-
-		case aaGuardianoftheForest: //Guardian of the Forest
-			spell_id = AA_Choose3(activate_val, 3271, 3272, 3273);
-			timer_base = 900;	//2160?
-			break;
-
-		case aaSpiritoftheWood:
-			spell_id = AA_Choose3(activate_val, 3277, 3278, 3279);
-			timer_base = 1320;
-			target = aaTargetCurrent;
-			break;
-
-		case aaBoastfulBellow:
-			spell_id = 3282;
-			timer_base = 18;
-			target = aaTargetCurrent;
-			break;
-
-		case aaHostoftheElements:
-			spell_id = AA_Choose3(activate_val, 3286, 3287, 3288);
-			timer_base = 1320;
-			break;
-
-		case aaCallofXuzl:
-			spell_id = AA_Choose3(activate_val, 3292, 3293, 3294);
-			timer_base = 900;
-			break;
-
-		case aaFadingMemories:
-			Message(0,"Sorry Fading Memories not working YET");
-			use_mana = 900;
-			spell_id = 5243;	//?
-			//Escape();
-			timer_base = 1;
-			break;
-
-		case aaProjectIllusion:
-			Message(0,"Sorry, Project Illusion not working YET");
-			timer_base = 1;
-			break;
-
-		case aaEntrap:
-			spell_id = 3614;
-			timer_base = 5;
-			target = aaTargetCurrent;
-			break;
-
-		case aaManaBurn2:	//another mana burn?
-			spell_id = 2751;
-			timer_base = 8640;
-			break;
-
-		case aaBeastialAlignment:
-			switch(GetBaseRace()) {
-				case BARBARIAN:
-					spell_id = AA_Choose3(activate_val, 4521, 4522, 4523);
-					break;
-				case TROLL:
-					spell_id = AA_Choose3(activate_val, 4524, 4525, 4526);
-					break;
-				case OGRE:
-					spell_id = AA_Choose3(activate_val, 4527, 4527, 4529);
-					break;
-				case IKSAR:
-					spell_id = AA_Choose3(activate_val, 4530, 4531, 4532);
-					break;
-				case VAHSHIR:
-					spell_id = AA_Choose3(activate_val, 4533, 4534, 4535);
-					break;
-			}
-			timer_base = 4320;
-			Message(0,"Sorry Bestial Alignment not working YET");
-			break;
-
-		case aaFeralSwipe:
-			Message(0,"Sorry, Feral Swipe not working YET");
-			spell_id = 4788;
-			timer_base = 60;
-			break;
-
-		case aaDivineAvatar:
-			spell_id = AA_Choose3(activate_val, 4549, 4550, 4551);
-			Message(0,"Sorry, Divine Avatar not working YET");
-			timer_base = 7200;
-			break;
-
-		case aaExquisiteBenediction:
-			spell_id = AA_Choose5(activate_val, 4790, 4791, 4792, 4793, 4794);
-			Message(0,"Sorry Equisite Benediction not working YET");
-			timer_base = 1800;
-			break;
-
-		case aaNaturesBoon:
-			spell_id = AA_Choose5(activate_val, 4796, 4797, 4798, 4799, 4800);
-			Message(0,"Sorry Natures Boon not working YET");
-			timer_base = 1800;
-			break;
-
-		case aaDoppelganger:
-			spell_id = AA_Choose3(activate_val, 4552, 4553, 4554);
-			Message(0,"Sorry Doppelganer not working YET");
-			timer_base = 4320;
-			break;
-
-		case aaSharedHealth:
-			Message(0,"Sorry Shared Health not working YET");
-			timer_base = 900;
-			target = aaTargetPet;
-			break;
-
-		case aaDestructiveForce:
-			Message(0,"Sorry Destructive Force not working YET");
-			timer_base = 3600;
-			target = aaTargetCurrent;
-			break;
-
-		case aaSwarmofDecay:
-			spell_id = AA_Choose3(activate_val, 4564, 4565, 4566);
-			Message(0,"Sorry Swarm of Decay not working YET");
-			timer_base = 1800;
-			break;
-
-		case aaRadiantCure2:	//dont know whats different about this one...
-			spell_id = AA_Choose3(activate_val, 3297, 3298, 3299);
-			//was spell_id = AA_Choose3(activate_val, 1982, 1983, 1984);
-			dedux = 10*GetAA(aaQuickenedCuring);
-			timer_base = 180;
-			target = aaTargetCurrent;
-			break;
-
-		case aaPurification:
-			spell_id = 2742;	//wrong
-			timer_base = 4320;
-			Message(0,"Sorry, Purification not working, enjoy your self only purify soul");
-			break;
-
-		case aaFlamingArrows:
-			timer_base = 4320;
-			Message(0,"Sorry Flaming Arrows not working YET");
-			break;
-
-		case aaFrostArrows:
-			timer_base = 4320;
-			Message(0,"Sorry Frost Arrows not working YET");
-			break;
-
-		case aaCalloftheAncients:
-			spell_id = AA_Choose5(activate_val, 4828, 4829, 4830, 4831, 4832);
-			Message(0,"Sorry Call of the Ancients not working YET");
-			timer_base = 1800;
-			break;
-
-		case aaWarlordsTenacity:
-			spell_id = AA_Choose3(activate_val, 4925, 4926, 4927);
-			timer_base = 3600;
-			break;
-
-		case aaRosFlamingFamiliar:
-			spell_id = 4833;
-			timer_base = 60;
-			Message(0,"Sorry Ro's Flaming Familiar not working YET");
-			break;
-
-		case aaEcisIcyFamiliar:
-			spell_id = 4834;
-			timer_base = 60;
-			Message(0,"Sorry Eci's Icy Familiar not working YET");
-			break;
-
-		case aaDruzzilsMysticalFamiliar:
-			spell_id = 4835;
-			timer_base = 60;
-			Message(0,"Sorry Druzzil's Mystical Familiar not working YET");
-			break;
-
-		case aaWardofDestruction:
-			spell_id = AA_Choose5(activate_val, 4836, 4837, 4838, 4839, 4840);
-			timer_base = 1800;
-			Message(0,"Sorry Ward of Destruction not working YET");
-			break;
-
-		case aaFrenziedDevistation:
-			spell_id = AA_Choose3(activate_val, 5245, 5246, 5247);
-			timer_base = 4320;
-			Message(0,"Sorry Frenzied Devastation not working YET");
-			break;
-*/
-
 void Client::DurationRampage(uint32 duration)
 {
 	if(duration) {
 		m_epp.aa_effects |= 1 << (aaEffectRampage-1);
 		p_timers.Start(pTimerAAEffectStart + aaEffectRampage, duration);
 	}
+}
+
+AA_SwarmPetInfo::AA_SwarmPetInfo() 
+{ 
+    target = 0; 
+    owner_id = 0; 
+    duration = NULL;
+}
+
+AA_SwarmPetInfo::~AA_SwarmPetInfo() 
+{ 
+    target = 0; 
+    owner_id = 0; 
+    safe_delete(duration); 
+}
+
+Mob *AA_SwarmPetInfo::GetOwner() 
+{ 
+    return entity_list.GetMobID(owner_id); 
 }

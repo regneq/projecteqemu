@@ -65,20 +65,6 @@ void log_packet_mob(LogType type, Mob *who, const BasePacket *p) {
 	log_hex(type,(const char *)p->pBuffer,p->size);
 }
 
-#ifdef NO_VARIADIC_MACROS
-void Mob::mob_log(LogType type, const char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	if(log_type_info[type].enabled) {
-		log_message_mobVA(type, this, fmt, args);
-	}
-	va_end(args);
-}
-
-void Mob::mob_hex(LogType type, const char *data, unsigned long length, unsigned char padding) {
-	log_hex_mob(type, this, data, length, padding);
-}
-#endif
 
 
 

@@ -280,17 +280,11 @@ enum {
 	commandZoneToCoords = 0			//can #zone with coords
 };
 
-//these are large right now because the x,y,z coords of the zone
-//lines do not make a lot of sense
-//Maximum distance from a zone point given that the request didnt
-//know what zone that the line was for
-#define ZONEPOINT_NOZONE_RANGE 40000.0f
-//Maximum distance from a zone point if zone was specified
-#define ZONEPOINT_ZONE_RANGE 40000.0f
-
 //default states for logging flag on NPCs and clients (having NPCs on by default is prolly a bad idea)
 #define CLIENT_DEFAULT_LOGGING_ENABLED true
 #define NPC_DEFAULT_LOGGING_ENABLED false
+
+
 
 /*
 

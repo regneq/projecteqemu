@@ -67,6 +67,8 @@ struct AISpells_Struct {
 	int16  resist_adjust;
 };
 
+class AA_SwarmPetInfo;
+
 class NPC : public Mob
 {
 public:
@@ -274,9 +276,9 @@ public:
 	std::list<MercType> GetMercTypesList( uint32 expansion );
 	std::list<MercData> GetMercsList() {return mercDataList; };
 	std::list<MercData> GetMercsList( uint32 expansion );
-	int		GetNumMercTypes() { return mercTypeList.size(); };
+	int		GetNumMercTypes() { return static_cast<int>(mercTypeList.size()); };
 	int		GetNumMercTypes( uint32 expansion );
-	int		GetNumMercs() { return mercDataList.size(); };
+	int		GetNumMercs() { return static_cast<int>(mercDataList.size()); };
 	int		GetNumMercs( uint32 expansion );
 	
 	inline bool WillAggroNPCs() const { return(npc_aggro); }

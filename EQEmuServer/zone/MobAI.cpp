@@ -79,7 +79,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes) {
 	bool checked_los = false;	//we do not check LOS until we are absolutely sure we need to, and we only do it once.
 	
 	float manaR = GetManaRatio();
-	for (int i=AIspells.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(AIspells.size()) - 1; i >= 0; i--) {
 		if (AIspells[i].spellid <= 0 || AIspells[i].spellid >= SPDAT_RECORDS) {
 			// this is both to quit early to save cpu and to avoid casting bad spells
 			// Bad info from database can trigger this incorrectly, but that should be fixed in DB, not here
@@ -445,7 +445,7 @@ void NPC::AI_Init() {
 	Mob::AI_Init();
 	
 	AIautocastspell_timer = 0;
-	casting_spell_AIindex = AIspells.size();
+	casting_spell_AIindex = static_cast<uint8>(AIspells.size());
 
 	roambox_max_x = 0;
 	roambox_max_y = 0;

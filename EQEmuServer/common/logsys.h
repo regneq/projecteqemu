@@ -45,27 +45,6 @@
 #include <stdarg.h>
 #include "types.h"
 
-#ifdef WIN32
-	//only VC2003+ has variadic macro support
-	// 1200 = vc6
-	// 1300 = vc2003
-	// 1310 = vc8
-	//NOTE: per-mob toggling of log messages cannot work without variadic macros!
-	#if (_MSC_VER <= 1310)
-		#define NO_VARIADIC_MACROS
-	#endif
-
-	#ifdef NO_VARIADIC_MACROS
-		/*
-		uncomment this to disable debug logging all together on windows
-		this is here because logging has a decent amount of overhead
-		on windows since we must make the call and build the variable
-		argument list before checking to see if the type is enabled.
-		*/
-		//#define DISABLE_LOGSYS
-	#endif
-#endif
-
 #define LOG_CATEGORY(category) LOG_ ##category ,
 typedef enum {
 	#include "logtypes.h"
@@ -105,26 +84,7 @@ extern void log_raw_packet(LogType type, uint16 seq, const BasePacket *p);
 	inline void clog(LogType, const char *, ...) {}
 	inline void zlog(LogType, const char *, ...) {}
 #else	//!DISABLE_LOGSYS
-	#ifdef NO_VARIADIC_MACROS
-		inline void _log(LogType type, const char *fmt, ...) {
-			va_list args;
-			va_start(args, fmt);
-			if(log_type_info[type].enabled) {
-				log_messageVA(type, fmt, args);
-			}
-			va_end(args);
-		}
-		//this call proceedure is slower than the variadic case, because we have
-		//to make the call (with all its arguments) before we can even check to
-		//see if this log type is enabled.
-		#ifdef ZONE
-			#define mlog if(IsLoggingEnabled()) mob_log
-		#endif
-		#ifdef WORLD
-			#define clog world_log
-			#define zlog world_log
-		#endif
-	#else //!NO_VARIADIC_MACROS
+
 		//we have variadic macros, hooray!
 		//the do-while construct is needed to allow a ; at the end of log(); lines when used
 		//in conditional statements without {}'s
@@ -134,7 +94,6 @@ extern void log_raw_packet(LogType type, uint16 seq, const BasePacket *p);
 					log_message(type, format, ##__VA_ARGS__); \
 				} \
 			} while(false)
-//i feel dirty for putting this ifdef here, but I dont wanna have to include a header in all zone files to get it
 		#ifdef ZONE
 			class Mob;
 			extern void log_message_mob(LogType type, Mob *who, const char *fmt, ...);
@@ -165,7 +124,6 @@ extern void log_raw_packet(LogType type, uint16 seq, const BasePacket *p);
 					} \
 				} while(false)
 		#endif
-	#endif //!NO_VARIADIC_MACROS
 #endif	//!DISABLE_LOGSYS
 
 
