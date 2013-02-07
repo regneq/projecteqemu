@@ -24,6 +24,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 
 #include <sstream>
 #include <math.h>
+#include <limits.h>
 
 extern EntityList entity_list;
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
