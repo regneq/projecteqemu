@@ -12,7 +12,7 @@ using namespace std;
 #define CASTERDPS   12
 const int MercAISpellRange = 100; // TODO: Write a method that calcs what the merc's spell range is based on spell, equipment, AA, whatever and replace this
 
-typedef enum MercStanceType {
+enum MercStanceType {
 	MercStancePassive = 1,
 	MercStanceBalanced,
 	MercStanceEfficient,
