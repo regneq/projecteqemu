@@ -165,8 +165,8 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, float partial)
 	}
 	
 	if(spells[spell_id].viral_targets > 0) {
-		if(!ViralTimer.Enabled()) 
-			ViralTimer.Start(1000);
+		if(!viral_timer.Enabled()) 
+			viral_timer.Start(1000);
 			
 		has_virus = true;
 		for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2)
@@ -3328,7 +3328,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 		}
 		// This is the last virus on us so lets stop timer
 		if(last_virus) {
-			ViralTimer.Disable();
+			viral_timer.Disable();
 			has_virus = false;
 		}
 	}
@@ -3415,7 +3415,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 			case SE_Levitate:
 			{
-				if (!AffectedExcludingSlot(slot, SE_Levitate))
+				if (!AffectedBySpellExcludingSlot(slot, SE_Levitate))
 					SendAppearancePacket(AT_Levitate, 0);
 				break;
 			}
@@ -5217,7 +5217,7 @@ bool Mob::TryDeathSave() {
 	return false;
 }
 
-bool Mob::AffectedExcludingSlot(int slot, int effect)
+bool Mob::AffectedBySpellExcludingSlot(int slot, int effect)
 {
 	for (int i = 0; i <= EFFECT_COUNT; i++)
 	{

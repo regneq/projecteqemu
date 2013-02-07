@@ -16,33 +16,14 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "../common/debug.h"
-#include "features.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include "masterentity.h"
-#include "pathing.h"
-#include "zone.h"
 #include "spdat.h"
-#include "../common/skills.h"
-#include "map.h"
 #include "StringIDs.h"
-#include "../common/rulesys.h"
-#include "../common/emu_opcodes.h"
-#include "../common/eq_packet_structs.h"
-#include "zonedb.h"
-#include "../common/packet_dump.h"
-#include "../common/packet_functions.h"
-#include "../common/bodytypes.h"
-#include "../common/guilds.h"
-#include "../common/MiscFunctions.h"
 #include "worldserver.h"
-#include "QGlobals.h"
 #include "QuestParserCollection.h"
 
-#include <stdio.h>
-#include <limits.h>
 #include <sstream>
+#include <math.h>
 
 extern EntityList entity_list;
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
@@ -118,12 +99,11 @@ Mob::Mob(const char*   in_name,
 		bardsong_timer(6000),
 		flee_timer(FLEE_CHECK_TIMER),
 		bindwound_timer(10000),
-		GravityTimer(1000),
-		ViralTimer(0)
+		gravity_timer(1000),
+		viral_timer(0)
 		
 {
 	targeted = 0;
-	logpos = false;
 	tar_ndx=0;
 	tar_vector=0;
 	tar_vx=0;
@@ -356,10 +336,10 @@ Mob::Mob(const char*   in_name,
 	pStandingPetOrder = SPO_Follow;
 
 	see_invis = in_see_invis;
-	see_invis_undead = in_see_invis_undead;
-	see_hide = in_see_hide;
-	see_improved_hide = in_see_improved_hide;
-	qglobal=in_qglobal;
+	see_invis_undead = in_see_invis_undead != 0;
+	see_hide = in_see_hide != 0;
+	see_improved_hide = in_see_improved_hide != 0;
+	qglobal = in_qglobal != 0;
 	
 	// Bind wound
 	bindwound_timer.Disable();
@@ -370,7 +350,6 @@ Mob::Mob(const char*   in_name,
 	nexthpevent = -1;
 	nextinchpevent = -1;
 	
-	fix_pathing = false;
 	TempPets(false);
 	SetHasRune(false);
 	SetHasSpellRune(false);
@@ -477,9 +456,7 @@ uint32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
 	}
 	return(ANIM_STAND);
 }
-uint32 Mob::GetPRange(float x, float y, float z){
-	return 0;
-}
+
 void Mob::SetInvisible(uint8 state)
 {
 	invisible = state;
@@ -583,7 +560,7 @@ float Mob::_GetMovementSpeed(int mod) const {
 	}
 	else
 	{
-		movemod = (aa_mod);
+		movemod = static_cast<int>(aa_mod);
 	}
 	
 	if(movemod < -85) //cap it at moving very very slow
@@ -820,7 +797,7 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	ns->spawn.y			= FloatToEQ19(y_pos);//((int32)y_pos)<<3;
 	ns->spawn.z			= FloatToEQ19(z_pos);//((int32)z_pos)<<3;
 	ns->spawn.spawnId	= GetID();
-	ns->spawn.curHp	= (int16)GetHPRatio();
+	ns->spawn.curHp	= static_cast<uint8>(GetHPRatio());
 	ns->spawn.max_hp	= 100;		//this field needs a better name
 	ns->spawn.race		= race;
 	ns->spawn.runspeed	= runspeed;
@@ -1187,7 +1164,7 @@ void Mob::MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu) {
 		spu->animation = animation;
 	else
 		spu->animation	= pRunAnimSpeed;//animation;
-	spu->delta_heading = NewFloatToEQ13(delta_heading);
+	spu->delta_heading = NewFloatToEQ13(static_cast<float>(delta_heading));
 }
 
 void Mob::ShowStats(Client* client) 
@@ -1833,14 +1810,14 @@ bool Mob::BehindMob(Mob* other, float playerx, float playery) const {
 	float mobx = -(other->GetX());	// mob xlocation (inverse because eq is confused)
 	float moby = other->GetY();		// mobylocation
 	float heading = other->GetHeading();	// mob heading
-	heading = (heading * 360.0)/256.0;	// convert to degrees
+	heading = (heading * 360.0f) / 256.0f;	// convert to degrees
 	if (heading < 270)
 		heading += 90;
 	else
 		heading -= 270;
-	heading = heading*3.1415/180.0;	// convert to radians
-	vectorx = mobx + (10.0 * cosf(heading));	// create a vector based on heading
-	vectory = moby + (10.0 * sinf(heading));	// of mob length 10
+	heading = heading * 3.1415f / 180.0f;	// convert to radians
+	vectorx = mobx + (10.0f * cosf(heading));	// create a vector based on heading
+	vectory = moby + (10.0f * sinf(heading));	// of mob length 10
 
 	//length of mob to player vector
 	//lengthb = (float)sqrtf(pow((-playerx-mobx),2) + pow((playery-moby),2));
@@ -1848,8 +1825,8 @@ bool Mob::BehindMob(Mob* other, float playerx, float playery) const {
 
 	// calculate dot product to get angle
 	angle = acosf(((vectorx-mobx)*(-playerx-mobx)+(vectory-moby)*(playery-moby)) / (10 * lengthb));
-	angle = angle * 180 / 3.1415;
-	if (angle > 90.0) //not sure what value to use (90*2=180 degrees is front)
+	angle = angle * 180.0f / 3.1415f;
+	if (angle > 90.0f) //not sure what value to use (90*2=180 degrees is front)
 		return true;
 	else
 		return false;
@@ -1999,7 +1976,7 @@ void Mob::SetAttackTimer() {
 							continue;
 						if(pi->IsType(ItemClassContainer) && pi->GetItem()->BagType == bagTypeQuiver)
 						{
-							float temp_wr = (pi->GetItem()->BagWR / 3);
+							float temp_wr = (pi->GetItem()->BagWR / 3.0f);
 							if(temp_wr > max_quiver)
 							{
 								max_quiver = temp_wr;
@@ -2009,7 +1986,7 @@ void Mob::SetAttackTimer() {
 					if(max_quiver > 0)
 					{
 						float quiver_haste = 1 / (1 + max_quiver / 100);
-						speed *= quiver_haste;
+						speed *= static_cast<int>(quiver_haste);
 					}
 				}
 			}
@@ -2190,13 +2167,13 @@ float Mob::GetReciprocalHeading(Mob* target) {
 
 	if(target) {
 		// Convert to radians
-		float h = (target->GetHeading() / 256) * 6.283184;
+		float h = (target->GetHeading() / 256.0f) * 6.283184f;
 
 		// Calculate the reciprocal heading in radians
-		Result =  h + 3.141592;
+		Result =  h + 3.141592f;
 
 		// Convert back to eq heading from radians
-		Result = (Result / 6.283184) * 256;
+		Result = (Result / 6.283184f) * 256.0f;
 	}
 
 	return Result;
@@ -2214,7 +2191,7 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 			look_heading = target->GetHeading();
 
 		// Convert to sony heading to radians
-		look_heading = (look_heading / 256) * 6.283184;
+		look_heading = (look_heading / 256.0f) * 6.283184f;
 
 		float tempX = 0;
 		float tempY = 0;
@@ -2229,8 +2206,8 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 		rangeReduction = (tempSize * rangeCreepMod);
 
 		while(tempSize > 0 && counter != maxIterationsAllowed) {
-			tempX = GetX() + (tempSize * sin(double(look_heading)));
-			tempY = GetY() + (tempSize * cos(double(look_heading)));
+			tempX = GetX() + (tempSize * static_cast<float>(sin(double(look_heading))));
+			tempY = GetY() + (tempSize * static_cast<float>(cos(double(look_heading))));
 			tempZ = target->GetZ();
 
 			if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
@@ -2252,8 +2229,8 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 			counter = 0;
 
 			while(tempSize > 0 && counter != maxIterationsAllowed) {
-				tempX = GetX() + (tempSize * sin(double(look_heading)));
-				tempY = GetY() + (tempSize * cos(double(look_heading)));
+				tempX = GetX() + (tempSize * static_cast<float>(sin(double(look_heading))));
+				tempY = GetY() + (tempSize * static_cast<float>(cos(double(look_heading))));
 				tempZ = target->GetZ();
 
 				if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
@@ -2890,7 +2867,7 @@ float Mob::GetGroundZ(float new_x, float new_y, float z_offset)
 int Mob::CountDispellableBuffs()
 {
 	int val = 0;
-	uint32 buff_count = GetMaxTotalSlots();
+	int buff_count = GetMaxTotalSlots();
 	for(int x = 0; x < buff_count; x++)
 	{
 		if(!IsValidSpell(buffs[x].spellid))
@@ -2913,7 +2890,7 @@ int Mob::GetSnaredAmount()
 {
 	int worst_snare = -1;
 
-	uint32 buff_count = GetMaxTotalSlots();
+	int buff_count = GetMaxTotalSlots();
 	for (int i = 0; i < buff_count; i++)
 	{
 		if (!IsValidSpell(buffs[i].spellid))
@@ -2946,7 +2923,7 @@ void Mob::SetDeltas(float dx, float dy, float dz, float dh) {
 	delta_x = dx;
 	delta_y = dy;
 	delta_z = dz;
-	delta_heading = dh;
+	delta_heading = static_cast<int>(dh);
 }
 
 
@@ -3069,100 +3046,6 @@ void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, bool aa_trigger)
 	}
 }
 
-//void Mob::CastTriggerableEffect(Mob* target, uint32 base_spell_id, uint32 triggered_spell_id)
-
-/*
-void Mob::TryTriggerOnCast(uint32 spell_id, bool aa_trigger)
-{
-	if(!IsValidSpell(spell_id))
-		return;
-	
-	if(aa_trigger)
-	{
-		for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
-		{
-			if(this->aabonuses.SpellTriggers[i])
-				TriggerOnCast(this->aabonuses.SpellTriggers[i], spell_id, this->aabonuses.SpellTriggers[i+1]);
-		}
-	}
-	else
-	{
-		if(this->itembonuses.SpellTriggers[0])
-		{
-			for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
-			{
-				if(this->itembonuses.SpellTriggers[i])
-					TriggerOnCast(this->itembonuses.SpellTriggers[i], spell_id, 0);
-			}
-		}
-		if(this->spellbonuses.SpellTriggers[0])
-		{
-			for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
-			{
-				if(this->spellbonuses.SpellTriggers[i])
-					TriggerOnCast(this->spellbonuses.SpellTriggers[i], spell_id, 0);
-			}
-		}
-	}
-}
-
-
-
-void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
-{
-	if(!IsValidSpell(focus_spell) || !IsValidSpell(spell_id))
-		return;
-
-	int32 focus = 0;
-	if(!aa_chance)
-	{
-		focus = CalcFocusEffect(focusTriggerOnCast, focus_spell, spell_id);
-		if(focus)
-		{
-			for(int i = 0; i < EFFECT_COUNT; i++)
-			{
-				if (spells[focus_spell].effectid[i] == SE_TriggerOnCast)
-				{
-					// 100 = 100% chance to proc...
-					if(MakeRandomInt(0, 99) < spells[focus_spell].base[i])
-					{
-						if(spells[spells[focus_spell].base2[i]].targettype == ST_Self || spells[spells[focus_spell].base2[i]].targettype == ST_Group)
-						{
-							SpellFinished(spells[focus_spell].base2[i], this);
-						}
-						else if (this->GetTarget())
-						{	
-							SpellFinished(spells[focus_spell].base2[i], this->GetTarget());
-						}
-
-						CheckHitsRemaining(0, false,false, 0, focus_spell);
-					}
-				}
-			}
-		}
-	}
-	// Innate AA Triggers
-	else
-	{
-		focus = this->CastToClient()->CalcAAFocusEffect(focusTriggerOnCast, focus_spell, spell_id);
-		if(focus)
-		{
-			if(MakeRandomInt(0, 99) < aa_chance)
-			{
-				if(spells[focus_spell].targettype == ST_Self || spells[focus_spell].targettype == ST_Group)
-				{
-					SpellFinished(focus_spell, this);
-				}
-				else if (this->GetTarget())
-				{	
-					SpellFinished(focus_spell, this->GetTarget());
-				}
-			}
-		}
-	}
-}
-*/
-
 void Mob::TrySpellTrigger(Mob *target, uint32 spell_id)
 {
 	if(target == NULL || !IsValidSpell(spell_id))
@@ -3257,7 +3140,7 @@ void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
 	//Retains function for non clients
 	else if (spellbonuses.FocusEffects[focusTwincast] || itembonuses.FocusEffects[focusTwincast])
 	{
-		uint32 buff_count = GetMaxTotalSlots();
+		int buff_count = GetMaxTotalSlots();
 		for(int i = 0; i < buff_count; i++) 
 		{
 			if(IsEffectInSpell(buffs[i].spellid, SE_Twincast))
@@ -3293,7 +3176,7 @@ int32 Mob::GetVulnerability(int32 damage, Mob *caster, uint32 spell_id, uint32 t
 		int32 tmp_focus = 0;
 		int tmp_buffslot = -1;
 
-		uint32 buff_count = GetMaxTotalSlots();
+		int buff_count = GetMaxTotalSlots();
 		for(int i = 0; i < buff_count; i++) {
 
 			if((IsValidSpell(buffs[i].spellid) && IsEffectInSpell(buffs[i].spellid, SE_SpellVulnerability))){
@@ -3977,7 +3860,7 @@ int Mob::QGVarDuration(const char *fmt)
 
 	// format:	Y#### or D## or H## or M## or S## or T###### or C#######
 
-	int len = strlen(fmt);
+	int len = static_cast<int>(strlen(fmt));
 
 	// Default to no duration
 	if (len < 1)
@@ -4050,9 +3933,9 @@ void Mob::DoKnockback(Mob *caster, uint32 pushback, uint32 pushup)
 		spu->x_pos		= FloatToEQ19(GetX());
 		spu->y_pos		= FloatToEQ19(GetY());
 		spu->z_pos		= FloatToEQ19(GetZ());
-		spu->delta_x	= NewFloatToEQ13(new_x);
-		spu->delta_y	= NewFloatToEQ13(new_y);
-		spu->delta_z	= NewFloatToEQ13(pushup);
+		spu->delta_x	= NewFloatToEQ13(static_cast<float>(new_x));
+		spu->delta_y	= NewFloatToEQ13(static_cast<float>(new_y));
+		spu->delta_z	= NewFloatToEQ13(static_cast<float>(pushup));
 		spu->heading	= FloatToEQ19(GetHeading());
 		spu->padding0002	=0;
 		spu->padding0006	=7;
@@ -4090,18 +3973,18 @@ void Mob::TrySpellOnKill(uint8 level, uint16 spell_id)
 	// Allow to check AA, items and buffs in all cases. Base2 = Spell to fire | Base1 = % chance | Base3 = min level
 	for(int i = 0; i < MAX_SPELL_TRIGGER*3; i+=3) {
 	
-		if(aabonuses.SpellOnKill[i] && (level >= aabonuses.SpellOnKill[i+2])) {
-			if(MakeRandomInt(0,99) < aabonuses.SpellOnKill[i+1])
+		if(aabonuses.SpellOnKill[i] && (level >= aabonuses.SpellOnKill[i + 2])) {
+			if(MakeRandomInt(0, 99) < static_cast<int>(aabonuses.SpellOnKill[i + 1]))
 				SpellFinished(aabonuses.SpellOnKill[i], this);
 		}
 
-		if(itembonuses.SpellOnKill[i] && (level >= itembonuses.SpellOnKill[i+2])){
-			if(MakeRandomInt(0,99) < itembonuses.SpellOnKill[i+1]) 
+		if(itembonuses.SpellOnKill[i] && (level >= itembonuses.SpellOnKill[i + 2])){
+			if(MakeRandomInt(0, 99) < static_cast<int>(itembonuses.SpellOnKill[i + 1])) 
 				SpellFinished(itembonuses.SpellOnKill[i], this);
 		}
 		
-		if(spellbonuses.SpellOnKill[i] && (level >= spellbonuses.SpellOnKill[i+2])) {
-			if(MakeRandomInt(0,99) < spellbonuses.SpellOnKill[i+1]) 
+		if(spellbonuses.SpellOnKill[i] && (level >= spellbonuses.SpellOnKill[i + 2])) {
+			if(MakeRandomInt(0, 99) < static_cast<int>(spellbonuses.SpellOnKill[i + 1])) 
 				SpellFinished(spellbonuses.SpellOnKill[i], this);
 		}
 		
@@ -4118,19 +4001,19 @@ bool Mob::TrySpellOnDeath()
 
 	for(int i = 0; i < MAX_SPELL_TRIGGER*2; i+=2) {
 		if(IsClient() && aabonuses.SpellOnDeath[i]) {
-			if(MakeRandomInt(0,99) < aabonuses.SpellOnDeath[i+1]) {
+			if(MakeRandomInt(0, 99) < static_cast<int>(aabonuses.SpellOnDeath[i + 1])) {
 				SpellFinished(aabonuses.SpellOnDeath[i], this);
 			}
 		}
 
 		if(itembonuses.SpellOnDeath[i]) {
-			if(MakeRandomInt(0,99) < itembonuses.SpellOnDeath[i+1]) {
+			if(MakeRandomInt(0, 99) < static_cast<int>(itembonuses.SpellOnDeath[i + 1])) {
 				SpellFinished(itembonuses.SpellOnDeath[i], this); 
 			}
 		}
 			
 		if(spellbonuses.SpellOnDeath[i]) {
-			if(MakeRandomInt(0,99) < spellbonuses.SpellOnDeath[i+1])  {
+			if(MakeRandomInt(0, 99) < static_cast<int>(spellbonuses.SpellOnDeath[i + 1]))  {
 				SpellFinished(spellbonuses.SpellOnDeath[i], this); 
 				}
 			}
@@ -4297,7 +4180,7 @@ void Mob::DoGravityEffect()
 	cur_x = my_x = GetX();
 	cur_y = my_y = GetY();
 	
-	uint32 buff_count = GetMaxTotalSlots();
+	int buff_count = GetMaxTotalSlots();
 	for (int slot = 0; slot < buff_count; slot++)
 	{
 		if (buffs[slot].spellid != SPELL_UNKNOWN && IsEffectInSpell(buffs[slot].spellid, SE_GravityEffect))
@@ -4316,7 +4199,7 @@ void Mob::DoGravityEffect()
 					caster_x = caster->GetX();
 					caster_y = caster->GetY();
 										
-					value = spells[buffs[slot].spellid].base[i];
+					value = static_cast<float>(spells[buffs[slot].spellid].base[i]);
 					if(value == 0) 
 						continue;
 						
@@ -4407,7 +4290,7 @@ void Mob::RemoveNimbusEffect(int effectid)
 	safe_delete(outapp);
 }
 
-bool Mob::IsBoat() {
+bool Mob::IsBoat() const {
     return (race == 72 || race == 73 || race == 114 || race == 404 || race == 550 || race == 551 || race == 552);
 }
 
@@ -4523,22 +4406,22 @@ void Mob::CastOnNumHitFade(uint32 spell_id)
 
 int Mob::SlowMitigation(bool slow_msg, Mob *caster, int slow_value) 
 { 
-	uint8 int_slow_mitigation = slow_mitigation * 100.0f;
+	float int_slow_mitigation = slow_mitigation * 100.0f;
 
-	if (int_slow_mitigation > 100)
+	if (int_slow_mitigation > 100.0f)
 		return 0;
 
 	if (slow_msg)
 	{
 		if (caster && caster->IsClient())
 		{
-			if ((int_slow_mitigation > 0) && (int_slow_mitigation < 26))
+			if ((int_slow_mitigation > 0.0f) && (int_slow_mitigation < 26.0f))
 				caster->Message(262, "Your spell was mostly successful");
 
-			else if ((int_slow_mitigation > 26) && (int_slow_mitigation < 74))
+			else if ((int_slow_mitigation > 26.0f) && (int_slow_mitigation < 74.0f))
 				caster->Message(262, "Your spell was partially successful");
 
-			else if ((int_slow_mitigation > 74) && (int_slow_mitigation < 101))
+			else if ((int_slow_mitigation > 74.0f) && (int_slow_mitigation < 101.0f))
 				caster->Message(262, "Your spell was slightly successful");
 		}
 		return 0;
@@ -4546,7 +4429,7 @@ int Mob::SlowMitigation(bool slow_msg, Mob *caster, int slow_value)
 
 	else
 	{
-		slow_value -= (slow_value*int_slow_mitigation/100);
+		slow_value -= (slow_value * static_cast<int>(int_slow_mitigation) / 100);
 		return slow_value;
 	}
 }
@@ -4593,5 +4476,3 @@ bool Mob::PassLimitToSkill(uint16 spell_id, uint16 skill) {
 	}
 	return false; 
 }
-
-

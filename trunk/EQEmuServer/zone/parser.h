@@ -101,7 +101,7 @@ public:
     virtual void EventGlobalPlayer(QuestEventID evt, Client *client, std::string data, uint32 extra_data) {}
     virtual void EventItem(QuestEventID evt, Client *client, ItemInst *item, uint32 objid, uint32 extra_data) {}
     virtual void EventSpell(QuestEventID evt, NPC* npc, Client *client, uint32 spell_id, uint32 extra_data) {}
-    virtual bool HasQuestSub(uint32 npcid, const char *subname) { return HasQuestFile(npcid); }
+    virtual bool HasQuestSub(uint32 npcid, const char *subname) { return HasQuestFile(npcid) != 0; }
     virtual bool PlayerHasQuestSub(const char *subname) { return true; }
     virtual bool GlobalPlayerHasQuestSub(const char *subname) { return true; }
     virtual bool SpellHasQuestSub(uint32 spell_id, const char *subname) { return true; }

@@ -326,8 +326,8 @@ public:
 	void	SetGM(bool toggle);
 	void	SetPVP(bool toggle);
 
-	inline bool	GetPVP()	const { return zone->GetZoneID() == 77 ? true : m_pp.pvp; }
-	inline bool	GetGM()		const { return (bool) m_pp.gm; }
+	inline bool	GetPVP()	const { return zone->GetZoneID() == 77 ? true : (m_pp.pvp != 0); }
+	inline bool	GetGM()		const { return m_pp.gm != 0; }
 
 	inline void	SetBaseClass(uint32 i) { m_pp.class_=i; }
 	inline void	SetBaseRace(uint32 i) { m_pp.race=i; }
@@ -696,7 +696,7 @@ public:
 	uint32 GetEquipment(uint8 material_slot) const;	// returns item id
 	uint32 GetEquipmentColor(uint8 material_slot) const;
 
-	inline bool AutoSplitEnabled() { return(m_pp.autosplit); }
+	inline bool AutoSplitEnabled() { return m_pp.autosplit != 0; }
 
 	void SummonHorse(uint16 spell_id);
 	void SetHorseId(uint16 horseid_in);

@@ -220,7 +220,7 @@ public:
 	bool	CanLevitate() const {return(can_levitate); } // Magoth78
 	bool    CanCastOutdoor() const {return(can_castoutdoor);} //qadar
 	bool	IsHotzone() const { return(is_hotzone); }
-	inline	bool BuffTimersSuspended() const { return newzone_data.SuspendBuffs; };
+	inline	bool BuffTimersSuspended() const { return newzone_data.SuspendBuffs != 0; };
 	
 	time_t	weather_timer;
 	uint8	weather_type;

@@ -32,7 +32,7 @@ public:
 	Seperator(const char* message_in, char div = ' ', uint16 in_maxargnum = 10, uint16 arglen = 100, bool iObeyQuotes = false, char div2 = '\t', char div3 = 0, bool iSkipEmpty = true) {
 		int i;
 		argnum = 0;
-		int len = strlen(message_in);
+		int len = static_cast<int>(strlen(message_in));
 		
 		if(arglen > len)
 			arglen = len+1;
@@ -116,7 +116,7 @@ public:
 	}
 	static bool IsNumber(const char* check) {
 		bool SeenDec = false;
-		int len = strlen(check);
+		int len = static_cast<int>(strlen(check));
 		if (len == 0) {
 			return false;
 		}
@@ -137,7 +137,7 @@ public:
 		return true;
 	}
 	static bool IsHexNumber(char* check) {
-		int len = strlen(check);
+		int len = static_cast<int>(strlen(check));
 		if (len < 3)
 			return false;
 		if (check[0] != '0' || (check[1] != 'x' && check[1] != 'X'))

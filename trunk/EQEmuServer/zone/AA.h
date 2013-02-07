@@ -2155,4 +2155,15 @@ enum {	//values of AA_Action.action
 	aaActionBuy = 3
 };
 
+class Timer;
+class AA_SwarmPetInfo {
+public:
+	AA_SwarmPetInfo();
+	~AA_SwarmPetInfo();
+	Mob * GetOwner();
+	Timer *duration;
+	uint32 target; //the target ID
+	uint32 owner_id;
+};
+
 #endif

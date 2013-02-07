@@ -99,6 +99,7 @@ SET(zone_headers
     client_logs.h
     client_packet.h
     command.h
+    common.h
     doors.h
     embparser.h
     embperl.h

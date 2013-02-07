@@ -151,7 +151,7 @@ bool Map::loadMap(FILE *fp) {
 	}
 #else
 	uint32 count;
-	if((count=fread(mFinalFaces, sizeof(FACE), m_Faces , fp)) != m_Faces) {
+	if((count = static_cast<int>(fread(mFinalFaces, sizeof(FACE), m_Faces , fp))) != m_Faces) {
 		printf("Unable to read %lu face bytes from map file, got %lu.\n", (unsigned long)m_Faces, (unsigned long)count);
 		return(false);
 	}

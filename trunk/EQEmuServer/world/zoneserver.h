@@ -68,11 +68,6 @@ public:
 
 	inline uint32		GetInstanceID() { return instanceID; }
 	inline void			SetInstanceID(uint32 i) { instanceID = i; }
-	//
-	//used by wlog() for VC6
-	#ifdef NO_VARIADIC_MACROS
-	void world_log(LogType type, const char *fmt, ...);
-	#endif
 private:
 	EmuTCPConnection* const tcpc;
 

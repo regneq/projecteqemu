@@ -113,7 +113,7 @@ public:
 	void push_front(ItemInst* inst);
 	ItemInst* pop();
 	ItemInst* peek_front() const;
-	inline int size() 		{ return m_list.size(); }
+	inline int size() 		{ return static_cast<int>(m_list.size()); }
 	
 protected:
 	/////////////////////////
