@@ -5039,9 +5039,6 @@ struct MercenaryMerchantResponse_Struct {
 /*0004*/
 };
 
-//old structures live here:
-#include "eq_old_structs.h"
-
 // Restore structure packing to default
 #pragma pack()
 

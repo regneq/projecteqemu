@@ -66,7 +66,6 @@ using namespace std;
 #include "../common/classes.h"
 #include "../common/races.h"
 #include "zonedb.h"
-#include "../common/files.h"
 #include "spdat.h"
 #include "../common/packet_functions.h"
 #include "../common/MiscFunctions.h"

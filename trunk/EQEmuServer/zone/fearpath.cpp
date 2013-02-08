@@ -22,7 +22,6 @@
 #include <string.h>
 #include <cstdlib>
 
-#include "../common/files.h"
 #include "../common/rulesys.h"
 #include "../common/MiscFunctions.h"
 #include "zone_profile.h"

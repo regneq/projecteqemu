@@ -32,7 +32,6 @@ using namespace std;
 #include "database.h"
 #include "../common/packet_functions.h"
 #include "../common/md5.h"
-#include "../common/files.h"
 
 extern WorldServer worldserver;
 extern Clientlist *CL;

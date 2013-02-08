@@ -46,12 +46,6 @@ using namespace std;
 #include "guilds.h"
 #include "MiscFunctions.h"
 #include "extprofile.h"
-/*#include "../common/classes.h"
-#include "../common/races.h"
-#include "../common/files.h"
-#include "../common/EQEMuError.h"
-#include "../common/packet_dump.h"
-*/
 extern Client client;
 
 /*

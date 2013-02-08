@@ -108,7 +108,6 @@ SET(common_headers
     EmuTCPConnection.h
     EmuTCPServer.h
     eq_constants.h
-    eq_old_structs.h
     eq_opcodes.h
     eq_packet_structs.h
     EQDB.h
@@ -127,7 +126,6 @@ SET(common_headers
     eqtime.h
     errmsg.h
     extprofile.h
-    files.h
     guild_base.h
     guilds.h
     Item.h

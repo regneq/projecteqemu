@@ -48,7 +48,6 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 #include "../common/packet_functions.h"
 #include "../common/packet_dump.h"
 #include "../common/serverinfo.h"
-#include "../common/files.h"
 #include "../common/opcodemgr.h"
 #include "../common/EQPacket.h"
 #include "../common/guilds.h"
@@ -7366,92 +7365,10 @@ void command_profilereset(Client *c, const Seperator *sep) {
 #endif
 
 void command_opcode(Client *c, const Seperator *sep) {
-#ifndef WIN32
-#warning rewrite this...
-#endif
 	if(!strcasecmp( sep->arg[1], "reload" )) {
 		ReloadAllPatches();
 		c->Message(0, "Opcodes for all patches have been reloaded");
 	}
-	
-/*	if(ZoneOpcodeManager == NULL) {
-		c->Message(13, "It seems that the server is not using an opcode translator.");
-		return;
-	}
-	
-	if(!strcasecmp( sep->arg[1], "mode" )) {
-		OpcodeManager *new_mgr, *old_mgr;
-		if(!strcasecmp( sep->arg[2], "shared" )) {
-			new_mgr = new SharedOpcodeManager();
-		} else if(!strcasecmp( sep->arg[2], "private" )) {
-			new_mgr = new RegularOpcodeManager();
-		} else {
-			c->Message(13, "You specified an invalid manager type. Options: shared | private");
-			return;
-		}
-		if(!new_mgr->LoadOpcodes(OPCODES_FILE)) {
-			LogFile->write(EQEMuLog::Error, "Loading new opcode manager failed. Not switching");
-			c->Message(13, "Loading new opcode manager failed. Not switching");
-			return;
-		}
-		
-		old_mgr = ZoneOpcodeManager;
-		ZoneOpcodeManager = new_mgr;
-		safe_delete(old_mgr);
-		
-		c->Message(0, "Opcodes mode has been changed to '%s'", sep->arg[2]);
-	} else if(!strcasecmp( sep->arg[1], "reload" )) {
-		if(!ZoneOpcodeManager->Mutable()) {
-			c->Message(13, "Your opcode manager is not editable. Only private opcode manager can be edited right now.");
-			return;
-		}
-		((MutableOpcodeManager *) ZoneOpcodeManager)->ReloadOpcodes(OPCODES_FILE);
-		c->Message(0, "Opcodes have been reloaded");
-	} else if(!strcasecmp( sep->arg[1], "get" )) {
-		EmuOpcode op = ZoneOpcodeManager->NameSearch(sep->arg[2]);
-		if(op == OP_Unknown) {
-			c->Message(0, "Opcode '%s' is unknown.", sep->arg[2]);
-		} else {
-			uint16 eq_op = ZoneOpcodeManager->EmuToEQ(op);
-			c->Message(0, "Opcode '%s' is 0x%.4x", sep->arg[2], eq_op);
-		}
-	} else if(!strcasecmp( sep->arg[1], "set" )) {
-		if(!ZoneOpcodeManager->Mutable()) {
-			c->Message(13, "Your opcode manager is not editable. Only private opcode manager can be edited right now.");
-			return;
-		}
-		//find the named opcode
-		EmuOpcode op = ZoneOpcodeManager->NameSearch(sep->arg[2]);
-		if(op == OP_Unknown) {
-			c->Message(13, "Unable to locate opcode named '%s'", sep->arg[2]);
-			return;
-		}
-		
-		//turn the second value into a number
-		uint32 newop = 0;
-		if(sscanf(sep->arg[3], "0x%x", &newop) != 1) {
-			c->Message(13, "Unable to read your opcode value. It hsould be of the form 0x0000");
-			return;
-		}
-		
-		//set it
-		((MutableOpcodeManager *)ZoneOpcodeManager)->SetOpcode(op, newop);
-		if(newop == 0) {
-			c->Message(0, "Opcode '%s' has been cleared.");
-		} else {
-			c->Message(0, "Opcode '%s' has been set to 0x%.4x.", sep->arg[2], newop);
-		}
-	} else {
-		c->Message(0, "Usage: #opcodes [command]");
-		c->Message(0, "Commands:");
-		c->Message(0, "  mode [shared|private] - Switch to a new opcode manager of this type.");
-		c->Message(0, "  reload - Reloads your opcodes.conf");
-		c->Message(0, "  get [name] - Get the value for the opcode name.");
-		c->Message(0, "  set [name] [value 0x..] - Set an opcode in game (temporary).");
-		c->Message(0, "  search [value 0x..] - Try to find the name for an opcode.");
-	}
-	
-	*/
 }
 
 void command_logsql(Client *c, const Seperator *sep) {

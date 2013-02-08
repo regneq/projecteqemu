@@ -36,7 +36,6 @@ using namespace std;
 #include "LoginServerList.h"
 #include "../common/serverinfo.h"
 #include "../common/md5.h"
-#include "../common/files.h"
 #include "../common/opcodemgr.h"
 #include "../common/rulesys.h"
 #include "../common/ruletypes.h"

@@ -27,7 +27,6 @@ public:
 	void	ping();
 	MYSQL*	getMySQL(){ return &mysql; }
 	
-	static bool	ReadDBINI(char *host, char *user, char *pass, char *db, uint32 &port, bool &compress, bool *items);
 protected:
 	bool	Open(const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase, uint32 iPort, uint32* errnum = 0, char* errbuf = 0, bool iCompress = false, bool iSSL = false);
 private:

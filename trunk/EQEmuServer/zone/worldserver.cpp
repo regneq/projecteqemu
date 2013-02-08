@@ -49,7 +49,6 @@ using namespace std;
 #include "petitions.h"
 #include "../common/packet_functions.h"
 #include "../common/md5.h"
-#include "../common/files.h"
 #include "ZoneConfig.h"
 #include "StringIDs.h"
 #include "guild_mgr.h"
