@@ -54,7 +54,6 @@ using namespace std;
 #include "object.h"
 #include "petitions.h"
 #include "pathing.h"
-#include "../common/files.h"
 #include "parser.h"
 #include "event_codes.h"
 #include "client_logs.h"

@@ -27,7 +27,6 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #define SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
 #endif
 
-#include "../common/files.h"
 #include "zone_profile.h"
 #include "map.h"
 #include "zone.h"

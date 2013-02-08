@@ -76,7 +76,6 @@ extern volatile bool ZoneLoaded;
 #include "../common/eq_packet_structs.h"
 #include "../common/Mutex.h"
 #include "../common/version.h"
-#include "../common/files.h"
 #include "../common/EQEMuError.h"
 #include "ZoneConfig.h"
 #include "../common/packet_dump_file.h"
@@ -249,11 +248,12 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 	#endif
-	
-	if(!load_log_settings(LOG_INI_FILE))
-		_log(ZONE__INIT, "Warning: Unable to read %s", LOG_INI_FILE);
+
+	const char *log_ini_file = "./log.ini";
+	if(!load_log_settings(log_ini_file))
+		_log(ZONE__INIT, "Warning: Unable to read %s", log_ini_file);
 	else
-		_log(ZONE__INIT, "Log settings loaded from %s", LOG_INI_FILE);
+		_log(ZONE__INIT, "Log settings loaded from %s", log_ini_file);
 	
 	_log(ZONE__INIT, "Mapping Incoming Opcodes");
 	MapOpcodes();

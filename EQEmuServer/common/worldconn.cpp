@@ -29,7 +29,6 @@ using namespace std;
 #include "worldconn.h"
 #include "EQEmuConfig.h"
 #include "md5.h"
-#include "files.h"
 #include "database.h"
 #include "servertalk.h"
 

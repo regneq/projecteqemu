@@ -22,7 +22,6 @@ using namespace std;
 #include "../common/classes.h"
 #include "../common/races.h"
 #include "zonedb.h"
-#include "../common/files.h"
 #include "spdat.h"
 #include "../common/packet_functions.h"
 #include "spawn2.h"
@@ -1050,7 +1049,7 @@ int Parser::LoadScript(int npcid, const char * zone, Mob* activater)
 	if (npcid)
 		strnpcid = itoa(npcid);
 	string filename;
-	filename = QUEST_DIR "/" + (string)zone + "/" + (string)strnpcid + ".qst";
+	filename = "./quests/" + (string)zone + "/" + (string)strnpcid + ".qst";
 	string line,buffer,temp;
 	ifstream file( filename.c_str() );
 	if (!file)

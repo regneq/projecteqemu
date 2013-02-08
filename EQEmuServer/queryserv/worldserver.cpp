@@ -32,7 +32,6 @@ using namespace std;
 #include "lfguild.h"
 #include "../common/packet_functions.h"
 #include "../common/md5.h"
-#include "../common/files.h"
 #include "../common/packet_dump.h"
 
 extern WorldServer worldserver;

@@ -22,7 +22,6 @@
 #include <string.h>
 #include <float.h>
 
-#include "../common/files.h"
 #include "watermap.h"
 #include "../common/MiscFunctions.h"
 #ifdef _WINDOWS

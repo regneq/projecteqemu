@@ -1,5 +1,4 @@
 #include "../common/debug.h"
-#include "../common/files.h"
 
 #ifdef _WINDOWS
 #include <winsock2.h>
@@ -48,87 +47,6 @@ DBcore::~DBcore() {
 	safe_delete_array(pPassword);
 	safe_delete_array(pDatabase);
 }
-
-
-bool DBcore::ReadDBINI(char *host, char *user, char *passwd, char *database, uint32 &port, bool &compress, bool *items) {
-	char buf[200], type[200];
-	char linebuf[512];
-	char cport[6]={0};
-
-	FILE *f;
-	
-	if (!(f = fopen (DB_INI_FILE, "r")))
-	{
-		printf ("Couldn't open Database Config File '%s'.\n", DB_INI_FILE);
-		return(false);
-	}
-	
-	do
-	{
-		fgets (buf, 199, f);
-		if (feof (f))
-		{
-			printf ("[Database] block not found in DB.INI.\n");
-			fclose(f);
-			return(false);
-		}
-	}
-	while (strncasecmp (buf, "[Database]\n", 11) != 0 && strncasecmp (buf, "[Database]\r\n", 12) != 0);
-	
-	while (!feof (f))
-	{
-		if(fgets(linebuf, 512, f) == NULL)
-			continue;
-#ifdef _WINDOWS
-		if (sscanf(linebuf, "%[^=]=%[^\n]\n", type, buf) != 2)
-			continue;
-#else	
-		if (sscanf(linebuf, "%[^=]=%[^\r\n]\n", type, buf) != 2)
-			continue;
-#endif
-			{
-				if (!strncasecmp (type, "host", 4))
-				{
-					strn0cpy (host, buf, 199);
-					items[0] = true;
-				}
-				if (!strncasecmp (type, "user", 4))
-				{
-					strn0cpy (user, buf, 199);
-					items[1] = true;
-				}
-				if (!strncasecmp (type, "pass", 4))
-				{
-					strn0cpy (passwd, buf, 199);
-					items[2] = true;
-				}
-				if (!strncasecmp (type, "data", 4))
-				{
-					strn0cpy (database, buf, 199);
-					items[3] = true;
-				}
-				if (!strncasecmp (type, "port", 4))
-				{
-					strn0cpy(cport,buf,5);
-					port=atoi(cport);
-					items[4] = true;
-				}
-				if (!strncasecmp (type, "compression", 11)) {
-					if (strcasecmp(buf, "on") == 0) {
-						items[5] = true;
-						compress = true;
-						printf("DB Compression on.\n");
-					}
-					else if (strcasecmp(buf, "off") != 0)
-						printf("Unknown 'compression' setting in db.ini. Expected 'on' or 'off'.\n");;
-				}
-			}
-	}
-	
-	fclose (f);
-	return(true);
-}
-
 
 // Sends the MySQL server a keepalive
 void DBcore::ping() {

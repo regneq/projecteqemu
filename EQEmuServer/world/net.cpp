@@ -34,7 +34,6 @@ using namespace std;
 #include "worlddb.h"
 #include "../common/seperator.h"
 #include "../common/version.h"
-#include "../common/files.h"
 #include "../common/eqtime.h"
 #include "../common/timeoutmgr.h"
 #include "../common/EQEMuError.h"
