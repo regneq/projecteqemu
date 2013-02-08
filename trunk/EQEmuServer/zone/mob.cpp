@@ -1977,7 +1977,7 @@ void Mob::SetAttackTimer() {
 							continue;
 						if(pi->IsType(ItemClassContainer) && pi->GetItem()->BagType == bagTypeQuiver)
 						{
-							float temp_wr = (pi->GetItem()->BagWR / 3.0f);
+							float temp_wr = (pi->GetItem()->BagWR / 3);
 							if(temp_wr > max_quiver)
 							{
 								max_quiver = temp_wr;
@@ -1987,7 +1987,7 @@ void Mob::SetAttackTimer() {
 					if(max_quiver > 0)
 					{
 						float quiver_haste = 1 / (1 + max_quiver / 100);
-						speed *= static_cast<int>(quiver_haste);
+						speed *= quiver_haste;
 					}
 				}
 			}
