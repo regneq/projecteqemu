@@ -21,7 +21,7 @@
 		<!-- <unlocked/> -->
 
 		<!-- Sets the ip/port for the tcp connections.  Both zones and console (if enabled).  Defaults are shown -->
-		<tcp ip="localhost" port="9000" telnet="disable"/>
+		<tcp ip="127.0.0.1" port="9000" telnet="disable"/>
 
 		<!-- Sets the shared key used by zone/launcher to connect to world -->
 		<key>some long random string</key>
@@ -51,7 +51,7 @@
 
 	<!-- Database configuration, replaces db.ini.  Defaults shown -->
 	<database>
-		<host>localhost</host>
+		<host>127.0.0.1</host>
 		<port>3306</port>
 		<username>eq</username>
 		<password>eq</password>
@@ -59,7 +59,7 @@
 	</database>
 
 	<qsdatabase>
-		<host>localhost</host>
+		<host>127.0.0.1</host>
 		<port>3306</port>
 		<username>eq</username>
 		<password>eq</password>
