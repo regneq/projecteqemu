@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==02/10/2013==
+Derision: Added decoder to support packet dumps from for the current Test Server client. SQL generation not tested.
+
 ==01/30/2013==
 Derision: Added support in netcode for fragmented Client->Server packets.
 
