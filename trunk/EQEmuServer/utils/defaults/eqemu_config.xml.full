@@ -39,7 +39,7 @@
 	<!-- Mailserver (in-game mail) information.  Defaults shown -->
 	<mailserver>
 		<host>channels.eqemulator.net</host>
-		<port>7779</port>
+		<port>7778</port>
 	</mailserver>
 
 	<zones>
@@ -57,6 +57,14 @@
 		<password>eq</password>
 		<db>eq</db>
 	</database>
+
+	<qsdatabase>
+		<host>localhost</host>
+		<port>3306</port>
+		<username>eq</username>
+		<password>eq</password>
+		<db>eq</db>
+	</qsdatabase>
 
 	<!-- Launcher Configuration -->
 	<launcher>
