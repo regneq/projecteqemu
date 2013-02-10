@@ -1,6 +1,6 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-== 01/09/2013 ==
+== 02/09/2013 ==
 KLS: Was pointed out to me that we're in violation of ActiveState Licensing terms for their perl distribution.
 To rectify this we have removed the Windows perl binaries from the source.
 
