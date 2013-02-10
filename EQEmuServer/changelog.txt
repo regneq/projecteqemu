@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 01/09/2013 ==
+KLS: Was pointed out to me that we're in violation of ActiveState Licensing terms for their perl distribution.
+To rectify this we have removed the Windows perl binaries from the source.
+
 == 02/06/2013 ==
 Uleat: Changed conversion of bot armor colors from long to unsigned long. Conversion error led to #FFFFFFFF for all returns.
 
