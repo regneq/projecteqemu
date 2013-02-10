@@ -222,6 +222,11 @@ SET(common_headers
 )
 
 SOURCE_GROUP(Patches FILES
+    patches/Client62.h
+    patches/Client62_itemfields.h
+    patches/Client62_ops.h
+    patches/Client62_structs.h
+    patches/patches.h
     patches/SoD.h
     patches/SoD_itemfields.h
     patches/SoD_ops.h
