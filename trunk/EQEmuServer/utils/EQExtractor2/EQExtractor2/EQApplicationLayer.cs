@@ -98,6 +98,8 @@ namespace EQApplicationLayer
             PatchList.Add(new PatchJanuary162013Decoder());
 
             PatchList.Add(new PatchTestServerJanuary162013Decoder());
+
+            PatchList.Add(new PatchTestServerFebruary52013Decoder());
             
             PatchList.Add(new PatchSoD());
 
