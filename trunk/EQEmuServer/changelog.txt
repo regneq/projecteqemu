@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 JJ: (demonstar55) Language skill up should use proper function.
 JJ: SetLanguageSkill now updates client immediately. Both functions do proper limit checks.
     Added two missing languages. Skill level 0 in a spoken language now shows 'in an unknown tongue'.
+JJ: Initial implementation of a GarbleMessage function and implemented for languages. Can be shared with drunk speaking.
 
 == 02/09/2013 ==
 KLS: Was pointed out to me that we're in violation of ActiveState Licensing terms for their perl distribution.
