@@ -1,9 +1,9 @@
 /*  EQEMu:  Everquest Server Emulator
-	Copyright (C) 2001-2003  EQEMu Development Team (http://eqemulator.net)
+	Copyright (C) 2001-2003  EQEMu Development Team (http://eqemulator.org)
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; version 2 of the License.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2 of the License.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY except by those people which sell it, which
@@ -11,9 +11,9 @@
 	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 	A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-	  You should have received a copy of the GNU General Public License
-	  along with this program; if not, write to the Free Software
-	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "../common/debug.h"
 #include <iostream>
@@ -26,7 +26,7 @@ using namespace std;
 #include <signal.h>
 #include <math.h>
 
-// Disgrace: for windows compile
+// for windows compile
 #ifdef _WINDOWS
 #define abs64 _abs64
 #define snprintf	_snprintf
@@ -240,7 +240,7 @@ Client::Client(EQStreamInterface* ieqs)
 	pLastUpdate = 0;
 	pLastUpdateWZ = 0;
 	m_pp.autosplit = false;
-	// Kaiyodo - initialise haste variable
+	// initialise haste variable
 	m_tradeskill_object = NULL;
 	delaytimer = false;
 	PendingRezzXP = -1;
@@ -501,7 +501,7 @@ bool Client::Save(uint8 iCommitNow) {
 	m_pp.guildrank=guildrank;
 	m_pp.heading = heading;
 	
-	// Akkadius (Uleat): Temp Hack for signed values until we get the root of the problem changed over to signed...
+	// Temp Hack for signed values until we get the root of the problem changed over to signed...
 	if (m_pp.copper < 0) { m_pp.copper = 0; }
 	if (m_pp.silver < 0) { m_pp.silver = 0; }
 	if (m_pp.gold < 0) { m_pp.gold = 0; }
@@ -717,13 +717,6 @@ void Client::QueuePacket(const EQApplicationPacket* app, bool ack_req, CLIENT_CO
 		AddPacket(app, ack_req);
 		return;
 	}
-	//#ifdef EQDEBUG >= 9
-		// This just here while figuring out new opcodes/packets
-		#ifdef MERTHALICIOUS
-			//@merth: this just here temporarily for my debugging
-			cout << "Sending: 0x" << hex << setw(4) << setfill('0') << app->GetOpcode() << dec << ", size=" << app->size << endl;
-		#endif
-	//#endif
 
 	// if the program doesnt care about the status or if the status isnt what we requested
     if (required_state != CLIENT_CONNECTINGALL && client_state != required_state)
@@ -1149,17 +1142,18 @@ void Client::ChannelMessageSend(const char* from, const char* to, uint8 chan_num
 	
 	if (language < MAX_PP_LANGUAGE) {
 		ListenerSkill = m_pp.languages[language];
-		cm->language = language;
-		if ((chan_num == 2) && (ListenerSkill < 100)) {	// group message in unmastered language, check for skill up
-			if ((m_pp.languages[language] <= lang_skill) && (from != this->GetName() )) 
-				CheckLanguageSkillIncrease(language, lang_skill);
+		if (ListenerSkill == 0) {
+			cm->language = (MAX_PP_LANGUAGE - 1); // in an unknown tongue
+		}
+		else {
+			cm->language = language;
 		}
 	}
 	else {
 		ListenerSkill = m_pp.languages[0];
 		cm->language = 0;
 	}
-	
+
 	// set effective language skill = lower of sender and receiver skills
 	int32 EffSkill = (lang_skill < ListenerSkill ? lang_skill : ListenerSkill);
 	if (EffSkill > 100)	// maximum language skill is 100
@@ -1169,6 +1163,11 @@ void Client::ChannelMessageSend(const char* from, const char* to, uint8 chan_num
 	cm->chan_num = chan_num;
 	strcpy(&cm->message[0], buffer);
 	QueuePacket(&app);
+
+	if ((chan_num == 2) && (ListenerSkill < 100)) {	// group message in unmastered language, check for skill up
+		if ((m_pp.languages[language] <= lang_skill) && (from != this->GetName())) 
+			CheckLanguageSkillIncrease(language, lang_skill);
+	}
 }
 
 void Client::Message(uint32 type, const char* message, ...) {
@@ -1407,11 +1406,15 @@ void Client::SetSkill(SkillType skillid, uint16 value) {
 	safe_delete(outapp);
 }
 
-void    Client::IncreaseLanguageSkill(int skill_id, int value) { 
+void Client::IncreaseLanguageSkill(int skill_id, int value) { 
 
-	if (skill_id > 25) return;
+	if (skill_id >= MAX_PP_LANGUAGE)
+		return; //Invalid lang id
 
 	m_pp.languages[skill_id] += value;
+
+	if (m_pp.languages[skill_id] > 100) //Lang skill above max
+		m_pp.languages[skill_id] = 100;
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
 	SkillUpdate_Struct* skill = (SkillUpdate_Struct*)outapp->pBuffer;
@@ -1419,6 +1422,8 @@ void    Client::IncreaseLanguageSkill(int skill_id, int value) {
 	skill->value = m_pp.languages[skill_id];
 	QueuePacket(outapp);
 	safe_delete(outapp);
+
+	Message_StringID( MT_Skills, LANG_SKILL_IMPROVED ); //Notify client
 }
 
 void Client::AddSkill(SkillType skillid, uint16 value) {
@@ -1431,7 +1436,7 @@ void Client::AddSkill(SkillType skillid, uint16 value) {
 	SetSkill(skillid, value);
 }
 
-void Client::SendSound(){//-Cofruben:Makes a sound.
+void Client::SendSound(){//Makes a sound.
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Sound, 68);
 	unsigned char x[68];
 	memset(x, 0, 68);
@@ -1549,7 +1554,7 @@ void Client::UpdateAdmin(bool iFromDB) {
 #if EQDEBUG >= 5
 		printf("%s is a GM\n", GetName());
 #endif
-// solar: no need for this, having it set in pp you already start as gm
+// no need for this, having it set in pp you already start as gm
 // and it's also set in your spawn packet so other people see it too
 //		SendAppearancePacket(AT_GM, 1, false);
 		petition_list.UpdateGMQueue();
@@ -1827,7 +1832,7 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 
 	// Populate client-specific spawn information
 	ns->spawn.afk		= AFK;
-	ns->spawn.lfg		= LFG; // @bp: afk and lfg are cleared on zoning on live
+	ns->spawn.lfg		= LFG; // afk and lfg are cleared on zoning on live
 	ns->spawn.anon		= m_pp.anon;
 	ns->spawn.gm		= GetGM() ? 1 : 0;
 	ns->spawn.guildID	= GuildID();
@@ -1855,7 +1860,7 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	ns->spawn.runspeed		= (gmspeed == 0) ? runspeed : 3.125f;
 	if (!m_pp.showhelm) ns->spawn.showhelm = 0;
 
-	// @merth: pp also hold this info; should we pull from there or inventory?
+	// pp also hold this info; should we pull from there or inventory?
 	// (update: i think pp should do it, as this holds LoY dye - plus, this is ugly code with Inventory!)
 	const Item_Struct* item = NULL;
 	const ItemInst* inst = NULL;
@@ -1910,7 +1915,7 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 			ns->spawn.equipment[MATERIAL_SECONDARY] = atoi(&item->IDFile[2]);
 	}
 
-	// @merth: these two may be related to ns->spawn.texture
+	//these two may be related to ns->spawn.texture
 	/*
 	ns->spawn.npc_armor_graphic = texture;
 	ns->spawn.npc_helm_graphic = helmtexture;
@@ -2348,7 +2353,7 @@ void Client::CheckLanguageSkillIncrease(uint8 langid, uint8 TeacherSkill) {
 		Chance = (Chance * RuleI(Character, SkillUpModifier)/100);
 
 		if(MakeRandomFloat(0,100) < Chance) {	// if they make the roll
-			SetLanguageSkill(langid, LangSkill+1);	// increase the language skill by 1
+			IncreaseLanguageSkill(langid);	// increase the language skill by 1
 			_log(SKILLS__GAIN, "Language %d at value %d successfully gain with %.4f%%chance", langid, LangSkill, Chance);
 		} 
 		else
@@ -2886,7 +2891,7 @@ void Client::Message_StringID(uint32 type, uint32 string_id, uint32 distance)
 }
 
 //
-// solar: this list of 9 args isn't how I want to do it, but to use va_arg
+// this list of 9 args isn't how I want to do it, but to use va_arg
 // you have to know how many args you're expecting, and to do that we have
 // to load the eqstr file and count them in the string.
 // This hack sucks but it's gonna work for now.
@@ -2958,7 +2963,7 @@ void Client::SetTint(int16 in_slot, uint32 color) {
 	SetTint(in_slot, new_color);
 }
 
-// @merth: Still need to reconcile bracer01 versus bracer02
+// Still need to reconcile bracer01 versus bracer02
 void Client::SetTint(int16 in_slot, Color_Struct& color) {
 	if (in_slot==SLOT_HEAD)
 		m_pp.item_tint[MATERIAL_HEAD].color=color.color;
@@ -3007,14 +3012,22 @@ void Client::SetHideMe(bool flag)
 
 void Client::SetLanguageSkill(int langid, int value)
 {
-	if (langid > 26)
-		return;
-	if( value <= 100 )
-	{
-		m_pp.languages[langid] = value;
+	if (langid >= MAX_PP_LANGUAGE)
+		return; //Invalid Language
 
-		Message_StringID( MT_Skills, LANG_SKILL_IMPROVED );
-	}
+	if (value > 100)
+		value = 100; //Max lang value
+
+	m_pp.languages[langid] = value;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
+	SkillUpdate_Struct* skill = (SkillUpdate_Struct*)outapp->pBuffer;
+	skill->skillId = 100 + langid;
+	skill->value = m_pp.languages[langid];
+	QueuePacket(outapp);
+	safe_delete(outapp);
+
+	Message_StringID( MT_Skills, LANG_SKILL_IMPROVED ); //Notify the client
 }
 
 void Client::LinkDead()
@@ -3526,7 +3539,7 @@ void Client::GetGroupAAs(GroupLeadershipAA_Struct *into) const {
 
 void Client::EnteringMessages(Client* client)
 {
-	//aza77 server rules
+	//server rules
 	char *rules;
 	rules = new char [4096];
 

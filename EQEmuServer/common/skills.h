@@ -1,5 +1,5 @@
 /*  EQEMu:  Everquest Server Emulator
-    Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
+    Copyright (C) 2001-2002  EQEMu Development Team (http://eqemulator.org)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 */
 #ifndef SKILLS_H
 #define SKILLS_H
-
-
 
 // Correct Skill Numbers as of 4-14-2002
 typedef enum {

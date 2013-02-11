@@ -1,5 +1,5 @@
 /*  EQEMu:  Everquest Server Emulator
-	Copyright (C) 2001-2003  EQEMu Development Team (http://eqemulator.net)
+	Copyright (C) 2001-2003  EQEMu Development Team (http://eqemulator.org)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ typedef enum {
 	ZoneUnsolicited,
 	GateToBindPoint,		// Always send RequestClientZoneChange_Struct to client: Gate spell or Translocate To Bind Point spell
 	SummonPC,				// In-zone GMMove() always: Call of the Hero spell or some other type of in zone only summons
-	Rewind,					// Lieka:  Summon to /rewind location.
+	Rewind,					// Summon to /rewind location.
 	EvacToSafeCoords
 } ZoneMode;
 
@@ -641,7 +641,7 @@ public:
 	uint32	GetRawSkill(SkillType skill_id) const { if (skill_id <= HIGHEST_SKILL) { return(m_pp.skills[skill_id]); } return 0; }
 	bool	HasSkill(SkillType skill_id) const;
 	bool	CanHaveSkill(SkillType skill_id) const;
-	void	SetSkill(SkillType skill_num, uint16 value); // socket 12-29-01
+	void	SetSkill(SkillType skill_num, uint16 value);
 	void	AddSkill(SkillType skillid, uint16 value);
 	void	CheckSpecializeIncrease(uint16 spell_id);
 	void	CheckSongSkillIncrease(uint16 spell_id);
@@ -686,7 +686,6 @@ public:
 	inline void	SetBecomeNPCLevel(uint8 level) { npclevel = level; }
 	bool LootToStack(uint32 itemid);
 	void SetFeigned(bool in_feigned);
-	// EverHood 6/16/06
 	/// this cures timing issues cuz dead animation isn't done but server side feigning is?
 	inline bool    GetFeigned()	const { return(feigned); }
 	EQStreamInterface* Connection() { return eqs; }
@@ -727,7 +726,7 @@ public:
 	void  SendAA(uint32 id, int seq=1);
 	void  SendPreviousAA(uint32 id, int seq=1);
 	void  BuyAA(AA_Action* action);
-	// solar: this function is used by some AA stuff
+	//this function is used by some AA stuff
 	void MemorizeSpell(uint32 slot,uint32 spellid,uint32 scribing);
 	void	SetAATitle(const char *Title);
 	void	SetTitleSuffix(const char *txt);
@@ -1128,7 +1127,7 @@ public:
 	char* GetClassPlural(Client* client);
 	void  SendWebLink(const char* website);
 
-	bool	StoreTurnInItems(Mob* with);
+	bool StoreTurnInItems(Mob* with);
 	void DuplicateLoreMessage(uint32 ItemID);
 
 protected:
