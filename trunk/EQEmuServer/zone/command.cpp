@@ -1,24 +1,22 @@
-/*	EQEMu:	Everquest Server Emulator
-Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
+/*  EQEMu:  Everquest Server Emulator
+    Copyright (C) 2001-2002  EQEMu Development Team (http://eqemulator.org)
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; version 2 of the License.
-	
-		This program is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY except by those people which sell it, which
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY except by those people which sell it, which
 	are required to give you total support for your newly bought product;
 	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-	A PARTICULAR PURPOSE.	See the GNU General Public License for more details.
-	
-		You should have received a copy of the GNU General Public License
-		along with this program; if not, write to the Free Software
-		Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
+	A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /*
-
-	solar: file created 9/20/03
 	
 	To add a new command 3 things must be done:
 	
@@ -645,7 +643,7 @@ int command_realdispatch(Client *c, const char *message)
 	_ZP(command_realdispatch);
 	
 	
-    Seperator sep(message, ' ', 10, 100, true); //changed by Eglin: "three word argument" should be considered 1 arg
+    Seperator sep(message, ' ', 10, 100, true); // "three word argument" should be considered 1 arg
 	
 	command_logcommand(c, message);
 	
@@ -1368,7 +1366,6 @@ void command_gm(Client *c, const Seperator *sep)
 //To whoever wrote the above: And what about /kill, /zone, /zoneserver, etc?
 //There is a reason for the # commands: so that admins can specifically enable certain
 //commands for their users.  Some might want users to #summon but not to /kill.  Cant do that if they are a GM
-//Added back - LE
 void command_summon(Client *c, const Seperator *sep)
 {
 	Mob *t;
@@ -1384,7 +1381,7 @@ void command_summon(Client *c, const Seperator *sep)
 				c->Message(0, "Error: World server disconnected.");
 			else
 			{ // player is in another zone
-				// @merth: Taking this command out until we test the factor of 8 in ServerOP_ZonePlayer
+				//Taking this command out until we test the factor of 8 in ServerOP_ZonePlayer
 				//c->Message(0, "Summoning player from another zone not yet implemented.");
 				//return;
 
@@ -1395,7 +1392,7 @@ void command_summon(Client *c, const Seperator *sep)
 				szp->ignorerestrictions = 2;
 				strcpy(szp->name, sep->arg[1]);
 				strcpy(szp->zone, zone->GetShortName());
-				szp->x_pos = c->GetX(); // @merth: May need to add a factor of 8 in here..
+				szp->x_pos = c->GetX(); // May need to add a factor of 8 in here..
 				szp->y_pos = c->GetY();
 				szp->z_pos = c->GetZ();
 				worldserver.SendPacket(pack);
@@ -2162,7 +2159,7 @@ void command_spoff(Client *c, const Seperator *sep)
 void command_itemtest(Client *c, const Seperator *sep)
 {
 	char chBuffer[8192] = {0};
-	//@merth: Using this to determine new item layout
+	//Using this to determine new item layout
 	FILE* f = NULL;
 	if (!(f = fopen("c:\\EQEMUcvs\\ItemDump.txt", "rb"))) {
 		c->Message(13, "Error: Could not open c:\\EQEMUcvs\\ItemDump.txt");
@@ -2663,33 +2660,34 @@ void command_setlanguage(Client *c, const Seperator *sep)
 	if ( strcasecmp( sep->arg[1], "list" ) == 0 )
 	{
 		c->Message(0, "Languages:");
-		c->Message(0, "     (0) Common Tongue");
-		c->Message(0, "     (1) Barbarian");
-		c->Message(0, "     (2) Erudian");
-		c->Message(0, "     (3) Elvish");
-		c->Message(0, "     (4) Dark Elvish");
-		c->Message(0, "     (5) Dwarvish");
-		c->Message(0, "     (6) Troll");
-		c->Message(0, "     (7) Ogre");
-		c->Message(0, "     (8) Gnomish");
-		c->Message(0, "     (9) Halfling");
-		c->Message(0, "    (10) Thieves Cant");
-		c->Message(0, "    (11) Old Erudian");
-		c->Message(0, "    (12) Elder Elvish");
-		c->Message(0, "    (13) Froglok");
-		c->Message(0, "    (14) Goblin");
-		c->Message(0, "    (15) Gnoll");
-		c->Message(0, "    (16) Combine Tongue");
-		c->Message(0, "    (17) Elder Teir`Dal");
-		c->Message(0, "    (18) Lizardman");
-		c->Message(0, "    (19) Orcish");
-		c->Message(0, "    (20) Faerie");
-		c->Message(0, "    (21) Dragon");
-		c->Message(0, "    (22) Elder Dragon");
-		c->Message(0, "    (23) Dark Speech");
-		c->Message(0, "    (24) Vah Shir");
-		c->Message(0, "    (25) Unknown1");
-		c->Message(0, "    (26) Unknown2");
+		c->Message(0, "(0) Common Tongue");
+		c->Message(0, "(1) Barbarian");
+		c->Message(0, "(2) Erudian");
+		c->Message(0, "(3) Elvish");
+		c->Message(0, "(4) Dark Elvish");
+		c->Message(0, "(5) Dwarvish");
+		c->Message(0, "(6) Troll");
+		c->Message(0, "(7) Ogre");
+		c->Message(0, "(8) Gnomish");
+		c->Message(0, "(9) Halfling");
+		c->Message(0, "(10) Thieves Cant");
+		c->Message(0, "(11) Old Erudian");
+		c->Message(0, "(12) Elder Elvish");
+		c->Message(0, "(13) Froglok");
+		c->Message(0, "(14) Goblin");
+		c->Message(0, "(15) Gnoll");
+		c->Message(0, "(16) Combine Tongue");
+		c->Message(0, "(17) Elder Teir`Dal");
+		c->Message(0, "(18) Lizardman");
+		c->Message(0, "(19) Orcish");
+		c->Message(0, "(20) Faerie");
+		c->Message(0, "(21) Dragon");
+		c->Message(0, "(22) Elder Dragon");
+		c->Message(0, "(23) Dark Speech");
+		c->Message(0, "(24) Vah Shir");
+		c->Message(0, "(25) Alaran");
+		c->Message(0, "(26) Hadal");
+		c->Message(0, "(27) Unknown1");
 	}
 	else if( c->GetTarget() == 0 )
 	{
@@ -2700,11 +2698,11 @@ void command_setlanguage(Client *c, const Seperator *sep)
 		c->Message(0, "Error: Target must be a player.");
 	}
 	else if (
-				!sep->IsNumber(1) || atoi(sep->arg[1]) < 0 || atoi(sep->arg[1]) > 26 ||
+				!sep->IsNumber(1) || atoi(sep->arg[1]) < 0 || atoi(sep->arg[1]) > 27 ||
 				!sep->IsNumber(2) || atoi(sep->arg[2]) < 0 || atoi(sep->arg[2]) > 100
 			)
 	{
-		c->Message(0, "Usage: #setlanguage [language ID] [value] (0-26, 0-100)");
+		c->Message(0, "Usage: #setlanguage [language ID] [value] (0-27, 0-100)");
 		c->Message(0, "Try #setlanguage list for a list of language IDs");
 	}
 	else
@@ -2769,7 +2767,7 @@ void command_race(Client *c, const Seperator *sep)
 {
   Mob *t=c->CastToMob();
 
-	// @merth: Need to figure out max race for LoY/LDoN: going with upper bound of 500 now for testing
+	// Need to figure out max race for LoY/LDoN: going with upper bound of 500 now for testing
 	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 724) {
 		if ((c->GetTarget()) && c->Admin() >= commandRaceOthers)
 			t=c->GetTarget();
@@ -3735,7 +3733,7 @@ void command_equipitem(Client *c, const Seperator *sep)
 			}
 			safe_delete(outapp);
 
-			// @merth: also send out a wear change packet?
+			// also send out a wear change packet?
 		}
 		else if (from_inst == NULL)
 			c->Message(13, "Error: There is no item on your cursor");
@@ -4625,7 +4623,7 @@ void command_name(Client *c, const Seperator *sep)
 		if(target->ChangeFirstName(sep->arg[1], c->GetName()))
 		{
 			c->Message(0, "Successfully renamed %s to %s", oldname, sep->arg[1]);
-			// solar: until we get the name packet working right this will work
+			// until we get the name packet working right this will work
 			c->Message(0, "Sending player to char select.");
 			target->Kick();
 		}
@@ -4677,7 +4675,7 @@ void command_kill(Client *c, const Seperator *sep)
 
 void command_haste(Client *c, const Seperator *sep)
 {
-	// Kaiyodo - #haste command to set client attack speed. Takes a percentage (100 = twice normal attack speed)
+	// #haste command to set client attack speed. Takes a percentage (100 = twice normal attack speed)
 	if(sep->arg[1][0] != 0) {
 		uint16 Haste = atoi(sep->arg[1]);
 		if(Haste > 85)
@@ -4712,7 +4710,7 @@ void command_zonespawn(Client *c, const Seperator *sep)
 	c->Message(0, "This command is not yet implemented.");
 	return;
 	
-/* solar: this was kept from client.cpp verbatim (it was commented out) */
+/* this was kept from client.cpp verbatim (it was commented out) */
 	//	if (target && target->IsNPC()) {
 	//		Message(0, "Inside main if.");
 	//		if (strcasecmp(sep->arg[1], "add")==0) {
@@ -4835,7 +4833,7 @@ void command_loc(Client *c, const Seperator *sep)
 
 void command_goto(Client *c, const Seperator *sep)
 {
-	// Pyro's goto function
+	// goto function
 	if (sep->arg[1][0] == '\0' && c->GetTarget())
 		c->MovePC(zone->GetZoneID(), zone->GetInstanceID(), c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ(), c->GetTarget()->GetHeading());
 	else if (!(sep->IsNumber(1) && sep->IsNumber(2) && sep->IsNumber(3)))
@@ -4924,7 +4922,6 @@ void command_flag(Client *c, const Seperator *sep)
 
 void command_time(Client *c, const Seperator *sep)
 {
-	// image - Redone by Scruffy
 	char timeMessage[255];
 	int minutes=0;
 	if(sep->IsNumber(1)) {
@@ -7445,7 +7442,7 @@ void command_nologs(Client *c, const Seperator *sep)
 }
 
 void command_qglobal(Client *c, const Seperator *sep) {
-	//Cisyouc: In-game switch for qglobal column
+	//In-game switch for qglobal column
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	if(sep->arg[1][0] == 0) {

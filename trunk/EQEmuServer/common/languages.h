@@ -1,5 +1,5 @@
 /*  EQEMu:  Everquest Server Emulator 
-    Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org) 
+    Copyright (C) 2001-2002  EQEMu Development Team (http://eqemulator.org) 
 
     This program is free software; you can redistribute it and/or modify 
     it under the terms of the GNU General Public License as published by 
@@ -7,9 +7,9 @@
 
     This program is distributed in the hope that it will be useful, 
     but WITHOUT ANY WARRANTY except by those people which sell it, which 
-   are required to give you total support for your newly bought product; 
-   without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-   A PARTICULAR PURPOSE.  See the GNU General Public License for more details. 
+    are required to give you total support for your newly bought product; 
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+    A PARTICULAR PURPOSE.  See the GNU General Public License for more details. 
 
     You should have received a copy of the GNU General Public License 
     along with this program; if not, write to the Free Software 
@@ -44,8 +44,9 @@
 #define LANG_ELDER_DRAGON   22
 #define LANG_DARK_SPEECH    23
 #define LANG_VAH_SHIR       24
-#define LANG_UNKNOWN1       25
-#define LANG_UNKNOWN2       26
+#define LANG_ALARAN         25
+#define LANG_HADAL          26
+#define LANG_UNKNOWN        27
 
 #endif
 
