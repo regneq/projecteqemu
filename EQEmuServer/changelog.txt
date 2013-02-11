@@ -1,7 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 == 02/11/2013 ==
-Derision: RoF: Added ENCODE for OP_BeginCast (fixes no sound during spell casting).
+Derision: RoF: Added ENCODE for OP_BeginCast (fixes no sound during spell casting). Corrected OP_DeleteSpell.
 
 == 02/10/2013 ==
 JJ: (demonstar55) Language skill up should use proper function.
