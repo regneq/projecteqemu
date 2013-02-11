@@ -635,10 +635,10 @@ struct SwapSpell_Struct
 
 struct BeginCast_Struct
 {
-/*000*/	uint16	caster_id;
-/*002*/	uint16	spell_id;
-/*004*/	uint32	cast_time;		// in miliseconds
-/*008*/	
+/*000*/	uint32	spell_id;
+/*004*/	uint16	caster_id;
+/*006*/	uint32	cast_time;		// in miliseconds
+/*010*/	
 };
 
 struct CastSpell_Struct

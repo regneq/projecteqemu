@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+== 02/11/2013 ==
+Derision: RoF: Added ENCODE for OP_BeginCast (fixes no sound during spell casting).
+
 == 02/10/2013 ==
 JJ: (demonstar55) Language skill up should use proper function.
 JJ: SetLanguageSkill now updates client immediately. Both functions do proper limit checks.
