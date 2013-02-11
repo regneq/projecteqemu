@@ -1129,6 +1129,7 @@ public:
 
 	bool StoreTurnInItems(Mob* with);
 	void DuplicateLoreMessage(uint32 ItemID);
+	void GarbleMessage(char *, uint8);
 
 protected:
 	friend class Mob;
