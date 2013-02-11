@@ -3973,6 +3973,17 @@ ENCODE(OP_GuildMemberUpdate)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_BeginCast)
+{
+	SETUP_DIRECT_ENCODE(BeginCast_Struct, structs::BeginCast_Struct);
+
+	OUT(spell_id);
+	OUT(caster_id);
+	OUT(cast_time);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BuffRemoveRequest)
 {
 	// This is to cater for the fact that short buff box buffs start at 30 as opposed to 25 in prior clients.

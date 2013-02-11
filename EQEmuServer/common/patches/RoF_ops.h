@@ -99,6 +99,7 @@ E(OP_MercenaryDataUpdate)
 E(OP_MercenaryDataResponse)
 E(OP_GuildMemberUpdate)
 E(OP_GMLastName)
+E(OP_BeginCast)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
