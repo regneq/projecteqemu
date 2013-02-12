@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+== 02/12/2013 ==
+Kayen: AA fix
+
+REQUIRED SQL: utils/sql/svn/2504_required_aa_updates.sql
+
 == 02/11/2013 ==
 Derision: RoF: Added ENCODE for OP_BeginCast (fixes no sound during spell casting). Corrected OP_DeleteSpell.
 
