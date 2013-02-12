@@ -118,7 +118,7 @@ IF(UNIX)
     OPTION(EQEMU_BUILD_CLEANIPC "Build cleanipc." ON)
     
     #Use C++11 stuff, support for this is still it infancy
-    OPTION(EQEMU_CPP_ELEVEN "Enable C++11 extentions in g++" ON)
+    OPTION(EQEMU_CPP_ELEVEN "Enable C++11 extentions in g++" OFF)
     IF(EQEMU_CPP_ELEVEN)
         ADD_DEFINITIONS(-std=c++0x)
     ENDIF(EQEMU_CPP_ELEVEN)
