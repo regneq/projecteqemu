@@ -18,7 +18,7 @@ namespace EQExtractor2
 {
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.5.1 SVN";
+        string Version = "EQExtractor2 Version 2.6.0 SVN";
 
         static int PacketsSeen = 0;
         static long BytesRead = 0;
@@ -130,8 +130,8 @@ namespace EQExtractor2
         {
             foreach (Control c in this.Controls)
                 c.Enabled = true;
-            
-            menuGenerateSQL.Enabled = StreamProcessor.StreamRecognised();
+
+            menuGenerateSQL.Enabled = StreamProcessor.StreamRecognised() && StreamProcessor.SupportsSQLGeneration();
             menuDumpAAs.Enabled = StreamProcessor.StreamRecognised();            
         }
         
@@ -250,7 +250,11 @@ namespace EQExtractor2
             {
                 ClientVersionLabel.ForeColor = Color.Green;
                 Log("Found player profile packet of the expected length (" + PPLength + ").");
-                StatusBar.Text = "Client version recognised. Press Ctrl-S to Generate SQL";
+
+                if(StreamProcessor.SupportsSQLGeneration())
+                    StatusBar.Text = "Client version recognised. Press Ctrl-S to Generate SQL";                
+                else
+                    StatusBar.Text = "Client version recognised. *SQL GENERATION NOT SUPPORTED FOR THIS CLIENT*";                
             }
 
             ZoneName = StreamProcessor.GetZoneName();
@@ -275,7 +279,7 @@ namespace EQExtractor2
             SQLForm.GroundSpawnTextBox.Enabled = true;
             SQLForm.MerchantTextBox.Enabled = true;
             SQLForm.VersionSelector.Enabled = true;
-            menuGenerateSQL.Enabled = true;
+            menuGenerateSQL.Enabled = StreamProcessor.SupportsSQLGeneration();
             menuPacketDump.Enabled = true;
             menuViewPackets.Enabled = true;
             menuDumpAAs.Enabled = true;

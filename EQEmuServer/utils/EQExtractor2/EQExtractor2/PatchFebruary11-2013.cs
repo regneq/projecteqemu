@@ -9,13 +9,13 @@ using MyUtils;
 
 namespace EQExtractor2.Patches
 {
-    class PatchTestServerJanuary162013Decoder : PatchJanuary162013Decoder
+    class PatchFebruary112013Decoder : PatchJanuary162013Decoder
     {
-        public PatchTestServerJanuary162013Decoder()
+        public PatchFebruary112013Decoder()
         {
-            Version = "EQ Client Build Date Test Server January 16 2013.";
+            Version = "EQ Client Build Date February 11 2013.";
                                    
-            PatchConfFileName = "patch_TestServer-Jan16-2013.conf";
+            PatchConfFileName = "patch_Feb11-2013.conf";
 
             SupportsSQLGeneration = false;
         }        

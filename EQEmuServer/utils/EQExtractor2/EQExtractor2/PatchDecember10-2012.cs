@@ -540,6 +540,110 @@ namespace EQExtractor2.Patches
             //OpManager.RegisterExplorer("OP_ClientUpdate", ExploreClientUpdate);
             //OpManager.RegisterExplorer("OP_OpenNewTasksWindow", ExploreOpenNewTasksWindow);
             //OpManager.RegisterExplorer("OP_TaskDescription", ExploreTaskDescription);
+            //OpManager.RegisterExplorer("OP_CharInventory", ExploreInventory);
+        }
+
+        public void DecodeItemPacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            String UnkString = Buffer.ReadString(false);
+            Buffer.SkipBytes(88);
+            String ItemName = Buffer.ReadString(false);
+            String ItemLore = Buffer.ReadString(false);
+            String ItemIDFile = Buffer.ReadString(false);
+            Buffer.ReadString(false);
+
+            UInt32 ItemID = Buffer.ReadUInt32();
+            OutputStream.WriteLine("ItemName: {0}, IDFile: {1}", ItemName, ItemIDFile);
+
+            Buffer.SkipBytes(251);
+
+            String CharmFile = Buffer.ReadString(false);
+
+            OutputStream.WriteLine("CharmFile: {0}", CharmFile);
+
+            Buffer.SkipBytes(74);   // Secondary BS
+
+            String FileName = Buffer.ReadString(false);
+            OutputStream.WriteLine("FileName: {0}", CharmFile);
+
+            Buffer.SkipBytes(76);   // Tertiary BS
+
+            UInt32 ClickEffect = Buffer.ReadUInt32();
+            Buffer.SkipBytes(26);   // ClickEffect Struct
+            String ClickName = Buffer.ReadString(false);
+            OutputStream.WriteLine("ClickEffect = {0}, ClickName = {1}", ClickEffect, ClickName);
+            Buffer.ReadUInt32();
+
+            ClickEffect = Buffer.ReadUInt32();
+            Buffer.SkipBytes(26);   // ClickEffect Struct
+            ClickName = Buffer.ReadString(false);
+            OutputStream.WriteLine("ClickEffect = {0}, ClickName = {1}", ClickEffect, ClickName);
+            Buffer.ReadUInt32();
+
+            ClickEffect = Buffer.ReadUInt32();
+            Buffer.SkipBytes(26);   // ClickEffect Struct
+            ClickName = Buffer.ReadString(false);
+            OutputStream.WriteLine("ClickEffect = {0}, ClickName = {1}", ClickEffect, ClickName);
+            Buffer.ReadUInt32();
+
+            ClickEffect = Buffer.ReadUInt32();
+            Buffer.SkipBytes(26);   // ClickEffect Struct
+            ClickName = Buffer.ReadString(false);
+            OutputStream.WriteLine("ClickEffect = {0}, ClickName = {1}", ClickEffect, ClickName);
+            Buffer.ReadUInt32();
+
+            ClickEffect = Buffer.ReadUInt32();
+            Buffer.SkipBytes(26);   // ClickEffect Struct
+            ClickName = Buffer.ReadString(false);
+            OutputStream.WriteLine("ClickEffect = {0}, ClickName = {1}", ClickEffect, ClickName);
+            Buffer.ReadUInt32();
+
+            ClickEffect = Buffer.ReadUInt32();
+            Buffer.SkipBytes(26);   // ClickEffect Struct
+            ClickName = Buffer.ReadString(false);
+            OutputStream.WriteLine("ClickEffect = {0}, ClickName = {1}", ClickEffect, ClickName);
+            Buffer.ReadUInt32();
+
+            //Buffer.SkipBytes(167);
+            Buffer.SkipBytes(125);
+            //Byte UnkByte = Buffer.ReadByte();
+            //OutputStream.WriteLine("Unk byte is {0:X}", UnkByte);
+            OutputStream.WriteLine("At String ? Pos is {0}", Buffer.GetPosition());
+            UnkString = Buffer.ReadString(false);
+            OutputStream.WriteLine("Unk String is {0}", UnkString);
+            Buffer.SkipBytes(41);
+            UInt32 SubItemCount = Buffer.ReadUInt32();
+
+            OutputStream.WriteLine("Buffer Pos: {0}, SubItemCount = {1}", Buffer.GetPosition(), SubItemCount);
+
+            for (int j = 0; j < SubItemCount; ++j)
+            {
+                Buffer.ReadUInt32();
+                DecodeItemPacket(OutputStream, Buffer, Direction);
+            }
+
+            
+        }
+
+
+        public void ExploreInventory(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            if (Buffer.Length() < 4)
+                return;
+
+            UInt32 Count = Buffer.ReadUInt32();
+
+            for (int i = 0; i < Count; ++i)
+            {
+                try
+                {
+                    DecodeItemPacket(OutputStream, Buffer, Direction);
+                }
+                catch
+                {
+                    return;
+                }
+            }
         }
 
         public void ExploreTaskDescription(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
