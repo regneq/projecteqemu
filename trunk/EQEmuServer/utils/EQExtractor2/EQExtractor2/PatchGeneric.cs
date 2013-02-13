@@ -29,6 +29,7 @@ namespace EQExtractor2.Patches
             PPZoneIDOffset = 0;
             PatchConfFileName = "";
             IDStatus = IdentificationStatus.No;
+            SupportsSQLGeneration = true;
         }
 
         public string GetVersion()
@@ -300,5 +301,7 @@ namespace EQExtractor2.Patches
         protected IdentificationStatus IDStatus;
 
         private List<ExplorerSpawnRecord> ExplorerSpawns = new List<ExplorerSpawnRecord>();
+
+        public bool SupportsSQLGeneration;
     }
 }

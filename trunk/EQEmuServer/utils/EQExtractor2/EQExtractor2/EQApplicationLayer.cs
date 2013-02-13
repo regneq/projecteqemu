@@ -100,6 +100,8 @@ namespace EQApplicationLayer
             PatchList.Add(new PatchTestServerJanuary162013Decoder());
 
             PatchList.Add(new PatchTestServerFebruary52013Decoder());
+
+            PatchList.Add(new PatchFebruary112013Decoder());
             
             PatchList.Add(new PatchSoD());
 
@@ -1715,6 +1717,14 @@ namespace EQApplicationLayer
                 case 999: return "apprentice";
             }
             return "UNKNOWNZONE";
+        }
+
+        public bool SupportsSQLGeneration()
+        {
+            if (PatchDecoder.SupportsSQLGeneration)
+                return true;
+
+            return false;
         }
     }
 }

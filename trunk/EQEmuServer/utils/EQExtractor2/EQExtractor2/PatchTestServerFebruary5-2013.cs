@@ -15,7 +15,9 @@ namespace EQExtractor2.Patches
         {
             Version = "EQ Client Build Date Test Server February 5 2013.";
                                    
-            PatchConfFileName = "patch_TestServer-Feb5-2013.conf";                       
+            PatchConfFileName = "patch_TestServer-Feb5-2013.conf";
+
+            SupportsSQLGeneration = false;
         }        
     }
 }
